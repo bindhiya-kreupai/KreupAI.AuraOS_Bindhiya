@@ -6,3 +6,4 @@
  */
 
 export * from './menu.types';
+export * from './common.types';
