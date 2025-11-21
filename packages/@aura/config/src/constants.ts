@@ -143,6 +143,7 @@ export const MODULE_CODES = {
   WELLNESS: 'WELLNESS',
   WORKFLOW_ENGINE: 'WORKFLOW_ENGINE',
   WORKFORCE_PLANNING: 'WORKFORCE_PLANNING',
+  MASTER_DATA: 'MASTER_DATA',
 } as const;
 
 // ==================== Status Constants ====================
