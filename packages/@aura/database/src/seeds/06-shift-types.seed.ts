@@ -1,0 +1,150 @@
+/**
+ * @module ShiftTypesSeed
+ * @description Seed data for shift types
+ * @project AURA HCM Platform
+ * @reference docs/aura-master-instructions.md
+ */
+
+import { ShiftType } from '@aura/types';
+
+export const shiftTypesSeed: Omit<ShiftType, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted'>[] = [
+  {
+    code: 'GENERAL',
+    name: 'General Shift',
+    description: 'Standard 9 AM to 6 PM shift',
+    type: 'fixed',
+    startTime: '09:00',
+    endTime: '18:00',
+    graceTimeIn: 15,
+    graceTimeOut: 15,
+    halfDayThreshold: 4,
+    fullDayThreshold: 8,
+    breaks: [
+      {
+        name: 'Lunch Break',
+        start: '13:00',
+        end: '14:00',
+        isPaid: true,
+      },
+    ],
+    weeklyOffDays: [0, 6], // Sunday, Saturday
+    overtimeEligible: true,
+    isActive: true,
+  },
+  {
+    code: 'MORNING',
+    name: 'Morning Shift',
+    description: 'Early morning shift - 6 AM to 3 PM',
+    type: 'fixed',
+    startTime: '06:00',
+    endTime: '15:00',
+    graceTimeIn: 15,
+    graceTimeOut: 15,
+    halfDayThreshold: 4,
+    fullDayThreshold: 8,
+    breaks: [
+      {
+        name: 'Breakfast Break',
+        start: '08:30',
+        end: '09:00',
+        isPaid: true,
+      },
+      {
+        name: 'Lunch Break',
+        start: '12:00',
+        end: '12:30',
+        isPaid: true,
+      },
+    ],
+    weeklyOffDays: [0],
+    overtimeEligible: true,
+    isActive: true,
+  },
+  {
+    code: 'EVENING',
+    name: 'Evening Shift',
+    description: 'Evening shift - 3 PM to 12 AM',
+    type: 'rotational',
+    startTime: '15:00',
+    endTime: '00:00',
+    graceTimeIn: 15,
+    graceTimeOut: 15,
+    halfDayThreshold: 4,
+    fullDayThreshold: 8,
+    breaks: [
+      {
+        name: 'Dinner Break',
+        start: '19:00',
+        end: '19:30',
+        isPaid: true,
+      },
+    ],
+    weeklyOffDays: [0],
+    overtimeEligible: true,
+    nightShiftAllowance: 500,
+    isActive: true,
+  },
+  {
+    code: 'NIGHT',
+    name: 'Night Shift',
+    description: 'Night shift - 11 PM to 8 AM',
+    type: 'night',
+    startTime: '23:00',
+    endTime: '08:00',
+    graceTimeIn: 15,
+    graceTimeOut: 15,
+    halfDayThreshold: 4,
+    fullDayThreshold: 8,
+    breaks: [
+      {
+        name: 'Midnight Break',
+        start: '03:00',
+        end: '03:30',
+        isPaid: true,
+      },
+    ],
+    weeklyOffDays: [0],
+    overtimeEligible: true,
+    nightShiftAllowance: 1000,
+    isActive: true,
+  },
+  {
+    code: 'FLEXIBLE',
+    name: 'Flexible Shift',
+    description: 'Flexible working hours',
+    type: 'flexible',
+    startTime: '00:00',
+    endTime: '23:59',
+    graceTimeIn: 0,
+    graceTimeOut: 0,
+    halfDayThreshold: 4,
+    fullDayThreshold: 8,
+    breaks: [],
+    weeklyOffDays: [0, 6],
+    overtimeEligible: false,
+    isActive: true,
+  },
+  {
+    code: 'ROTATIONAL',
+    name: 'Rotational Shift',
+    description: 'Rotating shift pattern',
+    type: 'rotational',
+    startTime: '09:00',
+    endTime: '18:00',
+    graceTimeIn: 15,
+    graceTimeOut: 15,
+    halfDayThreshold: 4,
+    fullDayThreshold: 8,
+    breaks: [
+      {
+        name: 'Break',
+        start: '13:00',
+        end: '14:00',
+        isPaid: true,
+      },
+    ],
+    weeklyOffDays: [],
+    overtimeEligible: true,
+    isActive: true,
+  },
+];

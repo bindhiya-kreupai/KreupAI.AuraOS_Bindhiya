@@ -1,0 +1,616 @@
+/**
+ * @module MasterDataSchema
+ * @description Database schema for common master data across all AURA HCM modules
+ * @project AURA HCM Platform
+ * @reference docs/aura-master-instructions.md
+ */
+
+// ==================== Geographic Master Data ====================
+
+model Country {
+  id          String   @id @default(uuid())
+  code        String   @unique @db.VarChar(2)  // ISO 3166-1 alpha-2
+  code3       String   @unique @db.VarChar(3)  // ISO 3166-1 alpha-3
+  name        String   @db.VarChar(100)
+  nativeName  String   @db.VarChar(100)
+  phoneCode   String   @db.VarChar(10)
+  currencyCode String  @db.VarChar(3)
+  timezones   String[]
+  region      String   @db.VarChar(50)
+  subregion   String   @db.VarChar(50)
+  flag        String?  @db.VarChar(255)
+  emoji       String?  @db.VarChar(10)
+  isActive    Boolean  @default(true)
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?  @db.VarChar(36)
+  updatedBy   String?  @db.VarChar(36)
+
+  states      State[]
+  locations   Location[]
+
+  @@index([code])
+  @@index([name])
+  @@map("countries")
+}
+
+model State {
+  id          String   @id @default(uuid())
+  countryCode String   @db.VarChar(2)
+  code        String   @db.VarChar(10)
+  name        String   @db.VarChar(100)
+  type        String?  @db.VarChar(50) // state, province, region, etc.
+  isActive    Boolean  @default(true)
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?  @db.VarChar(36)
+  updatedBy   String?  @db.VarChar(36)
+
+  country     Country  @relation(fields: [countryCode], references: [code])
+  cities      City[]
+
+  @@unique([countryCode, code])
+  @@index([countryCode])
+  @@index([name])
+  @@map("states")
+}
+
+model City {
+  id          String   @id @default(uuid())
+  stateCode   String   @db.VarChar(10)
+  countryCode String   @db.VarChar(2)
+  name        String   @db.VarChar(100)
+  latitude    Float?
+  longitude   Float?
+  population  Int?
+  isActive    Boolean  @default(true)
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?  @db.VarChar(36)
+  updatedBy   String?  @db.VarChar(36)
+
+  state       State    @relation(fields: [stateCode, countryCode], references: [code, countryCode])
+
+  @@index([countryCode])
+  @@index([stateCode])
+  @@index([name])
+  @@map("cities")
+}
+
+// ==================== Currency & Language ====================
+
+model Currency {
+  id            String   @id @default(uuid())
+  code          String   @unique @db.VarChar(3) // ISO 4217
+  name          String   @db.VarChar(100)
+  symbol        String   @db.VarChar(10)
+  decimalPlaces Int      @default(2)
+  countries     String[]
+  isActive      Boolean  @default(true)
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?  @db.VarChar(36)
+  updatedBy     String?  @db.VarChar(36)
+
+  @@index([code])
+  @@map("currencies")
+}
+
+model Language {
+  id          String   @id @default(uuid())
+  code        String   @unique @db.VarChar(5) // ISO 639-1
+  name        String   @db.VarChar(100)
+  nativeName  String   @db.VarChar(100)
+  direction   String   @db.VarChar(3) @default("ltr") // ltr or rtl
+  isSupported Boolean  @default(true)
+  isActive    Boolean  @default(true)
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?  @db.VarChar(36)
+  updatedBy   String?  @db.VarChar(36)
+
+  @@index([code])
+  @@map("languages")
+}
+
+// ==================== Organization Master Data ====================
+
+model Department {
+  id                String    @id @default(uuid())
+  code              String    @unique @db.VarChar(20)
+  name              String    @db.VarChar(100)
+  description       String?   @db.Text
+  parentDepartmentId String?  @db.VarChar(36)
+  headOfDepartment  String?   @db.VarChar(36) // Employee ID
+  costCenterId      String?   @db.VarChar(36)
+  locationId        String?   @db.VarChar(36)
+  budgetAmount      Decimal?  @db.Decimal(15, 2)
+  employeeCount     Int?      @default(0)
+  level             Int       @default(1)
+  isActive          Boolean   @default(true)
+  isDeleted         Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?   @db.VarChar(36)
+  updatedBy         String?   @db.VarChar(36)
+
+  parentDepartment  Department?  @relation("DepartmentHierarchy", fields: [parentDepartmentId], references: [id])
+  childDepartments  Department[] @relation("DepartmentHierarchy")
+  costCenter        CostCenter?  @relation(fields: [costCenterId], references: [id])
+
+  @@index([code])
+  @@index([name])
+  @@index([parentDepartmentId])
+  @@map("departments")
+}
+
+model Designation {
+  id                 String   @id @default(uuid())
+  code               String   @unique @db.VarChar(20)
+  title              String   @db.VarChar(100)
+  description        String?  @db.Text
+  level              Int
+  gradeId            String?  @db.VarChar(36)
+  departmentId       String?  @db.VarChar(36)
+  jobFamilyId        String?  @db.VarChar(36)
+  isManagerial       Boolean  @default(false)
+  reportingTo        String?  @db.VarChar(36) // Designation ID
+  minExperience      Int?
+  maxExperience      Int?
+  skillRequirements  String[] // Skill IDs
+  isActive           Boolean  @default(true)
+  isDeleted          Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  createdBy          String?  @db.VarChar(36)
+  updatedBy          String?  @db.VarChar(36)
+
+  grade              Grade?      @relation(fields: [gradeId], references: [id])
+  jobFamily          JobFamily?  @relation(fields: [jobFamilyId], references: [id])
+  reportingDesignation Designation? @relation("DesignationHierarchy", fields: [reportingTo], references: [id])
+  subordinates       Designation[] @relation("DesignationHierarchy")
+
+  @@index([code])
+  @@index([title])
+  @@index([level])
+  @@map("designations")
+}
+
+model Grade {
+  id                String      @id @default(uuid())
+  code              String      @unique @db.VarChar(20)
+  name              String      @db.VarChar(100)
+  level             Int
+  description       String?     @db.Text
+  minSalary         Decimal?    @db.Decimal(15, 2)
+  maxSalary         Decimal?    @db.Decimal(15, 2)
+  benefits          String[]
+  eligibleForBonus  Boolean     @default(true)
+  eligibleForEquity Boolean     @default(false)
+  isActive          Boolean     @default(true)
+  isDeleted         Boolean     @default(false)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  createdBy         String?     @db.VarChar(36)
+  updatedBy         String?     @db.VarChar(36)
+
+  designations      Designation[]
+
+  @@index([code])
+  @@index([level])
+  @@map("grades")
+}
+
+model CostCenter {
+  id            String      @id @default(uuid())
+  code          String      @unique @db.VarChar(20)
+  name          String      @db.VarChar(100)
+  description   String?     @db.Text
+  departmentId  String?     @db.VarChar(36)
+  locationId    String?     @db.VarChar(36)
+  budget        Decimal?    @db.Decimal(15, 2)
+  budgetPeriod  String?     @db.VarChar(20) // monthly, quarterly, yearly
+  managerId     String?     @db.VarChar(36) // Employee ID
+  isActive      Boolean     @default(true)
+  isDeleted     Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  createdBy     String?     @db.VarChar(36)
+  updatedBy     String?     @db.VarChar(36)
+
+  departments   Department[]
+
+  @@index([code])
+  @@map("cost_centers")
+}
+
+model BusinessUnit {
+  id            String   @id @default(uuid())
+  code          String   @unique @db.VarChar(20)
+  name          String   @db.VarChar(100)
+  description   String?  @db.Text
+  headOfUnit    String?  @db.VarChar(36) // Employee ID
+  parentUnitId  String?  @db.VarChar(36)
+  locations     String[]
+  region        String?  @db.VarChar(50)
+  country       String?  @db.VarChar(2)
+  isActive      Boolean  @default(true)
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?  @db.VarChar(36)
+  updatedBy     String?  @db.VarChar(36)
+
+  parentUnit    BusinessUnit?  @relation("BusinessUnitHierarchy", fields: [parentUnitId], references: [id])
+  childUnits    BusinessUnit[] @relation("BusinessUnitHierarchy")
+
+  @@index([code])
+  @@index([parentUnitId])
+  @@map("business_units")
+}
+
+model Location {
+  id              String   @id @default(uuid())
+  code            String   @unique @db.VarChar(20)
+  name            String   @db.VarChar(100)
+  type            String   @db.VarChar(50) // headquarters, branch, regional_office, etc.
+  addressLine1    String   @db.VarChar(255)
+  addressLine2    String?  @db.VarChar(255)
+  city            String   @db.VarChar(100)
+  state           String   @db.VarChar(100)
+  country         String   @db.VarChar(2)
+  postalCode      String   @db.VarChar(20)
+  landmark        String?  @db.VarChar(255)
+  latitude        Float?
+  longitude       Float?
+  timezone        String   @db.VarChar(50)
+  workingHours    Json?    // WorkingHours JSON
+  capacity        Int?
+  isHeadquarters  Boolean  @default(false)
+  isPrimary       Boolean  @default(false)
+  contactPhone    String?  @db.VarChar(20)
+  contactEmail    String?  @db.VarChar(255)
+  isActive        Boolean  @default(true)
+  isDeleted       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?  @db.VarChar(36)
+  updatedBy       String?  @db.VarChar(36)
+
+  countryRelation Country  @relation(fields: [country], references: [code])
+
+  @@index([code])
+  @@index([type])
+  @@index([country])
+  @@map("locations")
+}
+
+// ==================== Employment Master Data ====================
+
+model EmploymentType {
+  id                String   @id @default(uuid())
+  code              String   @unique @db.VarChar(20)
+  name              String   @db.VarChar(100)
+  description       String?  @db.Text
+  isPermanent       Boolean  @default(true)
+  isFullTime        Boolean  @default(true)
+  benefitsEligible  Boolean  @default(true)
+  probationPeriod   Int?     // in months
+  noticePeriod      Int?     // in days
+  isActive          Boolean  @default(true)
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?  @db.VarChar(36)
+  updatedBy         String?  @db.VarChar(36)
+
+  @@index([code])
+  @@map("employment_types")
+}
+
+model EmploymentStatus {
+  id                  String   @id @default(uuid())
+  code                String   @unique @db.VarChar(20)
+  name                String   @db.VarChar(100)
+  description         String?  @db.Text
+  category            String   @db.VarChar(20) // active, inactive, terminated, etc.
+  isPayrollEligible   Boolean  @default(true)
+  isBenefitsEligible  Boolean  @default(true)
+  isActive            Boolean  @default(true)
+  isDeleted           Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  createdBy           String?  @db.VarChar(36)
+  updatedBy           String?  @db.VarChar(36)
+
+  @@index([code])
+  @@index([category])
+  @@map("employment_statuses")
+}
+
+model JobFamily {
+  id           String        @id @default(uuid())
+  code         String        @unique @db.VarChar(20)
+  name         String        @db.VarChar(100)
+  description  String?       @db.Text
+  category     String        @db.VarChar(50)
+  competencies String[]      // Competency IDs
+  isActive     Boolean       @default(true)
+  isDeleted    Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  createdBy    String?       @db.VarChar(36)
+  updatedBy    String?       @db.VarChar(36)
+
+  designations Designation[]
+
+  @@index([code])
+  @@map("job_families")
+}
+
+// ==================== Document Master Data ====================
+
+model DocumentType {
+  id                   String   @id @default(uuid())
+  code                 String   @unique @db.VarChar(20)
+  name                 String   @db.VarChar(100)
+  description          String?  @db.Text
+  category             String   @db.VarChar(50) // identity, address, education, etc.
+  isMandatory          Boolean  @default(false)
+  validityPeriod       Int?     // in months
+  maxFileSize          Int?     // in MB
+  allowedFormats       String[] // ['pdf', 'jpg', 'png']
+  expiryTracking       Boolean  @default(false)
+  requiresVerification Boolean  @default(false)
+  isActive             Boolean  @default(true)
+  isDeleted            Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  createdBy            String?  @db.VarChar(36)
+  updatedBy            String?  @db.VarChar(36)
+
+  @@index([code])
+  @@index([category])
+  @@map("document_types")
+}
+
+// ==================== Skill & Competency Master Data ====================
+
+model Skill {
+  id                 String   @id @default(uuid())
+  code               String   @unique @db.VarChar(20)
+  name               String   @db.VarChar(100)
+  description        String?  @db.Text
+  category           String   @db.VarChar(50) // technical, functional, behavioral, leadership
+  proficiencyLevels  Json     // ProficiencyLevel[] JSON
+  relatedSkills      String[] // Skill IDs
+  isActive           Boolean  @default(true)
+  isDeleted          Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  createdBy          String?  @db.VarChar(36)
+  updatedBy          String?  @db.VarChar(36)
+
+  @@index([code])
+  @@index([category])
+  @@map("skills")
+}
+
+model Competency {
+  id               String   @id @default(uuid())
+  code             String   @unique @db.VarChar(20)
+  name             String   @db.VarChar(100)
+  description      String?  @db.Text
+  type             String   @db.VarChar(50) // core, functional, leadership, technical
+  proficiencyScale Json     // ProficiencyScale JSON
+  behaviors        String[]
+  relatedSkills    String[]
+  isActive         Boolean  @default(true)
+  isDeleted        Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  createdBy        String?  @db.VarChar(36)
+  updatedBy        String?  @db.VarChar(36)
+
+  @@index([code])
+  @@index([type])
+  @@map("competencies")
+}
+
+// ==================== Leave Master Data ====================
+
+model LeaveType {
+  id                   String   @id @default(uuid())
+  code                 String   @unique @db.VarChar(20)
+  name                 String   @db.VarChar(100)
+  description          String?  @db.Text
+  category             String   @db.VarChar(50) // paid, unpaid, sick, casual, etc.
+  isPaid               Boolean  @default(true)
+  isCarryForward       Boolean  @default(false)
+  maxCarryForward      Int?
+  isEncashable         Boolean  @default(false)
+  maxEncashment        Int?
+  accrualType          String   @db.VarChar(20) // monthly, quarterly, yearly, manual
+  accrualAmount        Decimal? @db.Decimal(5, 2)
+  maxBalance           Int?
+  minServicePeriod     Int?     // in months
+  requiresApproval     Boolean  @default(true)
+  requiresDocument     Boolean  @default(false)
+  gender               String?  @db.VarChar(20) // male, female, all
+  applicableAfter      Int?     // in months
+  allowNegativeBalance Boolean  @default(false)
+  maxNegativeBalance   Int?
+  proration            Boolean  @default(true)
+  isActive             Boolean  @default(true)
+  isDeleted            Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  createdBy            String?  @db.VarChar(36)
+  updatedBy            String?  @db.VarChar(36)
+
+  @@index([code])
+  @@index([category])
+  @@map("leave_types")
+}
+
+// ==================== Attendance & Time Master Data ====================
+
+model ShiftType {
+  id                 String   @id @default(uuid())
+  code               String   @unique @db.VarChar(20)
+  name               String   @db.VarChar(100)
+  description        String?  @db.Text
+  type               String   @db.VarChar(20) // fixed, rotational, flexible, night
+  startTime          String   @db.VarChar(5) // HH:mm
+  endTime            String   @db.VarChar(5) // HH:mm
+  graceTimeIn        Int?     // in minutes
+  graceTimeOut       Int?     // in minutes
+  halfDayThreshold   Int?     // in hours
+  fullDayThreshold   Int?     // in hours
+  breaks             Json     // Break[] JSON
+  weeklyOffDays      Int[]    // [0, 6] for Sunday, Saturday
+  overtimeEligible   Boolean  @default(false)
+  nightShiftAllowance Decimal? @db.Decimal(10, 2)
+  isActive           Boolean  @default(true)
+  isDeleted          Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  createdBy          String?  @db.VarChar(36)
+  updatedBy          String?  @db.VarChar(36)
+
+  @@index([code])
+  @@index([type])
+  @@map("shift_types")
+}
+
+model Holiday {
+  id          String   @id @default(uuid())
+  name        String   @db.VarChar(200)
+  date        DateTime
+  type        String   @db.VarChar(20) // national, regional, optional, floating
+  countryCode String?  @db.VarChar(2)
+  stateCode   String?  @db.VarChar(10)
+  locationIds String[]
+  isOptional  Boolean  @default(false)
+  description String?  @db.Text
+  year        Int
+  isActive    Boolean  @default(true)
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?  @db.VarChar(36)
+  updatedBy   String?  @db.VarChar(36)
+
+  @@index([date])
+  @@index([year])
+  @@index([type])
+  @@index([countryCode])
+  @@map("holidays")
+}
+
+// ==================== Tax & Compliance Master Data ====================
+
+model TaxRegime {
+  id            String   @id @default(uuid())
+  code          String   @unique @db.VarChar(20)
+  name          String   @db.VarChar(100)
+  countryCode   String   @db.VarChar(2)
+  description   String?  @db.Text
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  slabs         Json     // TaxSlab[] JSON
+  deductions    Json?    // TaxDeduction[] JSON
+  exemptions    Json?    // TaxExemption[] JSON
+  isActive      Boolean  @default(true)
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?  @db.VarChar(36)
+  updatedBy     String?  @db.VarChar(36)
+
+  @@index([code])
+  @@index([countryCode])
+  @@index([effectiveFrom])
+  @@map("tax_regimes")
+}
+
+// ==================== Payroll Master Data ====================
+
+model PayComponent {
+  id              String   @id @default(uuid())
+  code            String   @unique @db.VarChar(20)
+  name            String   @db.VarChar(100)
+  description     String?  @db.Text
+  type            String   @db.VarChar(50) // earning, deduction, reimbursement, benefit
+  category        String   @db.VarChar(50) // fixed, variable, statutory
+  calculationType String   @db.VarChar(20) // flat, percentage, formula
+  calculation     String?  @db.Text
+  frequency       String   @db.VarChar(20) // monthly, quarterly, yearly, one_time
+  isTaxable       Boolean  @default(true)
+  isPFApplicable  Boolean  @default(false)
+  isESIApplicable Boolean  @default(false)
+  isProrated      Boolean  @default(false)
+  displayOrder    Int?
+  isActive        Boolean  @default(true)
+  isDeleted       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?  @db.VarChar(36)
+  updatedBy       String?  @db.VarChar(36)
+
+  @@index([code])
+  @@index([type])
+  @@map("pay_components")
+}
+
+// ==================== User & Role Master Data ====================
+
+model Role {
+  id          String   @id @default(uuid())
+  code        String   @unique @db.VarChar(20)
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  type        String   @db.VarChar(20) @default("custom") // system, custom
+  permissions Json     // Permission[] JSON
+  hierarchy   Int?
+  isDefault   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?  @db.VarChar(36)
+  updatedBy   String?  @db.VarChar(36)
+
+  @@index([code])
+  @@index([type])
+  @@map("roles")
+}
+
+// ==================== System Settings ====================
+
+model SystemSetting {
+  id          String   @id @default(uuid())
+  category    String   @db.VarChar(50)
+  key         String   @db.VarChar(100)
+  value       Json
+  dataType    String   @db.VarChar(20) // string, number, boolean, object, array
+  description String?  @db.Text
+  isEditable  Boolean  @default(true)
+  module      String?  @db.VarChar(50)
+  isActive    Boolean  @default(true)
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?  @db.VarChar(36)
+  updatedBy   String?  @db.VarChar(36)
+
+  @@unique([category, key])
+  @@index([category])
+  @@index([module])
+  @@map("system_settings")
+}
