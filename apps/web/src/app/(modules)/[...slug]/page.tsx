@@ -8,14 +8,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { ModulePage } from '@/components/ui';
-import { superAdminMenu } from '@aura/config';
-import type { MenuIconName } from '@aura/types';
-
-// Convert slug to module code
-function slugToCode(slug: string): string {
-  return slug.toUpperCase().replace(/-/g, '_');
-}
+import { EmptyPage } from '@/components/ui';
 
 // Convert slug to readable name
 function slugToName(slug: string): string {
@@ -31,57 +24,25 @@ export default function CatchAllModulePage() {
 
   if (!slugArray || slugArray.length === 0) {
     return (
-      <ModulePage
-        moduleCode="UNKNOWN"
-        moduleName="Unknown Module"
-        isImplemented={false}
+      <EmptyPage
+        variant="coming-soon"
+        title="Module Coming Soon"
+        description="This module is currently under development."
       />
     );
   }
 
   const moduleSlug = slugArray[0];
   const featureSlug = slugArray[1];
-  const moduleCode = slugToCode(moduleSlug);
-
-  // Find module in menu
-  const moduleData = superAdminMenu.items.find((m) => m.code === moduleCode);
-
-  if (!moduleData) {
-    // Module not found, still show coming soon
-    return (
-      <ModulePage
-        moduleCode={moduleCode}
-        moduleName={slugToName(moduleSlug)}
-        featureName={featureSlug ? slugToName(featureSlug) : undefined}
-        isImplemented={false}
-      />
-    );
-  }
-
-  // Find feature if specified
-  let featureName: string | undefined;
-  if (featureSlug) {
-    featureName = moduleData.features.find(
-      (f) =>
-        f
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, '') === featureSlug
-    );
-
-    if (!featureName) {
-      featureName = slugToName(featureSlug);
-    }
-  }
+  const moduleName = slugToName(moduleSlug);
+  const featureName = featureSlug ? slugToName(featureSlug) : undefined;
 
   return (
-    <ModulePage
-      moduleCode={moduleData.code}
-      moduleName={moduleData.label}
-      moduleIcon={moduleData.icon as MenuIconName}
-      featureName={featureName}
-      featureCount={moduleData.features.length}
-      isImplemented={false}
+    <EmptyPage
+      variant="coming-soon"
+      title={`${featureName || moduleName} Coming Soon`}
+      description={`The ${featureName || moduleName} feature is currently under development. Our team is working hard to bring you this functionality.`}
     />
   );
 }
+

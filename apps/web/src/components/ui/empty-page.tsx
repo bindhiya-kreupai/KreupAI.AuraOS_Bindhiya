@@ -22,17 +22,23 @@ import { cn } from '@/lib/utils';
 
 type EmptyPageVariant = 'coming-soon' | 'under-construction' | 'not-found' | 'no-access' | 'empty';
 
+import { getMenuIcon } from '@aura/ui/components/menu';
+import type { MenuIconName } from '@aura/types';
+
 interface EmptyPageProps {
   variant?: EmptyPageVariant;
   title?: string;
   description?: string;
-  icon?: React.ReactNode;
+  icon?: React.ReactNode | string;
   showBackButton?: boolean;
   showHomeButton?: boolean;
   backHref?: string;
   backLabel?: string;
   children?: React.ReactNode;
   className?: string;
+  // Legacy/Scaffold props
+  module?: string;
+  features?: string[];
 }
 
 const variantConfig: Record<EmptyPageVariant, { icon: React.ReactNode; title: string; description: string }> = {
@@ -74,8 +80,25 @@ export const EmptyPage: React.FC<EmptyPageProps> = ({
   backLabel = 'Go Back',
   children,
   className,
+  module,
+  features,
 }) => {
   const config = variantConfig[variant];
+
+  // Handle string icon
+  let DisplayIcon = config.icon;
+  if (typeof icon === 'string') {
+    const IconComponent = getMenuIcon(icon as MenuIconName);
+    if (IconComponent) {
+      DisplayIcon = <IconComponent className="w-16 h-16" />;
+    }
+  } else if (icon) {
+    DisplayIcon = icon as React.ReactNode;
+  }
+
+  // Handle module prop
+  const displayTitle = title || (module ? `${module} Coming Soon` : config.title);
+  const displayDescription = description || (module ? `The ${module} module is currently under development.` : config.description);
 
   return (
     <div
@@ -94,18 +117,33 @@ export const EmptyPage: React.FC<EmptyPageProps> = ({
       <div className="relative z-10 flex flex-col items-center text-center max-w-md">
         {/* Icon */}
         <div className="mb-6 p-6 rounded-2xl bg-gradient-to-br from-celestial-indigo/10 to-quantum-rose/10 text-celestial-indigo dark:text-quantum-rose">
-          {icon || config.icon}
+          {DisplayIcon}
         </div>
 
         {/* Title */}
         <h1 className="text-2xl md:text-3xl font-display font-bold text-ink-black dark:text-pearl mb-3">
-          {title || config.title}
+          {displayTitle}
         </h1>
 
         {/* Description */}
         <p className="text-twilight dark:text-silver-mist mb-8 leading-relaxed">
-          {description || config.description}
+          {displayDescription}
         </p>
+
+        {/* Features List (Scaffold support) */}
+        {features && features.length > 0 && (
+          <div className="mb-8 w-full text-left bg-white dark:bg-stellar-blue/50 p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
+            <h3 className="text-sm font-semibold text-ink-black dark:text-pearl mb-2">Planned Features:</h3>
+            <ul className="grid grid-cols-1 gap-2">
+              {features.map((feature, idx) => (
+                <li key={idx} className="flex items-center gap-2 text-sm text-twilight dark:text-silver-mist">
+                  <div className="w-1.5 h-1.5 rounded-full bg-neural-mint" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Custom Content */}
         {children && <div className="mb-8 w-full">{children}</div>}

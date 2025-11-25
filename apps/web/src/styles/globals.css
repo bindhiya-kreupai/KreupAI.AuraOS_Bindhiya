@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Aurora Professional Palette */
+    --primary: 75 59 245;
+    /* Celestial Indigo #4B3BF5 */
+    --secondary: 233 30 140;
+    /* Quantum Rose #E91E8C */
+    --tertiary: 0 212 170;
+    /* Neural Mint #00D4AA */
+
+    --background: 255 255 255;
+    --foreground: 10 14 39;
+    /* Ink Black */
+
+    --card: 255 255 255;
+    --card-foreground: 10 14 39;
+
+    --popover: 255 255 255;
+    --popover-foreground: 10 14 39;
+
+    --primary-foreground: 255 255 255;
+    --secondary-foreground: 255 255 255;
+
+    --muted: 241 245 249;
+    --muted-foreground: 100 116 139;
+
+    --accent: 241 245 249;
+    --accent-foreground: 15 23 42;
+
+    --destructive: 239 68 68;
+    --destructive-foreground: 255 255 255;
+
+    --border: 226 232 240;
+    --input: 226 232 240;
+    --ring: 75 59 245;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 10 11 30;
+    /* Deep Cosmos */
+    --foreground: 232 236 244;
+
+    --card: 21 23 41;
+    /* Stellar Blue */
+    --card-foreground: 232 236 244;
+
+    --popover: 10 11 30;
+    --popover-foreground: 232 236 244;
+
+    --primary: 75 59 245;
+    --primary-foreground: 255 255 255;
+
+    --secondary: 233 30 140;
+    --secondary-foreground: 255 255 255;
+
+    --muted: 30 41 59;
+    --muted-foreground: 148 163 184;
+
+    --accent: 30 41 59;
+    --accent-foreground: 248 250 252;
+
+    --destructive: 127 29 29;
+    --destructive-foreground: 248 250 252;
+
+    --border: 30 41 59;
+    --input: 30 41 59;
+    --ring: 75 59 245;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+  }
+}
