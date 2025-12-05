@@ -33,8 +33,9 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
   const [expandedModules, setExpandedModules] = useState<string[]>([]);
 
   // Convert menu data to path format
-  const getModulePath = (code: string) => {
-    return `/${code.toLowerCase().replace(/_/g, '-')}`;
+  const getModulePath = (module: typeof superAdminMenu.items[0]) => {
+    if (module.path) return module.path;
+    return `/${module.code.toLowerCase().replace(/_/g, '-')}`;
   };
 
   // Filter modules based on search
@@ -61,14 +62,14 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
   };
 
   // Check if module is active
-  const isModuleActive = (code: string) => {
-    const modulePath = getModulePath(code);
+  const isModuleActive = (module: typeof superAdminMenu.items[0]) => {
+    const modulePath = getModulePath(module);
     return pathname.startsWith(modulePath);
   };
 
   // Check if feature is active
-  const getFeaturePath = (moduleCode: string, featureName: string) => {
-    const modulePath = getModulePath(moduleCode);
+  const getFeaturePath = (module: typeof superAdminMenu.items[0], featureName: string) => {
+    const modulePath = getModulePath(module);
     const featureSlug = featureName
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -137,16 +138,16 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
       <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
         {filteredModules.map((module) => {
           const Icon = getMenuIcon(module.icon as MenuIconName);
-          const isActive = isModuleActive(module.code);
+          const isActive = isModuleActive(module);
           const isExpanded = expandedModules.includes(module.code);
-          const modulePath = getModulePath(module.code);
+          const modulePath = getModulePath(module);
 
           return (
             <div key={module.code}>
               {/* Module Item */}
               <div
                 className={cn(
-                  'group flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200',
+                  'group flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-all duration-200',
                   isActive
                     ? 'bg-gradient-to-r from-celestial-indigo/10 to-quantum-rose/10 text-celestial-indigo dark:text-quantum-rose'
                     : 'text-twilight dark:text-silver-mist hover:bg-pearl dark:hover:bg-stellar-blue'
@@ -186,7 +187,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
               {!collapsed && isExpanded && (
                 <div className="ml-4 mt-1 space-y-0.5 border-l-2 border-cloud dark:border-nebula-purple pl-4">
                   {module.features.map((feature) => {
-                    const featurePath = getFeaturePath(module.code, feature);
+                    const featurePath = getFeaturePath(module, feature);
                     const isFeatureActive = pathname === featurePath;
 
                     return (

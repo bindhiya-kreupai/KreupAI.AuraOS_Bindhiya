@@ -1,5 +1,6 @@
 import React from 'react';
 import { SidebarMenu, TopNav } from '@aura/ui/components/menu';
+import { RightPanel } from '@aura/ui/components/layout';
 
 export default function DashboardLayout({
     children,
@@ -17,12 +18,15 @@ export default function DashboardLayout({
                 <TopNav />
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scroll-smooth">
-                    <div className="max-w-7xl mx-auto w-full">
+                <main className="flex-1 overflow-y-auto p-2 scroll-smooth pr-16">
+                    <div className="max-w-full mx-auto w-full h-full">
                         {children}
                     </div>
                 </main>
             </div>
+
+            {/* Right Panel (Action Hub) */}
+            <RightPanel />
         </div>
     );
 }

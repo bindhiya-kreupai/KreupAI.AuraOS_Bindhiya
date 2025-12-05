@@ -1,0 +1,562 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// 1. ORGANIZATION STRUCTURE (Multi-Entity, Multi-Tenant Support)
+// ============================================================================
+
+model Tenant {
+  id        String   @id @default(uuid())
+  code      String   @unique // e.g., "ACME_CORP"
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companies Company[]
+  users     User[]
+}
+
+model Company {
+  id       String  @id @default(uuid())
+  tenantId String
+  tenant   Tenant  @relation(fields: [tenantId], references: [id])
+  code     String // e.g., "US_HQ"
+  name     String
+  taxId    String? // EIN, VAT, etc.
+
+  locations   Location[]
+  departments Department[]
+  employees   Employee[]
+
+  @@unique([tenantId, code])
+}
+
+model Department {
+  id        String       @id @default(uuid())
+  companyId String
+  company   Company      @relation(fields: [companyId], references: [id])
+  code      String
+  name      String
+  parentId  String? // For hierarchy (e.g., Engineering -> Backend)
+  parent    Department?  @relation("DeptHierarchy", fields: [parentId], references: [id])
+  children  Department[] @relation("DeptHierarchy")
+
+  costCenterId String?
+  costCenter   CostCenter? @relation(fields: [costCenterId], references: [id])
+
+  employees Employee[]
+
+  @@unique([companyId, code])
+}
+
+model CostCenter {
+  id          String       @id @default(uuid())
+  code        String       @unique
+  name        String
+  departments Department[]
+}
+
+// ============================================================================
+// 2. LOCATION MASTER
+// ============================================================================
+
+model Country {
+  id       String @id @default(uuid())
+  isoCode  String @unique // US, IN, UK
+  name     String
+  currency String // USD, INR
+
+  states    State[]
+  addresses Address[]
+}
+
+model State {
+  id        String  @id @default(uuid())
+  countryId String
+  country   Country @relation(fields: [countryId], references: [id])
+  code      String // CA, NY
+  name      String
+
+  cities    City[]
+  addresses Address[]
+}
+
+model City {
+  id      String @id @default(uuid())
+  stateId String
+  state   State  @relation(fields: [stateId], references: [id])
+  name    String
+
+  addresses Address[]
+}
+
+model Address {
+  id         String  @id @default(uuid())
+  line1      String
+  line2      String?
+  postalCode String
+  cityId     String
+  city       City    @relation(fields: [cityId], references: [id])
+  stateId    String
+  state      State   @relation(fields: [stateId], references: [id])
+  countryId  String
+  country    Country @relation(fields: [countryId], references: [id])
+
+  locations Location[]
+  employees Employee[] // Home address
+}
+
+model Location {
+  id        String       @id @default(uuid())
+  companyId String
+  company   Company      @relation(fields: [companyId], references: [id])
+  code      String // e.g., "NYC_OFFICE"
+  name      String
+  type      LocationType // HEADQUARTERS, BRANCH, REMOTE_HUB
+  addressId String
+  address   Address      @relation(fields: [addressId], references: [id])
+
+  employees Employee[]
+}
+
+enum LocationType {
+  HEADQUARTERS
+  BRANCH
+  REMOTE_HUB
+  WAREHOUSE
+  PLANT
+}
+
+// ============================================================================
+// 3. JOB ARCHITECTURE
+// ============================================================================
+
+model JobFunction {
+  id   String @id @default(uuid())
+  code String // e.g., "ENG"
+  name String // e.g., "Engineering"
+
+  jobFamilies JobFamily[]
+}
+
+model JobFamily {
+  id         String      @id @default(uuid())
+  functionId String
+  function   JobFunction @relation(fields: [functionId], references: [id])
+  code       String // e.g., "SW_DEV"
+  name       String // e.g., "Software Development"
+
+  jobProfiles JobProfile[]
+}
+
+model JobProfile {
+  id          String    @id @default(uuid())
+  familyId    String
+  family      JobFamily @relation(fields: [familyId], references: [id])
+  code        String // e.g., "SENIOR_FE"
+  title       String // e.g., "Senior Frontend Engineer"
+  description String?
+
+  employees Employee[]
+}
+
+model Grade {
+  id    String @id @default(uuid())
+  code  String // e.g., "L4"
+  name  String // e.g., "Level 4"
+  level Int // Numeric level for hierarchy comparison
+
+  employees Employee[]
+}
+
+// ============================================================================
+// 4. EMPLOYEE MASTER (The Core)
+// ============================================================================
+
+model Employee {
+  id     String  @id @default(uuid())
+  userId String? @unique // Link to auth user
+  user   User?   @relation(fields: [userId], references: [id])
+
+  // Identity
+  employeeCode String @unique
+  firstName    String
+  lastName     String
+  email        String @unique
+
+  // Organization Links (Normalized)
+  companyId    String
+  company      Company    @relation(fields: [companyId], references: [id])
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  locationId   String
+  location     Location   @relation(fields: [locationId], references: [id])
+
+  // Job Links (Normalized)
+  jobProfileId String
+  jobProfile   JobProfile @relation(fields: [jobProfileId], references: [id])
+  gradeId      String
+  grade        Grade      @relation(fields: [gradeId], references: [id])
+
+  // Manager (Self-Relation)
+  managerId String?
+  manager   Employee?  @relation("ManagerReports", fields: [managerId], references: [id])
+  reports   Employee[] @relation("ManagerReports")
+
+  // Status
+  // Status
+  statusId    String
+  status      EmployeeStatus @relation(fields: [statusId], references: [id])
+  typeId      String
+  type        EmploymentType @relation(fields: [typeId], references: [id])
+  joiningDate DateTime
+
+  // Personal
+  addressId String?
+  address   Address? @relation(fields: [addressId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmployeeStatus {
+  id          String  @id @default(uuid())
+  code        String  @unique // ACTIVE, PROBATION
+  name        String
+  description String?
+  status      String  @default("Active")
+
+  employees Employee[]
+}
+
+model EmploymentType {
+  id          String  @id @default(uuid())
+  code        String  @unique // FULL_TIME, PART_TIME
+  name        String
+  description String?
+  status      String  @default("Active")
+
+  employees Employee[]
+}
+
+// ============================================================================
+// 5. SYSTEM / AUTH
+// ============================================================================
+
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  password String // Hashed
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+
+  employee Employee?
+
+  // User Management Fields
+  status     String    @default("Active") // Active, Inactive, Suspended
+  mfaEnabled Boolean   @default(false)
+  lastLogin  DateTime?
+
+  // Relations
+  sessions      UserSession[]
+  auditLogs     AuditLog[]
+  delegatedTo   UserDelegation[]   @relation("Delegator")
+  delegatedFrom UserDelegation[]   @relation("Delegatee")
+  deactivations UserDeactivation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================================
+// 6. MASTER DATA (General & System)
+// ============================================================================
+
+model Currency {
+  id     String @id @default(uuid())
+  code   String @unique // USD, EUR
+  name   String
+  symbol String
+  status String @default("Active") // Active, Inactive
+}
+
+model Language {
+  id     String  @id @default(uuid())
+  code   String  @unique // en, es
+  name   String
+  isRTL  Boolean @default(false)
+  status String  @default("Active")
+}
+
+model DocumentType {
+  id          String  @id @default(uuid())
+  code        String  @unique
+  name        String
+  description String?
+  isRequired  Boolean @default(false)
+  status      String  @default("Active")
+}
+
+// ============================================================================
+// 7. ORGANIZATION MASTERS
+// ============================================================================
+
+model BusinessUnit {
+  id     String  @id @default(uuid())
+  code   String  @unique
+  name   String
+  head   String?
+  status String  @default("Active")
+}
+
+model Designation {
+  id          String  @id @default(uuid())
+  code        String  @unique
+  name        String
+  gradeId     String?
+  description String?
+  status      String  @default("Active")
+}
+
+// ============================================================================
+// 8. EMPLOYMENT MASTERS
+// ============================================================================
+
+model Skill {
+  id          String  @id @default(uuid())
+  code        String  @unique
+  name        String
+  category    String?
+  description String?
+  status      String  @default("Active")
+}
+
+model Competency {
+  id          String  @id @default(uuid())
+  code        String  @unique
+  name        String
+  description String?
+  status      String  @default("Active")
+}
+
+// ============================================================================
+// 9. TIME & LEAVE MASTERS
+// ============================================================================
+
+model LeaveType {
+  id     String  @id @default(uuid())
+  code   String  @unique
+  name   String
+  isPaid Boolean @default(true)
+  status String  @default("Active")
+}
+
+model ShiftType {
+  id        String @id @default(uuid())
+  code      String @unique
+  name      String
+  startTime String
+  endTime   String
+  status    String @default("Active")
+}
+
+model Holiday {
+  id     String @id @default(uuid())
+  name   String
+  date   String // YYYY-MM-DD
+  type   String // National, Regional
+  status String @default("Active")
+}
+
+// ============================================================================
+// 10. PAYROLL & FINANCE MASTERS
+// ============================================================================
+
+model TaxRegime {
+  id      String @id @default(uuid())
+  code    String @unique
+  name    String
+  country String
+  status  String @default("Active")
+}
+
+model PayComponent {
+  id     String @id @default(uuid())
+  code   String @unique
+  name   String
+  type   String // Earning, Deduction
+  status String @default("Active")
+}
+
+model Bank {
+  id         String  @id @default(uuid())
+  name       String
+  swiftCode  String
+  branchName String?
+  status     String  @default("Active")
+}
+
+// ============================================================================
+// 11. SYSTEM MASTERS
+// ============================================================================
+
+model Role {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+  usersCount  Int     @default(0)
+  status      String  @default("Active")
+}
+
+model SystemSetting {
+  id          String  @id @default(uuid())
+  key         String  @unique
+  value       String
+  group       String
+  description String?
+}
+
+// ============================================================================
+// 12. EXTENDED MASTERS
+// ============================================================================
+
+model EducationLevel {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+  status      String  @default("Active")
+}
+
+model Relationship {
+  id     String @id @default(uuid())
+  name   String @unique
+  type   String // Immediate, Extended
+  status String @default("Active")
+}
+
+model ExitReason {
+  id     String @id @default(uuid())
+  reason String @unique
+  type   String // Voluntary, Involuntary
+  status String @default("Active")
+}
+
+// ============================================================================
+// 13. USER MANAGEMENT SUITE
+// ============================================================================
+
+model AccessControl {
+  id        String   @id @default(uuid())
+  name      String
+  type      String // IP_RANGE, TIME_WINDOW
+  value     String
+  status    String   @default("Active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PasswordPolicy {
+  id                  String   @id @default(uuid())
+  minLength           Int      @default(8)
+  requireUppercase    Boolean  @default(true)
+  requireLowercase    Boolean  @default(true)
+  requireNumbers      Boolean  @default(true)
+  requireSpecialChars Boolean  @default(true)
+  expiryDays          Int      @default(90)
+  historyCount        Int      @default(5)
+  lockoutAttempts     Int      @default(3)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model SSOConfig {
+  id          String   @id @default(uuid())
+  enabled     Boolean  @default(false)
+  provider    String // SAML, OIDC
+  issuerUrl   String?
+  ssoUrl      String?
+  certificate String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model UserSession {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  ipAddress  String
+  device     String?
+  browser    String?
+  location   String?
+  lastActive DateTime @default(now())
+  status     String   @default("Active") // Active, Idle, Revoked
+  createdAt  DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String // LOGIN, CREATE, UPDATE, DELETE
+  module    String
+  details   String?
+  ipAddress String?
+  timestamp DateTime @default(now())
+}
+
+model UserDelegation {
+  id          String   @id @default(uuid())
+  delegatorId String
+  delegator   User     @relation("Delegator", fields: [delegatorId], references: [id])
+  delegateeId String
+  delegatee   User     @relation("Delegatee", fields: [delegateeId], references: [id])
+  role        String
+  startDate   DateTime
+  endDate     DateTime
+  reason      String?
+  status      String   @default("Scheduled") // Active, Scheduled, Expired
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model License {
+  id        String   @id @default(uuid())
+  name      String   @unique // Core HR, Payroll
+  total     Int
+  used      Int      @default(0)
+  type      String // Per User, Per Recruiter
+  status    String   @default("Active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserDeactivation {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  reason        String?
+  deactivatedBy String
+  deactivatedAt DateTime @default(now())
+}
+
+model MFAConfig {
+  id               String   @id @default(uuid())
+  enabled          Boolean  @default(false)
+  enforceForAdmins Boolean  @default(true)
+  enforceForAll    Boolean  @default(false)
+  methods          Json // { authenticatorApp: true, sms: false, ... }
+  gracePeriodDays  Int      @default(7)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+
