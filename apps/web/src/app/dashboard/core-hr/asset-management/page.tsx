@@ -4,228 +4,134 @@ import React, { useState } from 'react';
 import {
     Monitor,
     Smartphone,
-    Laptop,
-    HardDrive,
-    Search,
-    Filter,
     Plus,
-    MoreHorizontal,
-    User,
-    CheckCircle2,
-    AlertCircle,
-    Package
+    Filter,
+    MoreVertical,
+    Check,
+    X,
+    Laptop,
+    Mouse
 } from 'lucide-react';
 
-// --- MOCK DATA ---
-
-type AssetStatus = 'Assigned' | 'In Stock' | 'In Repair' | 'Retired';
-
-interface Asset {
-    id: string;
-    name: string;
-    model: string;
-    category: 'Laptop' | 'Monitor' | 'Phone' | 'Peripherals';
-    serial: string;
-    purchaseDate: string;
-    value: number;
-    status: AssetStatus;
-    assignedTo?: string;
-    location?: string;
-}
-
-const ASSETS: Asset[] = [
-    {
-        id: 'AST-001',
-        name: 'MacBook Pro 16"',
-        model: 'M2 Max, 32GB RAM',
-        category: 'Laptop',
-        serial: 'FVFXG...',
-        purchaseDate: 'Jan 15, 2024',
-        value: 2499,
-        status: 'Assigned',
-        assignedTo: 'Sarah Jenkins',
-        location: 'Remote (NY)'
-    },
-    {
-        id: 'AST-002',
-        name: 'Dell UltraSharp 27"',
-        model: 'U2723QE',
-        category: 'Monitor',
-        serial: 'CN-0...',
-        purchaseDate: 'Feb 10, 2024',
-        value: 549,
-        status: 'In Stock',
-        location: 'HQ - IT Room'
-    },
-    {
-        id: 'AST-003',
-        name: 'iPhone 15 Pro',
-        model: '256GB, Titanium',
-        category: 'Phone',
-        serial: 'G6T7...',
-        purchaseDate: 'Mar 01, 2024',
-        value: 1099,
-        status: 'Assigned',
-        assignedTo: 'Mike Ross',
-        location: 'HQ - Sales Floor'
-    },
-    {
-        id: 'AST-004',
-        name: 'MacBook Air 13"',
-        model: 'M1, 16GB RAM',
-        category: 'Laptop',
-        serial: 'C02...',
-        purchaseDate: 'Jun 20, 2022',
-        value: 1299,
-        status: 'In Repair',
-        location: 'Service Center'
-    },
-];
-
 export default function AssetManagementPage() {
-    const [filterCategory, setFilterCategory] = useState('All');
+    const [showModal, setShowModal] = useState(false);
 
-    const getIcon = (cat: string) => {
-        switch (cat) {
-            case 'Laptop': return <Laptop className="w-5 h-5" />;
-            case 'Monitor': return <Monitor className="w-5 h-5" />;
-            case 'Phone': return <Smartphone className="w-5 h-5" />;
-            default: return <HardDrive className="w-5 h-5" />;
-        }
-    };
-
-    const getStatusColor = (status: AssetStatus) => {
-        switch (status) {
-            case 'Assigned': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400';
-            case 'In Stock': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400';
-            case 'In Repair': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400';
-            default: return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400';
-        }
-    };
+    // Mock Data
+    const assets = [
+        { id: 'AST-001', name: 'MacBook Pro 16"', type: 'Laptop', user: 'Alice Cooper', status: 'Assigned', icon: Laptop },
+        { id: 'AST-002', name: 'Dell UltraSharp 27"', type: 'Monitor', user: 'Bob Marley', status: 'Assigned', icon: Monitor },
+        { id: 'AST-003', name: 'iPhone 14 Pro', type: 'Mobile', user: 'Charlie Puth', status: 'In Repair', icon: Smartphone },
+        { id: 'AST-004', name: 'Logitech MX Master', type: 'Peripheral', user: 'Unassigned', status: 'Available', icon: Mouse },
+    ];
 
     return (
-        <div className="space-y-6 pb-10">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
                 <div>
-                    <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
-                        <Package className="w-6 h-6 text-celestial-indigo" />
+                    <h1 className="text-2xl font-bold flex items-center gap-2">
+                        <Monitor className="w-6 h-6 text-indigo-500" />
                         Asset Management
                     </h1>
-                    <p className="text-silver-mist text-sm">Track inventory, manage assignments, and monitor allocations.</p>
+                    <p className="text-slate-500 text-sm">Track and manage company assets assigned to employees.</p>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-celestial-indigo text-white rounded-lg text-sm font-medium hover:bg-celestial-indigo/90 transition-colors shadow-lg shadow-celestial-indigo/20">
+                <button
+                    onClick={() => setShowModal(true)}
+                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
+                >
                     <Plus className="w-4 h-4" /> Add Asset
                 </button>
             </div>
 
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
-                    <div className="text-silver-mist text-xs font-bold uppercase">Total Assets</div>
-                    <div className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">142</div>
-                </div>
-                <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
-                    <div className="text-silver-mist text-xs font-bold uppercase">Assigned</div>
-                    <div className="text-2xl font-bold text-emerald-500 mt-1">118</div>
-                </div>
-                <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
-                    <div className="text-silver-mist text-xs font-bold uppercase">In Stock</div>
-                    <div className="text-2xl font-bold text-blue-500 mt-1">20</div>
-                </div>
-                <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
-                    <div className="text-silver-mist text-xs font-bold uppercase">Total Value</div>
-                    <div className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">$245k</div>
-                </div>
-            </div>
-
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center bg-white dark:bg-stellar-blue p-2 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
-                    <input
-                        type="text"
-                        placeholder="Search by tag, serial, or user..."
-                        className="w-full pl-9 pr-4 py-2 bg-transparent text-sm focus:outline-none"
-                    />
-                </div>
-                <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
-                    {['All', 'Laptop', 'Monitor', 'Phone', 'Peripherals'].map(cat => (
-                        <button
-                            key={cat}
-                            onClick={() => setFilterCategory(cat)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${filterCategory === cat
-                                    ? 'bg-celestial-indigo text-white'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'
-                                }`}
-                        >
-                            {cat}
-                        </button>
-                    ))}
-                    <button className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500 hover:text-celestial-indigo">
-                        <Filter className="w-4 h-4" />
-                    </button>
-                </div>
-            </div>
-
-            {/* Asset Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {ASSETS.map(asset => (
-                    <div key={asset.id} className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm hover:shadow-md transition-all group flex flex-col">
-                        <div className="p-5 flex-1">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className={`p-2.5 rounded-xl ${asset.category === 'Laptop' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400' :
-                                        asset.category === 'Phone' ? 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400' :
-                                            'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                                    }`}>
-                                    {getIcon(asset.category)}
-                                </div>
-                                <div className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${getStatusColor(asset.status)}`}>
-                                    {asset.status}
-                                </div>
-                            </div>
-
-                            <h3 className="font-bold text-ink-black dark:text-pearl truncate">{asset.name}</h3>
-                            <div className="text-sm text-silver-mist mb-4 truncate">{asset.model}</div>
-
-                            <div className="space-y-2">
-                                <div className="flex justify-between text-xs">
-                                    <span className="text-silver-mist">Tag ID</span>
-                                    <span className="font-mono font-medium text-slate-600 dark:text-slate-300">{asset.id}</span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                    <span className="text-silver-mist">Value</span>
-                                    <span className="font-medium text-slate-600 dark:text-slate-300">${asset.value}</span>
-                                </div>
-                                {asset.assignedTo && (
-                                    <div className="flex justify-between text-xs items-center pt-2 border-t border-cloud dark:border-nebula-purple/20">
-                                        <span className="text-silver-mist">Holder</span>
-                                        <div className="flex items-center gap-1.5 font-bold text-ink-black dark:text-pearl">
-                                            <div className="w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-[8px] text-indigo-700">
-                                                {asset.assignedTo.charAt(0)}
-                                            </div>
-                                            {asset.assignedTo}
-                                        </div>
-                                    </div>
-                                )}
-                                {!asset.assignedTo && (
-                                    <div className="flex justify-between text-xs items-center pt-2 border-t border-cloud dark:border-nebula-purple/20">
-                                        <span className="text-silver-mist">Location</span>
-                                        <span className="text-slate-600 dark:text-slate-300">{asset.location}</span>
-                                    </div>
-                                )}
-                            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {assets.map((asset) => (
+                    <div key={asset.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col hover:shadow-xl transition-all duration-300 relative group hover:-translate-y-1">
+                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">
+                                <MoreVertical className="w-4 h-4 text-slate-400" />
+                            </button>
                         </div>
 
-                        {/* Footer Actions */}
-                        <div className="p-3 border-t border-cloud dark:border-nebula-purple/20 bg-slate-50/50 dark:bg-deep-cosmos/30 rounded-b-2xl">
-                            <button className="w-full py-1.5 text-xs font-bold text-celestial-indigo hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors">
-                                {asset.status === 'In Stock' ? 'Allocate Asset' : 'View Details'}
-                            </button>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4
+                            ${asset.type === 'Laptop' ? 'bg-indigo-100 text-indigo-600' :
+                                asset.type === 'Monitor' ? 'bg-blue-100 text-blue-600' :
+                                    asset.type === 'Mobile' ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-600'}
+                         `}>
+                            <asset.icon className="w-6 h-6" />
+                        </div>
+
+                        <h3 className="font-bold text-lg truncate w-full" title={asset.name}>{asset.name}</h3>
+                        <div className="text-xs text-slate-400 font-mono mb-4">{asset.id}</div>
+
+                        <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase">Assigned To</span>
+                                <span className="text-sm font-bold">{asset.user}</span>
+                            </div>
+                            <span className={`px-2 py-1 rounded-full text-xs font-bold
+                                ${asset.status === 'Assigned' ? 'bg-emerald-100 text-emerald-600' :
+                                    asset.status === 'Available' ? 'bg-indigo-100 text-indigo-600' : 'bg-amber-100 text-amber-600'}
+                             `}>
+                                {asset.status}
+                            </span>
                         </div>
                     </div>
                 ))}
             </div>
+
+            {/* Add Asset Modal */}
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                            <h2 className="text-xl font-bold">Add New Asset</h2>
+                            <button onClick={() => setShowModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                                <X className="w-5 h-5 text-slate-500" />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Asset Name / Model</label>
+                                <input type="text" className="w-full p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. MacBook Pro M3" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-1">Type</label>
+                                    <select className="w-full p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                                        <option>Laptop</option>
+                                        <option>Monitor</option>
+                                        <option>Mobile</option>
+                                        <option>Accessory</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-1">Serial Number</label>
+                                    <input type="text" className="w-full p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Assign To (Optional)</label>
+                                <select className="w-full p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option>Unassigned</option>
+                                    <option>Alice Cooper</option>
+                                    <option>Bob Marley</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3">
+                            <button onClick={() => setShowModal(false)} className="px-4 py-2 font-bold text-slate-500 hover:text-slate-700">Cancel</button>
+                            <button
+                                onClick={() => {
+                                    alert('Asset Added!');
+                                    setShowModal(false);
+                                }}
+                                className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
+                            >
+                                Add Asset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -231,7 +231,7 @@ export default function PayComponentsPage() {
                         <p className="text-sm text-indigo-700 dark:text-indigo-400 leading-relaxed mb-4">
                             Components are processed in sequence:
                             <br />
-                            1. Fixed Amounts -> 2. Formula Based -> 3. Balancing Figure.
+                            1. Fixed Amounts &rarr; 2. Formula Based &rarr; 3. Balancing Figure.
                             <br /><br />
                             <strong>Statutory Deductions</strong> (PF/ESI) are auto-calculated based on government slabs unless overridden.
                         </p>

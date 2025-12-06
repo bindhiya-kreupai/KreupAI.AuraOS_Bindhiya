@@ -2,400 +2,190 @@
 
 import React, { useState } from 'react';
 import {
+    Users,
     Search,
     Filter,
-    Grid,
-    List as ListIcon,
-    MoreHorizontal,
+    MoreVertical,
     Mail,
     Phone,
     MapPin,
-    Briefcase,
-    Building2,
-    Download,
     Plus,
-    CheckCircle2,
-    XCircle,
-    Clock
+    X,
+    Check
 } from 'lucide-react';
 
-// --- MOCK DATA ---
-
-const EMPLOYEES = [
-    {
-        id: 'EMP001',
-        name: 'Sarah Anderson',
-        role: 'Senior Product Designer',
-        department: 'Product',
-        location: 'New York, USA',
-        email: 'sarah.a@kreupai.com',
-        phone: '+1 (555) 123-4567',
-        status: 'Active',
-        avatar: 'https://i.pravatar.cc/150?u=EMP001',
-        joinDate: 'Jan 15, 2022'
-    },
-    {
-        id: 'EMP002',
-        name: 'Michael Chen',
-        role: 'Engineering Manager',
-        department: 'Engineering',
-        location: 'San Francisco, USA',
-        email: 'mike.c@kreupai.com',
-        phone: '+1 (555) 987-6543',
-        status: 'Active',
-        avatar: 'https://i.pravatar.cc/150?u=EMP002',
-        joinDate: 'Mar 01, 2021'
-    },
-    {
-        id: 'EMP003',
-        name: 'Priya Sharma',
-        role: 'HR Specialist',
-        department: 'Human Resources',
-        location: 'Bangalore, India',
-        email: 'priya.s@kreupai.com',
-        phone: '+91 98765 43210',
-        status: 'On Leave',
-        avatar: 'https://i.pravatar.cc/150?u=EMP003',
-        joinDate: 'Jun 10, 2023'
-    },
-    {
-        id: 'EMP004',
-        name: 'James Wilson',
-        role: 'Backend Developer',
-        department: 'Engineering',
-        location: 'London, UK',
-        email: 'james.w@kreupai.com',
-        phone: '+44 20 1234 5678',
-        status: 'Active',
-        avatar: 'https://i.pravatar.cc/150?u=EMP004',
-        joinDate: 'Nov 22, 2022'
-    },
-    {
-        id: 'EMP005',
-        name: 'Anita Desai',
-        role: 'Marketing Lead',
-        department: 'Marketing',
-        location: 'Mumbai, India',
-        email: 'anita.d@kreupai.com',
-        phone: '+91 99887 76655',
-        status: 'Active',
-        avatar: 'https://i.pravatar.cc/150?u=EMP005',
-        joinDate: 'Feb 14, 2020'
-    },
-    {
-        id: 'EMP006',
-        name: 'Omar Al-Fayed',
-        role: 'Sales Director',
-        department: 'Sales',
-        location: 'Dubai, UAE',
-        email: 'omar.f@kreupai.com',
-        phone: '+971 50 123 4567',
-        status: 'Active',
-        avatar: 'https://i.pravatar.cc/150?u=EMP006',
-        joinDate: 'Sep 05, 2019'
-    },
-    {
-        id: 'EMP007',
-        name: 'Elena Rodriguez',
-        role: 'QA Engineer',
-        department: 'Engineering',
-        location: 'Madrid, Spain',
-        email: 'elena.r@kreupai.com',
-        phone: '+34 600 123 456',
-        status: 'Probation',
-        avatar: 'https://i.pravatar.cc/150?u=EMP007',
-        joinDate: 'Aug 01, 2024'
-    },
-    {
-        id: 'EMP008',
-        name: 'David Kim',
-        role: 'Data Scientist',
-        department: 'AI Research',
-        location: 'Seoul, South Korea',
-        email: 'david.k@kreupai.com',
-        phone: '+82 10 1234 5678',
-        status: 'Active',
-        avatar: 'https://i.pravatar.cc/150?u=EMP008',
-        joinDate: 'Dec 12, 2021'
-    },
-];
-
-const FILTER_OPTIONS = {
-    Department: ['Engineering', 'Product', 'Sales', 'Marketing', 'Human Resources', 'AI Research'],
-    Location: ['New York, USA', 'San Francisco, USA', 'London, UK', 'Dubai, UAE', 'Bangalore, India', 'Mumbai, India'],
-    Status: ['Active', 'On Leave', 'Probation', 'Terminated'],
-};
-
 export default function EmployeeDatabasePage() {
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeFilters, setActiveFilters] = useState<Record<string, string>>({});
-    const [showFilters, setShowFilters] = useState(false);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [selectedDept, setSelectedDept] = useState('All');
 
-    // Filter Logic
-    const filteredEmployees = EMPLOYEES.filter(emp => {
+    // Mock Data
+    const allEmployees = [
+        { id: 1, name: 'Alice Cooper', role: 'Senior Product Designer', dept: 'Design', loc: 'San Francisco', img: 'https://i.pravatar.cc/150?u=a', email: 'alice@company.com', phone: '+1 555 0101' },
+        { id: 2, name: 'Bob Marley', role: 'Frontend Engineer', dept: 'Engineering', loc: 'Remote', img: 'https://i.pravatar.cc/150?u=b', email: 'bob@company.com', phone: '+1 555 0102' },
+        { id: 3, name: 'Charlie Puth', role: 'Marketing Manager', dept: 'Marketing', loc: 'New York', img: 'https://i.pravatar.cc/150?u=c', email: 'charlie@company.com', phone: '+1 555 0103' },
+        { id: 4, name: 'David Bowie', role: 'DevOps Engineer', dept: 'Engineering', loc: 'London', img: 'https://i.pravatar.cc/150?u=d', email: 'david@company.com', phone: '+44 20 7123 4567' },
+        { id: 5, name: 'Eva Green', role: 'HR BP', dept: 'People', loc: 'Berlin', img: 'https://i.pravatar.cc/150?u=e', email: 'eva@company.com', phone: '+49 30 123456' },
+        { id: 6, name: 'Frank Ocean', role: 'Sales Director', dept: 'Sales', loc: 'Austin', img: 'https://i.pravatar.cc/150?u=f', email: 'frank@company.com', phone: '+1 512 555 0199' },
+        { id: 7, name: 'Grace Hopper', role: 'CTO', dept: 'Executive', loc: 'San Francisco', img: 'https://i.pravatar.cc/150?u=g', email: 'grace@company.com', phone: '+1 415 555 0100' },
+        { id: 8, name: 'Harry Styles', role: 'Content Writer', dept: 'Marketing', loc: 'London', img: 'https://i.pravatar.cc/150?u=h', email: 'harry@company.com', phone: '+44 20 7987 6543' },
+    ];
+
+    const filteredEmployees = allEmployees.filter(emp => {
         const matchesSearch = emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            emp.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            emp.email.toLowerCase().includes(searchQuery.toLowerCase());
-
-        const matchesFilters = Object.entries(activeFilters).every(([key, value]) => {
-            if (!value) return true;
-            if (key === 'Department') return emp.department === value;
-            if (key === 'Location') return emp.location === value;
-            if (key === 'Status') return emp.status === value;
-            return true;
-        });
-
-        return matchesSearch && matchesFilters;
+            emp.role.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesDept = selectedDept === 'All' || emp.dept === selectedDept;
+        return matchesSearch && matchesDept;
     });
 
-    const toggleFilter = (category: string, value: string) => {
-        setActiveFilters(prev => ({
-            ...prev,
-            [category]: prev[category] === value ? '' : value
-        }));
+    const handleEmail = (email: string) => {
+        alert(`Opening mail client for: ${email}`);
+    };
+
+    const handleCall = (phone: string) => {
+        alert(`Dialing: ${phone}`);
     };
 
     return (
-        <div className="flex h-[calc(100vh-6rem)] gap-6 overflow-hidden">
-            {/* Sidebar Filters */}
-            <div className={`w-64 flex-shrink-0 bg-white dark:bg-stellar-blue border-r border-cloud dark:border-nebula-purple/20 p-4 overflow-y-auto transition-all duration-300 ${showFilters ? 'translate-x-0' : '-ml-72 lg:ml-0'}`}>
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="font-bold text-ink-black dark:text-pearl flex items-center gap-2">
-                        <Filter className="w-4 h-4" /> Filters
-                    </h2>
-                    {(Object.keys(activeFilters).length > 0) && (
-                        <button
-                            onClick={() => setActiveFilters({})}
-                            className="text-xs text-celestial-indigo hover:text-celestial-indigo/80 font-medium"
-                        >
-                            Reset
-                        </button>
-                    )}
+        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+                <div>
+                    <h1 className="text-2xl font-bold flex items-center gap-2">
+                        <Users className="w-6 h-6 text-indigo-500" />
+                        Employee Database
+                    </h1>
+                    <p className="text-slate-500 text-sm">Centralized directory of all active and inactive employees.</p>
                 </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 active:scale-95"
+                    >
+                        <Plus className="w-4 h-4" /> Add Employee
+                    </button>
+                </div>
+            </div>
 
-                <div className="space-y-6">
-                    {Object.entries(FILTER_OPTIONS).map(([category, options]) => (
-                        <div key={category}>
-                            <h3 className="text-xs font-semibold text-silver-mist uppercase tracking-wider mb-3">{category}</h3>
-                            <div className="space-y-2">
-                                {options.map(option => (
-                                    <label key={option} className="flex items-center gap-2 cursor-pointer group">
-                                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${activeFilters[category] === option ? 'bg-celestial-indigo border-celestial-indigo' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-deep-cosmos'}`}>
-                                            {activeFilters[category] === option && <CheckCircle2 className="w-3 h-3 text-white" />}
-                                        </div>
-                                        <input
-                                            type="checkbox"
-                                            className="hidden"
-                                            checked={activeFilters[category] === option}
-                                            onChange={() => toggleFilter(category, option)}
-                                        />
-                                        <span className={`text-sm ${activeFilters[category] === option ? 'text-celestial-indigo font-medium' : 'text-slate-600 dark:text-slate-400 group-hover:text-ink-black dark:group-hover:text-pearl'}`}>
-                                            {option}
-                                        </span>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
+            {/* Toolbar */}
+            <div className="flex flex-wrap gap-4 shrink-0 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="relative flex-1 min-w-[250px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                        type="text"
+                        placeholder="Search by name or role..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl text-sm outline-none ring-2 ring-transparent focus:ring-indigo-500/20 transition-all"
+                    />
+                </div>
+                <div className="flex gap-2">
+                    {['All', 'Design', 'Engineering', 'Marketing', 'Sales'].map(dept => (
+                        <button
+                            key={dept}
+                            onClick={() => setSelectedDept(dept)}
+                            className={`px-3 py-2 rounded-xl text-sm font-bold transition-all ${selectedDept === dept
+                                    ? 'bg-indigo-600 text-white shadow-md'
+                                    : 'bg-slate-50 dark:bg-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                }`}
+                        >
+                            {dept}
+                        </button>
                     ))}
                 </div>
             </div>
 
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col min-w-0">
-                {/* Header Actions */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                    <div className="flex items-center gap-4 flex-1">
-                        <button
-                            onClick={() => setShowFilters(!showFilters)}
-                            className="lg:hidden p-2 bg-white dark:bg-stellar-blue border border-cloud dark:border-nebula-purple/50 rounded-lg"
-                        >
-                            <Filter className="w-5 h-5 text-silver-mist" />
-                        </button>
-                        <div className="relative flex-1 max-w-md">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
-                            <input
-                                type="text"
-                                placeholder="Search employees..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2 bg-white dark:bg-stellar-blue border border-cloud dark:border-nebula-purple/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-celestial-indigo/50 text-sm"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <div className="hidden md:flex bg-white dark:bg-stellar-blue border border-cloud dark:border-nebula-purple/50 rounded-lg p-1">
-                            <button
-                                onClick={() => setViewMode('grid')}
-                                className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-cloud dark:bg-deep-cosmos text-celestial-indigo' : 'text-silver-mist hover:text-ink-black dark:hover:text-pearl'}`}
-                            >
-                                <Grid className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={() => setViewMode('list')}
-                                className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-cloud dark:bg-deep-cosmos text-celestial-indigo' : 'text-silver-mist hover:text-ink-black dark:hover:text-pearl'}`}
-                            >
-                                <ListIcon className="w-4 h-4" />
+            {/* Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-y-auto pb-20 p-1">
+                {filteredEmployees.map((emp) => (
+                    <div key={emp.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col items-center text-center hover:shadow-xl transition-all duration-300 group relative hover:-translate-y-1">
+                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400">
+                                <MoreVertical className="w-4 h-4" />
                             </button>
                         </div>
-                        <button className="hidden md:flex items-center gap-2 px-3 py-2 bg-white dark:bg-stellar-blue border border-cloud dark:border-nebula-purple/50 rounded-lg text-sm font-medium hover:bg-cloud/50 transition-colors">
-                            <Download className="w-4 h-4" /> Export
-                        </button>
-                        <button className="flex items-center gap-2 px-3 py-2 bg-celestial-indigo text-white rounded-lg text-sm font-medium hover:bg-celestial-indigo/90 transition-colors">
-                            <Plus className="w-4 h-4" /> Add Employee
-                        </button>
-                    </div>
-                </div>
 
-                {/* Database View */}
-                <div className="flex-1 overflow-y-auto pr-2">
-                    {filteredEmployees.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-64 text-center">
-                            <div className="w-16 h-16 bg-cloud dark:bg-deep-cosmos rounded-full flex items-center justify-center mb-4">
-                                <Search className="w-8 h-8 text-silver-mist" />
+                        <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-slate-100 dark:border-slate-800 group-hover:border-indigo-500 transition-colors">
+                            <img src={emp.img} alt={emp.name} className="w-full h-full object-cover" />
+                        </div>
+
+                        <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">{emp.name}</h3>
+                        <div className="text-sm text-indigo-600 dark:text-indigo-400 font-medium mb-1">{emp.role}</div>
+                        <div className="text-xs text-slate-500 mb-4 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">{emp.dept}</div>
+
+                        <div className="w-full flex justify-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
+                            <button
+                                onClick={() => handleEmail(emp.email)}
+                                className="p-2 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all hover:scale-110"
+                                title="Send Email"
+                            >
+                                <Mail className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => handleCall(emp.phone)}
+                                className="p-2 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all hover:scale-110"
+                                title="Call"
+                            >
+                                <Phone className="w-4 h-4" />
+                            </button>
+                            <div className="flex items-center gap-1 text-xs text-slate-500 ml-auto bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-lg">
+                                <MapPin className="w-3 h-3 text-slate-400" /> {emp.loc}
                             </div>
-                            <h3 className="text-lg font-medium text-ink-black dark:text-pearl">No employees found</h3>
-                            <p className="text-silver-mist text-sm">Try adjusting your search or filters</p>
-                            <button
-                                onClick={() => { setSearchQuery(''); setActiveFilters({}); }}
-                                className="mt-4 text-celestial-indigo font-medium text-sm hover:underline"
-                            >
-                                Clear all filters
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Add Employee Modal */}
+            {showAddModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                            <h2 className="text-xl font-bold">Add New Employee</h2>
+                            <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                                <X className="w-5 h-5 text-slate-500" />
                             </button>
                         </div>
-                    ) : viewMode === 'grid' ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                            {filteredEmployees.map(emp => (
-                                <EmployeeCard key={emp.id} employee={emp} />
-                            ))}
+                        <div className="p-6 space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-1">First Name</label>
+                                    <input type="text" className="w-full p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" placeholder="John" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-1">Last Name</label>
+                                    <input type="text" className="w-full p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Doe" />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Role Title</label>
+                                <input type="text" className="w-full p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Senior Developer" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Department</label>
+                                <select className="w-full p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option>Engineering</option>
+                                    <option>Design</option>
+                                    <option>Sales</option>
+                                    <option>Marketing</option>
+                                </select>
+                            </div>
                         </div>
-                    ) : (
-                        <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 overflow-hidden">
-                            <table className="w-full text-sm text-left">
-                                <thead className="bg-cloud/50 dark:bg-deep-cosmos/50 text-xs uppercase text-silver-mist font-semibold">
-                                    <tr>
-                                        <th className="px-4 py-3">Employee</th>
-                                        <th className="px-4 py-3 hidden md:table-cell">Role & Dept</th>
-                                        <th className="px-4 py-3 hidden lg:table-cell">Location</th>
-                                        <th className="px-4 py-3 hidden xl:table-cell">Contacts</th>
-                                        <th className="px-4 py-3">Status</th>
-                                        <th className="px-4 py-3 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-cloud dark:divide-nebula-purple/20">
-                                    {filteredEmployees.map(emp => (
-                                        <tr key={emp.id} className="hover:bg-slate-50 dark:hover:bg-deep-cosmos/30 transition-colors">
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center gap-3">
-                                                    <img src={emp.avatar} alt={emp.name} className="w-9 h-9 rounded-full bg-slate-200 object-cover" />
-                                                    <div>
-                                                        <div className="font-medium text-ink-black dark:text-pearl">{emp.name}</div>
-                                                        <div className="text-xs text-silver-mist">{emp.id}</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3 hidden md:table-cell">
-                                                <div className="text-ink-black dark:text-pearl">{emp.role}</div>
-                                                <div className="text-xs text-silver-mist">{emp.department}</div>
-                                            </td>
-                                            <td className="px-4 py-3 hidden lg:table-cell text-slate-600 dark:text-slate-400">
-                                                <div className="flex items-center gap-1.5">
-                                                    <MapPin className="w-3.5 h-3.5 text-silver-mist" />
-                                                    {emp.location}
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3 hidden xl:table-cell">
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                                                        <Mail className="w-3 h-3" /> {emp.email}
-                                                    </div>
-                                                    <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                                                        <Phone className="w-3 h-3" /> {emp.phone}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <StatusBadge status={emp.status} />
-                                            </td>
-                                            <td className="px-4 py-3 text-right">
-                                                <button className="p-1.5 hover:bg-cloud dark:hover:bg-deep-cosmos rounded text-silver-mist hover:text-ink-black dark:hover:text-pearl">
-                                                    <MoreHorizontal className="w-4 h-4" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3">
+                            <button onClick={() => setShowAddModal(false)} className="px-4 py-2 font-bold text-slate-500 hover:text-slate-700">Cancel</button>
+                            <button
+                                onClick={() => {
+                                    alert('Employee Added! (Simulated)');
+                                    setShowAddModal(false);
+                                }}
+                                className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
+                            >
+                                Create Employee
+                            </button>
                         </div>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// --- SUB COMPONENTS ---
-
-function EmployeeCard({ employee }: { employee: typeof EMPLOYEES[0] }) {
-    return (
-        <div className="group bg-white dark:bg-stellar-blue p-5 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm hover:shadow-md hover:border-celestial-indigo/50 transition-all cursor-pointer relative overflow-hidden">
-            {/* Top Pattern */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-celestial-indigo to-quantum-rose opacity-0 group-hover:opacity-100 transition-opacity" />
-
-            <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                    <img src={employee.avatar} alt={employee.name} className="w-12 h-12 rounded-full bg-slate-200 object-cover ring-2 ring-white dark:ring-deep-cosmos shadow-sm" />
-                    <div>
-                        <h3 className="font-bold text-ink-black dark:text-pearl group-hover:text-celestial-indigo transition-colors">{employee.name}</h3>
-                        <p className="text-xs text-silver-mist">{employee.id}</p>
                     </div>
                 </div>
-                <StatusBadge status={employee.status} />
-            </div>
-
-            <div className="space-y-2.5 mb-4">
-                <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                    <Briefcase className="w-4 h-4 text-celestial-indigo/70" />
-                    <span className="truncate">{employee.role}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                    <Building2 className="w-4 h-4 text-quantum-rose/70" />
-                    <span className="truncate">{employee.department}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                    <MapPin className="w-4 h-4 text-neural-mint/70" />
-                    <span className="truncate">{employee.location}</span>
-                </div>
-            </div>
-
-            <div className="pt-4 border-t border-cloud dark:border-nebula-purple/20 flex items-center justify-between text-xs text-silver-mist">
-                <div className="flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5" />
-                    Joined {employee.joinDate}
-                </div>
-                <button className="text-celestial-indigo hover:underline font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                    View Profile
-                </button>
-            </div>
+            )}
         </div>
-    );
-}
-
-function StatusBadge({ status }: { status: string }) {
-    const config = {
-        'Active': { bg: 'bg-emerald-500/10', text: 'text-emerald-600', icon: CheckCircle2 },
-        'On Leave': { bg: 'bg-amber-500/10', text: 'text-amber-600', icon: Clock },
-        'Probation': { bg: 'bg-blue-500/10', text: 'text-blue-600', icon: Users },
-        'Terminated': { bg: 'bg-red-500/10', text: 'text-red-600', icon: XCircle },
-    }[status] || { bg: 'bg-slate-500/10', text: 'text-slate-600', icon: CheckCircle2 };
-
-    const Icon = config.icon;
-
-    return (
-        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
-            <Icon className="w-3 h-3" />
-            {status}
-        </span>
     );
 }

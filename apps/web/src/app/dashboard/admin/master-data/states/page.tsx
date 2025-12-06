@@ -22,19 +22,30 @@ export default function StatesPage() {
     const [countries, setCountries] = useState<Country[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchData = async () => {
+    const fetchData = async (query?: string) => {
         try {
-            const [statesRes, countriesRes] = await Promise.all([
-                fetch('/api/master-data/states'),
-                fetch('/api/master-data/countries')
-            ]);
+            const url = query
+                ? `/api/master-data/states?q=${encodeURIComponent(query)}`
+                : '/api/master-data/states';
 
-            if (statesRes.ok) setData(await statesRes.json());
-            if (countriesRes.ok) setCountries(await countriesRes.json());
+            const response = await fetch(url);
+            if (response.ok) {
+                setData(await response.json());
+            }
         } catch (error) {
-            console.error('Failed to fetch data:', error);
+            console.error('Failed to fetch states:', error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    // Separate function to fetch countries, as fetchData no longer handles it
+    const fetchCountries = async () => {
+        try {
+            const countriesRes = await fetch('/api/master-data/countries');
+            if (countriesRes.ok) setCountries(await countriesRes.json());
+        } catch (error) {
+            console.error('Failed to fetch countries:', error);
         }
     };
 

@@ -188,51 +188,7 @@ export default function TalentMatrixPage() {
         if (item) setActiveItem(item);
     };
 
-    const handleDragOver = (event: DragOverEvent) => {
-        const { active, over } = event;
-        if (!over) return;
 
-        const activeContainer = findContainer(active.id as string);
-        const overContainer = findContainer(over.id as string);
-
-        if (!activeContainer || !overContainer || activeContainer === overContainer) return;
-
-        // Move item to new container visually during drag
-        setBoxes(prev => {
-            const activeBox = prev.find(b => b.id === activeContainer);
-            const overBox = prev.find(b => b.id === overContainer);
-            if (!activeBox || !overBox) return prev;
-
-            const activeItems = activeBox.items;
-            const overItems = overBox.items;
-            const activeIndex = activeItems.findIndex(i => i.id === active.id);
-
-            let newIndex;
-            if (over.id in prev.find(b => b.id === overContainer)!) {
-                newIndex = overItems.length + 1;
-            } else {
-                const isBelowLastItem = over && overIndex === overItems.length - 1 && draggingRect.offsetTop > overRect.offsetTop + overRect.height;
-                const modifier = isBelowLastItem ? 1 : 0;
-                newIndex = overIndex >= 0 ? overIndex + modifier : overItems.length + 1;
-            }
-
-            return prev.map(b => {
-                if (b.id === activeContainer) {
-                    return { ...b, items: activeItems.filter(i => i.id !== active.id) };
-                }
-                if (b.id === overContainer) {
-                    // Logic simplification: Just append or insert isn't strictly necessary for visual drag over
-                    // in this simple grid, we'll let DragEnd handle the final move usually, 
-                    // but for smooth sortable we need to move it.
-                    // For simplicity in this grid demo, we will handle mainly in DragEnd
-                    // unless using specific Sortable strategies across containers.
-                    // We'll stick to DragEnd for cross-container moves to keep code simple and robust.
-                    return b;
-                }
-                return b;
-            });
-        });
-    };
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;

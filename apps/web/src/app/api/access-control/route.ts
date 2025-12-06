@@ -1,18 +1,13 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// Mock Data
+let mockData = [
+    { id: '1', name: 'HR Admin', type: 'Role', value: 'Full Access', status: 'Active', createdAt: new Date() },
+    { id: '2', name: 'Employee View', type: 'Policy', value: 'Read Only', status: 'Active', createdAt: new Date() },
+];
 
 export async function GET() {
-    try {
-        const items = await prisma.accessControl.findMany({
-            orderBy: { createdAt: 'desc' },
-        });
-        return NextResponse.json(items);
-    } catch (error) {
-        console.error('Failed to fetch access controls:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-    }
+    return NextResponse.json(mockData);
 }
 
 export async function POST(request: Request) {
@@ -20,17 +15,18 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { name, type, value, status } = body;
 
-        if (!name || !type || !value) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-        }
+        const newItem = {
+            id: Math.random().toString(36).substr(2, 9),
+            name,
+            type,
+            value,
+            status,
+            createdAt: new Date(),
+        };
 
-        const newItem = await prisma.accessControl.create({
-            data: { name, type, value, status },
-        });
-
+        mockData.push(newItem);
         return NextResponse.json(newItem);
     } catch (error) {
-        console.error('Failed to create access control:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
@@ -40,36 +36,23 @@ export async function PUT(request: Request) {
         const body = await request.json();
         const { id, name, type, value, status } = body;
 
-        if (!id) {
-            return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+        const index = mockData.findIndex(item => item.id === id);
+        if (index !== -1) {
+            mockData[index] = { ...mockData[index], name, type, value, status };
+            return NextResponse.json(mockData[index]);
         }
-
-        const updatedItem = await prisma.accessControl.update({
-            where: { id },
-            data: { name, type, value, status },
-        });
-
-        return NextResponse.json(updatedItem);
+        return NextResponse.json({ error: 'Not Found' }, { status: 404 });
     } catch (error) {
-        console.error('Failed to update access control:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
 
 export async function DELETE(request: Request) {
-    try {
-        const { searchParams } = new URL(request.url);
-        const id = searchParams.get('id');
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
 
-        if (!id) {
-            return NextResponse.json({ error: 'ID is required' }, { status: 400 });
-        }
-
-        await prisma.accessControl.delete({ where: { id } });
-
-        return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error('Failed to delete access control:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    if (id) {
+        mockData = mockData.filter(item => item.id !== id);
     }
+    return NextResponse.json({ success: true });
 }

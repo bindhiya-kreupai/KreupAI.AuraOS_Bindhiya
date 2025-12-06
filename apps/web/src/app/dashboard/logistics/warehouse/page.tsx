@@ -7,7 +7,8 @@ import {
     Calendar,
     ArrowUpRight,
     Search,
-    BarChart3
+    BarChart3,
+    Clock
 } from 'lucide-react';
 
 export default function WarehousePage() {

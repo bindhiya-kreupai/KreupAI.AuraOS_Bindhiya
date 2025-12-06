@@ -22,10 +22,14 @@ export default function JobFamiliesPage() {
     const [jobFunctions, setJobFunctions] = useState<JobFunction[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchData = async () => {
+    const fetchData = async (query?: string) => {
         try {
+            const url = query
+                ? `/api/master-data/job-families?q=${encodeURIComponent(query)}`
+                : '/api/master-data/job-families';
+
             const [familiesRes, functionsRes] = await Promise.all([
-                fetch('/api/master-data/job-families'),
+                fetch(url),
                 fetch('/api/master-data/job-functions')
             ]);
 

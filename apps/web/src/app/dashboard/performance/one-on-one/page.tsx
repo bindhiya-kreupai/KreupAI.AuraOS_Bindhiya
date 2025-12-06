@@ -1,22 +1,14 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
     MessageSquare,
     Calendar,
+    Mic,
     CheckSquare,
-    Plus,
-    Clock,
-    User,
-    ChevronRight,
-    MoreVertical
+    Smile,
+    ArrowRight
 } from 'lucide-react';
-
-const MEETINGS = [
-    { id: 1, title: 'Weekly Sync: Alice', date: 'Today, 2:00 PM', with: 'Alice Chen', status: 'Scheduled', items: 2 },
-    { id: 2, title: 'Career Growth: Bob', date: 'Tomorrow, 11:00 AM', with: 'Bob Smith', status: 'Scheduled', items: 1 },
-    { id: 3, title: 'Monthly Review: Charlie', date: 'Dec 15, 3:00 PM', with: 'Charlie D.', status: 'Pending', items: 0 },
-];
 
 export default function OneOnOnePage() {
     return (
@@ -25,109 +17,115 @@ export default function OneOnOnePage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
-                        <MessageSquare className="w-6 h-6 text-indigo-500" />
-                        One-on-Ones
+                        <MessageSquare className="w-6 h-6 text-emerald-500" />
+                        1-on-1 Meetings
                     </h1>
-                    <p className="text-slate-500 text-sm">Manage agendas and action items for direct reports.</p>
+                    <p className="text-slate-500 text-sm">Track manager-employee check-ins, talking points, and action items.</p>
                 </div>
-                <button className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20">
-                    <Plus className="w-4 h-4" /> Schedule Meeting
+                <button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20">
+                    + Schedule New
                 </button>
             </div>
 
-            <div className="flex h-full min-h-0 gap-6 overflow-hidden">
-                {/* Upcoming List */}
-                <div className="w-80 flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shrink-0 overflow-hidden">
-                    <div className="p-4 border-b border-slate-200 dark:border-slate-800 font-bold text-sm">
-                        Upcoming Meetings
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                        {MEETINGS.map(mtg => (
-                            <button key={mtg.id} className="w-full text-left p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all group">
-                                <div className="flex justify-between items-start mb-1">
-                                    <span className="font-bold text-sm truncate">{mtg.with}</span>
-                                    <span className="text-[10px] text-slate-400">{mtg.status}</span>
-                                </div>
-                                <div className="text-xs text-slate-500 mb-2 flex items-center gap-1">
-                                    <Calendar className="w-3 h-3" /> {mtg.date}
-                                </div>
-                                <div className="flex items-center gap-2 text-[10px] bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 px-2 py-0.5 rounded w-fit">
-                                    <CheckSquare className="w-3 h-3" /> {mtg.items} Action Items
-                                </div>
-                            </button>
-                        ))}
-                    </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+                {/* Meeting List */}
+                <div className="lg:col-span-1 space-y-4 overflow-y-auto pb-20">
+                    <h3 className="font-bold text-sm mb-2 text-slate-500 uppercase">Upcoming</h3>
+                    {[
+                        { with: 'Dwight Schrute', role: 'Assistant Regional Mgr', time: 'Today, 2:00 PM', type: 'Weekly Sync' },
+                        { with: 'Jim Halpert', role: 'Sales Exec', time: 'Tomorrow, 10:00 AM', type: 'Career Dev' },
+                    ].map((m, i) => (
+                        <div key={i} className="bg-white dark:bg-slate-900 p-4 rounded-xl border-l-4 border-emerald-500 shadow-sm cursor-pointer hover:shadow-md transition-all">
+                            <div className="flex justify-between items-start mb-2">
+                                <h4 className="font-bold text-slate-800 dark:text-slate-200">{m.with}</h4>
+                                <span className="text-[10px] bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 px-2 py-0.5 rounded font-bold">{m.type}</span>
+                            </div>
+                            <div className="text-xs text-slate-500 font-bold mb-1">{m.role}</div>
+                            <div className="text-xs text-slate-400 flex items-center gap-1">
+                                <Calendar className="w-3 h-3" /> {m.time}
+                            </div>
+                        </div>
+                    ))}
+
+                    <h3 className="font-bold text-sm mt-6 mb-2 text-slate-500 uppercase">Past Logs</h3>
+                    {[
+                        { with: 'Pam Beesly', date: 'Dec 01', note: 'Discussed design courses.' },
+                        { with: 'Stanley Hudson', date: 'Nov 24', note: 'Retirement planning.' },
+                    ].map((m, i) => (
+                        <div key={i} className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 opacity-80 hover:opacity-100 transition-opacity">
+                            <div className="flex justify-between items-start mb-1">
+                                <h4 className="font-bold text-slate-700 dark:text-slate-300 text-sm">{m.with}</h4>
+                                <span className="text-[10px] text-slate-400 font-bold">{m.date}</span>
+                            </div>
+                            <p className="text-xs text-slate-500 truncate">{m.note}</p>
+                        </div>
+                    ))}
                 </div>
 
-                {/* Main View - Workspace */}
-                <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden">
-                    {/* Workspace Header */}
-                    <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-start">
-                        <div>
-                            <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Agenda for</div>
-                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Weekly Sync: Alice</h2>
-                            <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
-                                <span className="flex items-center gap-1"><User className="w-4 h-4" /> Alice Chen</span>
-                                <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> 30 mins</span>
+                {/* Meeting Console */}
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 h-full flex flex-col">
+                        <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800 mb-4">
+                            <div>
+                                <h2 className="text-xl font-bold flex items-center gap-2">
+                                    Dwight Schrute <span className="text-base font-normal text-slate-400">@ 2:00 PM</span>
+                                </h2>
+                                <p className="text-xs text-slate-500">Weekly Sync • 30 Mins</p>
                             </div>
+                            <button className="p-2 bg-rose-50 dark:bg-rose-900/20 text-rose-600 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/30">
+                                <Mic className="w-5 h-5" />
+                            </button>
                         </div>
-                        <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400">
-                            <MoreVertical className="w-5 h-5" />
-                        </button>
-                    </div>
 
-                    {/* Agenda Items */}
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                        <div className="space-y-4">
-                            <h3 className="font-bold text-lg text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
-                                <MessageSquare className="w-5 h-5" /> Discussion Points
-                            </h3>
-
-                            <div className="space-y-2">
-                                {[
-                                    'Review Q4 Goals progress',
-                                    'Discuss training budget approval',
-                                    'Feedback on last sprint demo'
-                                ].map((item, i) => (
-                                    <div key={i} className="flex items-start gap-3 group">
-                                        <div className="mt-1 w-4 h-4 rounded border border-slate-300 dark:border-slate-600 group-hover:border-indigo-500 cursor-pointer"></div>
-                                        <input
-                                            type="text"
-                                            defaultValue={item}
-                                            className="flex-1 bg-transparent outline-none border-b border-transparent focus:border-indigo-200 text-sm py-0.5"
-                                        />
+                        {/* Talking Points */}
+                        <div className="flex-1 space-y-6">
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
+                                    <MessageSquare className="w-4 h-4" /> Talking Points
+                                </h3>
+                                <div className="space-y-2">
+                                    {['Review Sales Numbers for Nov', 'Discuss new Beet Farm Policy', 'Safety Training Compliance'].map((p, i) => (
+                                        <div key={i} className="flex items-center gap-3 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                                            <div className="w-4 h-4 rounded border border-slate-300 dark:border-slate-600 cursor-pointer"></div>
+                                            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{p}</span>
+                                        </div>
+                                    ))}
+                                    <div className="flex items-center gap-3 p-2 opacity-60">
+                                        <div className="w-4 h-4 rounded border border-slate-300 dark:border-slate-600"></div>
+                                        <input type="text" placeholder="Add point..." className="bg-transparent text-sm outline-none w-full" />
                                     </div>
-                                ))}
-                                <div className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer hover:text-indigo-500 mt-2">
-                                    <Plus className="w-4 h-4" /> Add talking point
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="space-y-4 pt-6 border-t border-slate-100 dark:border-slate-800">
-                            <h3 className="font-bold text-lg text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-                                <CheckSquare className="w-5 h-5" /> Action Items
-                            </h3>
-
-                            <div className="space-y-2">
-                                <div className="flex items-start gap-3">
-                                    <div className="mt-1 w-4 h-4 rounded bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
-                                        <CheckSquare className="w-3 h-3 text-emerald-600" />
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
+                                    <CheckSquare className="w-4 h-4" /> Action Items
+                                </h3>
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-3 p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-100 dark:border-indigo-800/30">
+                                        <input type="checkbox" className="accent-indigo-600 w-4 h-4" />
+                                        <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">Submit revised forecast by Friday</span>
                                     </div>
-                                    <span className="text-sm line-through text-slate-400">Send updated roadmap deck</span>
-                                </div>
-                                <div className="flex items-start gap-3">
-                                    <div className="mt-1 w-4 h-4 rounded border border-slate-300 dark:border-slate-600 cursor-pointer"></div>
-                                    <span className="text-sm text-slate-700 dark:text-slate-300">Schedule team lunch</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Footer */}
-                    <div className="p-4 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
-                        <button className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700">Add Private Note</button>
-                        <button className="px-4 py-2 bg-indigo-500 text-white rounded-xl text-sm font-bold shadow-md hover:bg-indigo-600">Complete Meeting</button>
+                        {/* Sentiment */}
+                        <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="text-xs font-bold text-slate-400 uppercase">Meeting Vibe</div>
+                                <div className="flex gap-1">
+                                    {[1, 2, 3, 4, 5].map(n => (
+                                        <button key={n} className={`p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 ${n === 4 ? 'bg-emerald-100 text-emerald-600' : 'text-slate-400'}`}>
+                                            <Smile className="w-4 h-4" />
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <button className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold flex items-center gap-2">
+                                Complete Meeting <ArrowRight className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

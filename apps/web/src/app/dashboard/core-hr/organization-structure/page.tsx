@@ -1,175 +1,155 @@
 "use client";
 
-import React, { useCallback } from 'react';
-import ReactFlow, {
-    useNodesState,
-    useEdgesState,
-    addEdge,
-    Controls,
-    Background,
-    Connection,
-    Edge,
-    Node,
-    Handle,
-    Position,
-    MiniMap
-} from 'reactflow';
-import 'reactflow/dist/style.css';
-import { User, Mail, Briefcase, Minus, Plus } from 'lucide-react';
-
-// --- CUSTOM NODE COMPONENT ---
-
-const CustomNode = ({ data }: { data: any }) => {
-    return (
-        <div className="px-4 py-2 shadow-md rounded-md bg-white dark:bg-stellar-blue border-2 border-cloud dark:border-nebula-purple/50 w-64 group hover:border-celestial-indigo transition-colors">
-            <Handle type="target" position={Position.Top} className="w-3 h-3 !bg-celestial-indigo" />
-
-            <div className="flex items-center">
-                <div className="rounded-full w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-deep-cosmos object-cover overflow-hidden mr-3 border border-gray-200 dark:border-gray-700">
-                    {data.image ? (
-                        <img src={data.image} alt={data.name} className="w-full h-full object-cover" />
-                    ) : (
-                        <User className="text-gray-400 w-6 h-6" />
-                    )}
-                </div>
-                <div>
-                    <div className="text-sm font-bold text-ink-black dark:text-pearl">{data.name}</div>
-                    <div className="text-xs text-silver-mist">{data.role}</div>
-                </div>
-            </div>
-
-            <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                <div className="flex items-center text-[10px] text-gray-500 gap-1">
-                    <Briefcase className="w-3 h-3" /> {data.department}
-                </div>
-                {data.reports > 0 && (
-                    <div className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-medium">
-                        {data.reports} Reports
-                    </div>
-                )}
-            </div>
-
-            <Handle type="source" position={Position.Bottom} className="w-3 h-3 !bg-celestial-indigo" />
-        </div>
-    );
-};
-
-const nodeTypes = {
-    custom: CustomNode,
-};
-
-// --- MOCK DATA ---
-
-const initialNodes: Node[] = [
-    // Level 1: CEO
-    {
-        id: '1',
-        type: 'custom',
-        position: { x: 450, y: 0 },
-        data: { name: 'Alexandra Hamilton', role: 'CEO & Founder', department: 'Executive', image: 'https://i.pravatar.cc/150?u=1', reports: 3 },
-    },
-    // Level 2: VP of Eng, VP of Sales, VP of HR
-    {
-        id: '2',
-        type: 'custom',
-        position: { x: 100, y: 200 },
-        data: { name: 'Marcus Chen', role: 'VP of Engineering', department: 'Engineering', image: 'https://i.pravatar.cc/150?u=2', reports: 2 },
-    },
-    {
-        id: '3',
-        type: 'custom',
-        position: { x: 450, y: 200 },
-        data: { name: 'Sarah Miller', role: 'VP of Sales', department: 'Sales', image: 'https://i.pravatar.cc/150?u=3', reports: 2 },
-    },
-    {
-        id: '4',
-        type: 'custom',
-        position: { x: 800, y: 200 },
-        data: { name: 'James Wilson', role: 'VP of HR', department: 'Human Resources', image: 'https://i.pravatar.cc/150?u=4', reports: 1 },
-    },
-    // Level 3: Engineering Managers
-    {
-        id: '5',
-        type: 'custom',
-        position: { x: 0, y: 400 },
-        data: { name: 'Emily Davis', role: 'Frontend Lead', department: 'Engineering', image: 'https://i.pravatar.cc/150?u=5', reports: 0 },
-    },
-    {
-        id: '6',
-        type: 'custom',
-        position: { x: 250, y: 400 },
-        data: { name: 'David Lee', role: 'Backend Lead', department: 'Engineering', image: 'https://i.pravatar.cc/150?u=6', reports: 0 },
-    },
-    // Level 3: Sales Managers
-    {
-        id: '7',
-        type: 'custom',
-        position: { x: 400, y: 400 },
-        data: { name: 'Robert Fox', role: 'Regional Manager', department: 'Sales', image: 'https://i.pravatar.cc/150?u=7', reports: 0 },
-    },
-    {
-        id: '8',
-        type: 'custom',
-        position: { x: 600, y: 400 },
-        data: { name: 'Lisa Wang', role: 'Sales Operations', department: 'Sales', image: 'https://i.pravatar.cc/150?u=8', reports: 0 },
-    },
-    // Level 3: HR Managers
-    {
-        id: '9',
-        type: 'custom',
-        position: { x: 800, y: 400 },
-        data: { name: 'Priya Patel', role: 'HR Manager', department: 'Human Resources', image: 'https://i.pravatar.cc/150?u=9', reports: 0 },
-    },
-];
-
-const initialEdges: Edge[] = [
-    { id: 'e1-2', source: '1', target: '2', type: 'smoothstep', animated: true, style: { stroke: '#6366f1' } },
-    { id: 'e1-3', source: '1', target: '3', type: 'smoothstep', animated: true, style: { stroke: '#6366f1' } },
-    { id: 'e1-4', source: '1', target: '4', type: 'smoothstep', animated: true, style: { stroke: '#6366f1' } },
-
-    { id: 'e2-5', source: '2', target: '5', type: 'smoothstep', style: { stroke: '#cbd5e1' } },
-    { id: 'e2-6', source: '2', target: '6', type: 'smoothstep', style: { stroke: '#cbd5e1' } },
-
-    { id: 'e3-7', source: '3', target: '7', type: 'smoothstep', style: { stroke: '#cbd5e1' } },
-    { id: 'e3-8', source: '3', target: '8', type: 'smoothstep', style: { stroke: '#cbd5e1' } },
-
-    { id: 'e4-9', source: '4', target: '9', type: 'smoothstep', style: { stroke: '#cbd5e1' } },
-];
+import React, { useState } from 'react';
+import {
+    Network,
+    ZoomIn,
+    ZoomOut,
+    ChevronDown,
+    ChevronUp,
+    User,
+    RefreshCw
+} from 'lucide-react';
 
 export default function OrgStructurePage() {
-    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+    const [zoom, setZoom] = useState(1);
+    const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({ 'ceo': true });
 
-    const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+    const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 1.5));
+    const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.5));
+    const resetZoom = () => setZoom(1);
+
+    const toggleNode = (id: string) => {
+        setExpandedNodes(prev => ({
+            ...prev,
+            [id]: !prev[id]
+        }));
+    };
 
     return (
-        <div className="h-[calc(100vh-6rem)] w-full bg-slate-50 dark:bg-slate-900 rounded-xl border border-cloud dark:border-nebula-purple/50 overflow-hidden relative">
-            <div className="absolute top-4 left-4 z-10 bg-white dark:bg-stellar-blue p-4 rounded-lg shadow-md border border-cloud dark:border-nebula-purple/50">
-                <h1 className="text-lg font-bold text-ink-black dark:text-pearl">Organization Hierarchy</h1>
-                <p className="text-xs text-silver-mist">Drag to explore • Scroll to zoom</p>
-                <div className="mt-3 flex gap-2">
-                    <div className="flex items-center text-xs text-slate-500">
-                        <div className="w-2 h-2 rounded-full bg-celestial-indigo mr-1"></div> Executive
+        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+                <div>
+                    <h1 className="text-2xl font-bold flex items-center gap-2">
+                        <Network className="w-6 h-6 text-indigo-500" />
+                        Organization Structure
+                    </h1>
+                    <p className="text-slate-500 text-sm">Interactive visual hierarchy and reporting lines.</p>
+                </div>
+                <div className="flex gap-2">
+                    <button onClick={handleZoomOut} className="p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">
+                        <ZoomOut className="w-5 h-5" />
+                    </button>
+                    <div className="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-mono font-bold flex items-center">
+                        {Math.round(zoom * 100)}%
                     </div>
-                    <div className="flex items-center text-xs text-slate-500">
-                        <div className="w-2 h-2 rounded-full bg-slate-300 mr-1"></div> Management
-                    </div>
+                    <button onClick={handleZoomIn} className="p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">
+                        <ZoomIn className="w-5 h-5" />
+                    </button>
+                    <button onClick={resetZoom} className="p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm text-slate-500">
+                        <RefreshCw className="w-5 h-5" />
+                    </button>
                 </div>
             </div>
 
-            <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                nodeTypes={nodeTypes}
-                fitView
-                className="bg-slate-50 dark:bg-slate-900"
+            {/* Canvas */}
+            <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 overflow-hidden relative group">
+                <div className="absolute inset-0 flex items-center justify-center overflow-auto cursor-grab active:cursor-grabbing">
+                    <div
+                        className="flex flex-col items-center transition-transform duration-200 ease-out origin-top"
+                        style={{ transform: `scale(${zoom})` }}
+                    >
+                        {/* CEO Node */}
+                        <div className="flex flex-col items-center">
+                            <div className="bg-white dark:bg-slate-900 border-2 border-indigo-500 p-4 rounded-2xl shadow-xl w-64 text-center relative z-10 transition-shadow hover:shadow-2xl hover:border-indigo-600">
+                                <div className="w-16 h-16 rounded-full overflow-hidden mx-auto mb-2 border-4 border-indigo-50">
+                                    <img src="https://i.pravatar.cc/150?u=ceEO" alt="CEO" />
+                                </div>
+                                <div className="font-bold text-lg">Alexandra Ray</div>
+                                <div className="text-sm text-indigo-600 font-bold mb-2">Chief Executive Officer</div>
+                                <button
+                                    onClick={() => toggleNode('ceo')}
+                                    className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-indigo-500 hover:bg-indigo-600 rounded-full flex items-center justify-center text-white cursor-pointer shadow-lg transition-colors z-20"
+                                >
+                                    {expandedNodes['ceo'] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                </button>
+                            </div>
+
+                            {expandedNodes['ceo'] && (
+                                <div className="animate-in fade-in slide-in-from-top-4 duration-300 flex flex-col items-center">
+                                    <div className="h-8 w-px bg-slate-400 dark:bg-slate-600"></div>
+                                    <div className="h-px w-[600px] bg-slate-400 dark:bg-slate-600"></div>
+                                    <div className="flex justify-between w-[600px] relative">
+                                        <div className="h-8 w-px bg-slate-400 dark:bg-slate-600 absolute left-0 top-0"></div>
+                                        <div className="h-8 w-px bg-slate-400 dark:bg-slate-600 absolute left-1/2 -translate-x-1/2 top-0"></div>
+                                        <div className="h-8 w-px bg-slate-400 dark:bg-slate-600 absolute right-0 top-0"></div>
+                                    </div>
+
+                                    {/* VPs Level */}
+                                    <div className="flex gap-16 mt-0">
+                                        <OrgNode
+                                            name="Marcus Chen"
+                                            role="CTO"
+                                            reports={45}
+                                            img="https://i.pravatar.cc/150?u=cto"
+                                        />
+                                        <OrgNode
+                                            name="Sarah Williams"
+                                            role="Chief People Officer"
+                                            reports={12}
+                                            img="https://i.pravatar.cc/150?u=cpo"
+                                        />
+                                        <OrgNode
+                                            name="David Miller"
+                                            role="Chief Revenue Officer"
+                                            reports={30}
+                                            img="https://i.pravatar.cc/150?u=cro"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="absolute bottom-4 right-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-500 pointer-events-none">
+                    Use mouse wheel or buttons to zoom
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function OrgNode({ name, role, reports, img }: { name: string, role: string, reports: number, img: string }) {
+    const [expanded, setExpanded] = useState(false);
+
+    return (
+        <div className="flex flex-col items-center">
+            <div
+                onClick={() => setExpanded(!expanded)}
+                className={`bg-white dark:bg-slate-900 border p-4 rounded-2xl shadow-lg w-48 text-center transition-all cursor-pointer relative z-10 hover:-translate-y-1
+                ${expanded ? 'border-indigo-400 ring-2 ring-indigo-500/20' : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300'}`}
             >
-                <Controls className="bg-white dark:bg-stellar-blue border-cloud dark:border-nebula-purple/50 shadow-sm" />
-                <Background color="#94a3b8" gap={16} size={1} className="opacity-20" />
-            </ReactFlow>
+                <div className="w-12 h-12 rounded-full overflow-hidden mx-auto mb-2 border-2 border-slate-100 dark:border-slate-800">
+                    <img src={img} alt={name} />
+                </div>
+                <div className="font-bold text-slate-800 dark:text-slate-100">{name}</div>
+                <div className="text-xs text-slate-500 font-bold">{role}</div>
+                <div className="mt-2 flex items-center justify-center gap-1 text-[10px] bg-slate-100 dark:bg-slate-800 rounded-full py-0.5 px-2 mx-auto w-fit font-bold text-slate-600 dark:text-slate-400">
+                    <User className="w-3 h-3" /> {reports} Reports
+                </div>
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-500 cursor-pointer hover:bg-indigo-500 hover:text-white transition-colors shadow-sm">
+                    {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </div>
+            </div>
+            {expanded && (
+                <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="text-xs text-slate-400 italic bg-white dark:bg-slate-900 px-3 py-1 rounded-full shadow-sm border border-slate-100 dark:border-slate-800">
+                        {reports} direct reports hidden
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

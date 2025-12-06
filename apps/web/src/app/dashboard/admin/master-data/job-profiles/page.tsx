@@ -32,10 +32,14 @@ export default function JobProfilesPage() {
     const [grades, setGrades] = useState<Grade[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchData = async () => {
+    const fetchData = async (query?: string) => {
         try {
+            const url = query
+                ? `/api/master-data/job-profiles?q=${encodeURIComponent(query)}`
+                : '/api/master-data/job-profiles';
+
             const [profilesRes, familiesRes, gradesRes] = await Promise.all([
-                fetch('/api/master-data/job-profiles'),
+                fetch(url),
                 fetch('/api/master-data/job-families'),
                 fetch('/api/master-data/grades')
             ]);

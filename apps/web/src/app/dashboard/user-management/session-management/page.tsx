@@ -79,7 +79,6 @@ export default function SessionsPage() {
             columns={columns}
             // We reuse onDelete for Revoke to leverage DataPage's action column
             onDelete={handleRevoke}
-            deleteLabel="Revoke"
             // Disable Create/Edit as sessions are managed by system
             onSave={undefined}
             renderForm={() => <></>} // Empty form as we don't allow creating sessions manually

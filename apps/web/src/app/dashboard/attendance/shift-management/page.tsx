@@ -1,208 +1,168 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
-    ChevronLeft,
-    ChevronRight,
-    Calendar as CalendarIcon,
     Clock,
-    User,
-    Search,
-    Download,
-    Save,
+    Plus,
     MoreHorizontal,
-    Moon,
+    Edit2,
+    Trash2,
     Sun,
-    Sunset,
-    Coffee
+    Moon,
+    Coffee,
+    Briefcase
 } from 'lucide-react';
 
 // --- MOCK DATA ---
 
-const SHIFT_TYPES = {
-    MORNING: { id: 'M', label: 'Morning', time: '09:00 - 18:00', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', icon: Sun },
-    EVENING: { id: 'E', label: 'Evening', time: '14:00 - 23:00', color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400', icon: Sunset },
-    NIGHT: { id: 'N', label: 'Night', time: '22:00 - 07:00', color: 'bg-slate-800 text-slate-100 dark:bg-slate-700 dark:text-slate-100', icon: Moon },
-    OFF: { id: 'O', label: 'Day Off', time: '-', color: 'bg-slate-100 text-slate-400 dark:bg-slate-800/50 dark:text-slate-500', icon: Coffee },
-};
-
-const EMPLOYEES = [
-    { id: '1', name: 'Sarah Anderson', role: 'Team Lead', avatar: 'https://i.pravatar.cc/150?u=EMP001' },
-    { id: '2', name: 'Michael Chen', role: 'Developer', avatar: 'https://i.pravatar.cc/150?u=EMP002' },
-    { id: '3', name: 'Priya Sharma', role: 'Designer', avatar: 'https://i.pravatar.cc/150?u=EMP003' },
-    { id: '4', name: 'James Wilson', role: 'Developer', avatar: 'https://i.pravatar.cc/150?u=EMP004' },
-    { id: '5', name: 'David Kim', role: 'QA Engineer', avatar: 'https://i.pravatar.cc/150?u=EMP008' },
+const SHIFTS = [
+    {
+        id: 'S-001',
+        name: 'General Shift',
+        start: '09:00 AM',
+        end: '06:00 PM',
+        break_duration: '60 mins',
+        type: 'Regular',
+        color: 'bg-blue-500',
+        icon: Sun,
+        employees: 142
+    },
+    {
+        id: 'S-002',
+        name: 'Morning Shift',
+        start: '06:00 AM',
+        end: '03:00 PM',
+        break_duration: '45 mins',
+        type: 'Rotational',
+        color: 'bg-amber-500',
+        icon: Coffee,
+        employees: 28
+    },
+    {
+        id: 'S-003',
+        name: 'Night Shift',
+        start: '08:00 PM',
+        end: '05:00 AM',
+        break_duration: '60 mins',
+        type: 'Night',
+        color: 'bg-indigo-500',
+        icon: Moon,
+        employees: 45
+    },
+    {
+        id: 'S-004',
+        name: 'Executive Shift',
+        start: '10:00 AM',
+        end: '07:00 PM',
+        break_duration: '60 mins',
+        type: 'Flexible',
+        color: 'bg-emerald-500',
+        icon: Briefcase,
+        employees: 12
+    }
 ];
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const DATES = ['12', '13', '14', '15', '16', '17', '18']; // Mock dates for a week
-
-// Initial Roster State (EmpId -> DayIndex -> ShiftId)
-const INITIAL_ROSTER: Record<string, string[]> = {
-    '1': ['M', 'M', 'M', 'M', 'M', 'O', 'O'],
-    '2': ['M', 'M', 'E', 'E', 'E', 'O', 'O'],
-    '3': ['E', 'E', 'E', 'E', 'E', 'O', 'O'],
-    '4': ['N', 'N', 'N', 'N', 'N', 'O', 'O'],
-    '5': ['M', 'M', 'M', 'M', 'M', 'O', 'O'],
-};
-
 export default function ShiftManagementPage() {
-    const [roster, setRoster] = useState(INITIAL_ROSTER);
-    const [selectedShiftTool, setSelectedShiftTool] = useState<string>('M'); // Default tool to paint with
-
-    // Function to handle cell click
-    const handleCellClick = (empId: string, dayIndex: number) => {
-        setRoster(prev => ({
-            ...prev,
-            [empId]: prev[empId].map((shift, idx) => idx === dayIndex ? selectedShiftTool : shift)
-        }));
-    };
-
-    // Calculate weekly stats
-    const calculateStats = () => {
-        let hours = 0;
-        let shiftCounts = { M: 0, E: 0, N: 0, O: 0 };
-
-        Object.values(roster).flat().forEach(shift => {
-            // @ts-ignore
-            shiftCounts[shift]++;
-            if (shift !== 'O') hours += 9; // Assuming 9 hour shifts
-        });
-
-        return { hours, shiftCounts };
-    };
-
-    const stats = calculateStats();
-
     return (
-        <div className="h-[calc(100vh-6rem)] flex flex-col gap-6">
+        <div className="space-y-6 pb-10">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex justify-between items-start">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
-                        <CalendarIcon className="w-6 h-6 text-celestial-indigo" />
-                        Shift Roster
+                        <Clock className="w-6 h-6 text-indigo-500" />
+                        Shift Management
                     </h1>
-                    <p className="text-silver-mist text-sm">Manage team schedules and assignments</p>
+                    <p className="text-silver-mist text-sm mt-1">Configure work shifts, timings, and break rules.</p>
                 </div>
-                <div className="flex gap-2">
-                    <button className="px-4 py-2 bg-white dark:bg-stellar-blue border border-cloud dark:border-nebula-purple/50 rounded-lg text-sm font-medium hover:bg-cloud/50 transition-colors flex items-center gap-2">
-                        <Download className="w-4 h-4" /> Export
-                    </button>
-                    <button className="px-4 py-2 bg-celestial-indigo text-white rounded-lg text-sm font-medium hover:bg-celestial-indigo/90 transition-colors flex items-center gap-2">
-                        <Save className="w-4 h-4" /> Publish Roster
-                    </button>
-                </div>
+                <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                    <Plus className="w-4 h-4" /> Add New Shift
+                </button>
             </div>
 
-            {/* Controls & Toolbar */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                {/* Date Navigation */}
-                <div className="lg:col-span-1 bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 flex items-center justify-between">
-                    <button className="p-1 hover:bg-cloud dark:hover:bg-deep-cosmos rounded"><ChevronLeft className="w-5 h-5 text-silver-mist" /></button>
-                    <div className="text-center">
-                        <div className="font-bold text-ink-black dark:text-pearl">Aug 12 - Aug 18</div>
-                        <div className="text-xs text-silver-mist">Week 33, 2024</div>
-                    </div>
-                    <button className="p-1 hover:bg-cloud dark:hover:bg-deep-cosmos rounded"><ChevronRight className="w-5 h-5 text-silver-mist" /></button>
-                </div>
-
-                {/* Shift Painter Tools */}
-                <div className="lg:col-span-3 bg-white dark:bg-stellar-blue p-2 rounded-xl border border-cloud dark:border-nebula-purple/50 flex items-center gap-2 overflow-x-auto">
-                    <span className="text-xs font-semibold text-silver-mist px-2 uppercase tracking-wider">Paint Tool:</span>
-                    {Object.values(SHIFT_TYPES).map((shift) => (
-                        <button
-                            key={shift.id}
-                            onClick={() => setSelectedShiftTool(shift.id)}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${selectedShiftTool === shift.id
-                                    ? 'ring-2 ring-celestial-indigo shadow-md scale-105'
-                                    : 'hover:bg-cloud dark:hover:bg-deep-cosmos opacity-70 hover:opacity-100'
-                                } ${shift.color}`}
-                        >
-                            <shift.icon className="w-4 h-4" />
-                            {shift.label}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Roster Grid */}
-            <div className="flex-1 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 overflow-hidden flex flex-col">
-                {/* Grid Header */}
-                <div className="grid grid-cols-[250px_1fr] border-b border-cloud dark:border-nebula-purple/20 bg-slate-50 dark:bg-slate-900/50">
-                    <div className="p-4 font-semibold text-sm text-silver-mist uppercase tracking-wider flex items-center">Employee</div>
-                    <div className="grid grid-cols-7">
-                        {DAYS.map((day, i) => (
-                            <div key={day} className="p-3 text-center border-l border-cloud dark:border-nebula-purple/20">
-                                <div className="text-xs font-bold text-ink-black dark:text-pearl">{day}</div>
-                                <div className="text-xs text-silver-mist">{DATES[i]}</div>
+            {/* Shift Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {SHIFTS.map((shift) => (
+                    <div key={shift.id} className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden hover:shadow-md transition-all group">
+                        <div className={`h-2 ${shift.color}`} />
+                        <div className="p-5">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${shift.color} bg-opacity-10 text-opacity-100`}>
+                                    <shift.icon className={`w-5 h-5 ${shift.color.replace('bg-', 'text-')}`} />
+                                </div>
+                                <button className="p-1 hover:bg-slate-50 dark:hover:bg-slate-800 rounded">
+                                    <MoreHorizontal className="w-4 h-4 text-slate-400" />
+                                </button>
                             </div>
-                        ))}
-                    </div>
-                </div>
 
-                {/* Grid Content */}
-                <div className="overflow-y-auto flex-1">
-                    {EMPLOYEES.map((emp) => (
-                        <div key={emp.id} className="grid grid-cols-[250px_1fr] border-b border-cloud dark:border-nebula-purple/10 hover:bg-slate-50 dark:hover:bg-deep-cosmos/30 transition-colors group">
-                            {/* Employee Column */}
-                            <div className="p-4 flex items-center gap-3">
-                                <img src={emp.avatar} alt={emp.name} className="w-10 h-10 rounded-full bg-slate-200 object-cover" />
-                                <div>
-                                    <div className="font-medium text-sm text-ink-black dark:text-pearl">{emp.name}</div>
-                                    <div className="text-xs text-silver-mist">{emp.role}</div>
+                            <h3 className="font-bold text-lg text-ink-black dark:text-pearl mb-1">{shift.name}</h3>
+                            <p className="text-xs text-silver-mist font-medium mb-4">{shift.type}</p>
+
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-slate-500 dark:text-slate-400">Timing</span>
+                                    <span className="font-bold text-slate-700 dark:text-slate-200">
+                                        {shift.start} - <span className="text-xs opacity-50">{shift.end}</span>
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-slate-500 dark:text-slate-400">Break</span>
+                                    <span className="font-bold text-slate-700 dark:text-slate-200">{shift.break_duration}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-slate-500 dark:text-slate-400">Employees</span>
+                                    <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-bold text-slate-600 dark:text-slate-300">
+                                        {shift.employees}
+                                    </span>
                                 </div>
                             </div>
+                        </div>
+                        <div className="flex border-t border-cloud dark:border-nebula-purple/20 divide-x divide-cloud dark:divide-nebula-purple/20">
+                            <button className="flex-1 py-3 text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 transition-colors flex items-center justify-center gap-2">
+                                <Edit2 className="w-3.5 h-3.5" /> Edit
+                            </button>
+                            <button className="flex-1 py-3 text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-rose-600 transition-colors flex items-center justify-center gap-2">
+                                <Trash2 className="w-3.5 h-3.5" /> Delete
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
 
-                            {/* Shifts Columns */}
-                            <div className="grid grid-cols-7">
-                                {roster[emp.id].map((shiftId, dayIndex) => {
-                                    // @ts-ignore
-                                    const shiftConfig = Object.values(SHIFT_TYPES).find(s => s.id === shiftId);
-                                    if (!shiftConfig) return null;
+            {/* Visual Timeline (Mock) */}
+            <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm mt-8">
+                <h3 className="font-bold text-ink-black dark:text-pearl mb-6">Daily Coverage Timeline (24 Hours)</h3>
 
-                                    return (
-                                        <div
-                                            key={dayIndex}
-                                            className="border-l border-cloud dark:border-nebula-purple/20 p-1 cursor-pointer"
-                                            onClick={() => handleCellClick(emp.id, dayIndex)}
-                                        >
-                                            <div className={`h-full w-full rounded-md flex flex-col items-center justify-center gap-1 transition-all hover:opacity-80 ${shiftConfig.color}`}>
-                                                <shiftConfig.icon className="w-4 h-4" />
-                                                <span className="text-[10px] font-bold">{shiftConfig.label}</span>
-                                                <span className="text-[9px] opacity-75 hidden xl:block">{shiftConfig.time}</span>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                <div className="relative h-20 bg-slate-50 dark:bg-slate-900/40 rounded-lg overflow-hidden flex">
+                    {/* Time Markers */}
+                    {[0, 4, 8, 12, 16, 20, 24].map((h, i) => (
+                        <div key={h} className="absolute h-full border-l border-slate-200 dark:border-slate-700 flex flex-col justify-end pb-2 pl-1" style={{ left: `${(h / 24) * 100}%` }}>
+                            <span className="text-[10px] font-mono text-slate-400">{h}:00</span>
+                        </div>
+                    ))}
+
+                    {/* Shift Bars */}
+                    {/* Morning: 06:00 - 15:00 (9 hrs) -> Start 25%, Width 37.5% */}
+                    <div className="absolute top-2 h-3 bg-amber-400 rounded-full opacity-80 hover:opacity-100 transition-opacity cursor-pointer" style={{ left: '25%', width: '37.5%' }} title="Morning Shift" />
+
+                    {/* General: 09:00 - 18:00 (9 hrs) -> Start 37.5%, Width 37.5% */}
+                    <div className="absolute top-6 h-3 bg-blue-500 rounded-full opacity-80 hover:opacity-100 transition-opacity cursor-pointer" style={{ left: '37.5%', width: '37.5%' }} title="General Shift" />
+
+                    {/* Executive: 10:00 - 19:00 (9 hrs) -> Start 41.6%, Width 37.5% */}
+                    <div className="absolute top-10 h-3 bg-emerald-500 rounded-full opacity-80 hover:opacity-100 transition-opacity cursor-pointer" style={{ left: '41.6%', width: '37.5%' }} title="Executive Shift" />
+
+                    {/* Night: 20:00 - 05:00 (9 hrs) -> Split Bar */}
+                    <div className="absolute top-14 h-3 bg-indigo-500 rounded-l-full opacity-80 hover:opacity-100 transition-opacity cursor-pointer" style={{ left: '83.3%', width: '16.7%' }} title="Night Shift (Start)" />
+                    <div className="absolute top-14 h-3 bg-indigo-500 rounded-r-full opacity-80 hover:opacity-100 transition-opacity cursor-pointer" style={{ left: '0%', width: '20.8%' }} title="Night Shift (End)" />
+                </div>
+
+                <div className="flex justify-center gap-6 mt-4">
+                    {SHIFTS.map(s => (
+                        <div key={s.id} className="flex items-center gap-2">
+                            <div className={`w-3 h-3 ${s.color} rounded-sm`} />
+                            <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{s.name}</span>
                         </div>
                     ))}
                 </div>
-            </div>
-
-            {/* Footer Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <StatCard label="Total Scheduled Hrs" value={`${stats.hours}h`} icon={Clock} color="text-celestial-indigo" />
-                <StatCard label="Morning Shifts" value={stats.shiftCounts.M.toString()} icon={Sun} color="text-amber-500" />
-                <StatCard label="Night Shifts" value={stats.shiftCounts.N.toString()} icon={Moon} color="text-slate-500" />
-                <StatCard label="Coverage" value="98%" icon={User} color="text-emerald-500" />
-            </div>
-        </div>
-    );
-}
-
-// --- SUB COMPONENTS ---
-
-function StatCard({ label, value, icon: Icon, color }: any) {
-    return (
-        <div className="bg-white dark:bg-stellar-blue p-3 rounded-xl border border-cloud dark:border-nebula-purple/50 flex items-center gap-3">
-            <div className={`p-2 rounded-lg bg-slate-100 dark:bg-deep-cosmos ${color}`}>
-                <Icon className="w-4 h-4" />
-            </div>
-            <div>
-                <div className="text-lg font-bold text-ink-black dark:text-pearl leading-none">{value}</div>
-                <div className="text-xs text-silver-mist mt-0.5">{label}</div>
             </div>
         </div>
     );

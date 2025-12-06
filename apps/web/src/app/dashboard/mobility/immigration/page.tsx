@@ -2,7 +2,7 @@
 
 import React from 'react';
 import {
-    Passport,
+    BookUser,
     Plane,
     Calendar,
     AlertCircle,
@@ -18,7 +18,7 @@ export default function ImmigrationPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
-                        <Passport className="w-6 h-6 text-indigo-500" />
+                        <BookUser className="w-6 h-6 text-indigo-500" />
                         Visa & Immigration
                     </h1>
                     <p className="text-slate-500 text-sm">Track visa status, work permits, and travel documents.</p>

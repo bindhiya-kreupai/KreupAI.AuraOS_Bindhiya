@@ -86,7 +86,6 @@ export default function UserDeactivationPage() {
             columns={columns}
             onSave={handleSave}
             onDelete={undefined}
-            createLabel="Deactivate User"
             defaultValues={{}}
             renderForm={(record, onChange) => (
                 <>

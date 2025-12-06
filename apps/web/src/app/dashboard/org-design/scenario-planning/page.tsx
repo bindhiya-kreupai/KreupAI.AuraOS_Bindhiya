@@ -102,15 +102,15 @@ export default function ScenarioPlanningPage() {
                                     key={scenario.id}
                                     onClick={() => setSelectedScenario(scenario)}
                                     className={`p-4 rounded-xl border cursor-pointer transition-all group ${selectedScenario.id === scenario.id
-                                            ? 'bg-indigo-50 dark:bg-indigo-900/20 border-celestial-indigo ring-1 ring-celestial-indigo'
-                                            : 'bg-white dark:bg-stellar-blue border-cloud dark:border-nebula-purple/50 hover:border-celestial-indigo/50'
+                                        ? 'bg-indigo-50 dark:bg-indigo-900/20 border-celestial-indigo ring-1 ring-celestial-indigo'
+                                        : 'bg-white dark:bg-stellar-blue border-cloud dark:border-nebula-purple/50 hover:border-celestial-indigo/50'
                                         }`}
                                 >
                                     <div className="flex justify-between items-start mb-2">
                                         <div className="font-bold text-sm text-ink-black dark:text-pearl group-hover:text-celestial-indigo transition-colors">{scenario.name}</div>
                                         <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${scenario.status === 'Active' ? 'bg-emerald-100 text-emerald-600' :
-                                                scenario.status === 'Draft' ? 'bg-amber-100 text-amber-600' :
-                                                    'bg-slate-100 text-slate-500'
+                                            scenario.status === 'Draft' ? 'bg-amber-100 text-amber-600' :
+                                                'bg-slate-100 text-slate-500'
                                             }`}>
                                             {scenario.status}
                                         </span>
@@ -178,8 +178,8 @@ export default function ScenarioPlanningPage() {
                                         itemStyle={{ color: '#f8fafc' }}
                                         cursor={{ fill: 'transparent' }}
                                     />
-                                    <Bar dataKey="current" name="Current HC" fill="#94a3b8" radiuses={[4, 4, 0, 0]} barSize={32} />
-                                    <Bar dataKey="proposed" name="Proposed HC" fill="#6366f1" radiuses={[4, 4, 0, 0]} barSize={32} />
+                                    <Bar dataKey="current" name="Current HC" fill="#94a3b8" radius={[4, 4, 0, 0]} barSize={32} />
+                                    <Bar dataKey="proposed" name="Proposed HC" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={32} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>

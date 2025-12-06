@@ -26,6 +26,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'AI_AUTOMATION',
       label: 'AI & Automation',
       icon: 'ai',
+      path: '/dashboard/ai-automation',
       features: [
         'Org Health Predictor',
         'AI Coaching Bot',
@@ -48,6 +49,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'ATTENDANCE',
       label: 'Attendance',
       icon: 'attendance',
+      path: '/dashboard/attendance',
       features: [
         'Shift Management',
         'Roster Assignment',
@@ -69,6 +71,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'AUDIT_SECURITY',
       label: 'Audit & Security',
       icon: 'security',
+      path: '/dashboard/security',
       features: [
         'Audit Logs',
         'Login Logs',
@@ -88,6 +91,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'BENEFITS',
       label: 'Benefits',
       icon: 'benefits',
+      path: '/dashboard/benefits',
       features: [
         'Benefit Types',
         'Plan Eligibility',
@@ -107,6 +111,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'CAREER_PLANNING',
       label: 'Career Planning',
       icon: 'career',
+      path: '/dashboard/career',
       features: [
         'Career Ladders',
         'Internal Mobility',
@@ -118,6 +123,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'CHATBOT_BUILDER',
       label: 'Chatbot Builder',
       icon: 'chatbot',
+      path: '/dashboard/chatbot-builder',
       features: [
         'Dialogue Designer',
         'Entity Management',
@@ -133,6 +139,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'COMPENSATION',
       label: 'Compensation',
       icon: 'compensation',
+      path: '/dashboard/compensation',
       features: [
         'Salary Structure',
         'Grade & Bands',
@@ -151,6 +158,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'COMPETENCY_LIBRARY',
       label: 'Competency Library',
       icon: 'competency',
+      path: '/dashboard/performance/competency-library',
       features: [
         'Competency Catalog',
         'Proficiency Levels',
@@ -163,6 +171,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'CONTRACT_WORKFORCE',
       label: 'Contract Workforce',
       icon: 'contract',
+      path: '/dashboard/recruitment/vendors',
       features: [
         'Vendor Management',
         'Contract Types',
@@ -178,6 +187,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'CORE_HR',
       label: 'Core HR',
       icon: 'coreHr',
+      path: '/dashboard/core-hr',
       features: [
         'Employee Database',
         'Organization Structure',
@@ -201,6 +211,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'DEI',
       label: 'DEI',
       icon: 'dei',
+      path: '/dashboard/dei',
       features: [
         'Diversity Metrics',
         'Inclusion Survey',
@@ -216,6 +227,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'ESS',
       label: 'ESS',
       icon: 'ess',
+      path: '/dashboard/my-services',
       features: [
         'Personal Info Update',
         'Leave Application',
@@ -231,6 +243,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'EMPLOYEE_ENGAGEMENT',
       label: 'Employee Engagement',
       icon: 'engagementEmployee',
+      path: '/dashboard/engagement',
       features: [
         'Pulse Surveys',
         'Recognition Wall',
@@ -241,6 +254,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'ENGAGEMENT',
       label: 'Engagement',
       icon: 'engagement',
+      path: '/dashboard/engagement',
       features: [
         'Event Calendar',
         'Birthday/Anniversary',
@@ -257,6 +271,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'GAMIFICATION',
       label: 'Gamification',
       icon: 'gamification',
+      path: '/dashboard/gamification',
       features: [
         'Points System',
         'Leaderboards',
@@ -272,6 +287,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'HEALTH_SAFETY',
       label: 'Health & Safety',
       icon: 'healthSafety',
+      path: '/dashboard/health-safety',
       features: [
         'Incident Reporting',
         'Safety Training',
@@ -284,6 +300,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'HR_BUDGETING',
       label: 'HR Budgeting',
       icon: 'hrBudgeting',
+      path: '/dashboard/finance/budget',
       features: [
         'Headcount Planning',
         'Salary Budgets',
@@ -299,6 +316,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'HR_HELPDESK',
       label: 'HR Helpdesk',
       icon: 'hrHelpdesk',
+      path: '/dashboard/helpdesk',
       features: [
         'Ticket Management',
         'SLA Tracking',
@@ -315,6 +333,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'HRSD',
       label: 'HRSD',
       icon: 'hrsd',
+      path: '/dashboard/hr-helpdesk',
       features: [
         'Service Catalog',
         'Request Portal',
@@ -330,6 +349,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'JOB_LIBRARY',
       label: 'Job Library',
       icon: 'jobLibrary',
+      path: '/dashboard/job-library',
       features: [
         'Job Catalog',
         'Job Families',
@@ -342,6 +362,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'LEARNING_DEVELOPMENT',
       label: 'L&D',
       icon: 'learning',
+      path: '/dashboard/learning',
       features: [
         'Course Catalog',
         'Learning Paths',
@@ -366,6 +387,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'INTEGRATION_HUB',
       label: 'Integration Hub',
       icon: 'Plug',
+      path: '/dashboard/integration-hub',
       features: [
         'API Marketplace',
         'Webhook Manager',
@@ -376,6 +398,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'GLOBAL_MOBILITY',
       label: 'Global Mobility',
       icon: 'Globe',
+      path: '/dashboard/mobility',
       features: [
         'Visa & Immigration',
         'Relocation Packages',
@@ -386,6 +409,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'ALUMNI_NETWORK',
       label: 'Alumni Network',
       icon: 'Users2',
+      path: '/dashboard/alumni-network',
       features: [
         'Alumni Directory',
         'Events & Reunions',
@@ -396,6 +420,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'COLLABORATION',
       label: 'Collaboration',
       icon: 'MessagesSquare',
+      path: '/dashboard/collaboration',
       features: [
         'Digital Whiteboard',
         'Task Kanban',
@@ -406,6 +431,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'MANUFACTURING',
       label: 'Manufacturing',
       icon: 'Factory',
+      path: '/dashboard/manufacturing',
       features: [
         'Plant Maintenance',
         'Production Efficiency',
@@ -416,6 +442,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'HEALTHCARE',
       label: 'Healthcare',
       icon: 'Stethoscope',
+      path: '/dashboard/healthcare',
       features: [
         'Credentialing',
         'Nurse Rostering',
@@ -426,6 +453,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'RETAIL',
       label: 'Retail',
       icon: 'ShoppingBag',
+      path: '/dashboard/retail',
       features: [
         'Store Operations',
         'Commission & Incentives',
@@ -436,6 +464,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'EDUCATION',
       label: 'Education',
       icon: 'GraduationCap',
+      path: '/dashboard/education',
       features: [
         'Faculty Tenure',
         'Research Grants',
@@ -446,6 +475,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'GOVERNMENT',
       label: 'Government',
       icon: 'Landmark',
+      path: '/dashboard/government',
       features: [
         'Civil Service Grades',
         'Security Clearance',
@@ -456,6 +486,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'AGRICULTURE',
       label: 'Agriculture',
       icon: 'Wheat',
+      path: '/dashboard/agriculture',
       features: [
         'Seasonal Labor',
         'Housing Management',
@@ -466,6 +497,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'MINING',
       label: 'Mining & Resources',
       icon: 'Pickaxe',
+      path: '/dashboard/mining',
       features: [
         'FIFO Logistics',
         'Camp Management',
@@ -476,6 +508,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'HOSPITALITY',
       label: 'Hospitality',
       icon: 'ConciergeBell',
+      path: '/dashboard/hospitality',
       features: [
         'Tip Management',
         'Event Staffing',
@@ -486,6 +519,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'AUTOMOTIVE',
       label: 'Automotive',
       icon: 'Car',
+      path: '/dashboard/automotive',
       features: [
         'Technician Rostering',
         'Sales Commissions',
@@ -496,6 +530,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'AVIATION',
       label: 'Aviation',
       icon: 'PlaneForward',
+      path: '/dashboard/aviation',
       features: [
         'Cabin Crew',
         'Pilot Training',
@@ -506,6 +541,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'MARITIME',
       label: 'Maritime',
       icon: 'Anchor',
+      path: '/dashboard/maritime',
       features: [
         'Vessel Crewing',
         'Port Operations',
@@ -516,6 +552,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'NONPROFIT_NGO',
       label: 'Nonprofit / NGO',
       icon: 'HeartHandshake',
+      path: '/dashboard/nonprofit',
       features: [
         'Volunteer Management',
         'Field Deployment',
@@ -526,6 +563,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'LOGISTICS',
       label: 'Logistics',
       icon: 'Truck',
+      path: '/dashboard/logistics',
       features: [
         'Driver Management',
         'Fleet Safety',
@@ -536,6 +574,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'LABOR_RELATIONS',
       label: 'Labor Relations',
       icon: 'labor',
+      path: '/dashboard/compliance',
       features: [
         'Union Database',
         'Grievance Management',
@@ -551,6 +590,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'LEAVE',
       label: 'Leave',
       icon: 'leave',
+      path: '/dashboard/leave',
       features: [
         'Leave Types',
         'Leave Policy',
@@ -569,6 +609,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'LOCALIZATION',
       label: 'Localization',
       icon: 'localization',
+      path: '/dashboard/admin/master-data',
       features: [
         'Multi-Currency',
         'Multi-Language',
@@ -587,6 +628,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'MOBILE_APP',
       label: 'Mobile App',
       icon: 'mobile',
+      path: '/dashboard/analytics',
       features: [
         'Native Apps',
         'Push Notifications',
@@ -609,6 +651,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'MSS',
       label: 'MSS',
       icon: 'mss',
+      path: '/dashboard/manager',
       features: [
         'Team Dashboard',
         'Approval Center',
@@ -620,6 +663,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'OFFBOARDING',
       label: 'Offboarding',
       icon: 'offboarding',
+      path: '/dashboard/offboarding',
       features: [
         'Exit Process',
         'Exit Interview',
@@ -631,6 +675,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'ONBOARDING',
       label: 'Onboarding',
       icon: 'onboarding',
+      path: '/dashboard/onboarding',
       features: [
         'Pre-boarding',
         'First Day Experience',
@@ -643,6 +688,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'ORG_DESIGN',
       label: 'Org Design',
       icon: 'orgDesign',
+      path: '/dashboard/org-design',
       features: [
         'Org Chart Builder',
         'Scenario Planning',
@@ -658,6 +704,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'PAYROLL',
       label: 'Payroll',
       icon: 'payroll',
+      path: '/dashboard/payroll',
       features: [
         'Payroll Processing',
         'Tax Calculation',
@@ -682,6 +729,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'PERFORMANCE',
       label: 'Performance',
       icon: 'performance',
+      path: '/dashboard/performance',
       features: [
         'Goal Setting',
         'Review Cycles',
@@ -705,6 +753,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'POLICY_MGMT',
       label: 'Policy Mgmt',
       icon: 'policy',
+      path: '/dashboard/policy-mgmt',
       features: [
         'Policy Repository',
         'Policy Creation',
@@ -720,6 +769,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'POSITION_BUDGETING',
       label: 'Position Budgeting',
       icon: 'positionBudgeting',
+      path: '/dashboard/finance/budget',
       features: [
         'Position Creation',
         'Budget Allocation',
@@ -735,6 +785,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'RECRUITMENT',
       label: 'Recruitment',
       icon: 'recruitment',
+      path: '/dashboard/recruitment',
       features: [
         'Job Requisition',
         'Job Posting',
@@ -755,6 +806,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'REMOTE_WORK',
       label: 'Remote Work',
       icon: 'remoteWork',
+      path: '/dashboard/attendance',
       features: [
         'Remote Policy',
         'Equipment Tracking',
@@ -770,6 +822,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'REPORTS',
       label: 'Reports',
       icon: 'reports',
+      path: '/dashboard/analytics',
       features: [
         'Standard Reports',
         'Custom Reports',
@@ -789,6 +842,7 @@ export const superAdminMenu: MenuDefinition = {
       code: 'SUCCESSION_PLANNING',
       label: 'Succession Planning',
       icon: 'succession',
+      path: '/dashboard/succession-planning',
       features: [
         'Critical Positions',
         'Talent Matrix',

@@ -21,10 +21,14 @@ export default function CitiesPage() {
     const [states, setStates] = useState<State[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchData = async () => {
+    const fetchData = async (query?: string) => {
         try {
+            const url = query
+                ? `/api/master-data/cities?q=${encodeURIComponent(query)}`
+                : '/api/master-data/cities';
+
             const [citiesRes, statesRes] = await Promise.all([
-                fetch('/api/master-data/cities'),
+                fetch(url),
                 fetch('/api/master-data/states')
             ]);
 
