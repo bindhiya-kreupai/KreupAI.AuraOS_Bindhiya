@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface TaxRegime {
     id: string;
@@ -33,9 +34,12 @@ export default function TaxRegimesPage() {
     const [data, setData] = useState<TaxRegime[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchTaxRegimes = async () => {
+    const fetchTaxRegimes = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/tax-regimes');
+            const url = query
+                ? `/api/master-data/tax-regimes?q=${encodeURIComponent(query)}`
+                : '/api/master-data/tax-regimes';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -50,6 +54,8 @@ export default function TaxRegimesPage() {
     useEffect(() => {
         fetchTaxRegimes();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<TaxRegime>) => {
         try {
@@ -99,7 +105,7 @@ export default function TaxRegimesPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('tax-regimes');
     };
 
     const handleImport = () => {
@@ -107,7 +113,10 @@ export default function TaxRegimesPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search tax regimes:');
+        if (query !== null) {
+            fetchTaxRegimes(query);
+        }
     };
 
     return (

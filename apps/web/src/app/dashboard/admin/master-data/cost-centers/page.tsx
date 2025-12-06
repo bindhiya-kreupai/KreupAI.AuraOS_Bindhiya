@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface CostCenter {
     id: string;
@@ -21,9 +22,12 @@ export default function CostCentersPage() {
     const [data, setData] = useState<CostCenter[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchCostCenters = async () => {
+    const fetchCostCenters = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/cost-centers');
+            const url = query
+                ? `/api/master-data/cost-centers?q=${encodeURIComponent(query)}`
+                : '/api/master-data/cost-centers';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -38,6 +42,8 @@ export default function CostCentersPage() {
     useEffect(() => {
         fetchCostCenters();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<CostCenter>) => {
         try {
@@ -87,7 +93,7 @@ export default function CostCentersPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('cost-centers');
     };
 
     const handleImport = () => {
@@ -95,7 +101,10 @@ export default function CostCentersPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search cost centers:');
+        if (query !== null) {
+            fetchCostCenters(query);
+        }
     };
 
     return (

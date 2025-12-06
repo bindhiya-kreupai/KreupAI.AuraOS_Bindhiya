@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface Competency {
     id: string;
@@ -33,9 +34,12 @@ export default function CompetenciesPage() {
     const [data, setData] = useState<Competency[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchCompetencies = async () => {
+    const fetchCompetencies = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/competencies');
+            const url = query
+                ? `/api/master-data/competencies?q=${encodeURIComponent(query)}`
+                : '/api/master-data/competencies';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -50,6 +54,8 @@ export default function CompetenciesPage() {
     useEffect(() => {
         fetchCompetencies();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<Competency>) => {
         try {
@@ -99,7 +105,7 @@ export default function CompetenciesPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('competencies');
     };
 
     const handleImport = () => {
@@ -107,7 +113,10 @@ export default function CompetenciesPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search competencies:');
+        if (query !== null) {
+            fetchCompetencies(query);
+        }
     };
 
     return (

@@ -5,9 +5,8 @@
  * @reference docs/aura-master-instructions.md
  */
 
-import { LeaveType } from '@aura/types';
 
-export const leaveTypesSeed: Omit<LeaveType, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted'>[] = [
+export const leaveTypesSeed = [
   {
     code: 'PL',
     name: 'Paid Leave',
@@ -162,6 +161,25 @@ export const leaveTypesSeed: Omit<LeaveType, 'id' | 'createdAt' | 'updatedAt' | 
     requiresDocument: true,
     gender: 'all',
     applicableAfter: 0,
+    allowNegativeBalance: false,
+    proration: false,
+    isActive: true,
+  },
+  {
+    code: 'HAJJ',
+    name: 'Hajj Leave',
+    description: 'Pilgrimage leave for Hajj',
+    category: 'other',
+    isPaid: true,
+    isCarryForward: false,
+    isEncashable: false,
+    accrualType: 'one_time', // Assuming schema supports this or falls back to 'manual'
+    maxBalance: 15,
+    minServicePeriod: 12,
+    requiresApproval: true,
+    requiresDocument: true,
+    gender: 'all',
+    applicableAfter: 12,
     allowNegativeBalance: false,
     proration: false,
     isActive: true,

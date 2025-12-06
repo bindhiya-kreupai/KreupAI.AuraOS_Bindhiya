@@ -402,6 +402,7 @@ model Bank {
   name       String
   swiftCode  String
   branchName String?
+  countryCode String? // ISO codde e.g. AE, IN (Optional for migration safety, backfill later)
   status     String  @default("Active")
 }
 

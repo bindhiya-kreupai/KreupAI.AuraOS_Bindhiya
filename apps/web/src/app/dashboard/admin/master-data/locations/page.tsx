@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface Location {
     id: string;
@@ -40,10 +41,14 @@ export default function LocationsPage() {
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchData = async () => {
+    const fetchData = async (query?: string) => {
         try {
+            const locationsUrl = query
+                ? `/api/master-data/locations?q=${encodeURIComponent(query)}`
+                : '/api/master-data/locations';
+
             const [locsRes, compsRes, addrRes] = await Promise.all([
-                fetch('/api/master-data/locations'),
+                fetch(locationsUrl),
                 fetch('/api/master-data/companies'),
                 fetch('/api/master-data/addresses')
             ]);
@@ -143,7 +148,7 @@ export default function LocationsPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('locations');
     };
 
     const handleImport = () => {
@@ -151,7 +156,10 @@ export default function LocationsPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search locations:');
+        if (query !== null) {
+            fetchData(query);
+        }
     };
 
     return (

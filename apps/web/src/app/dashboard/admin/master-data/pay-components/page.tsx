@@ -1,187 +1,387 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { DataPage } from '@aura/ui/components/ui';
-import type { Column } from '@aura/ui/components/ui';
+import React, { useState } from 'react';
+import {
+    Coins,
+    Calculator,
+    Percent,
+    Plus,
+    CheckCircle2,
+    X,
+    FileText,
+    ArrowRight,
+    Search,
+    Filter,
+    MoreVertical,
+    DollarSign,
+    ShieldAlert,
+    Info,
+    Trash2,
+    Edit2
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-interface PayComponent {
-    id: string;
-    code: string;
-    name: string;
-    type: 'Earning' | 'Deduction';
-    status: 'Active' | 'Inactive';
-}
+// --- MOCK DATA ---
 
-const columns: Column<PayComponent>[] = [
-    { key: 'code', header: 'Code', width: '100px', render: (row) => <span className="font-mono text-xs">{row.code}</span> },
-    { key: 'name', header: 'Name', render: (row) => <span className="font-medium">{row.name}</span> },
+const EARNINGS = [
     {
-        key: 'type',
-        header: 'Type',
-        width: '120px',
-        render: (row) => (
-            <span className={`px-2 py-0.5 rounded-md text-xs font-medium ${row.type === 'Earning' ? 'bg-neural-mint/10 text-neural-mint' : 'bg-sunset-orange/10 text-sunset-orange'
-                }`}>
-                {row.type}
-            </span>
-        )
+        id: 'PAY-101',
+        name: 'Basic Salary',
+        type: 'Fixed',
+        calculation: '40-50% of CTC',
+        taxable: true,
+        status: 'Active',
+        description: 'Fixed component, base for PF and Gratuity.',
+        color: 'bg-indigo-500'
     },
     {
-        key: 'status',
-        header: 'Status',
-        width: '100px',
-        render: (row) => (
-            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${row.status === 'Active' ? 'bg-neural-mint/10 text-neural-mint' : 'bg-silver-mist/10 text-silver-mist'
-                }`}>
-                {row.status}
-            </span>
-        )
+        id: 'PAY-102',
+        name: 'House Rent Allowance (HRA)',
+        type: 'Formula',
+        calculation: '40% of Basic (Non-Metro) / 50% (Metro)',
+        taxable: 'Partial',
+        status: 'Active',
+        description: 'Allowance for rental accommodation.',
+        color: 'bg-sky-500'
     },
+    {
+        id: 'PAY-103',
+        name: 'Special Allowance',
+        type: 'Balancing',
+        calculation: 'Residual of CTC',
+        taxable: true,
+        status: 'Active',
+        description: 'Balancing figure after all other components.',
+        color: 'bg-emerald-500'
+    }
+];
+
+const DEDUCTIONS = [
+    {
+        id: 'DED-201',
+        name: 'Provident Fund (PF)',
+        type: 'Statutory',
+        calculation: '12% of Basic (Capped)',
+        taxable: false,
+        status: 'Active',
+        description: 'Employee contribution towards EPF.',
+        color: 'bg-rose-500'
+    },
+    {
+        id: 'DED-202',
+        name: 'Professional Tax',
+        type: 'Statutory',
+        calculation: 'State Slab Based',
+        taxable: false,
+        status: 'Active',
+        description: 'State government tax based on location.',
+        color: 'bg-amber-500'
+    }
+];
+
+const REIMBURSEMENTS = [
+    {
+        id: 'RMB-301',
+        name: 'Fuel & Maintenance',
+        limit: '₹15,000 / month',
+        proofRequired: true,
+        status: 'Active',
+        color: 'bg-purple-500'
+    },
+    {
+        id: 'RMB-302',
+        name: 'Communication / Internet',
+        limit: '₹2,000 / month',
+        proofRequired: true,
+        status: 'Active',
+        color: 'bg-pink-500'
+    }
 ];
 
 export default function PayComponentsPage() {
-    const [data, setData] = useState<PayComponent[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<'Earnings' | 'Deductions' | 'Reimbursements'>('Earnings');
+    const [showWizard, setShowWizard] = useState(false);
+    const [step, setStep] = useState(1);
 
-    const fetchPayComponents = async () => {
-        try {
-            const response = await fetch('/api/master-data/pay-components');
-            if (response.ok) {
-                const result = await response.json();
-                setData(result);
-            }
-        } catch (error) {
-            console.error('Failed to fetch pay components:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    // Wizard State
+    const [newComponent, setNewComponent] = useState({
+        name: '',
+        type: 'Fixed',
+        isTaxable: true,
+        formula: ''
+    });
 
-    useEffect(() => {
-        fetchPayComponents();
-    }, []);
-
-    const handleSave = async (record: Partial<PayComponent>) => {
-        try {
-            let response;
-            if (record.id) {
-                response = await fetch(`/api/master-data/pay-components`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(record),
-                });
-            } else {
-                response = await fetch(`/api/master-data/pay-components`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(record),
-                });
-            }
-
-            if (response.ok) {
-                fetchPayComponents();
-            } else {
-                alert('Failed to save pay component');
-            }
-        } catch (error) {
-            console.error('Error saving pay component:', error);
-            alert('Error saving pay component');
-        }
-    };
-
-    const handleDelete = async (record: PayComponent) => {
-        if (confirm(`Are you sure you want to delete ${record.name}?`)) {
-            try {
-                const response = await fetch(`/api/master-data/pay-components?id=${record.id}`, {
-                    method: 'DELETE',
-                });
-
-                if (response.ok) {
-                    fetchPayComponents();
-                } else {
-                    alert('Failed to delete pay component');
-                }
-            } catch (error) {
-                console.error('Error deleting pay component:', error);
-                alert('Error deleting pay component');
-            }
-        }
-    };
-
-    const handleExport = () => {
-        alert('Export functionality coming soon!');
-    };
-
-    const handleImport = () => {
-        alert('Import functionality coming soon!');
-    };
-
-    const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
-    };
+    const activeList = activeTab === 'Earnings' ? EARNINGS : activeTab === 'Deductions' ? DEDUCTIONS : REIMBURSEMENTS;
 
     return (
-        <DataPage<PayComponent>
-            title="Pay Components"
-            breadcrumbs={[
-                { label: 'Admin' },
-                { label: 'Master Data' },
-                { label: 'Pay Components' }
-            ]}
-            data={data}
-            columns={columns}
-            onSave={handleSave}
-            onDelete={handleDelete}
-            onExport={handleExport}
-            onImport={handleImport}
-            onFilter={handleFilter}
-            defaultValues={{ status: 'Active', type: 'Earning' }}
-            renderForm={(record, onChange) => (
-                <>
-                    <div>
-                        <label className="block text-xs font-medium text-silver-mist mb-1">Code</label>
-                        <input
-                            type="text"
-                            value={record.code || ''}
-                            onChange={e => onChange('code', e.target.value)}
-                            className="w-full px-3 py-2 bg-pearl dark:bg-stellar-blue rounded-lg text-sm border border-cloud dark:border-nebula-purple/50 focus:ring-2 focus:ring-celestial-indigo/50 outline-none"
-                            placeholder="e.g. BASIC"
-                        />
+        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+                <div>
+                    <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
+                        <Coins className="w-6 h-6 text-indigo-500" />
+                        Pay Components
+                    </h1>
+                    <p className="text-silver-mist text-sm">Configure salary heads, taxability rules, and calculation formulas.</p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => { setStep(1); setShowWizard(true); }}
+                        className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors shadow-lg shadow-indigo-500/20"
+                    >
+                        <Plus className="w-4 h-4" /> Add Component
+                    </button>
+                    <button className="p-2 bg-white dark:bg-stellar-blue border border-cloud dark:border-nebula-purple/50 rounded-xl text-slate-500 hover:text-indigo-500 transition-colors">
+                        <Filter className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
+                {/* Left: Component List */}
+                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-6">
+                    {/* Tabs */}
+                    <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0 w-fit">
+                        {['Earnings', 'Deductions', 'Reimbursements'].map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab as any)}
+                                className={`px-6 py-2 rounded-lg text-sm font-bold transition-all
+                                    ${activeTab === tab
+                                        ? 'bg-white dark:bg-stellar-blue text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}
+                                `}
+                            >
+                                {tab}
+                            </button>
+                        ))}
                     </div>
-                    <div>
-                        <label className="block text-xs font-medium text-silver-mist mb-1">Name</label>
-                        <input
-                            type="text"
-                            value={record.name || ''}
-                            onChange={e => onChange('name', e.target.value)}
-                            className="w-full px-3 py-2 bg-pearl dark:bg-stellar-blue rounded-lg text-sm border border-cloud dark:border-nebula-purple/50 focus:ring-2 focus:ring-celestial-indigo/50 outline-none"
-                            placeholder="e.g. Basic Salary"
-                        />
+
+                    {/* Active List */}
+                    <div className="flex-1 overflow-y-auto pr-2 pb-20 space-y-4">
+                        {activeList.map((item: any) => (
+                            <div key={item.id} className="bg-white dark:bg-stellar-blue p-5 rounded-2xl border border-cloud dark:border-nebula-purple/50 hover:shadow-lg transition-all group relative overflow-hidden">
+                                <div className={`absolute top-0 left-0 w-1 h-full ${item.color}`}></div>
+
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded-lg ${item.color.replace('bg-', 'bg-').replace('500', '100')} ${item.color.replace('bg-', 'text-')} flex items-center justify-center font-bold text-lg`}>
+                                            {item.name.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-ink-black dark:text-pearl flex items-center gap-2">
+                                                {item.name}
+                                                <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 font-mono font-medium">{item.id}</span>
+                                            </h3>
+                                            <div className="flex items-center gap-2 text-xs text-silver-mist mt-0.5">
+                                                <span className="font-bold text-indigo-500">{item.type}</span>
+                                                {item.calculation && <span>• {item.calculation}</span>}
+                                                {item.limit && <span>• Limit: {item.limit}</span>}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-indigo-500 transition-colors">
+                                            <Edit2 className="w-4 h-4" />
+                                        </button>
+                                        <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-rose-500 transition-colors">
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <p className="text-sm text-slate-600 dark:text-slate-300 ml-13 pl-13 mb-3">
+                                    {item.description || (item.proofRequired ? 'Requires submission of bills for tax exemption.' : 'No description available.')}
+                                </p>
+
+                                <div className="flex items-center gap-4 ml-13 pl-13 text-xs font-bold border-t border-cloud dark:border-slate-800 pt-3">
+                                    {item.taxable !== undefined && (
+                                        <div className={`flex items-center gap-1 
+                                            ${item.taxable === true ? 'text-rose-500' : item.taxable === 'Partial' ? 'text-amber-500' : 'text-emerald-500'}
+                                        `}>
+                                            <ShieldAlert className="w-3 h-3" />
+                                            {item.taxable === true ? 'Fully Taxable' : item.taxable === 'Partial' ? 'Partially Exempt' : 'Tax Exhaust'}
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-1 text-slate-500">
+                                        <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                                        {activeTab === 'Earnings' ? 'Include in CTC' : 'Deducted from Gross'}
+                                    </div>
+                                    {activeTab === 'Reimbursements' && (
+                                        <div className="flex items-center gap-1 text-slate-500">
+                                            <FileText className="w-3 h-3 text-indigo-500" />
+                                            Active Flexible Benefit Plan (FBP)
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    <div>
-                        <label className="block text-xs font-medium text-silver-mist mb-1">Type</label>
-                        <select
-                            value={record.type || 'Earning'}
-                            onChange={e => onChange('type', e.target.value)}
-                            className="w-full px-3 py-2 bg-pearl dark:bg-stellar-blue rounded-lg text-sm border border-cloud dark:border-nebula-purple/50 focus:ring-2 focus:ring-celestial-indigo/50 outline-none"
+                </div>
+
+                {/* Right: Config & Rules */}
+                <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
+                    {/* Logic Box */}
+                    <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-800/30 shrink-0">
+                        <h3 className="font-bold text-indigo-800 dark:text-indigo-300 mb-2 flex items-center gap-2">
+                            <Calculator className="w-5 h-5" /> Config Logic
+                        </h3>
+                        <p className="text-sm text-indigo-700 dark:text-indigo-400 leading-relaxed mb-4">
+                            Components are processed in sequence:
+                            <br />
+                            1. Fixed Amounts -> 2. Formula Based -> 3. Balancing Figure.
+                            <br /><br />
+                            <strong>Statutory Deductions</strong> (PF/ESI) are auto-calculated based on government slabs unless overridden.
+                        </p>
+                        <button className="text-xs font-bold text-indigo-600 dark:text-indigo-300 hover:underline flex items-center gap-1">
+                            View Calculation Chain <ArrowRight className="w-3 h-3" />
+                        </button>
+                    </div>
+
+                    {/* Tax Rules */}
+                    <div className="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-800/30 flex-1">
+                        <h3 className="font-bold text-emerald-800 dark:text-emerald-300 mb-2 flex items-center gap-2">
+                            <Percent className="w-5 h-5" /> Tax Regimes
+                        </h3>
+                        <div className="space-y-3 mt-4">
+                            <div className="p-3 bg-white/50 dark:bg-black/20 rounded-lg text-xs">
+                                <span className="block font-bold text-emerald-900 dark:text-emerald-200 mb-1">New Regime (Default)</span>
+                                <span className="text-emerald-700 dark:text-emerald-400">Most exemptions (HRA, LTA) are NOT applicable. Standard deduction applies.</span>
+                            </div>
+                            <div className="p-3 bg-white/50 dark:bg-black/20 rounded-lg text-xs">
+                                <span className="block font-bold text-emerald-900 dark:text-emerald-200 mb-1">Old Regime</span>
+                                <span className="text-emerald-700 dark:text-emerald-400">Allows Section 80C, HRA, and medical insurance deductions.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Wizard Modal */}
+            <AnimatePresence>
+                {showWizard && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-white/80 dark:bg-black/80 backdrop-blur-sm"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95 }}
+                            animate={{ scale: 1 }}
+                            exit={{ scale: 0.95 }}
+                            className="bg-white dark:bg-stellar-blue w-full max-w-lg rounded-2xl border border-cloud dark:border-slate-800 shadow-2xl p-6 relative"
                         >
-                            <option value="Earning">Earning</option>
-                            <option value="Deduction">Deduction</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-medium text-silver-mist mb-1">Status</label>
-                        <select
-                            value={record.status || 'Active'}
-                            onChange={e => onChange('status', e.target.value)}
-                            className="w-full px-3 py-2 bg-pearl dark:bg-stellar-blue rounded-lg text-sm border border-cloud dark:border-nebula-purple/50 focus:ring-2 focus:ring-celestial-indigo/50 outline-none"
-                        >
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                        </select>
-                    </div>
-                </>
-            )}
-        />
+                            <button
+                                onClick={() => setShowWizard(false)}
+                                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+
+                            <h2 className="text-xl font-bold text-ink-black dark:text-pearl mb-1">
+                                {step === 1 ? 'Basic Details' : 'Calculation Logic'}
+                            </h2>
+                            <p className="text-sm text-silver-mist mb-6">Step {step} of 2</p>
+
+                            {step === 1 ? (
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 mb-1 block">Component Name</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g., Uniform Allowance"
+                                            className="w-full p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                            value={newComponent.name}
+                                            onChange={(e) => setNewComponent({ ...newComponent, name: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 mb-1 block">Component Type</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {['Earnings', 'Deductions', 'Reimbursements'].map(t => (
+                                                <button
+                                                    key={t}
+                                                    className={`p-3 rounded-xl border text-sm font-bold transition-all
+                                                        ${activeTab === t ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 text-indigo-600' : 'border-cloud dark:border-slate-800 text-slate-500 hover:bg-slate-50'}
+                                                    `}
+                                                >
+                                                    {t}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 mb-1 block">Display Name in Payslip</label>
+                                        <input type="text" placeholder="Short name (max 15 chars)" className="w-full p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 mb-1 block">Calculation Method</label>
+                                        <select
+                                            className="w-full p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none"
+                                            value={newComponent.type}
+                                            onChange={(e) => setNewComponent({ ...newComponent, type: e.target.value })}
+                                        >
+                                            <option value="Fixed">Flat Amount</option>
+                                            <option value="Formula">Formula (% of Basic/CTC)</option>
+                                            <option value="Balancing">Balancing Figure (Residual)</option>
+                                        </select>
+                                    </div>
+
+                                    {newComponent.type === 'Formula' && (
+                                        <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl">
+                                            <label className="text-xs font-bold text-slate-500 mb-1 block">Formula Expression</label>
+                                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                                {['Basic', 'CTC', 'Gross'].map(v => (
+                                                    <span key={v} className="px-2 py-1 bg-white dark:bg-slate-700 rounded border border-cloud dark:border-slate-600 text-[10px] font-mono cursor-pointer hover:bg-indigo-50 hover:border-indigo-200">
+                                                        [{v}]
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g., 0.50 * [Basic]"
+                                                className="w-full p-2 rounded-lg border border-cloud dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-mono outline-none"
+                                            />
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-center gap-3 p-3 border border-cloud dark:border-slate-800 rounded-xl">
+                                        <input type="checkbox" className="w-5 h-5 accent-indigo-500" checked={newComponent.isTaxable} onChange={(e) => setNewComponent({ ...newComponent, isTaxable: e.target.checked })} />
+                                        <div>
+                                            <div className="text-sm font-bold text-ink-black dark:text-pearl">Is Taxable?</div>
+                                            <div className="text-xs text-silver-mist">Include this component in income tax projections.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex gap-3 mt-8">
+                                {step === 2 && (
+                                    <button
+                                        onClick={() => setStep(1)}
+                                        className="flex-1 py-3 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold rounded-xl transition-colors"
+                                    >
+                                        Back
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => step === 1 ? setStep(2) : setShowWizard(false)}
+                                    className="flex-1 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2"
+                                >
+                                    {step === 1 ? 'Next Step' : 'Create Component'}
+                                    {step === 1 && <ArrowRight className="w-4 h-4" />}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 }

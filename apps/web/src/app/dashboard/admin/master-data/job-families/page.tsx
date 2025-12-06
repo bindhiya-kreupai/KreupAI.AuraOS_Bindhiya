@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface JobFamily {
     id: string;
@@ -103,7 +104,7 @@ export default function JobFamiliesPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('job-families');
     };
 
     const handleImport = () => {
@@ -111,7 +112,10 @@ export default function JobFamiliesPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search job families:');
+        if (query !== null) {
+            fetchData(query);
+        }
     };
 
     return (

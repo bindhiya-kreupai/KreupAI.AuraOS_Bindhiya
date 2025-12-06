@@ -5,9 +5,8 @@
  * @reference docs/aura-master-instructions.md
  */
 
-import { Country } from '@aura/types';
 
-export const countriesSeed: Omit<Country, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted'>[] = [
+export const countriesSeed = [
   {
     code: 'IN',
     code3: 'IND',
@@ -207,6 +206,62 @@ export const countriesSeed: Omit<Country, 'id' | 'createdAt' | 'updatedAt' | 'is
     subregion: 'Central America',
     flag: '🇲🇽',
     emoji: '🇲🇽',
+    isActive: true,
+  },
+  {
+    code: 'SA',
+    code3: 'SAU',
+    name: 'Saudi Arabia',
+    nativeName: 'المملكة العربية السعودية',
+    phoneCode: '+966',
+    currencyCode: 'SAR',
+    timezones: ['Asia/Riyadh'],
+    region: 'Asia',
+    subregion: 'Western Asia',
+    flag: '🇸🇦',
+    emoji: '🇸🇦',
+    isActive: true,
+  },
+  {
+    code: 'BH',
+    code3: 'BHR',
+    name: 'Bahrain',
+    nativeName: 'البحرين',
+    phoneCode: '+973',
+    currencyCode: 'BHD',
+    timezones: ['Asia/Bahrain'],
+    region: 'Asia',
+    subregion: 'Western Asia',
+    flag: '🇧🇭',
+    emoji: '🇧🇭',
+    isActive: true,
+  },
+  {
+    code: 'QA',
+    code3: 'QAT',
+    name: 'Qatar',
+    nativeName: 'قطر',
+    phoneCode: '+974',
+    currencyCode: 'QAR',
+    timezones: ['Asia/Qatar'],
+    region: 'Asia',
+    subregion: 'Western Asia',
+    flag: '🇶🇦',
+    emoji: '🇶🇦',
+    isActive: true,
+  },
+  {
+    code: 'OM',
+    code3: 'OMN',
+    name: 'Oman',
+    nativeName: 'عمان',
+    phoneCode: '+968',
+    currencyCode: 'OMR',
+    timezones: ['Asia/Muscat'],
+    region: 'Asia',
+    subregion: 'Western Asia',
+    flag: '🇴🇲',
+    emoji: '🇴🇲',
     isActive: true,
   },
 ];

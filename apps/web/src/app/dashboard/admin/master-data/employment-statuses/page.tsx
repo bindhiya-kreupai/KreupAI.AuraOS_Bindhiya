@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface EmploymentStatus {
     id: string;
@@ -31,9 +32,12 @@ export default function EmploymentStatusesPage() {
     const [data, setData] = useState<EmploymentStatus[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchEmploymentStatuses = async () => {
+    const fetchEmploymentStatuses = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/employment-statuses');
+            const url = query
+                ? `/api/master-data/employment-statuses?q=${encodeURIComponent(query)}`
+                : '/api/master-data/employment-statuses';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -48,6 +52,8 @@ export default function EmploymentStatusesPage() {
     useEffect(() => {
         fetchEmploymentStatuses();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<EmploymentStatus>) => {
         try {
@@ -97,7 +103,7 @@ export default function EmploymentStatusesPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('employment-statuses');
     };
 
     const handleImport = () => {
@@ -105,7 +111,10 @@ export default function EmploymentStatusesPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search employment statuses:');
+        if (query !== null) {
+            fetchEmploymentStatuses(query);
+        }
     };
 
     return (

@@ -5,9 +5,8 @@
  * @reference docs/aura-master-instructions.md
  */
 
-import { ShiftType } from '@aura/types';
 
-export const shiftTypesSeed: Omit<ShiftType, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted'>[] = [
+export const shiftTypesSeed = [
   {
     code: 'GENERAL',
     name: 'General Shift',
@@ -145,6 +144,22 @@ export const shiftTypesSeed: Omit<ShiftType, 'id' | 'createdAt' | 'updatedAt' | 
     ],
     weeklyOffDays: [],
     overtimeEligible: true,
+    isActive: true,
+  },
+  {
+    code: 'RAMADAN',
+    name: 'Ramadan Shift',
+    description: 'Reduced hours during Ramadan (6 Hours)',
+    type: 'fixed',
+    startTime: '09:00',
+    endTime: '15:00',
+    graceTimeIn: 30,
+    graceTimeOut: 0,
+    halfDayThreshold: 3,
+    fullDayThreshold: 5,
+    breaks: [],
+    weeklyOffDays: [0, 6],
+    overtimeEligible: false,
     isActive: true,
   },
 ];

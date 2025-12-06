@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface EmploymentType {
     id: string;
@@ -31,9 +32,12 @@ export default function EmploymentTypesPage() {
     const [data, setData] = useState<EmploymentType[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchEmploymentTypes = async () => {
+    const fetchEmploymentTypes = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/employment-types');
+            const url = query
+                ? `/api/master-data/employment-types?q=${encodeURIComponent(query)}`
+                : '/api/master-data/employment-types';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -48,6 +52,8 @@ export default function EmploymentTypesPage() {
     useEffect(() => {
         fetchEmploymentTypes();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<EmploymentType>) => {
         try {
@@ -97,7 +103,7 @@ export default function EmploymentTypesPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('employment-types');
     };
 
     const handleImport = () => {
@@ -105,7 +111,10 @@ export default function EmploymentTypesPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search employment types:');
+        if (query !== null) {
+            fetchEmploymentTypes(query);
+        }
     };
 
     return (

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface LeaveType {
     id: string;
@@ -43,9 +44,12 @@ export default function LeaveTypesPage() {
     const [data, setData] = useState<LeaveType[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchLeaveTypes = async () => {
+    const fetchLeaveTypes = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/leave-types');
+            const url = query
+                ? `/api/master-data/leave-types?q=${encodeURIComponent(query)}`
+                : '/api/master-data/leave-types';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -60,6 +64,8 @@ export default function LeaveTypesPage() {
     useEffect(() => {
         fetchLeaveTypes();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<LeaveType>) => {
         try {
@@ -109,7 +115,7 @@ export default function LeaveTypesPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('leave-types');
     };
 
     const handleImport = () => {
@@ -117,7 +123,10 @@ export default function LeaveTypesPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search leave types:');
+        if (query !== null) {
+            fetchLeaveTypes(query);
+        }
     };
 
     return (

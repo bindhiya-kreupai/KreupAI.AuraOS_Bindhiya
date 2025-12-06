@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface BusinessUnit {
     id: string;
@@ -33,9 +34,12 @@ export default function BusinessUnitsPage() {
     const [data, setData] = useState<BusinessUnit[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchBusinessUnits = async () => {
+    const fetchBusinessUnits = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/business-units');
+            const url = query
+                ? `/api/master-data/business-units?q=${encodeURIComponent(query)}`
+                : '/api/master-data/business-units';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -50,6 +54,8 @@ export default function BusinessUnitsPage() {
     useEffect(() => {
         fetchBusinessUnits();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<BusinessUnit>) => {
         try {
@@ -99,7 +105,7 @@ export default function BusinessUnitsPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('business-units');
     };
 
     const handleImport = () => {
@@ -107,7 +113,10 @@ export default function BusinessUnitsPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search business units:');
+        if (query !== null) {
+            fetchBusinessUnits(query);
+        }
     };
 
     return (

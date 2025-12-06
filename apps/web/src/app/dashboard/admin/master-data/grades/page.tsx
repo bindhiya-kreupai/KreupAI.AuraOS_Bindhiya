@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface Grade {
     id: string;
@@ -36,9 +37,12 @@ export default function GradesPage() {
     const [data, setData] = useState<Grade[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchGrades = async () => {
+    const fetchGrades = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/grades');
+            const url = query
+                ? `/api/master-data/grades?q=${encodeURIComponent(query)}`
+                : '/api/master-data/grades';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -53,6 +57,8 @@ export default function GradesPage() {
     useEffect(() => {
         fetchGrades();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<Grade>) => {
         try {
@@ -105,7 +111,7 @@ export default function GradesPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('grades');
     };
 
     const handleImport = () => {
@@ -113,7 +119,10 @@ export default function GradesPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search grades:');
+        if (query !== null) {
+            fetchGrades(query);
+        }
     };
 
     return (

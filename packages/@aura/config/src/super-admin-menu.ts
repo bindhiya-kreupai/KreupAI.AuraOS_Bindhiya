@@ -62,6 +62,7 @@ export const superAdminMenu: MenuDefinition = {
         'Overtime Management',
         'Time Rounding',
         'Approval Workflow',
+        'Timesheets',
       ],
     },
     {
@@ -143,6 +144,7 @@ export const superAdminMenu: MenuDefinition = {
         'Total Rewards',
         'Market Benchmarking',
         'Budget Simulation',
+        'Loans',
       ],
     },
     {
@@ -192,6 +194,7 @@ export const superAdminMenu: MenuDefinition = {
         'Auto-Numbering',
         'Probation Tracking',
         'Confirmation Letters',
+        'Asset Management',
       ],
     },
     {
@@ -247,6 +250,7 @@ export const superAdminMenu: MenuDefinition = {
         'Rewards Catalog',
         'Referral Program',
         'CSR Activities',
+        'Surveys',
       ],
     },
     {
@@ -304,6 +308,7 @@ export const superAdminMenu: MenuDefinition = {
         'Customer Satisfaction',
         'Canned Responses',
         'Analytics',
+        'Tickets',
       ],
     },
     {
@@ -358,6 +363,176 @@ export const superAdminMenu: MenuDefinition = {
       ],
     },
     {
+      code: 'INTEGRATION_HUB',
+      label: 'Integration Hub',
+      icon: 'Plug',
+      features: [
+        'API Marketplace',
+        'Webhook Manager',
+        'App Directory',
+      ],
+    },
+    {
+      code: 'GLOBAL_MOBILITY',
+      label: 'Global Mobility',
+      icon: 'Globe',
+      features: [
+        'Visa & Immigration',
+        'Relocation Packages',
+        'Expat Tax Manager',
+      ],
+    },
+    {
+      code: 'ALUMNI_NETWORK',
+      label: 'Alumni Network',
+      icon: 'Users2',
+      features: [
+        'Alumni Directory',
+        'Events & Reunions',
+        'Alumni Jobs',
+      ],
+    },
+    {
+      code: 'COLLABORATION',
+      label: 'Collaboration',
+      icon: 'MessagesSquare',
+      features: [
+        'Digital Whiteboard',
+        'Task Kanban',
+        'Daily Standups',
+      ],
+    },
+    {
+      code: 'MANUFACTURING',
+      label: 'Manufacturing',
+      icon: 'Factory',
+      features: [
+        'Plant Maintenance',
+        'Production Efficiency',
+        'Safety Compliance',
+      ],
+    },
+    {
+      code: 'HEALTHCARE',
+      label: 'Healthcare',
+      icon: 'Stethoscope',
+      features: [
+        'Credentialing',
+        'Nurse Rostering',
+        'Locum Management',
+      ],
+    },
+    {
+      code: 'RETAIL',
+      label: 'Retail',
+      icon: 'ShoppingBag',
+      features: [
+        'Store Operations',
+        'Commission & Incentives',
+        'Seasonal Hiring',
+      ],
+    },
+    {
+      code: 'EDUCATION',
+      label: 'Education',
+      icon: 'GraduationCap',
+      features: [
+        'Faculty Tenure',
+        'Research Grants',
+        'Adjunct Management',
+      ],
+    },
+    {
+      code: 'GOVERNMENT',
+      label: 'Government',
+      icon: 'Landmark',
+      features: [
+        'Civil Service Grades',
+        'Security Clearance',
+        'Pension Scheme',
+      ],
+    },
+    {
+      code: 'AGRICULTURE',
+      label: 'Agriculture',
+      icon: 'Wheat',
+      features: [
+        'Seasonal Labor',
+        'Housing Management',
+        'Crop Cycles',
+      ],
+    },
+    {
+      code: 'MINING',
+      label: 'Mining & Resources',
+      icon: 'Pickaxe',
+      features: [
+        'FIFO Logistics',
+        'Camp Management',
+        'Hazard Pay',
+      ],
+    },
+    {
+      code: 'HOSPITALITY',
+      label: 'Hospitality',
+      icon: 'ConciergeBell',
+      features: [
+        'Tip Management',
+        'Event Staffing',
+        'Housekeeping',
+      ],
+    },
+    {
+      code: 'AUTOMOTIVE',
+      label: 'Automotive',
+      icon: 'Car',
+      features: [
+        'Technician Rostering',
+        'Sales Commissions',
+        'Parts Inventory',
+      ],
+    },
+    {
+      code: 'AVIATION',
+      label: 'Aviation',
+      icon: 'PlaneForward',
+      features: [
+        'Cabin Crew',
+        'Pilot Training',
+        'Ground Operations',
+      ],
+    },
+    {
+      code: 'MARITIME',
+      label: 'Maritime',
+      icon: 'Anchor',
+      features: [
+        'Vessel Crewing',
+        'Port Operations',
+        'Offshore Compliance',
+      ],
+    },
+    {
+      code: 'NONPROFIT_NGO',
+      label: 'Nonprofit / NGO',
+      icon: 'HeartHandshake',
+      features: [
+        'Volunteer Management',
+        'Field Deployment',
+        'Donor Relations',
+      ],
+    },
+    {
+      code: 'LOGISTICS',
+      label: 'Logistics',
+      icon: 'Truck',
+      features: [
+        'Driver Management',
+        'Fleet Safety',
+        'Warehouse Staffing',
+      ],
+    },
+    {
       code: 'LABOR_RELATIONS',
       label: 'Labor Relations',
       icon: 'labor',
@@ -387,6 +562,7 @@ export const superAdminMenu: MenuDefinition = {
         'Carry Forward',
         'Comp-off Tracking',
         'Leave Reports',
+        'My Leaves',
       ],
     },
     {
@@ -499,6 +675,7 @@ export const superAdminMenu: MenuDefinition = {
         'Off-cycle Payments',
         'Payroll Reports',
         'Additional Tasks (per doc)',
+        'Payslips',
       ],
     },
     {
@@ -521,6 +698,7 @@ export const superAdminMenu: MenuDefinition = {
         'Development Plans',
         'Performance Analytics',
         'Reward Linkage',
+        'My Reviews',
       ],
     },
     {
@@ -639,6 +817,7 @@ export const superAdminMenu: MenuDefinition = {
         'Travel History',
         'Mileage Tracking',
         'Travel Analytics',
+        'Dashboard',
       ],
     },
     {
@@ -673,6 +852,7 @@ export const superAdminMenu: MenuDefinition = {
         'Wellness Points',
         'Gym Membership',
         'Wellness Dashboard',
+        'Dashboard',
       ],
     },
     {

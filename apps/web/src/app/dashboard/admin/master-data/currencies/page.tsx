@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface Currency {
     id: string;
@@ -33,9 +34,12 @@ export default function CurrenciesPage() {
     const [data, setData] = useState<Currency[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchCurrencies = async () => {
+    const fetchCurrencies = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/currencies');
+            const url = query
+                ? `/api/master-data/currencies?q=${encodeURIComponent(query)}`
+                : '/api/master-data/currencies';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -99,7 +103,7 @@ export default function CurrenciesPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('currencies');
     };
 
     const handleImport = () => {
@@ -107,7 +111,10 @@ export default function CurrenciesPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search currencies:');
+        if (query !== null) {
+            fetchCurrencies(query);
+        }
     };
 
     return (

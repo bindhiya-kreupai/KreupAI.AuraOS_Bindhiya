@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface Designation {
     id: string;
@@ -50,9 +51,12 @@ export default function DesignationsPage() {
     const [data, setData] = useState<Designation[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchDesignations = async () => {
+    const fetchDesignations = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/designations');
+            const url = query
+                ? `/api/master-data/designations?q=${encodeURIComponent(query)}`
+                : '/api/master-data/designations';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -67,6 +71,8 @@ export default function DesignationsPage() {
     useEffect(() => {
         fetchDesignations();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<Designation>) => {
         try {
@@ -116,7 +122,7 @@ export default function DesignationsPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('designations');
     };
 
     const handleImport = () => {
@@ -124,7 +130,10 @@ export default function DesignationsPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search designations:');
+        if (query !== null) {
+            fetchDesignations(query);
+        }
     };
 
     return (

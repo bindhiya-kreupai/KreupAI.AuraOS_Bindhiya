@@ -5,9 +5,8 @@
  * @reference docs/aura-master-instructions.md
  */
 
-import { EmploymentType, EmploymentStatus } from '@aura/types';
 
-export const employmentTypesSeed: Omit<EmploymentType, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted'>[] = [
+export const employmentTypesSeed = [
   {
     code: 'FULL_TIME',
     name: 'Full Time',
@@ -87,7 +86,7 @@ export const employmentTypesSeed: Omit<EmploymentType, 'id' | 'createdAt' | 'upd
   },
 ];
 
-export const employmentStatusesSeed: Omit<EmploymentStatus, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted'>[] = [
+export const employmentStatusesSeed = [
   {
     code: 'ACTIVE',
     name: 'Active',

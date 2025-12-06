@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface DocumentType {
     id: string;
@@ -42,9 +43,12 @@ export default function DocumentTypesPage() {
     const [data, setData] = useState<DocumentType[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchDocumentTypes = async () => {
+    const fetchDocumentTypes = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/document-types');
+            const url = query
+                ? `/api/master-data/document-types?q=${encodeURIComponent(query)}`
+                : '/api/master-data/document-types';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -59,6 +63,8 @@ export default function DocumentTypesPage() {
     useEffect(() => {
         fetchDocumentTypes();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<DocumentType>) => {
         try {
@@ -108,7 +114,7 @@ export default function DocumentTypesPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('document-types');
     };
 
     const handleImport = () => {
@@ -116,7 +122,10 @@ export default function DocumentTypesPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search document types:');
+        if (query !== null) {
+            fetchDocumentTypes(query);
+        }
     };
 
     return (

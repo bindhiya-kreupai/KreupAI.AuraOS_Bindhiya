@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface Company {
     id: string;
@@ -21,9 +22,12 @@ export default function CompaniesPage() {
     const [data, setData] = useState<Company[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchCompanies = async () => {
+    const fetchCompanies = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/companies');
+            const url = query
+                ? `/api/master-data/companies?q=${encodeURIComponent(query)}`
+                : '/api/master-data/companies';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -38,6 +42,8 @@ export default function CompaniesPage() {
     useEffect(() => {
         fetchCompanies();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<Company>) => {
         try {
@@ -127,7 +133,7 @@ export default function CompaniesPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('companies');
     };
 
     const handleImport = () => {
@@ -135,7 +141,10 @@ export default function CompaniesPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search companies:');
+        if (query !== null) {
+            fetchCompanies(query);
+        }
     };
 
     return (

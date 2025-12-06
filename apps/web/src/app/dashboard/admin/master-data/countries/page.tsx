@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface Country {
     id: string;
@@ -21,9 +22,12 @@ export default function CountriesPage() {
     const [data, setData] = useState<Country[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchCountries = async () => {
+    const fetchCountries = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/countries');
+            const url = query
+                ? `/api/master-data/countries?q=${encodeURIComponent(query)}`
+                : '/api/master-data/countries';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -38,6 +42,8 @@ export default function CountriesPage() {
     useEffect(() => {
         fetchCountries();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<Country>) => {
         try {
@@ -87,7 +93,7 @@ export default function CountriesPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('countries');
     };
 
     const handleImport = () => {
@@ -95,7 +101,10 @@ export default function CountriesPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search countries:');
+        if (query !== null) {
+            fetchCountries(query);
+        }
     };
 
     return (

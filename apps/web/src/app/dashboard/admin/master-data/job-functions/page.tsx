@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface JobFunction {
     id: string;
@@ -21,9 +22,12 @@ export default function JobFunctionsPage() {
     const [data, setData] = useState<JobFunction[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchJobFunctions = async () => {
+    const fetchJobFunctions = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/job-functions');
+            const url = query
+                ? `/api/master-data/job-functions?q=${encodeURIComponent(query)}`
+                : '/api/master-data/job-functions';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -38,6 +42,8 @@ export default function JobFunctionsPage() {
     useEffect(() => {
         fetchJobFunctions();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<JobFunction>) => {
         try {
@@ -87,7 +93,7 @@ export default function JobFunctionsPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('job-functions');
     };
 
     const handleImport = () => {
@@ -95,7 +101,10 @@ export default function JobFunctionsPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search job functions:');
+        if (query !== null) {
+            fetchJobFunctions(query);
+        }
     };
 
     return (

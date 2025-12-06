@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface Skill {
     id: string;
@@ -42,9 +43,12 @@ export default function SkillsPage() {
     const [data, setData] = useState<Skill[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchSkills = async () => {
+    const fetchSkills = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/skills');
+            const url = query
+                ? `/api/master-data/skills?q=${encodeURIComponent(query)}`
+                : '/api/master-data/skills';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -59,6 +63,8 @@ export default function SkillsPage() {
     useEffect(() => {
         fetchSkills();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<Skill>) => {
         try {
@@ -108,7 +114,7 @@ export default function SkillsPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('skills');
     };
 
     const handleImport = () => {
@@ -116,7 +122,10 @@ export default function SkillsPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search skills:');
+        if (query !== null) {
+            fetchSkills(query);
+        }
     };
 
     return (

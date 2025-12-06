@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface Department {
     id: string;
@@ -30,10 +31,14 @@ export default function DepartmentsPage() {
     const [costCenters, setCostCenters] = useState<CostCenter[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchData = async () => {
+    const fetchData = async (query?: string) => {
         try {
+            const depsUrl = query
+                ? `/api/master-data/departments?q=${encodeURIComponent(query)}`
+                : '/api/master-data/departments';
+
             const [depsRes, compsRes, costsRes] = await Promise.all([
-                fetch('/api/master-data/departments'),
+                fetch(depsUrl),
                 fetch('/api/master-data/companies'),
                 fetch('/api/master-data/cost-centers')
             ]);
@@ -136,7 +141,7 @@ export default function DepartmentsPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('departments');
     };
 
     const handleImport = () => {
@@ -144,7 +149,10 @@ export default function DepartmentsPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search departments:');
+        if (query !== null) {
+            fetchData(query);
+        }
     };
 
     return (

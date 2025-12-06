@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface Role {
     id: string;
@@ -33,9 +34,12 @@ export default function RolesPermissionsPage() {
     const [data, setData] = useState<Role[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchRoles = async () => {
+    const fetchRoles = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/roles-permissions');
+            const url = query
+                ? `/api/master-data/roles-permissions?q=${encodeURIComponent(query)}`
+                : '/api/master-data/roles-permissions';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -50,6 +54,8 @@ export default function RolesPermissionsPage() {
     useEffect(() => {
         fetchRoles();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<Role>) => {
         try {
@@ -99,7 +105,7 @@ export default function RolesPermissionsPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('roles-permissions');
     };
 
     const handleImport = () => {
@@ -107,7 +113,10 @@ export default function RolesPermissionsPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search roles:');
+        if (query !== null) {
+            fetchRoles(query);
+        }
     };
 
     return (

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface ExitReason {
     id: string;
@@ -41,9 +42,12 @@ export default function ExitReasonsPage() {
     const [data, setData] = useState<ExitReason[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchExitReasons = async () => {
+    const fetchExitReasons = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/exit-reasons');
+            const url = query
+                ? `/api/master-data/exit-reasons?q=${encodeURIComponent(query)}`
+                : '/api/master-data/exit-reasons';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -107,7 +111,7 @@ export default function ExitReasonsPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('exit-reasons');
     };
 
     const handleImport = () => {
@@ -115,7 +119,10 @@ export default function ExitReasonsPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search exit reasons:');
+        if (query !== null) {
+            fetchExitReasons(query);
+        }
     };
 
     return (

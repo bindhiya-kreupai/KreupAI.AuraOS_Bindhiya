@@ -5,9 +5,8 @@
  * @reference docs/aura-master-instructions.md
  */
 
-import { Currency } from '@aura/types';
 
-export const currenciesSeed: Omit<Currency, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted'>[] = [
+export const currenciesSeed = [
   {
     code: 'INR',
     name: 'Indian Rupee',
@@ -126,6 +125,38 @@ export const currenciesSeed: Omit<Currency, 'id' | 'createdAt' | 'updatedAt' | '
     symbol: 'HK$',
     decimalPlaces: 2,
     countries: ['HK'],
+    isActive: true,
+  },
+  {
+    code: 'SAR',
+    name: 'Saudi Riyal',
+    symbol: '﷼',
+    decimalPlaces: 2,
+    countries: ['SA'],
+    isActive: true,
+  },
+  {
+    code: 'BHD',
+    name: 'Bahraini Dinar',
+    symbol: '.د.ب',
+    decimalPlaces: 3,
+    countries: ['BH'],
+    isActive: true,
+  },
+  {
+    code: 'QAR',
+    name: 'Qatari Riyal',
+    symbol: '﷼',
+    decimalPlaces: 2,
+    countries: ['QA'],
+    isActive: true,
+  },
+  {
+    code: 'OMR',
+    name: 'Omani Rial',
+    symbol: '﷼',
+    decimalPlaces: 3,
+    countries: ['OM'],
     isActive: true,
   },
 ];

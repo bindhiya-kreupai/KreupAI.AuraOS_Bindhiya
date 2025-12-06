@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface Holiday {
     id: string;
@@ -42,9 +43,12 @@ export default function HolidaysPage() {
     const [data, setData] = useState<Holiday[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchHolidays = async () => {
+    const fetchHolidays = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/holidays');
+            const url = query
+                ? `/api/master-data/holidays?q=${encodeURIComponent(query)}`
+                : '/api/master-data/holidays';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -59,6 +63,8 @@ export default function HolidaysPage() {
     useEffect(() => {
         fetchHolidays();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<Holiday>) => {
         try {
@@ -108,7 +114,7 @@ export default function HolidaysPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('holidays');
     };
 
     const handleImport = () => {
@@ -116,7 +122,10 @@ export default function HolidaysPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search holidays:');
+        if (query !== null) {
+            fetchHolidays(query);
+        }
     };
 
     return (

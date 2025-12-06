@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface Relationship {
     id: string;
@@ -40,9 +41,12 @@ export default function RelationshipsPage() {
     const [data, setData] = useState<Relationship[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchRelationships = async () => {
+    const fetchRelationships = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/relationships');
+            const url = query
+                ? `/api/master-data/relationships?q=${encodeURIComponent(query)}`
+                : '/api/master-data/relationships';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -57,6 +61,8 @@ export default function RelationshipsPage() {
     useEffect(() => {
         fetchRelationships();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<Relationship>) => {
         try {
@@ -106,7 +112,7 @@ export default function RelationshipsPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('relationships');
     };
 
     const handleImport = () => {
@@ -114,7 +120,10 @@ export default function RelationshipsPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search relationships:');
+        if (query !== null) {
+            fetchRelationships(query);
+        }
     };
 
     return (

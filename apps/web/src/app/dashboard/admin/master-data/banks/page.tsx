@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface Bank {
     id: string;
@@ -33,9 +34,12 @@ export default function BanksPage() {
     const [data, setData] = useState<Bank[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchBanks = async () => {
+    const fetchBanks = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/banks');
+            const url = query
+                ? `/api/master-data/banks?q=${encodeURIComponent(query)}`
+                : '/api/master-data/banks';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -99,7 +103,7 @@ export default function BanksPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('banks');
     };
 
     const handleImport = () => {
@@ -107,7 +111,10 @@ export default function BanksPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search banks:');
+        if (query !== null) {
+            fetchBanks(query);
+        }
     };
 
     return (

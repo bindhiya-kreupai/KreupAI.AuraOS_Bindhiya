@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { handleValuesExport } from '@/lib/master-data-utils';
 
 interface Language {
     id: string;
@@ -33,9 +34,12 @@ export default function LanguagesPage() {
     const [data, setData] = useState<Language[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchLanguages = async () => {
+    const fetchLanguages = async (query?: string) => {
         try {
-            const response = await fetch('/api/master-data/languages');
+            const url = query
+                ? `/api/master-data/languages?q=${encodeURIComponent(query)}`
+                : '/api/master-data/languages';
+            const response = await fetch(url);
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
@@ -50,6 +54,8 @@ export default function LanguagesPage() {
     useEffect(() => {
         fetchLanguages();
     }, []);
+
+    // ... (rest of the component)
 
     const handleSave = async (record: Partial<Language>) => {
         try {
@@ -99,7 +105,7 @@ export default function LanguagesPage() {
     };
 
     const handleExport = () => {
-        alert('Export functionality coming soon!');
+        handleValuesExport('languages');
     };
 
     const handleImport = () => {
@@ -107,7 +113,10 @@ export default function LanguagesPage() {
     };
 
     const handleFilter = () => {
-        alert('Advanced filter functionality coming soon!');
+        const query = prompt('Search languages:');
+        if (query !== null) {
+            fetchLanguages(query);
+        }
     };
 
     return (
