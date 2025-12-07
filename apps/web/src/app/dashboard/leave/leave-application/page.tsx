@@ -1,0 +1,108 @@
+"use client";
+
+import React, { useState } from 'react';
+import {
+    CalendarPlus,
+    Clock,
+    User,
+    CheckCircle2
+} from 'lucide-react';
+
+export default function LeaveApplicationPage() {
+    return (
+        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+                <div>
+                    <h1 className="text-2xl font-bold flex items-center gap-2">
+                        <CalendarPlus className="w-6 h-6 text-indigo-500" />
+                        Leave Application
+                    </h1>
+                    <p className="text-slate-500 text-sm">Review and approve employee time-off requests.</p>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                        <h3 className="font-bold text-lg mb-4">Pending Requests</h3>
+                        <div className="space-y-4">
+                            {[
+                                { name: 'John Doe', type: 'Annual Leave', dates: 'Dec 20 - Dec 24', days: 5, reason: 'Family Vacation', status: 'Pending' },
+                                { name: 'Jane Smith', type: 'Sick Leave', dates: 'Oct 30', days: 1, reason: 'Flu', status: 'Pending' },
+                                { name: 'Mike Ross', type: 'Casual Leave', dates: 'Nov 15', days: 1, reason: 'Personal', status: 'Pending' },
+                            ].map((req, i) => (
+                                <div key={i} className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center font-bold text-indigo-600">
+                                                {req.name.split(' ').map(n => n[0]).join('')}
+                                            </div>
+                                            <div>
+                                                <div className="font-bold">{req.name}</div>
+                                                <div className="text-sm text-slate-500">{req.type}</div>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="font-bold text-indigo-600">{req.days} Day(s)</div>
+                                            <div className="text-xs text-slate-400">{req.dates}</div>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-slate-600 dark:text-slate-300 italic mb-4">"{req.reason}"</p>
+                                    <div className="flex gap-2">
+                                        <button className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-1.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2">
+                                            <CheckCircle2 className="w-4 h-4" /> Approve
+                                        </button>
+                                        <button className="flex-1 bg-rose-500 hover:bg-rose-600 text-white py-1.5 rounded-lg text-sm font-bold">Reject</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-6">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
+                        <h3 className="font-bold text-lg mb-4">Upcoming Leaves</h3>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <User className="w-4 h-4 text-slate-400" />
+                                    <span className="text-sm font-bold">Alice Brown</span>
+                                </div>
+                                <span className="text-xs bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 px-2 py-1 rounded">Tomorrow</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <User className="w-4 h-4 text-slate-400" />
+                                    <span className="text-sm font-bold">Robert Fox</span>
+                                </div>
+                                <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-1 rounded">Nov 12-15</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <User className="w-4 h-4 text-slate-400" />
+                                    <span className="text-sm font-bold">Sarah Lee</span>
+                                </div>
+                                <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-1 rounded">Nov 20</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-900/30">
+                        <h3 className="font-bold text-indigo-900 dark:text-indigo-300 mb-2">Quick Stats</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">12%</div>
+                                <div className="text-xs text-indigo-600 dark:text-indigo-500">Absent Today</div>
+                            </div>
+                            <div>
+                                <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">8</div>
+                                <div className="text-xs text-indigo-600 dark:text-indigo-500">Pending Req</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

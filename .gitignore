@@ -55,3 +55,6 @@ Thumbs.db
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+# Generated files
+apps/web/matches.txt

@@ -12,13 +12,13 @@ export default function SuccessionPlanningPage() {
     'Emergency Succession',
     'Talent Review',
     'Career Pathing',
-    'Succession Analytics'
+    'Succession Analytics',
   ];
 
   return (
     <ModuleGrid
       title="Succession Planning"
-      description="Manage your succession planning operations and settings."
+      description="Identify, develop, and retain top talent for key leadership roles."
       features={features}
       basePath="/dashboard/succession-planning"
     />

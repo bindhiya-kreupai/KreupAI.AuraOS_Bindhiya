@@ -3,17 +3,18 @@
 import React from 'react';
 import { ModuleGrid } from '@/components/dashboard/module-grid';
 
-export default function AlumniNetworkPage() {
+export default function OffboardingPage() {
   const features = [
-    'Alumni Directory',
-    'Events & Reunions',
-    'Alumni Jobs'
+    'Exit Process',
+    'Exit Interview',
+    'Clearance Checklist',
+    'F&F Settlement'
   ];
 
   return (
     <ModuleGrid
-      title="Alumni Network"
-      description="Manage your alumni network operations and settings."
+      title="Offboarding"
+      description="Manage resignations, exit interviews, and full & final settlements."
       features={features}
       basePath="/dashboard/offboarding"
     />
