@@ -10,6 +10,7 @@
     },
     "dependencies": {
         "@aura/config": "workspace:*",
+        "@aura/database": "workspace:^",
         "@aura/types": "workspace:*",
         "@aura/ui": "workspace:*",
         "@dnd-kit/core": "^6.3.1",

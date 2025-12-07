@@ -33,7 +33,7 @@ export default function AcknowledgementPage() {
                 </div>
                 <div className="p-6 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-100 dark:border-amber-900/50">
                     <div className="text-3xl font-black text-amber-600">12%</div>
-                    <div className="text-sm font-bold text-amber-800 dark:text-amber-400">Pending > 7 Days</div>
+                    <div className="text-sm font-bold text-amber-800 dark:text-amber-400">Pending &gt; 7 Days</div>
                 </div>
                 <div className="p-6 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900/50">
                     <div className="text-3xl font-black text-rose-600">3%</div>
@@ -68,7 +68,7 @@ export default function AcknowledgementPage() {
                                 <td className="px-6 py-4 text-slate-500">{row.policy}</td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 rounded-full text-xs font-bold ${row.status === 'Signed' ? 'bg-emerald-100 text-emerald-600' :
-                                            row.status === 'Pending' ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600'
+                                        row.status === 'Pending' ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600'
                                         }`}>
                                         {row.status}
                                     </span>

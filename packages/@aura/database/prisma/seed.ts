@@ -15,6 +15,7 @@ import { jobFamiliesSeed, jobProfilesSeed } from '../src/seeds/13-job-architectu
 import { statesSeed, citiesSeed } from '../src/seeds/14-geo-masters.seed';
 import { passwordPolicySeed, mfaConfigSeed, licenseSeed, accessControlSeed, ssoConfigSeed } from '../src/seeds/15-system-policies.seed';
 import { superAdminUserSeed } from '../src/seeds/16-users.seed';
+import { jobPostingsSeed } from '../src/seeds/17-recruitment.seed';
 
 const prisma = new PrismaClient();
 
@@ -42,6 +43,11 @@ async function main() {
             create: s,
         });
     }
+
+    // ============================================
+    // 12. EXTENDED MASTERS
+    // ============================================
+
 
     // ============================================
     // B. GEO MASTERS
@@ -234,11 +240,36 @@ async function main() {
     // Job Profiles
     for (const jp of jobProfilesSeed) {
         const fam = await prisma.jobFamily.findFirst({ where: { code: jp.familyCode } });
+        // @ts-ignore
+        const gradeCode = jp.gradeCode;
+        // @ts-ignore
+        const status = jp.status;
+
+        const grade = await prisma.grade.findFirst({ where: { code: gradeCode } });
+
         if (fam) {
             const existing = await prisma.jobProfile.findFirst({ where: { code: jp.code } });
             if (!existing) {
                 await prisma.jobProfile.create({
-                    data: { code: jp.code, title: jp.title, description: jp.description, familyId: fam.id }
+                    data: {
+                        code: jp.code,
+                        title: jp.title,
+                        description: jp.description,
+                        familyId: fam.id,
+                        gradeId: grade?.id,
+                        status: status || 'Active'
+                    }
+                });
+            } else {
+                // Determine if we should update existing records.
+                // For "dev" environments, updating is often helpful.
+                await prisma.jobProfile.update({
+                    where: { id: existing.id },
+                    data: {
+                        gradeId: grade?.id,
+                        status: status || 'Active',
+                        updatedAt: new Date() // Force update timestamp
+                    }
                 });
             }
         }
@@ -487,6 +518,37 @@ async function main() {
             console.log(`✅ Super Admin created: ${superAdminUserSeed.email}`);
         } else {
             console.warn('⚠️ Could not create Admin Employee - links missing');
+        }
+    }
+
+    console.log('...Seeding Recruitments');
+    for (const job of jobPostingsSeed) {
+        // @ts-ignore
+        const metrics = job.metrics; // Extract to avoid type issues if needed, but simple create is fine
+        // @ts-ignore 
+        const channels = job.channels;
+
+        // Check duplicacy by title + department (simple check)
+        const existing = await prisma.jobPosting.findFirst({
+            where: { title: job.title, department: job.department }
+        });
+
+        if (!existing) {
+            await prisma.jobPosting.create({
+                data: {
+                    title: job.title,
+                    department: job.department,
+                    location: job.location, // String for now
+                    type: job.type,
+                    status: job.status,
+                    postedDate: job.postedDate,
+                    views: metrics.views,
+                    clicks: metrics.clicks,
+                    applies: metrics.applies,
+                    channels: channels,
+                    description: job.description
+                }
+            });
         }
     }
 

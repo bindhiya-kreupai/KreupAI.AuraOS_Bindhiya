@@ -162,11 +162,17 @@ model JobProfile {
   id          String    @id @default(uuid())
   familyId    String
   family      JobFamily @relation(fields: [familyId], references: [id])
+  gradeId     String?
+  grade       Grade?    @relation(fields: [gradeId], references: [id])
   code        String // e.g., "SENIOR_FE"
   title       String // e.g., "Senior Frontend Engineer"
   description String?
+  status      String    @default("Active")
 
   employees Employee[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Grade {
@@ -176,6 +182,7 @@ model Grade {
   level Int // Numeric level for hierarchy comparison
 
   employees Employee[]
+  profiles  JobProfile[]
 }
 
 // ============================================================================
@@ -561,3 +568,29 @@ model MFAConfig {
 }
 
 
+
+// ============================================================================
+// 14. RECRUITMENT MODULE
+// ============================================================================
+
+model JobPosting {
+  id          String   @id @default(uuid())
+  title       String
+  department  String
+  location    String
+  type        String
+  status      String   @default("Draft")
+  description String?  
+  postedDate  DateTime?
+  
+  // Metrics
+  views       Int      @default(0)
+  clicks      Int      @default(0)
+  applies     Int      @default(0)
+  
+  // Channels (Stored as JSON)
+  channels    Json?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

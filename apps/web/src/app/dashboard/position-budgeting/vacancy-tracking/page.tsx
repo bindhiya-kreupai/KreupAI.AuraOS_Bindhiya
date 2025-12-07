@@ -34,7 +34,7 @@ export default function VacancyTrackingPage() {
                 </div>
                 <div className="p-6 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900/50">
                     <div className="text-3xl font-black text-rose-600">5</div>
-                    <div className="text-sm font-bold text-rose-800 dark:text-rose-400">Critical Vacancies (>60 Days)</div>
+                    <div className="text-sm font-bold text-rose-800 dark:text-rose-400">Critical Vacancies (&gt;60 Days)</div>
                 </div>
             </div>
 
@@ -72,7 +72,7 @@ export default function VacancyTrackingPage() {
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 rounded-full text-xs font-bold flex w-fit items-center gap-1 ${row.status === 'Critical' ? 'bg-rose-100 text-rose-600' :
-                                            row.status === 'Active' ? 'bg-indigo-100 text-indigo-600' : 'bg-emerald-100 text-emerald-600'
+                                        row.status === 'Active' ? 'bg-indigo-100 text-indigo-600' : 'bg-emerald-100 text-emerald-600'
                                         }`}>
                                         {row.status === 'Critical' && <AlertTriangle className="w-3 h-3" />}
                                         {row.status}

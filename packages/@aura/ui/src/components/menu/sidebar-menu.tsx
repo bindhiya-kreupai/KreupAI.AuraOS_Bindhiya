@@ -61,11 +61,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     );
   };
 
-  // Check if module is active
-  const isModuleActive = (module: typeof superAdminMenu.items[0]) => {
-    const modulePath = getModulePath(module);
-    return pathname.startsWith(modulePath);
-  };
+
 
   // Check if feature is active
   const getFeaturePath = (module: typeof superAdminMenu.items[0], featureName: string) => {
@@ -138,9 +134,20 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
       <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
         {filteredModules.map((module) => {
           const Icon = getMenuIcon(module.icon as MenuIconName);
+          const hasSubModules = module.items && module.items.length > 0;
+
+          // Check if module or any of its sub-modules is active
+          const isModuleActive = (mod: typeof superAdminMenu.items[0]): boolean => {
+            const modPath = getModulePath(mod);
+            if (pathname.startsWith(modPath)) return true;
+            if (mod.items) {
+              return mod.items.some(sub => isModuleActive(sub));
+            }
+            return false;
+          };
+
           const isActive = isModuleActive(module);
           const isExpanded = expandedModules.includes(module.code);
-          const modulePath = getModulePath(module);
 
           return (
             <div key={module.code}>
@@ -170,12 +177,10 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                     <span className="flex-1 text-sm font-medium truncate">
                       {module.label}
                     </span>
-                    <span className="text-xs text-silver-mist">
-                      {module.features.length}
-                    </span>
+                    {/* Show item count or chevron */}
                     <ChevronDown
                       className={cn(
-                        'w-4 h-4 transition-transform duration-200',
+                        'w-4 h-4 transition-transform duration-200 text-silver-mist',
                         isExpanded ? 'rotate-180' : ''
                       )}
                     />
@@ -183,29 +188,83 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                 )}
               </div>
 
-              {/* Features Submenu */}
+              {/* Sub-Items (Features or Sub-Modules) */}
               {!collapsed && isExpanded && (
                 <div className="ml-4 mt-1 space-y-0.5 border-l-2 border-cloud dark:border-nebula-purple pl-4">
-                  {module.features.map((feature) => {
-                    const featurePath = getFeaturePath(module, feature);
-                    const isFeatureActive = pathname === featurePath;
 
-                    return (
-                      <Link
-                        key={feature}
-                        href={featurePath}
-                        className={cn(
-                          'flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors',
-                          isFeatureActive
-                            ? 'bg-celestial-indigo/10 text-celestial-indigo dark:text-quantum-rose font-medium'
-                            : 'text-twilight dark:text-silver-mist hover:bg-pearl dark:hover:bg-stellar-blue hover:text-ink-black dark:hover:text-pearl'
-                        )}
-                      >
-                        <ChevronRight className="w-3 h-3" />
-                        <span className="truncate">{feature}</span>
-                      </Link>
-                    );
-                  })}
+                  {/* Scenario A: Module has sub-modules (e.g. Vertical Solutions) */}
+                  {hasSubModules ? (
+                    module.items?.map((subModule) => {
+                      const SubIcon = getMenuIcon(subModule.icon as MenuIconName);
+                      const isSubActive = isModuleActive(subModule);
+                      const isSubExpanded = expandedModules.includes(subModule.code);
+
+                      return (
+                        <div key={subModule.code} className="mb-2">
+                          <div
+                            className={cn(
+                              "flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors text-sm",
+                              isSubActive
+                                ? "text-celestial-indigo dark:text-quantum-rose font-medium"
+                                : "text-twilight dark:text-silver-mist hover:text-ink-black dark:hover:text-pearl"
+                            )}
+                            onClick={() => toggleModule(subModule.code)}
+                          >
+                            <SubIcon className="w-4 h-4 opacity-70" />
+                            <span className="flex-1 truncate">{subModule.label}</span>
+                            <ChevronDown className={cn("w-3 h-3 transition-transform", isSubExpanded ? "rotate-180" : "")} />
+                          </div>
+
+                          {/* Sub-Module Features */}
+                          {isSubExpanded && (
+                            <div className="ml-3 mt-0.5 space-y-0.5 border-l border-slate-200 dark:border-slate-700 pl-3">
+                              {subModule.features.map(feature => {
+                                const featurePath = getFeaturePath(subModule, feature);
+                                const isFeatureActive = pathname === featurePath;
+                                return (
+                                  <Link
+                                    key={feature}
+                                    href={featurePath}
+                                    className={cn(
+                                      'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-colors',
+                                      isFeatureActive
+                                        ? 'bg-celestial-indigo/10 text-celestial-indigo dark:text-quantum-rose font-medium'
+                                        : 'text-silver-mist hover:text-ink-black dark:hover:text-pearl'
+                                    )}
+                                  >
+                                    <span className="w-1.5 h-1.5 rounded-full bg-current opacity-40" />
+                                    <span className="truncate">{feature}</span>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    /* Scenario B: Standard Module with just features */
+                    module.features.map((feature) => {
+                      const featurePath = getFeaturePath(module, feature);
+                      const isFeatureActive = pathname === featurePath;
+
+                      return (
+                        <Link
+                          key={feature}
+                          href={featurePath}
+                          className={cn(
+                            'flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors',
+                            isFeatureActive
+                              ? 'bg-celestial-indigo/10 text-celestial-indigo dark:text-quantum-rose font-medium'
+                              : 'text-twilight dark:text-silver-mist hover:bg-pearl dark:hover:bg-stellar-blue hover:text-ink-black dark:hover:text-pearl'
+                          )}
+                        >
+                          <ChevronRight className="w-3 h-3" />
+                          <span className="truncate">{feature}</span>
+                        </Link>
+                      );
+                    })
+                  )}
                 </div>
               )}
             </div>
