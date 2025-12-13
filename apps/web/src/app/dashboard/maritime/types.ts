@@ -1,0 +1,21 @@
+export type CrewRank = 'master' | 'chief_officer' | 'second_officer' | 'third_officer' | 'chief_engineer' | 'second_engineer' | 'able_seaman' | 'ordinary_seaman' | 'oiler' | 'cook' | 'steward';
+export type CertificateStatus = 'valid' | 'expiring_soon' | 'expired' | 'suspended';
+export type ContractType = 'permanent' | 'temporary' | 'rotational';
+
+export interface CrewMember { crewId: string; employeeId: string; employeeName: string; nationality: string; rank: CrewRank; certificates: MaritimeCertificate[]; seamanBook: SeamanBook; medicalCertificate: MedicalCertificate; contracts: CrewContract[]; currentVessel?: string; seaService: SeaServiceRecord; status: 'active' | 'on_leave' | 'standby' | 'inactive'; createdAt: string; }
+export interface MaritimeCertificate { certificateId: string; certificateType: string; certificateNumber: string; issueDate: string; expiryDate: string; issuingAuthority: string; status: CertificateStatus; }
+export interface SeamanBook { bookNumber: string; issueDate: string; expiryDate: string; issuingCountry: string; }
+export interface MedicalCertificate { certificateNumber: string; examDate: string; expiryDate: string; examiner: string; fitnessLevel: 'fit' | 'fit_with_restrictions' | 'unfit'; restrictions?: string[]; }
+export interface CrewContract { contractId: string; contractType: ContractType; signOnDate: string; signOffDate: string; vesselName: string; vesselType: string; position: string; salary: number; currency: string; status: 'active' | 'completed' | 'terminated'; }
+export interface SeaServiceRecord { totalSeaTime: number; totalVessels: number; lastSignOff: string; serviceHistory: ServiceEntry[]; }
+export interface ServiceEntry { entryId: string; vesselName: string; vesselType: string; rank: string; signOnDate: string; signOffDate: string; duration: number; }
+export interface PortOperation { operationId: string; operationType: 'loading' | 'unloading' | 'bunkering' | 'crew_change' | 'maintenance'; vesselId: string; vesselName: string; portName: string; portCode: string; country: string; eta: string; etd: string; ata?: string; atd?: string; cargoDetails?: CargoInfo; crewChanges?: CrewChange[]; services: PortService[]; costs: OperationCost[]; status: 'scheduled' | 'arrived' | 'in_progress' | 'completed' | 'delayed'; createdAt: string; }
+export interface CargoInfo { cargoType: string; quantity: number; unit: string; manifests: string[]; }
+export interface CrewChange { changeType: 'sign_on' | 'sign_off'; crewId: string; crewName: string; rank: string; flightDetails?: string; }
+export interface PortService { serviceType: string; provider: string; cost: number; currency: string; }
+export interface OperationCost { costCategory: string; amount: number; currency: string; paid: boolean; }
+export interface OffshoreCompliance { complianceId: string; vesselId: string; vesselName: string; complianceType: 'safety' | 'environmental' | 'security' | 'labor'; regulation: string; inspectionDate: string; inspector: string; findings: ComplianceFinding[]; correctiveActions: CorrectiveAction[]; status: 'compliant' | 'non_compliant' | 'conditional'; certificateIssued: boolean; certificateExpiry?: string; createdAt: string; }
+export interface ComplianceFinding { findingId: string; category: string; description: string; severity: 'minor' | 'major' | 'critical'; evidencePhotos: string[]; }
+export interface CorrectiveAction { actionId: string; description: string; responsiblePerson: string; deadline: string; status: 'pending' | 'in_progress' | 'completed'; completionDate?: string; }
+export interface MaritimeSettings { settingsId: string; organizationId: string; crewSettings: { certificateExpiryWarningDays: number; medicalExpiryWarningDays: number; rotationPeriodDays: number; }; portSettings: { advanceNoticeDays: number; costTrackingEnabled: boolean; }; complianceSettings: { inspectionFrequencyDays: number; autoReminderEnabled: boolean; }; notifications: { certificateExpiring: boolean; portArrivalAlert: boolean; complianceIssue: boolean; }; updatedAt: string; }
+export interface MaritimeAlert { alertId: string; alertType: 'crew' | 'port' | 'compliance'; severity: 'low' | 'medium' | 'high' | 'critical'; title: string; message: string; relatedEntity: { entityType: string; entityId: string; entityName: string; }; status: 'active' | 'acknowledged' | 'resolved'; createdAt: string; }

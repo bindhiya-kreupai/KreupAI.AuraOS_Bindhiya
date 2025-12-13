@@ -1,0 +1,14 @@
+export type TipDistributionMethod = 'equal' | 'hours_based' | 'points_based' | 'position_based';
+export type EventStatus = 'planning' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
+export type RoomStatus = 'vacant_clean' | 'vacant_dirty' | 'occupied_clean' | 'occupied_dirty' | 'out_of_order';
+
+export interface TipPool { poolId: string; poolName: string; date: string; totalAmount: number; distributionMethod: TipDistributionMethod; participants: TipParticipant[]; distributions: TipDistribution[]; status: 'open' | 'closed' | 'distributed'; createdAt: string; }
+export interface TipParticipant { participantId: string; employeeId: string; employeeName: string; position: string; hoursWorked: number; points: number; percentage?: number; }
+export interface TipDistribution { distributionId: string; employeeId: string; employeeName: string; amount: number; distributionDate: string; paymentMethod: string; status: 'pending' | 'paid'; }
+export interface Event { eventId: string; eventName: string; eventType: string; eventDate: string; startTime: string; endTime: string; venue: string; expectedGuests: number; actualGuests?: number; staffingPlan: EventStaffing; budget: number; actualCost?: number; status: EventStatus; createdAt: string; }
+export interface EventStaffing { staffingId: string; requiredStaff: StaffRequirement[]; assignedStaff: StaffAssignment[]; totalStaffCost: number; }
+export interface StaffRequirement { role: string; quantity: number; hourlyRate: number; hours: number; }
+export interface StaffAssignment { assignmentId: string; employeeId: string; employeeName: string; role: string; checkIn?: string; checkOut?: string; hoursWorked?: number; status: 'scheduled' | 'confirmed' | 'completed' | 'no_show'; }
+export interface HousekeepingTask { taskId: string; roomNumber: string; roomType: string; taskType: 'clean' | 'inspect' | 'deep_clean' | 'turndown' | 'maintenance'; assignedTo?: string; priority: 'low' | 'medium' | 'high' | 'urgent'; status: RoomStatus; scheduledTime: string; startTime?: string; completionTime?: string; duration?: number; inspectionScore?: number; notes?: string; createdAt: string; }
+export interface HospitalitySettings { settingsId: string; organizationId: string; tipSettings: { autoDistribution: boolean; distributionFrequency: string; minimumPoolAmount: number; }; eventSettings: { advanceBookingDays: number; cancellationPenaltyPercent: number; staffingBuffer: number; }; housekeepingSettings: { roomsPerHousekeeper: number; deepCleanFrequency: number; inspectionRequired: boolean; }; notifications: { tipDistribution: boolean; eventStaffing: boolean; taskAssignment: boolean; }; updatedAt: string; }
+export interface HospitalityAlert { alertId: string; alertType: 'tip_pool' | 'event_staffing' | 'room_status'; severity: 'low' | 'medium' | 'high'; title: string; message: string; status: 'active' | 'acknowledged' | 'resolved'; createdAt: string; }

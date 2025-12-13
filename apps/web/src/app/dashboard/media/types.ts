@@ -1,0 +1,19 @@
+export type RightsStatus = 'active' | 'expiring_soon' | 'expired' | 'disputed';
+export type ContentType = 'video' | 'audio' | 'image' | 'text' | 'interactive';
+
+export interface ContentRights { rightsId: string; contentId: string; contentTitle: string; contentType: ContentType; rightsHolder: string; licenseType: string; territory: string[]; exclusivity: boolean; startDate: string; endDate: string; usageRights: UsageRights; royalties: RoyaltyStructure; restrictions: string[]; sublicensing: boolean; status: RightsStatus; createdAt: string; }
+export interface UsageRights { broadcast: boolean; streaming: boolean; digital: boolean; physical: boolean; derivative: boolean; }
+export interface RoyaltyStructure { royaltyType: 'fixed' | 'percentage' | 'hybrid'; fixedAmount?: number; percentageRate?: number; minimumGuarantee?: number; currency: string; paymentSchedule: string; }
+export interface BandwidthMetrics { metricId: string; period: { startDate: string; endDate: string; }; totalBandwidth: number; averageBandwidth: number; peakBandwidth: number; peakTime: string; dataTransferred: number; unit: 'GB' | 'TB' | 'PB'; costPerUnit: number; totalCost: number; utilizationRate: number; trendData: TrendPoint[]; }
+export interface TrendPoint { timestamp: string; bandwidth: number; requests: number; }
+export interface AudienceMetrics { metricId: string; contentId?: string; period: { startDate: string; endDate: string; }; totalViews: number; uniqueViewers: number; avgWatchTime: number; completionRate: number; engagementRate: number; demographics: Demographics; geography: GeographicData[]; devices: DeviceData[]; sources: TrafficSource[]; }
+export interface Demographics { ageGroups: { ageRange: string; percentage: number; }[]; gender: { male: number; female: number; other: number; }; }
+export interface GeographicData { country: string; views: number; uniqueViewers: number; percentage: number; }
+export interface DeviceData { deviceType: string; views: number; percentage: number; }
+export interface TrafficSource { source: string; views: number; percentage: number; }
+export interface NetworkOperations { operationId: string; operationType: 'deployment' | 'maintenance' | 'upgrade' | 'incident'; facilityId: string; facilityName: string; equipment: NetworkEquipment[]; scheduledStart: string; scheduledEnd: string; actualStart?: string; actualEnd?: string; technicians: Technician[]; status: 'scheduled' | 'in_progress' | 'completed' | 'delayed' | 'cancelled'; impact: ImpactAssessment; createdAt: string; }
+export interface NetworkEquipment { equipmentId: string; equipmentType: string; manufacturer: string; model: string; serialNumber: string; location: string; status: 'active' | 'standby' | 'maintenance' | 'faulty'; }
+export interface Technician { technicianId: string; technicianName: string; specialization: string; certifications: string[]; }
+export interface ImpactAssessment { severity: 'none' | 'low' | 'medium' | 'high' | 'critical'; affectedServices: string[]; estimatedDowntime?: number; customerImpact: number; }
+export interface MediaSettings { settingsId: string; organizationId: string; contentSettings: { rightsExpiryWarningDays: number; autoRenewalEnabled: boolean; }; bandwidthSettings: { alertThreshold: number; costTrackingEnabled: boolean; }; audienceSettings: { metricsUpdateFrequency: number; retentionPeriodDays: number; }; networkSettings: { maintenanceWindowEnabled: boolean; incidentResponseTime: number; }; notifications: { rightsExpiring: boolean; bandwidthAlert: boolean; networkIncident: boolean; }; updatedAt: string; }
+export interface MediaAlert { alertId: string; alertType: 'rights' | 'bandwidth' | 'audience' | 'network'; severity: 'low' | 'medium' | 'high' | 'critical'; title: string; message: string; relatedEntity: { entityType: string; entityId: string; entityName: string; }; status: 'active' | 'acknowledged' | 'resolved'; createdAt: string; }

@@ -1,0 +1,13 @@
+"use client";
+import { useState, useEffect, useCallback } from 'react';
+import { RemoteEmployee, RemoteWorkSettings, RemoteWorkAlert } from '../types';
+import { RemoteEmployeeService, RemoteWorkSettingsService, AlertsService } from '../services';
+import { sampleRemoteEmployees, sampleRemoteWorkSettings } from '../data';
+interface Toast { type: 'success' | 'error' | 'info'; message: string; }
+export const useRemoteWork = () => { const [employees, setEmployees] = useState<RemoteEmployee[]>([]); const [settings, setSettings] = useState<RemoteWorkSettings | null>(null); const [alerts, setAlerts] = useState<RemoteWorkAlert[]>([]); const [loading, setLoading] = useState(false); const [error, setError] = useState<string | null>(null); const [toasts, setToasts] = useState<Toast[]>([]);
+const addToast = useCallback((toast: Toast) => { setToasts(prev => [...prev, toast]); setTimeout(() => setToasts(prev => prev.slice(1)), 5000); }, []);
+const loadAllData = useCallback(async () => { setLoading(true); try { const [empData, settingsData] = await Promise.all([RemoteEmployeeService.getAll(), RemoteWorkSettingsService.get()]); if (empData.length === 0) { for (const e of sampleRemoteEmployees) await RemoteEmployeeService.create(e); setEmployees(sampleRemoteEmployees); } else setEmployees(empData); if (!settingsData) { await RemoteWorkSettingsService.update(sampleRemoteWorkSettings); setSettings(sampleRemoteWorkSettings); } else setSettings(settingsData); } catch (err) { setError(err instanceof Error ? err.message : 'Failed to load data'); addToast({ type: 'error', message: 'Failed to load remote work data' }); } finally { setLoading(false); } }, [addToast]);
+useEffect(() => { loadAllData(); }, [loadAllData]);
+const createEmployee = async (data: Partial<RemoteEmployee>) => { setLoading(true); try { const emp = await RemoteEmployeeService.create(data); setEmployees(await RemoteEmployeeService.getAll()); addToast({ type: 'success', message: 'Employee created' }); return emp; } catch (err) { addToast({ type: 'error', message: 'Failed to create employee' }); throw err; } finally { setLoading(false); } };
+const updateEmployee = async (id: string, updates: Partial<RemoteEmployee>) => { setLoading(true); try { const emp = await RemoteEmployeeService.update(id, updates); setEmployees(await RemoteEmployeeService.getAll()); addToast({ type: 'success', message: 'Employee updated' }); return emp; } catch (err) { addToast({ type: 'error', message: 'Failed to update employee' }); throw err; } finally { setLoading(false); } };
+return { employees, settings, alerts, loading, error, toasts, createEmployee, updateEmployee, loadAllData }; };
