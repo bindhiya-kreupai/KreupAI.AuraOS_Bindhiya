@@ -5,7 +5,7 @@ import "../styles/globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "AURA - Intelligent Human Capital Platform",
+    title: "AuraOS - Intelligent Human Capital Platform",
     description: "The Intelligence Around Your Workforce",
 };
 
