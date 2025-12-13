@@ -16,6 +16,22 @@ import { statesSeed, citiesSeed } from '../src/seeds/14-geo-masters.seed';
 import { passwordPolicySeed, mfaConfigSeed, licenseSeed, accessControlSeed, ssoConfigSeed } from '../src/seeds/15-system-policies.seed';
 import { superAdminUserSeed } from '../src/seeds/16-users.seed';
 import { jobPostingsSeed } from '../src/seeds/17-recruitment.seed';
+import {
+    competencyCategoriesSeed,
+    competencySubcategoriesSeed,
+    proficiencyFrameworksSeed,
+    proficiencyLevelsSeed,
+    competencyCatalogSeed,
+    competencyProficiencyDescriptorsSeed,
+    jobRolesSeed,
+    jobCompetencyMappingsSeed,
+    skillAssessmentsSeed,
+    gapAnalysisSeed,
+    developmentPlansSeed,
+    developmentActivitiesSeed,
+    competencyResourcesSeed,
+    assessmentCriteriaSeed
+} from '../src/seeds/18-competency-library.seed';
 
 const prisma = new PrismaClient();
 
@@ -551,6 +567,325 @@ async function main() {
             });
         }
     }
+
+    // ============================================
+    // COMPETENCY LIBRARY MODULE
+    // ============================================
+    console.log('\n📚 Seeding Competency Library Module...');
+
+    // Competency Categories
+    console.log('...Seeding Competency Categories');
+    for (const cat of competencyCategoriesSeed) {
+        await prisma.competencyCategory.upsert({
+            where: { code: cat.code },
+            update: { name: cat.name, description: cat.description, icon: cat.icon, color: cat.color, sortOrder: cat.sortOrder },
+            create: cat
+        });
+    }
+
+    // Competency Subcategories
+    console.log('...Seeding Competency Subcategories');
+    for (const sub of competencySubcategoriesSeed) {
+        const category = await prisma.competencyCategory.findUnique({ where: { code: sub.categoryCode } });
+        if (category) {
+            const existing = await prisma.competencySubcategory.findFirst({
+                where: { categoryId: category.id, code: sub.code }
+            });
+            if (!existing) {
+                await prisma.competencySubcategory.create({
+                    data: { categoryId: category.id, code: sub.code, name: sub.name }
+                });
+            }
+        }
+    }
+
+    // Proficiency Frameworks
+    console.log('...Seeding Proficiency Frameworks');
+    for (const fw of proficiencyFrameworksSeed) {
+        await prisma.proficiencyFramework.upsert({
+            where: { code: fw.code },
+            update: { name: fw.name, description: fw.description, type: fw.type, isDefault: fw.isDefault },
+            create: fw
+        });
+    }
+
+    // Proficiency Levels
+    console.log('...Seeding Proficiency Levels');
+    for (const lvl of proficiencyLevelsSeed) {
+        const framework = await prisma.proficiencyFramework.findUnique({ where: { code: lvl.frameworkCode } });
+        if (framework) {
+            const existing = await prisma.proficiencyLevel.findFirst({
+                where: { frameworkId: framework.id, code: lvl.code }
+            });
+            if (!existing) {
+                await prisma.proficiencyLevel.create({
+                    data: {
+                        frameworkId: framework.id,
+                        code: lvl.code,
+                        name: lvl.name,
+                        levelNumber: lvl.levelNumber,
+                        description: lvl.description,
+                        color: lvl.color
+                    }
+                });
+            }
+        }
+    }
+
+    // Competency Catalog
+    console.log('...Seeding Competency Catalog');
+    for (const comp of competencyCatalogSeed) {
+        const category = await prisma.competencyCategory.findUnique({ where: { code: comp.categoryCode } });
+        const subcategory = comp.subcategoryCode 
+            ? await prisma.competencySubcategory.findFirst({ where: { code: comp.subcategoryCode } })
+            : null;
+        
+        if (category) {
+            await prisma.competencyCatalog.upsert({
+                where: { code: comp.code },
+                update: {
+                    name: comp.name,
+                    categoryId: category.id,
+                    subcategoryId: subcategory?.id,
+                    description: comp.description,
+                    status: comp.status,
+                    version: comp.version,
+                    owner: comp.owner,
+                    usageCount: comp.usageCount
+                },
+                create: {
+                    code: comp.code,
+                    name: comp.name,
+                    categoryId: category.id,
+                    subcategoryId: subcategory?.id,
+                    description: comp.description,
+                    status: comp.status,
+                    version: comp.version,
+                    owner: comp.owner,
+                    usageCount: comp.usageCount
+                }
+            });
+        }
+    }
+
+    // Competency Proficiency Descriptors
+    console.log('...Seeding Competency Proficiency Descriptors');
+    for (const desc of competencyProficiencyDescriptorsSeed) {
+        const competency = await prisma.competencyCatalog.findUnique({ where: { code: desc.competencyCode } });
+        const framework = await prisma.proficiencyFramework.findUnique({ where: { code: desc.frameworkCode } });
+        
+        if (competency && framework) {
+            const level = await prisma.proficiencyLevel.findFirst({
+                where: { frameworkId: framework.id, code: desc.levelCode }
+            });
+            
+            if (level) {
+                const existing = await prisma.competencyProficiencyDescriptor.findFirst({
+                    where: { competencyId: competency.id, levelId: level.id }
+                });
+                if (!existing) {
+                    await prisma.competencyProficiencyDescriptor.create({
+                        data: {
+                            competencyId: competency.id,
+                            levelId: level.id,
+                            description: desc.description,
+                            behaviors: desc.behaviors
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    // Job Roles for Competency Mapping
+    console.log('...Seeding Job Roles');
+    for (const role of jobRolesSeed) {
+        await prisma.jobRole.upsert({
+            where: { code: role.code },
+            update: { name: role.name, description: role.description, level: role.level },
+            create: role
+        });
+    }
+
+    // Job Competency Mappings
+    console.log('...Seeding Job Competency Mappings');
+    const defaultFramework = await prisma.proficiencyFramework.findUnique({ where: { code: 'STANDARD_5' } });
+    
+    for (const mapping of jobCompetencyMappingsSeed) {
+        const jobRole = await prisma.jobRole.findUnique({ where: { code: mapping.jobRoleCode } });
+        const competency = await prisma.competencyCatalog.findUnique({ where: { code: mapping.competencyCode } });
+        
+        if (jobRole && competency && defaultFramework) {
+            const level = await prisma.proficiencyLevel.findFirst({
+                where: { frameworkId: defaultFramework.id, code: mapping.levelCode }
+            });
+            
+            if (level) {
+                const existing = await prisma.jobCompetencyMapping.findFirst({
+                    where: { jobRoleId: jobRole.id, competencyId: competency.id }
+                });
+                if (!existing) {
+                    await prisma.jobCompetencyMapping.create({
+                        data: {
+                            jobRoleId: jobRole.id,
+                            competencyId: competency.id,
+                            requiredLevelId: level.id,
+                            weight: mapping.weight,
+                            isRequired: mapping.isRequired
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    // Skill Assessments
+    console.log('...Seeding Skill Assessments');
+    for (const assessment of skillAssessmentsSeed) {
+        await prisma.skillAssessment.upsert({
+            where: { code: assessment.code },
+            update: {
+                name: assessment.name,
+                description: assessment.description,
+                type: assessment.type,
+                status: assessment.status,
+                cycleId: assessment.cycleId,
+                startDate: assessment.startDate ? new Date(assessment.startDate) : null,
+                endDate: assessment.endDate ? new Date(assessment.endDate) : null,
+                completedAt: assessment.completedAt ? new Date(assessment.completedAt) : null
+            },
+            create: {
+                code: assessment.code,
+                name: assessment.name,
+                description: assessment.description,
+                type: assessment.type,
+                status: assessment.status,
+                cycleId: assessment.cycleId,
+                startDate: assessment.startDate ? new Date(assessment.startDate) : null,
+                endDate: assessment.endDate ? new Date(assessment.endDate) : null,
+                completedAt: assessment.completedAt ? new Date(assessment.completedAt) : null,
+                createdBy: assessment.createdBy
+            }
+        });
+    }
+
+    // Gap Analysis
+    console.log('...Seeding Gap Analysis');
+    for (const gap of gapAnalysisSeed) {
+        await prisma.gapAnalysis.upsert({
+            where: { code: gap.code },
+            update: { name: gap.name, type: gap.type, targetType: gap.targetType, targetId: gap.targetId, status: gap.status },
+            create: {
+                code: gap.code,
+                name: gap.name,
+                type: gap.type,
+                targetType: gap.targetType,
+                targetId: gap.targetId,
+                status: gap.status,
+                createdBy: gap.createdBy
+            }
+        });
+    }
+
+    // Development Plans
+    console.log('...Seeding Development Plans');
+    for (const plan of developmentPlansSeed) {
+        await prisma.developmentPlan.upsert({
+            where: { code: plan.code },
+            update: {
+                name: plan.name,
+                description: plan.description,
+                type: plan.type,
+                targetType: plan.targetType,
+                targetId: plan.targetId,
+                status: plan.status,
+                startDate: plan.startDate ? new Date(plan.startDate) : null,
+                endDate: plan.endDate ? new Date(plan.endDate) : null,
+                budget: plan.budget
+            },
+            create: {
+                code: plan.code,
+                name: plan.name,
+                description: plan.description,
+                type: plan.type,
+                targetType: plan.targetType,
+                targetId: plan.targetId,
+                status: plan.status,
+                startDate: plan.startDate ? new Date(plan.startDate) : null,
+                endDate: plan.endDate ? new Date(plan.endDate) : null,
+                budget: plan.budget,
+                createdBy: plan.createdBy
+            }
+        });
+    }
+
+    // Development Activities
+    console.log('...Seeding Development Activities');
+    for (const activity of developmentActivitiesSeed) {
+        const plan = await prisma.developmentPlan.findUnique({ where: { code: activity.planCode } });
+        if (plan) {
+            const existing = await prisma.developmentActivity.findFirst({
+                where: { developmentPlanId: plan.id, name: activity.name }
+            });
+            if (!existing) {
+                await prisma.developmentActivity.create({
+                    data: {
+                        developmentPlanId: plan.id,
+                        name: activity.name,
+                        type: activity.type,
+                        provider: activity.provider,
+                        description: activity.description,
+                        duration: activity.duration,
+                        estimatedCost: activity.estimatedCost,
+                        status: activity.status
+                    }
+                });
+            }
+        }
+    }
+
+    // Competency Development Resources
+    console.log('...Seeding Competency Development Resources');
+    for (const res of competencyResourcesSeed) {
+        const competency = await prisma.competencyCatalog.findUnique({ where: { code: res.competencyCode } });
+        if (competency) {
+            const existing = await prisma.competencyDevelopmentResource.findFirst({
+                where: { competencyId: competency.id, title: res.title }
+            });
+            if (!existing) {
+                await prisma.competencyDevelopmentResource.create({
+                    data: {
+                        competencyId: competency.id,
+                        title: res.title,
+                        type: res.type,
+                        provider: res.provider,
+                        url: res.url
+                    }
+                });
+            }
+        }
+    }
+
+    // Assessment Criteria
+    console.log('...Seeding Assessment Criteria');
+    for (const crit of assessmentCriteriaSeed) {
+        const competency = await prisma.competencyCatalog.findUnique({ where: { code: crit.competencyCode } });
+        if (competency) {
+            const existing = await prisma.competencyAssessmentCriteria.findFirst({
+                where: { competencyId: competency.id, criteria: crit.criteria }
+            });
+            if (!existing) {
+                await prisma.competencyAssessmentCriteria.create({
+                    data: {
+                        competencyId: competency.id,
+                        criteria: crit.criteria
+                    }
+                });
+            }
+        }
+    }
+
+    console.log('✅ Competency Library Module seeded successfully!');
 
     console.log('🏁 Comprehensive Seeding Completed!');
 }

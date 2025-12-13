@@ -1,0 +1,357 @@
+// ============================================================================
+// COMPETENCY LIBRARY MODULE - Extended Schema
+// ============================================================================
+// This file contains the extended schema for the Competency Library module
+// Merge these models into your main schema.prisma file
+
+// ============================================================================
+// 1. COMPETENCY CATALOG
+// ============================================================================
+
+model CompetencyCategory {
+  id          String   @id @default(uuid())
+  code        String   @unique // TECHNICAL, LEADERSHIP, BEHAVIORAL, FUNCTIONAL, CORE
+  name        String
+  description String?
+  icon        String?
+  color       String?
+  sortOrder   Int      @default(0)
+  status      String   @default("Active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  competencies     CompetencyCatalog[]
+  subcategories    CompetencySubcategory[]
+}
+
+model CompetencySubcategory {
+  id         String   @id @default(uuid())
+  categoryId String
+  category   CompetencyCategory @relation(fields: [categoryId], references: [id])
+  code       String
+  name       String
+  status     String   @default("Active")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  competencies CompetencyCatalog[]
+
+  @@unique([categoryId, code])
+}
+
+model CompetencyCatalog {
+  id             String   @id @default(uuid())
+  code           String   @unique
+  name           String
+  categoryId     String
+  category       CompetencyCategory @relation(fields: [categoryId], references: [id])
+  subcategoryId  String?
+  subcategory    CompetencySubcategory? @relation(fields: [subcategoryId], references: [id])
+  description    String?  @db.Text
+  status         String   @default("Active") // Active, Draft, Archived, Under Review
+  version        String   @default("1.0")
+  owner          String?
+  usageCount     Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  proficiencyDescriptors CompetencyProficiencyDescriptor[]
+  applicableRoles        CompetencyRoleMapping[]
+  relatedCompetencies    CompetencyRelation[]     @relation("SourceCompetency")
+  relatedTo              CompetencyRelation[]     @relation("RelatedCompetency")
+  assessmentCriteria     CompetencyAssessmentCriteria[]
+  developmentResources   CompetencyDevelopmentResource[]
+  jobCompetencyMappings  JobCompetencyMapping[]
+  skillAssessments       SkillAssessmentCompetency[]
+  gapAnalysisItems       GapAnalysisItem[]
+}
+
+model CompetencyProficiencyDescriptor {
+  id            String   @id @default(uuid())
+  competencyId  String
+  competency    CompetencyCatalog @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  levelId       String
+  level         ProficiencyLevel @relation(fields: [levelId], references: [id])
+  description   String?  @db.Text
+  behaviors     Json?    // Array of behavior strings
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([competencyId, levelId])
+}
+
+model CompetencyRelation {
+  id                   String   @id @default(uuid())
+  sourceCompetencyId   String
+  sourceCompetency     CompetencyCatalog @relation("SourceCompetency", fields: [sourceCompetencyId], references: [id], onDelete: Cascade)
+  relatedCompetencyId  String
+  relatedCompetency    CompetencyCatalog @relation("RelatedCompetency", fields: [relatedCompetencyId], references: [id], onDelete: Cascade)
+  relationType         String   @default("Related") // Related, Prerequisite, Complementary
+  createdAt            DateTime @default(now())
+
+  @@unique([sourceCompetencyId, relatedCompetencyId])
+}
+
+model CompetencyRoleMapping {
+  id           String   @id @default(uuid())
+  competencyId String
+  competency   CompetencyCatalog @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  roleName     String   // Job role name
+  createdAt    DateTime @default(now())
+
+  @@unique([competencyId, roleName])
+}
+
+model CompetencyAssessmentCriteria {
+  id           String   @id @default(uuid())
+  competencyId String
+  competency   CompetencyCatalog @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  criteria     String
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+}
+
+model CompetencyDevelopmentResource {
+  id           String   @id @default(uuid())
+  competencyId String
+  competency   CompetencyCatalog @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  title        String
+  type         String   // Course, Book, Workshop, Certification, On-the-job
+  url          String?
+  provider     String?
+  duration     String?
+  cost         Float?
+  createdAt    DateTime @default(now())
+}
+
+// ============================================================================
+// 2. PROFICIENCY LEVELS / FRAMEWORKS
+// ============================================================================
+
+model ProficiencyFramework {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?  @db.Text
+  type        String   @default("Standard") // Standard, Custom, Industry
+  isDefault   Boolean  @default(false)
+  status      String   @default("Active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  levels ProficiencyLevel[]
+}
+
+model ProficiencyLevel {
+  id            String   @id @default(uuid())
+  frameworkId   String
+  framework     ProficiencyFramework @relation(fields: [frameworkId], references: [id], onDelete: Cascade)
+  code          String
+  name          String   // Foundational, Developing, Proficient, Advanced, Expert
+  levelNumber   Int      // 1, 2, 3, 4, 5
+  description   String?  @db.Text
+  color         String?  // For UI display
+  icon          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  competencyDescriptors CompetencyProficiencyDescriptor[]
+  jobCompetencyMappings JobCompetencyMapping[]
+  assessmentResults     SkillAssessmentResult[]
+  gapAnalysisItems      GapAnalysisItem[]
+  gapAnalysisTargets    GapAnalysisItem[]       @relation("TargetLevel")
+
+  @@unique([frameworkId, levelNumber])
+  @@unique([frameworkId, code])
+}
+
+// ============================================================================
+// 3. JOB COMPETENCY MAPPING
+// ============================================================================
+
+model JobRole {
+  id           String   @id @default(uuid())
+  code         String   @unique
+  name         String
+  departmentId String?
+  description  String?  @db.Text
+  level        String?  // Entry, Mid, Senior, Lead, Executive
+  status       String   @default("Active")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  competencyMappings JobCompetencyMapping[]
+  skillAssessments   SkillAssessment[]
+}
+
+model JobCompetencyMapping {
+  id               String   @id @default(uuid())
+  jobRoleId        String
+  jobRole          JobRole  @relation(fields: [jobRoleId], references: [id], onDelete: Cascade)
+  competencyId     String
+  competency       CompetencyCatalog @relation(fields: [competencyId], references: [id])
+  requiredLevelId  String
+  requiredLevel    ProficiencyLevel @relation(fields: [requiredLevelId], references: [id])
+  weight           Float    @default(1.0) // Importance weight 0-1
+  isRequired       Boolean  @default(true) // Required vs Preferred
+  effectiveFrom    DateTime @default(now())
+  effectiveTo      DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([jobRoleId, competencyId])
+}
+
+// ============================================================================
+// 4. SKILL ASSESSMENT
+// ============================================================================
+
+model SkillAssessment {
+  id             String   @id @default(uuid())
+  code           String   @unique
+  name           String
+  description    String?  @db.Text
+  type           String   // Self, Manager, 360, Peer
+  status         String   @default("Draft") // Draft, In Progress, Completed, Cancelled
+  employeeId     String?  // Target employee
+  jobRoleId      String?
+  jobRole        JobRole? @relation(fields: [jobRoleId], references: [id])
+  cycleId        String?
+  assessorIds    Json?    // Array of assessor IDs for 360/peer
+  startDate      DateTime?
+  endDate        DateTime?
+  completedAt    DateTime?
+  createdBy      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  competencies SkillAssessmentCompetency[]
+  results      SkillAssessmentResult[]
+}
+
+model SkillAssessmentCompetency {
+  id             String   @id @default(uuid())
+  assessmentId   String
+  assessment     SkillAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  competencyId   String
+  competency     CompetencyCatalog @relation(fields: [competencyId], references: [id])
+  weight         Float    @default(1.0)
+  createdAt      DateTime @default(now())
+
+  @@unique([assessmentId, competencyId])
+}
+
+model SkillAssessmentResult {
+  id              String   @id @default(uuid())
+  assessmentId    String
+  assessment      SkillAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  competencyId    String
+  assessorId      String?  // Who provided this rating
+  assessorType    String?  // Self, Manager, Peer
+  ratingLevelId   String
+  ratingLevel     ProficiencyLevel @relation(fields: [ratingLevelId], references: [id])
+  comments        String?  @db.Text
+  evidence        String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([assessmentId, competencyId, assessorId])
+}
+
+// ============================================================================
+// 5. GAP ANALYSIS & DEVELOPMENT PLANS
+// ============================================================================
+
+model GapAnalysis {
+  id           String   @id @default(uuid())
+  code         String   @unique
+  name         String
+  type         String   // Individual, Team, Department, Organization
+  targetType   String?  // Employee, Department, Team
+  targetId     String?  // ID of employee/department/team
+  status       String   @default("Active")
+  analysisDate DateTime @default(now())
+  createdBy    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  items           GapAnalysisItem[]
+  developmentPlan DevelopmentPlan?
+}
+
+model GapAnalysisItem {
+  id              String   @id @default(uuid())
+  gapAnalysisId   String
+  gapAnalysis     GapAnalysis @relation(fields: [gapAnalysisId], references: [id], onDelete: Cascade)
+  competencyId    String
+  competency      CompetencyCatalog @relation(fields: [competencyId], references: [id])
+  currentLevelId  String
+  currentLevel    ProficiencyLevel @relation(fields: [currentLevelId], references: [id])
+  targetLevelId   String
+  targetLevel     ProficiencyLevel @relation("TargetLevel", fields: [targetLevelId], references: [id])
+  gapScore        Float    // Calculated gap
+  priority        String   @default("Medium") // Critical, High, Medium, Low
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([gapAnalysisId, competencyId])
+}
+
+model DevelopmentPlan {
+  id             String   @id @default(uuid())
+  code           String   @unique
+  name           String
+  description    String?  @db.Text
+  type           String   // Individual, Team, Department, Organization
+  targetType     String?  // Employee, Department, Team
+  targetId       String?
+  gapAnalysisId  String?  @unique
+  gapAnalysis    GapAnalysis? @relation(fields: [gapAnalysisId], references: [id])
+  status         String   @default("Draft") // Draft, Active, In Progress, Completed, Cancelled
+  startDate      DateTime?
+  endDate        DateTime?
+  budget         Float?
+  createdBy      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  activities DevelopmentActivity[]
+  milestones DevelopmentMilestone[]
+}
+
+model DevelopmentActivity {
+  id                String   @id @default(uuid())
+  developmentPlanId String
+  developmentPlan   DevelopmentPlan @relation(fields: [developmentPlanId], references: [id], onDelete: Cascade)
+  name              String
+  type              String   // Training, Course, Mentoring, Workshop, Certification, On-the-job
+  provider          String?
+  description       String?  @db.Text
+  duration          String?
+  estimatedCost     Float?
+  actualCost        Float?
+  startDate         DateTime?
+  endDate           DateTime?
+  completedAt       DateTime?
+  status            String   @default("Planned") // Planned, In Progress, Completed, Cancelled
+  competencyIds     Json?    // Array of competency IDs this activity addresses
+  sortOrder         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model DevelopmentMilestone {
+  id                String   @id @default(uuid())
+  developmentPlanId String
+  developmentPlan   DevelopmentPlan @relation(fields: [developmentPlanId], references: [id], onDelete: Cascade)
+  name              String
+  description       String?
+  targetDate        DateTime
+  completedAt       DateTime?
+  status            String   @default("Pending") // Pending, Achieved, Missed
+  sortOrder         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}

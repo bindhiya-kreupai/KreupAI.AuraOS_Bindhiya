@@ -14,9 +14,18 @@ interface SheetProps {
     children: React.ReactNode;
     footer?: React.ReactNode;
     className?: string;
+    size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
 }
 
-export function Sheet({ isOpen, onClose, title, children, footer, className }: SheetProps) {
+const sizeClasses = {
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
+    full: 'max-w-full'
+};
+
+export function Sheet({ isOpen, onClose, title, children, footer, className, size = 'md' }: SheetProps) {
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
@@ -33,7 +42,7 @@ export function Sheet({ isOpen, onClose, title, children, footer, className }: S
     if (!isVisible && !isOpen) return null;
 
     return (
-        <div className={cn("absolute inset-0 z-50 flex justify-end pointer-events-none", className)}>
+        <div className={cn("fixed inset-0 z-[100] flex justify-end pointer-events-none", className)}>
             {/* Backdrop */}
             <div
                 className={cn(
@@ -46,7 +55,8 @@ export function Sheet({ isOpen, onClose, title, children, footer, className }: S
             {/* Panel */}
             <div
                 className={cn(
-                    "relative w-full max-w-md h-full bg-white dark:bg-deep-cosmos shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col pointer-events-auto",
+                    "relative w-full h-full bg-white dark:bg-deep-cosmos shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col pointer-events-auto",
+                    sizeClasses[size],
                     isOpen ? "translate-x-0" : "translate-x-full"
                 )}
             >

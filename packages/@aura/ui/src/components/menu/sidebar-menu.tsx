@@ -8,29 +8,49 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronDown, ChevronRight, Search, X, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { ChevronDown, ChevronRight, Search, X, PanelLeftClose, PanelLeft, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getMenuIcon } from './menu-icons';
 import { superAdminMenu } from '@aura/config';
 import type { MenuIconName } from '@aura/types';
 
+interface FavoriteItem {
+  path: string;
+  title: string;
+  module: string;
+  icon?: string;
+}
+
 interface SidebarMenuProps {
   collapsed?: boolean;
   onToggleCollapse?: () => void;
   className?: string;
+  favorites?: FavoriteItem[];
+  onToggleFavorite?: (item: FavoriteItem) => void;
+  onNavigate?: (item: { path: string; title: string; module: string }) => void;
 }
 
 export const SidebarMenu: React.FC<SidebarMenuProps> = ({
   collapsed = false,
   onToggleCollapse,
   className,
+  favorites = [],
+  onToggleFavorite,
+  onNavigate,
 }) => {
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedModules, setExpandedModules] = useState<string[]>([]);
+  const [expandedModule, setExpandedModule] = useState<string | null>(null);
+  const [expandedSubModule, setExpandedSubModule] = useState<string | null>(null);
+
+  // Check if a path is favorited
+  const isFavorite = useCallback(
+    (path: string) => favorites.some((f) => f.path === path),
+    [favorites]
+  );
 
   // Convert menu data to path format
   const getModulePath = (module: typeof superAdminMenu.items[0]) => {
@@ -52,13 +72,20 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     );
   }, [searchQuery]);
 
-  // Toggle module expansion
+  // Toggle parent module expansion (accordion - only one open at a time)
   const toggleModule = (code: string) => {
-    setExpandedModules((prev) =>
-      prev.includes(code)
-        ? prev.filter((c) => c !== code)
-        : [...prev, code]
-    );
+    if (expandedModule === code) {
+      setExpandedModule(null);
+      setExpandedSubModule(null); // Also close sub-modules
+    } else {
+      setExpandedModule(code);
+      setExpandedSubModule(null); // Reset sub-module when switching parent
+    }
+  };
+
+  // Toggle sub-module expansion (accordion - only one open at a time)
+  const toggleSubModule = (code: string) => {
+    setExpandedSubModule(prev => prev === code ? null : code);
   };
 
 
@@ -147,7 +174,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
           };
 
           const isActive = isModuleActive(module);
-          const isExpanded = expandedModules.includes(module.code);
+          const isExpanded = expandedModule === module.code;
 
           return (
             <div key={module.code}>
@@ -197,7 +224,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                     module.items?.map((subModule) => {
                       const SubIcon = getMenuIcon(subModule.icon as MenuIconName);
                       const isSubActive = isModuleActive(subModule);
-                      const isSubExpanded = expandedModules.includes(subModule.code);
+                      const isSubExpanded = expandedSubModule === subModule.code;
 
                       return (
                         <div key={subModule.code} className="mb-2">
@@ -208,7 +235,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                                 ? "text-celestial-indigo dark:text-quantum-rose font-medium"
                                 : "text-twilight dark:text-silver-mist hover:text-ink-black dark:hover:text-pearl"
                             )}
-                            onClick={() => toggleModule(subModule.code)}
+                            onClick={() => toggleSubModule(subModule.code)}
                           >
                             <SubIcon className="w-4 h-4 opacity-70" />
                             <span className="flex-1 truncate">{subModule.label}</span>
@@ -221,20 +248,43 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                               {subModule.features.map(feature => {
                                 const featurePath = getFeaturePath(subModule, feature);
                                 const isFeatureActive = pathname === featurePath;
+                                const featureIsFavorite = isFavorite(featurePath);
                                 return (
-                                  <Link
+                                  <div
                                     key={feature}
-                                    href={featurePath}
                                     className={cn(
-                                      'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-colors',
+                                      'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-colors group',
                                       isFeatureActive
                                         ? 'bg-celestial-indigo/10 text-celestial-indigo dark:text-quantum-rose font-medium'
                                         : 'text-silver-mist hover:text-ink-black dark:hover:text-pearl'
                                     )}
                                   >
-                                    <span className="w-1.5 h-1.5 rounded-full bg-current opacity-40" />
-                                    <span className="truncate">{feature}</span>
-                                  </Link>
+                                    <Link
+                                      href={featurePath}
+                                      onClick={() => onNavigate?.({ path: featurePath, title: feature, module: subModule.label })}
+                                      className="flex items-center gap-2 flex-1 min-w-0"
+                                    >
+                                      <span className="w-1.5 h-1.5 rounded-full bg-current opacity-40" />
+                                      <span className="truncate">{feature}</span>
+                                    </Link>
+                                    {onToggleFavorite && (
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onToggleFavorite({ path: featurePath, title: feature, module: subModule.label });
+                                        }}
+                                        className={cn(
+                                          'p-0.5 rounded transition-all',
+                                          featureIsFavorite
+                                            ? 'text-sunset-amber opacity-100'
+                                            : 'opacity-0 group-hover:opacity-100 text-silver-mist hover:text-sunset-amber'
+                                        )}
+                                        title={featureIsFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                                      >
+                                        <Star className={cn('w-3 h-3', featureIsFavorite && 'fill-current')} />
+                                      </button>
+                                    )}
+                                  </div>
                                 );
                               })}
                             </div>
@@ -247,21 +297,44 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                     module.features.map((feature) => {
                       const featurePath = getFeaturePath(module, feature);
                       const isFeatureActive = pathname === featurePath;
+                      const featureIsFavorite = isFavorite(featurePath);
 
                       return (
-                        <Link
+                        <div
                           key={feature}
-                          href={featurePath}
                           className={cn(
-                            'flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors',
+                            'flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors group',
                             isFeatureActive
                               ? 'bg-celestial-indigo/10 text-celestial-indigo dark:text-quantum-rose font-medium'
                               : 'text-twilight dark:text-silver-mist hover:bg-pearl dark:hover:bg-stellar-blue hover:text-ink-black dark:hover:text-pearl'
                           )}
                         >
-                          <ChevronRight className="w-3 h-3" />
-                          <span className="truncate">{feature}</span>
-                        </Link>
+                          <Link
+                            href={featurePath}
+                            onClick={() => onNavigate?.({ path: featurePath, title: feature, module: module.label })}
+                            className="flex items-center gap-2 flex-1 min-w-0"
+                          >
+                            <ChevronRight className="w-3 h-3" />
+                            <span className="truncate">{feature}</span>
+                          </Link>
+                          {onToggleFavorite && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onToggleFavorite({ path: featurePath, title: feature, module: module.label });
+                              }}
+                              className={cn(
+                                'p-0.5 rounded transition-all',
+                                featureIsFavorite
+                                  ? 'text-sunset-amber opacity-100'
+                                  : 'opacity-0 group-hover:opacity-100 text-silver-mist hover:text-sunset-amber'
+                              )}
+                              title={featureIsFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                            >
+                              <Star className={cn('w-3.5 h-3.5', featureIsFavorite && 'fill-current')} />
+                            </button>
+                          )}
+                        </div>
                       );
                     })
                   )}

@@ -8,4 +8,5 @@
 export { SidebarMenu } from './sidebar-menu';
 export { MobileMenu } from './mobile-menu';
 export { TopNav } from './top-nav';
+export { RightSidebar } from './right-sidebar';
 export { menuIconMap, getMenuIcon } from './menu-icons';
