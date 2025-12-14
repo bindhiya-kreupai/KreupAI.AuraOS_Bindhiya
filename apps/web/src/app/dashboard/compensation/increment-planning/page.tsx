@@ -123,7 +123,7 @@ export default function CompPlanningPage() {
                                             </div>
                                         </td>
                                         <td className="py-4 pr-4 text-right font-bold text-emerald-600">
-                                            ${(parseInt(row.cur.replace('$', '').replace(',', '')) * (1 + row.rec / 100)).toLocaleString()}
+                                            ${row.cur ? (parseInt(row.cur.replace('$', '').replace(',', '')) * (1 + row.rec / 100)).toLocaleString() : 'N/A'}
                                         </td>
                                     </tr>
                                 ))}

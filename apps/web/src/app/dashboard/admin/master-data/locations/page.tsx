@@ -76,7 +76,7 @@ export default function LocationsPage() {
             width: '120px',
             render: (row) => (
                 <span className="px-2 py-0.5 rounded-md bg-pearl dark:bg-stellar-blue border border-cloud dark:border-nebula-purple/50 text-xs font-medium">
-                    {row.type.replace('_', ' ')}
+                    {row.type ? row.type.replace('_', ' ') : 'N/A'}
                 </span>
             )
         },

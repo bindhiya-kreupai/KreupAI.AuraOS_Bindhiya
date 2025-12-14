@@ -77,7 +77,7 @@ export default function CompliancePage() {
                                 <tr key={i} className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                     <td className="py-4 pl-2 font-bold text-slate-700 dark:text-slate-300 flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500 text-xs">
-                                            {row.name.split(' ')[0][0]}
+                                            {row.name ? row.name.split(' ')[0][0] : '?'}
                                         </div>
                                         {row.name}
                                     </td>

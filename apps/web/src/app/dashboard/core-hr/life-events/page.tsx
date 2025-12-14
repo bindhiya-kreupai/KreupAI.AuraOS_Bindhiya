@@ -65,7 +65,7 @@ export default function LifeEventsPage() {
                                 <div key={i} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center font-bold text-slate-500 text-xs shadow-sm">
-                                            {row.name.split(' ').map(n => n[0]).join('')}
+                                            {row.name ? row.name.split(' ').map(n => n[0]).join('') : '?'}
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">{row.name}</h4>
