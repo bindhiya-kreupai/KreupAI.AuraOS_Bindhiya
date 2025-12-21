@@ -1,0 +1,79 @@
+import jwt from 'jsonwebtoken';
+
+// JWT configuration
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+
+export interface JWTPayload {
+  userId: string;
+  email: string;
+  tenantId: string;
+  sessionId?: string;
+  type: 'access' | 'refresh';
+}
+
+/**
+ * Generates a JWT access token
+ */
+export function generateAccessToken(payload: Omit<JWTPayload, 'type'>): string {
+  return jwt.sign(
+    { ...payload, type: 'access' },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES_IN }
+  );
+}
+
+/**
+ * Generates a JWT refresh token
+ */
+export function generateRefreshToken(payload: Omit<JWTPayload, 'type'>): string {
+  return jwt.sign(
+    { ...payload, type: 'refresh' },
+    JWT_SECRET,
+    { expiresIn: JWT_REFRESH_EXPIRES_IN }
+  );
+}
+
+/**
+ * Verifies and decodes a JWT token
+ */
+export function verifyToken(token: string): JWTPayload {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    return decoded;
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new Error('Token has expired');
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      throw new Error('Invalid token');
+    }
+    throw error;
+  }
+}
+
+/**
+ * Decodes a token without verification (use cautiously)
+ */
+export function decodeToken(token: string): JWTPayload | null {
+  try {
+    return jwt.decode(token) as JWTPayload;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Extracts token from Authorization header
+ */
+export function extractTokenFromHeader(authHeader: string | null): string | null {
+  if (!authHeader) return null;
+
+  const parts = authHeader.split(' ');
+  if (parts.length !== 2 || parts[0] !== 'Bearer') {
+    return null;
+  }
+
+  return parts[1];
+}

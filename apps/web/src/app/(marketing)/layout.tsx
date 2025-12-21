@@ -86,7 +86,7 @@ const MarketingFooter = () => (
                 </div>
             </div>
             <div className="border-t border-cloud dark:border-nebula-purple pt-8 text-center text-sm text-silver-mist">
-                © {new Date().getFullYear()} AURA HCM. All rights reserved.
+                © {new Date().getFullYear()} KreupAI Technologies. All rights reserved.
             </div>
         </div>
     </footer>

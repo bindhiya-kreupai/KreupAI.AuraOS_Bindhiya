@@ -1,58 +1,136 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
+import { withEnhancedAuth } from '@/lib/auth';
+import { Resource, Action, requirePermission, RolePermissions } from '@/lib/auth';
 
-// Mock Data
-let mockData = [
-    { id: '1', name: 'HR Admin', type: 'Role', value: 'Full Access', status: 'Active', createdAt: new Date() },
-    { id: '2', name: 'Employee View', type: 'Policy', value: 'Read Only', status: 'Active', createdAt: new Date() },
-];
+// GET - Fetch access control overview (roles and their permissions)
+export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
+  try {
+    // Check permission
+    const permissionError = requirePermission(Resource.ROLES, Action.READ, permissions);
+    if (permissionError) return permissionError;
 
-export async function GET() {
-    return NextResponse.json(mockData);
-}
+    // Fetch all active roles
+    const roles = await prisma.role.findMany({
+      where: { status: 'Active' },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        status: true,
+        usersCount: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { name: 'asc' },
+    });
 
-export async function POST(request: Request) {
-    try {
-        const body = await request.json();
-        const { name, type, value, status } = body;
+    // Map roles to their permissions from the RolePermissions system
+    const accessControlData = roles.map((role) => {
+      const roleKey = role.name.toUpperCase().replace(/\s+/g, '_');
+      const rolePermissions = RolePermissions[roleKey] || [];
 
-        const newItem = {
-            id: Math.random().toString(36).substr(2, 9),
-            name,
-            type,
-            value,
-            status,
-            createdAt: new Date(),
-        };
+      return {
+        id: role.id,
+        name: role.name,
+        type: 'Role',
+        description: role.description || '',
+        permissions: rolePermissions,
+        permissionCount: rolePermissions.length,
+        usersCount: role.usersCount,
+        status: role.status,
+        createdAt: role.createdAt,
+        updatedAt: role.updatedAt,
+      };
+    });
 
-        mockData.push(newItem);
-        return NextResponse.json(newItem);
-    } catch (error) {
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({
+      success: true,
+      data: accessControlData,
+      meta: {
+        total: accessControlData.length,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching access control data:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch access control data' },
+      { status: 500 }
+    );
+  }
+});
+
+// GET specific role's permissions
+export const POST = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
+  try {
+    // Check permission
+    const permissionError = requirePermission(Resource.ROLES, Action.READ, permissions);
+    if (permissionError) return permissionError;
+
+    const { roleId } = await request.json();
+
+    if (!roleId) {
+      return NextResponse.json(
+        { success: false, error: 'Role ID is required' },
+        { status: 400 }
+      );
     }
-}
 
-export async function PUT(request: Request) {
-    try {
-        const body = await request.json();
-        const { id, name, type, value, status } = body;
+    // Fetch the specific role
+    const role = await prisma.role.findUnique({
+      where: { id: roleId },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        status: true,
+        usersCount: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
-        const index = mockData.findIndex(item => item.id === id);
-        if (index !== -1) {
-            mockData[index] = { ...mockData[index], name, type, value, status };
-            return NextResponse.json(mockData[index]);
-        }
-        return NextResponse.json({ error: 'Not Found' }, { status: 404 });
-    } catch (error) {
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    if (!role) {
+      return NextResponse.json(
+        { success: false, error: 'Role not found' },
+        { status: 404 }
+      );
     }
-}
 
-export async function DELETE(request: Request) {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    // Get permissions for this role
+    const roleKey = role.name.toUpperCase().replace(/\s+/g, '_');
+    const rolePermissions = RolePermissions[roleKey] || [];
 
-    if (id) {
-        mockData = mockData.filter(item => item.id !== id);
-    }
-    return NextResponse.json({ success: true });
-}
+    // Group permissions by resource
+    const permissionsByResource: Record<string, string[]> = {};
+    rolePermissions.forEach((permission) => {
+      const [resource, action] = permission.split(':');
+      if (!permissionsByResource[resource]) {
+        permissionsByResource[resource] = [];
+      }
+      permissionsByResource[resource].push(action);
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        role: {
+          id: role.id,
+          name: role.name,
+          description: role.description,
+          status: role.status,
+          usersCount: role.usersCount,
+        },
+        permissions: rolePermissions,
+        permissionsByResource,
+        totalPermissions: rolePermissions.length,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching role permissions:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch role permissions' },
+      { status: 500 }
+    );
+  }
+});

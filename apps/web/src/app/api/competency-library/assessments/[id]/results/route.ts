@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@aura/database';
 
-const prisma = new PrismaClient();
+interface AssessmentResultInput {
+    competencyId: string;
+    ratingLevelId: string;
+    comments?: string;
+    evidence?: string;
+}
 
 // POST - Submit assessment results
 export async function POST(
@@ -11,7 +16,11 @@ export async function POST(
     try {
         const { id } = params;
         const body = await request.json();
-        const { results, assessorId, assessorType } = body;
+        const { results, assessorId, assessorType } = body as {
+            results: AssessmentResultInput[];
+            assessorId?: string;
+            assessorType?: string;
+        };
 
         // Validate assessment exists
         const assessment = await prisma.skillAssessment.findUnique({
@@ -25,46 +34,54 @@ export async function POST(
             );
         }
 
-        // Create results
-        const createdResults = [];
-        for (const result of results) {
-            const existingResult = await prisma.skillAssessmentResult.findFirst({
-                where: {
-                    assessmentId: id,
-                    competencyId: result.competencyId,
-                    assessorId: assessorId || null
-                }
-            });
-
-            if (existingResult) {
-                // Update existing result
-                const updated = await prisma.skillAssessmentResult.update({
-                    where: { id: existingResult.id },
-                    data: {
-                        ratingLevelId: result.ratingLevelId,
-                        comments: result.comments,
-                        evidence: result.evidence
-                    },
-                    include: { ratingLevel: true }
-                });
-                createdResults.push(updated);
-            } else {
-                // Create new result
-                const created = await prisma.skillAssessmentResult.create({
-                    data: {
-                        assessmentId: id,
-                        competencyId: result.competencyId,
-                        assessorId,
-                        assessorType,
-                        ratingLevelId: result.ratingLevelId,
-                        comments: result.comments,
-                        evidence: result.evidence
-                    },
-                    include: { ratingLevel: true }
-                });
-                createdResults.push(created);
+        // Batch fetch existing results in ONE query to avoid N+1
+        const competencyIds = results.map((r: AssessmentResultInput) => r.competencyId);
+        const existingResults = await prisma.skillAssessmentResult.findMany({
+            where: {
+                assessmentId: id,
+                competencyId: { in: competencyIds },
+                assessorId: assessorId || null
             }
-        }
+        });
+
+        // Create lookup map for O(1) access
+        const existingResultsMap = new Map(
+            existingResults.map((r) => [r.competencyId, r] as const)
+        );
+
+        // Batch all operations in a transaction
+        const createdResults = await prisma.$transaction(
+            results.map((result: AssessmentResultInput) => {
+                const existing = existingResultsMap.get(result.competencyId);
+
+                if (existing) {
+                    // Update existing result
+                    return prisma.skillAssessmentResult.update({
+                        where: { id: existing.id },
+                        data: {
+                            ratingLevelId: result.ratingLevelId,
+                            comments: result.comments,
+                            evidence: result.evidence
+                        },
+                        include: { ratingLevel: true }
+                    });
+                } else {
+                    // Create new result
+                    return prisma.skillAssessmentResult.create({
+                        data: {
+                            assessmentId: id,
+                            competencyId: result.competencyId,
+                            assessorId,
+                            assessorType,
+                            ratingLevelId: result.ratingLevelId,
+                            comments: result.comments,
+                            evidence: result.evidence
+                        },
+                        include: { ratingLevel: true }
+                    });
+                }
+            })
+        );
 
         // Check if all competencies have been rated
         const [totalCompetencies, totalResults] = await Promise.all([

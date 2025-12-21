@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@aura/ui/components/ui/button';
 import {
     ArrowRight,
@@ -254,6 +255,113 @@ export default function LandingPage() {
                                 <p className="text-twilight dark:text-silver-mist leading-relaxed">{feature.desc}</p>
                             </div>
                         ))}
+                    </div>
+                </div>
+
+            </section>
+
+            {/* Dashboard Showcase */}
+            <section className="py-24 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl font-display font-bold text-ink-black dark:text-pearl mb-4">
+                            Beautiful, Insightful Dashboards
+                        </h2>
+                        <p className="text-twilight dark:text-silver-mist max-w-2xl mx-auto">
+                            Purpose-built interfaces for every stakeholder, from detailed analytics to talent pipelines.
+                        </p>
+                    </div>
+
+                    <div className="space-y-20">
+                        {/* Analytics */}
+                        <div className="grid lg:grid-cols-2 gap-12 items-center">
+                            <div className="order-2 lg:order-1 relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800">
+                                <Image
+                                    src="/images/dashboards/real-analytics.png"
+                                    alt="HR Analytics Dashboard"
+                                    width={800}
+                                    height={500}
+                                    className="w-full h-auto"
+                                />
+                            </div>
+                            <div className="order-1 lg:order-2">
+                                <div className="w-12 h-12 rounded-lg bg-celestial-indigo/10 flex items-center justify-center mb-6">
+                                    <BarChart3 className="w-6 h-6 text-celestial-indigo" />
+                                </div>
+                                <h3 className="text-2xl font-bold text-ink-black dark:text-pearl mb-4">Deep Analytics</h3>
+                                <p className="text-twilight dark:text-silver-mist text-lg leading-relaxed mb-6">
+                                    Visualize your workforce data like never before. Track attrition, engagement, and performance trends in real-time with AI-powered insights.
+                                </p>
+                                <ul className="space-y-3">
+                                    {['Predictive turnover models', 'Real-time engagement scoring', 'Compensation analysis'].map((item, i) => (
+                                        <li key={i} className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
+                                            <CheckCircle className="w-4 h-4 text-celestial-indigo" />
+                                            {item}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+
+                        {/* Employee Management */}
+                        <div className="grid lg:grid-cols-2 gap-12 items-center">
+                            <div className="order-2 lg:order-2 relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800">
+                                <Image
+                                    src="/images/dashboards/real-employee.png"
+                                    alt="Employee Profile Dashboard"
+                                    width={800}
+                                    height={500}
+                                    className="w-full h-auto"
+                                />
+                            </div>
+                            <div className="order-1 lg:order-1">
+                                <div className="w-12 h-12 rounded-lg bg-quantum-rose/10 flex items-center justify-center mb-6">
+                                    <Users className="w-6 h-6 text-quantum-rose" />
+                                </div>
+                                <h3 className="text-2xl font-bold text-ink-black dark:text-pearl mb-4">Employee 360</h3>
+                                <p className="text-twilight dark:text-silver-mist text-lg leading-relaxed mb-6">
+                                    A complete view of every employee. Manage skills, career progression, and performance reviews in one unified profile.
+                                </p>
+                                <ul className="space-y-3">
+                                    {['Skills gap analysis', 'Performance timeline', 'Career path visualization'].map((item, i) => (
+                                        <li key={i} className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
+                                            <CheckCircle className="w-4 h-4 text-quantum-rose" />
+                                            {item}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+
+                        {/* Recruitment */}
+                        <div className="grid lg:grid-cols-2 gap-12 items-center">
+                            <div className="order-2 lg:order-1 relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800">
+                                <Image
+                                    src="/images/dashboards/real-recruitment.png"
+                                    alt="Recruitment Dashboard"
+                                    width={800}
+                                    height={500}
+                                    className="w-full h-auto"
+                                />
+                            </div>
+                            <div className="order-1 lg:order-2">
+                                <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center mb-6">
+                                    <Briefcase className="w-6 h-6 text-purple-500" />
+                                </div>
+                                <h3 className="text-2xl font-bold text-ink-black dark:text-pearl mb-4">Smart Recruitment</h3>
+                                <p className="text-twilight dark:text-silver-mist text-lg leading-relaxed mb-6">
+                                    Accelerate hiring with an AI-driven applicant tracking system. Visualize pipelines and automate candidate screening.
+                                </p>
+                                <ul className="space-y-3">
+                                    {['Visual Kanban pipelines', 'Automated screening', 'Time-to-hire metrics'].map((item, i) => (
+                                        <li key={i} className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
+                                            <CheckCircle className="w-4 h-4 text-purple-500" />
+                                            {item}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

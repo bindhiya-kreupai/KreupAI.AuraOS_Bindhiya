@@ -55,7 +55,8 @@ export function DataPage<T extends { id: string | number }>({
     };
 
     // Filter data
-    const filteredData = data.filter(row =>
+    // Filter data
+    const filteredData = (Array.isArray(data) ? data : []).filter(row =>
         Object.values(row).some(val =>
             String(val).toLowerCase().includes(searchQuery.toLowerCase())
         )

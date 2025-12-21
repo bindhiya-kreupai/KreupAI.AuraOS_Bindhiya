@@ -1,0 +1,264 @@
+# Continuous Deployment Pipeline
+# Deploys to staging/production on merge to main/release branches
+
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+      - release/*
+    tags:
+      - 'v*.*.*'
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # =============================================================================
+  # BUILD AND PUSH DOCKER IMAGE
+  # =============================================================================
+  build-and-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha,prefix={{branch}}-
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NODE_ENV=production
+            NEXT_TELEMETRY_DISABLED=1
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+  # =============================================================================
+  # DEPLOY TO STAGING
+  # =============================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: staging
+      url: https://staging.auraos.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        if: ${{ vars.DEPLOY_TARGET == 'aws' }}
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to staging (Docker Compose)
+        if: ${{ vars.DEPLOY_TARGET == 'docker-compose' }}
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            cd /opt/auraos
+            docker compose pull web
+            docker compose up -d --no-deps web
+            docker compose exec web pnpm --filter @aura/database prisma migrate deploy
+            echo "Deployment to staging complete"
+
+      - name: Deploy to staging (Kubernetes)
+        if: ${{ vars.DEPLOY_TARGET == 'kubernetes' }}
+        run: |
+          echo "${{ secrets.KUBECONFIG_STAGING }}" > kubeconfig
+          export KUBECONFIG=kubeconfig
+          kubectl set image deployment/auraos-web web=${{ needs.build-and-push.outputs.image-tag }}
+          kubectl rollout status deployment/auraos-web -n staging
+          rm kubeconfig
+
+      - name: Run database migrations
+        if: ${{ vars.RUN_MIGRATIONS == 'true' }}
+        run: |
+          # SSH into server and run migrations
+          echo "Migrations would run here"
+
+      - name: Health check
+        run: |
+          sleep 30
+          curl -f https://staging.auraos.com/api/health || exit 1
+
+      - name: Notify deployment
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          text: 'Staging deployment ${{ job.status }}'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  # =============================================================================
+  # DEPLOY TO PRODUCTION
+  # =============================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: startsWith(github.ref, 'refs/tags/v')
+    environment:
+      name: production
+      url: https://auraos.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        if: ${{ vars.DEPLOY_TARGET == 'aws' }}
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to production (Docker Compose)
+        if: ${{ vars.DEPLOY_TARGET == 'docker-compose' }}
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          script: |
+            cd /opt/auraos
+            docker compose pull web
+            docker compose up -d --no-deps web
+            docker compose exec web pnpm --filter @aura/database prisma migrate deploy
+            echo "Deployment to production complete"
+
+      - name: Deploy to production (Kubernetes)
+        if: ${{ vars.DEPLOY_TARGET == 'kubernetes' }}
+        run: |
+          echo "${{ secrets.KUBECONFIG_PRODUCTION }}" > kubeconfig
+          export KUBECONFIG=kubeconfig
+          kubectl set image deployment/auraos-web web=${{ needs.build-and-push.outputs.image-tag }}
+          kubectl rollout status deployment/auraos-web -n production
+          rm kubeconfig
+
+      - name: Run database migrations
+        if: ${{ vars.RUN_MIGRATIONS == 'true' }}
+        run: |
+          # SSH into server and run migrations
+          echo "Migrations would run here"
+
+      - name: Health check
+        run: |
+          sleep 30
+          curl -f https://auraos.com/api/health || exit 1
+
+      - name: Create GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Notify deployment
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          text: 'Production deployment ${{ job.status }}'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  # =============================================================================
+  # POST-DEPLOYMENT TESTS
+  # =============================================================================
+  smoke-tests:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run smoke tests
+        run: pnpm --filter web test:smoke
+        env:
+          API_URL: https://staging.auraos.com
+
+      - name: Notify test results
+        uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+          status: ${{ job.status }}
+          text: 'Smoke tests failed on staging'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
