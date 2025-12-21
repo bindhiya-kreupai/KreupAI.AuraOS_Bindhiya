@@ -6,6 +6,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { logger } from '@/lib/logger';
 
 /**
  * N+1 Query Prevention Patterns
@@ -363,7 +364,7 @@ export class QueryPerformanceTracker {
       });
 
       if (logQueries) {
-        console.log(`Query ${this.queryCount}: ${params.model}.${params.action} (${duration}ms)`);
+        logger.info(`Query ${this.queryCount}: ${params.model}.${params.action} (${duration}ms)`);
       }
 
       return result;
@@ -379,7 +380,7 @@ export class QueryPerformanceTracker {
 
     // Warn if threshold exceeded
     if (this.queryCount > warnThreshold) {
-      console.warn(
+      logger.warn(
         `⚠️ High query count detected: ${this.queryCount} queries in ${totalDuration}ms`
       );
     }

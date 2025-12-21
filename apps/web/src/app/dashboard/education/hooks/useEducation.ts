@@ -10,6 +10,7 @@ import {
   EducationSettingsService
 } from '../services';
 import {
+import { logger } from '@/lib/logger';
   sampleFacultyMembers, sampleTenureApplications, sampleResearchGrants,
   sampleAdjunctFaculty, sampleAdjunctContracts, sampleAdjunctPools,
   sampleEducationSettings
@@ -51,7 +52,7 @@ export const useEducation = () => {
         loadAdjuncts(), loadContracts(), loadSettings()
       ]);
     } catch (error) {
-      console.error('Error loading data:', error);
+      logger.error('Error loading data:', error);
       addToast({ type: 'error', message: 'Failed to load education data' });
     } finally {
       setLoading(false);

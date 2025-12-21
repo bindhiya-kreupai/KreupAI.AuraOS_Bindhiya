@@ -5,6 +5,7 @@ import { Resource, Action, requirePermission } from '@/lib/auth';
 import { UpdateLicenseSchema, validationErrorResponse } from '@/lib/validators';
 import { licenseService } from '@/lib/services';
 import { validateTenantAccess } from '@/lib/middleware/tenant-isolation';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch single license by ID
 export const GET = withEnhancedAuth(
@@ -34,7 +35,7 @@ export const GET = withEnhancedAuth(
         data: result.data,
       });
     } catch (error) {
-      console.error('Error fetching license:', error);
+      logger.error('Error fetching license:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch license' },
         { status: 500 }
@@ -98,7 +99,7 @@ export const PUT = withEnhancedAuth(
         return validationErrorResponse(error);
       }
 
-      console.error('Error updating license:', error);
+      logger.error('Error updating license:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update license' },
         { status: 500 }
@@ -148,7 +149,7 @@ export const DELETE = withEnhancedAuth(
         message: 'License deactivated successfully',
       });
     } catch (error) {
-      console.error('Error deleting license:', error);
+      logger.error('Error deleting license:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to delete license' },
         { status: 500 }

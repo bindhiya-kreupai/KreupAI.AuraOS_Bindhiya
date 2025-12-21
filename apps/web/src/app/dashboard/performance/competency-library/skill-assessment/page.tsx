@@ -59,6 +59,7 @@ import {
 } from 'lucide-react';
 import { Sheet } from '@aura/ui/components/ui';
 import { AssessmentService } from '@/services/competency-library.service';
+import { logger } from '@/lib/logger';
 
 // --- TYPES ---
 
@@ -503,7 +504,7 @@ export default function SkillAssessmentPage() {
                 }
             }
         } catch (error) {
-            console.error('Failed to fetch assessments:', error);
+            logger.error('Failed to fetch assessments:', error);
         } finally {
             setIsLoading(false);
         }
@@ -638,7 +639,7 @@ export default function SkillAssessmentPage() {
             }
             setIsSheetOpen(false);
         } catch (error) {
-            console.error('Failed to save assessment:', error);
+            logger.error('Failed to save assessment:', error);
         } finally {
             setIsSaving(false);
         }
@@ -652,7 +653,7 @@ export default function SkillAssessmentPage() {
                     setAssessments(prev => prev.filter(a => a.id !== assessmentId));
                 }
             } catch (error) {
-                console.error('Failed to delete assessment:', error);
+                logger.error('Failed to delete assessment:', error);
             }
         }
     };

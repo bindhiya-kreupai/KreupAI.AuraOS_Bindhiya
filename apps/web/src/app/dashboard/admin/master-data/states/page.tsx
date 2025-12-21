@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface State {
     id: string;
@@ -33,7 +34,7 @@ export default function StatesPage() {
                 setData(await response.json());
             }
         } catch (error) {
-            console.error('Failed to fetch states:', error);
+            logger.error('Failed to fetch states:', error);
         } finally {
             setIsLoading(false);
         }
@@ -45,7 +46,7 @@ export default function StatesPage() {
             const countriesRes = await fetch('/api/master-data/countries');
             if (countriesRes.ok) setCountries(await countriesRes.json());
         } catch (error) {
-            console.error('Failed to fetch countries:', error);
+            logger.error('Failed to fetch countries:', error);
         }
     };
 
@@ -90,7 +91,7 @@ export default function StatesPage() {
                 alert('Failed to save state');
             }
         } catch (error) {
-            console.error('Error saving state:', error);
+            logger.error('Error saving state:', error);
             alert('Error saving state');
         }
     };
@@ -108,7 +109,7 @@ export default function StatesPage() {
                     alert('Failed to delete state');
                 }
             } catch (error) {
-                console.error('Error deleting state:', error);
+                logger.error('Error deleting state:', error);
                 alert('Error deleting state');
             }
         }

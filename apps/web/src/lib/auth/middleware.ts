@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { verifyToken, extractTokenFromHeader, JWTPayload } from './jwt';
+import { logger } from '@/lib/logger';
 
 export interface AuthenticatedRequest extends NextRequest {
   user?: JWTPayload;
@@ -117,7 +118,7 @@ export async function authenticate(
 
     return { user: decoded, error: null };
   } catch (error) {
-    console.error('Authentication error:', error);
+    logger.error('Authentication error:', error);
     return {
       user: null,
       error: NextResponse.json(

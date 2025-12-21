@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { CreateSSOConfigSchema, validationErrorResponse } from '@/lib/validators';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch current SSO configuration (typically only one per system)
 export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
@@ -36,7 +37,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       data: config,
     });
   } catch (error) {
-    console.error('Error fetching SSO configuration:', error);
+    logger.error('Error fetching SSO configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch SSO configuration' },
       { status: 500 }
@@ -102,7 +103,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       return validationErrorResponse(error);
     }
 
-    console.error('Error creating SSO configuration:', error);
+    logger.error('Error creating SSO configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create SSO configuration' },
       { status: 500 }
@@ -166,7 +167,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
       return validationErrorResponse(error);
     }
 
-    console.error('Error updating SSO configuration:', error);
+    logger.error('Error updating SSO configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update SSO configuration' },
       { status: 500 }
@@ -220,7 +221,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, perm
       message: 'SSO configuration deleted successfully. SSO is now disabled.',
     });
   } catch (error) {
-    console.error('Error deleting SSO configuration:', error);
+    logger.error('Error deleting SSO configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to delete SSO configuration' },
       { status: 500 }

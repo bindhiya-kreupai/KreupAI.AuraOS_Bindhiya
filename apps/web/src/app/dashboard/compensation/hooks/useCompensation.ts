@@ -42,6 +42,7 @@ import {
   CompensationSettingsService
 } from '../services';
 import {
+import { logger } from '@/lib/logger';
   sampleComponents,
   sampleGrades,
   sampleBands,
@@ -248,7 +249,7 @@ export function useCompensation(): UseCompensationReturn {
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load compensation data');
-      console.error('Error initializing compensation data:', err);
+      logger.error('Error initializing compensation data:', err);
     } finally {
       setLoading(false);
     }

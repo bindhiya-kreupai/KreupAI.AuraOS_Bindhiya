@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface LeaveType {
     id: string;
@@ -55,7 +56,7 @@ export default function LeaveTypesPage() {
                 setData(result);
             }
         } catch (error) {
-            console.error('Failed to fetch leave types:', error);
+            logger.error('Failed to fetch leave types:', error);
         } finally {
             setIsLoading(false);
         }
@@ -90,7 +91,7 @@ export default function LeaveTypesPage() {
                 alert('Failed to save leave type');
             }
         } catch (error) {
-            console.error('Error saving leave type:', error);
+            logger.error('Error saving leave type:', error);
             alert('Error saving leave type');
         }
     };
@@ -108,7 +109,7 @@ export default function LeaveTypesPage() {
                     alert('Failed to delete leave type');
                 }
             } catch (error) {
-                console.error('Error deleting leave type:', error);
+                logger.error('Error deleting leave type:', error);
                 alert('Error deleting leave type');
             }
         }

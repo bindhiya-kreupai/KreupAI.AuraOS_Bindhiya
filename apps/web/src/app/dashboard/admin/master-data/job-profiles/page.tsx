@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface JobProfile {
     id: string;
@@ -48,7 +49,7 @@ export default function JobProfilesPage() {
             if (familiesRes.ok) setJobFamilies(await familiesRes.json());
             if (gradesRes.ok) setGrades(await gradesRes.json());
         } catch (error) {
-            console.error('Failed to fetch data:', error);
+            logger.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
         }
@@ -105,7 +106,7 @@ export default function JobProfilesPage() {
                 alert('Failed to save job profile');
             }
         } catch (error) {
-            console.error('Error saving job profile:', error);
+            logger.error('Error saving job profile:', error);
             alert('Error saving job profile');
         }
     };
@@ -123,7 +124,7 @@ export default function JobProfilesPage() {
                     alert('Failed to delete job profile');
                 }
             } catch (error) {
-                console.error('Error deleting job profile:', error);
+                logger.error('Error deleting job profile:', error);
                 alert('Error deleting job profile');
             }
         }

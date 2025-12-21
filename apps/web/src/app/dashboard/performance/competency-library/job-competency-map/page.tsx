@@ -45,6 +45,7 @@ import {
 } from 'lucide-react';
 import { Sheet } from '@aura/ui/components/ui';
 import { JobRoleService } from '@/services/competency-library.service';
+import { logger } from '@/lib/logger';
 
 // --- TYPES ---
 
@@ -414,7 +415,7 @@ export default function JobCompetencyMapPage() {
                 }
             }
         } catch (error) {
-            console.error('Failed to fetch job roles:', error);
+            logger.error('Failed to fetch job roles:', error);
         } finally {
             setIsLoading(false);
         }
@@ -515,7 +516,7 @@ export default function JobCompetencyMapPage() {
             }
             setIsSheetOpen(false);
         } catch (error) {
-            console.error('Failed to save mapping:', error);
+            logger.error('Failed to save mapping:', error);
         } finally {
             setIsSaving(false);
         }
@@ -529,7 +530,7 @@ export default function JobCompetencyMapPage() {
                     setJobRoles(prev => prev.filter(r => r.id !== roleId));
                 }
             } catch (error) {
-                console.error('Failed to delete role:', error);
+                logger.error('Failed to delete role:', error);
             }
         }
     };

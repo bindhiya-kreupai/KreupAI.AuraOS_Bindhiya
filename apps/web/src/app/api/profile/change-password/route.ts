@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { withAuth } from '@/lib/auth';
 import { ChangePasswordSchema, validationErrorResponse } from '@/lib/validators';
 import { hashPassword, comparePassword, validatePasswordStrength } from '@/lib/auth/password';
+import { logger } from '@/lib/logger';
 
 // POST - Change user password
 export const POST = withAuth(async (request: NextRequest, { user }) => {
@@ -107,7 +108,7 @@ export const POST = withAuth(async (request: NextRequest, { user }) => {
       return validationErrorResponse(error);
     }
 
-    console.error('Error changing password:', error);
+    logger.error('Error changing password:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to change password' },
       { status: 500 }

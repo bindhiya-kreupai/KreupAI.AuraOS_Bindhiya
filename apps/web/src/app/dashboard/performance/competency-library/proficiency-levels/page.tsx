@@ -38,6 +38,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { FrameworkService } from '@/services/competency-library.service';
+import { logger } from '@/lib/logger';
 
 // --- TYPES ---
 
@@ -711,7 +712,7 @@ export default function ProficiencyLevelsPage() {
                 }
             }
         } catch (error) {
-            console.error('Failed to fetch frameworks:', error);
+            logger.error('Failed to fetch frameworks:', error);
         } finally {
             setIsLoading(false);
         }
@@ -869,7 +870,7 @@ export default function ProficiencyLevelsPage() {
             setIsSheetOpen(false);
             setEditingFramework(null);
         } catch (error) {
-            console.error('Failed to save framework:', error);
+            logger.error('Failed to save framework:', error);
         } finally {
             setIsSaving(false);
         }
@@ -888,7 +889,7 @@ export default function ProficiencyLevelsPage() {
                     setFrameworks(prev => prev.filter(f => f.id !== id));
                 }
             } catch (error) {
-                console.error('Failed to delete framework:', error);
+                logger.error('Failed to delete framework:', error);
             }
         }
     };

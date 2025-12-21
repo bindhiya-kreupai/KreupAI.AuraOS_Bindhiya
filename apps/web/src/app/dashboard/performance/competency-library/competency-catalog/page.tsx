@@ -43,6 +43,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { CompetencyService, CategoryService } from '@/services/competency-library.service';
+import { logger } from '@/lib/logger';
 
 // --- TYPES ---
 
@@ -838,7 +839,7 @@ export default function CompetencyCatalogPage() {
                 setCompetencies(result.data as any);
             }
         } catch (error) {
-            console.error('Failed to fetch competencies:', error);
+            logger.error('Failed to fetch competencies:', error);
         } finally {
             setIsLoading(false);
         }
@@ -912,7 +913,7 @@ export default function CompetencyCatalogPage() {
             setIsSheetOpen(false);
             setEditingCompetency(null);
         } catch (error) {
-            console.error('Failed to save competency:', error);
+            logger.error('Failed to save competency:', error);
         } finally {
             setIsSaving(false);
         }
@@ -926,7 +927,7 @@ export default function CompetencyCatalogPage() {
                     setCompetencies(prev => prev.filter(c => c.id !== id));
                 }
             } catch (error) {
-                console.error('Failed to delete competency:', error);
+                logger.error('Failed to delete competency:', error);
             }
         }
     };

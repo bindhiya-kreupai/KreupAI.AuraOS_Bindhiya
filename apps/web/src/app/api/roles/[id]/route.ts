@@ -1,29 +1,68 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
-import { withEnhancedAuth } from '@/lib/auth';
-import { Resource, Action, requirePermission } from '@/lib/auth';
-import { UpdateRoleSchema, validationErrorResponse } from '@/lib/validators';
+import { withEnhancedAuth } from '@/lib/auth/enhanced-middleware';
+import { logger } from '@/lib/logger';
+
+/**
+ * Individual Role Management API - Database-Backed RBAC Implementation
+ * Handles GET/PUT/DELETE operations for specific roles
+ */
+
+// Validation Schema for updates
+const UpdateRoleSchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  description: z.string().optional(),
+  isActive: z.boolean().optional(),
+  permissionIds: z.array(z.string()).optional(),
+});
 
 // GET - Fetch single role by ID
 export const GET = withEnhancedAuth(
   async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
     try {
       // Check permission
-      const permissionError = requirePermission(Resource.ROLES, Action.READ, permissions);
-      if (permissionError) return permissionError;
+      if (!permissions.includes('roles:read') && !permissions.includes('roles:manage')) {
+        return NextResponse.json(
+          { success: false, error: 'Insufficient permissions' },
+          { status: 403 }
+        );
+      }
 
       const roleId = params.id;
 
-      // Fetch role
-      const role = await prisma.role.findUnique({
-        where: { id: roleId },
+      // Fetch role with full details including permissions
+      const role = await prisma.role.findFirst({
+        where: {
+          id: roleId,
+          tenantId: user.tenantId, // Ensure tenant isolation
+        },
         select: {
           id: true,
+          code: true,
           name: true,
           description: true,
-          usersCount: true,
-          status: true,
+          isSystem: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+          permissions: {
+            select: {
+              permission: {
+                select: {
+                  id: true,
+                  resource: true,
+                  action: true,
+                  description: true,
+                },
+              },
+            },
+          },
+          _count: {
+            select: {
+              userRoles: true,
+            },
+          },
         },
       });
 
@@ -34,12 +73,18 @@ export const GET = withEnhancedAuth(
         );
       }
 
+      logger.info({
+        userId: user.userId,
+        roleId: role.id,
+        roleCode: role.code,
+      }, 'Role fetched successfully');
+
       return NextResponse.json({
         success: true,
         data: role,
       });
     } catch (error) {
-      console.error('Error fetching role:', error);
+      logger.error({ error, userId: user.userId, roleId: params.id }, 'Error fetching role');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch role' },
         { status: 500 }
@@ -53,8 +98,12 @@ export const PUT = withEnhancedAuth(
   async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
     try {
       // Check permission
-      const permissionError = requirePermission(Resource.ROLES, Action.UPDATE, permissions);
-      if (permissionError) return permissionError;
+      if (!permissions.includes('roles:update') && !permissions.includes('roles:manage')) {
+        return NextResponse.json(
+          { success: false, error: 'Insufficient permissions' },
+          { status: 403 }
+        );
+      }
 
       const roleId = params.id;
 
@@ -62,9 +111,12 @@ export const PUT = withEnhancedAuth(
       const body = await request.json();
       const validatedData = UpdateRoleSchema.parse(body);
 
-      // Check if role exists
-      const existingRole = await prisma.role.findUnique({
-        where: { id: roleId },
+      // Check if role exists and belongs to tenant
+      const existingRole = await prisma.role.findFirst({
+        where: {
+          id: roleId,
+          tenantId: user.tenantId,
+        },
       });
 
       if (!existingRole) {
@@ -74,47 +126,73 @@ export const PUT = withEnhancedAuth(
         );
       }
 
-      // Check for name uniqueness if name is being updated
-      if (validatedData.name && validatedData.name !== existingRole.name) {
-        const nameExists = await prisma.role.findUnique({
-          where: { name: validatedData.name },
-        });
-
-        if (nameExists) {
-          return NextResponse.json(
-            { success: false, error: 'Role name already in use' },
-            { status: 400 }
-          );
-        }
+      // Prevent modification of system roles
+      if (existingRole.isSystem && validatedData.isActive === false) {
+        return NextResponse.json(
+          { success: false, error: 'Cannot deactivate system roles' },
+          { status: 400 }
+        );
       }
 
-      // Update role
-      const updatedRole = await prisma.role.update({
-        where: { id: roleId },
-        data: validatedData,
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          status: true,
-        },
+      // Update role and permissions in a transaction
+      const updatedRole = await prisma.$transaction(async (tx) => {
+        // Update role basic info
+        const role = await tx.role.update({
+          where: { id: roleId },
+          data: {
+            name: validatedData.name,
+            description: validatedData.description,
+            isActive: validatedData.isActive,
+          },
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            description: true,
+            isSystem: true,
+            isActive: true,
+          },
+        });
+
+        // Update permissions if provided
+        if (validatedData.permissionIds !== undefined) {
+          // Remove all existing permissions
+          await tx.rolePermission.deleteMany({
+            where: { roleId },
+          });
+
+          // Add new permissions
+          if (validatedData.permissionIds.length > 0) {
+            await tx.rolePermission.createMany({
+              data: validatedData.permissionIds.map((permId) => ({
+                roleId,
+                permissionId: permId,
+              })),
+            });
+          }
+        }
+
+        return role;
       });
 
       // Create audit log
-      const ipAddress =
-        request.headers.get('x-forwarded-for') ||
-        request.headers.get('x-real-ip') ||
-        'unknown';
+      const ipAddress = request.headers.get('x-forwarded-for') || 'unknown';
 
       await prisma.auditLog.create({
         data: {
           userId: user.userId,
           action: 'UPDATE',
           module: 'Role Management',
-          details: `Updated role: ${updatedRole.name}`,
+          details: `Updated role: ${updatedRole.code} (${updatedRole.name})`,
           ipAddress,
         },
       });
+
+      logger.info({
+        userId: user.userId,
+        roleId: updatedRole.id,
+        roleCode: updatedRole.code,
+      }, 'Role updated successfully');
 
       return NextResponse.json({
         success: true,
@@ -123,10 +201,13 @@ export const PUT = withEnhancedAuth(
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return validationErrorResponse(error);
+        return NextResponse.json(
+          { success: false, error: 'Validation failed', details: error.errors },
+          { status: 400 }
+        );
       }
 
-      console.error('Error updating role:', error);
+      logger.error({ error, userId: user.userId, roleId: params.id }, 'Error updating role');
       return NextResponse.json(
         { success: false, error: 'Failed to update role' },
         { status: 500 }
@@ -135,20 +216,37 @@ export const PUT = withEnhancedAuth(
   }
 );
 
-// DELETE - Delete role
+// DELETE - Delete role (soft delete by deactivation)
 export const DELETE = withEnhancedAuth(
   async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
     try {
       // Check permission
-      const permissionError = requirePermission(Resource.ROLES, Action.DELETE, permissions);
-      if (permissionError) return permissionError;
+      if (!permissions.includes('roles:delete') && !permissions.includes('roles:manage')) {
+        return NextResponse.json(
+          { success: false, error: 'Insufficient permissions' },
+          { status: 403 }
+        );
+      }
 
       const roleId = params.id;
 
-      // Check if role exists
-      const existingRole = await prisma.role.findUnique({
-        where: { id: roleId },
-        select: { id: true, name: true, usersCount: true },
+      // Check if role exists and belongs to tenant
+      const existingRole = await prisma.role.findFirst({
+        where: {
+          id: roleId,
+          tenantId: user.tenantId,
+        },
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          isSystem: true,
+          _count: {
+            select: {
+              userRoles: true,
+            },
+          },
+        },
       });
 
       if (!existingRole) {
@@ -158,45 +256,56 @@ export const DELETE = withEnhancedAuth(
         );
       }
 
-      // Prevent deletion if role has users
-      if (existingRole.usersCount > 0) {
+      // Prevent deletion of system roles
+      if (existingRole.isSystem) {
+        return NextResponse.json(
+          { success: false, error: 'Cannot delete system roles' },
+          { status: 400 }
+        );
+      }
+
+      // Prevent deletion if role has active users
+      if (existingRole._count.userRoles > 0) {
         return NextResponse.json(
           {
             success: false,
-            error: `Cannot delete role with ${existingRole.usersCount} assigned user(s)`,
+            error: `Cannot delete role with ${existingRole._count.userRoles} assigned user(s)`,
           },
           { status: 400 }
         );
       }
 
-      // Soft delete by setting status to Inactive
+      // Soft delete by setting isActive to false
       await prisma.role.update({
         where: { id: roleId },
-        data: { status: 'Inactive' },
+        data: { isActive: false },
       });
 
       // Create audit log
-      const ipAddress =
-        request.headers.get('x-forwarded-for') ||
-        request.headers.get('x-real-ip') ||
-        'unknown';
+      const ipAddress = request.headers.get('x-forwarded-for') || 'unknown';
 
       await prisma.auditLog.create({
         data: {
           userId: user.userId,
           action: 'DELETE',
           module: 'Role Management',
-          details: `Deactivated role: ${existingRole.name}`,
+          details: `Deactivated role: ${existingRole.code} (${existingRole.name})`,
           ipAddress,
         },
       });
+
+      logger.info({
+        userId: user.userId,
+        roleId: existingRole.id,
+        roleCode: existingRole.code,
+      }, 'Role deactivated successfully');
 
       return NextResponse.json({
         success: true,
         message: 'Role deactivated successfully',
       });
     } catch (error) {
-      console.error('Error deleting role:', error);
+      logger.error({ error, userId: user.userId, roleId: params.id }, 'Error deleting role');
       return NextResponse.json(
         { success: false, error: 'Failed to delete role' },
         { status: 500 }

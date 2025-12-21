@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface EducationLevel {
     id: string;
@@ -43,7 +44,7 @@ export default function EducationLevelsPage() {
                 setData(result);
             }
         } catch (error) {
-            console.error('Failed to fetch education levels:', error);
+            logger.error('Failed to fetch education levels:', error);
         } finally {
             setIsLoading(false);
         }
@@ -78,7 +79,7 @@ export default function EducationLevelsPage() {
                 alert('Failed to save education level');
             }
         } catch (error) {
-            console.error('Error saving education level:', error);
+            logger.error('Error saving education level:', error);
             alert('Error saving education level');
         }
     };
@@ -96,7 +97,7 @@ export default function EducationLevelsPage() {
                     alert('Failed to delete education level');
                 }
             } catch (error) {
-                console.error('Error deleting education level:', error);
+                logger.error('Error deleting education level:', error);
                 alert('Error deleting education level');
             }
         }

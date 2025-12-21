@@ -7,6 +7,7 @@
 'use client';
 
 import React, {
+import { logger } from '@/lib/logger';
   createContext,
   useContext,
   useState,
@@ -69,7 +70,7 @@ export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }
         setFavorites(JSON.parse(storedFavorites));
       }
     } catch (error) {
-      console.error('Failed to load activity from localStorage:', error);
+      logger.error('Failed to load activity from localStorage:', error);
     }
     setIsHydrated(true);
   }, []);
@@ -80,7 +81,7 @@ export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }
       try {
         localStorage.setItem(STORAGE_KEYS.RECENT_ACTIVITY, JSON.stringify(recentActivity));
       } catch (error) {
-        console.error('Failed to save recent activity:', error);
+        logger.error('Failed to save recent activity:', error);
       }
     }
   }, [recentActivity, isHydrated]);
@@ -91,7 +92,7 @@ export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }
       try {
         localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(favorites));
       } catch (error) {
-        console.error('Failed to save favorites:', error);
+        logger.error('Failed to save favorites:', error);
       }
     }
   }, [favorites, isHydrated]);

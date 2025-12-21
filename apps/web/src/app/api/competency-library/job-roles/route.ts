@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch all job roles with competency mappings
 export async function GET(request: NextRequest) {
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
             data: transformed
         });
     } catch (error) {
-        console.error('Error fetching job roles:', error);
+        logger.error('Error fetching job roles:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch job roles' },
             { status: 500 }
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
             message: 'Job role created successfully'
         });
     } catch (error: any) {
-        console.error('Error creating job role:', error);
+        logger.error('Error creating job role:', error);
         if (error.code === 'P2002') {
             return NextResponse.json(
                 { success: false, error: 'A job role with this code already exists' },

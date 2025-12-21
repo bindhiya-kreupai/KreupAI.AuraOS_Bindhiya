@@ -38,6 +38,7 @@ import {
     SuccessionSettingsService,
 } from '../services';
 import { useToast } from './useToast';
+import { logger } from '@/lib/logger';
 
 export const useSuccession = () => {
     // State
@@ -100,7 +101,7 @@ export const useSuccession = () => {
             setSettings(settingsData);
         } catch (error) {
             toast.error('Failed to load succession planning data');
-            console.error('Load error:', error);
+            logger.error('Load error:', error);
         } finally {
             setIsLoading(false);
         }

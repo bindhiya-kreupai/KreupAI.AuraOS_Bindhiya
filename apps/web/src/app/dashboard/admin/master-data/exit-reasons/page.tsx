@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface ExitReason {
     id: string;
@@ -53,7 +54,7 @@ export default function ExitReasonsPage() {
                 setData(result);
             }
         } catch (error) {
-            console.error('Failed to fetch exit reasons:', error);
+            logger.error('Failed to fetch exit reasons:', error);
         } finally {
             setIsLoading(false);
         }
@@ -86,7 +87,7 @@ export default function ExitReasonsPage() {
                 alert('Failed to save exit reason');
             }
         } catch (error) {
-            console.error('Error saving exit reason:', error);
+            logger.error('Error saving exit reason:', error);
             alert('Error saving exit reason');
         }
     };
@@ -104,7 +105,7 @@ export default function ExitReasonsPage() {
                     alert('Failed to delete exit reason');
                 }
             } catch (error) {
-                console.error('Error deleting exit reason:', error);
+                logger.error('Error deleting exit reason:', error);
                 alert('Error deleting exit reason');
             }
         }

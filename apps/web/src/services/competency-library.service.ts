@@ -4,6 +4,7 @@
  */
 
 import type {
+import { logger } from '@/lib/logger';
     Competency,
     CompetencyCategory,
     ProficiencyFramework,
@@ -51,7 +52,7 @@ async function fetchWithFallback<T>(
         const isAvailable = await checkApiAvailability();
         
         if (!isAvailable) {
-            console.log(`[CompetencyService] API unavailable, using mock data for: ${endpoint}`);
+            logger.info(`[CompetencyService] API unavailable, using mock data for: ${endpoint}`);
             return { success: true, data: fallbackData };
         }
 
@@ -61,13 +62,13 @@ async function fetchWithFallback<T>(
         });
 
         if (!res.ok) {
-            console.warn(`[CompetencyService] API error ${res.status}, using mock data for: ${endpoint}`);
+            logger.warn(`[CompetencyService] API error ${res.status}, using mock data for: ${endpoint}`);
             return { success: true, data: fallbackData };
         }
 
         return await res.json();
     } catch (error) {
-        console.warn(`[CompetencyService] Fetch failed, using mock data for: ${endpoint}`, error);
+        logger.warn(`[CompetencyService] Fetch failed, using mock data for: ${endpoint}`, error);
         return { success: true, data: fallbackData };
     }
 }

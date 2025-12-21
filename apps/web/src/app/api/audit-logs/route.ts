@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { AuditLogQuerySchema, validationErrorResponse, validateQueryParams } from '@/lib/validators';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch audit logs with filters
 export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
@@ -88,7 +89,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       return validationErrorResponse(error);
     }
 
-    console.error('Error fetching audit logs:', error);
+    logger.error('Error fetching audit logs:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch audit logs' },
       { status: 500 }

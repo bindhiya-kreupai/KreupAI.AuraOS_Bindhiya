@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch all gap analyses
 export async function GET(request: NextRequest) {
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest) {
             data: transformed
         });
     } catch (error) {
-        console.error('Error fetching gap analyses:', error);
+        logger.error('Error fetching gap analyses:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch gap analyses' },
             { status: 500 }
@@ -121,7 +122,7 @@ export async function POST(request: NextRequest) {
             message: 'Gap analysis created successfully'
         });
     } catch (error) {
-        console.error('Error creating gap analysis:', error);
+        logger.error('Error creating gap analysis:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to create gap analysis' },
             { status: 500 }

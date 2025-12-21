@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface Competency {
     id: string;
@@ -45,7 +46,7 @@ export default function CompetenciesPage() {
                 setData(result);
             }
         } catch (error) {
-            console.error('Failed to fetch competencies:', error);
+            logger.error('Failed to fetch competencies:', error);
         } finally {
             setIsLoading(false);
         }
@@ -80,7 +81,7 @@ export default function CompetenciesPage() {
                 alert('Failed to save competency');
             }
         } catch (error) {
-            console.error('Error saving competency:', error);
+            logger.error('Error saving competency:', error);
             alert('Error saving competency');
         }
     };
@@ -98,7 +99,7 @@ export default function CompetenciesPage() {
                     alert('Failed to delete competency');
                 }
             } catch (error) {
-                console.error('Error deleting competency:', error);
+                logger.error('Error deleting competency:', error);
                 alert('Error deleting competency');
             }
         }

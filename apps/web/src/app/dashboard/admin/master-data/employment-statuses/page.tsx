@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface EmploymentStatus {
     id: string;
@@ -43,7 +44,7 @@ export default function EmploymentStatusesPage() {
                 setData(result);
             }
         } catch (error) {
-            console.error('Failed to fetch employment statuses:', error);
+            logger.error('Failed to fetch employment statuses:', error);
         } finally {
             setIsLoading(false);
         }
@@ -78,7 +79,7 @@ export default function EmploymentStatusesPage() {
                 alert('Failed to save employment status');
             }
         } catch (error) {
-            console.error('Error saving employment status:', error);
+            logger.error('Error saving employment status:', error);
             alert('Error saving employment status');
         }
     };
@@ -96,7 +97,7 @@ export default function EmploymentStatusesPage() {
                     alert('Failed to delete employment status');
                 }
             } catch (error) {
-                console.error('Error deleting employment status:', error);
+                logger.error('Error deleting employment status:', error);
                 alert('Error deleting employment status');
             }
         }

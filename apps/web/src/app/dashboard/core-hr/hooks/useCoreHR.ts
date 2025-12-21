@@ -14,6 +14,7 @@ import {
   ProbationService, ConfirmationService, AssetService, CoreHRSettingsService
 } from '../services';
 import {
+import { logger } from '@/lib/logger';
   sampleEmployees, sampleOrganizationUnits, sampleEmploymentHistory, sampleEmployeeDocuments,
   samplePositions, sampleCostCenters, sampleLifeEvents, sampleMassUpdates, sampleIDCards,
   sampleLetterRequests, sampleExitProcesses, sampleAnniversaries, sampleAutoNumberSequences,
@@ -82,7 +83,7 @@ export const useCoreHR = () => {
         loadAssets(), loadExitProcesses(), loadAnniversaries(), loadSettings()
       ]);
     } catch (error) {
-      console.error('Error loading data:', error);
+      logger.error('Error loading data:', error);
       addToast({ type: 'error', message: 'Failed to load Core HR data' });
     } finally {
       setLoading(false);

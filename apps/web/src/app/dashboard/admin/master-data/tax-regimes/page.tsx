@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface TaxRegime {
     id: string;
@@ -45,7 +46,7 @@ export default function TaxRegimesPage() {
                 setData(result);
             }
         } catch (error) {
-            console.error('Failed to fetch tax regimes:', error);
+            logger.error('Failed to fetch tax regimes:', error);
         } finally {
             setIsLoading(false);
         }
@@ -80,7 +81,7 @@ export default function TaxRegimesPage() {
                 alert('Failed to save tax regime');
             }
         } catch (error) {
-            console.error('Error saving tax regime:', error);
+            logger.error('Error saving tax regime:', error);
             alert('Error saving tax regime');
         }
     };
@@ -98,7 +99,7 @@ export default function TaxRegimesPage() {
                     alert('Failed to delete tax regime');
                 }
             } catch (error) {
-                console.error('Error deleting tax regime:', error);
+                logger.error('Error deleting tax regime:', error);
                 alert('Error deleting tax regime');
             }
         }

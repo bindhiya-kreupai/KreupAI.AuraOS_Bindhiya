@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch all development plans
 export async function GET(request: NextRequest) {
@@ -74,7 +75,7 @@ export async function GET(request: NextRequest) {
             data: transformed
         });
     } catch (error) {
-        console.error('Error fetching development plans:', error);
+        logger.error('Error fetching development plans:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch development plans' },
             { status: 500 }
@@ -156,7 +157,7 @@ export async function POST(request: NextRequest) {
             message: 'Development plan created successfully'
         });
     } catch (error) {
-        console.error('Error creating development plan:', error);
+        logger.error('Error creating development plan:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to create development plan' },
             { status: 500 }

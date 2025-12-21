@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import {
+import { logger } from '@/lib/logger';
   CreateUserDelegationSchema,
   UserDelegationQuerySchema,
   validationErrorResponse,
@@ -79,7 +80,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       return validationErrorResponse(error);
     }
 
-    console.error('Error fetching user delegations:', error);
+    logger.error('Error fetching user delegations:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch user delegations' },
       { status: 500 }
@@ -229,7 +230,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       return validationErrorResponse(error);
     }
 
-    console.error('Error creating user delegation:', error);
+    logger.error('Error creating user delegation:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create user delegation' },
       { status: 500 }

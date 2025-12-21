@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { CreateMFAConfigSchema, validationErrorResponse } from '@/lib/validators';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch current MFA configuration (typically only one per system)
 export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
@@ -40,7 +41,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       data: config,
     });
   } catch (error) {
-    console.error('Error fetching MFA configuration:', error);
+    logger.error('Error fetching MFA configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch MFA configuration' },
       { status: 500 }
@@ -106,7 +107,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       return validationErrorResponse(error);
     }
 
-    console.error('Error creating MFA configuration:', error);
+    logger.error('Error creating MFA configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create MFA configuration' },
       { status: 500 }
@@ -170,7 +171,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
       return validationErrorResponse(error);
     }
 
-    console.error('Error updating MFA configuration:', error);
+    logger.error('Error updating MFA configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update MFA configuration' },
       { status: 500 }
@@ -224,7 +225,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, perm
       message: 'MFA configuration deleted successfully. MFA is now disabled.',
     });
   } catch (error) {
-    console.error('Error deleting MFA configuration:', error);
+    logger.error('Error deleting MFA configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to delete MFA configuration' },
       { status: 500 }

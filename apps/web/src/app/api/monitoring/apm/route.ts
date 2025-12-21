@@ -9,6 +9,7 @@ import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { apm, apmConfig } from '@/lib/monitoring/apm';
 import { getPrismaQueryStats, resetPrismaQueryStats } from '@/lib/monitoring/prisma-apm';
+import { logger } from '@/lib/logger';
 
 /**
  * GET - Fetch APM metrics and statistics
@@ -59,7 +60,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       data
     });
   } catch (error) {
-    console.error('Error fetching APM metrics:', error);
+    logger.error('Error fetching APM metrics:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch APM metrics' },
       { status: 500 }
@@ -94,7 +95,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         );
     }
   } catch (error) {
-    console.error('Error performing APM action:', error);
+    logger.error('Error performing APM action:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to perform APM action' },
       { status: 500 }

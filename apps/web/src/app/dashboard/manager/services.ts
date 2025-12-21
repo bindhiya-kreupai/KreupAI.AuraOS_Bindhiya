@@ -6,6 +6,7 @@
 'use client';
 
 import {
+import { logger } from '@/lib/logger';
   TeamMember,
   TeamMetrics,
   TeamGoal,
@@ -439,7 +440,7 @@ export class ApprovalCenterService {
         const result = await this.approveRequest(requestId, approverId, remarks);
         approved.push(result);
       } catch (error) {
-        console.error(`Failed to approve request ${requestId}:`, error);
+        logger.error(`Failed to approve request ${requestId}:`, error);
       }
     }
     return approved;

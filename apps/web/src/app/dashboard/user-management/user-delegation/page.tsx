@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { logger } from '@/lib/logger';
 
 interface UserDelegation {
     id: string;
@@ -37,7 +38,7 @@ export default function UserDelegationPage() {
             if (delegationsRes.ok) setData(await delegationsRes.json());
             if (usersRes.ok) setUsers(await usersRes.json());
         } catch (error) {
-            console.error('Failed to fetch data:', error);
+            logger.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
         }
@@ -91,7 +92,7 @@ export default function UserDelegationPage() {
                 alert(`Failed to create delegation: ${error.error}`);
             }
         } catch (error) {
-            console.error('Error creating delegation:', error);
+            logger.error('Error creating delegation:', error);
             alert('Error creating delegation');
         }
     };
@@ -103,7 +104,7 @@ export default function UserDelegationPage() {
                 if (response.ok) fetchData();
                 else alert('Failed to delete delegation');
             } catch (error) {
-                console.error('Error deleting delegation:', error);
+                logger.error('Error deleting delegation:', error);
                 alert('Error deleting delegation');
             }
         }

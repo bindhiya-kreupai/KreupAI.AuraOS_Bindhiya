@@ -10,6 +10,7 @@ import {
 } from '../services';
 import { documentData } from '../data';
 import { useToast } from '../../components/Toast';
+import { logger } from '@/lib/logger';
 
 interface UseDocumentsReturn {
   // State
@@ -232,7 +233,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setDocuments((prev) => prev.map(d => d.id === id ? { ...d, viewCount: d.viewCount + 1 } : d));
     } catch (err) {
       const error = err as Error;
-      console.error('Failed to increment view count:', error);
+      logger.error('Failed to increment view count:', error);
     }
   }, []);
 

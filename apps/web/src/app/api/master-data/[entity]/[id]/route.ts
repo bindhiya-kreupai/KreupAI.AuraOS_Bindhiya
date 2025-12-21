@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import {
+import { logger } from '@/lib/logger';
   UpdateCountrySchema,
   UpdateStateSchema,
   UpdateCitySchema,
@@ -51,7 +52,7 @@ export const GET = withEnhancedAuth(
 
       return NextResponse.json({ success: true, data: item });
     } catch (error) {
-      console.error(`Error fetching ${params.entity}:`, error);
+      logger.error(`Error fetching ${params.entity}:`, error);
       return NextResponse.json({ success: false, error: 'Failed to fetch' }, { status: 500 });
     }
   }
@@ -96,7 +97,7 @@ export const PUT = withEnhancedAuth(
       return NextResponse.json({ success: true, data: updated });
     } catch (error) {
       if (error instanceof z.ZodError) return validationErrorResponse(error);
-      console.error(`Error updating ${params.entity}:`, error);
+      logger.error(`Error updating ${params.entity}:`, error);
       return NextResponse.json({ success: false, error: 'Failed to update' }, { status: 500 });
     }
   }
@@ -141,7 +142,7 @@ export const DELETE = withEnhancedAuth(
 
       return NextResponse.json({ success: true, message: 'Deleted successfully' });
     } catch (error) {
-      console.error(`Error deleting ${params.entity}:`, error);
+      logger.error(`Error deleting ${params.entity}:`, error);
       return NextResponse.json({ success: false, error: 'Failed to delete' }, { status: 500 });
     }
   }

@@ -6,6 +6,7 @@ import { generateAccessToken, generateRefreshToken } from '@/lib/auth/jwt';
 import { validationErrorResponse } from '@/lib/validators';
 import { authRateLimit } from '@/lib/middleware/rate-limit';
 import { logAuthEvent } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 const LoginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -72,6 +73,34 @@ export const POST = authRateLimit(async function (request: NextRequest) {
         { success: false, error: 'Invalid email or password' },
         { status: 401 }
       );
+    }
+
+    // Check if MFA is enabled for this user
+    if (user.mfaEnabled) {
+      // Create audit log for MFA required
+      await prisma.auditLog.create({
+        data: {
+          userId: user.id,
+          action: 'LOGIN_MFA_REQUIRED',
+          module: 'Authentication',
+          details: `User ${user.email} requires MFA verification from ${ipAddress}`,
+          ipAddress,
+        },
+      });
+
+      logger.info({
+        userId: user.id,
+        email: user.email,
+        ipAddress,
+      }, 'Login password verified, MFA required');
+
+      // Return MFA required response
+      return NextResponse.json({
+        success: true,
+        mfaRequired: true,
+        userId: user.id,
+        message: 'MFA verification required. Please provide your verification code.',
+      });
     }
 
     const userAgent = request.headers.get('user-agent') || 'unknown';
@@ -147,7 +176,7 @@ export const POST = authRateLimit(async function (request: NextRequest) {
       return validationErrorResponse(error);
     }
 
-    console.error('Login error:', error);
+    logger.error('Login error:', error);
     return NextResponse.json(
       { success: false, error: 'Login failed' },
       { status: 500 }

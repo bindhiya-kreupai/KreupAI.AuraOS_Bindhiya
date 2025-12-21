@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface CostCenter {
     id: string;
@@ -33,7 +34,7 @@ export default function CostCentersPage() {
                 setData(result);
             }
         } catch (error) {
-            console.error('Failed to fetch cost centers:', error);
+            logger.error('Failed to fetch cost centers:', error);
         } finally {
             setIsLoading(false);
         }
@@ -68,7 +69,7 @@ export default function CostCentersPage() {
                 alert('Failed to save cost center');
             }
         } catch (error) {
-            console.error('Error saving cost center:', error);
+            logger.error('Error saving cost center:', error);
             alert('Error saving cost center');
         }
     };
@@ -86,7 +87,7 @@ export default function CostCentersPage() {
                     alert('Failed to delete cost center');
                 }
             } catch (error) {
-                console.error('Error deleting cost center:', error);
+                logger.error('Error deleting cost center:', error);
                 alert('Error deleting cost center');
             }
         }

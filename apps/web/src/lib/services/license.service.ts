@@ -1,5 +1,6 @@
 import { BaseService, ServiceResponse, ListOptions } from './base.service';
 import type { LicenseType, LicenseStatus } from '@prisma/client';
+import { logger } from '@/lib/logger';
 
 export interface CreateLicenseInput {
   name: string;
@@ -100,7 +101,7 @@ export class LicenseService extends BaseService {
         meta: this.buildPaginationMeta(total, page, limit),
       };
     } catch (error) {
-      console.error('LicenseService.listLicenses error:', error);
+      logger.error('LicenseService.listLicenses error:', error);
       return {
         success: false,
         error: 'Failed to fetch licenses',
@@ -129,7 +130,7 @@ export class LicenseService extends BaseService {
         data: this.calculateUtilization(license),
       };
     } catch (error) {
-      console.error('LicenseService.getLicenseById error:', error);
+      logger.error('LicenseService.getLicenseById error:', error);
       return {
         success: false,
         error: 'Failed to fetch license',
@@ -196,7 +197,7 @@ export class LicenseService extends BaseService {
         data: this.calculateUtilization(result),
       };
     } catch (error) {
-      console.error('LicenseService.createLicense error:', error);
+      logger.error('LicenseService.createLicense error:', error);
       return {
         success: false,
         error: 'Failed to create license',
@@ -276,7 +277,7 @@ export class LicenseService extends BaseService {
         data: this.calculateUtilization(result),
       };
     } catch (error) {
-      console.error('LicenseService.updateLicense error:', error);
+      logger.error('LicenseService.updateLicense error:', error);
       return {
         success: false,
         error: 'Failed to update license',
@@ -327,7 +328,7 @@ export class LicenseService extends BaseService {
         success: true,
       };
     } catch (error) {
-      console.error('LicenseService.deleteLicense error:', error);
+      logger.error('LicenseService.deleteLicense error:', error);
       return {
         success: false,
         error: 'Failed to delete license',
@@ -388,7 +389,7 @@ export class LicenseService extends BaseService {
         data: this.calculateUtilization(result),
       };
     } catch (error) {
-      console.error('LicenseService.allocateLicense error:', error);
+      logger.error('LicenseService.allocateLicense error:', error);
       return {
         success: false,
         error: 'Failed to allocate license',
@@ -443,7 +444,7 @@ export class LicenseService extends BaseService {
         data: this.calculateUtilization(result),
       };
     } catch (error) {
-      console.error('LicenseService.releaseLicense error:', error);
+      logger.error('LicenseService.releaseLicense error:', error);
       return {
         success: false,
         error: 'Failed to release license',

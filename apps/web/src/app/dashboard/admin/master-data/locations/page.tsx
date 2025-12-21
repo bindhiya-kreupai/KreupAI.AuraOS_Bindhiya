@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface Location {
     id: string;
@@ -57,7 +58,7 @@ export default function LocationsPage() {
             if (compsRes.ok) setCompanies(await compsRes.json());
             if (addrRes.ok) setAddresses(await addrRes.json());
         } catch (error) {
-            console.error('Failed to fetch data:', error);
+            logger.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
         }
@@ -123,7 +124,7 @@ export default function LocationsPage() {
                 alert('Failed to save location');
             }
         } catch (error) {
-            console.error('Error saving location:', error);
+            logger.error('Error saving location:', error);
             alert('Error saving location');
         }
     };
@@ -141,7 +142,7 @@ export default function LocationsPage() {
                     alert('Failed to delete location');
                 }
             } catch (error) {
-                console.error('Error deleting location:', error);
+                logger.error('Error deleting location:', error);
                 alert('Error deleting location');
             }
         }

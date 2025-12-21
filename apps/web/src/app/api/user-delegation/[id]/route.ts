@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { UpdateUserDelegationSchema, validationErrorResponse } from '@/lib/validators';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch single user delegation by ID
 export const GET = withEnhancedAuth(
@@ -46,7 +47,7 @@ export const GET = withEnhancedAuth(
         data: delegation,
       });
     } catch (error) {
-      console.error('Error fetching user delegation:', error);
+      logger.error('Error fetching user delegation:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch user delegation' },
         { status: 500 }
@@ -171,7 +172,7 @@ export const PUT = withEnhancedAuth(
         return validationErrorResponse(error);
       }
 
-      console.error('Error updating user delegation:', error);
+      logger.error('Error updating user delegation:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update user delegation' },
         { status: 500 }
@@ -240,7 +241,7 @@ export const DELETE = withEnhancedAuth(
         message: 'User delegation deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting user delegation:', error);
+      logger.error('Error deleting user delegation:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to delete user delegation' },
         { status: 500 }

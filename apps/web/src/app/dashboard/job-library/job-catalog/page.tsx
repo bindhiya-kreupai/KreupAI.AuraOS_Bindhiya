@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import {
+import { logger } from '@/lib/logger';
     Briefcase,
     Search,
     Filter,
@@ -34,7 +35,7 @@ export default function JobCatalogPage() {
                 const data = await res.json();
                 setJobs(data);
             } catch (err) {
-                console.error(err);
+                logger.error(err);
                 setError('Failed to load job catalog');
             } finally {
                 setLoading(false);

@@ -1,5 +1,6 @@
 import { BaseService, ServiceResponse, ListOptions } from './base.service';
 import type { Prisma } from '@prisma/client';
+import { logger } from '@/lib/logger';
 
 export interface MasterDataQueryOptions extends ListOptions {
   [key: string]: any;
@@ -111,7 +112,7 @@ export class MasterDataService extends BaseService {
         meta: this.buildPaginationMeta(total, page, limit),
       };
     } catch (error) {
-      console.error('MasterDataService.listEntities error:', error);
+      logger.error('MasterDataService.listEntities error:', error);
       return {
         success: false,
         error: 'Failed to fetch entities',
@@ -152,7 +153,7 @@ export class MasterDataService extends BaseService {
         data: item,
       };
     } catch (error) {
-      console.error('MasterDataService.getEntityById error:', error);
+      logger.error('MasterDataService.getEntityById error:', error);
       return {
         success: false,
         error: 'Failed to fetch entity',
@@ -217,7 +218,7 @@ export class MasterDataService extends BaseService {
         data: result,
       };
     } catch (error) {
-      console.error('MasterDataService.createEntity error:', error);
+      logger.error('MasterDataService.createEntity error:', error);
       return {
         success: false,
         error: 'Failed to create entity',
@@ -282,7 +283,7 @@ export class MasterDataService extends BaseService {
         data: result,
       };
     } catch (error) {
-      console.error('MasterDataService.updateEntity error:', error);
+      logger.error('MasterDataService.updateEntity error:', error);
       return {
         success: false,
         error: 'Failed to update entity',
@@ -348,7 +349,7 @@ export class MasterDataService extends BaseService {
         success: true,
       };
     } catch (error) {
-      console.error('MasterDataService.deleteEntity error:', error);
+      logger.error('MasterDataService.deleteEntity error:', error);
       return {
         success: false,
         error: 'Failed to delete entity',
@@ -372,7 +373,7 @@ export class MasterDataService extends BaseService {
         data: states,
       };
     } catch (error) {
-      console.error('MasterDataService.getStatesByCountry error:', error);
+      logger.error('MasterDataService.getStatesByCountry error:', error);
       return {
         success: false,
         error: 'Failed to fetch states',
@@ -396,7 +397,7 @@ export class MasterDataService extends BaseService {
         data: cities,
       };
     } catch (error) {
-      console.error('MasterDataService.getCitiesByState error:', error);
+      logger.error('MasterDataService.getCitiesByState error:', error);
       return {
         success: false,
         error: 'Failed to fetch cities',

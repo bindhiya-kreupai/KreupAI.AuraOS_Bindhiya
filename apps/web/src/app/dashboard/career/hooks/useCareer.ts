@@ -13,6 +13,7 @@ import {
   CareerSettingsService
 } from '../services';
 import {
+import { logger } from '@/lib/logger';
   sampleCareerLadders, sampleEmployeeCareerPaths, sampleMobilityOpportunities, sampleMobilityApplications,
   sampleMobilityPreferences, sampleSuccessionPlans, sampleCareerGoals, sampleDevelopmentDiscussions,
   sampleCareerAspirations, sampleMentorshipRequests, sampleSkillAssessments, sampleLearningPathways,
@@ -98,7 +99,7 @@ export const useCareer = () => {
         loadSettings(),
       ]);
     } catch (error) {
-      console.error('Error loading data:', error);
+      logger.error('Error loading data:', error);
       addToast({ type: 'error', message: 'Failed to load career planning data' });
     } finally {
       setLoading(false);
@@ -113,7 +114,7 @@ export const useCareer = () => {
       const data = await CareerLadderService.getAllLadders();
       setCareerLadders(data);
     } catch (error) {
-      console.error('Error loading career ladders:', error);
+      logger.error('Error loading career ladders:', error);
     }
   };
 
@@ -125,7 +126,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Career ladder created successfully' });
       return ladder;
     } catch (error) {
-      console.error('Error creating career ladder:', error);
+      logger.error('Error creating career ladder:', error);
       addToast({ type: 'error', message: 'Failed to create career ladder' });
       throw error;
     } finally {
@@ -141,7 +142,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Career ladder updated successfully' });
       return ladder;
     } catch (error) {
-      console.error('Error updating career ladder:', error);
+      logger.error('Error updating career ladder:', error);
       addToast({ type: 'error', message: 'Failed to update career ladder' });
       throw error;
     } finally {
@@ -156,7 +157,7 @@ export const useCareer = () => {
       await loadCareerLadders();
       addToast({ type: 'success', message: 'Career ladder deleted successfully' });
     } catch (error) {
-      console.error('Error deleting career ladder:', error);
+      logger.error('Error deleting career ladder:', error);
       addToast({ type: 'error', message: 'Failed to delete career ladder' });
       throw error;
     } finally {
@@ -169,7 +170,7 @@ export const useCareer = () => {
       const data = await EmployeeCareerPathService.getAllPaths();
       setEmployeeCareerPaths(data);
     } catch (error) {
-      console.error('Error loading employee career paths:', error);
+      logger.error('Error loading employee career paths:', error);
     }
   };
 
@@ -181,7 +182,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Career path created successfully' });
       return path;
     } catch (error) {
-      console.error('Error creating career path:', error);
+      logger.error('Error creating career path:', error);
       addToast({ type: 'error', message: 'Failed to create career path' });
       throw error;
     } finally {
@@ -197,7 +198,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Career path updated successfully' });
       return path;
     } catch (error) {
-      console.error('Error updating career path:', error);
+      logger.error('Error updating career path:', error);
       addToast({ type: 'error', message: 'Failed to update career path' });
       throw error;
     } finally {
@@ -213,7 +214,7 @@ export const useCareer = () => {
       const data = await MobilityOpportunityService.getAllOpportunities();
       setMobilityOpportunities(data);
     } catch (error) {
-      console.error('Error loading mobility opportunities:', error);
+      logger.error('Error loading mobility opportunities:', error);
     }
   };
 
@@ -225,7 +226,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Mobility opportunity created successfully' });
       return opportunity;
     } catch (error) {
-      console.error('Error creating mobility opportunity:', error);
+      logger.error('Error creating mobility opportunity:', error);
       addToast({ type: 'error', message: 'Failed to create mobility opportunity' });
       throw error;
     } finally {
@@ -241,7 +242,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Mobility opportunity updated successfully' });
       return opportunity;
     } catch (error) {
-      console.error('Error updating mobility opportunity:', error);
+      logger.error('Error updating mobility opportunity:', error);
       addToast({ type: 'error', message: 'Failed to update mobility opportunity' });
       throw error;
     } finally {
@@ -254,7 +255,7 @@ export const useCareer = () => {
       const data = await MobilityApplicationService.getAllApplications();
       setMobilityApplications(data);
     } catch (error) {
-      console.error('Error loading mobility applications:', error);
+      logger.error('Error loading mobility applications:', error);
     }
   };
 
@@ -266,7 +267,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Application submitted successfully' });
       return application;
     } catch (error) {
-      console.error('Error creating mobility application:', error);
+      logger.error('Error creating mobility application:', error);
       addToast({ type: 'error', message: 'Failed to submit application' });
       throw error;
     } finally {
@@ -282,7 +283,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Application updated successfully' });
       return application;
     } catch (error) {
-      console.error('Error updating mobility application:', error);
+      logger.error('Error updating mobility application:', error);
       addToast({ type: 'error', message: 'Failed to update application' });
       throw error;
     } finally {
@@ -295,7 +296,7 @@ export const useCareer = () => {
       const data = await MobilityPreferenceService.getAllPreferences();
       setMobilityPreferences(data);
     } catch (error) {
-      console.error('Error loading mobility preferences:', error);
+      logger.error('Error loading mobility preferences:', error);
     }
   };
 
@@ -307,7 +308,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Mobility preferences saved successfully' });
       return preference;
     } catch (error) {
-      console.error('Error creating mobility preference:', error);
+      logger.error('Error creating mobility preference:', error);
       addToast({ type: 'error', message: 'Failed to save mobility preferences' });
       throw error;
     } finally {
@@ -323,7 +324,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Mobility preferences updated successfully' });
       return preference;
     } catch (error) {
-      console.error('Error updating mobility preference:', error);
+      logger.error('Error updating mobility preference:', error);
       addToast({ type: 'error', message: 'Failed to update mobility preferences' });
       throw error;
     } finally {
@@ -336,7 +337,7 @@ export const useCareer = () => {
       const data = await SuccessionPlanService.getAllPlans();
       setSuccessionPlans(data);
     } catch (error) {
-      console.error('Error loading succession plans:', error);
+      logger.error('Error loading succession plans:', error);
     }
   };
 
@@ -348,7 +349,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Succession plan created successfully' });
       return plan;
     } catch (error) {
-      console.error('Error creating succession plan:', error);
+      logger.error('Error creating succession plan:', error);
       addToast({ type: 'error', message: 'Failed to create succession plan' });
       throw error;
     } finally {
@@ -364,7 +365,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Succession plan updated successfully' });
       return plan;
     } catch (error) {
-      console.error('Error updating succession plan:', error);
+      logger.error('Error updating succession plan:', error);
       addToast({ type: 'error', message: 'Failed to update succession plan' });
       throw error;
     } finally {
@@ -380,7 +381,7 @@ export const useCareer = () => {
       const data = await CareerGoalService.getAllGoals();
       setCareerGoals(data);
     } catch (error) {
-      console.error('Error loading career goals:', error);
+      logger.error('Error loading career goals:', error);
     }
   };
 
@@ -392,7 +393,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Career goal created successfully' });
       return goal;
     } catch (error) {
-      console.error('Error creating career goal:', error);
+      logger.error('Error creating career goal:', error);
       addToast({ type: 'error', message: 'Failed to create career goal' });
       throw error;
     } finally {
@@ -408,7 +409,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Career goal updated successfully' });
       return goal;
     } catch (error) {
-      console.error('Error updating career goal:', error);
+      logger.error('Error updating career goal:', error);
       addToast({ type: 'error', message: 'Failed to update career goal' });
       throw error;
     } finally {
@@ -423,7 +424,7 @@ export const useCareer = () => {
       await loadCareerGoals();
       addToast({ type: 'success', message: 'Career goal deleted successfully' });
     } catch (error) {
-      console.error('Error deleting career goal:', error);
+      logger.error('Error deleting career goal:', error);
       addToast({ type: 'error', message: 'Failed to delete career goal' });
       throw error;
     } finally {
@@ -436,7 +437,7 @@ export const useCareer = () => {
       const data = await DevelopmentDiscussionService.getAllDiscussions();
       setDevelopmentDiscussions(data);
     } catch (error) {
-      console.error('Error loading development discussions:', error);
+      logger.error('Error loading development discussions:', error);
     }
   };
 
@@ -448,7 +449,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Development discussion recorded successfully' });
       return discussion;
     } catch (error) {
-      console.error('Error creating development discussion:', error);
+      logger.error('Error creating development discussion:', error);
       addToast({ type: 'error', message: 'Failed to record development discussion' });
       throw error;
     } finally {
@@ -464,7 +465,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Development discussion updated successfully' });
       return discussion;
     } catch (error) {
-      console.error('Error updating development discussion:', error);
+      logger.error('Error updating development discussion:', error);
       addToast({ type: 'error', message: 'Failed to update development discussion' });
       throw error;
     } finally {
@@ -480,7 +481,7 @@ export const useCareer = () => {
       const data = await CareerAspirationService.getAllAspirations();
       setCareerAspirations(data);
     } catch (error) {
-      console.error('Error loading career aspirations:', error);
+      logger.error('Error loading career aspirations:', error);
     }
   };
 
@@ -492,7 +493,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Career aspiration created successfully' });
       return aspiration;
     } catch (error) {
-      console.error('Error creating career aspiration:', error);
+      logger.error('Error creating career aspiration:', error);
       addToast({ type: 'error', message: 'Failed to create career aspiration' });
       throw error;
     } finally {
@@ -508,7 +509,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Career aspiration updated successfully' });
       return aspiration;
     } catch (error) {
-      console.error('Error updating career aspiration:', error);
+      logger.error('Error updating career aspiration:', error);
       addToast({ type: 'error', message: 'Failed to update career aspiration' });
       throw error;
     } finally {
@@ -523,7 +524,7 @@ export const useCareer = () => {
       await loadCareerAspirations();
       addToast({ type: 'success', message: 'Career aspiration deleted successfully' });
     } catch (error) {
-      console.error('Error deleting career aspiration:', error);
+      logger.error('Error deleting career aspiration:', error);
       addToast({ type: 'error', message: 'Failed to delete career aspiration' });
       throw error;
     } finally {
@@ -536,7 +537,7 @@ export const useCareer = () => {
       const data = await MentorshipRequestService.getAllRequests();
       setMentorshipRequests(data);
     } catch (error) {
-      console.error('Error loading mentorship requests:', error);
+      logger.error('Error loading mentorship requests:', error);
     }
   };
 
@@ -548,7 +549,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Mentorship request submitted successfully' });
       return request;
     } catch (error) {
-      console.error('Error creating mentorship request:', error);
+      logger.error('Error creating mentorship request:', error);
       addToast({ type: 'error', message: 'Failed to submit mentorship request' });
       throw error;
     } finally {
@@ -564,7 +565,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Mentorship request updated successfully' });
       return request;
     } catch (error) {
-      console.error('Error updating mentorship request:', error);
+      logger.error('Error updating mentorship request:', error);
       addToast({ type: 'error', message: 'Failed to update mentorship request' });
       throw error;
     } finally {
@@ -577,7 +578,7 @@ export const useCareer = () => {
       const data = await SkillAssessmentService.getAllAssessments();
       setSkillAssessments(data);
     } catch (error) {
-      console.error('Error loading skill assessments:', error);
+      logger.error('Error loading skill assessments:', error);
     }
   };
 
@@ -589,7 +590,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Skill assessment created successfully' });
       return assessment;
     } catch (error) {
-      console.error('Error creating skill assessment:', error);
+      logger.error('Error creating skill assessment:', error);
       addToast({ type: 'error', message: 'Failed to create skill assessment' });
       throw error;
     } finally {
@@ -602,7 +603,7 @@ export const useCareer = () => {
       const data = await LearningPathwayService.getAllPathways();
       setLearningPathways(data);
     } catch (error) {
-      console.error('Error loading learning pathways:', error);
+      logger.error('Error loading learning pathways:', error);
     }
   };
 
@@ -614,7 +615,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Learning pathway created successfully' });
       return pathway;
     } catch (error) {
-      console.error('Error creating learning pathway:', error);
+      logger.error('Error creating learning pathway:', error);
       addToast({ type: 'error', message: 'Failed to create learning pathway' });
       throw error;
     } finally {
@@ -630,7 +631,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Learning pathway updated successfully' });
       return pathway;
     } catch (error) {
-      console.error('Error updating learning pathway:', error);
+      logger.error('Error updating learning pathway:', error);
       addToast({ type: 'error', message: 'Failed to update learning pathway' });
       throw error;
     } finally {
@@ -646,7 +647,7 @@ export const useCareer = () => {
       const data = await CareerSettingsService.getSettings();
       setSettings(data);
     } catch (error) {
-      console.error('Error loading settings:', error);
+      logger.error('Error loading settings:', error);
     }
   };
 
@@ -658,7 +659,7 @@ export const useCareer = () => {
       addToast({ type: 'success', message: 'Settings updated successfully' });
       return updated;
     } catch (error) {
-      console.error('Error updating settings:', error);
+      logger.error('Error updating settings:', error);
       addToast({ type: 'error', message: 'Failed to update settings' });
       throw error;
     } finally {

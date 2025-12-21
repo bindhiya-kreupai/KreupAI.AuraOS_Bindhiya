@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch all proficiency frameworks
 export async function GET(request: NextRequest) {
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
             data: frameworks
         });
     } catch (error) {
-        console.error('Error fetching frameworks:', error);
+        logger.error('Error fetching frameworks:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch proficiency frameworks' },
             { status: 500 }
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
             message: 'Proficiency framework created successfully'
         });
     } catch (error: any) {
-        console.error('Error creating framework:', error);
+        logger.error('Error creating framework:', error);
         if (error.code === 'P2002') {
             return NextResponse.json(
                 { success: false, error: 'A framework with this code already exists' },

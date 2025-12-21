@@ -11,6 +11,7 @@ import {
   UtilityBillingService, EnergySettingsService
 } from '../services';
 import {
+import { logger } from '@/lib/logger';
   sampleSmartMeters, sampleEnergyConsumption, sampleLoadManagement,
   sampleWaterMeters, sampleWaterUsage, sampleLeakDetections,
   sampleConservationInitiatives, sampleRenewableAssets, sampleEnergyProduction,
@@ -64,7 +65,7 @@ export const useEnergy = () => {
         loadUtilityAccounts(), loadUtilityBills(), loadSettings()
       ]);
     } catch (error) {
-      console.error('Error loading data:', error);
+      logger.error('Error loading data:', error);
       addToast({ type: 'error', message: 'Failed to load energy data' });
     } finally {
       setLoading(false);

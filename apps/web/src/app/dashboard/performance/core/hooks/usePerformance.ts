@@ -16,6 +16,7 @@ import {
 } from '../data';
 import type { PerformanceReview, ReviewCycle, Goal, Competency, DevelopmentPlan, PerformanceStats } from '../types';
 import { useToast } from './useToast';
+import { logger } from '@/lib/logger';
 
 export const usePerformance = () => {
     const [reviews, setReviews] = useState<PerformanceReview[]>([]);
@@ -73,7 +74,7 @@ export const usePerformance = () => {
                 const statsData = await PerformanceAnalyticsService.getStats();
                 setStats(statsData);
             } catch (error) {
-                console.error('Failed to initialize performance data:', error);
+                logger.error('Failed to initialize performance data:', error);
                 toast.error('Failed to load performance data');
             } finally {
                 setIsLoading(false);

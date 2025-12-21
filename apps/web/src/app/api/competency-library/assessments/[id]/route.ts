@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch single assessment
 export async function GET(
@@ -52,7 +53,7 @@ export async function GET(
             data: assessment
         });
     } catch (error) {
-        console.error('Error fetching assessment:', error);
+        logger.error('Error fetching assessment:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch assessment' },
             { status: 500 }
@@ -138,7 +139,7 @@ export async function PUT(
             message: 'Assessment updated successfully'
         });
     } catch (error) {
-        console.error('Error updating assessment:', error);
+        logger.error('Error updating assessment:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to update assessment' },
             { status: 500 }
@@ -179,7 +180,7 @@ export async function DELETE(
             message: 'Assessment deleted successfully'
         });
     } catch (error) {
-        console.error('Error deleting assessment:', error);
+        logger.error('Error deleting assessment:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to delete assessment' },
             { status: 500 }

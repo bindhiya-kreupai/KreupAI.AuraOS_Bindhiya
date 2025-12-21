@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { SessionQuerySchema, validationErrorResponse, validateQueryParams } from '@/lib/validators';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch all sessions with filters
 export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
@@ -87,7 +88,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       return validationErrorResponse(error);
     }
 
-    console.error('Error fetching sessions:', error);
+    logger.error('Error fetching sessions:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch sessions' },
       { status: 500 }

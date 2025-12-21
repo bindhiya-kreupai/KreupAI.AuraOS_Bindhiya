@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface Designation {
     id: string;
@@ -62,7 +63,7 @@ export default function DesignationsPage() {
                 setData(result);
             }
         } catch (error) {
-            console.error('Failed to fetch designations:', error);
+            logger.error('Failed to fetch designations:', error);
         } finally {
             setIsLoading(false);
         }
@@ -97,7 +98,7 @@ export default function DesignationsPage() {
                 alert('Failed to save designation');
             }
         } catch (error) {
-            console.error('Error saving designation:', error);
+            logger.error('Error saving designation:', error);
             alert('Error saving designation');
         }
     };
@@ -115,7 +116,7 @@ export default function DesignationsPage() {
                     alert('Failed to delete designation');
                 }
             } catch (error) {
-                console.error('Error deleting designation:', error);
+                logger.error('Error deleting designation:', error);
                 alert('Error deleting designation');
             }
         }

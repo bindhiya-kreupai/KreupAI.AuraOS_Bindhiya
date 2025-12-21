@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch single competency by ID
 export async function GET(
@@ -43,7 +44,7 @@ export async function GET(
             }
         });
     } catch (error) {
-        console.error('Error fetching competency:', error);
+        logger.error('Error fetching competency:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch competency' },
             { status: 500 }
@@ -162,7 +163,7 @@ export async function PUT(
             message: 'Competency updated successfully'
         });
     } catch (error) {
-        console.error('Error updating competency:', error);
+        logger.error('Error updating competency:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to update competency' },
             { status: 500 }
@@ -200,7 +201,7 @@ export async function DELETE(
             message: 'Competency deleted successfully'
         });
     } catch (error) {
-        console.error('Error deleting competency:', error);
+        logger.error('Error deleting competency:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to delete competency' },
             { status: 500 }

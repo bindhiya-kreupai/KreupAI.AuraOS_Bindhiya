@@ -25,6 +25,7 @@ import {
   AgricultureSettingsService,
 } from '../services';
 import {
+import { logger } from '@/lib/logger';
   sampleSeasonalWorkers,
   sampleLaborPools,
   sampleHousingFacilities,
@@ -128,7 +129,7 @@ export const useAgriculture = () => {
         loadSettings(),
       ]);
     } catch (error) {
-      console.error('Error loading initial data:', error);
+      logger.error('Error loading initial data:', error);
       addToast({
         type: 'error',
         message: 'Failed to load agriculture data',
@@ -147,7 +148,7 @@ export const useAgriculture = () => {
       const workerList = await SeasonalLaborService.getAllWorkers();
       setWorkers(workerList);
     } catch (error) {
-      console.error('Error loading workers:', error);
+      logger.error('Error loading workers:', error);
       addToast({ type: 'error', message: 'Failed to load workers' });
     }
   };
@@ -163,7 +164,7 @@ export const useAgriculture = () => {
       });
       return newWorker;
     } catch (error) {
-      console.error('Error creating worker:', error);
+      logger.error('Error creating worker:', error);
       addToast({ type: 'error', message: 'Failed to create worker' });
       throw error;
     } finally {
@@ -188,7 +189,7 @@ export const useAgriculture = () => {
       });
       return updated;
     } catch (error) {
-      console.error('Error updating worker:', error);
+      logger.error('Error updating worker:', error);
       addToast({ type: 'error', message: 'Failed to update worker' });
       throw error;
     } finally {
@@ -206,7 +207,7 @@ export const useAgriculture = () => {
         message: 'Worker deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting worker:', error);
+      logger.error('Error deleting worker:', error);
       addToast({ type: 'error', message: 'Failed to delete worker' });
       throw error;
     } finally {
@@ -220,7 +221,7 @@ export const useAgriculture = () => {
       const results = await SeasonalLaborService.searchWorkers(query, filters);
       return results;
     } catch (error) {
-      console.error('Error searching workers:', error);
+      logger.error('Error searching workers:', error);
       addToast({ type: 'error', message: 'Failed to search workers' });
       throw error;
     } finally {
@@ -238,7 +239,7 @@ export const useAgriculture = () => {
         message: 'Worker assigned successfully',
       });
     } catch (error) {
-      console.error('Error assigning worker:', error);
+      logger.error('Error assigning worker:', error);
       addToast({ type: 'error', message: 'Failed to assign worker' });
       throw error;
     } finally {
@@ -251,7 +252,7 @@ export const useAgriculture = () => {
       const pools = await SeasonalLaborService.getAllLaborPools();
       setLaborPools(pools);
     } catch (error) {
-      console.error('Error loading labor pools:', error);
+      logger.error('Error loading labor pools:', error);
       addToast({ type: 'error', message: 'Failed to load labor pools' });
     }
   };
@@ -267,7 +268,7 @@ export const useAgriculture = () => {
       });
       return newPool;
     } catch (error) {
-      console.error('Error creating labor pool:', error);
+      logger.error('Error creating labor pool:', error);
       addToast({ type: 'error', message: 'Failed to create labor pool' });
       throw error;
     } finally {
@@ -284,7 +285,7 @@ export const useAgriculture = () => {
       const facilities = await HousingManagementService.getAllFacilities();
       setHousingFacilities(facilities);
     } catch (error) {
-      console.error('Error loading housing facilities:', error);
+      logger.error('Error loading housing facilities:', error);
       addToast({ type: 'error', message: 'Failed to load housing facilities' });
     }
   };
@@ -304,7 +305,7 @@ export const useAgriculture = () => {
       });
       return newFacility;
     } catch (error) {
-      console.error('Error creating housing facility:', error);
+      logger.error('Error creating housing facility:', error);
       addToast({ type: 'error', message: 'Failed to create housing facility' });
       throw error;
     } finally {
@@ -329,7 +330,7 @@ export const useAgriculture = () => {
       });
       return updated;
     } catch (error) {
-      console.error('Error updating housing facility:', error);
+      logger.error('Error updating housing facility:', error);
       addToast({ type: 'error', message: 'Failed to update housing facility' });
       throw error;
     } finally {
@@ -347,7 +348,7 @@ export const useAgriculture = () => {
         message: 'Housing facility deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting housing facility:', error);
+      logger.error('Error deleting housing facility:', error);
       addToast({ type: 'error', message: 'Failed to delete housing facility' });
       throw error;
     } finally {
@@ -360,7 +361,7 @@ export const useAgriculture = () => {
       const assignments = await HousingManagementService.getAllAssignments();
       setHousingAssignments(assignments);
     } catch (error) {
-      console.error('Error loading housing assignments:', error);
+      logger.error('Error loading housing assignments:', error);
       addToast({
         type: 'error',
         message: 'Failed to load housing assignments',
@@ -384,7 +385,7 @@ export const useAgriculture = () => {
       });
       return newAssignment;
     } catch (error) {
-      console.error('Error creating housing assignment:', error);
+      logger.error('Error creating housing assignment:', error);
       addToast({
         type: 'error',
         message: 'Failed to create housing assignment',
@@ -409,7 +410,7 @@ export const useAgriculture = () => {
         message: 'Worker checked out successfully',
       });
     } catch (error) {
-      console.error('Error checking out:', error);
+      logger.error('Error checking out:', error);
       addToast({ type: 'error', message: 'Failed to check out' });
       throw error;
     } finally {
@@ -422,7 +423,7 @@ export const useAgriculture = () => {
       const inspections = await HousingManagementService.getAllInspections();
       setHousingInspections(inspections);
     } catch (error) {
-      console.error('Error loading housing inspections:', error);
+      logger.error('Error loading housing inspections:', error);
       addToast({
         type: 'error',
         message: 'Failed to load housing inspections',
@@ -445,7 +446,7 @@ export const useAgriculture = () => {
       });
       return newInspection;
     } catch (error) {
-      console.error('Error creating inspection:', error);
+      logger.error('Error creating inspection:', error);
       addToast({ type: 'error', message: 'Failed to create inspection' });
       throw error;
     } finally {
@@ -462,7 +463,7 @@ export const useAgriculture = () => {
       const cycles = await CropCycleService.getAllCropCycles();
       setCropCycles(cycles);
     } catch (error) {
-      console.error('Error loading crop cycles:', error);
+      logger.error('Error loading crop cycles:', error);
       addToast({ type: 'error', message: 'Failed to load crop cycles' });
     }
   };
@@ -478,7 +479,7 @@ export const useAgriculture = () => {
       });
       return newCycle;
     } catch (error) {
-      console.error('Error creating crop cycle:', error);
+      logger.error('Error creating crop cycle:', error);
       addToast({ type: 'error', message: 'Failed to create crop cycle' });
       throw error;
     } finally {
@@ -500,7 +501,7 @@ export const useAgriculture = () => {
       });
       return updated;
     } catch (error) {
-      console.error('Error updating crop cycle:', error);
+      logger.error('Error updating crop cycle:', error);
       addToast({ type: 'error', message: 'Failed to update crop cycle' });
       throw error;
     } finally {
@@ -518,7 +519,7 @@ export const useAgriculture = () => {
         message: 'Crop cycle deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting crop cycle:', error);
+      logger.error('Error deleting crop cycle:', error);
       addToast({ type: 'error', message: 'Failed to delete crop cycle' });
       throw error;
     } finally {
@@ -536,7 +537,7 @@ export const useAgriculture = () => {
         message: `Crop stage updated to ${newStage}`,
       });
     } catch (error) {
-      console.error('Error updating crop stage:', error);
+      logger.error('Error updating crop stage:', error);
       addToast({ type: 'error', message: 'Failed to update crop stage' });
       throw error;
     } finally {
@@ -549,7 +550,7 @@ export const useAgriculture = () => {
       const schedules = await CropCycleService.getAllHarvestSchedules();
       setHarvestSchedules(schedules);
     } catch (error) {
-      console.error('Error loading harvest schedules:', error);
+      logger.error('Error loading harvest schedules:', error);
       addToast({
         type: 'error',
         message: 'Failed to load harvest schedules',
@@ -572,7 +573,7 @@ export const useAgriculture = () => {
       });
       return newSchedule;
     } catch (error) {
-      console.error('Error creating harvest schedule:', error);
+      logger.error('Error creating harvest schedule:', error);
       addToast({ type: 'error', message: 'Failed to create harvest schedule' });
       throw error;
     } finally {
@@ -590,7 +591,7 @@ export const useAgriculture = () => {
       const analyticsData = await AgricultureAnalyticsService.getAnalytics();
       setAnalytics(analyticsData);
     } catch (error) {
-      console.error('Error loading analytics:', error);
+      logger.error('Error loading analytics:', error);
       addToast({ type: 'error', message: 'Failed to load analytics' });
     } finally {
       setLoading(false);
@@ -614,7 +615,7 @@ export const useAgriculture = () => {
         message: `Analytics report exported as ${format.toUpperCase()}`,
       });
     } catch (error) {
-      console.error('Error exporting analytics:', error);
+      logger.error('Error exporting analytics:', error);
       addToast({ type: 'error', message: 'Failed to export analytics report' });
       throw error;
     } finally {
@@ -631,7 +632,7 @@ export const useAgriculture = () => {
       const settingsData = await AgricultureSettingsService.getSettings();
       setSettings(settingsData);
     } catch (error) {
-      console.error('Error loading settings:', error);
+      logger.error('Error loading settings:', error);
       addToast({ type: 'error', message: 'Failed to load settings' });
     }
   };
@@ -647,7 +648,7 @@ export const useAgriculture = () => {
       });
       return updated;
     } catch (error) {
-      console.error('Error updating settings:', error);
+      logger.error('Error updating settings:', error);
       addToast({ type: 'error', message: 'Failed to update settings' });
       throw error;
     } finally {

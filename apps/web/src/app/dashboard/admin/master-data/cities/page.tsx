@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface City {
     id: string;
@@ -35,7 +36,7 @@ export default function CitiesPage() {
             if (citiesRes.ok) setData(await citiesRes.json());
             if (statesRes.ok) setStates(await statesRes.json());
         } catch (error) {
-            console.error('Failed to fetch data:', error);
+            logger.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
         }
@@ -81,7 +82,7 @@ export default function CitiesPage() {
                 alert('Failed to save city');
             }
         } catch (error) {
-            console.error('Error saving city:', error);
+            logger.error('Error saving city:', error);
             alert('Error saving city');
         }
     };
@@ -99,7 +100,7 @@ export default function CitiesPage() {
                     alert('Failed to delete city');
                 }
             } catch (error) {
-                console.error('Error deleting city:', error);
+                logger.error('Error deleting city:', error);
                 alert('Error deleting city');
             }
         }

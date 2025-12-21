@@ -23,6 +23,8 @@ model Tenant {
 
   companies Company[]
   users     User[]
+  roles     Role[]
+  userRoles UserRole[]
 }
 
 model Company {
@@ -274,14 +276,126 @@ model User {
   lastLogin  DateTime?
 
   // Relations
-  sessions      UserSession[]
-  auditLogs     AuditLog[]
-  delegatedTo   UserDelegation[]   @relation("Delegator")
-  delegatedFrom UserDelegation[]   @relation("Delegatee")
-  deactivations UserDeactivation[]
+  sessions            UserSession[]
+  auditLogs           AuditLog[]
+  delegatedTo         UserDelegation[]      @relation("Delegator")
+  delegatedFrom       UserDelegation[]      @relation("Delegatee")
+  deactivations       UserDeactivation[]
+  passwordResetTokens PasswordResetToken[]
+  mfaSettings         UserMFA?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Role assignments
+  roles UserRole[]
+}
+
+// ============================================================================
+// 5B. ROLE-BASED ACCESS CONTROL (RBAC)
+// ============================================================================
+
+model Role {
+  id          String   @id @default(uuid())
+  tenantId    String?  // null for system-wide roles
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+  code        String   // SUPER_ADMIN, ADMIN, HR_MANAGER, etc.
+  name        String
+  description String?
+  isSystem    Boolean  @default(false) // System roles cannot be deleted
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userRoles   UserRole[]
+  permissions RolePermission[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([code])
+  @@index([isActive])
+}
+
+model UserRole {
+  id         String   @id @default(uuid())
+  userId     String
+  roleId     String
+  tenantId   String
+  assignedBy String?  // User ID who assigned this role
+  assignedAt DateTime @default(now())
+  expiresAt  DateTime? // Optional: For temporary role assignments
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+  @@index([tenantId])
+  @@index([expiresAt])
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  resource    String   // users, employees, departments, etc.
+  action      String   // create, read, update, delete, manage
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles RolePermission[]
+
+  @@unique([resource, action])
+  @@index([resource])
+}
+
+model RolePermission {
+  id           String   @id @default(uuid())
+  roleId       String
+  permissionId String
+  grantedAt    DateTime @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+// 5C. Password Reset
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique // Hashed token for security
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  ipAddress String?  // Track where reset was requested from
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+// 5D. Multi-Factor Authentication (MFA)
+model UserMFA {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  totpSecret    String?  // Encrypted TOTP secret for authenticator apps
+  backupCodes   Json?    // Array of hashed backup codes
+  phoneNumber   String?  // For SMS-based MFA (future)
+  method        String   @default("totp") // totp, sms, email
+  verifiedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 // ============================================================================
@@ -417,13 +531,7 @@ model Bank {
 // 11. SYSTEM MASTERS
 // ============================================================================
 
-model Role {
-  id          String  @id @default(uuid())
-  name        String  @unique
-  description String?
-  usersCount  Int     @default(0)
-  status      String  @default("Active")
-}
+// Note: Role model moved to section 5B (RBAC) for better organization
 
 model SystemSetting {
   id          String  @id @default(uuid())

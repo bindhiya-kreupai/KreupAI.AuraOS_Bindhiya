@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch all competency categories
 export async function GET(request: NextRequest) {
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
             data: transformed
         });
     } catch (error) {
-        console.error('Error fetching categories:', error);
+        logger.error('Error fetching categories:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch categories' },
             { status: 500 }
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
             message: 'Category created successfully'
         });
     } catch (error: any) {
-        console.error('Error creating category:', error);
+        logger.error('Error creating category:', error);
         if (error.code === 'P2002') {
             return NextResponse.json(
                 { success: false, error: 'A category with this code already exists' },

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch all competencies with filters
 export async function GET(request: NextRequest) {
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
             totalPages: Math.ceil(total / pageSize)
         });
     } catch (error) {
-        console.error('Error fetching competencies:', error);
+        logger.error('Error fetching competencies:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch competencies' },
             { status: 500 }
@@ -146,7 +147,7 @@ export async function POST(request: NextRequest) {
             message: 'Competency created successfully'
         });
     } catch (error: any) {
-        console.error('Error creating competency:', error);
+        logger.error('Error creating competency:', error);
         if (error.code === 'P2002') {
             return NextResponse.json(
                 { success: false, error: 'A competency with this code already exists' },

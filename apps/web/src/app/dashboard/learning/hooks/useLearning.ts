@@ -55,6 +55,7 @@ import {
     generateSampleLearningSettings,
 } from '../data';
 import { useToast } from './useToast';
+import { logger } from '@/lib/logger';
 
 export const useLearning = () => {
     const [courses, setCourses] = useState<Course[]>([]);
@@ -244,7 +245,7 @@ export const useLearning = () => {
             }
         } catch (error) {
             toast.error('Failed to load learning data');
-            console.error('Load error:', error);
+            logger.error('Load error:', error);
         } finally {
             setIsLoading(false);
         }
@@ -348,7 +349,7 @@ export const useLearning = () => {
             setEnrollments(prev => prev.map(e => e.id === id ? updated : e));
             return updated;
         } catch (error) {
-            console.error('Failed to update progress:', error);
+            logger.error('Failed to update progress:', error);
             throw error;
         }
     }, []);
@@ -486,7 +487,7 @@ export const useLearning = () => {
             setAnalytics(analyticsData);
         } catch (error) {
             toast.error('Failed to refresh analytics');
-            console.error('Analytics error:', error);
+            logger.error('Analytics error:', error);
         }
     }, [toast]);
 

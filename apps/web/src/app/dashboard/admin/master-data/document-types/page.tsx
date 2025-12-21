@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface DocumentType {
     id: string;
@@ -54,7 +55,7 @@ export default function DocumentTypesPage() {
                 setData(result);
             }
         } catch (error) {
-            console.error('Failed to fetch document types:', error);
+            logger.error('Failed to fetch document types:', error);
         } finally {
             setIsLoading(false);
         }
@@ -89,7 +90,7 @@ export default function DocumentTypesPage() {
                 alert('Failed to save document type');
             }
         } catch (error) {
-            console.error('Error saving document type:', error);
+            logger.error('Error saving document type:', error);
             alert('Error saving document type');
         }
     };
@@ -107,7 +108,7 @@ export default function DocumentTypesPage() {
                     alert('Failed to delete document type');
                 }
             } catch (error) {
-                console.error('Error deleting document type:', error);
+                logger.error('Error deleting document type:', error);
                 alert('Error deleting document type');
             }
         }

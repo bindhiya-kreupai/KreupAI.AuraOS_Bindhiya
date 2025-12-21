@@ -4,6 +4,7 @@ import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission, requireTenantAccess } from '@/lib/auth';
 import { UpdateUserSchema, validationErrorResponse } from '@/lib/validators';
 import { userService } from '@/lib/services';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch single user by ID
 export const GET = withEnhancedAuth(
@@ -34,7 +35,7 @@ export const GET = withEnhancedAuth(
         data: result.data,
       });
     } catch (error) {
-      console.error('Error fetching user:', error);
+      logger.error('Error fetching user:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch user' },
         { status: 500 }
@@ -100,7 +101,7 @@ export const PUT = withEnhancedAuth(
         return validationErrorResponse(error);
       }
 
-      console.error('Error updating user:', error);
+      logger.error('Error updating user:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update user' },
         { status: 500 }
@@ -160,7 +161,7 @@ export const DELETE = withEnhancedAuth(
         message: 'User deactivated successfully',
       });
     } catch (error) {
-      console.error('Error deleting user:', error);
+      logger.error('Error deleting user:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to delete user' },
         { status: 500 }

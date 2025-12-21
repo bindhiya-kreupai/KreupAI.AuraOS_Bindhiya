@@ -18,6 +18,7 @@ import {
   MobileSettingsService,
 } from '../services';
 import type {
+import { logger } from '@/lib/logger';
   MobileAppConfig,
   PushNotification,
   NotificationTemplate,
@@ -254,7 +255,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const config = await MobileAppConfigService.getConfig();
       setAppConfig(config);
     } catch (error) {
-      console.error('Failed to fetch app config:', error);
+      logger.error('Failed to fetch app config:', error);
     } finally {
       setConfigLoading(false);
     }
@@ -267,7 +268,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setAppConfig(updated);
       return updated;
     } catch (error) {
-      console.error('Failed to update app config:', error);
+      logger.error('Failed to update app config:', error);
       throw error;
     } finally {
       setConfigLoading(false);
@@ -281,7 +282,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setAppConfig(updated);
       return updated;
     } catch (error) {
-      console.error('Failed to enable maintenance mode:', error);
+      logger.error('Failed to enable maintenance mode:', error);
       throw error;
     } finally {
       setConfigLoading(false);
@@ -295,7 +296,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setAppConfig(updated);
       return updated;
     } catch (error) {
-      console.error('Failed to disable maintenance mode:', error);
+      logger.error('Failed to disable maintenance mode:', error);
       throw error;
     } finally {
       setConfigLoading(false);
@@ -309,7 +310,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setAppConfig(updated);
       return updated;
     } catch (error) {
-      console.error('Failed to force update:', error);
+      logger.error('Failed to force update:', error);
       throw error;
     } finally {
       setConfigLoading(false);
@@ -379,7 +380,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const templates = await PushNotificationService.getTemplates();
       setNotificationTemplates(templates);
     } catch (error) {
-      console.error('Failed to fetch templates:', error);
+      logger.error('Failed to fetch templates:', error);
     }
   }, []);
 
@@ -389,7 +390,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setNotificationTemplates((prev) => [...prev, created]);
       return created;
     } catch (error) {
-      console.error('Failed to create template:', error);
+      logger.error('Failed to create template:', error);
       throw error;
     }
   }, []);
@@ -401,7 +402,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const config = await OfflineModeService.getConfig();
       setOfflineConfig(config);
     } catch (error) {
-      console.error('Failed to fetch offline config:', error);
+      logger.error('Failed to fetch offline config:', error);
     } finally {
       setOfflineLoading(false);
     }
@@ -414,7 +415,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setOfflineConfig(updated);
       return updated;
     } catch (error) {
-      console.error('Failed to update offline config:', error);
+      logger.error('Failed to update offline config:', error);
       throw error;
     } finally {
       setOfflineLoading(false);
@@ -426,7 +427,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const status = await OfflineModeService.getSyncStatus();
       setSyncStatus(status);
     } catch (error) {
-      console.error('Failed to fetch sync status:', error);
+      logger.error('Failed to fetch sync status:', error);
     }
   }, []);
 
@@ -437,7 +438,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setSyncStatus(status);
       return status;
     } catch (error) {
-      console.error('Failed to sync data:', error);
+      logger.error('Failed to sync data:', error);
       throw error;
     } finally {
       setOfflineLoading(false);
@@ -451,7 +452,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const config = await BiometricService.getConfig();
       setBiometricConfig(config);
     } catch (error) {
-      console.error('Failed to fetch biometric config:', error);
+      logger.error('Failed to fetch biometric config:', error);
     } finally {
       setBiometricLoading(false);
     }
@@ -464,7 +465,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setBiometricConfig(updated);
       return updated;
     } catch (error) {
-      console.error('Failed to update biometric config:', error);
+      logger.error('Failed to update biometric config:', error);
       throw error;
     } finally {
       setBiometricLoading(false);
@@ -477,7 +478,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const enrollments = await BiometricService.getAllEnrollments();
       setBiometricEnrollments(enrollments);
     } catch (error) {
-      console.error('Failed to fetch biometric enrollments:', error);
+      logger.error('Failed to fetch biometric enrollments:', error);
     } finally {
       setBiometricLoading(false);
     }
@@ -490,7 +491,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setBiometricEnrollments((prev) => [...prev, created]);
       return created;
     } catch (error) {
-      console.error('Failed to enroll biometric:', error);
+      logger.error('Failed to enroll biometric:', error);
       throw error;
     } finally {
       setBiometricLoading(false);
@@ -504,7 +505,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setBiometricEnrollments((prev) => prev.map((e) => (e.enrollmentId === enrollmentId ? updated : e)));
       return updated;
     } catch (error) {
-      console.error('Failed to revoke biometric:', error);
+      logger.error('Failed to revoke biometric:', error);
       throw error;
     } finally {
       setBiometricLoading(false);
@@ -518,7 +519,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const config = await GPSAttendanceService.getConfig();
       setGpsConfig(config);
     } catch (error) {
-      console.error('Failed to fetch GPS config:', error);
+      logger.error('Failed to fetch GPS config:', error);
     } finally {
       setGpsLoading(false);
     }
@@ -531,7 +532,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setGpsConfig(updated);
       return updated;
     } catch (error) {
-      console.error('Failed to update GPS config:', error);
+      logger.error('Failed to update GPS config:', error);
       throw error;
     } finally {
       setGpsLoading(false);
@@ -544,7 +545,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const data = await GPSAttendanceService.getAllCheckIns();
       setCheckIns(data);
     } catch (error) {
-      console.error('Failed to fetch check-ins:', error);
+      logger.error('Failed to fetch check-ins:', error);
     } finally {
       setGpsLoading(false);
     }
@@ -557,7 +558,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setCheckIns((prev) => [...prev, created]);
       return created;
     } catch (error) {
-      console.error('Failed to record check-in:', error);
+      logger.error('Failed to record check-in:', error);
       throw error;
     } finally {
       setGpsLoading(false);
@@ -615,7 +616,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const config = await DocumentUploadService.getConfig();
       setDocumentConfig(config);
     } catch (error) {
-      console.error('Failed to fetch document config:', error);
+      logger.error('Failed to fetch document config:', error);
     } finally {
       setDocumentsLoading(false);
     }
@@ -628,7 +629,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setUploadedDocuments((prev) => [...prev, uploaded]);
       return uploaded;
     } catch (error) {
-      console.error('Failed to upload document:', error);
+      logger.error('Failed to upload document:', error);
       throw error;
     } finally {
       setDocumentsLoading(false);
@@ -641,7 +642,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const docs = await DocumentUploadService.getAllDocuments();
       setUploadedDocuments(docs);
     } catch (error) {
-      console.error('Failed to fetch uploaded documents:', error);
+      logger.error('Failed to fetch uploaded documents:', error);
     } finally {
       setDocumentsLoading(false);
     }
@@ -654,7 +655,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const data = await MobileTimesheetsService.getAllTimesheets();
       setTimesheets(data);
     } catch (error) {
-      console.error('Failed to fetch timesheets:', error);
+      logger.error('Failed to fetch timesheets:', error);
     } finally {
       setTimesheetsLoading(false);
     }
@@ -667,7 +668,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setTimesheets((prev) => prev.map((t) => (t.timesheetId === timesheetId ? updated : t)));
       return updated;
     } catch (error) {
-      console.error('Failed to submit timesheet:', error);
+      logger.error('Failed to submit timesheet:', error);
       throw error;
     } finally {
       setTimesheetsLoading(false);
@@ -681,7 +682,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const actions = await QuickActionsService.getAllQuickActions();
       setQuickActions(actions);
     } catch (error) {
-      console.error('Failed to fetch quick actions:', error);
+      logger.error('Failed to fetch quick actions:', error);
     } finally {
       setQuickActionsLoading(false);
     }
@@ -694,7 +695,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setQuickActions((prev) => prev.map((a) => (a.actionId === actionId ? updated : a)));
       return updated;
     } catch (error) {
-      console.error('Failed to update quick action:', error);
+      logger.error('Failed to update quick action:', error);
       throw error;
     } finally {
       setQuickActionsLoading(false);
@@ -708,7 +709,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const config = await VoiceCommandsService.getConfig();
       setVoiceConfig(config);
     } catch (error) {
-      console.error('Failed to fetch voice config:', error);
+      logger.error('Failed to fetch voice config:', error);
     } finally {
       setVoiceLoading(false);
     }
@@ -721,7 +722,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setVoiceInteractions((prev) => [...prev, recorded]);
       return recorded;
     } catch (error) {
-      console.error('Failed to record voice interaction:', error);
+      logger.error('Failed to record voice interaction:', error);
       throw error;
     } finally {
       setVoiceLoading(false);
@@ -734,7 +735,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const interactions = await VoiceCommandsService.getAllInteractions();
       setVoiceInteractions(interactions);
     } catch (error) {
-      console.error('Failed to fetch voice interactions:', error);
+      logger.error('Failed to fetch voice interactions:', error);
     } finally {
       setVoiceLoading(false);
     }
@@ -747,7 +748,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const data = await MobileAnalyticsService.getAnalytics();
       setAnalytics(data);
     } catch (error) {
-      console.error('Failed to fetch analytics:', error);
+      logger.error('Failed to fetch analytics:', error);
     } finally {
       setAnalyticsLoading(false);
     }
@@ -760,7 +761,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const data = await ChatService.getAllConversations();
       setConversations(data);
     } catch (error) {
-      console.error('Failed to fetch conversations:', error);
+      logger.error('Failed to fetch conversations:', error);
     } finally {
       setChatLoading(false);
     }
@@ -772,7 +773,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const sent = await ChatService.sendMessage(message);
       return sent;
     } catch (error) {
-      console.error('Failed to send message:', error);
+      logger.error('Failed to send message:', error);
       throw error;
     } finally {
       setChatLoading(false);
@@ -786,7 +787,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const profile = await MobileProfileService.getProfile();
       setUserProfile(profile);
     } catch (error) {
-      console.error('Failed to fetch user profile:', error);
+      logger.error('Failed to fetch user profile:', error);
     } finally {
       setProfileLoading(false);
     }
@@ -799,7 +800,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setUserProfile(updated);
       return updated;
     } catch (error) {
-      console.error('Failed to update user profile:', error);
+      logger.error('Failed to update user profile:', error);
       throw error;
     } finally {
       setProfileLoading(false);
@@ -813,7 +814,7 @@ export function useMobileApp(): UseMobileAppReturn {
       const data = await MobileSettingsService.getSettings();
       setSettings(data);
     } catch (error) {
-      console.error('Failed to fetch settings:', error);
+      logger.error('Failed to fetch settings:', error);
     } finally {
       setSettingsLoading(false);
     }
@@ -826,7 +827,7 @@ export function useMobileApp(): UseMobileAppReturn {
       setSettings(updated);
       return updated;
     } catch (error) {
-      console.error('Failed to update settings:', error);
+      logger.error('Failed to update settings:', error);
       throw error;
     } finally {
       setSettingsLoading(false);

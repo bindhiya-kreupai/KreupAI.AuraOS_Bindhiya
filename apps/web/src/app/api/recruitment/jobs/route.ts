@@ -1,6 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
+import { logger } from '@/lib/logger';
 
 export async function GET() {
     try {
@@ -9,7 +10,7 @@ export async function GET() {
         });
         return NextResponse.json(jobs);
     } catch (error) {
-        console.error('Error fetching jobs:', error);
+        logger.error('Error fetching jobs:', error);
         return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
     }
 }
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
         });
         return NextResponse.json(job);
     } catch (error) {
-        console.error('Error creating job:', error);
+        logger.error('Error creating job:', error);
         return NextResponse.json({ error: 'Failed to create job' }, { status: 500 });
     }
 }

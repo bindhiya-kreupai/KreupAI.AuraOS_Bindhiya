@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { authenticate } from './middleware';
-import { Permission, getRolePermissions } from './permissions';
+import { Permission } from './permissions';
 import { JWTPayload } from './jwt';
+import { logger } from '@/lib/logger';
 
 export interface EnhancedAuthContext {
   user: JWTPayload;
@@ -28,24 +29,50 @@ export async function authenticateWithPermissions(
   }
 
   try {
-    // Fetch user with employee information
-    // For now, we'll use a simple role system based on email or a default
-    // In production, you'd fetch this from a UserRole junction table
-
-    const userWithEmployee = await prisma.user.findUnique({
+    // Fetch user with employee information and roles from database
+    const userWithRoles = await prisma.user.findUnique({
       where: { id: user!.userId },
       select: {
         id: true,
         email: true,
+        tenantId: true,
         employee: {
           select: {
             id: true,
           },
         },
+        roles: {
+          where: {
+            OR: [
+              { expiresAt: null }, // No expiration
+              { expiresAt: { gt: new Date() } }, // Not expired
+            ],
+          },
+          select: {
+            role: {
+              select: {
+                code: true,
+                name: true,
+                isActive: true,
+                permissions: {
+                  select: {
+                    permission: {
+                      select: {
+                        resource: true,
+                        action: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 
-    if (!userWithEmployee) {
+    if (!userWithRoles) {
+      logger.warn({ userId: user!.userId }, 'User not found during enhanced auth');
       return {
         context: null,
         error: NextResponse.json(
@@ -55,26 +82,50 @@ export async function authenticateWithPermissions(
       };
     }
 
-    // TODO: Fetch actual roles from database when UserRole table exists
-    // For now, assign default role based on email or use EMPLOYEE as default
-    const roles = determineUserRoles(userWithEmployee.email);
+    // Extract role codes from database
+    const roles = userWithRoles.roles
+      .filter((ur) => ur.role.isActive)
+      .map((ur) => ur.role.code);
+
+    // If user has no roles, assign default EMPLOYEE role
+    if (roles.length === 0) {
+      logger.warn({
+        userId: user!.userId,
+        email: userWithRoles.email
+      }, 'User has no roles assigned, defaulting to EMPLOYEE');
+      roles.push('EMPLOYEE');
+    }
 
     // Aggregate permissions from all roles
-    const permissions = roles.flatMap((role) => getRolePermissions(role));
+    const permissionSet = new Set<Permission>();
 
-    // Remove duplicates
-    const uniquePermissions = [...new Set(permissions)];
+    for (const userRole of userWithRoles.roles) {
+      if (!userRole.role.isActive) continue;
+
+      for (const rolePerm of userRole.role.permissions) {
+        const permission: Permission = `${rolePerm.permission.resource}:${rolePerm.permission.action}`;
+        permissionSet.add(permission);
+      }
+    }
+
+    const permissions = Array.from(permissionSet);
+
+    logger.info({
+      userId: user!.userId,
+      roles: roles.length,
+      permissions: permissions.length
+    }, 'Enhanced authentication successful');
 
     const context: EnhancedAuthContext = {
       user: user!,
-      permissions: uniquePermissions,
+      permissions,
       roles,
-      employeeId: userWithEmployee.employee?.id,
+      employeeId: userWithRoles.employee?.id,
     };
 
     return { context, error: null };
   } catch (error) {
-    console.error('Enhanced authentication error:', error);
+    logger.error({ error, userId: user!.userId }, 'Enhanced authentication error');
     return {
       context: null,
       error: NextResponse.json(
@@ -83,36 +134,6 @@ export async function authenticateWithPermissions(
       ),
     };
   }
-}
-
-/**
- * Determine user roles based on email (temporary solution)
- * TODO: Replace with database lookup when UserRole table exists
- */
-function determineUserRoles(email: string): string[] {
-  // Super admin emails (configure via environment variable in production)
-  const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS || '').split(',');
-  if (superAdminEmails.some((e) => e.trim().toLowerCase() === email.toLowerCase())) {
-    return ['SUPER_ADMIN'];
-  }
-
-  // Admin domain check (example: @admin.company.com)
-  if (email.includes('@admin.') || email.startsWith('admin@')) {
-    return ['ADMIN'];
-  }
-
-  // HR domain check
-  if (email.includes('@hr.') || email.startsWith('hr@')) {
-    return ['HR_MANAGER'];
-  }
-
-  // Manager check (you can implement more sophisticated logic)
-  if (email.includes('manager@')) {
-    return ['MANAGER'];
-  }
-
-  // Default role
-  return ['EMPLOYEE'];
 }
 
 /**

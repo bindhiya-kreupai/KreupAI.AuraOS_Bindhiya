@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { StandardReport, CustomReport, Dashboard, ScheduledReport, RealtimeMetric, ComplianceReport, ExecutiveDashboard, PredictiveAnalytics, AnalyticsSettings, Toast } from '../types';
 import { StandardReportService, CustomReportService, DashboardService, ScheduledReportService, ReportExportService, RealtimeMetricsService, ComplianceReportService, ExecutiveDashboardService, PredictiveAnalyticsService, AnalyticsSettingsService } from '../services';
 import { sampleStandardReports, sampleCustomReports, sampleDashboards, sampleScheduledReports, sampleRealtimeMetrics, sampleComplianceReports, sampleExecutiveDashboards, samplePredictiveAnalytics, sampleAnalyticsSettings } from '../data';
+import { logger } from '@/lib/logger';
 
 export const useAnalytics = () => {
   const [standardReports, setStandardReports] = useState<StandardReport[]>([]);
@@ -50,7 +51,7 @@ export const useAnalytics = () => {
         loadSettings(),
       ]);
     } catch (error) {
-      console.error('Error loading data:', error);
+      logger.error('Error loading data:', error);
       addToast({ type: 'error', message: 'Failed to load analytics data' });
     } finally {
       setLoading(false);
@@ -62,7 +63,7 @@ export const useAnalytics = () => {
       const reports = await StandardReportService.getAllReports();
       setStandardReports(reports);
     } catch (error) {
-      console.error('Error loading standard reports:', error);
+      logger.error('Error loading standard reports:', error);
     }
   };
 
@@ -73,7 +74,7 @@ export const useAnalytics = () => {
       addToast({ type: 'success', message: 'Report generated successfully' });
       return report;
     } catch (error) {
-      console.error('Error generating report:', error);
+      logger.error('Error generating report:', error);
       addToast({ type: 'error', message: 'Failed to generate report' });
       throw error;
     } finally {
@@ -86,7 +87,7 @@ export const useAnalytics = () => {
       const reports = await CustomReportService.getAllReports();
       setCustomReports(reports);
     } catch (error) {
-      console.error('Error loading custom reports:', error);
+      logger.error('Error loading custom reports:', error);
     }
   };
 
@@ -98,7 +99,7 @@ export const useAnalytics = () => {
       addToast({ type: 'success', message: 'Custom report created' });
       return report;
     } catch (error) {
-      console.error('Error creating report:', error);
+      logger.error('Error creating report:', error);
       addToast({ type: 'error', message: 'Failed to create report' });
       throw error;
     } finally {
@@ -113,7 +114,7 @@ export const useAnalytics = () => {
       const defaultDash = dashboardList.find(d => d.isDefault);
       if (defaultDash) setSelectedDashboard(defaultDash);
     } catch (error) {
-      console.error('Error loading dashboards:', error);
+      logger.error('Error loading dashboards:', error);
     }
   };
 
@@ -125,7 +126,7 @@ export const useAnalytics = () => {
       addToast({ type: 'success', message: 'Dashboard created' });
       return dashboard;
     } catch (error) {
-      console.error('Error creating dashboard:', error);
+      logger.error('Error creating dashboard:', error);
       addToast({ type: 'error', message: 'Failed to create dashboard' });
       throw error;
     } finally {
@@ -138,7 +139,7 @@ export const useAnalytics = () => {
       const schedules = await ScheduledReportService.getAllScheduledReports();
       setScheduledReports(schedules);
     } catch (error) {
-      console.error('Error loading scheduled reports:', error);
+      logger.error('Error loading scheduled reports:', error);
     }
   };
 
@@ -150,7 +151,7 @@ export const useAnalytics = () => {
       addToast({ type: 'success', message: 'Report scheduled' });
       return schedule;
     } catch (error) {
-      console.error('Error scheduling report:', error);
+      logger.error('Error scheduling report:', error);
       addToast({ type: 'error', message: 'Failed to schedule report' });
       throw error;
     } finally {
@@ -165,7 +166,7 @@ export const useAnalytics = () => {
       addToast({ type: 'success', message: \`Report exported as \${format.toUpperCase()}\` });
       return exportRecord;
     } catch (error) {
-      console.error('Error exporting report:', error);
+      logger.error('Error exporting report:', error);
       addToast({ type: 'error', message: 'Failed to export report' });
       throw error;
     } finally {
@@ -178,7 +179,7 @@ export const useAnalytics = () => {
       const metrics = await RealtimeMetricsService.getMetrics();
       setRealtimeMetrics(metrics);
     } catch (error) {
-      console.error('Error loading metrics:', error);
+      logger.error('Error loading metrics:', error);
     }
   };
 
@@ -187,7 +188,7 @@ export const useAnalytics = () => {
       const reports = await ComplianceReportService.getAllReports();
       setComplianceReports(reports);
     } catch (error) {
-      console.error('Error loading compliance reports:', error);
+      logger.error('Error loading compliance reports:', error);
     }
   };
 
@@ -196,7 +197,7 @@ export const useAnalytics = () => {
       const dashboardList = await ExecutiveDashboardService.getAllDashboards();
       setExecutiveDashboards(dashboardList);
     } catch (error) {
-      console.error('Error loading executive dashboards:', error);
+      logger.error('Error loading executive dashboards:', error);
     }
   };
 
@@ -205,7 +206,7 @@ export const useAnalytics = () => {
       const analytics = await PredictiveAnalyticsService.getAnalytics();
       setPredictiveAnalytics(analytics);
     } catch (error) {
-      console.error('Error loading predictive analytics:', error);
+      logger.error('Error loading predictive analytics:', error);
     }
   };
 
@@ -214,7 +215,7 @@ export const useAnalytics = () => {
       const settingsData = await AnalyticsSettingsService.getSettings();
       setSettings(settingsData);
     } catch (error) {
-      console.error('Error loading settings:', error);
+      logger.error('Error loading settings:', error);
     }
   };
 
@@ -226,7 +227,7 @@ export const useAnalytics = () => {
       addToast({ type: 'success', message: 'Settings updated' });
       return updated;
     } catch (error) {
-      console.error('Error updating settings:', error);
+      logger.error('Error updating settings:', error);
       addToast({ type: 'error', message: 'Failed to update settings' });
       throw error;
     } finally {

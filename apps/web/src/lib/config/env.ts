@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 /**
  * Environment Variable Validation Schema
@@ -96,9 +97,9 @@ function parseEnv(): Env {
         return `  - ${path}: ${err.message}`;
       });
 
-      console.error('\n❌ Invalid environment variables:\n');
-      console.error(formatted.join('\n'));
-      console.error('\nPlease check your .env file and ensure all required variables are set.\n');
+      logger.error('\n❌ Invalid environment variables:\n');
+      logger.error(formatted.join('\n'));
+      logger.error('\nPlease check your .env file and ensure all required variables are set.\n');
 
       process.exit(1);
     }
@@ -201,5 +202,5 @@ export const rateLimitConfig = {
  */
 if (typeof window === 'undefined') {
   // Only validate on server-side
-  console.log('✅ Environment variables validated successfully');
+  logger.info('✅ Environment variables validated successfully');
 }

@@ -41,6 +41,7 @@ import {
   OrgDesignSettingsService,
 } from '../services';
 import {
+import { logger } from '@/lib/logger';
   sampleOrgCharts,
   sampleScenarios,
   sampleSpanOfControl,
@@ -140,7 +141,7 @@ export const useOrgDesign = () => {
         loadAnalytics(),
       ]);
     } catch (error) {
-      console.error('Error loading initial data:', error);
+      logger.error('Error loading initial data:', error);
       addToast({
         type: 'error',
         message: 'Failed to load organizational design data',
@@ -163,7 +164,7 @@ export const useOrgDesign = () => {
       setCurrentChart(current);
       setSelectedChart(current);
     } catch (error) {
-      console.error('Error loading org charts:', error);
+      logger.error('Error loading org charts:', error);
       addToast({ type: 'error', message: 'Failed to load org charts' });
     }
   };
@@ -179,7 +180,7 @@ export const useOrgDesign = () => {
       });
       return newChart;
     } catch (error) {
-      console.error('Error creating org chart:', error);
+      logger.error('Error creating org chart:', error);
       addToast({ type: 'error', message: 'Failed to create org chart' });
       throw error;
     } finally {
@@ -198,7 +199,7 @@ export const useOrgDesign = () => {
       });
       return updated;
     } catch (error) {
-      console.error('Error updating org chart:', error);
+      logger.error('Error updating org chart:', error);
       addToast({ type: 'error', message: 'Failed to update org chart' });
       throw error;
     } finally {
@@ -216,7 +217,7 @@ export const useOrgDesign = () => {
         message: 'Org chart deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting org chart:', error);
+      logger.error('Error deleting org chart:', error);
       addToast({ type: 'error', message: 'Failed to delete org chart' });
       throw error;
     } finally {
@@ -234,7 +235,7 @@ export const useOrgDesign = () => {
         message: `Position "${node.positionTitle}" added to org chart`,
       });
     } catch (error) {
-      console.error('Error adding node:', error);
+      logger.error('Error adding node:', error);
       addToast({ type: 'error', message: 'Failed to add position' });
       throw error;
     } finally {
@@ -256,7 +257,7 @@ export const useOrgDesign = () => {
         message: 'Position updated successfully',
       });
     } catch (error) {
-      console.error('Error updating node:', error);
+      logger.error('Error updating node:', error);
       addToast({ type: 'error', message: 'Failed to update position' });
       throw error;
     } finally {
@@ -274,7 +275,7 @@ export const useOrgDesign = () => {
         message: 'Position removed from org chart',
       });
     } catch (error) {
-      console.error('Error deleting node:', error);
+      logger.error('Error deleting node:', error);
       addToast({ type: 'error', message: 'Failed to remove position' });
       throw error;
     } finally {
@@ -296,7 +297,7 @@ export const useOrgDesign = () => {
         message: 'Position moved successfully',
       });
     } catch (error) {
-      console.error('Error moving node:', error);
+      logger.error('Error moving node:', error);
       addToast({ type: 'error', message: 'Failed to move position' });
       throw error;
     } finally {
@@ -324,7 +325,7 @@ export const useOrgDesign = () => {
         message: `Org chart exported as ${format.toUpperCase()}`,
       });
     } catch (error) {
-      console.error('Error exporting org chart:', error);
+      logger.error('Error exporting org chart:', error);
       addToast({ type: 'error', message: 'Failed to export org chart' });
       throw error;
     } finally {
@@ -341,7 +342,7 @@ export const useOrgDesign = () => {
       const scenarioList = await ScenarioService.getAllScenarios();
       setScenarios(scenarioList);
     } catch (error) {
-      console.error('Error loading scenarios:', error);
+      logger.error('Error loading scenarios:', error);
       addToast({ type: 'error', message: 'Failed to load scenarios' });
     }
   };
@@ -357,7 +358,7 @@ export const useOrgDesign = () => {
       });
       return newScenario;
     } catch (error) {
-      console.error('Error creating scenario:', error);
+      logger.error('Error creating scenario:', error);
       addToast({ type: 'error', message: 'Failed to create scenario' });
       throw error;
     } finally {
@@ -376,7 +377,7 @@ export const useOrgDesign = () => {
       });
       return updated;
     } catch (error) {
-      console.error('Error updating scenario:', error);
+      logger.error('Error updating scenario:', error);
       addToast({ type: 'error', message: 'Failed to update scenario' });
       throw error;
     } finally {
@@ -394,7 +395,7 @@ export const useOrgDesign = () => {
         message: 'Scenario deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting scenario:', error);
+      logger.error('Error deleting scenario:', error);
       addToast({ type: 'error', message: 'Failed to delete scenario' });
       throw error;
     } finally {
@@ -415,7 +416,7 @@ export const useOrgDesign = () => {
         message: 'Change added to scenario',
       });
     } catch (error) {
-      console.error('Error adding change:', error);
+      logger.error('Error adding change:', error);
       addToast({ type: 'error', message: 'Failed to add change' });
       throw error;
     } finally {
@@ -434,7 +435,7 @@ export const useOrgDesign = () => {
       });
       return impact;
     } catch (error) {
-      console.error('Error calculating impact:', error);
+      logger.error('Error calculating impact:', error);
       addToast({ type: 'error', message: 'Failed to calculate impact' });
       throw error;
     } finally {
@@ -452,7 +453,7 @@ export const useOrgDesign = () => {
         message: 'Scenario approved successfully',
       });
     } catch (error) {
-      console.error('Error approving scenario:', error);
+      logger.error('Error approving scenario:', error);
       addToast({ type: 'error', message: 'Failed to approve scenario' });
       throw error;
     } finally {
@@ -471,7 +472,7 @@ export const useOrgDesign = () => {
         message: 'Scenario implemented successfully',
       });
     } catch (error) {
-      console.error('Error implementing scenario:', error);
+      logger.error('Error implementing scenario:', error);
       addToast({ type: 'error', message: 'Failed to implement scenario' });
       throw error;
     } finally {
@@ -489,7 +490,7 @@ export const useOrgDesign = () => {
       });
       return comparison;
     } catch (error) {
-      console.error('Error comparing scenarios:', error);
+      logger.error('Error comparing scenarios:', error);
       addToast({ type: 'error', message: 'Failed to compare scenarios' });
       throw error;
     } finally {
@@ -512,7 +513,7 @@ export const useOrgDesign = () => {
       });
       return analysis;
     } catch (error) {
-      console.error('Error analyzing span:', error);
+      logger.error('Error analyzing span:', error);
       addToast({
         type: 'error',
         message: 'Failed to analyze span of control',
@@ -532,7 +533,7 @@ export const useOrgDesign = () => {
       const positionList = await PositionHierarchyService.getAllPositions();
       setPositions(positionList);
     } catch (error) {
-      console.error('Error loading positions:', error);
+      logger.error('Error loading positions:', error);
       addToast({ type: 'error', message: 'Failed to load positions' });
     }
   };
@@ -550,7 +551,7 @@ export const useOrgDesign = () => {
       });
       return newPosition;
     } catch (error) {
-      console.error('Error creating position:', error);
+      logger.error('Error creating position:', error);
       addToast({ type: 'error', message: 'Failed to create position' });
       throw error;
     } finally {
@@ -575,7 +576,7 @@ export const useOrgDesign = () => {
       });
       return updated;
     } catch (error) {
-      console.error('Error updating position:', error);
+      logger.error('Error updating position:', error);
       addToast({ type: 'error', message: 'Failed to update position' });
       throw error;
     } finally {
@@ -593,7 +594,7 @@ export const useOrgDesign = () => {
         message: 'Position deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting position:', error);
+      logger.error('Error deleting position:', error);
       addToast({ type: 'error', message: 'Failed to delete position' });
       throw error;
     } finally {
@@ -610,7 +611,7 @@ export const useOrgDesign = () => {
       );
       return results;
     } catch (error) {
-      console.error('Error searching positions:', error);
+      logger.error('Error searching positions:', error);
       addToast({ type: 'error', message: 'Failed to search positions' });
       throw error;
     } finally {
@@ -627,7 +628,7 @@ export const useOrgDesign = () => {
       const structures = await MatrixStructureService.getAllMatrixStructures();
       setMatrixStructures(structures);
     } catch (error) {
-      console.error('Error loading matrix structures:', error);
+      logger.error('Error loading matrix structures:', error);
       addToast({ type: 'error', message: 'Failed to load matrix structures' });
     }
   };
@@ -645,7 +646,7 @@ export const useOrgDesign = () => {
       });
       return newStructure;
     } catch (error) {
-      console.error('Error creating matrix structure:', error);
+      logger.error('Error creating matrix structure:', error);
       addToast({ type: 'error', message: 'Failed to create matrix structure' });
       throw error;
     } finally {
@@ -670,7 +671,7 @@ export const useOrgDesign = () => {
       });
       return updated;
     } catch (error) {
-      console.error('Error updating matrix structure:', error);
+      logger.error('Error updating matrix structure:', error);
       addToast({ type: 'error', message: 'Failed to update matrix structure' });
       throw error;
     } finally {
@@ -688,7 +689,7 @@ export const useOrgDesign = () => {
         message: 'Matrix structure deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting matrix structure:', error);
+      logger.error('Error deleting matrix structure:', error);
       addToast({ type: 'error', message: 'Failed to delete matrix structure' });
       throw error;
     } finally {
@@ -709,7 +710,7 @@ export const useOrgDesign = () => {
         message: 'Matrix relationship added successfully',
       });
     } catch (error) {
-      console.error('Error adding matrix relationship:', error);
+      logger.error('Error adding matrix relationship:', error);
       addToast({ type: 'error', message: 'Failed to add matrix relationship' });
       throw error;
     } finally {
@@ -727,7 +728,7 @@ export const useOrgDesign = () => {
         message: 'Decision right added successfully',
       });
     } catch (error) {
-      console.error('Error adding decision right:', error);
+      logger.error('Error adding decision right:', error);
       addToast({ type: 'error', message: 'Failed to add decision right' });
       throw error;
     } finally {
@@ -744,7 +745,7 @@ export const useOrgDesign = () => {
       const pools = await SuccessionPoolService.getAllSuccessionPools();
       setSuccessionPools(pools);
     } catch (error) {
-      console.error('Error loading succession pools:', error);
+      logger.error('Error loading succession pools:', error);
       addToast({ type: 'error', message: 'Failed to load succession pools' });
     }
   };
@@ -760,7 +761,7 @@ export const useOrgDesign = () => {
       });
       return newPool;
     } catch (error) {
-      console.error('Error creating succession pool:', error);
+      logger.error('Error creating succession pool:', error);
       addToast({ type: 'error', message: 'Failed to create succession pool' });
       throw error;
     } finally {
@@ -785,7 +786,7 @@ export const useOrgDesign = () => {
       });
       return updated;
     } catch (error) {
-      console.error('Error updating succession pool:', error);
+      logger.error('Error updating succession pool:', error);
       addToast({ type: 'error', message: 'Failed to update succession pool' });
       throw error;
     } finally {
@@ -803,7 +804,7 @@ export const useOrgDesign = () => {
         message: 'Succession pool deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting succession pool:', error);
+      logger.error('Error deleting succession pool:', error);
       addToast({ type: 'error', message: 'Failed to delete succession pool' });
       throw error;
     } finally {
@@ -821,7 +822,7 @@ export const useOrgDesign = () => {
         message: `${member.employeeName} added to succession pool`,
       });
     } catch (error) {
-      console.error('Error adding pool member:', error);
+      logger.error('Error adding pool member:', error);
       addToast({ type: 'error', message: 'Failed to add pool member' });
       throw error;
     } finally {
@@ -839,7 +840,7 @@ export const useOrgDesign = () => {
         message: 'Member removed from succession pool',
       });
     } catch (error) {
-      console.error('Error removing pool member:', error);
+      logger.error('Error removing pool member:', error);
       addToast({ type: 'error', message: 'Failed to remove pool member' });
       throw error;
     } finally {
@@ -861,7 +862,7 @@ export const useOrgDesign = () => {
         message: 'Development plan updated successfully',
       });
     } catch (error) {
-      console.error('Error updating development plan:', error);
+      logger.error('Error updating development plan:', error);
       addToast({ type: 'error', message: 'Failed to update development plan' });
       throw error;
     } finally {
@@ -879,7 +880,7 @@ export const useOrgDesign = () => {
       const analytics = await OrgAnalyticsService.getOrgAnalytics(chartId);
       setOrgAnalytics(analytics);
     } catch (error) {
-      console.error('Error loading analytics:', error);
+      logger.error('Error loading analytics:', error);
       addToast({ type: 'error', message: 'Failed to load analytics' });
     } finally {
       setLoading(false);
@@ -905,7 +906,7 @@ export const useOrgDesign = () => {
         message: `Analytics report exported as ${format.toUpperCase()}`,
       });
     } catch (error) {
-      console.error('Error exporting analytics:', error);
+      logger.error('Error exporting analytics:', error);
       addToast({ type: 'error', message: 'Failed to export analytics report' });
       throw error;
     } finally {
@@ -922,7 +923,7 @@ export const useOrgDesign = () => {
       const changeList = await ChangeManagementService.getAllChanges();
       setChanges(changeList);
     } catch (error) {
-      console.error('Error loading changes:', error);
+      logger.error('Error loading changes:', error);
       addToast({ type: 'error', message: 'Failed to load changes' });
     }
   };
@@ -938,7 +939,7 @@ export const useOrgDesign = () => {
       });
       return newChange;
     } catch (error) {
-      console.error('Error creating change:', error);
+      logger.error('Error creating change:', error);
       addToast({ type: 'error', message: 'Failed to create change' });
       throw error;
     } finally {
@@ -963,7 +964,7 @@ export const useOrgDesign = () => {
       });
       return updated;
     } catch (error) {
-      console.error('Error updating change:', error);
+      logger.error('Error updating change:', error);
       addToast({ type: 'error', message: 'Failed to update change' });
       throw error;
     } finally {
@@ -981,7 +982,7 @@ export const useOrgDesign = () => {
         message: 'Change deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting change:', error);
+      logger.error('Error deleting change:', error);
       addToast({ type: 'error', message: 'Failed to delete change' });
       throw error;
     } finally {
@@ -1000,7 +1001,7 @@ export const useOrgDesign = () => {
       });
       return assessment;
     } catch (error) {
-      console.error('Error assessing impact:', error);
+      logger.error('Error assessing impact:', error);
       addToast({ type: 'error', message: 'Failed to assess impact' });
       throw error;
     } finally {
@@ -1021,7 +1022,7 @@ export const useOrgDesign = () => {
         message: 'Affected employee added',
       });
     } catch (error) {
-      console.error('Error adding affected employee:', error);
+      logger.error('Error adding affected employee:', error);
       addToast({ type: 'error', message: 'Failed to add affected employee' });
       throw error;
     } finally {
@@ -1038,7 +1039,7 @@ export const useOrgDesign = () => {
       const settingsData = await OrgDesignSettingsService.getSettings();
       setSettings(settingsData);
     } catch (error) {
-      console.error('Error loading settings:', error);
+      logger.error('Error loading settings:', error);
       addToast({ type: 'error', message: 'Failed to load settings' });
     }
   };
@@ -1054,7 +1055,7 @@ export const useOrgDesign = () => {
       });
       return updated;
     } catch (error) {
-      console.error('Error updating settings:', error);
+      logger.error('Error updating settings:', error);
       addToast({ type: 'error', message: 'Failed to update settings' });
       throw error;
     } finally {

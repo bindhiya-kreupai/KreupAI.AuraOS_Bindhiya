@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch all skill assessments
 export async function GET(request: NextRequest) {
@@ -67,7 +68,7 @@ export async function GET(request: NextRequest) {
             totalPages: Math.ceil(total / pageSize)
         });
     } catch (error) {
-        console.error('Error fetching assessments:', error);
+        logger.error('Error fetching assessments:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch assessments' },
             { status: 500 }
@@ -133,7 +134,7 @@ export async function POST(request: NextRequest) {
             message: 'Assessment created successfully'
         });
     } catch (error) {
-        console.error('Error creating assessment:', error);
+        logger.error('Error creating assessment:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to create assessment' },
             { status: 500 }

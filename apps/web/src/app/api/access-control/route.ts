@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission, RolePermissions } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch access control overview (roles and their permissions)
 export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
@@ -52,7 +53,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       },
     });
   } catch (error) {
-    console.error('Error fetching access control data:', error);
+    logger.error('Error fetching access control data:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch access control data' },
       { status: 500 }
@@ -127,7 +128,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       },
     });
   } catch (error) {
-    console.error('Error fetching role permissions:', error);
+    logger.error('Error fetching role permissions:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch role permissions' },
       { status: 500 }

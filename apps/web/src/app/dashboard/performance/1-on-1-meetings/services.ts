@@ -4,6 +4,7 @@
  */
 
 import { Meeting, FeedbackResponse, MeetingStats } from './types';
+import { logger } from '@/lib/logger';
 
 const API_BASE = '/api/meetings';
 const STORAGE_KEY = 'aura_one_on_one_meetings';
@@ -19,7 +20,7 @@ class StorageService {
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(meetings));
         } catch (error) {
-            console.error('Failed to save meetings to localStorage:', error);
+            logger.error('Failed to save meetings to localStorage:', error);
         }
     }
 
@@ -28,7 +29,7 @@ class StorageService {
             const data = localStorage.getItem(STORAGE_KEY);
             return data ? JSON.parse(data) : [];
         } catch (error) {
-            console.error('Failed to load meetings from localStorage:', error);
+            logger.error('Failed to load meetings from localStorage:', error);
             return [];
         }
     }
@@ -58,7 +59,7 @@ export class MeetingsService {
             // For now, load from localStorage
             return StorageService.load();
         } catch (error) {
-            console.error('Error fetching meetings:', error);
+            logger.error('Error fetching meetings:', error);
             throw new Error('Failed to load meetings. Please try again.');
         }
     }
@@ -85,7 +86,7 @@ export class MeetingsService {
             StorageService.save(meetings);
             return meeting;
         } catch (error) {
-            console.error('Error creating meeting:', error);
+            logger.error('Error creating meeting:', error);
             throw new Error('Failed to schedule meeting. Please try again.');
         }
     }
@@ -114,7 +115,7 @@ export class MeetingsService {
             StorageService.save(meetings);
             return meetings[index];
         } catch (error) {
-            console.error('Error updating meeting:', error);
+            logger.error('Error updating meeting:', error);
             throw new Error('Failed to update meeting. Please try again.');
         }
     }
@@ -134,7 +135,7 @@ export class MeetingsService {
             const filtered = meetings.filter(m => m.id !== id);
             StorageService.save(filtered);
         } catch (error) {
-            console.error('Error deleting meeting:', error);
+            logger.error('Error deleting meeting:', error);
             throw new Error('Failed to delete meeting. Please try again.');
         }
     }
@@ -160,7 +161,7 @@ export class MeetingsService {
             StorageService.save(meetings);
             return meetings[index];
         } catch (error) {
-            console.error('Error completing meeting:', error);
+            logger.error('Error completing meeting:', error);
             throw new Error('Failed to complete meeting. Please try again.');
         }
     }
@@ -190,7 +191,7 @@ export class MeetingsService {
             meetings[index].feedbackResponses = responses;
             StorageService.save(meetings);
         } catch (error) {
-            console.error('Error submitting feedback:', error);
+            logger.error('Error submitting feedback:', error);
             throw new Error('Failed to submit feedback. Please try again.');
         }
     }
@@ -224,7 +225,7 @@ export class MeetingsService {
                 trendsImproving: true, // Would be calculated from historical data
             };
         } catch (error) {
-            console.error('Error fetching analytics:', error);
+            logger.error('Error fetching analytics:', error);
             throw new Error('Failed to load analytics. Please try again.');
         }
     }

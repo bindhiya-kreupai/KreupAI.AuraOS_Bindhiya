@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { withAuth } from '@/lib/auth';
 import { ChangePasswordSchema, validationErrorResponse } from '@/lib/validators';
 import { hashPassword, comparePassword } from '@/lib/auth/password';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch current user profile
 export const GET = withAuth(async (request: NextRequest, { user }) => {
@@ -90,7 +91,7 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
       data: userProfile,
     });
   } catch (error) {
-    console.error('Error fetching profile:', error);
+    logger.error('Error fetching profile:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch profile' },
       { status: 500 }
@@ -173,7 +174,7 @@ export const PUT = withAuth(async (request: NextRequest, { user }) => {
       message: 'Profile updated successfully',
     });
   } catch (error) {
-    console.error('Error updating profile:', error);
+    logger.error('Error updating profile:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update profile' },
       { status: 500 }

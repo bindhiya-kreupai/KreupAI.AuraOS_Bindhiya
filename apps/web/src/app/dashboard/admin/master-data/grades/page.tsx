@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface Grade {
     id: string;
@@ -48,7 +49,7 @@ export default function GradesPage() {
                 setData(result);
             }
         } catch (error) {
-            console.error('Failed to fetch grades:', error);
+            logger.error('Failed to fetch grades:', error);
         } finally {
             setIsLoading(false);
         }
@@ -86,7 +87,7 @@ export default function GradesPage() {
                 alert('Failed to save grade');
             }
         } catch (error) {
-            console.error('Error saving grade:', error);
+            logger.error('Error saving grade:', error);
             alert('Error saving grade');
         }
     };
@@ -104,7 +105,7 @@ export default function GradesPage() {
                     alert('Failed to delete grade');
                 }
             } catch (error) {
-                console.error('Error deleting grade:', error);
+                logger.error('Error deleting grade:', error);
                 alert('Error deleting grade');
             }
         }

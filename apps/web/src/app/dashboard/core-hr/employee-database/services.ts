@@ -4,6 +4,7 @@
  */
 
 import { Employee, EmployeeStats, Document, EmploymentHistoryEvent } from './types';
+import { logger } from '@/lib/logger';
 
 const API_BASE = '/api/employees';
 const STORAGE_KEY = 'aura_employee_profiles';
@@ -19,7 +20,7 @@ class StorageService {
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(employees));
         } catch (error) {
-            console.error('Failed to save employees to localStorage:', error);
+            logger.error('Failed to save employees to localStorage:', error);
         }
     }
 
@@ -28,7 +29,7 @@ class StorageService {
             const data = localStorage.getItem(STORAGE_KEY);
             return data ? JSON.parse(data) : [];
         } catch (error) {
-            console.error('Failed to load employees from localStorage:', error);
+            logger.error('Failed to load employees from localStorage:', error);
             return [];
         }
     }
@@ -56,7 +57,7 @@ export class EmployeesService {
 
             return StorageService.load();
         } catch (error) {
-            console.error('Error fetching employees:', error);
+            logger.error('Error fetching employees:', error);
             throw new Error('Failed to load employees. Please try again.');
         }
     }
@@ -76,7 +77,7 @@ export class EmployeesService {
             const employees = StorageService.load();
             return employees.find(e => e.id === id) || null;
         } catch (error) {
-            console.error('Error fetching employee:', error);
+            logger.error('Error fetching employee:', error);
             throw new Error('Failed to load employee details. Please try again.');
         }
     }
@@ -102,7 +103,7 @@ export class EmployeesService {
             StorageService.save(employees);
             return employee;
         } catch (error) {
-            console.error('Error creating employee:', error);
+            logger.error('Error creating employee:', error);
             throw new Error('Failed to create employee. Please try again.');
         }
     }
@@ -131,7 +132,7 @@ export class EmployeesService {
             StorageService.save(employees);
             return employees[index];
         } catch (error) {
-            console.error('Error updating employee:', error);
+            logger.error('Error updating employee:', error);
             throw new Error('Failed to update employee. Please try again.');
         }
     }
@@ -151,7 +152,7 @@ export class EmployeesService {
             const filtered = employees.filter(e => e.id !== id);
             StorageService.save(filtered);
         } catch (error) {
-            console.error('Error deleting employee:', error);
+            logger.error('Error deleting employee:', error);
             throw new Error('Failed to delete employee. Please try again.');
         }
     }
@@ -182,7 +183,7 @@ export class EmployeesService {
             StorageService.save(employees);
             return document;
         } catch (error) {
-            console.error('Error uploading document:', error);
+            logger.error('Error uploading document:', error);
             throw new Error('Failed to upload document. Please try again.');
         }
     }
@@ -208,7 +209,7 @@ export class EmployeesService {
             employee.updatedAt = new Date().toISOString();
             StorageService.save(employees);
         } catch (error) {
-            console.error('Error deleting document:', error);
+            logger.error('Error deleting document:', error);
             throw new Error('Failed to delete document. Please try again.');
         }
     }
@@ -241,7 +242,7 @@ export class EmployeesService {
             StorageService.save(employees);
             return event;
         } catch (error) {
-            console.error('Error adding history event:', error);
+            logger.error('Error adding history event:', error);
             throw new Error('Failed to add history event. Please try again.');
         }
     }
@@ -284,7 +285,7 @@ export class EmployeesService {
                 byLocation,
             };
         } catch (error) {
-            console.error('Error fetching stats:', error);
+            logger.error('Error fetching stats:', error);
             throw new Error('Failed to load statistics. Please try again.');
         }
     }

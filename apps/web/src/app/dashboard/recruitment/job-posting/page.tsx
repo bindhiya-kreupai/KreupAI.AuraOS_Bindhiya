@@ -16,6 +16,7 @@ import {
     Loader2
 } from 'lucide-react';
 import CreateJobModal from '@/components/recruitment/create-job-modal';
+import { logger } from '@/lib/logger';
 
 interface JobPosting {
     id: string;
@@ -63,7 +64,7 @@ export default function JobPostingsPage() {
                 setJobs(transformed);
             } catch (err) {
                 setError('Could not load job postings. Please try again later.');
-                console.error(err);
+                logger.error(err);
             } finally {
                 setLoading(false);
             }

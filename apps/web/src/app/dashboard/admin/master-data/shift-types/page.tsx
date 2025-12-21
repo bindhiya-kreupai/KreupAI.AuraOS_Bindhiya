@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface ShiftType {
     id: string;
@@ -47,7 +48,7 @@ export default function ShiftTypesPage() {
                 setData(result);
             }
         } catch (error) {
-            console.error('Failed to fetch shift types:', error);
+            logger.error('Failed to fetch shift types:', error);
         } finally {
             setIsLoading(false);
         }
@@ -82,7 +83,7 @@ export default function ShiftTypesPage() {
                 alert('Failed to save shift type');
             }
         } catch (error) {
-            console.error('Error saving shift type:', error);
+            logger.error('Error saving shift type:', error);
             alert('Error saving shift type');
         }
     };
@@ -100,7 +101,7 @@ export default function ShiftTypesPage() {
                     alert('Failed to delete shift type');
                 }
             } catch (error) {
-                console.error('Error deleting shift type:', error);
+                logger.error('Error deleting shift type:', error);
                 alert('Error deleting shift type');
             }
         }

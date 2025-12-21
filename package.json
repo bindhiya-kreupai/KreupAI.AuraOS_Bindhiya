@@ -8,12 +8,23 @@
         "lint": "turbo run lint",
         "test": "turbo run test",
         "nav:check": "node scripts/nav-smoke.js",
-        "format": "prettier --write \"**/*.{ts,tsx,md}\""
+        "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+        "prepare": "husky install"
+    },
+    "lint-staged": {
+        "apps/web/src/**/*.{ts,tsx}": [
+            "eslint --fix",
+            "prettier --write"
+        ],
+        "*.{json,md}": [
+            "prettier --write"
+        ]
     },
     "devDependencies": {
         "@types/node": "^20.11.16",
         "eslint": "^8.56.0",
         "husky": "^9.0.0",
+        "lint-staged": "^15.2.0",
         "prettier": "^3.1.0",
         "turbo": "latest",
         "typescript": "^5.3.0"

@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import 'swagger-ui-react/swagger-ui.css';
+import { logger } from '@/lib/logger';
 
 // Dynamically import SwaggerUI to avoid SSR issues
 const SwaggerUI = dynamic(() => import('swagger-ui-react'), { ssr: false });
@@ -23,7 +24,7 @@ export default function APIDocsPage() {
         setLoading(false);
       })
       .catch((error) => {
-        console.error('Failed to load API spec:', error);
+        logger.error('Failed to load API spec:', error);
         setLoading(false);
       });
   }, []);

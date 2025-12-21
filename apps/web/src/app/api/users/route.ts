@@ -9,6 +9,7 @@ import {
   validateQueryParams,
 } from '@/lib/validators';
 import { userService } from '@/lib/services';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch all users with filters and pagination
 export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
@@ -53,7 +54,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       return validationErrorResponse(error);
     }
 
-    console.error('Error fetching users:', error);
+    logger.error('Error fetching users:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch users' },
       { status: 500 }
@@ -110,7 +111,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       return validationErrorResponse(error);
     }
 
-    console.error('Error creating user:', error);
+    logger.error('Error creating user:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create user' },
       { status: 500 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
+import { logger } from '@/lib/logger';
 
 interface AssessmentResultInput {
     competencyId: string;
@@ -106,7 +107,7 @@ export async function POST(
             message: 'Results submitted successfully'
         });
     } catch (error) {
-        console.error('Error submitting results:', error);
+        logger.error('Error submitting results:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to submit results' },
             { status: 500 }
@@ -139,7 +140,7 @@ export async function GET(
             data: results
         });
     } catch (error) {
-        console.error('Error fetching results:', error);
+        logger.error('Error fetching results:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch results' },
             { status: 500 }

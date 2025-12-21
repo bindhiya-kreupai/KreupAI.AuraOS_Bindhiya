@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch single job role with mappings
 export async function GET(
@@ -44,7 +45,7 @@ export async function GET(
             data: jobRole
         });
     } catch (error) {
-        console.error('Error fetching job role:', error);
+        logger.error('Error fetching job role:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch job role' },
             { status: 500 }
@@ -109,7 +110,7 @@ export async function PUT(
             message: 'Job role updated successfully'
         });
     } catch (error) {
-        console.error('Error updating job role:', error);
+        logger.error('Error updating job role:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to update job role' },
             { status: 500 }
@@ -147,7 +148,7 @@ export async function DELETE(
             message: 'Job role deleted successfully'
         });
     } catch (error) {
-        console.error('Error deleting job role:', error);
+        logger.error('Error deleting job role:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to delete job role' },
             { status: 500 }

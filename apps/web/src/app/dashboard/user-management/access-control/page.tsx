@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { logger } from '@/lib/logger';
 
 interface AccessControl {
     id: string;
@@ -21,7 +22,7 @@ export default function AccessControlPage() {
             const res = await fetch('/api/access-control');
             if (res.ok) setData(await res.json());
         } catch (error) {
-            console.error('Failed to fetch access controls:', error);
+            logger.error('Failed to fetch access controls:', error);
         } finally {
             setIsLoading(false);
         }
@@ -64,7 +65,7 @@ export default function AccessControlPage() {
                 alert(`Failed to save rule: ${error.error}`);
             }
         } catch (error) {
-            console.error('Error saving rule:', error);
+            logger.error('Error saving rule:', error);
             alert('Error saving rule');
         }
     };
@@ -76,7 +77,7 @@ export default function AccessControlPage() {
                 if (response.ok) fetchData();
                 else alert('Failed to delete rule');
             } catch (error) {
-                console.error('Error deleting rule:', error);
+                logger.error('Error deleting rule:', error);
                 alert('Error deleting rule');
             }
         }

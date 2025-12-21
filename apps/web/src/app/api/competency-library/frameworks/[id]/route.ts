@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch single framework by ID
 export async function GET(
@@ -30,7 +31,7 @@ export async function GET(
             data: framework
         });
     } catch (error) {
-        console.error('Error fetching framework:', error);
+        logger.error('Error fetching framework:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch framework' },
             { status: 500 }
@@ -93,7 +94,7 @@ export async function PUT(
             message: 'Framework updated successfully'
         });
     } catch (error) {
-        console.error('Error updating framework:', error);
+        logger.error('Error updating framework:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to update framework' },
             { status: 500 }
@@ -145,7 +146,7 @@ export async function DELETE(
             message: 'Framework deleted successfully'
         });
     } catch (error) {
-        console.error('Error deleting framework:', error);
+        logger.error('Error deleting framework:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to delete framework' },
             { status: 500 }

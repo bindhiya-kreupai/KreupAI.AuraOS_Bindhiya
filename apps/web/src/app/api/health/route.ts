@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { redis } from '@/lib/cache/redis';
 import { queryMonitor } from '@/lib/monitoring/query-monitor';
+import { logger } from '@/lib/logger';
 
 // GET - Basic health check (public endpoint - no auth required)
 export async function GET(request: NextRequest) {
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
       dbResponseTime = Date.now() - dbStart;
     } catch (error) {
       dbStatus = 'unhealthy';
-      console.error('Database health check failed:', error);
+      logger.error('Database health check failed:', error);
     }
 
     // Check Redis connectivity
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(healthData, { status: statusCode });
   } catch (error) {
-    console.error('Health check error:', error);
+    logger.error('Health check error:', error);
     return NextResponse.json(
       {
         status: 'unhealthy',

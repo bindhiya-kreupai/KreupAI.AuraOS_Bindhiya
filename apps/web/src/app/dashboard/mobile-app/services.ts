@@ -30,6 +30,7 @@ import type {
 } from './types';
 
 import {
+import { logger } from '@/lib/logger';
   sampleMobileAppConfig,
   samplePushNotifications,
   sampleOfflineConfig,
@@ -726,7 +727,7 @@ export class MobileAnalyticsService {
 
   static async recordSession(session: UserSession): Promise<void> {
     // TODO: Replace with API call
-    console.log('Session recorded:', session);
+    logger.info('Session recorded:', session);
   }
 }
 

@@ -45,6 +45,7 @@ import type {
     BenefitStats,
 } from '../types';
 import { useToast } from './useToast';
+import { logger } from '@/lib/logger';
 
 /**
  * Main hook for benefits management
@@ -183,7 +184,7 @@ export const useBenefits = () => {
                 const statsData = await BenefitAnalyticsService.getStats();
                 setStats(statsData);
             } catch (error) {
-                console.error('Failed to initialize benefits data:', error);
+                logger.error('Failed to initialize benefits data:', error);
                 toast.error('Failed to load benefits data');
             } finally {
                 setIsLoading(false);

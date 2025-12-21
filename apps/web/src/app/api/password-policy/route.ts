@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { CreatePasswordPolicySchema, validationErrorResponse } from '@/lib/validators';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch current password policy (typically only one per system)
 export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
@@ -39,7 +40,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       data: policy,
     });
   } catch (error) {
-    console.error('Error fetching password policy:', error);
+    logger.error('Error fetching password policy:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch password policy' },
       { status: 500 }
@@ -105,7 +106,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       return validationErrorResponse(error);
     }
 
-    console.error('Error creating password policy:', error);
+    logger.error('Error creating password policy:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create password policy' },
       { status: 500 }
@@ -169,7 +170,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
       return validationErrorResponse(error);
     }
 
-    console.error('Error updating password policy:', error);
+    logger.error('Error updating password policy:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update password policy' },
       { status: 500 }
@@ -223,7 +224,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, perm
       message: 'Password policy deleted successfully. System will use default values.',
     });
   } catch (error) {
-    console.error('Error deleting password policy:', error);
+    logger.error('Error deleting password policy:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to delete password policy' },
       { status: 500 }

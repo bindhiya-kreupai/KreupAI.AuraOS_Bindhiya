@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import {
+import { logger } from '@/lib/logger';
   DeactivateUserSchema,
   UserDeactivationQuerySchema,
   validationErrorResponse,
@@ -70,7 +71,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       return validationErrorResponse(error);
     }
 
-    console.error('Error fetching user deactivations:', error);
+    logger.error('Error fetching user deactivations:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch user deactivations' },
       { status: 500 }
@@ -189,7 +190,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       return validationErrorResponse(error);
     }
 
-    console.error('Error deactivating user:', error);
+    logger.error('Error deactivating user:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to deactivate user' },
       { status: 500 }

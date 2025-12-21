@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface BusinessUnit {
     id: string;
@@ -45,7 +46,7 @@ export default function BusinessUnitsPage() {
                 setData(result);
             }
         } catch (error) {
-            console.error('Failed to fetch business units:', error);
+            logger.error('Failed to fetch business units:', error);
         } finally {
             setIsLoading(false);
         }
@@ -80,7 +81,7 @@ export default function BusinessUnitsPage() {
                 alert('Failed to save business unit');
             }
         } catch (error) {
-            console.error('Error saving business unit:', error);
+            logger.error('Error saving business unit:', error);
             alert('Error saving business unit');
         }
     };
@@ -98,7 +99,7 @@ export default function BusinessUnitsPage() {
                     alert('Failed to delete business unit');
                 }
             } catch (error) {
-                console.error('Error deleting business unit:', error);
+                logger.error('Error deleting business unit:', error);
                 alert('Error deleting business unit');
             }
         }

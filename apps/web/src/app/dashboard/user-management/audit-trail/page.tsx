@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { logger } from '@/lib/logger';
 
 interface AuditLog {
     id: string;
@@ -23,7 +24,7 @@ export default function AuditTrailPage() {
             const res = await fetch('/api/audit-logs');
             if (res.ok) setData(await res.json());
         } catch (error) {
-            console.error('Failed to fetch audit logs:', error);
+            logger.error('Failed to fetch audit logs:', error);
         } finally {
             setIsLoading(false);
         }

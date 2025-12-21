@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface Relationship {
     id: string;
@@ -52,7 +53,7 @@ export default function RelationshipsPage() {
                 setData(result);
             }
         } catch (error) {
-            console.error('Failed to fetch relationships:', error);
+            logger.error('Failed to fetch relationships:', error);
         } finally {
             setIsLoading(false);
         }
@@ -87,7 +88,7 @@ export default function RelationshipsPage() {
                 alert('Failed to save relationship');
             }
         } catch (error) {
-            console.error('Error saving relationship:', error);
+            logger.error('Error saving relationship:', error);
             alert('Error saving relationship');
         }
     };
@@ -105,7 +106,7 @@ export default function RelationshipsPage() {
                     alert('Failed to delete relationship');
                 }
             } catch (error) {
-                console.error('Error deleting relationship:', error);
+                logger.error('Error deleting relationship:', error);
                 alert('Error deleting relationship');
             }
         }

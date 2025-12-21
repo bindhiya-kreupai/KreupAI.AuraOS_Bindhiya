@@ -13,6 +13,7 @@ import {
   ERGService, MentorshipService, AccessibilityService, DEIGoalsService, DEISettingsService
 } from '../services';
 import {
+import { logger } from '@/lib/logger';
   sampleDiversityMetrics, sampleInclusionSurveys, sampleSurveyAnalytics,
   samplePayEquityAnalyses, sampleBiasTrainings, sampleERGs, sampleMentorshipPrograms,
   sampleMentorProfiles, sampleMenteeProfiles, sampleAccessibilityRequests,
@@ -71,7 +72,7 @@ export const useDEI = () => {
         loadERGs(), loadMentorshipPrograms(), loadAccessibilityRequests(), loadDEIGoals(), loadSettings()
       ]);
     } catch (error) {
-      console.error('Error loading data:', error);
+      logger.error('Error loading data:', error);
       addToast({ type: 'error', message: 'Failed to load DEI data' });
     } finally {
       setLoading(false);

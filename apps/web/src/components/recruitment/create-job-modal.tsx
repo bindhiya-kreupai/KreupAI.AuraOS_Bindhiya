@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface CreateJobModalProps {
     isOpen: boolean;
@@ -43,7 +44,7 @@ export default function CreateJobModal({ isOpen, onClose, onSuccess }: CreateJob
             setFormData({ title: '', department: '', location: '', type: 'Full-time' });
             onSuccess();
         } catch (err) {
-            console.error(err);
+            logger.error(err);
             setError('Failed to create job. Please try again.');
         } finally {
             setLoading(false);

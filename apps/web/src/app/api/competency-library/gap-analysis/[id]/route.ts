@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch single gap analysis
 export async function GET(
@@ -49,7 +50,7 @@ export async function GET(
             data: gapAnalysis
         });
     } catch (error) {
-        console.error('Error fetching gap analysis:', error);
+        logger.error('Error fetching gap analysis:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch gap analysis' },
             { status: 500 }
@@ -116,7 +117,7 @@ export async function PUT(
             message: 'Gap analysis updated successfully'
         });
     } catch (error) {
-        console.error('Error updating gap analysis:', error);
+        logger.error('Error updating gap analysis:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to update gap analysis' },
             { status: 500 }
@@ -154,7 +155,7 @@ export async function DELETE(
             message: 'Gap analysis deleted successfully'
         });
     } catch (error) {
-        console.error('Error deleting gap analysis:', error);
+        logger.error('Error deleting gap analysis:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to delete gap analysis' },
             { status: 500 }

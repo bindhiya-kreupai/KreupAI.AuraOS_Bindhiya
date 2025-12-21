@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
+import { logger } from '@/lib/logger';
 
 interface Department {
     id: string;
@@ -47,7 +48,7 @@ export default function DepartmentsPage() {
             if (compsRes.ok) setCompanies(await compsRes.json());
             if (costsRes.ok) setCostCenters(await costsRes.json());
         } catch (error) {
-            console.error('Failed to fetch data:', error);
+            logger.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
         }
@@ -116,7 +117,7 @@ export default function DepartmentsPage() {
                 alert('Failed to save department');
             }
         } catch (error) {
-            console.error('Error saving department:', error);
+            logger.error('Error saving department:', error);
             alert('Error saving department');
         }
     };
@@ -134,7 +135,7 @@ export default function DepartmentsPage() {
                     alert('Failed to delete department');
                 }
             } catch (error) {
-                console.error('Error deleting department:', error);
+                logger.error('Error deleting department:', error);
                 alert('Error deleting department');
             }
         }

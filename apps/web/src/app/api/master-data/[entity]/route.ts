@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import {
+import { logger } from '@/lib/logger';
   MasterDataQuerySchema,
   CreateCountrySchema,
   UpdateCountrySchema,
@@ -110,7 +111,7 @@ export const GET = withEnhancedAuth(
       });
     } catch (error) {
       if (error instanceof z.ZodError) return validationErrorResponse(error);
-      console.error(`Error fetching ${params.entity}:`, error);
+      logger.error(`Error fetching ${params.entity}:`, error);
       return NextResponse.json({ success: false, error: 'Failed to fetch data' }, { status: 500 });
     }
   }
@@ -153,7 +154,7 @@ export const POST = withEnhancedAuth(
       return NextResponse.json({ success: true, data: item }, { status: 201 });
     } catch (error) {
       if (error instanceof z.ZodError) return validationErrorResponse(error);
-      console.error(`Error creating ${params.entity}:`, error);
+      logger.error(`Error creating ${params.entity}:`, error);
       return NextResponse.json({ success: false, error: 'Failed to create' }, { status: 500 });
     }
   }
