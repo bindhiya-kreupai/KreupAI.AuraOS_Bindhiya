@@ -1,0 +1,21 @@
+/**
+ * AI/ML Services Export
+ * Phase 3: Intelligence Layer
+ */
+
+// Types
+export * from './types';
+
+// Services
+export * from './attrition.service';
+export * from './performance-prediction.service';
+export * from './resume-parser.service';
+export * from './workforce-analytics.service';
+export * from './sentiment-analysis.service';
+
+// Named exports for convenience
+export { AttritionPredictionService } from './attrition.service';
+export { PerformancePredictionService } from './performance-prediction.service';
+export { ResumeParserService } from './resume-parser.service';
+export { WorkforceAnalyticsService } from './workforce-analytics.service';
+export { SentimentAnalysisService } from './sentiment-analysis.service';
