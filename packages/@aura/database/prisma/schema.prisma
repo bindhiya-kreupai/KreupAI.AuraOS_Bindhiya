@@ -1054,3 +1054,834 @@ model DevelopmentMilestone {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
+
+// ============================================================================
+// 20. MENA COMPLIANCE - LABOUR LAW ENGINE
+// ============================================================================
+
+model LabourLawConfig {
+  id                        String    @id @default(uuid())
+  countryCode               String    // ISO country code: AE, SA, BH, QA, OM, KW, IN
+  countryName               String
+  countryNameAr             String?   // Arabic name
+  effectiveFrom             DateTime
+  effectiveTo               DateTime?
+
+  // Working Hours Configuration
+  standardHoursPerDay       Int       @default(8)
+  standardHoursPerWeek      Int       @default(48)
+  ramadanHoursPerDay        Int?      // Reduced hours during Ramadan
+  ramadanHoursPerWeek       Int?
+  maxOvertimeHoursPerDay    Int?
+  maxOvertimeHoursPerYear   Int?
+
+  // Overtime Rates (as percentage, e.g., 125 = 125%)
+  overtimeRateNormal        Decimal   @default(125)
+  overtimeRateNight         Decimal   @default(150)
+  overtimeRateHoliday       Decimal   @default(150)
+  overtimeRateFriday        Decimal?  // Friday work rate
+  nightShiftStart           String?   // e.g., "21:00"
+  nightShiftEnd             String?   // e.g., "04:00"
+
+  // Probation
+  maxProbationDays          Int       @default(90)
+  probationExtensionDays    Int?
+  probationNoticeDays       Int       @default(14)
+
+  // Leave Entitlements (in days)
+  annualLeaveFirstYear      Int       @default(21)
+  annualLeaveAfterYears     Int       @default(30)
+  annualLeaveThresholdYears Int       @default(5)  // Years after which higher entitlement
+  sickLeaveFullPay          Int       @default(15)
+  sickLeaveHalfPay          Int       @default(30)
+  sickLeaveUnpaid           Int       @default(45)
+  maternityLeaveDays        Int       @default(60)
+  maternityLeaveFullPay     Int       @default(45)
+  maternityLeaveHalfPay     Int       @default(15)
+  paternityLeaveDays        Int       @default(5)
+  bereavementLeaveSpouse    Int       @default(5)
+  bereavementLeaveFamily    Int       @default(3)
+  hajjLeaveDays             Int?      // Muslim pilgrimage leave
+  hajjLeaveMinServiceYears  Int?
+  studyLeaveDays            Int?
+  marriageLeaveDays         Int?
+  iddahLeaveDays            Int?      // Widow waiting period (4 months 10 days = 130)
+
+  // EOSB / Gratuity Configuration
+  eosbFirstPeriodYears      Int       @default(5)
+  eosbFirstPeriodDays       Int       @default(21)  // Days per year for first period
+  eosbAfterPeriodDays       Int       @default(30)  // Days per year after first period
+  eosbMaxMonths             Int?      // Maximum cap in months (e.g., 24 = 2 years)
+  eosbResignationFactor1    Decimal?  // Factor for resignation (1-3 years)
+  eosbResignationFactor2    Decimal?  // Factor for resignation (3-5 years)
+  eosbMinServiceMonths      Int       @default(12)  // Minimum service for eligibility
+
+  // Social Insurance Rates (as percentage)
+  socialInsuranceEmployeeRate   Decimal?
+  socialInsuranceEmployerRate   Decimal?
+  socialInsuranceMaxWage        Decimal?  // Contribution cap
+  pensionEmployeeRate           Decimal?
+  pensionEmployerRate           Decimal?
+  unemploymentEmployeeRate      Decimal?
+  unemploymentEmployerRate      Decimal?
+  occupationalHazardsRate       Decimal?
+
+  // Additional Settings
+  weekendDays               Json?     // e.g., ["Friday", "Saturday"]
+  workWeekStartDay          String    @default("Sunday")
+  currencyCode              String
+
+  status                    String    @default("Active")
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  @@unique([countryCode, effectiveFrom])
+  @@index([countryCode])
+  @@index([status])
+}
+
+// ============================================================================
+// 21. WPS (WAGE PROTECTION SYSTEM) - UAE
+// ============================================================================
+
+model WPSConfiguration {
+  id              String   @id @default(uuid())
+  tenantId        String
+  companyId       String
+  wpsAgentCode    String   // WPS Agent/Bank code
+  employerCode    String   // Ministry of Labour employer code
+  bankCode        String   // Routing bank code
+  bankBranchCode  String?
+  molEstablishmentId String? // Ministry of Labour establishment ID
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  submissions     WPSSubmission[]
+
+  @@unique([tenantId, companyId])
+  @@index([tenantId])
+}
+
+model WPSSubmission {
+  id              String      @id @default(uuid())
+  tenantId        String
+  wpsConfigId     String
+  wpsConfig       WPSConfiguration @relation(fields: [wpsConfigId], references: [id])
+  payrollMonth    String      // YYYY-MM format
+  submissionDate  DateTime?
+  status          WPSStatus   @default(PENDING)
+
+  // File Information
+  sifFileName     String?
+  sifFileUrl      String?
+  responseFileName String?
+  responseFileUrl String?
+
+  // Summary
+  totalRecords    Int         @default(0)
+  totalAmount     Decimal     @default(0)
+  successCount    Int         @default(0)
+  failureCount    Int         @default(0)
+
+  // Validation & Errors
+  validationErrors Json?      // Array of validation issues
+  rejectionReasons Json?      // Reasons if rejected by WPS
+
+  processedAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  records         WPSRecord[]
+
+  @@index([tenantId])
+  @@index([payrollMonth])
+  @@index([status])
+}
+
+model WPSRecord {
+  id              String        @id @default(uuid())
+  submissionId    String
+  submission      WPSSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  employeeId      String
+
+  // Employee WPS Details
+  labourCardNumber String
+  personalNumber   String?      // MOL personal number
+  bankRoutingCode  String
+  accountNumber    String
+
+  // Salary Details
+  basicSalary      Decimal
+  allowances       Decimal      @default(0)
+  deductions       Decimal      @default(0)
+  netSalary        Decimal
+  leaveSalary      Decimal      @default(0)
+
+  // Status
+  status           WPSRecordStatus @default(PENDING)
+  errorCode        String?
+  errorMessage     String?
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([submissionId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+enum WPSStatus {
+  PENDING
+  VALIDATING
+  VALIDATED
+  SUBMITTED
+  PROCESSING
+  ACCEPTED
+  PARTIALLY_ACCEPTED
+  REJECTED
+  FAILED
+}
+
+enum WPSRecordStatus {
+  PENDING
+  VALID
+  INVALID
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+}
+
+// ============================================================================
+// 22. GOSI (GENERAL ORGANIZATION FOR SOCIAL INSURANCE) - KSA
+// ============================================================================
+
+model GOSIConfiguration {
+  id                    String   @id @default(uuid())
+  tenantId              String
+  companyId             String
+  gosiSubscriptionNumber String  // GOSI subscription/registration number
+  establishmentNumber   String?  // Ministry of Labour establishment number
+  bankAccountIBAN       String?
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  submissions           GOSISubmission[]
+
+  @@unique([tenantId, companyId])
+  @@index([tenantId])
+}
+
+model GOSISubmission {
+  id              String      @id @default(uuid())
+  tenantId        String
+  gosiConfigId    String
+  gosiConfig      GOSIConfiguration @relation(fields: [gosiConfigId], references: [id])
+  contributionMonth String    // YYYY-MM format
+  submissionDate  DateTime?
+  status          GOSIStatus  @default(PENDING)
+
+  // File Information
+  fileName        String?
+  fileUrl         String?
+  responseFileName String?
+  responseFileUrl String?
+
+  // Summary
+  totalEmployees  Int         @default(0)
+  totalSaudis     Int         @default(0)
+  totalNonSaudis  Int         @default(0)
+
+  // Contribution Totals
+  totalEmployeeContribution   Decimal @default(0)
+  totalEmployerContribution   Decimal @default(0)
+  totalPensionContribution    Decimal @default(0)
+  totalSanedContribution      Decimal @default(0)
+  totalOccupationalHazards    Decimal @default(0)
+  grandTotal                  Decimal @default(0)
+
+  // Status
+  validationErrors Json?
+  rejectionReasons Json?
+
+  processedAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  records         GOSIRecord[]
+
+  @@index([tenantId])
+  @@index([contributionMonth])
+  @@index([status])
+}
+
+model GOSIRecord {
+  id                String        @id @default(uuid())
+  submissionId      String
+  submission        GOSISubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  employeeId        String
+
+  // Employee Details
+  iqamaNumber       String?       // For non-Saudis
+  nationalId        String?       // For Saudis
+  nationality       String
+  isSaudi           Boolean       @default(false)
+
+  // Salary Details
+  contributableSalary Decimal     // Capped at 45,000 SAR
+  basicSalary        Decimal
+  housingAllowance   Decimal      @default(0)
+
+  // Contribution Breakdown
+  employeePension    Decimal      @default(0)  // 9.75% for Saudis
+  employerPension    Decimal      @default(0)  // 9.75% for Saudis
+  sanedEmployee      Decimal      @default(0)  // 0.75% for Saudis
+  sanedEmployer      Decimal      @default(0)  // 0.75% for Saudis
+  occupationalHazards Decimal     @default(0)  // 2% employer only
+  totalEmployee      Decimal      @default(0)
+  totalEmployer      Decimal      @default(0)
+
+  // Status
+  status             GOSIRecordStatus @default(PENDING)
+  errorCode          String?
+  errorMessage       String?
+
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  @@index([submissionId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+enum GOSIStatus {
+  PENDING
+  VALIDATING
+  VALIDATED
+  SUBMITTED
+  PROCESSING
+  ACCEPTED
+  PARTIALLY_ACCEPTED
+  REJECTED
+  FAILED
+}
+
+enum GOSIRecordStatus {
+  PENDING
+  VALID
+  INVALID
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+}
+
+// ============================================================================
+// 23. NITAQAT (SAUDIZATION) TRACKING - KSA
+// ============================================================================
+
+model NitaqatConfiguration {
+  id              String   @id @default(uuid())
+  tenantId        String
+  companyId       String
+  industryCode    String   // ISIC industry classification
+  industryName    String
+  companySizeBand String   // Small, Medium, Large, Giant
+
+  // Nitaqat Requirements
+  requiredSaudiRatio Decimal  // Required Saudization percentage
+  targetRatio        Decimal? // Target ratio for incentives
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  snapshots       NitaqatSnapshot[]
+
+  @@unique([tenantId, companyId])
+  @@index([tenantId])
+}
+
+model NitaqatSnapshot {
+  id              String   @id @default(uuid())
+  configId        String
+  config          NitaqatConfiguration @relation(fields: [configId], references: [id])
+  snapshotDate    DateTime @default(now())
+
+  // Headcount
+  totalEmployees  Int
+  saudiEmployees  Int
+  nonSaudiEmployees Int
+
+  // Ratio & Band
+  currentRatio    Decimal
+  nitaqatBand     NitaqatBand
+  previousBand    NitaqatBand?
+
+  // Details
+  deficit         Int      @default(0)  // How many Saudis needed to reach target
+  surplus         Int      @default(0)  // Excess Saudis above requirement
+
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@index([configId])
+  @@index([snapshotDate])
+}
+
+enum NitaqatBand {
+  PLATINUM
+  GREEN_HIGH
+  GREEN_MEDIUM
+  GREEN_LOW
+  YELLOW
+  RED
+}
+
+// ============================================================================
+// 24. EOSB (END OF SERVICE BENEFITS) / GRATUITY
+// ============================================================================
+
+model EOSBCalculation {
+  id              String   @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  calculationDate DateTime @default(now())
+  calculationType EOSBCalculationType
+
+  // Employee Details at Calculation
+  countryCode     String
+  joiningDate     DateTime
+  lastWorkingDate DateTime?
+  yearsOfService  Decimal
+  monthsOfService Int
+  daysOfService   Int
+
+  // Salary Details
+  basicSalary     Decimal
+  totalSalary     Decimal
+  dailyRate       Decimal
+
+  // Calculation Breakdown
+  firstPeriodYears   Decimal @default(0)
+  firstPeriodAmount  Decimal @default(0)
+  secondPeriodYears  Decimal @default(0)
+  secondPeriodAmount Decimal @default(0)
+  grossAmount        Decimal
+
+  // Adjustments
+  terminationType    TerminationType
+  resignationFactor  Decimal @default(1)  // 1/3, 2/3, or 1
+  deductions         Decimal @default(0)  // Any deductions
+
+  // Final Amount
+  netAmount          Decimal
+  currency           String  @default("AED")
+
+  // Status
+  status             EOSBStatus @default(CALCULATED)
+  approvedBy         String?
+  approvedAt         DateTime?
+  paidAt             DateTime?
+
+  notes              String?
+  calculationDetails Json?    // Detailed breakdown
+
+  createdBy          String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+enum EOSBCalculationType {
+  ESTIMATE       // For planning/preview
+  FINAL          // Final calculation for settlement
+  ADJUSTMENT     // Correction to previous calculation
+}
+
+enum TerminationType {
+  RESIGNATION           // Employee-initiated
+  TERMINATION           // Employer-initiated (with cause)
+  TERMINATION_WITHOUT_CAUSE  // Employer-initiated (without cause)
+  END_OF_CONTRACT       // Fixed-term contract expiry
+  RETIREMENT            // Retirement
+  DEATH                 // Death of employee
+  DISABILITY            // Permanent disability
+  MUTUAL_AGREEMENT      // Mutual termination
+}
+
+enum EOSBStatus {
+  CALCULATED
+  PENDING_APPROVAL
+  APPROVED
+  PAID
+  CANCELLED
+}
+
+// ============================================================================
+// 25. EMPLOYEE COMPLIANCE DETAILS
+// ============================================================================
+
+model EmployeeComplianceDetails {
+  id              String   @id @default(uuid())
+  tenantId        String
+  employeeId      String   @unique
+  countryCode     String
+
+  // UAE Specific
+  labourCardNumber    String?
+  labourCardExpiry    DateTime?
+  emiratesId          String?
+  emiratesIdExpiry    DateTime?
+  visaNumber          String?
+  visaType            String?
+  visaExpiry          DateTime?
+  wpsPersonalNumber   String?
+
+  // KSA Specific
+  iqamaNumber         String?
+  iqamaExpiry         DateTime?
+  nationalId          String?  // For Saudis
+  borderNumber        String?
+  gosiSubscriptionNumber String?
+
+  // India Specific
+  panNumber           String?
+  aadhaarNumber       String?
+  uanNumber           String?  // Universal Account Number for PF
+  esiNumber           String?
+  pfAccountNumber     String?
+
+  // Banking for Payroll
+  bankName            String?
+  bankAccountNumber   String?
+  bankIBAN            String?
+  bankSwiftCode       String?
+  bankBranchCode      String?
+  bankRoutingCode     String?  // For WPS
+
+  // Contract Details
+  contractType        String?  // Fixed, Indefinite
+  contractStartDate   DateTime?
+  contractEndDate     DateTime?
+  probationEndDate    DateTime?
+
+  // Nationality & Religion (for Hajj leave etc.)
+  nationality         String?
+  religion            String?  // For Hajj leave eligibility
+  isLocalNational     Boolean  @default(false)  // Saudi/Emirati/etc.
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([countryCode])
+}
+
+// ============================================================================
+// 26. PAYROLL CONFIGURATION & PROCESSING
+// ============================================================================
+
+model PayrollConfiguration {
+  id                  String   @id @default(uuid())
+  tenantId            String
+  companyId           String
+  countryCode         String
+
+  // Pay Cycle
+  payCycleType        String   @default("Monthly") // Monthly, Bi-weekly, Weekly
+  payDay              Int      @default(28)        // Day of month for payment
+  cutoffDay           Int      @default(25)        // Attendance cutoff day
+
+  // Components
+  componentsConfig    Json?    // Configurable pay components
+
+  // Statutory
+  enableWPS           Boolean  @default(false)
+  enableGOSI          Boolean  @default(false)
+  enablePF            Boolean  @default(false)
+  enableESI           Boolean  @default(false)
+  enableTDS           Boolean  @default(false)
+
+  // Calculations
+  overtimeCalculationBase String @default("Basic")  // Basic, Gross
+  leaveEncashmentBase     String @default("Basic")
+  gratuityCalculationBase String @default("Basic")
+
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  payrollRuns         PayrollRun[]
+
+  @@unique([tenantId, companyId])
+  @@index([tenantId])
+}
+
+model PayrollRun {
+  id                  String   @id @default(uuid())
+  tenantId            String
+  configId            String
+  config              PayrollConfiguration @relation(fields: [configId], references: [id])
+  payrollMonth        String   // YYYY-MM format
+  status              PayrollRunStatus @default(DRAFT)
+
+  // Processing Dates
+  processedAt         DateTime?
+  approvedAt          DateTime?
+  paidAt              DateTime?
+
+  // Approvals
+  approvedBy          String?
+  approvalLevel       Int      @default(0)
+
+  // Summary
+  totalEmployees      Int      @default(0)
+  totalGrossSalary    Decimal  @default(0)
+  totalDeductions     Decimal  @default(0)
+  totalNetSalary      Decimal  @default(0)
+  totalEmployerCost   Decimal  @default(0)  // Including employer contributions
+  currency            String   @default("AED")
+
+  notes               String?
+  createdBy           String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  payslips            Payslip[]
+
+  @@unique([tenantId, configId, payrollMonth])
+  @@index([tenantId])
+  @@index([payrollMonth])
+  @@index([status])
+}
+
+model Payslip {
+  id                  String   @id @default(uuid())
+  payrollRunId        String
+  payrollRun          PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employeeId          String
+  employeeCode        String
+  employeeName        String
+
+  // Salary Structure
+  basicSalary         Decimal
+
+  // Earnings (stored as JSON for flexibility)
+  earnings            Json     // Array of { code, name, amount }
+  totalEarnings       Decimal
+
+  // Deductions
+  deductions          Json     // Array of { code, name, amount }
+  totalDeductions     Decimal
+
+  // Statutory (separate for clarity)
+  employeePF          Decimal  @default(0)
+  employeeESI         Decimal  @default(0)
+  employeePension     Decimal  @default(0)
+  employeeTDS         Decimal  @default(0)
+  employeeSaned       Decimal  @default(0)
+  totalStatutoryEmployee Decimal @default(0)
+
+  employerPF          Decimal  @default(0)
+  employerESI         Decimal  @default(0)
+  employerPension     Decimal  @default(0)
+  employerGOSI        Decimal  @default(0)
+  totalStatutoryEmployer Decimal @default(0)
+
+  // Net
+  grossSalary         Decimal
+  netSalary           Decimal
+
+  // Metadata
+  workingDays         Int      @default(0)
+  paidDays            Decimal  @default(0)
+  lopDays             Decimal  @default(0)  // Loss of Pay
+  overtimeHours       Decimal  @default(0)
+  overtimeAmount      Decimal  @default(0)
+
+  // Status
+  status              PayslipStatus @default(DRAFT)
+  pdfUrl              String?
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([payrollRunId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+enum PayrollRunStatus {
+  DRAFT
+  PROCESSING
+  CALCULATED
+  PENDING_APPROVAL
+  APPROVED
+  PAID
+  CANCELLED
+}
+
+enum PayslipStatus {
+  DRAFT
+  CALCULATED
+  APPROVED
+  PAID
+  CANCELLED
+}
+
+// ============================================================================
+// 27. LEAVE POLICY & ACCRUAL ENGINE
+// ============================================================================
+
+model LeavePolicy {
+  id                  String   @id @default(uuid())
+  tenantId            String
+  companyId           String?  // null for tenant-wide policy
+  countryCode         String?
+
+  // Policy Details
+  code                String
+  name                String
+  nameAr              String?
+  leaveTypeId         String
+
+  // Eligibility
+  employmentTypes     Json?    // Array of employment type codes
+  minServiceMonths    Int      @default(0)
+
+  // Entitlement
+  annualEntitlement   Decimal
+  accrualType         LeaveAccrualType @default(MONTHLY)
+  accrualRate         Decimal?  // For monthly accrual
+
+  // Carry Forward
+  allowCarryForward   Boolean  @default(true)
+  maxCarryForwardDays Decimal?
+  carryForwardExpiryMonths Int?
+
+  // Encashment
+  allowEncashment     Boolean  @default(false)
+  maxEncashmentDays   Decimal?
+  encashmentRate      Decimal  @default(100)  // Percentage of salary
+
+  // Negative Balance
+  allowNegativeBalance Boolean @default(false)
+  maxNegativeDays     Decimal?
+
+  // Rules
+  minConsecutiveDays  Int?
+  maxConsecutiveDays  Int?
+  advanceNoticeDays   Int      @default(0)
+  requiresApproval    Boolean  @default(true)
+  requiresDocument    Boolean  @default(false)  // e.g., medical certificate
+
+  // Pro-rata
+  proRataOnJoining    Boolean  @default(true)
+  proRataOnExit       Boolean  @default(true)
+
+  isActive            Boolean  @default(true)
+  effectiveFrom       DateTime @default(now())
+  effectiveTo         DateTime?
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  balances            LeaveBalance[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([countryCode])
+}
+
+model LeaveBalance {
+  id                  String   @id @default(uuid())
+  tenantId            String
+  employeeId          String
+  policyId            String
+  policy              LeavePolicy @relation(fields: [policyId], references: [id])
+  leaveYear           Int      // e.g., 2025
+
+  // Balance Tracking
+  openingBalance      Decimal  @default(0)
+  accrued             Decimal  @default(0)
+  taken               Decimal  @default(0)
+  adjusted            Decimal  @default(0)
+  encashed            Decimal  @default(0)
+  carriedForward      Decimal  @default(0)
+  lapsed              Decimal  @default(0)
+  currentBalance      Decimal  @default(0)
+
+  lastAccrualDate     DateTime?
+  lastUpdated         DateTime @default(now())
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([employeeId, policyId, leaveYear])
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([leaveYear])
+}
+
+enum LeaveAccrualType {
+  ANNUAL      // All at once at year start
+  MONTHLY     // Pro-rata monthly
+  QUARTERLY   // Pro-rata quarterly
+  TENURE      // Based on years of service
+}
+
+// ============================================================================
+// 28. LOCALIZATION & TRANSLATIONS
+// ============================================================================
+
+model Translation {
+  id          String   @id @default(uuid())
+  tenantId    String?  // null for system-wide
+  locale      String   // en-US, ar-SA, ar-AE, etc.
+  namespace   String   // common, employee, payroll, leave, etc.
+  key         String
+  value       String   @db.Text
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tenantId, locale, namespace, key])
+  @@index([locale])
+  @@index([namespace])
+}
+
+model LocalizationConfig {
+  id                  String   @id @default(uuid())
+  tenantId            String   @unique
+
+  // Language Settings
+  defaultLocale       String   @default("en-US")
+  supportedLocales    Json     @default("[\"en-US\", \"ar-SA\"]")
+  fallbackLocale      String   @default("en-US")
+
+  // Regional Settings
+  defaultTimezone     String   @default("Asia/Dubai")
+  defaultCurrency     String   @default("AED")
+  defaultCalendar     String   @default("gregorian")  // gregorian, hijri
+  showHijriDates      Boolean  @default(false)
+
+  // Date/Time Format
+  dateFormat          String   @default("DD/MM/YYYY")
+  timeFormat          String   @default("12h")  // 12h, 24h
+  firstDayOfWeek      String   @default("Sunday")
+
+  // Number Format
+  decimalSeparator    String   @default(".")
+  thousandsSeparator  String   @default(",")
+  currencyPosition    String   @default("before")  // before, after
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([tenantId])
+}
