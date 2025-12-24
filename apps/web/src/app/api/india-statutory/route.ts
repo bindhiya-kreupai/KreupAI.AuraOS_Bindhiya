@@ -1,10 +1,18 @@
 /**
  * India Statutory API Routes
  * Phase 4: India Payroll Compliance
+ *
+ * Comprehensive endpoints for:
+ * - PF (Provident Fund) calculations
+ * - ESI (Employee State Insurance) calculations
+ * - TDS (Tax Deducted at Source) calculations
+ * - Professional Tax calculations
+ * - Statutory forms generation
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { IndiaFormsService } from '@/lib/services/india-statutory';
+import { IndiaStatutoryService } from '@/lib/services/compliance/india-statutory.service';
 
 /**
  * POST /api/india-statutory
@@ -226,6 +234,203 @@ export async function POST(request: NextRequest) {
           messageHi: 'ईएसआई योगदान की गणना की गई',
         });
 
+      case 'calculate-pf-detailed':
+        if (body.basicSalary === undefined) {
+          return NextResponse.json(
+            {
+              error: 'basicSalary is required',
+              errorHi: 'मूल वेतन आवश्यक है'
+            },
+            { status: 400 }
+          );
+        }
+
+        const pfDetailed = IndiaStatutoryService.calculatePF(
+          body.basicSalary,
+          body.dearnessAllowance || 0,
+          body.isVoluntaryHigher || false
+        );
+
+        return NextResponse.json({
+          success: true,
+          data: pfDetailed,
+          message: 'PF contribution calculated with detailed breakdown',
+          messageHi: 'पीएफ योगदान का विस्तृत विवरण गणना की गई',
+        });
+
+      case 'calculate-esi-detailed':
+        if (body.grossSalary === undefined) {
+          return NextResponse.json(
+            {
+              error: 'grossSalary is required',
+              errorHi: 'सकल वेतन आवश्यक है'
+            },
+            { status: 400 }
+          );
+        }
+
+        const esiDetailed = IndiaStatutoryService.calculateESI(body.grossSalary);
+
+        return NextResponse.json({
+          success: true,
+          data: esiDetailed,
+          message: 'ESI contribution calculated',
+          messageHi: 'ईएसआई योगदान की गणना की गई',
+        });
+
+      case 'calculate-professional-tax':
+        if (body.grossSalary === undefined || !body.stateCode) {
+          return NextResponse.json(
+            {
+              error: 'grossSalary and stateCode are required',
+              errorHi: 'सकल वेतन और राज्य कोड आवश्यक हैं'
+            },
+            { status: 400 }
+          );
+        }
+
+        const ptResult = IndiaStatutoryService.calculateProfessionalTax(
+          body.grossSalary,
+          body.stateCode,
+          body.isFebruary || false
+        );
+
+        return NextResponse.json({
+          success: true,
+          data: ptResult,
+          message: 'Professional tax calculated',
+          messageHi: 'व्यावसायिक कर की गणना की गई',
+        });
+
+      case 'calculate-tds-detailed':
+        if (body.annualGrossSalary === undefined) {
+          return NextResponse.json(
+            {
+              error: 'annualGrossSalary is required',
+              errorHi: 'वार्षिक सकल वेतन आवश्यक है'
+            },
+            { status: 400 }
+          );
+        }
+
+        const tdsResult = IndiaStatutoryService.calculateTDS(
+          body.annualGrossSalary,
+          body.isNewRegime !== false, // Default to new regime
+          {
+            section80C: body.section80C,
+            section80CCD1B: body.section80CCD1B,
+            section80D: body.section80D,
+            section24B: body.section24B,
+            section80E: body.section80E,
+            hra: body.hra,
+            lta: body.lta,
+            otherExemptions: body.otherExemptions,
+          }
+        );
+
+        return NextResponse.json({
+          success: true,
+          data: tdsResult,
+          message: 'TDS calculated with slab breakdown',
+          messageHi: 'स्लैब विवरण के साथ टीडीएस की गणना की गई',
+        });
+
+      case 'compare-tax-regimes':
+        if (body.annualGrossSalary === undefined) {
+          return NextResponse.json(
+            {
+              error: 'annualGrossSalary is required',
+              errorHi: 'वार्षिक सकल वेतन आवश्यक है'
+            },
+            { status: 400 }
+          );
+        }
+
+        const comparison = IndiaStatutoryService.compareRegimes(
+          body.annualGrossSalary,
+          {
+            section80C: body.section80C,
+            section80CCD1B: body.section80CCD1B,
+            section80D: body.section80D,
+            section24B: body.section24B,
+            hra: body.hra,
+            lta: body.lta,
+          }
+        );
+
+        return NextResponse.json({
+          success: true,
+          data: comparison,
+          message: 'Tax regime comparison completed',
+          messageHi: 'कर व्यवस्था तुलना पूर्ण',
+        });
+
+      case 'calculate-all-statutory':
+        if (!body.employeeData) {
+          return NextResponse.json(
+            {
+              error: 'employeeData is required',
+              errorHi: 'कर्मचारी डेटा आवश्यक है'
+            },
+            { status: 400 }
+          );
+        }
+
+        const allStatutory = IndiaStatutoryService.calculateAll(
+          body.employeeData,
+          body.month || new Date().toISOString().slice(0, 7),
+          body.annualGrossSalary
+        );
+
+        return NextResponse.json({
+          success: true,
+          data: allStatutory,
+          message: 'All statutory deductions calculated',
+          messageHi: 'सभी वैधानिक कटौती की गणना की गई',
+        });
+
+      case 'validate-pan':
+        if (!body.panNumber) {
+          return NextResponse.json(
+            { error: 'panNumber is required', errorHi: 'पैन नंबर आवश्यक है' },
+            { status: 400 }
+          );
+        }
+
+        const panValidation = IndiaStatutoryService.validatePAN(body.panNumber);
+        return NextResponse.json({
+          success: true,
+          data: panValidation,
+        });
+
+      case 'validate-aadhaar':
+        if (!body.aadhaarNumber) {
+          return NextResponse.json(
+            { error: 'aadhaarNumber is required', errorHi: 'आधार नंबर आवश्यक है' },
+            { status: 400 }
+          );
+        }
+
+        const aadhaarValidation = IndiaStatutoryService.validateAadhaar(body.aadhaarNumber);
+        return NextResponse.json({
+          success: true,
+          data: aadhaarValidation,
+        });
+
+      case 'validate-uan':
+        if (!body.uanNumber) {
+          return NextResponse.json(
+            { error: 'uanNumber is required', errorHi: 'यूएएन नंबर आवश्यक है' },
+            { status: 400 }
+          );
+        }
+
+        const uanValidation = IndiaStatutoryService.validateUAN(body.uanNumber);
+        return NextResponse.json({
+          success: true,
+          data: uanValidation,
+        });
+
       default:
         return NextResponse.json(
           { error: 'Invalid action', errorHi: 'अमान्य क्रिया' },
@@ -427,6 +632,66 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
           success: true,
           data: complianceCalendar,
+        });
+
+      case 'pf-config':
+        const pfConfig = IndiaStatutoryService.getPFConfig();
+        return NextResponse.json({
+          success: true,
+          data: pfConfig,
+        });
+
+      case 'esi-config':
+        const esiConfig = IndiaStatutoryService.getESIConfig();
+        return NextResponse.json({
+          success: true,
+          data: esiConfig,
+        });
+
+      case 'supported-states':
+        const supportedStates = IndiaStatutoryService.getSupportedStates();
+        return NextResponse.json({
+          success: true,
+          data: supportedStates,
+        });
+
+      case 'all-configs':
+        const allConfigs = {
+          pf: IndiaStatutoryService.getPFConfig(),
+          esi: IndiaStatutoryService.getESIConfig(),
+          supportedStates: IndiaStatutoryService.getSupportedStates(),
+          taxSlabs: {
+            old: [
+              { min: 0, max: 250000, rate: 0, description: 'No tax' },
+              { min: 250001, max: 500000, rate: 5, description: '5% of income above 2.5L' },
+              { min: 500001, max: 1000000, rate: 20, description: '20% of income above 5L' },
+              { min: 1000001, max: null, rate: 30, description: '30% of income above 10L' },
+            ],
+            new: [
+              { min: 0, max: 300000, rate: 0, description: 'No tax' },
+              { min: 300001, max: 700000, rate: 5, description: '5% of income above 3L' },
+              { min: 700001, max: 1000000, rate: 10, description: '10% of income above 7L' },
+              { min: 1000001, max: 1200000, rate: 15, description: '15% of income above 10L' },
+              { min: 1200001, max: 1500000, rate: 20, description: '20% of income above 12L' },
+              { min: 1500001, max: null, rate: 30, description: '30% of income above 15L' },
+            ],
+          },
+          deductionLimits: {
+            section80C: 150000,
+            section80CCD1B: 50000,
+            section80D: { selfFamily: 25000, selfFamilySenior: 50000 },
+            section24B: 200000,
+            standardDeduction: 75000,
+          },
+          cessRate: 0.04,
+          rebate87A: {
+            newRegimeThreshold: 700000,
+            maxRebate: 25000,
+          },
+        };
+        return NextResponse.json({
+          success: true,
+          data: allConfigs,
         });
 
       default:

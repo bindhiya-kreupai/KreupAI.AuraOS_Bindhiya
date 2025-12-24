@@ -168,6 +168,86 @@
       "overtimeNight": "Night Overtime",
       "overtimeHoliday": "Holiday Overtime",
       "ramadanHours": "Ramadan Working Hours"
+    },
+    "indiaStatutory": {
+      "title": "India Statutory Compliance",
+      "subtitle": "PF / ESI / TDS",
+      "pf": {
+        "title": "Provident Fund",
+        "subtitle": "PF Contributions",
+        "basicSalary": "Basic Salary",
+        "dearnessAllowance": "Dearness Allowance",
+        "contributableWage": "Contributable Wage",
+        "employeeContribution": "Employee Contribution",
+        "employerContribution": "Employer Contribution",
+        "employerPF": "Employer - EPF",
+        "employerEPS": "Employer - EPS (Pension)",
+        "adminCharges": "Admin Charges",
+        "edliCharges": "EDLI Charges",
+        "totalEmployerCost": "Total Employer Cost",
+        "uanNumber": "UAN Number",
+        "pfAccountNumber": "PF Account Number",
+        "voluntaryHigher": "Voluntary Higher Contribution",
+        "wageCeiling": "Wage Ceiling"
+      },
+      "esi": {
+        "title": "Employee State Insurance",
+        "subtitle": "ESI Contributions",
+        "grossSalary": "Gross Salary",
+        "employeeContribution": "Employee Contribution",
+        "employerContribution": "Employer Contribution",
+        "totalContribution": "Total Contribution",
+        "isApplicable": "Applicable",
+        "notApplicable": "Not Applicable",
+        "wageCeiling": "Wage Ceiling",
+        "esiNumber": "ESI Number"
+      },
+      "tds": {
+        "title": "Tax Deducted at Source",
+        "subtitle": "Income Tax Calculation",
+        "annualGrossSalary": "Annual Gross Salary",
+        "taxableIncome": "Taxable Income",
+        "taxBeforeRebate": "Tax Before Rebate",
+        "rebate87A": "Rebate u/s 87A",
+        "taxAfterRebate": "Tax After Rebate",
+        "cess": "Health & Education Cess",
+        "totalTax": "Total Tax",
+        "monthlyTDS": "Monthly TDS",
+        "effectiveRate": "Effective Tax Rate",
+        "newRegime": "New Regime",
+        "oldRegime": "Old Regime",
+        "section80C": "Section 80C - Investments",
+        "section80D": "Section 80D - Health Insurance",
+        "section24B": "Section 24B - Home Loan Interest",
+        "standardDeduction": "Standard Deduction",
+        "hraExemption": "HRA Exemption",
+        "panNumber": "PAN Number"
+      },
+      "pt": {
+        "title": "Professional Tax",
+        "subtitle": "State Tax",
+        "state": "State",
+        "grossSalary": "Gross Salary",
+        "monthlyTax": "Monthly Tax",
+        "annualTax": "Annual Tax",
+        "maxAnnualTax": "Maximum Annual Tax"
+      },
+      "gratuity": {
+        "title": "Gratuity",
+        "subtitle": "End of Service Benefits",
+        "yearsOfService": "Years of Service",
+        "lastDrawnSalary": "Last Drawn Salary",
+        "gratuityAmount": "Gratuity Amount",
+        "maxGratuity": "Maximum Gratuity"
+      },
+      "complianceCalendar": {
+        "title": "Compliance Calendar",
+        "epfDueDate": "EPF Due Date",
+        "esiDueDate": "ESI Due Date",
+        "tdsDueDate": "TDS Due Date",
+        "form16DueDate": "Form 16 Due Date",
+        "penalty": "Penalty"
+      }
     }
   },
   "countries": {

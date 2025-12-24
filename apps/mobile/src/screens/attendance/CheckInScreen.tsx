@@ -1,9 +1,10 @@
 /**
  * Check In Screen
- * Advanced check-in with photo and location
+ * Advanced check-in with photo, location, and geofencing
+ * Phase 2 Enhancement: GPS-based attendance with geofence validation
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -17,13 +18,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Camera, CameraType } from 'expo-camera';
-import * as Location from 'expo-location';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useThemeStore } from '@/stores/theme.store';
 import { attendanceService } from '@/services/attendance.service';
+import { locationService, GeofenceStatus, LocationResult } from '@/services';
 import { AttendanceStackParamList, GeoLocation } from '@/types';
 
 type Props = {
@@ -39,25 +40,71 @@ export function CheckInScreen({ navigation }: Props) {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
   const [location, setLocation] = useState<GeoLocation | null>(null);
+  const [geofenceStatus, setGeofenceStatus] = useState<GeofenceStatus | null>(null);
+  const [locationAddress, setLocationAddress] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(true);
 
-  React.useEffect(() => {
-    (async () => {
+  // Fetch work locations for geofencing
+  const { data: workLocations } = useQuery({
+    queryKey: ['workLocations'],
+    queryFn: () => attendanceService.getWorkLocations(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Set up geofence regions when work locations are loaded
+  useEffect(() => {
+    if (workLocations?.locations) {
+      locationService.setGeofenceRegions(
+        workLocations.locations.map(loc => ({
+          id: loc.id,
+          name: loc.name,
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          radius: loc.radius,
+        }))
+      );
+    }
+  }, [workLocations]);
+
+  // Request permissions and get location
+  const fetchLocation = useCallback(async () => {
+    setIsLoadingLocation(true);
+    try {
       const { status: cameraStatus } = await Camera.requestCameraPermissionsAsync();
-      const { status: locationStatus } = await Location.requestForegroundPermissionsAsync();
-
       setHasPermission(cameraStatus === 'granted');
 
-      if (locationStatus === 'granted') {
-        const loc = await Location.getCurrentPositionAsync({});
+      const result: LocationResult = await locationService.getCurrentLocation();
+
+      if (result.success && result.coordinates) {
         setLocation({
-          latitude: loc.coords.latitude,
-          longitude: loc.coords.longitude,
-          accuracy: loc.coords.accuracy || undefined,
+          latitude: result.coordinates.latitude,
+          longitude: result.coordinates.longitude,
+          accuracy: result.coordinates.accuracy,
         });
+
+        // Check geofence
+        if (workLocations?.locations) {
+          const geoStatus = locationService.checkGeofence(result.coordinates);
+          setGeofenceStatus(geoStatus);
+        }
+
+        // Get address
+        const address = await locationService.getAddress(result.coordinates);
+        setLocationAddress(address);
+      } else {
+        Alert.alert(t('attendance.error'), result.error || t('attendance.locationError'));
       }
-    })();
-  }, []);
+    } catch (error) {
+      console.error('Error fetching location:', error);
+    } finally {
+      setIsLoadingLocation(false);
+    }
+  }, [workLocations, t]);
+
+  useEffect(() => {
+    fetchLocation();
+  }, [fetchLocation]);
 
   const checkInMutation = useMutation({
     mutationFn: () =>
@@ -151,14 +198,86 @@ export function CheckInScreen({ navigation }: Props) {
           {format(new Date(), 'EEEE, MMMM d, yyyy')}
         </Text>
 
-        {location && (
-          <View style={styles.locationInfo}>
-            <Ionicons name="location" size={16} color={theme.colors.success} />
-            <Text style={[styles.locationText, { color: theme.colors.textSecondary }]}>
-              {t('attendance.locationCaptured')}
-            </Text>
-          </View>
-        )}
+        {/* Location Status Section */}
+        <View style={styles.locationSection}>
+          {isLoadingLocation ? (
+            <View style={styles.locationInfo}>
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <Text style={[styles.locationText, { color: theme.colors.textSecondary }]}>
+                {t('attendance.gettingLocation')}
+              </Text>
+            </View>
+          ) : location ? (
+            <>
+              {/* Geofence Status */}
+              {geofenceStatus && (
+                <View style={[
+                  styles.geofenceStatus,
+                  {
+                    backgroundColor: geofenceStatus.isWithin
+                      ? `${theme.colors.success}20`
+                      : `${theme.colors.warning}20`,
+                  }
+                ]}>
+                  <Ionicons
+                    name={geofenceStatus.isWithin ? 'checkmark-circle' : 'warning'}
+                    size={20}
+                    color={geofenceStatus.isWithin ? theme.colors.success : theme.colors.warning}
+                  />
+                  <View style={styles.geofenceTextContainer}>
+                    <Text style={[
+                      styles.geofenceTitle,
+                      { color: geofenceStatus.isWithin ? theme.colors.success : theme.colors.warning }
+                    ]}>
+                      {geofenceStatus.isWithin
+                        ? t('attendance.withinOffice')
+                        : t('attendance.outsideOffice')}
+                    </Text>
+                    {geofenceStatus.region && (
+                      <Text style={[styles.geofenceSubtitle, { color: theme.colors.textSecondary }]}>
+                        {geofenceStatus.isWithin
+                          ? geofenceStatus.region.name
+                          : `${locationService.formatDistance(geofenceStatus.distance)} from ${geofenceStatus.region.name}`}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+              )}
+
+              {/* Address */}
+              {locationAddress && (
+                <View style={styles.locationInfo}>
+                  <Ionicons name="location" size={16} color={theme.colors.primary} />
+                  <Text
+                    style={[styles.locationText, { color: theme.colors.textSecondary }]}
+                    numberOfLines={2}
+                  >
+                    {locationAddress}
+                  </Text>
+                </View>
+              )}
+
+              {/* Refresh Location Button */}
+              <TouchableOpacity
+                style={styles.refreshLocationButton}
+                onPress={fetchLocation}
+                disabled={isLoadingLocation}
+              >
+                <Ionicons name="refresh" size={16} color={theme.colors.primary} />
+                <Text style={[styles.refreshLocationText, { color: theme.colors.primary }]}>
+                  {t('attendance.refreshLocation')}
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <View style={styles.locationInfo}>
+              <Ionicons name="location-outline" size={16} color={theme.colors.error} />
+              <Text style={[styles.locationText, { color: theme.colors.error }]}>
+                {t('attendance.locationUnavailable')}
+              </Text>
+            </View>
+          )}
+        </View>
 
         {/* Action Buttons */}
         <View style={styles.actions}>
@@ -265,15 +384,50 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 16,
   },
+  locationSection: {
+    marginBottom: 16,
+  },
   locationInfo: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 8,
   },
   locationText: {
     marginLeft: 8,
     fontSize: 14,
+    flex: 1,
+  },
+  geofenceStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  geofenceTextContainer: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  geofenceTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  geofenceSubtitle: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+  refreshLocationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    marginBottom: 8,
+  },
+  refreshLocationText: {
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: '500',
   },
   actions: {
     flexDirection: 'row',

@@ -5,6 +5,7 @@ import { ModuleGrid } from '@/components/dashboard/module-grid';
 
 export default function AiAutomationPage() {
   const features = [
+    'AI Analytics',
     'Org Health Predictor',
     'AI Coaching Bot',
     'Workflow Generator',
@@ -17,6 +18,7 @@ export default function AiAutomationPage() {
     'Performance Analysis',
     'L&D Recommendation',
     'Job Matching',
+    'Job Boards',
     'Email Parsing',
     'Auto Accruals',
     'NLP Insights'
@@ -25,7 +27,7 @@ export default function AiAutomationPage() {
   return (
     <ModuleGrid
       title="AI & Automation"
-      description="Manage your ai & automation operations and settings."
+      description="AI-powered workforce intelligence and recruitment automation."
       features={features}
       basePath="/dashboard/ai-automation"
     />
