@@ -656,6 +656,7 @@ export const superAdminMenu: MenuDefinition = {
                 'Performance Analytics',
                 'Reward Linkage',
                 'My Reviews',
+                'Skills Gap',
             ],
         },
         {
