@@ -168,6 +168,86 @@
       "overtimeNight": "العمل الإضافي الليلي",
       "overtimeHoliday": "العمل الإضافي في العطلات",
       "ramadanHours": "ساعات العمل في رمضان"
+    },
+    "indiaStatutory": {
+      "title": "الامتثال القانوني الهندي",
+      "subtitle": "صندوق الادخار / التأمين الصحي / الضرائب",
+      "pf": {
+        "title": "صندوق الادخار",
+        "subtitle": "مساهمات صندوق الادخار",
+        "basicSalary": "الراتب الأساسي",
+        "dearnessAllowance": "بدل الغلاء",
+        "contributableWage": "الأجر الخاضع للاشتراك",
+        "employeeContribution": "حصة الموظف",
+        "employerContribution": "حصة صاحب العمل",
+        "employerPF": "صاحب العمل - صندوق الادخار",
+        "employerEPS": "صاحب العمل - نظام التقاعد",
+        "adminCharges": "الرسوم الإدارية",
+        "edliCharges": "رسوم التأمين على الحياة",
+        "totalEmployerCost": "إجمالي تكلفة صاحب العمل",
+        "uanNumber": "رقم الحساب العالمي",
+        "pfAccountNumber": "رقم حساب صندوق الادخار",
+        "voluntaryHigher": "مساهمة طوعية أعلى",
+        "wageCeiling": "سقف الأجر"
+      },
+      "esi": {
+        "title": "التأمين الصحي للموظفين",
+        "subtitle": "مساهمات التأمين الصحي",
+        "grossSalary": "الراتب الإجمالي",
+        "employeeContribution": "حصة الموظف",
+        "employerContribution": "حصة صاحب العمل",
+        "totalContribution": "إجمالي المساهمة",
+        "isApplicable": "قابل للتطبيق",
+        "notApplicable": "غير قابل للتطبيق",
+        "wageCeiling": "سقف الأجر",
+        "esiNumber": "رقم التأمين الصحي"
+      },
+      "tds": {
+        "title": "الضريبة المخصومة من المصدر",
+        "subtitle": "حساب ضريبة الدخل",
+        "annualGrossSalary": "الراتب السنوي الإجمالي",
+        "taxableIncome": "الدخل الخاضع للضريبة",
+        "taxBeforeRebate": "الضريبة قبل الخصم",
+        "rebate87A": "خصم المادة 87أ",
+        "taxAfterRebate": "الضريبة بعد الخصم",
+        "cess": "رسوم التعليم والصحة",
+        "totalTax": "إجمالي الضريبة",
+        "monthlyTDS": "الضريبة الشهرية",
+        "effectiveRate": "معدل الضريبة الفعلي",
+        "newRegime": "النظام الجديد",
+        "oldRegime": "النظام القديم",
+        "section80C": "المادة 80ج - الاستثمارات",
+        "section80D": "المادة 80د - التأمين الصحي",
+        "section24B": "المادة 24ب - فوائد القرض العقاري",
+        "standardDeduction": "الخصم المعياري",
+        "hraExemption": "إعفاء بدل السكن",
+        "panNumber": "رقم البطاقة الدائمة"
+      },
+      "pt": {
+        "title": "الضريبة المهنية",
+        "subtitle": "ضريبة الولاية",
+        "state": "الولاية",
+        "grossSalary": "الراتب الإجمالي",
+        "monthlyTax": "الضريبة الشهرية",
+        "annualTax": "الضريبة السنوية",
+        "maxAnnualTax": "الحد الأقصى للضريبة السنوية"
+      },
+      "gratuity": {
+        "title": "المكافأة",
+        "subtitle": "مستحقات نهاية الخدمة",
+        "yearsOfService": "سنوات الخدمة",
+        "lastDrawnSalary": "آخر راتب",
+        "gratuityAmount": "مبلغ المكافأة",
+        "maxGratuity": "الحد الأقصى للمكافأة"
+      },
+      "complianceCalendar": {
+        "title": "تقويم الامتثال",
+        "epfDueDate": "موعد استحقاق صندوق الادخار",
+        "esiDueDate": "موعد استحقاق التأمين الصحي",
+        "tdsDueDate": "موعد استحقاق الضريبة",
+        "form16DueDate": "موعد استحقاق النموذج 16",
+        "penalty": "الغرامة"
+      }
     }
   },
   "countries": {

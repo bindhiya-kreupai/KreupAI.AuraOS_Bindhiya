@@ -98,6 +98,20 @@ const complianceModules = [
     descriptionAr: 'الوصول لإعدادات قانون العمل وقواعد الامتثال',
     href: '/dashboard/payroll-compliance/labour-law',
   },
+  {
+    id: 'india-statutory',
+    title: 'India Statutory',
+    titleAr: 'الامتثال الهندي',
+    subtitle: 'PF / ESI / TDS',
+    subtitleAr: 'صندوق الادخار / التأمين الصحي / الضرائب',
+    country: 'India',
+    countryAr: 'الهند',
+    icon: FileText,
+    color: 'bg-orange-500',
+    description: 'Manage PF, ESI, TDS and Professional Tax compliance',
+    descriptionAr: 'إدارة امتثال صندوق الادخار والتأمين الصحي والضرائب',
+    href: '/dashboard/payroll-compliance/india-statutory',
+  },
 ];
 
 const supportedCountries = [
@@ -203,7 +217,7 @@ export default function PayrollCompliancePage() {
           <div className="text-xs opacity-75 mt-1" dir="rtl">دول مدعومة</div>
         </div>
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-5 text-white">
-          <div className="text-3xl font-bold">6</div>
+          <div className="text-3xl font-bold">7</div>
           <div className="text-sm opacity-90">Compliance Modules</div>
           <div className="text-xs opacity-75 mt-1" dir="rtl">وحدات الامتثال</div>
         </div>
