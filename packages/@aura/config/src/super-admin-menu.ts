@@ -30,6 +30,7 @@ export const superAdminMenu: MenuDefinition = {
             icon: 'ai',
             path: '/dashboard/ai-automation',
             features: [
+                'AI Analytics',
                 'Org Health Predictor',
                 'AI Coaching Bot',
                 'Workflow Generator',
@@ -42,6 +43,7 @@ export const superAdminMenu: MenuDefinition = {
                 'Performance Analysis',
                 'L&D Recommendation',
                 'Job Matching',
+                'Job Boards',
                 'Email Parsing',
                 'Auto Accruals',
                 'NLP Insights',
@@ -247,9 +249,16 @@ export const superAdminMenu: MenuDefinition = {
             icon: 'engagementEmployee',
             path: '/dashboard/engagement',
             features: [
+                'Engagement Analytics',
                 'Pulse Surveys',
                 'Recognition Wall',
                 'Suggestion Box',
+                'Social Feed',
+                'Event Calendar',
+                'Referral Program',
+                'Polls Quizzes',
+                'CSR Activities',
+                'Classifieds',
             ],
         },
         {
