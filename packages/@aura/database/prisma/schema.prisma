@@ -1885,3 +1885,463 @@ model LocalizationConfig {
 
   @@index([tenantId])
 }
+
+// ============================================================================
+// 29. INDIA STATUTORY COMPLIANCE - PF (PROVIDENT FUND)
+// ============================================================================
+
+model IndiaPFConfiguration {
+  id                      String   @id @default(uuid())
+  tenantId                String
+  companyId               String
+
+  // EPFO Registration
+  epfoEstablishmentId     String   // Establishment ID
+  epfoRegistrationNumber  String   // PF Code
+
+  // Rates (can be customized per company)
+  employeeContributionRate Decimal @default(12)    // 12%
+  employerContributionRate Decimal @default(12)    // 12%
+  adminChargesRate         Decimal @default(0.5)   // 0.50%
+  edliChargesRate          Decimal @default(0.5)   // 0.50%
+  wageCeiling              Decimal @default(15000) // PF wage ceiling
+  pensionWageCeiling       Decimal @default(15000) // EPS ceiling
+
+  // Settings
+  isVoluntaryHigherAllowed Boolean  @default(true)
+  isActive                 Boolean  @default(true)
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  submissions             IndiaPFSubmission[]
+
+  @@unique([tenantId, companyId])
+  @@index([tenantId])
+}
+
+model IndiaPFSubmission {
+  id                String   @id @default(uuid())
+  tenantId          String
+  configId          String
+  config            IndiaPFConfiguration @relation(fields: [configId], references: [id])
+  contributionMonth String   // YYYY-MM format
+
+  // Status
+  status            IndiaPFStatus @default(DRAFT)
+  submissionDate    DateTime?
+
+  // Totals
+  totalEmployees           Int      @default(0)
+  totalWages               Decimal  @default(0)
+  totalEmployeeContribution Decimal @default(0)
+  totalEmployerPF          Decimal  @default(0)
+  totalEmployerEPS         Decimal  @default(0)
+  totalAdminCharges        Decimal  @default(0)
+  totalEDLI                Decimal  @default(0)
+  grandTotal               Decimal  @default(0)
+
+  // File Info
+  ecrFileName       String?
+  ecrFileUrl        String?
+  challanNumber     String?
+  trrn              String?  // Transaction Reference Number
+
+  // Validation
+  validationErrors  Json?
+
+  processedAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  records           IndiaPFRecord[]
+
+  @@index([tenantId])
+  @@index([contributionMonth])
+  @@index([status])
+}
+
+model IndiaPFRecord {
+  id                String   @id @default(uuid())
+  submissionId      String
+  submission        IndiaPFSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  employeeId        String
+
+  // Employee Details
+  uanNumber         String
+  pfAccountNumber   String?
+  employeeName      String
+  fatherHusbandName String?
+  dateOfJoining     DateTime?
+  dateOfExit        DateTime?
+  gender            String?
+
+  // Salary Details
+  basicWages        Decimal
+  dearnessAllowance Decimal  @default(0)
+  contributableWages Decimal
+
+  // Contributions
+  employeeContribution    Decimal
+  employerPFContribution  Decimal
+  employerEPSContribution Decimal
+  isVoluntaryHigher       Boolean @default(false)
+
+  // NCP Days (Non-Contributing Period)
+  ncpDays           Int      @default(0)
+
+  // Status
+  status            IndiaPFRecordStatus @default(PENDING)
+  errorCode         String?
+  errorMessage      String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([submissionId])
+  @@index([employeeId])
+  @@index([uanNumber])
+}
+
+enum IndiaPFStatus {
+  DRAFT
+  VALIDATING
+  VALIDATED
+  SUBMITTED
+  PROCESSING
+  ACCEPTED
+  REJECTED
+  FAILED
+}
+
+enum IndiaPFRecordStatus {
+  PENDING
+  VALID
+  INVALID
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+}
+
+// ============================================================================
+// 30. INDIA STATUTORY COMPLIANCE - ESI (EMPLOYEE STATE INSURANCE)
+// ============================================================================
+
+model IndiaESIConfiguration {
+  id                      String   @id @default(uuid())
+  tenantId                String
+  companyId               String
+
+  // ESIC Registration
+  esicCode                String   // ESI Code
+  esicSubCode             String?  // Sub-unit code
+  regionCode              String?
+
+  // Rates
+  employeeContributionRate Decimal @default(0.75)  // 0.75%
+  employerContributionRate Decimal @default(3.25)  // 3.25%
+  wageCeiling              Decimal @default(21000) // ESI applicability ceiling
+
+  // Settings
+  isActive                Boolean  @default(true)
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  submissions             IndiaESISubmission[]
+
+  @@unique([tenantId, companyId])
+  @@index([tenantId])
+}
+
+model IndiaESISubmission {
+  id                String   @id @default(uuid())
+  tenantId          String
+  configId          String
+  config            IndiaESIConfiguration @relation(fields: [configId], references: [id])
+  contributionMonth String   // YYYY-MM format
+
+  // Status
+  status            IndiaESIStatus @default(DRAFT)
+  submissionDate    DateTime?
+
+  // Totals
+  totalEmployees           Int     @default(0)
+  totalWages               Decimal @default(0)
+  totalEmployeeContribution Decimal @default(0)
+  totalEmployerContribution Decimal @default(0)
+  grandTotal               Decimal @default(0)
+
+  // File Info
+  fileName          String?
+  fileUrl           String?
+  challanNumber     String?
+
+  // Validation
+  validationErrors  Json?
+
+  processedAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  records           IndiaESIRecord[]
+
+  @@index([tenantId])
+  @@index([contributionMonth])
+  @@index([status])
+}
+
+model IndiaESIRecord {
+  id                String   @id @default(uuid())
+  submissionId      String
+  submission        IndiaESISubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  employeeId        String
+
+  // Employee Details
+  esiNumber         String   // IP Number
+  employeeName      String
+  dateOfJoining     DateTime?
+
+  // Salary Details
+  grossWages        Decimal
+  workingDays       Int      @default(0)
+
+  // Contributions
+  employeeContribution Decimal
+  employerContribution Decimal
+  totalContribution    Decimal
+
+  // Status
+  status            IndiaESIRecordStatus @default(PENDING)
+  errorCode         String?
+  errorMessage      String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([submissionId])
+  @@index([employeeId])
+  @@index([esiNumber])
+}
+
+enum IndiaESIStatus {
+  DRAFT
+  VALIDATING
+  VALIDATED
+  SUBMITTED
+  PROCESSING
+  ACCEPTED
+  REJECTED
+  FAILED
+}
+
+enum IndiaESIRecordStatus {
+  PENDING
+  VALID
+  INVALID
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+}
+
+// ============================================================================
+// 31. INDIA STATUTORY COMPLIANCE - TDS (TAX DEDUCTED AT SOURCE)
+// ============================================================================
+
+model IndiaTDSConfiguration {
+  id                String   @id @default(uuid())
+  tenantId          String
+  companyId         String
+
+  // TAN Details
+  tanNumber         String   // Tax Deduction Account Number
+  panNumber         String?  // Company PAN
+
+  // Assessment Year
+  assessmentYear    String   // e.g., "2025-26"
+
+  // Settings
+  defaultRegime     String   @default("NEW")  // OLD or NEW
+  isActive          Boolean  @default(true)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  declarations      IndiaTDSDeclaration[]
+
+  @@unique([tenantId, companyId, assessmentYear])
+  @@index([tenantId])
+}
+
+model IndiaTDSDeclaration {
+  id                String   @id @default(uuid())
+  tenantId          String
+  configId          String
+  config            IndiaTDSConfiguration @relation(fields: [configId], references: [id])
+  employeeId        String
+
+  // Employee Details
+  panNumber         String
+  employeeName      String
+  financialYear     String   // e.g., "2024-25"
+
+  // Regime Selection
+  taxRegime         String   @default("NEW")  // OLD or NEW
+
+  // Annual Income
+  annualGrossSalary    Decimal
+  annualTaxableIncome  Decimal
+
+  // Exemptions (Old Regime)
+  hraExemption         Decimal @default(0)
+  ltaExemption         Decimal @default(0)
+  otherExemptions      Decimal @default(0)
+
+  // Deductions (Old Regime)
+  section80C           Decimal @default(0)  // Max 1.5L
+  section80CCD1B       Decimal @default(0)  // NPS Max 50K
+  section80D           Decimal @default(0)  // Health Insurance
+  section80E           Decimal @default(0)  // Education Loan
+  section24B           Decimal @default(0)  // Home Loan Interest
+  standardDeduction    Decimal @default(75000)
+  otherDeductions      Decimal @default(0)
+
+  // Tax Calculation
+  taxableIncomeAfterDeductions Decimal
+  taxBeforeRebate              Decimal
+  rebateUnder87A               Decimal @default(0)
+  taxAfterRebate               Decimal
+  cess                         Decimal
+  totalTaxLiability            Decimal
+
+  // Monthly TDS
+  monthlyTDS           Decimal
+
+  // Status
+  status               TDSDeclarationStatus @default(SUBMITTED)
+  submittedAt          DateTime?
+  approvedAt           DateTime?
+  approvedBy           String?
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([employeeId, financialYear])
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([financialYear])
+}
+
+enum TDSDeclarationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+// ============================================================================
+// 32. INDIA STATUTORY COMPLIANCE - PROFESSIONAL TAX
+// ============================================================================
+
+model IndiaProfessionalTaxConfig {
+  id                String   @id @default(uuid())
+  tenantId          String
+  companyId         String
+  stateCode         String   // State code (MH, KA, TN, etc.)
+  stateName         String
+
+  // Registration
+  ptRegistrationNumber String
+  ptCircle             String?
+
+  // Rates (stored as JSON for flexibility)
+  slabs                Json     // Array of { minSalary, maxSalary, monthlyTax }
+  maxAnnualTax         Decimal  @default(2500)
+
+  // Settings
+  isActive             Boolean  @default(true)
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  deductions           IndiaProfessionalTaxDeduction[]
+
+  @@unique([tenantId, companyId, stateCode])
+  @@index([tenantId])
+  @@index([stateCode])
+}
+
+model IndiaProfessionalTaxDeduction {
+  id                String   @id @default(uuid())
+  tenantId          String
+  configId          String
+  config            IndiaProfessionalTaxConfig @relation(fields: [configId], references: [id])
+  employeeId        String
+  deductionMonth    String   // YYYY-MM format
+
+  // Employee Details
+  employeeName      String
+  grossSalary       Decimal
+
+  // Deduction
+  taxAmount         Decimal
+  isFebruaryAdjustment Boolean @default(false)  // For Maharashtra Feb adjustment
+
+  // Status
+  status            PTDeductionStatus @default(DEDUCTED)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([employeeId, deductionMonth])
+  @@index([tenantId])
+  @@index([deductionMonth])
+}
+
+enum PTDeductionStatus {
+  DEDUCTED
+  REMITTED
+  CANCELLED
+}
+
+// ============================================================================
+// 33. COMPLIANCE AUDIT LOG
+// ============================================================================
+
+model ComplianceAuditLog {
+  id              String   @id @default(uuid())
+  tenantId        String
+  companyId       String?
+
+  // Action Details
+  action          String   // SUBMISSION, VALIDATION, APPROVAL, REJECTION, etc.
+  module          String   // WPS, GOSI, PF, ESI, TDS, PT, EOSB, NITAQAT
+  entityType      String   // Submission, Record, Configuration
+  entityId        String
+
+  // User Details
+  performedBy     String
+  performedByName String?
+
+  // Change Details
+  previousState   Json?
+  newState        Json?
+  changes         Json?    // Array of field changes
+
+  // Context
+  ipAddress       String?
+  userAgent       String?
+  notes           String?
+
+  // Bilingual Messages
+  message         String
+  messageAr       String?
+
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([module])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
