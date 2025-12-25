@@ -1,5 +1,7 @@
+"use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { RecruitmentSettingsService } from '../../services';
 
 export default function VendorsManagementPage() {
     return (

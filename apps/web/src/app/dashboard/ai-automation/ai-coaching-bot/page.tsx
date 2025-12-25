@@ -14,23 +14,13 @@ import {
     MessageSquare,
     ArrowRight
 } from 'lucide-react';
-
-// --- MOCK DATA ---
+import { aiCoachingBot } from '@/lib/services/ai-automation-client';
 
 const SUGGESTED_TOPICS = [
     "How to handle underperformance?",
     "Preparing for a promotion review",
     "Conflict resolution strategies",
     "Giving constructive feedback"
-];
-
-const INITIAL_MESSAGES = [
-    {
-        id: 1,
-        sender: 'ai',
-        content: "Hi Sarah, I'm your Aura Leadership Coach. I can help you prepare for difficult conversations, draft feedback, or find relevant training resources. What's on your mind today?",
-        timestamp: '10:00 AM'
-    }
 ];
 
 const CONTEXT_RESOURCES = [
@@ -40,8 +30,10 @@ const CONTEXT_RESOURCES = [
 ];
 
 export default function AICoachingBotPage() {
-    const [messages, setMessages] = useState(INITIAL_MESSAGES);
+    const [messages, setMessages] = useState<any[]>([]);
     const [inputValue, setInputValue] = useState('');
+    const [sessionId, setSessionId] = useState<string>('');
+    const [loading, setLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -52,8 +44,18 @@ export default function AICoachingBotPage() {
         scrollToBottom();
     }, [messages]);
 
-    const handleSend = () => {
-        if (!inputValue.trim()) return;
+    useEffect(() => {
+        // Initialize with welcome message
+        setMessages([{
+            id: 1,
+            sender: 'ai',
+            content: "Hi, I'm your Aura Leadership Coach. I can help you prepare for difficult conversations, draft feedback, or find relevant training resources. What's on your mind today?",
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
+    }, []);
+
+    const handleSend = async () => {
+        if (!inputValue.trim() || loading) return;
 
         const userMsg = {
             id: messages.length + 1,
@@ -63,18 +65,30 @@ export default function AICoachingBotPage() {
         };
 
         setMessages(prev => [...prev, userMsg]);
+        const currentInput = inputValue;
         setInputValue('');
+        setLoading(true);
 
-        // Mock AI Response
-        setTimeout(() => {
-            const aiMsg = {
-                id: messages.length + 2,
-                sender: 'ai',
-                content: "That's a common challenge. When addressing underperformance, it's best to start with specific examples and ask for their perspective. Would you like me to draft a conversation script for you?",
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            };
-            setMessages(prev => [...prev, aiMsg]);
-        }, 1000);
+        try {
+            const result = await aiCoachingBot.sendMessage(currentInput, sessionId);
+            if (result.success && result.data) {
+                const aiMsg = {
+                    id: messages.length + 2,
+                    sender: 'ai',
+                    content: result.data.message || result.data.response || "I'm here to help. Could you provide more details?",
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+                setMessages(prev => [...prev, aiMsg]);
+
+                if (result.data.sessionId && !sessionId) {
+                    setSessionId(result.data.sessionId);
+                }
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

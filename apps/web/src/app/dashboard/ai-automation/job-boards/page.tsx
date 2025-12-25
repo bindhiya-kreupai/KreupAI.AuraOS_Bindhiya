@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Briefcase,
   ExternalLink,
@@ -24,6 +24,7 @@ import {
   Zap,
   BarChart3
 } from 'lucide-react';
+import { jobBoards } from '@/lib/services/ai-automation-client';
 
 // ============================================================================
 // TYPES
@@ -267,8 +268,8 @@ function StatusBadge({ status }: { status: JobStatus }) {
   );
 }
 
-function PlatformBadge({ platform, status }: { platform: JobBoardPlatform; status: string }) {
-  const board = JOB_BOARDS.find(b => b.platform === platform);
+function PlatformBadge({ platform, status, boards }: { platform: JobBoardPlatform; status: string; boards: JobBoard[] }) {
+  const board = boards.find(b => b.platform === platform);
   if (!board) return null;
 
   return (
@@ -290,15 +291,60 @@ export default function JobBoardsPage() {
   const [activeTab, setActiveTab] = useState<'postings' | 'platforms' | 'analytics'>('postings');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<JobStatus | 'all'>('all');
+  const [boards, setBoards] = useState<JobBoard[]>(JOB_BOARDS);
+  const [postings, setPostings] = useState<JobPosting[]>(JOB_POSTINGS);
+  const [loading, setLoading] = useState(true);
 
-  const filteredPostings = JOB_POSTINGS.filter(job => {
+  useEffect(() => {
+    fetchJobBoards();
+  }, []);
+
+  const fetchJobBoards = async () => {
+    try {
+      const result = await jobBoards.getJobBoards();
+      if (result.success) {
+        if (result.data?.boards) setBoards(result.data.boards);
+        if (result.data?.postings) setPostings(result.data.postings);
+      }
+    } catch (error) {
+      console.error('Error fetching job boards:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePostJob = async (jobData: any, selectedBoards: string[]) => {
+    setLoading(true);
+    try {
+      await jobBoards.postJob(jobData, selectedBoards);
+      await fetchJobBoards();
+    } catch (error) {
+      console.error('Error posting job:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSyncCandidates = async () => {
+    setLoading(true);
+    try {
+      await jobBoards.syncCandidates();
+      await fetchJobBoards();
+    } catch (error) {
+      console.error('Error syncing candidates:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredPostings = postings.filter(job => {
     const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          job.department.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const connectedPlatforms = JOB_BOARDS.filter(b => b.connected);
+  const connectedPlatforms = boards.filter(b => b.connected);
   const totalStats = connectedPlatforms.reduce(
     (acc, board) => ({
       jobs: acc.jobs + board.stats.activeJobs,
@@ -454,7 +500,7 @@ export default function JobBoardsPage() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {job.platforms.map((p, idx) => (
-                        <PlatformBadge key={idx} platform={p.platform} status={p.status} />
+                        <PlatformBadge key={idx} platform={p.platform} status={p.status} boards={boards} />
                       ))}
                       {job.platforms.length === 0 && (
                         <span className="text-xs text-silver-mist italic">Not posted to any platform</span>
@@ -484,7 +530,7 @@ export default function JobBoardsPage() {
 
       {activeTab === 'platforms' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {JOB_BOARDS.map((board) => (
+          {boards.map((board) => (
             <div
               key={board.platform}
               className={`bg-white dark:bg-stellar-blue p-5 rounded-xl border ${

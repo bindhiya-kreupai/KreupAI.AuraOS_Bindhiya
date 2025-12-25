@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Users,
     Shield,
@@ -10,13 +10,7 @@ import {
     MoreHorizontal,
     Edit3
 } from 'lucide-react';
-
-const ROLES = [
-    { id: 1, name: 'Super Admin', users: 3, description: 'Full system access', isSystem: true },
-    { id: 2, name: 'HR Manager', users: 12, description: 'Access to HR & Payroll modules', isSystem: false },
-    { id: 3, name: 'Finance Lead', users: 4, description: 'Payroll & Expense management', isSystem: false },
-    { id: 4, name: 'Employee', users: 420, description: 'Self-service portal access only', isSystem: true },
-];
+import { RoleService } from '../services';
 
 const PERMISSIONS = [
     { module: 'Employee Directory', read: true, write: true, delete: true },
@@ -27,7 +21,38 @@ const PERMISSIONS = [
 ];
 
 export default function RoleBasedAccessPage() {
-    const [selectedRole, setSelectedRole] = useState(ROLES[0]);
+    const [roles, setRoles] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedRole, setSelectedRole] = useState<any>(null);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await RoleService.getAll();
+            if (result.length > 0) {
+                setRoles(result);
+                setSelectedRole(result[0]);
+            } else {
+                // Fallback mock data
+                const mockRoles = [
+                    { id: 1, roleName: 'Super Admin', assignedUsers: 3, description: 'Full system access', isSystem: true },
+                    { id: 2, roleName: 'HR Manager', assignedUsers: 12, description: 'Access to HR & Payroll modules', isSystem: false },
+                    { id: 3, roleName: 'Finance Lead', assignedUsers: 4, description: 'Payroll & Expense management', isSystem: false },
+                    { id: 4, roleName: 'Employee', assignedUsers: 420, description: 'Self-service portal access only', isSystem: true },
+                ];
+                setRoles(mockRoles);
+                setSelectedRole(mockRoles[0]);
+            }
+        } catch (error) {
+            console.error('Error fetching roles:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
@@ -50,7 +75,7 @@ export default function RoleBasedAccessPage() {
                 <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col overflow-hidden">
                     <h3 className="font-bold text-sm mb-4 text-slate-400 uppercase tracking-wider">System Roles</h3>
                     <div className="space-y-2 overflow-y-auto pr-2">
-                        {ROLES.map((role) => (
+                        {roles.map((role) => (
                             <button
                                 key={role.id}
                                 onClick={() => setSelectedRole(role)}
@@ -61,7 +86,7 @@ export default function RoleBasedAccessPage() {
                             >
                                 <div className="flex justify-between items-start mb-1">
                                     <span className={`font-bold ${selectedRole.id === role.id ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-300'}`}>
-                                        {role.name}
+                                        {role.roleName}
                                     </span>
                                     {role.isSystem && (
                                         <Shield className="w-3 h-3 text-slate-400" />
@@ -70,7 +95,7 @@ export default function RoleBasedAccessPage() {
                                 <p className="text-xs text-slate-500 line-clamp-1">{role.description}</p>
                                 <div className="mt-3 flex items-center gap-2 text-[10px] font-bold text-slate-400">
                                     <div className="bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300">
-                                        {role.users} Users
+                                        {role.assignedUsers} Users
                                     </div>
                                 </div>
                             </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     MapPin,
     Search,
@@ -8,8 +8,41 @@ import {
     Phone,
     Globe
 } from 'lucide-react';
+import { ProviderService } from '../services';
 
 export default function ProviderDirectoryPage() {
+    const [providers, setProviders] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchProviders();
+    }, []);
+
+    const fetchProviders = async () => {
+        try {
+            setLoading(true);
+            const data = await ProviderService.getProviders();
+            if (data.length === 0) {
+                setProviders(mockProviders);
+            } else {
+                setProviders(data);
+            }
+        } catch (error) {
+            console.error('Error fetching providers:', error);
+            setProviders(mockProviders);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const mockProviders = [
+        { name: 'Dr. Emily Chen, MD', specialty: 'Cardiology', distance: '1.2 mi', rating: 4.9, address: '555 Market St, San Francisco', accepting: true },
+        { name: 'City General Hospital', specialty: 'Hospital & ER', distance: '2.5 mi', rating: 4.5, address: '1001 Potrero Ave, San Francisco', accepting: true },
+        { name: 'Bright Smile Dental', specialty: 'Dentistry', distance: '0.5 mi', rating: 4.8, address: '300 Howard St, San Francisco', accepting: true },
+        { name: 'Dr. Alan Grant', specialty: 'Pediatrics', distance: '3.1 mi', rating: 5.0, address: '2200 Webster St, San Francisco', accepting: false },
+        { name: 'Vision Plus Center', specialty: 'Optometry', distance: '1.8 mi', rating: 4.6, address: '800 Market St, San Francisco', accepting: true },
+    ];
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -49,13 +82,11 @@ export default function ProviderDirectoryPage() {
 
             {/* Results */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pb-20">
-                {[
-                    { name: 'Dr. Emily Chen, MD', specialty: 'Cardiology', distance: '1.2 mi', rating: 4.9, address: '555 Market St, San Francisco', accepting: true },
-                    { name: 'City General Hospital', specialty: 'Hospital & ER', distance: '2.5 mi', rating: 4.5, address: '1001 Potrero Ave, San Francisco', accepting: true },
-                    { name: 'Bright Smile Dental', specialty: 'Dentistry', distance: '0.5 mi', rating: 4.8, address: '300 Howard St, San Francisco', accepting: true },
-                    { name: 'Dr. Alan Grant', specialty: 'Pediatrics', distance: '3.1 mi', rating: 5.0, address: '2200 Webster St, San Francisco', accepting: false },
-                    { name: 'Vision Plus Center', specialty: 'Optometry', distance: '1.8 mi', rating: 4.6, address: '800 Market St, San Francisco', accepting: true },
-                ].map((provider, i) => (
+                {loading ? (
+                    <div className="col-span-full flex justify-center items-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                    </div>
+                ) : providers.map((provider, i) => (
                     <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:shadow-lg transition-all flex flex-col h-full">
                         <div className="flex justify-between items-start mb-2">
                             <div className={`px-2 py-1 rounded text-xs font-bold uppercase ${provider.accepting ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>

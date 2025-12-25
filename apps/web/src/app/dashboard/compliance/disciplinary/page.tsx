@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Gavel,
     AlertTriangle,
@@ -11,6 +11,7 @@ import {
     MoreVertical,
     Plus
 } from 'lucide-react';
+import { DisciplinaryService } from '../services';
 
 const CASES = [
     { id: 'CASE-001', employee: 'John Doe', type: 'Misconduct', status: 'Investigation', severity: 'High', date: '2 days ago', investigator: 'Sarah Smith' },
@@ -19,6 +20,26 @@ const CASES = [
 ];
 
 export default function DisciplinaryPage() {
+    const [records, setRecords] = useState<any[]>(CASES);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchRecords();
+    }, []);
+
+    const fetchRecords = async () => {
+        try {
+            const data = await DisciplinaryService.getRecords();
+            if (data.length > 0) {
+                setRecords(data);
+            }
+        } catch (error) {
+            console.error('Error fetching disciplinary records:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

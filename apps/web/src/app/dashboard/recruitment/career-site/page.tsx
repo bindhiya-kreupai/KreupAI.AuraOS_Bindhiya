@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { JobPostingService, RecruitmentSettingsService } from '../services';
 import {
     Globe,
     Palette,
@@ -12,6 +13,37 @@ import {
 
 export default function CareerSitePage() {
     const [theme, setTheme] = useState('Modern Blue');
+    const [settings, setSettings] = useState<any>(null);
+    const [jobs, setJobs] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchCareerSiteData();
+    }, []);
+
+    const fetchCareerSiteData = async () => {
+        try {
+            const [settingsData, jobsData] = await Promise.all([
+                RecruitmentSettingsService.getSettings(),
+                JobPostingService.getPostings({ isActive: true })
+            ]);
+            setSettings(settingsData);
+            setJobs(jobsData);
+        } catch (error) {
+            console.error('Error fetching career site data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSaveSettings = async (newSettings: any) => {
+        try {
+            await RecruitmentSettingsService.updateSettings(newSettings);
+            await fetchCareerSiteData();
+        } catch (error) {
+            console.error('Error saving settings:', error);
+        }
+    };
 
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">

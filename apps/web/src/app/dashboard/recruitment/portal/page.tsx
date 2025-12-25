@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { CandidateApplicationService, JobPostingService } from '../services';
 import {
     Layout,
     FileText,
@@ -17,6 +18,26 @@ import {
 
 export default function CandidatePortalPage() {
     const [activeTab, setActiveTab] = useState('Applications');
+    const [applications, setApplications] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchApplications();
+    }, []);
+
+    const fetchApplications = async () => {
+        try {
+            setLoading(true);
+            const data = await CandidateApplicationService.getApplications();
+            if (data && data.length > 0) {
+                setApplications(data);
+            }
+        } catch (error) {
+            console.error('Error fetching applications:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">

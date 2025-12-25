@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FileText,
     Send,
@@ -9,8 +9,29 @@ import {
     Download,
     CheckCircle2
 } from 'lucide-react';
+import { PayslipService } from '../services';
 
 export default function PayslipGenerationPage() {
+    const [payslips, setPayslips] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await PayslipService.getPayslips();
+            if (result.length > 0) {
+                setPayslips(result);
+            }
+        } catch (error) {
+            console.error('Error fetching payslips:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}

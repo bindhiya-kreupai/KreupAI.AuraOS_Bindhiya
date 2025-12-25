@@ -1,14 +1,42 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Languages,
     Plus,
     CheckCircle2,
     Download
 } from 'lucide-react';
+import { LanguageService, TranslationService } from '../services';
 
 export default function MultiLingualPage() {
+    const [languages, setLanguages] = useState<any[]>([]);
+    const [translations, setTranslations] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [languagesData, translationsData] = await Promise.all([
+                LanguageService.getAllLanguages(),
+                TranslationService.getAllTranslations()
+            ]);
+            if (languagesData.length > 0) {
+                setLanguages(languagesData);
+            }
+            if (translationsData.length > 0) {
+                setTranslations(translationsData);
+            }
+        } catch (error) {
+            console.error('Error fetching multi-lingual data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

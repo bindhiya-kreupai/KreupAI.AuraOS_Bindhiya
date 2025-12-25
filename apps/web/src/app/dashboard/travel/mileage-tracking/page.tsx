@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Gauge, Plus, MapPin, Car } from 'lucide-react';
+import { TravelRequestService } from '../services';
 
 const LOGS = [
     { id: 1, date: 'Oct 28', from: 'Office', to: 'Client Site A', dist: '12 mi', amount: '$7.80', vehicle: 'Personal Car' },
@@ -10,6 +11,25 @@ const LOGS = [
 ];
 
 export default function MileageTrackingPage() {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const requests = await TravelRequestService.getRequests();
+            setData(requests);
+        } catch (error) {
+            console.error('Failed to fetch mileage tracking:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

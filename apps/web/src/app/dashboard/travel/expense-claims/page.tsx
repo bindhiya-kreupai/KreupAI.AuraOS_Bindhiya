@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Receipt, UploadCloud, DollarSign, Calendar, MoreVertical, Plus } from 'lucide-react';
+import { TravelRequestService } from '../services';
 
 const CLAIMS = [
     { id: 1, title: 'San Francisco Trip Expenses', date: 'Oct 30, 2024', amount: '$450.25', status: 'Submitted', items: 5 },
@@ -10,6 +11,25 @@ const CLAIMS = [
 ];
 
 export default function ExpenseClaimsPage() {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const requests = await TravelRequestService.getRequests();
+            setData(requests);
+        } catch (error) {
+            console.error('Failed to fetch expense claims:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

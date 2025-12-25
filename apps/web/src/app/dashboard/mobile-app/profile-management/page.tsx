@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     UserCog,
     Lock,
@@ -9,8 +9,29 @@ import {
     AlertTriangle,
     Save
 } from 'lucide-react';
+import { MobileProfileService } from '../services';
 
 export default function ProfileManagementPage() {
+    const [profile, setProfile] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await MobileProfileService.getProfile();
+            if (result) {
+                setProfile(result);
+            }
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}

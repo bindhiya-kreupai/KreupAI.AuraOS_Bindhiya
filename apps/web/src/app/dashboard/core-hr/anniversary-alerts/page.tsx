@@ -1,14 +1,33 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Award,
     Calendar,
     Gift,
     MessageCircle
 } from 'lucide-react';
+import { AnniversaryService } from '../services';
 
 export default function AnniversaryAlertsPage() {
+    const [anniversaries, setAnniversaries] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchAnniversaries();
+    }, []);
+
+    const fetchAnniversaries = async () => {
+        try {
+            const data = await AnniversaryService.getAllAnniversaries();
+            setAnniversaries(data);
+        } catch (error) {
+            console.error('Error fetching anniversaries:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleAction = (type: string, name: string) => {
         alert(`${type} sent to ${name}!`);
     };

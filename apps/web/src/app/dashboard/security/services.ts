@@ -1,6 +1,167 @@
+// Security Module - Service Layer
+// Handles all business logic and data operations for security features
+
+import { APIClient } from '@/lib/api-client';
 import { AuditLog, RolePermission, SecuritySettings, SecurityAlert } from './types';
-const SK = { AUDIT_LOGS: 'security_audit_logs', ROLES: 'security_roles', SETTINGS: 'security_settings', ALERTS: 'security_alerts' };
-export class AuditLogService { static async getAll(): Promise<AuditLog[]> { const d = localStorage.getItem(SK.AUDIT_LOGS); return d ? JSON.parse(d) : []; } static async create(data: Partial<AuditLog>): Promise<AuditLog> { const list = await this.getAll(); const item: AuditLog = { logId: 'log-' + Date.now(), timestamp: data.timestamp || new Date().toISOString(), userId: data.userId || '', userName: data.userName || '', action: data.action || 'read', resource: data.resource || '', resourceId: data.resourceId || '', ipAddress: data.ipAddress || '', userAgent: data.userAgent || '', status: data.status || 'success', ...data }; list.push(item); localStorage.setItem(SK.AUDIT_LOGS, JSON.stringify(list)); return item; } }
-export class RoleService { static async getAll(): Promise<RolePermission[]> { const d = localStorage.getItem(SK.ROLES); return d ? JSON.parse(d) : []; } static async create(data: Partial<RolePermission>): Promise<RolePermission> { const list = await this.getAll(); const item: RolePermission = { roleId: 'role-' + Date.now(), roleName: data.roleName || '', permissions: data.permissions || [], assignedUsers: data.assignedUsers || 0, createdAt: new Date().toISOString(), ...data }; list.push(item); localStorage.setItem(SK.ROLES, JSON.stringify(list)); return item; } static async update(id: string, updates: Partial<RolePermission>): Promise<RolePermission> { const list = await this.getAll(); const idx = list.findIndex(r => r.roleId === id); if (idx === -1) throw new Error('Not found'); list[idx] = { ...list[idx], ...updates }; localStorage.setItem(SK.ROLES, JSON.stringify(list)); return list[idx]; } }
-export class SecuritySettingsService { static async get(): Promise<SecuritySettings | null> { const d = localStorage.getItem(SK.SETTINGS); return d ? JSON.parse(d) : null; } static async update(s: Partial<SecuritySettings>): Promise<SecuritySettings> { const c = await this.get(); const u: SecuritySettings = { ...c, ...s, updatedAt: new Date().toISOString() } as SecuritySettings; localStorage.setItem(SK.SETTINGS, JSON.stringify(u)); return u; } }
-export class SecurityAlertService { static async getAll(): Promise<SecurityAlert[]> { const d = localStorage.getItem(SK.ALERTS); return d ? JSON.parse(d) : []; } static async create(data: Partial<SecurityAlert>): Promise<SecurityAlert> { const list = await this.getAll(); const item: SecurityAlert = { alertId: 'alert-' + Date.now(), alertType: data.alertType || 'access_violation', severity: data.severity || 'low', title: data.title || '', message: data.message || '', timestamp: data.timestamp || new Date().toISOString(), status: data.status || 'active', createdAt: new Date().toISOString(), ...data }; list.push(item); localStorage.setItem(SK.ALERTS, JSON.stringify(list)); return item; } static async update(id: string, updates: Partial<SecurityAlert>): Promise<SecurityAlert> { const list = await this.getAll(); const idx = list.findIndex(a => a.alertId === id); if (idx === -1) throw new Error('Not found'); list[idx] = { ...list[idx], ...updates }; localStorage.setItem(SK.ALERTS, JSON.stringify(list)); return list[idx]; } }
+
+// ============================================================================
+// AUDIT LOG SERVICE
+// ============================================================================
+
+export class AuditLogService {
+  private static endpoint = '/security/audit-logs';
+
+  static async getAll(): Promise<AuditLog[]> {
+    try {
+      const response = await APIClient.get<{ logs?: AuditLog[] }>(this.endpoint);
+      return response.logs || [];
+    } catch (error) {
+      console.error('Error fetching audit logs:', error);
+      return [];
+    }
+  }
+
+  static async create(data: Partial<AuditLog>): Promise<AuditLog | null> {
+    try {
+      const response = await APIClient.post<{ log: AuditLog }>(this.endpoint, data);
+      return response.log;
+    } catch (error) {
+      console.error('Error creating audit log:', error);
+      return null;
+    }
+  }
+
+  static async getById(logId: string): Promise<AuditLog | null> {
+    try {
+      const response = await APIClient.get<{ log?: AuditLog }>(`${this.endpoint}/${logId}`);
+      return response.log || null;
+    } catch (error) {
+      console.error('Error fetching audit log:', error);
+      return null;
+    }
+  }
+}
+
+// ============================================================================
+// ROLE SERVICE
+// ============================================================================
+
+export class RoleService {
+  private static endpoint = '/security/roles';
+
+  static async getAll(): Promise<RolePermission[]> {
+    try {
+      const response = await APIClient.get<{ roles?: RolePermission[] }>(this.endpoint);
+      return response.roles || [];
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+      return [];
+    }
+  }
+
+  static async create(data: Partial<RolePermission>): Promise<RolePermission | null> {
+    try {
+      const response = await APIClient.post<{ role: RolePermission }>(this.endpoint, data);
+      return response.role;
+    } catch (error) {
+      console.error('Error creating role:', error);
+      return null;
+    }
+  }
+
+  static async update(id: string, updates: Partial<RolePermission>): Promise<RolePermission | null> {
+    try {
+      const response = await APIClient.put<{ role: RolePermission }>(`${this.endpoint}/${id}`, updates);
+      return response.role;
+    } catch (error) {
+      console.error('Error updating role:', error);
+      return null;
+    }
+  }
+
+  static async delete(id: string): Promise<boolean> {
+    try {
+      await APIClient.delete(`${this.endpoint}/${id}`);
+      return true;
+    } catch (error) {
+      console.error('Error deleting role:', error);
+      return false;
+    }
+  }
+}
+
+// ============================================================================
+// SECURITY SETTINGS SERVICE
+// ============================================================================
+
+export class SecuritySettingsService {
+  private static endpoint = '/security/settings';
+
+  static async get(): Promise<SecuritySettings | null> {
+    try {
+      const response = await APIClient.get<{ settings: SecuritySettings }>(this.endpoint);
+      return response.settings;
+    } catch (error) {
+      console.error('Error fetching security settings:', error);
+      return null;
+    }
+  }
+
+  static async update(settings: Partial<SecuritySettings>): Promise<SecuritySettings | null> {
+    try {
+      const response = await APIClient.put<{ settings: SecuritySettings }>(this.endpoint, settings);
+      return response.settings;
+    } catch (error) {
+      console.error('Error updating security settings:', error);
+      return null;
+    }
+  }
+}
+
+// ============================================================================
+// SECURITY ALERT SERVICE
+// ============================================================================
+
+export class SecurityAlertService {
+  private static endpoint = '/security/alerts';
+
+  static async getAll(): Promise<SecurityAlert[]> {
+    try {
+      const response = await APIClient.get<{ alerts?: SecurityAlert[] }>(this.endpoint);
+      return response.alerts || [];
+    } catch (error) {
+      console.error('Error fetching security alerts:', error);
+      return [];
+    }
+  }
+
+  static async create(data: Partial<SecurityAlert>): Promise<SecurityAlert | null> {
+    try {
+      const response = await APIClient.post<{ alert: SecurityAlert }>(this.endpoint, data);
+      return response.alert;
+    } catch (error) {
+      console.error('Error creating security alert:', error);
+      return null;
+    }
+  }
+
+  static async update(id: string, updates: Partial<SecurityAlert>): Promise<SecurityAlert | null> {
+    try {
+      const response = await APIClient.put<{ alert: SecurityAlert }>(`${this.endpoint}/${id}`, updates);
+      return response.alert;
+    } catch (error) {
+      console.error('Error updating security alert:', error);
+      return null;
+    }
+  }
+
+  static async getActive(): Promise<SecurityAlert[]> {
+    try {
+      const response = await APIClient.get<{ alerts?: SecurityAlert[] }>(`${this.endpoint}/active`);
+      return response.alerts || [];
+    } catch (error) {
+      console.error('Error fetching active security alerts:', error);
+      return [];
+    }
+  }
+}

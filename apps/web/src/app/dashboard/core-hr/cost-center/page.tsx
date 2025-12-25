@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     PieChart,
     Wallet,
@@ -18,9 +18,27 @@ import {
     Tooltip,
     Legend
 } from 'recharts';
+import { CostCenterService } from '../services';
 
 export default function CostCenterPage() {
     const [showEditModal, setShowEditModal] = useState(false);
+    const [costCenters, setCostCenters] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchCostCenters();
+    }, []);
+
+    const fetchCostCenters = async () => {
+        try {
+            const data = await CostCenterService.getAllCostCenters();
+            setCostCenters(data);
+        } catch (error) {
+            console.error('Error fetching cost centers:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const [data, setData] = useState([
         { name: 'Engineering', value: 4500000, color: '#6366f1' },

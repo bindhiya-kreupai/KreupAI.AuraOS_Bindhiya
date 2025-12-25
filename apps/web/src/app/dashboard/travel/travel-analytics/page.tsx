@@ -1,10 +1,11 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { PieChart as IconPieChart } from 'lucide-react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
+import { TravelAnalyticsService } from '../services';
 
 const DEPT_SPEND = [
     { name: 'Sales', amount: 45000 },
@@ -15,6 +16,25 @@ const DEPT_SPEND = [
 ];
 
 export default function TravelAnalyticsPage() {
+    const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const metrics = await TravelAnalyticsService.getMetrics();
+            setData(metrics);
+        } catch (error) {
+            console.error('Failed to fetch travel analytics:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Globe, Search, ArrowRight, Star } from 'lucide-react';
+import { TravelBookingService } from '../services';
 
 const FLIGHTS = [
     { id: 1, airline: 'United Airlines', logo: 'UA', time: '08:00 AM - 11:30 AM', duration: '5h 30m', price: '$450', type: 'Non-stop' },
@@ -10,6 +11,25 @@ const FLIGHTS = [
 ];
 
 export default function BookingIntegrationPage() {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            // TravelBookingService is available for form submission
+            setData([]);
+        } catch (error) {
+            console.error('Failed to fetch bookings:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

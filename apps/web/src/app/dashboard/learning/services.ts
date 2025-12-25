@@ -1,10 +1,10 @@
 /**
  * Learning Management System - Service Layer
- * 
- * API-ready service classes with localStorage persistence.
- * Replace localStorage calls with real API endpoints when backend is ready.
+ *
+ * API-integrated service classes using APIClient.
  */
 
+import { APIClient } from '@/lib/api-client';
 import type {
     Course,
     LearningPath,
@@ -26,81 +26,21 @@ import type {
     SessionStatus,
 } from './types';
 
-// Storage keys
-const STORAGE_KEYS = {
-    COURSES: 'learning_courses',
-    LEARNING_PATHS: 'learning_paths',
-    ENROLLMENTS: 'learning_enrollments',
-    ASSESSMENTS: 'learning_assessments',
-    ASSESSMENT_ATTEMPTS: 'learning_assessment_attempts',
-    CERTIFICATIONS: 'learning_certifications',
-    TRAINING_SESSIONS: 'learning_training_sessions',
-    EXTERNAL_TRAINING: 'learning_external_training',
-    SKILL_GAP_ANALYSIS: 'learning_skill_gap_analysis',
-    MENTORING_PROGRAMS: 'learning_mentoring_programs',
-    TRAINING_BUDGETS: 'learning_training_budgets',
-    KNOWLEDGE_ARTICLES: 'learning_knowledge_articles',
-    TRAINING_FEEDBACK: 'learning_training_feedback',
-    SETTINGS: 'learning_settings',
-};
-
-// Helper for simulating API delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-// Storage helper
-class StorageService {
-    static load<T>(key: string): T | null {
-        if (typeof window === 'undefined') return null;
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : null;
-    }
-
-    static save<T>(key: string, data: T): void {
-        if (typeof window === 'undefined') return;
-        localStorage.setItem(key, JSON.stringify(data));
-    }
-}
-
 export class CourseService {
     static async getCourses(filters?: { status?: string; categoryId?: string }): Promise<Course[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<Course[]>(STORAGE_KEYS.COURSES);
-        let courses = stored || [];
-        
-        if (filters?.status) {
-            courses = courses.filter(c => c.status === filters.status);
-        }
-        if (filters?.categoryId) {
-            courses = courses.filter(c => c.categoryId === filters.categoryId);
-        }
-        
-        return courses;
+        return APIClient.get<Course[]>('/learning/courses', filters);
     }
 
     static async createCourse(data: Course): Promise<Course> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<Course[]>(STORAGE_KEYS.COURSES) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.COURSES, stored);
-        return data;
+        return APIClient.post<Course>('/learning/courses', data);
     }
 
     static async updateCourse(id: string, updates: Partial<Course>): Promise<Course> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<Course[]>(STORAGE_KEYS.COURSES) || [];
-        const index = stored.findIndex(c => c.id === id);
-        if (index === -1) throw new Error('Course not found');
-        
-        stored[index] = { ...stored[index], ...updates, updatedAt: new Date().toISOString() };
-        StorageService.save(STORAGE_KEYS.COURSES, stored);
-        return stored[index];
+        return APIClient.put<Course>(`/learning/courses/${id}`, updates);
     }
 
     static async publishCourse(id: string): Promise<Course> {
-        return this.updateCourse(id, { 
+        return this.updateCourse(id, {
             status: 'published',
             publishedDate: new Date().toISOString(),
         });
@@ -113,99 +53,40 @@ export class CourseService {
 
 export class LearningPathService {
     static async getLearningPaths(filters?: { isActive?: boolean }): Promise<LearningPath[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<LearningPath[]>(STORAGE_KEYS.LEARNING_PATHS);
-        let paths = stored || [];
-        
-        if (filters?.isActive !== undefined) {
-            paths = paths.filter(p => p.isActive === filters.isActive);
-        }
-        
-        return paths;
+        return APIClient.get<LearningPath[]>('/learning/paths', filters);
     }
 
     static async createLearningPath(data: LearningPath): Promise<LearningPath> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<LearningPath[]>(STORAGE_KEYS.LEARNING_PATHS) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.LEARNING_PATHS, stored);
-        return data;
+        return APIClient.post<LearningPath>('/learning/paths', data);
     }
 
     static async updateLearningPath(id: string, updates: Partial<LearningPath>): Promise<LearningPath> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<LearningPath[]>(STORAGE_KEYS.LEARNING_PATHS) || [];
-        const index = stored.findIndex(p => p.id === id);
-        if (index === -1) throw new Error('Learning path not found');
-        
-        stored[index] = { ...stored[index], ...updates, updatedAt: new Date().toISOString() };
-        StorageService.save(STORAGE_KEYS.LEARNING_PATHS, stored);
-        return stored[index];
+        return APIClient.put<LearningPath>(`/learning/paths/${id}`, updates);
     }
 }
 
 export class EnrollmentService {
     static async getEnrollments(filters?: { learnerId?: string; courseId?: string; status?: EnrollmentStatus }): Promise<Enrollment[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<Enrollment[]>(STORAGE_KEYS.ENROLLMENTS);
-        let enrollments = stored || [];
-        
-        if (filters?.learnerId) {
-            enrollments = enrollments.filter(e => e.learnerId === filters.learnerId);
-        }
-        if (filters?.courseId) {
-            enrollments = enrollments.filter(e => e.courseId === filters.courseId);
-        }
-        if (filters?.status) {
-            enrollments = enrollments.filter(e => e.status === filters.status);
-        }
-        
-        return enrollments;
+        return APIClient.get<Enrollment[]>('/learning/enrollments', filters);
     }
 
     static async createEnrollment(data: Enrollment): Promise<Enrollment> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<Enrollment[]>(STORAGE_KEYS.ENROLLMENTS) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.ENROLLMENTS, stored);
-        
-        // Update course enrollment count
-        const courses = StorageService.load<Course[]>(STORAGE_KEYS.COURSES) || [];
-        const course = courses.find(c => c.id === data.courseId);
-        if (course) {
-            course.currentEnrollments += 1;
-            StorageService.save(STORAGE_KEYS.COURSES, courses);
-        }
-        
-        return data;
+        return APIClient.post<Enrollment>('/learning/enrollments', data);
     }
 
     static async updateEnrollment(id: string, updates: Partial<Enrollment>): Promise<Enrollment> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<Enrollment[]>(STORAGE_KEYS.ENROLLMENTS) || [];
-        const index = stored.findIndex(e => e.id === id);
-        if (index === -1) throw new Error('Enrollment not found');
-        
-        stored[index] = { ...stored[index], ...updates, updatedAt: new Date().toISOString() };
-        StorageService.save(STORAGE_KEYS.ENROLLMENTS, stored);
-        return stored[index];
+        return APIClient.put<Enrollment>(`/learning/enrollments/${id}`, updates);
     }
 
     static async startEnrollment(id: string): Promise<Enrollment> {
-        return this.updateEnrollment(id, { 
+        return this.updateEnrollment(id, {
             status: 'in_progress',
             startDate: new Date().toISOString(),
         });
     }
 
     static async completeEnrollment(id: string, score: number): Promise<Enrollment> {
-        return this.updateEnrollment(id, { 
+        return this.updateEnrollment(id, {
             status: 'completed',
             completedDate: new Date().toISOString(),
             progress: 100,
@@ -218,7 +99,7 @@ export class EnrollmentService {
     }
 
     static async updateProgress(id: string, progress: number, timeSpent: number): Promise<Enrollment> {
-        return this.updateEnrollment(id, { 
+        return this.updateEnrollment(id, {
             progress,
             timeSpent,
             lastAccessedDate: new Date().toISOString(),
@@ -228,89 +109,33 @@ export class EnrollmentService {
 
 export class AssessmentService {
     static async getAssessments(filters?: { courseId?: string }): Promise<Assessment[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<Assessment[]>(STORAGE_KEYS.ASSESSMENTS);
-        let assessments = stored || [];
-        
-        if (filters?.courseId) {
-            assessments = assessments.filter(a => a.courseId === filters.courseId);
-        }
-        
-        return assessments;
+        return APIClient.get<Assessment[]>('/learning/assessments', filters);
     }
 
     static async createAssessment(data: Assessment): Promise<Assessment> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<Assessment[]>(STORAGE_KEYS.ASSESSMENTS) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.ASSESSMENTS, stored);
-        return data;
+        return APIClient.post<Assessment>('/learning/assessments', data);
     }
 
     static async getAssessmentAttempts(filters?: { assessmentId?: string; learnerId?: string }): Promise<AssessmentAttempt[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<AssessmentAttempt[]>(STORAGE_KEYS.ASSESSMENT_ATTEMPTS);
-        let attempts = stored || [];
-        
-        if (filters?.assessmentId) {
-            attempts = attempts.filter(a => a.assessmentId === filters.assessmentId);
-        }
-        if (filters?.learnerId) {
-            attempts = attempts.filter(a => a.learnerId === filters.learnerId);
-        }
-        
-        return attempts;
+        return APIClient.get<AssessmentAttempt[]>('/learning/assessment-attempts', filters);
     }
 
     static async submitAssessment(data: AssessmentAttempt): Promise<AssessmentAttempt> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<AssessmentAttempt[]>(STORAGE_KEYS.ASSESSMENT_ATTEMPTS) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.ASSESSMENT_ATTEMPTS, stored);
-        return data;
+        return APIClient.post<AssessmentAttempt>('/learning/assessment-attempts', data);
     }
 }
 
 export class CertificationService {
     static async getCertifications(filters?: { learnerId?: string; status?: CertificationStatus }): Promise<Certification[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<Certification[]>(STORAGE_KEYS.CERTIFICATIONS);
-        let certifications = stored || [];
-        
-        if (filters?.learnerId) {
-            certifications = certifications.filter(c => c.learnerId === filters.learnerId);
-        }
-        if (filters?.status) {
-            certifications = certifications.filter(c => c.status === filters.status);
-        }
-        
-        return certifications;
+        return APIClient.get<Certification[]>('/learning/certifications', filters);
     }
 
     static async issueCertification(data: Certification): Promise<Certification> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<Certification[]>(STORAGE_KEYS.CERTIFICATIONS) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.CERTIFICATIONS, stored);
-        return data;
+        return APIClient.post<Certification>('/learning/certifications', data);
     }
 
     static async updateCertification(id: string, updates: Partial<Certification>): Promise<Certification> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<Certification[]>(STORAGE_KEYS.CERTIFICATIONS) || [];
-        const index = stored.findIndex(c => c.id === id);
-        if (index === -1) throw new Error('Certification not found');
-        
-        stored[index] = { ...stored[index], ...updates, updatedAt: new Date().toISOString() };
-        StorageService.save(STORAGE_KEYS.CERTIFICATIONS, stored);
-        return stored[index];
+        return APIClient.put<Certification>(`/learning/certifications/${id}`, updates);
     }
 
     static async revokeCertification(id: string): Promise<Certification> {
@@ -320,271 +145,101 @@ export class CertificationService {
 
 export class TrainingSessionService {
     static async getTrainingSessions(filters?: { courseId?: string; status?: SessionStatus }): Promise<TrainingSession[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<TrainingSession[]>(STORAGE_KEYS.TRAINING_SESSIONS);
-        let sessions = stored || [];
-        
-        if (filters?.courseId) {
-            sessions = sessions.filter(s => s.courseId === filters.courseId);
-        }
-        if (filters?.status) {
-            sessions = sessions.filter(s => s.status === filters.status);
-        }
-        
-        return sessions;
+        return APIClient.get<TrainingSession[]>('/learning/training-sessions', filters);
     }
 
     static async createTrainingSession(data: TrainingSession): Promise<TrainingSession> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<TrainingSession[]>(STORAGE_KEYS.TRAINING_SESSIONS) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.TRAINING_SESSIONS, stored);
-        return data;
+        return APIClient.post<TrainingSession>('/learning/training-sessions', data);
     }
 
     static async updateTrainingSession(id: string, updates: Partial<TrainingSession>): Promise<TrainingSession> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<TrainingSession[]>(STORAGE_KEYS.TRAINING_SESSIONS) || [];
-        const index = stored.findIndex(s => s.id === id);
-        if (index === -1) throw new Error('Training session not found');
-        
-        stored[index] = { ...stored[index], ...updates, updatedAt: new Date().toISOString() };
-        StorageService.save(STORAGE_KEYS.TRAINING_SESSIONS, stored);
-        return stored[index];
+        return APIClient.put<TrainingSession>(`/learning/training-sessions/${id}`, updates);
     }
 
     static async markAttendance(sessionId: string, learnerId: string, status: string): Promise<TrainingSession> {
-        const stored = StorageService.load<TrainingSession[]>(STORAGE_KEYS.TRAINING_SESSIONS) || [];
-        const session = stored.find(s => s.id === sessionId);
-        if (!session) throw new Error('Training session not found');
-        
-        const attendee = session.attendees.find(a => a.learnerId === learnerId);
-        if (attendee) {
-            attendee.attendanceStatus = status as any;
-            attendee.attendanceMarkedAt = new Date().toISOString();
-        }
-        
-        StorageService.save(STORAGE_KEYS.TRAINING_SESSIONS, stored);
-        return session;
+        return APIClient.post<TrainingSession>(`/learning/training-sessions/${sessionId}/attendance`, {
+            learnerId,
+            status,
+        });
     }
 }
 
 export class ExternalTrainingService {
     static async getExternalTraining(filters?: { learnerId?: string }): Promise<ExternalTraining[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<ExternalTraining[]>(STORAGE_KEYS.EXTERNAL_TRAINING);
-        let trainings = stored || [];
-        
-        if (filters?.learnerId) {
-            trainings = trainings.filter(t => t.learnerId === filters.learnerId);
-        }
-        
-        return trainings;
+        return APIClient.get<ExternalTraining[]>('/learning/external-training', filters);
     }
 
     static async createExternalTraining(data: ExternalTraining): Promise<ExternalTraining> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<ExternalTraining[]>(STORAGE_KEYS.EXTERNAL_TRAINING) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.EXTERNAL_TRAINING, stored);
-        return data;
+        return APIClient.post<ExternalTraining>('/learning/external-training', data);
     }
 
     static async approveExternalTraining(id: string, approvedBy: string): Promise<ExternalTraining> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<ExternalTraining[]>(STORAGE_KEYS.EXTERNAL_TRAINING) || [];
-        const index = stored.findIndex(t => t.id === id);
-        if (index === -1) throw new Error('External training not found');
-        
-        stored[index] = { 
-            ...stored[index], 
-            approvalStatus: 'approved',
-            approvedBy,
-            approvedDate: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
-        StorageService.save(STORAGE_KEYS.EXTERNAL_TRAINING, stored);
-        return stored[index];
+        return APIClient.post<ExternalTraining>(`/learning/external-training/${id}/approve`, { approvedBy });
     }
 }
 
 export class SkillGapService {
     static async getSkillGapAnalysis(filters?: { employeeId?: string }): Promise<SkillGapAnalysis[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<SkillGapAnalysis[]>(STORAGE_KEYS.SKILL_GAP_ANALYSIS);
-        let analyses = stored || [];
-        
-        if (filters?.employeeId) {
-            analyses = analyses.filter(a => a.employeeId === filters.employeeId);
-        }
-        
-        return analyses;
+        return APIClient.get<SkillGapAnalysis[]>('/learning/skill-gap-analysis', filters);
     }
 
     static async createSkillGapAnalysis(data: SkillGapAnalysis): Promise<SkillGapAnalysis> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<SkillGapAnalysis[]>(STORAGE_KEYS.SKILL_GAP_ANALYSIS) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.SKILL_GAP_ANALYSIS, stored);
-        return data;
+        return APIClient.post<SkillGapAnalysis>('/learning/skill-gap-analysis', data);
     }
 }
 
 export class MentoringService {
     static async getMentoringPrograms(filters?: { mentorId?: string; menteeId?: string }): Promise<MentoringProgram[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<MentoringProgram[]>(STORAGE_KEYS.MENTORING_PROGRAMS);
-        let programs = stored || [];
-        
-        if (filters?.mentorId) {
-            programs = programs.filter(p => p.mentorId === filters.mentorId);
-        }
-        if (filters?.menteeId) {
-            programs = programs.filter(p => p.menteeId === filters.menteeId);
-        }
-        
-        return programs;
+        return APIClient.get<MentoringProgram[]>('/learning/mentoring-programs', filters);
     }
 
     static async createMentoringProgram(data: MentoringProgram): Promise<MentoringProgram> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<MentoringProgram[]>(STORAGE_KEYS.MENTORING_PROGRAMS) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.MENTORING_PROGRAMS, stored);
-        return data;
+        return APIClient.post<MentoringProgram>('/learning/mentoring-programs', data);
     }
 }
 
 export class TrainingBudgetService {
     static async getTrainingBudgets(filters?: { fiscalYear?: string; departmentId?: string }): Promise<TrainingBudget[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<TrainingBudget[]>(STORAGE_KEYS.TRAINING_BUDGETS);
-        let budgets = stored || [];
-        
-        if (filters?.fiscalYear) {
-            budgets = budgets.filter(b => b.fiscalYear === filters.fiscalYear);
-        }
-        if (filters?.departmentId) {
-            budgets = budgets.filter(b => b.departmentId === filters.departmentId);
-        }
-        
-        return budgets;
+        return APIClient.get<TrainingBudget[]>('/learning/training-budgets', filters);
     }
 
     static async createTrainingBudget(data: TrainingBudget): Promise<TrainingBudget> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<TrainingBudget[]>(STORAGE_KEYS.TRAINING_BUDGETS) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.TRAINING_BUDGETS, stored);
-        return data;
+        return APIClient.post<TrainingBudget>('/learning/training-budgets', data);
     }
 }
 
 export class KnowledgeBaseService {
     static async getKnowledgeArticles(filters?: { categoryId?: string }): Promise<KnowledgeArticle[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<KnowledgeArticle[]>(STORAGE_KEYS.KNOWLEDGE_ARTICLES);
-        let articles = stored || [];
-        
-        if (filters?.categoryId) {
-            articles = articles.filter(a => a.categoryId === filters.categoryId);
-        }
-        
-        return articles;
+        return APIClient.get<KnowledgeArticle[]>('/learning/knowledge-articles', filters);
     }
 
     static async createKnowledgeArticle(data: KnowledgeArticle): Promise<KnowledgeArticle> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<KnowledgeArticle[]>(STORAGE_KEYS.KNOWLEDGE_ARTICLES) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.KNOWLEDGE_ARTICLES, stored);
-        return data;
+        return APIClient.post<KnowledgeArticle>('/learning/knowledge-articles', data);
     }
 }
 
 export class TrainingFeedbackService {
     static async getTrainingFeedback(filters?: { courseId?: string; learnerId?: string }): Promise<TrainingFeedback[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<TrainingFeedback[]>(STORAGE_KEYS.TRAINING_FEEDBACK);
-        let feedback = stored || [];
-        
-        if (filters?.courseId) {
-            feedback = feedback.filter(f => f.courseId === filters.courseId);
-        }
-        if (filters?.learnerId) {
-            feedback = feedback.filter(f => f.learnerId === filters.learnerId);
-        }
-        
-        return feedback;
+        return APIClient.get<TrainingFeedback[]>('/learning/training-feedback', filters);
     }
 
     static async submitTrainingFeedback(data: TrainingFeedback): Promise<TrainingFeedback> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<TrainingFeedback[]>(STORAGE_KEYS.TRAINING_FEEDBACK) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.TRAINING_FEEDBACK, stored);
-        return data;
+        return APIClient.post<TrainingFeedback>('/learning/training-feedback', data);
     }
 }
 
 export class LearningAnalyticsService {
     static async getAnalytics(): Promise<LearningAnalytics> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const courses = StorageService.load<Course[]>(STORAGE_KEYS.COURSES) || [];
-        const enrollments = StorageService.load<Enrollment[]>(STORAGE_KEYS.ENROLLMENTS) || [];
-        const certifications = StorageService.load<Certification[]>(STORAGE_KEYS.CERTIFICATIONS) || [];
-
-        const completedEnrollments = enrollments.filter(e => e.status === 'completed').length;
-        const totalEnrollments = enrollments.length;
-
-        return {
-            totalCourses: courses.length,
-            activeCourses: courses.filter(c => c.status === 'published').length,
-            totalEnrollments,
-            activeEnrollments: enrollments.filter(e => e.status === 'in_progress').length,
-            completedEnrollments,
-            averageCompletionRate: totalEnrollments > 0 ? (completedEnrollments / totalEnrollments) * 100 : 0,
-            averageScore: enrollments.reduce((sum, e) => sum + (e.score || 0), 0) / (enrollments.filter(e => e.score).length || 1),
-            totalCertificationsIssued: certifications.length,
-            totalTrainingHours: enrollments.reduce((sum, e) => sum + (e.timeSpent / 60), 0),
-            trainingBudgetUtilization: 75, // TODO: Calculate from actual budget data
-            topCourses: [],
-            enrollmentsByCategory: {},
-            completionTrend: [],
-        };
+        return APIClient.get<LearningAnalytics>('/learning/analytics');
     }
 }
 
 export class LearningSettingsService {
     static async getSettings(): Promise<LearningSettings | null> {
-        await delay(300);
-        // TODO: Replace with real API call
-        return StorageService.load<LearningSettings>(STORAGE_KEYS.SETTINGS);
+        return APIClient.get<LearningSettings>('/learning/settings');
     }
 
     static async updateSettings(updates: Partial<LearningSettings>): Promise<LearningSettings> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const current = StorageService.load<LearningSettings>(STORAGE_KEYS.SETTINGS);
-        const updated = { ...current, ...updates } as LearningSettings;
-        StorageService.save(STORAGE_KEYS.SETTINGS, updated);
-        return updated;
+        return APIClient.put<LearningSettings>('/learning/settings', updates);
     }
 }

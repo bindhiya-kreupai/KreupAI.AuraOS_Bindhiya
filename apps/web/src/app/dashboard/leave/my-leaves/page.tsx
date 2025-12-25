@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Calendar,
     Plus,
@@ -23,8 +23,10 @@ import {
     Cell,
     ResponsiveContainer
 } from 'recharts';
+import { LeaveRequestService, LeaveBalanceService } from '../services';
+import { LeaveRequest as LeaveRequestType, LeaveBalance as LeaveBalanceType } from '../types';
 
-// --- MOCK DATA ---
+// --- MOCK DATA FOR UI STRUCTURE ---
 
 interface LeaveBalance {
     type: string;
@@ -35,35 +37,76 @@ interface LeaveBalance {
     icon: any;
 }
 
-const BALANCES: LeaveBalance[] = [
-    { type: 'Annual Leave', total: 24, used: 10, balance: 14, color: '#10b981', icon: Plane },
-    { type: 'Sick Leave', total: 12, used: 2, balance: 10, color: '#ef4444', icon: Thermometer },
-    { type: 'Casual Leave', total: 10, used: 8, balance: 2, color: '#f59e0b', icon: Briefcase },
-];
-
-interface LeaveRequest {
-    id: string;
-    type: string;
-    startDate: string;
-    endDate: string;
-    days: number;
-    status: 'Approved' | 'Pending' | 'Rejected';
-    approver: string;
-    appliedOn: string;
-}
-
-const HISTORY: LeaveRequest[] = [
-    { id: 'LR-202', type: 'Annual Leave', startDate: 'Dec 24, 2024', endDate: 'Dec 31, 2024', days: 6, status: 'Approved', approver: 'Sarah Jenkins', appliedOn: 'Oct 15, 2024' },
-    { id: 'LR-205', type: 'Sick Leave', startDate: 'Nov 12, 2024', endDate: 'Nov 12, 2024', days: 1, status: 'Approved', approver: 'Auto-Approved', appliedOn: 'Nov 12, 2024' },
-    { id: 'LR-210', type: 'Casual Leave', startDate: 'Jan 05, 2025', endDate: 'Jan 06, 2025', days: 2, status: 'Pending', approver: 'Sarah Jenkins', appliedOn: 'Dec 02, 2024' },
-];
-
 const TEAM_AWAY = [
     { name: 'Mike Ross', date: 'Today', avatar: 'MR' },
     { name: 'Linda M.', date: 'Tomorrow', avatar: 'LM' },
 ];
 
 export default function MyLeavesPage() {
+    const [leaveRequests, setLeaveRequests] = useState<LeaveRequestType[]>([]);
+    const [leaveBalances, setLeaveBalances] = useState<LeaveBalanceType[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    // Note: In a real app, you'd get the current user's ID from auth context
+    const currentUserId = 'current-user-id';
+
+    useEffect(() => {
+        fetchMyLeaves();
+    }, []);
+
+    const fetchMyLeaves = async () => {
+        try {
+            setLoading(true);
+            const [requestsData, balancesData] = await Promise.all([
+                LeaveRequestService.getRequests({ employeeId: currentUserId }),
+                LeaveBalanceService.getBalances(currentUserId)
+            ]);
+            if (requestsData.length > 0) {
+                setLeaveRequests(requestsData);
+            }
+            if (balancesData.length > 0) {
+                setLeaveBalances(balancesData);
+            }
+        } catch (error) {
+            console.error('Error fetching my leaves:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Transform API balances to UI format
+    const BALANCES: LeaveBalance[] = leaveBalances.length > 0
+        ? leaveBalances.map(bal => ({
+            type: bal.leaveTypeName || bal.leaveTypeId,
+            total: bal.totalBalance,
+            used: bal.availed,
+            balance: bal.availableBalance,
+            color: bal.leaveTypeId === 'AL' ? '#10b981' : bal.leaveTypeId === 'SL' ? '#ef4444' : '#f59e0b',
+            icon: bal.leaveTypeId === 'AL' ? Plane : bal.leaveTypeId === 'SL' ? Thermometer : Briefcase,
+        }))
+        : [
+            { type: 'Annual Leave', total: 24, used: 10, balance: 14, color: '#10b981', icon: Plane },
+            { type: 'Sick Leave', total: 12, used: 2, balance: 10, color: '#ef4444', icon: Thermometer },
+            { type: 'Casual Leave', total: 10, used: 8, balance: 2, color: '#f59e0b', icon: Briefcase },
+        ];
+
+    // Transform API requests to UI format
+    const HISTORY = leaveRequests.length > 0
+        ? leaveRequests.slice(0, 3).map(req => ({
+            id: req.id,
+            type: req.leaveTypeName || req.leaveTypeId,
+            startDate: new Date(req.fromDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            endDate: new Date(req.toDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            days: req.numberOfDays,
+            status: req.status === 'approved' ? 'Approved' as const : req.status === 'rejected' ? 'Rejected' as const : 'Pending' as const,
+            approver: req.approvedBy || 'Pending',
+            appliedOn: req.appliedDate ? new Date(req.appliedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A',
+        }))
+        : [
+            { id: 'LR-202', type: 'Annual Leave', startDate: 'Dec 24, 2024', endDate: 'Dec 31, 2024', days: 6, status: 'Approved' as const, approver: 'Sarah Jenkins', appliedOn: 'Oct 15, 2024' },
+            { id: 'LR-205', type: 'Sick Leave', startDate: 'Nov 12, 2024', endDate: 'Nov 12, 2024', days: 1, status: 'Approved' as const, approver: 'Auto-Approved', appliedOn: 'Nov 12, 2024' },
+            { id: 'LR-210', type: 'Casual Leave', startDate: 'Jan 05, 2025', endDate: 'Jan 06, 2025', days: 2, status: 'Pending' as const, approver: 'Sarah Jenkins', appliedOn: 'Dec 02, 2024' },
+        ];
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}

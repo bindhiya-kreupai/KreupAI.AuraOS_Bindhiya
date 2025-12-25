@@ -1,57 +1,127 @@
+import { APIClient } from '@/lib/api-client';
 import { Store, CommissionPlan, SalesCommission, SeasonalHire, RetailSettings, RetailAlert } from './types';
-const STORAGE_KEYS = { STORES: 'retail_stores', COMMISSION_PLANS: 'retail_commission_plans', SALES_COMMISSIONS: 'retail_sales_commissions', SEASONAL_HIRES: 'retail_seasonal_hires', SETTINGS: 'retail_settings', ALERTS: 'retail_alerts' };
+
 export class StoreOperationsService {
-  static async getAllStores(): Promise<Store[]> { const data = localStorage.getItem(STORAGE_KEYS.STORES); return data ? JSON.parse(data) : []; }
+  private static endpoint = '/industry-retail/stores';
+
+  static async getAllStores(): Promise<Store[]> {
+    try {
+      const response = await APIClient.get<{ stores?: Store[] }>(this.endpoint);
+      return response.stores || [];
+    } catch (error) {
+      console.error('Error fetching stores:', error);
+      return [];
+    }
+  }
+
   static async createStore(data: Partial<Store>): Promise<Store> {
-    const stores = await this.getAllStores();
-    const newStore: Store = { storeId: 'store-' + Date.now(), storeNumber: data.storeNumber || 'STR-' + Date.now(), storeName: data.storeName || '', location: data.location || {} as any, manager: data.manager || '', employees: data.employees || 0, status: data.status || 'open', operatingHours: data.operatingHours || {} as any, performance: data.performance || {} as any, createdAt: new Date().toISOString(), ...data };
-    stores.push(newStore); localStorage.setItem(STORAGE_KEYS.STORES, JSON.stringify(stores)); return newStore;
+    const response = await APIClient.post<{ store: Store }>(this.endpoint, data);
+    return response.store;
   }
+
   static async updateStore(storeId: string, updates: Partial<Store>): Promise<Store> {
-    const stores = await this.getAllStores(); const index = stores.findIndex(s => s.storeId === storeId);
-    if (index === -1) throw new Error('Store not found');
-    stores[index] = { ...stores[index], ...updates, updatedAt: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.STORES, JSON.stringify(stores)); return stores[index];
+    const response = await APIClient.put<{ store: Store }>(`${this.endpoint}/${storeId}`, updates);
+    return response.store;
   }
 }
+
 export class CommissionService {
-  static async getAllPlans(): Promise<CommissionPlan[]> { const data = localStorage.getItem(STORAGE_KEYS.COMMISSION_PLANS); return data ? JSON.parse(data) : []; }
+  private static endpoint = '/industry-retail/commissions';
+
+  static async getAllPlans(): Promise<CommissionPlan[]> {
+    try {
+      const response = await APIClient.get<{ plans?: CommissionPlan[] }>(`${this.endpoint}/plans`);
+      return response.plans || [];
+    } catch (error) {
+      console.error('Error fetching commission plans:', error);
+      return [];
+    }
+  }
+
   static async createPlan(data: Partial<CommissionPlan>): Promise<CommissionPlan> {
-    const plans = await this.getAllPlans();
-    const newPlan: CommissionPlan = { planId: 'plan-' + Date.now(), planName: data.planName || '', planType: data.planType || 'tiered', applicableRoles: data.applicableRoles || [], tiers: data.tiers || [], bonus: data.bonus || {} as any, effectiveDate: data.effectiveDate || new Date().toISOString().split('T')[0], status: data.status || 'active', createdAt: new Date().toISOString(), ...data };
-    plans.push(newPlan); localStorage.setItem(STORAGE_KEYS.COMMISSION_PLANS, JSON.stringify(plans)); return newPlan;
+    const response = await APIClient.post<{ plan: CommissionPlan }>(`${this.endpoint}/plans`, data);
+    return response.plan;
   }
-  static async getAllCommissions(): Promise<SalesCommission[]> { const data = localStorage.getItem(STORAGE_KEYS.SALES_COMMISSIONS); return data ? JSON.parse(data) : []; }
+
+  static async getAllCommissions(): Promise<SalesCommission[]> {
+    try {
+      const response = await APIClient.get<{ commissions?: SalesCommission[] }>(this.endpoint);
+      return response.commissions || [];
+    } catch (error) {
+      console.error('Error fetching commissions:', error);
+      return [];
+    }
+  }
+
   static async createCommission(data: Partial<SalesCommission>): Promise<SalesCommission> {
-    const commissions = await this.getAllCommissions();
-    const newCommission: SalesCommission = { commissionId: 'comm-' + Date.now(), employeeId: data.employeeId || '', employeeName: data.employeeName || '', period: data.period || {} as any, totalSales: data.totalSales || 0, commissionableAmount: data.commissionableAmount || 0, commissionRate: data.commissionRate || 0, commissionEarned: data.commissionEarned || 0, bonusEarned: data.bonusEarned || 0, totalEarnings: data.totalEarnings || 0, status: data.status || 'pending', createdAt: new Date().toISOString(), ...data };
-    commissions.push(newCommission); localStorage.setItem(STORAGE_KEYS.SALES_COMMISSIONS, JSON.stringify(commissions)); return newCommission;
+    const response = await APIClient.post<{ commission: SalesCommission }>(this.endpoint, data);
+    return response.commission;
   }
+
   static async updateCommission(commissionId: string, updates: Partial<SalesCommission>): Promise<SalesCommission> {
-    const commissions = await this.getAllCommissions(); const index = commissions.findIndex(c => c.commissionId === commissionId);
-    if (index === -1) throw new Error('Commission not found');
-    commissions[index] = { ...commissions[index], ...updates };
-    localStorage.setItem(STORAGE_KEYS.SALES_COMMISSIONS, JSON.stringify(commissions)); return commissions[index];
+    const response = await APIClient.put<{ commission: SalesCommission }>(`${this.endpoint}/${commissionId}`, updates);
+    return response.commission;
   }
 }
+
 export class SeasonalHiringService {
-  static async getAllHires(): Promise<SeasonalHire[]> { const data = localStorage.getItem(STORAGE_KEYS.SEASONAL_HIRES); return data ? JSON.parse(data) : []; }
-  static async createHire(data: Partial<SeasonalHire>): Promise<SeasonalHire> {
-    const hires = await this.getAllHires();
-    const newHire: SeasonalHire = { hireId: 'hire-' + Date.now(), applicantName: data.applicantName || '', email: data.email || '', phone: data.phone || '', position: data.position || '', storeId: data.storeId || '', storeName: data.storeName || '', seasonPeriod: data.seasonPeriod || {} as any, availability: data.availability || [], experience: data.experience || 0, status: data.status || 'applied', createdAt: new Date().toISOString(), ...data };
-    hires.push(newHire); localStorage.setItem(STORAGE_KEYS.SEASONAL_HIRES, JSON.stringify(hires)); return newHire;
+  private static endpoint = '/industry-retail/seasonal-hiring';
+
+  static async getAllHires(): Promise<SeasonalHire[]> {
+    try {
+      const response = await APIClient.get<{ hires?: SeasonalHire[] }>(this.endpoint);
+      return response.hires || [];
+    } catch (error) {
+      console.error('Error fetching seasonal hires:', error);
+      return [];
+    }
   }
+
+  static async createHire(data: Partial<SeasonalHire>): Promise<SeasonalHire> {
+    const response = await APIClient.post<{ hire: SeasonalHire }>(this.endpoint, data);
+    return response.hire;
+  }
+
   static async updateHire(hireId: string, updates: Partial<SeasonalHire>): Promise<SeasonalHire> {
-    const hires = await this.getAllHires(); const index = hires.findIndex(h => h.hireId === hireId);
-    if (index === -1) throw new Error('Hire not found');
-    hires[index] = { ...hires[index], ...updates, updatedAt: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.SEASONAL_HIRES, JSON.stringify(hires)); return hires[index];
+    const response = await APIClient.put<{ hire: SeasonalHire }>(`${this.endpoint}/${hireId}`, updates);
+    return response.hire;
   }
 }
+
 export class RetailSettingsService {
-  static async getSettings(): Promise<RetailSettings | null> { const data = localStorage.getItem(STORAGE_KEYS.SETTINGS); return data ? JSON.parse(data) : null; }
+  private static endpoint = '/industry-retail/settings';
+
+  static async getSettings(): Promise<RetailSettings | null> {
+    try {
+      const response = await APIClient.get<{ settings?: RetailSettings }>(this.endpoint);
+      return response.settings || null;
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      return null;
+    }
+  }
+
   static async updateSettings(settings: Partial<RetailSettings>): Promise<RetailSettings> {
-    const current = await this.getSettings(); const updated: RetailSettings = { ...current, ...settings, updatedAt: new Date().toISOString() } as RetailSettings;
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated)); return updated;
+    const response = await APIClient.put<{ settings: RetailSettings }>(this.endpoint, settings);
+    return response.settings;
+  }
+}
+
+export class AlertsService {
+  private static endpoint = '/industry-retail/alerts';
+
+  static async getAllAlerts(): Promise<RetailAlert[]> {
+    try {
+      const response = await APIClient.get<{ alerts?: RetailAlert[] }>(this.endpoint);
+      return response.alerts || [];
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
+      return [];
+    }
+  }
+
+  static async createAlert(data: Partial<RetailAlert>): Promise<RetailAlert> {
+    const response = await APIClient.post<{ alert: RetailAlert }>(this.endpoint, data);
+    return response.alert;
   }
 }

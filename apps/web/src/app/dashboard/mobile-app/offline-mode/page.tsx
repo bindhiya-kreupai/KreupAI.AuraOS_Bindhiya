@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     WifiOff,
     Database,
@@ -13,8 +13,32 @@ import {
     Settings2,
     Check
 } from 'lucide-react';
+import { OfflineModeService } from '../services';
 
 export default function OfflineModePage() {
+    const [config, setConfig] = useState<any>(null);
+    const [syncStatus, setSyncStatus] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [configData, syncData] = await Promise.all([
+                OfflineModeService.getConfig(),
+                OfflineModeService.getSyncStatus()
+            ]);
+            if (configData) setConfig(configData);
+            if (syncData) setSyncStatus(syncData);
+        } catch (error) {
+            console.error('Error fetching offline mode data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}

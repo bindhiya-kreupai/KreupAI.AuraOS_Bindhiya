@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     DollarSign,
     TrendingUp,
@@ -24,6 +24,7 @@ import {
     Bar,
     Cell
 } from 'recharts';
+import { BudgetSimulationService } from '../services';
 
 // --- MOCK DATA ---
 
@@ -51,8 +52,26 @@ const DEPT_COSTS = [
 ];
 
 export default function CostModelingPage() {
+    const [simulations, setSimulations] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [meritIncrease, setMeritIncrease] = useState(3);
     const [bonusPool, setBonusPool] = useState(10);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const data = await BudgetSimulationService.getSimulations();
+            setSimulations(data);
+        } catch (error) {
+            console.error('Error fetching budget simulations:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Simple calculation logic for "What-If"
     const baseTotal = 2450000; // Annual base

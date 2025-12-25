@@ -1,14 +1,47 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     PieChart,
     Coins,
     Percent,
     ArrowUpRight
 } from 'lucide-react';
+import { PremiumService } from '../services';
 
 export default function PremiumSharingPage() {
+    const [deductions, setDeductions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchDeductions();
+    }, []);
+
+    const fetchDeductions = async () => {
+        try {
+            setLoading(true);
+            const data = await PremiumService.getDeductions({ employeeId: 'EMP-001' });
+            if (data.length === 0) {
+                setDeductions(mockDeductions);
+            } else {
+                setDeductions(data);
+            }
+        } catch (error) {
+            console.error('Error fetching premium deductions:', error);
+            setDeductions(mockDeductions);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const mockDeductions = [
+        { plan: 'Health Insurance (Premium)', total: '$1,200', employer: 80, employee: 20 },
+        { plan: 'Dental Plan', total: '$150', employer: 50, employee: 50 },
+        { plan: 'Vision Plan', total: '$50', employer: 100, employee: 0 },
+        { plan: 'Life Insurance', total: '$80', employer: 100, employee: 0 },
+        { plan: 'Dependents Coverage', total: '$400', employer: 0, employee: 100 },
+    ];
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -23,13 +56,11 @@ export default function PremiumSharingPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pb-20">
-                {[
-                    { plan: 'Health Insurance (Premium)', total: '$1,200', employer: 80, employee: 20 },
-                    { plan: 'Dental Plan', total: '$150', employer: 50, employee: 50 },
-                    { plan: 'Vision Plan', total: '$50', employer: 100, employee: 0 },
-                    { plan: 'Life Insurance', total: '$80', employer: 100, employee: 0 },
-                    { plan: 'Dependents Coverage', total: '$400', employer: 0, employee: 100 },
-                ].map((item, i) => (
+                {loading ? (
+                    <div className="col-span-full flex justify-center items-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                    </div>
+                ) : deductions.map((item, i) => (
                     <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
                         <div className="flex justify-between items-start mb-6">
                             <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">{item.plan}</h3>

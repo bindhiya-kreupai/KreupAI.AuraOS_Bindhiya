@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Mail,
     FileJson,
@@ -10,6 +10,7 @@ import {
     RefreshCw,
     Upload
 } from 'lucide-react';
+import { emailParser } from '@/lib/services/ai-automation-client';
 
 // --- MOCK DATA ---
 
@@ -54,20 +55,54 @@ const JSON_PREVIEW = JSON.stringify(EXTRACTED_DATA, null, 4);
 export default function EmailParsingPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState(0);
+    const [emails, setEmails] = useState<any[]>([]);
+    const [currentEmail, setCurrentEmail] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
-    const handleProcess = () => {
+    useEffect(() => {
+        fetchEmails();
+    }, []);
+
+    const fetchEmails = async () => {
+        try {
+            const result = await emailParser.parseEmails();
+            if (result.success && result.data?.emails) {
+                setEmails(result.data.emails);
+                if (result.data.emails.length > 0) {
+                    setCurrentEmail(result.data.emails[0]);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching emails:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleProcess = async () => {
         setIsProcessing(true);
         setProgress(0);
-        // Simulate progress
-        let p = 0;
-        const interval = setInterval(() => {
-            p += 5;
-            setProgress(p);
-            if (p >= 100) {
-                clearInterval(interval);
-                setIsProcessing(false);
+        try {
+            // Simulate progress
+            let p = 0;
+            const interval = setInterval(() => {
+                p += 5;
+                setProgress(p);
+                if (p >= 100) {
+                    clearInterval(interval);
+                    setIsProcessing(false);
+                }
+            }, 50);
+
+            // Process email if current email exists
+            if (currentEmail?.id) {
+                await emailParser.processEmail(currentEmail.id, 'extract');
+                await fetchEmails();
             }
-        }, 50);
+        } catch (error) {
+            console.error('Error processing email:', error);
+            setIsProcessing(false);
+        }
     };
 
     return (
@@ -104,7 +139,7 @@ export default function EmailParsingPage() {
                     <div className="flex-1 p-0 relative">
                         <textarea
                             readOnly
-                            value={MOCK_EMAIL}
+                            value={currentEmail?.content || MOCK_EMAIL}
                             className="w-full h-full p-6 text-sm font-mono text-slate-600 dark:text-slate-300 bg-transparent resize-none focus:outline-none"
                         />
                         {/* Highlight overlay could go here in a real app */}
@@ -125,7 +160,7 @@ export default function EmailParsingPage() {
 
                     <div className="flex-1 p-6 overflow-auto font-mono text-sm">
                         <div className="space-y-1">
-                            {Object.entries(EXTRACTED_DATA).map(([key, data], i) => (
+                            {Object.entries(currentEmail?.extractedData || EXTRACTED_DATA).map(([key, data], i) => (
                                 <div key={i} className="group flex items-start hover:bg-white/5 -mx-2 px-2 py-1 rounded transition-colors">
                                     <div className="text-purple-400 w-40 shrink-0 select-none">"{key}":</div>
                                     <div className="flex-1">

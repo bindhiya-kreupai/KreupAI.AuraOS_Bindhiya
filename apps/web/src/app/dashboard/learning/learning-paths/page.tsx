@@ -1,13 +1,42 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Map,
     CheckCircle2,
     Lock
 } from 'lucide-react';
+import { LearningPathService } from '../services';
 
 export default function LearningPathsPage() {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    // Mock data as fallback
+    const mockPaths = [
+        { title: 'Frontend Developer Path', progress: 45, steps: 8, current: 'React Hooks Deep Dive', completed: ['HTML/CSS Basics', 'JS Fundamentals', 'Intro to React'] },
+        { title: 'New Manager Onboarding', progress: 10, steps: 5, current: 'Conflict Resolution', completed: ['Company Values'] },
+    ];
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const result = await LearningPathService.getLearningPaths();
+                setData(result.length > 0 ? result : mockPaths);
+            } catch (error) {
+                console.error('Error fetching learning paths:', error);
+                setData(mockPaths);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const displayData = data.length > 0 ? data : mockPaths;
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
@@ -21,10 +50,7 @@ export default function LearningPathsPage() {
             </div>
 
             <div className="space-y-8">
-                {[
-                    { title: 'Frontend Developer Path', progress: 45, steps: 8, current: 'React Hooks Deep Dive', completed: ['HTML/CSS Basics', 'JS Fundamentals', 'Intro to React'] },
-                    { title: 'New Manager Onboarding', progress: 10, steps: 5, current: 'Conflict Resolution', completed: ['Company Values'] },
-                ].map((path, i) => (
+                {displayData.map((path, i) => (
                     <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <div className="flex justify-between items-center mb-6">
                             <div>

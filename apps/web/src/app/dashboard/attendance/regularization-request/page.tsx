@@ -1,6 +1,7 @@
+// Using RegularizationService.getPendingRequests() for regularization request data
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FileCheck,
     Plus,
@@ -10,14 +11,78 @@ import {
     XCircle,
     MoreHorizontal
 } from 'lucide-react';
+import { RegularizationService } from '../services';
 
-const REQUESTS = [
-    { id: 1, date: '02 Apr 2025', type: 'Missed Punch', reason: 'System Lag', status: 'Approved', approver: 'Alice Manager' },
-    { id: 2, date: '28 Mar 2025', type: 'Late In', reason: 'Traffic congestion', status: 'Rejected', approver: 'Alice Manager' },
-    { id: 3, date: '15 Mar 2025', type: 'Early Out', reason: 'Doctor Appointment', status: 'Pending', approver: 'Pending' },
-];
+interface RegularizationRequest {
+    id: number;
+    date: string;
+    type: string;
+    reason: string;
+    status: 'Approved' | 'Rejected' | 'Pending';
+    approver: string;
+}
+
+interface RequestForm {
+    date: string;
+    type: string;
+    checkIn: string;
+    checkOut: string;
+    reason: string;
+}
 
 export default function RegularizationRequestPage() {
+    const [requests, setRequests] = useState<RegularizationRequest[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [form, setForm] = useState<RequestForm>({
+        date: '',
+        type: 'Missed Punch',
+        checkIn: '',
+        checkOut: '',
+        reason: ''
+    });
+
+    useEffect(() => {
+        fetchRequests();
+    }, []);
+
+    const fetchRequests = async () => {
+        try {
+            setLoading(true);
+            // Using RegularizationService.getPendingRequests() for regularization requests
+            const result = await RegularizationService.getPendingRequests();
+            if (result && result.length > 0) {
+                setRequests(result as any);
+            }
+        } catch (error) {
+            console.error('Error fetching requests:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            // Submit regularization using RegularizationService
+            await RegularizationService.submitRegularization({
+                date: form.date,
+                reason: form.reason,
+                requestedInTime: form.checkIn,
+                requestedOutTime: form.checkOut,
+            } as any);
+            await fetchRequests();
+            setForm({ date: '', type: 'Missed Punch', checkIn: '', checkOut: '', reason: '' });
+        } catch (error) {
+            console.error('Error submitting request:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleInputChange = (field: keyof RequestForm, value: string) => {
+        setForm({ ...form, [field]: value });
+    };
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -39,14 +104,22 @@ export default function RegularizationRequestPage() {
                 {/* Request Form Sidebar */}
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <h3 className="font-bold text-lg text-ink-black dark:text-pearl mb-4">Submit Request</h3>
-                    <form className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Date</label>
-                            <input type="date" className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                            <input
+                                type="date"
+                                value={form.date}
+                                onChange={(e) => handleInputChange('date', e.target.value)}
+                                required
+                                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Type</label>
-                            <select className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <select
+                                value={form.type}
+                                onChange={(e) => handleInputChange('type', e.target.value)}
+                                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                                 <option>Missed Punch</option>
                                 <option>Late In</option>
                                 <option>Early Out</option>
@@ -56,18 +129,37 @@ export default function RegularizationRequestPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Check In</label>
-                                <input type="time" className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                                <input
+                                    type="time"
+                                    value={form.checkIn}
+                                    onChange={(e) => handleInputChange('checkIn', e.target.value)}
+                                    required
+                                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Check Out</label>
-                                <input type="time" className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                                <input
+                                    type="time"
+                                    value={form.checkOut}
+                                    onChange={(e) => handleInputChange('checkOut', e.target.value)}
+                                    required
+                                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
                             </div>
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Reason</label>
-                            <textarea rows={3} className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none" placeholder="Enter justification..." />
+                            <textarea
+                                rows={3}
+                                value={form.reason}
+                                onChange={(e) => handleInputChange('reason', e.target.value)}
+                                required
+                                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
+                                placeholder="Enter justification..." />
                         </div>
-                        <button type="button" className="w-full py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
                             Submit Request
                         </button>
                     </form>
@@ -76,7 +168,7 @@ export default function RegularizationRequestPage() {
                 {/* History List */}
                 <div className="col-span-1 lg:col-span-2 space-y-4">
                     <h3 className="font-bold text-lg text-ink-black dark:text-pearl px-1">Recent Requests</h3>
-                    {REQUESTS.map((req) => (
+                    {requests.map((req) => (
                         <div key={req.id} className="p-4 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                             <div className="flex items-center gap-4">
                                 <div className={`w-12 h-12 rounded-full flex items-center justify-center ${req.status === 'Approved' ? 'bg-emerald-100 text-emerald-600' :

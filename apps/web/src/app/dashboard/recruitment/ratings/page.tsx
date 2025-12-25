@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { InterviewFeedbackService } from '../services';
 import {
     Star,
     Users,
@@ -18,6 +19,28 @@ const REVIEWS = [
 ];
 
 export default function InterviewRatingsPage() {
+    const [reviews, setReviews] = useState<any[]>(REVIEWS);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchReviews();
+    }, []);
+
+    const fetchReviews = async () => {
+        try {
+            setLoading(true);
+            // Fetch all feedbacks without specific interviewId
+            const data = await InterviewFeedbackService.getFeedback('');
+            if (data && data.length > 0) {
+                setReviews(data);
+            }
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -61,7 +84,7 @@ export default function InterviewRatingsPage() {
                 </div>
 
                 <div className="overflow-y-auto flex-1 p-2 space-y-2">
-                    {REVIEWS.map(review => (
+                    {reviews.map(review => (
                         <div key={review.id} className="flex items-center p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
                             <div className="w-1/4">
                                 <div className="font-bold">{review.candidate}</div>

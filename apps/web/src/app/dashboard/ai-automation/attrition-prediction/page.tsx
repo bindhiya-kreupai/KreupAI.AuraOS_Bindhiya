@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Users,
     AlertOctagon,
@@ -25,6 +25,7 @@ import {
     Tooltip,
     Legend
 } from 'recharts';
+import { predictiveAttrition } from '@/lib/services/ai-automation-client';
 
 // --- MOCK DATA ---
 
@@ -54,6 +55,33 @@ const HIGH_RISK_EMPLOYEES = [
 
 export default function AttritionPredictionPage() {
     const [salaryBoost, setSalaryBoost] = useState(0);
+    const [atRiskEmployees, setAtRiskEmployees] = useState<any[]>(HIGH_RISK_EMPLOYEES);
+    const [riskScores, setRiskScores] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchAttritionData();
+    }, []);
+
+    const fetchAttritionData = async () => {
+        try {
+            const [riskScoresResult, atRiskResult] = await Promise.all([
+                predictiveAttrition.getRiskScores(),
+                predictiveAttrition.getAtRiskEmployees(),
+            ]);
+
+            if (riskScoresResult.success) {
+                setRiskScores(riskScoresResult.data);
+            }
+            if (atRiskResult.success) {
+                setAtRiskEmployees(atRiskResult.data?.employees || HIGH_RISK_EMPLOYEES);
+            }
+        } catch (error) {
+            console.error('Error fetching attrition data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Simulation logic (mock)
     const predictedReduction = Math.min(salaryBoost * 1.5, 40); // 10% boost reduces risk by ~15%
@@ -217,7 +245,7 @@ export default function AttritionPredictionPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-cloud dark:divide-nebula-purple/20">
-                            {HIGH_RISK_EMPLOYEES.map((employee) => (
+                            {atRiskEmployees.map((employee) => (
                                 <tr key={employee.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                                     <td className="px-6 py-4 font-medium text-ink-black dark:text-pearl">
                                         {employee.name}

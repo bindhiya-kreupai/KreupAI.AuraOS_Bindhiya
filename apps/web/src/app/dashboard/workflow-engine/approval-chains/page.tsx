@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { GitPullRequest, Users, Edit, Trash2, CheckCircle, Shield } from 'lucide-react';
+import { ApprovalChainService } from '../services';
 
 const CHAINS = [
     { id: 1, name: 'Standard Expense Approval', steps: 3, lastUpdated: '2 days ago', status: 'Active', appliesTo: 'Expenses < $500' },
@@ -11,6 +12,27 @@ const CHAINS = [
 ];
 
 export default function ApprovalChainsPage() {
+    const [chains, setChains] = useState<any[]>(CHAINS);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchChains();
+    }, []);
+
+    const fetchChains = async () => {
+        try {
+            setLoading(true);
+            const data = await ApprovalChainService.getChains();
+            if (data.length > 0) {
+                setChains(data);
+            }
+        } catch (error) {
+            console.error('Error fetching approval chains:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -27,7 +49,7 @@ export default function ApprovalChainsPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-                {CHAINS.map(chain => (
+                {chains.map(chain => (
                     <div key={chain.id} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 hover:shadow-md transition-all">
                         <div className="flex items-center gap-4 flex-1">
                             <div className="w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center shrink-0">

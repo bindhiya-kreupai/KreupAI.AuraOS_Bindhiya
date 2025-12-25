@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     DollarSign,
     Plus,
@@ -20,6 +20,7 @@ import {
     ResponsiveContainer,
     Tooltip
 } from 'recharts';
+import { LoanService } from '../services';
 
 // --- MOCK DATA ---
 
@@ -75,6 +76,25 @@ const REQUEST_TYPES = [
 ];
 
 export default function LoansPage() {
+    const [employeeLoans, setEmployeeLoans] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const data = await LoanService.getLoans();
+            setEmployeeLoans(data);
+        } catch (error) {
+            console.error('Error fetching employee loans:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const activeLoan = ACTIVE_LOANS[0];
     const paidPercentage = ((activeLoan.amount - activeLoan.balance) / activeLoan.amount) * 100;
 

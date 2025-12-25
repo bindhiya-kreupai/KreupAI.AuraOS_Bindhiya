@@ -1,0 +1,526 @@
+// Shift Management Services - API Integrated
+import { APIClient } from '@/lib/api-client';
+import type {
+  Shift,
+  ShiftAssignment,
+  ShiftPattern,
+  ShiftTemplate,
+  ShiftSwapRequest,
+  ShiftCoverageRequest,
+  ShiftPreference,
+  ShiftSchedule,
+  ShiftBid,
+  OvertimeRecord,
+  ShiftConflict,
+  ShiftMetrics,
+  ShiftSettings,
+  ShiftRule,
+  StaffingRequirement,
+  CoverageAnalysis,
+  DailyCoverage
+} from './types';
+
+export class ShiftService {
+  private static endpoint = '/shifts';
+
+  static async getShifts(filters?: { departmentId?: string; locationId?: string; date?: string; status?: string }): Promise<Shift[]> {
+    try {
+      const response = await APIClient.get<{ shifts?: Shift[] }>(this.endpoint, filters);
+      return response.shifts || [];
+    } catch (error) {
+      console.error('Error fetching shifts:', error);
+      return [];
+    }
+  }
+
+  static async getShiftById(id: string): Promise<Shift | null> {
+    try {
+      const response = await APIClient.get<{ shift?: Shift }>(`${this.endpoint}/${id}`);
+      return response.shift || null;
+    } catch (error) {
+      console.error('Error fetching shift:', error);
+      return null;
+    }
+  }
+
+  static async createShift(shift: Shift): Promise<Shift> {
+    try {
+      const response = await APIClient.post<{ shift: Shift }>(this.endpoint, shift);
+      return response.shift;
+    } catch (error) {
+      console.error('Error creating shift:', error);
+      throw error;
+    }
+  }
+
+  static async updateShift(id: string, updates: Partial<Shift>): Promise<Shift> {
+    try {
+      const response = await APIClient.put<{ shift: Shift }>(`${this.endpoint}/${id}`, updates);
+      return response.shift;
+    } catch (error) {
+      console.error('Error updating shift:', error);
+      throw error;
+    }
+  }
+
+  static async deleteShift(id: string): Promise<void> {
+    try {
+      await APIClient.delete(`${this.endpoint}/${id}`);
+    } catch (error) {
+      console.error('Error deleting shift:', error);
+      throw error;
+    }
+  }
+
+  static async cancelShift(id: string, reason: string): Promise<Shift> {
+    try {
+      const response = await APIClient.post<{ shift: Shift }>(`${this.endpoint}/${id}/cancel`, { reason });
+      return response.shift;
+    } catch (error) {
+      console.error('Error cancelling shift:', error);
+      throw error;
+    }
+  }
+
+  static async duplicateShift(id: string, newDate: string): Promise<Shift> {
+    try {
+      const response = await APIClient.post<{ shift: Shift }>(`${this.endpoint}/${id}/duplicate`, { newDate });
+      return response.shift;
+    } catch (error) {
+      console.error('Error duplicating shift:', error);
+      throw error;
+    }
+  }
+}
+
+export class ShiftAssignmentService {
+  private static endpoint = '/shifts/assignments';
+
+  static async getAssignments(filters?: { shiftId?: string; employeeId?: string }): Promise<ShiftAssignment[]> {
+    try {
+      const response = await APIClient.get<{ assignments?: ShiftAssignment[] }>(this.endpoint, filters);
+      return response.assignments || [];
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+      return [];
+    }
+  }
+
+  static async assignEmployee(shiftId: string, employeeId: string, employeeName: string, employeeEmail: string, assignedBy: string): Promise<ShiftAssignment> {
+    try {
+      const response = await APIClient.post<{ assignment: ShiftAssignment }>(this.endpoint, {
+        shiftId,
+        employeeId,
+        employeeName,
+        employeeEmail,
+        assignedBy
+      });
+      return response.assignment;
+    } catch (error) {
+      console.error('Error assigning employee:', error);
+      throw error;
+    }
+  }
+
+  static async unassignEmployee(shiftId: string, employeeId: string): Promise<void> {
+    try {
+      await APIClient.delete(`${this.endpoint}/${shiftId}/${employeeId}`);
+    } catch (error) {
+      console.error('Error unassigning employee:', error);
+      throw error;
+    }
+  }
+
+  static async checkIn(assignmentId: string, checkInTime: string): Promise<ShiftAssignment> {
+    try {
+      const response = await APIClient.post<{ assignment: ShiftAssignment }>(`${this.endpoint}/${assignmentId}/check-in`, { checkInTime });
+      return response.assignment;
+    } catch (error) {
+      console.error('Error checking in:', error);
+      throw error;
+    }
+  }
+
+  static async checkOut(assignmentId: string, checkOutTime: string): Promise<ShiftAssignment> {
+    try {
+      const response = await APIClient.post<{ assignment: ShiftAssignment }>(`${this.endpoint}/${assignmentId}/check-out`, { checkOutTime });
+      return response.assignment;
+    } catch (error) {
+      console.error('Error checking out:', error);
+      throw error;
+    }
+  }
+
+  private static async checkAssignmentConflicts(employeeId: string, shift: Shift): Promise<ShiftConflict[]> {
+    try {
+      const response = await APIClient.get<{ conflicts?: ShiftConflict[] }>(`${this.endpoint}/check-conflicts`, {
+        employeeId,
+        shiftId: shift.id
+      });
+      return response.conflicts || [];
+    } catch (error) {
+      console.error('Error checking assignment conflicts:', error);
+      return [];
+    }
+  }
+}
+
+export class ShiftPatternService {
+  private static endpoint = '/shifts/patterns';
+
+  static async getPatterns(filters?: { departmentId?: string; isActive?: boolean }): Promise<ShiftPattern[]> {
+    try {
+      const response = await APIClient.get<{ patterns?: ShiftPattern[] }>(this.endpoint, filters);
+      return response.patterns || [];
+    } catch (error) {
+      console.error('Error fetching patterns:', error);
+      return [];
+    }
+  }
+
+  static async createPattern(pattern: ShiftPattern): Promise<ShiftPattern> {
+    try {
+      const response = await APIClient.post<{ pattern: ShiftPattern }>(this.endpoint, pattern);
+      return response.pattern;
+    } catch (error) {
+      console.error('Error creating pattern:', error);
+      throw error;
+    }
+  }
+
+  static async updatePattern(id: string, updates: Partial<ShiftPattern>): Promise<ShiftPattern> {
+    try {
+      const response = await APIClient.put<{ pattern: ShiftPattern }>(`${this.endpoint}/${id}`, updates);
+      return response.pattern;
+    } catch (error) {
+      console.error('Error updating pattern:', error);
+      throw error;
+    }
+  }
+
+  static async deletePattern(id: string): Promise<void> {
+    try {
+      await APIClient.delete(`${this.endpoint}/${id}`);
+    } catch (error) {
+      console.error('Error deleting pattern:', error);
+      throw error;
+    }
+  }
+
+  static async generateShiftsFromPattern(patternId: string, startDate: string, endDate: string): Promise<Shift[]> {
+    const pattern = (await this.getPatterns()).find(p => p.id === patternId);
+    if (!pattern) throw new Error('Pattern not found');
+
+    const shifts: Shift[] = [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    let currentDate = new Date(start);
+    let dayNumber = 0;
+
+    while (currentDate <= end) {
+      const cycleDay = pattern.cycle.shifts[dayNumber % pattern.cycle.shifts.length];
+
+      if (cycleDay.isWorkDay) {
+        const template = (await ShiftTemplateService.getTemplates()).find(t => t.id === cycleDay.shiftTemplateId);
+        if (template) {
+          const shift: Shift = {
+            id: `shift-${Date.now()}-${dayNumber}`,
+            shiftCode: `SHIFT-${currentDate.toISOString().split('T')[0]}-${dayNumber}`,
+            shiftName: template.templateName,
+            shiftType: template.shiftType,
+            date: currentDate.toISOString().split('T')[0],
+            startTime: template.startTime,
+            endTime: template.endTime,
+            duration: template.duration,
+            departmentId: pattern.departmentId,
+            departmentName: pattern.departmentName,
+            locationId: 'loc-001',
+            locationName: 'Main Office',
+            requiredSkills: template.requiredSkills,
+            minStaffing: 1,
+            maxStaffing: 5,
+            currentStaffing: 0,
+            assignments: [],
+            breakSchedule: template.breakSchedule,
+            overtimeEligible: template.overtimeEligible,
+            premiumRate: template.premiumRate,
+            status: 'scheduled',
+            isRecurring: true,
+            recurringPatternId: patternId,
+            createdBy: 'system',
+            createdDate: new Date().toISOString(),
+            lastModified: new Date().toISOString()
+          };
+
+          shifts.push(shift);
+          await ShiftService.createShift(shift);
+        }
+      }
+
+      currentDate.setDate(currentDate.getDate() + 1);
+      dayNumber++;
+    }
+
+    return shifts;
+  }
+}
+
+export class ShiftTemplateService {
+  static async getTemplates(filters?: { departmentId?: string; isActive?: boolean }): Promise<ShiftTemplate[]> {
+    // TODO: Replace with actual API call
+    const data = localStorage.getItem(STORAGE_KEYS.TEMPLATES);
+    let templates: ShiftTemplate[] = data ? JSON.parse(data) : [];
+
+    if (filters) {
+      if (filters.departmentId) templates = templates.filter(t => t.departmentId === filters.departmentId);
+      if (filters.isActive !== undefined) templates = templates.filter(t => t.isActive === filters.isActive);
+    }
+
+    return templates;
+  }
+
+  static async createTemplate(template: ShiftTemplate): Promise<ShiftTemplate> {
+    // TODO: Replace with actual API call
+    const templates = await this.getTemplates();
+    templates.push(template);
+    localStorage.setItem(STORAGE_KEYS.TEMPLATES, JSON.stringify(templates));
+    return template;
+  }
+
+  static async updateTemplate(id: string, updates: Partial<ShiftTemplate>): Promise<ShiftTemplate> {
+    // TODO: Replace with actual API call
+    const templates = await this.getTemplates();
+    const index = templates.findIndex(t => t.id === id);
+    if (index === -1) throw new Error('Template not found');
+
+    templates[index] = { ...templates[index], ...updates, lastModified: new Date().toISOString() };
+    localStorage.setItem(STORAGE_KEYS.TEMPLATES, JSON.stringify(templates));
+    return templates[index];
+  }
+
+  static async deleteTemplate(id: string): Promise<void> {
+    // TODO: Replace with actual API call
+    const templates = await this.getTemplates();
+    const filtered = templates.filter(t => t.id !== id);
+    localStorage.setItem(STORAGE_KEYS.TEMPLATES, JSON.stringify(filtered));
+  }
+}
+
+export class ShiftSwapService {
+  static async getSwapRequests(filters?: { requestorId?: string; requesteeId?: string; status?: string }): Promise<ShiftSwapRequest[]> {
+    // TODO: Replace with actual API call
+    const data = localStorage.getItem(STORAGE_KEYS.SWAP_REQUESTS);
+    let swaps: ShiftSwapRequest[] = data ? JSON.parse(data) : [];
+
+    if (filters) {
+      if (filters.requestorId) swaps = swaps.filter(s => s.requestorId === filters.requestorId);
+      if (filters.requesteeId) swaps = swaps.filter(s => s.requesteeId === filters.requesteeId);
+      if (filters.status) swaps = swaps.filter(s => s.status === filters.status);
+    }
+
+    return swaps;
+  }
+
+  static async createSwapRequest(swap: ShiftSwapRequest): Promise<ShiftSwapRequest> {
+    // TODO: Replace with actual API call
+    const swaps = await this.getSwapRequests();
+    swaps.push(swap);
+    localStorage.setItem(STORAGE_KEYS.SWAP_REQUESTS, JSON.stringify(swaps));
+    return swap;
+  }
+
+  static async approveSwap(id: string, approverId: string, approverName: string): Promise<ShiftSwapRequest> {
+    // TODO: Replace with actual API call
+    const swaps = await this.getSwapRequests();
+    const index = swaps.findIndex(s => s.id === id);
+    if (index === -1) throw new Error('Swap request not found');
+
+    swaps[index].status = 'approved';
+    swaps[index].approvedBy = approverId;
+    swaps[index].approvedByName = approverName;
+    swaps[index].approvedDate = new Date().toISOString();
+
+    // Perform the swap
+    await ShiftAssignmentService.unassignEmployee(swaps[index].requestorShiftId, swaps[index].requestorId);
+    await ShiftAssignmentService.unassignEmployee(swaps[index].requesteeShiftId, swaps[index].requesteeId);
+
+    await ShiftAssignmentService.assignEmployee(
+      swaps[index].requestorShiftId,
+      swaps[index].requesteeId,
+      swaps[index].requesteeName,
+      '',
+      approverId
+    );
+
+    await ShiftAssignmentService.assignEmployee(
+      swaps[index].requesteeShiftId,
+      swaps[index].requestorId,
+      swaps[index].requestorName,
+      '',
+      approverId
+    );
+
+    swaps[index].lastModified = new Date().toISOString();
+    localStorage.setItem(STORAGE_KEYS.SWAP_REQUESTS, JSON.stringify(swaps));
+    return swaps[index];
+  }
+
+  static async rejectSwap(id: string, reason: string): Promise<ShiftSwapRequest> {
+    // TODO: Replace with actual API call
+    const swaps = await this.getSwapRequests();
+    const index = swaps.findIndex(s => s.id === id);
+    if (index === -1) throw new Error('Swap request not found');
+
+    swaps[index].status = 'rejected';
+    swaps[index].rejectedReason = reason;
+    swaps[index].lastModified = new Date().toISOString();
+
+    localStorage.setItem(STORAGE_KEYS.SWAP_REQUESTS, JSON.stringify(swaps));
+    return swaps[index];
+  }
+}
+
+export class ShiftScheduleService {
+  static async getSchedules(filters?: { departmentId?: string; status?: string }): Promise<ShiftSchedule[]> {
+    // TODO: Replace with actual API call
+    const data = localStorage.getItem(STORAGE_KEYS.SCHEDULES);
+    let schedules: ShiftSchedule[] = data ? JSON.parse(data) : [];
+
+    if (filters) {
+      if (filters.departmentId) schedules = schedules.filter(s => s.departmentId === filters.departmentId);
+      if (filters.status) schedules = schedules.filter(s => s.status === filters.status);
+    }
+
+    return schedules;
+  }
+
+  static async createSchedule(schedule: ShiftSchedule): Promise<ShiftSchedule> {
+    // TODO: Replace with actual API call
+    const schedules = await this.getSchedules();
+    schedules.push(schedule);
+    localStorage.setItem(STORAGE_KEYS.SCHEDULES, JSON.stringify(schedules));
+    return schedule;
+  }
+
+  static async publishSchedule(id: string, publishedBy: string): Promise<ShiftSchedule> {
+    const schedules = await this.getSchedules();
+    const index = schedules.findIndex(s => s.id === id);
+    if (index === -1) throw new Error('Schedule not found');
+
+    schedules[index].status = 'published';
+    schedules[index].publishedBy = publishedBy;
+    schedules[index].publishedDate = new Date().toISOString();
+
+    // Notify all assigned employees
+    // TODO: Send notifications
+
+    schedules[index].lastModified = new Date().toISOString();
+    localStorage.setItem(STORAGE_KEYS.SCHEDULES, JSON.stringify(schedules));
+    return schedules[index];
+  }
+
+  static async analyzeCoverage(scheduleId: string): Promise<CoverageAnalysis> {
+    const schedule = (await this.getSchedules()).find(s => s.id === scheduleId);
+    if (!schedule) throw new Error('Schedule not found');
+
+    const totalRequiredStaff = schedule.shifts.reduce((sum, shift) => sum + shift.minStaffing, 0);
+    const totalAssignedStaff = schedule.shifts.reduce((sum, shift) => sum + shift.currentStaffing, 0);
+    const coveragePercentage = totalRequiredStaff > 0 ? (totalAssignedStaff / totalRequiredStaff) * 100 : 0;
+
+    const uncoveredShifts = schedule.shifts.filter(s => s.currentStaffing < s.minStaffing).length;
+    const overstaffedShifts = schedule.shifts.filter(s => s.currentStaffing > s.maxStaffing).length;
+
+    const dailyCoverage: DailyCoverage[] = [];
+    // TODO: Calculate daily coverage
+
+    return {
+      totalRequiredStaff,
+      totalAssignedStaff,
+      coveragePercentage,
+      coverageStatus: coveragePercentage >= 100 ? 'fully_covered' : coveragePercentage >= 80 ? 'partially_covered' : 'uncovered',
+      uncoveredShifts,
+      overstaffedShifts,
+      dailyCoverage,
+      skillGaps: []
+    };
+  }
+}
+
+export class ShiftAnalyticsService {
+  static async getMetrics(): Promise<ShiftMetrics> {
+    // TODO: Replace with actual API call
+    const data = localStorage.getItem(STORAGE_KEYS.METRICS);
+    return data ? JSON.parse(data) : {
+      totalShifts: 0,
+      totalAssignments: 0,
+      averageCoverage: 0,
+      uncoveredShifts: 0,
+      totalOvertimeHours: 0,
+      totalOvertimeCost: 0,
+      swapRequests: 0,
+      approvedSwaps: 0,
+      rejectedSwaps: 0,
+      averageSwapApprovalTime: 0,
+      lateCheckIns: 0,
+      noShows: 0,
+      earlyDepartures: 0,
+      onTimePercentage: 0,
+      utilizationRate: 0,
+      laborCost: 0,
+      costPerHour: 0,
+      shiftsByType: [],
+      shiftsByDepartment: [],
+      coverageByDay: [],
+      topPerformers: [],
+      overtimeByEmployee: [],
+      conflictsByType: []
+    };
+  }
+}
+
+export class ShiftSettingsService {
+  static async getSettings(): Promise<ShiftSettings> {
+    // TODO: Replace with actual API call
+    const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+    return data ? JSON.parse(data) : {
+      enableShiftManagement: true,
+      enableShiftSwaps: true,
+      enableShiftBidding: false,
+      enableOvertimeTracking: true,
+      requireSwapApproval: true,
+      swapApprovalLevels: 1,
+      autoPublishSchedule: false,
+      schedulePublishDays: 14,
+      allowSelfAssignment: false,
+      minRestHoursBetweenShifts: 8,
+      maxConsecutiveShifts: 6,
+      maxHoursPerWeek: 40,
+      maxHoursPerDay: 12,
+      overtimeThresholdDaily: 8,
+      overtimeThresholdWeekly: 40,
+      overtimeRateMultiplier: 1.5,
+      nightShiftPremium: 0.15,
+      weekendPremium: 0.10,
+      holidayPremium: 0.20,
+      enableBreakTracking: true,
+      mandatoryBreakDuration: 30,
+      breakPaidThreshold: 6,
+      enableGPSCheckIn: false,
+      gpsRadiusMeters: 100,
+      enableNotifications: true,
+      notifyShiftChanges: true,
+      notifySwapRequests: true,
+      reminderHoursBefore: 24,
+      fiscalWeekStart: 'monday',
+      defaultCurrency: 'USD'
+    };
+  }
+
+  static async updateSettings(updates: Partial<ShiftSettings>): Promise<ShiftSettings> {
+    // TODO: Replace with actual API call
+    const settings = await this.getSettings();
+    const updated = { ...settings, ...updates };
+    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated));
+    return updated;
+  }
+}

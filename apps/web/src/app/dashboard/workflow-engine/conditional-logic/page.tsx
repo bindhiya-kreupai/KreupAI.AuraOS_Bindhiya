@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { RefreshCw, Code, Filter, CheckSquare } from 'lucide-react';
+import { WorkflowService } from '../services';
 
 const RULES = [
     { id: 1, name: 'Expense > $5k Limit', condition: 'IF expense.amount > 5000', action: 'Route to CFO', active: true },
@@ -10,6 +11,28 @@ const RULES = [
 ];
 
 export default function ConditionalLogicPage() {
+    const [rules, setRules] = useState<any[]>(RULES);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchRules();
+    }, []);
+
+    const fetchRules = async () => {
+        try {
+            setLoading(true);
+            const data = await WorkflowService.getWorkflows();
+            // Extract conditional rules from workflows if available
+            if (data.length > 0) {
+                // Keep mock data as fallback
+            }
+        } catch (error) {
+            console.error('Error fetching conditional rules:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Database,
     UploadCloud,
@@ -10,9 +10,28 @@ import {
     RefreshCw,
     Download
 } from 'lucide-react';
+import { MassUpdateService } from '../services';
 
 export default function MassUpdatesPage() {
     const [isDragging, setIsDragging] = useState(false);
+    const [massUpdates, setMassUpdates] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchMassUpdates();
+    }, []);
+
+    const fetchMassUpdates = async () => {
+        try {
+            const data = await MassUpdateService.getAllMassUpdates();
+            setMassUpdates(data);
+        } catch (error) {
+            console.error('Error fetching mass updates:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const [jobs, setJobs] = useState([
         { name: 'Salary_Revision_2024.csv', date: 'Today, 10:30 AM', status: 'Success', records: 142 },
         { name: 'New_Hires_Nov_Batch.xlsx', date: 'Yesterday, 4:15 PM', status: 'Partial Error', records: 12 },

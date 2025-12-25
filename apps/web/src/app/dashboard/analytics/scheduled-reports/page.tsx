@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CalendarClock,
     Plus,
@@ -12,6 +12,7 @@ import {
     PauseCircle,
     Trash2
 } from 'lucide-react';
+import { ScheduledReportService } from '../services';
 
 // --- MOCK DATA ---
 
@@ -25,6 +26,34 @@ const SCHEDULES = [
 export default function ScheduledReportsPage() {
     const [schedules, setSchedules] = useState(SCHEDULES);
     const [showModal, setShowModal] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchSchedules();
+    }, []);
+
+    const fetchSchedules = async () => {
+        try {
+            const data = await ScheduledReportService.getAllScheduledReports();
+            if (data.length > 0) {
+                setSchedules(data as any);
+            }
+        } catch (error) {
+            console.error('Error fetching scheduled reports:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCreateSchedule = async (scheduleData: any) => {
+        try {
+            await ScheduledReportService.createSchedule(scheduleData);
+            await fetchSchedules();
+            setShowModal(false);
+        } catch (error) {
+            console.error('Error creating schedule:', error);
+        }
+    };
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">

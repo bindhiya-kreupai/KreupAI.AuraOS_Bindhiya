@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Hourglass,
     CheckCircle2,
@@ -8,8 +8,27 @@ import {
     Calendar,
     Clock
 } from 'lucide-react';
+import { ProbationService } from '../services';
 
 export default function ProbationTrackingPage() {
+    const [probationRecords, setProbationRecords] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchProbationRecords();
+    }, []);
+
+    const fetchProbationRecords = async () => {
+        try {
+            const data = await ProbationService.getAllProbationRecords();
+            setProbationRecords(data);
+        } catch (error) {
+            console.error('Error fetching probation records:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const [employees, setEmployees] = useState([
         { id: 1, name: 'John Smith', role: 'Junior Developer', dept: 'Engineering', start: 'Jun 15, 2023', end: 'Dec 15, 2023', daysLeft: 5, status: 'Reviews Pending' },
         { id: 2, name: 'Emily Davis', role: 'Sales Associate', dept: 'Sales', start: 'Jul 01, 2023', end: 'Jan 01, 2024', daysLeft: 22, status: 'On Track' },

@@ -1,6 +1,7 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { JobOfferService } from '../services';
 import {
     FileSignature,
     Send,
@@ -11,6 +12,48 @@ import {
 } from 'lucide-react';
 
 export default function OfferManagementPage() {
+    const [offers, setOffers] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({ pending: 0, accepted: 0, awaitingSignature: 0 });
+
+    useEffect(() => {
+        fetchOffers();
+    }, []);
+
+    const fetchOffers = async () => {
+        try {
+            const data = await JobOfferService.getOffers();
+            setOffers(data);
+
+            const awaitingSignature = data.filter((o: any) => o.status === 'sent').length;
+            const accepted = data.filter((o: any) => o.status === 'accepted').length;
+            const pending = data.filter((o: any) => o.status === 'pending').length;
+            setStats({ pending, accepted, awaitingSignature });
+        } catch (error) {
+            console.error('Error fetching offers:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCreateOffer = async (offerData: any) => {
+        try {
+            await JobOfferService.createOffer(offerData);
+            await fetchOffers();
+        } catch (error) {
+            console.error('Error creating offer:', error);
+        }
+    };
+
+    const handleSendOffer = async (offerId: string) => {
+        try {
+            await JobOfferService.sendOffer(offerId);
+            await fetchOffers();
+        } catch (error) {
+            console.error('Error sending offer:', error);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}

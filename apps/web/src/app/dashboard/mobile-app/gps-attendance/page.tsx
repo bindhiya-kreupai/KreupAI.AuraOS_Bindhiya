@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     MapPin,
     Navigation,
@@ -12,8 +12,32 @@ import {
     Plus,
     Users
 } from 'lucide-react';
+import { GPSAttendanceService } from '../services';
 
 export default function GlobalPositioningPage() {
+    const [config, setConfig] = useState<any>(null);
+    const [checkIns, setCheckIns] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [configData, checkInsData] = await Promise.all([
+                GPSAttendanceService.getConfig(),
+                GPSAttendanceService.getAllCheckIns()
+            ]);
+            if (configData) setConfig(configData);
+            if (checkInsData.length > 0) setCheckIns(checkInsData);
+        } catch (error) {
+            console.error('Error fetching GPS attendance data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}

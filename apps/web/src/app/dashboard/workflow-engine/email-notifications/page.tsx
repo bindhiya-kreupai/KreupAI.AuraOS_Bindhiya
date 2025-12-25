@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Edit, Send } from 'lucide-react';
+import { WorkflowSettingsService } from '../services';
 
 const TEMPLATES = [
     { id: 1, name: 'Approval Request', subject: 'Action Required: Approval for {{request_id}}', type: 'System', opens: '98%' },
@@ -11,6 +12,26 @@ const TEMPLATES = [
 ];
 
 export default function EmailNotificationsPage() {
+    const [templates, setTemplates] = useState<any[]>(TEMPLATES);
+    const [settings, setSettings] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchSettings();
+    }, []);
+
+    const fetchSettings = async () => {
+        try {
+            setLoading(true);
+            const data = await WorkflowSettingsService.getSettings();
+            setSettings(data);
+        } catch (error) {
+            console.error('Error fetching notification settings:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Gift,
     Calendar,
@@ -9,8 +9,32 @@ import {
     Download,
     Eye
 } from 'lucide-react';
+import { BonusService } from '../services';
 
 export default function BonusManagementPage() {
+    const [schemes, setSchemes] = useState<any[]>([]);
+    const [payouts, setPayouts] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [schemesData, payoutsData] = await Promise.all([
+                BonusService.getSchemes(),
+                BonusService.getPayouts()
+            ]);
+            setSchemes(schemesData);
+            setPayouts(payoutsData);
+        } catch (error) {
+            console.error('Error fetching bonus data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

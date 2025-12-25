@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CalendarPlus,
     Clock,
@@ -13,51 +13,61 @@ import {
     Briefcase,
     Hourglass
 } from 'lucide-react';
-
-// --- MOCK DATA ---
+import { CompOffService } from '../services';
 
 interface CompOffRequest {
     id: string;
-    dateWorked: string;
-    project: string;
-    hours: number;
+    workDate: string;
+    workHours: number;
     reason: string;
-    status: 'Pending' | 'Approved' | 'Rejected';
-    expiryDate: string;
+    status: string;
+    expiryDate?: string;
+    balance: number;
+    used: number;
 }
 
-const PAST_CLAIMS: CompOffRequest[] = [
-    {
-        id: 'REQ-1025',
-        dateWorked: 'Dec 02, 2024 (Saturday)',
-        project: 'Project Phoenix - Go Live',
-        hours: 8,
-        reason: 'Production deployment support.',
-        status: 'Approved',
-        expiryDate: 'Feb 01, 2025'
-    },
-    {
-        id: 'REQ-1028',
-        dateWorked: 'Nov 25, 2024 (Saturday)',
-        project: 'Client Audit',
-        hours: 6,
-        reason: 'External ISO audit preparation.',
-        status: 'Approved',
-        expiryDate: 'Jan 24, 2025'
-    },
-    {
-        id: 'REQ-1030',
-        dateWorked: 'Nov 18, 2024 (Saturday)',
-        project: 'Data Migration',
-        hours: 9,
-        reason: 'Legacy DB migration script execution.',
-        status: 'Pending',
-        expiryDate: 'TBD'
-    }
-];
+interface CompOffSummary {
+    total: number;
+    earned: number;
+    used: number;
+    pending: number;
+    expiring: number;
+}
 
 export default function CompOffPage() {
-    const availableCreditDays = 2.5;
+    const [compOffs, setCompOffs] = useState<CompOffRequest[]>([]);
+    const [summary, setSummary] = useState<CompOffSummary | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchCompOffs();
+    }, []);
+
+    const fetchCompOffs = async () => {
+        try {
+            setLoading(true);
+            const result = await CompOffService.getCompOffs();
+            if (result && result.length > 0) {
+                setCompOffs(result as any);
+            }
+            const summaryData = await CompOffService.getCompOffSummary('current-user-id');
+            if (summaryData) {
+                setSummary({
+                    total: summaryData.balance || 0,
+                    earned: summaryData.totalEarned || 0,
+                    used: summaryData.totalUsed || 0,
+                    pending: 0,
+                    expiring: 0
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching comp-offs:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const availableCreditDays = summary?.total || 0;
 
     return (
         <div className="space-y-6 pb-10">
@@ -134,38 +144,42 @@ export default function CompOffPage() {
                             <button className="text-xs font-bold text-celestial-indigo hover:underline">View All</button>
                         </div>
                         <div className="divide-y divide-cloud dark:divide-nebula-purple/20">
-                            {PAST_CLAIMS.map(claim => (
+                            {loading ? (
+                                <div className="p-8 text-center text-slate-400">Loading...</div>
+                            ) : compOffs.length === 0 ? (
+                                <div className="p-8 text-center text-slate-400">No comp-off records found</div>
+                            ) : compOffs.map(claim => (
                                 <div key={claim.id} className="p-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors group">
                                     <div className="flex justify-between items-start mb-2">
                                         <div className="flex items-center gap-2">
-                                            <span className="font-bold text-sm text-ink-black dark:text-pearl">{claim.dateWorked}</span>
-                                            <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${claim.status === 'Approved' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' :
-                                                    claim.status === 'Pending' ? 'bg-amber-100 text-amber-600' :
+                                            <span className="font-bold text-sm text-ink-black dark:text-pearl">{claim.workDate}</span>
+                                            <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${claim.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' :
+                                                    claim.status === 'PENDING' ? 'bg-amber-100 text-amber-600' :
                                                         'bg-rose-100 text-rose-600'
                                                 }`}>
                                                 {claim.status}
                                             </span>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-sm font-bold text-ink-black dark:text-pearl">{claim.hours} Hours</div>
+                                            <div className="text-sm font-bold text-ink-black dark:text-pearl">{claim.workHours} Hours</div>
                                             <div className="text-xs text-silver-mist">
-                                                {claim.hours >= 8 ? 'Full Day Credit' : 'Half Day Credit'}
+                                                {claim.workHours >= 8 ? 'Full Day Credit' : 'Half Day Credit'}
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="flex flex-col md:flex-row gap-4 text-xs text-slate-600 dark:text-slate-300 mb-2">
                                         <div className="flex items-center gap-1.5">
-                                            <Briefcase className="w-3 h-3 text-silver-mist" />
-                                            {claim.project}
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
                                             <FileText className="w-3 h-3 text-silver-mist" />
                                             {claim.reason}
                                         </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <Clock className="w-3 h-3 text-silver-mist" />
+                                            Balance: {claim.balance} days
+                                        </div>
                                     </div>
 
-                                    {claim.status === 'Approved' && (
+                                    {claim.status === 'APPROVED' && claim.expiryDate && (
                                         <div className="flex items-center gap-1.5 text-[10px] text-rose-500 font-medium bg-rose-50 dark:bg-rose-900/10 inline-flex px-2 py-0.5 rounded">
                                             <Hourglass className="w-3 h-3" />
                                             Expires on {claim.expiryDate}

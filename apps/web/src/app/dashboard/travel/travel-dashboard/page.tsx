@@ -1,10 +1,11 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plane, Calendar, CreditCard, Clock, Plus, FileText, Globe } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
+import { TravelAnalyticsService } from '../services';
 
 const TRIPS = [
     { id: 1, destination: 'San Francisco, USA', dates: 'Oct 24 - Oct 28', purpose: 'Tech Conference', status: 'Approved', cost: '$2,400' },
@@ -23,6 +24,25 @@ const SPEND_DATA = [
 ];
 
 export default function TravelDashboardPage() {
+    const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const metrics = await TravelAnalyticsService.getMetrics();
+            setData(metrics);
+        } catch (error) {
+            console.error('Failed to fetch travel dashboard metrics:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

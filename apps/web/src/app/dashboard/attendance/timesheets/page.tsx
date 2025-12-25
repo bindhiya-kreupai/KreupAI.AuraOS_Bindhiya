@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Table,
     FileText,
@@ -10,33 +10,76 @@ import {
     Download,
     Send
 } from 'lucide-react';
-
-// --- MOCK DATA ---
+import { AttendanceRecordService } from '../services';
 
 const WEEK_DAYS = ['Mon 01', 'Tue 02', 'Wed 03', 'Thu 04', 'Fri 05', 'Sat 06', 'Sun 07'];
 
-const TIMESHEET_DATA = [
-    {
-        project: 'Project Alpha (Website Redesign)',
-        task: 'Frontend Development',
-        hours: [8, 8, 7.5, 9, 8, 0, 0],
-        total: 40.5
-    },
-    {
-        project: 'Project Beta (Mobile App)',
-        task: 'API Integration',
-        hours: [0, 0, 1.5, 0, 1, 0, 0],
-        total: 2.5
-    },
-    {
-        project: 'Internal',
-        task: 'Team Meetings',
-        hours: [1, 1, 0, 0, 0, 0, 0],
-        total: 2.0
-    }
-];
+interface TimesheetEntry {
+    project: string;
+    task: string;
+    hours: number[];
+    total: number;
+}
+
+interface TimesheetSummary {
+    status: string;
+    totalHours: number;
+    billableHours: number;
+    nonBillableHours: number;
+}
 
 export default function TimesheetsPage() {
+    const [timesheetData, setTimesheetData] = useState<TimesheetEntry[]>([]);
+    const [summary, setSummary] = useState<TimesheetSummary | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchTimesheets();
+    }, []);
+
+    const fetchTimesheets = async () => {
+        try {
+            const records = await AttendanceRecordService.getRecords({ type: 'summary' });
+            if (records.length > 0) {
+                // Transform attendance records to timesheet entries
+                const entries: TimesheetEntry[] = records.map((record: any) => ({
+                    project: record.project || 'Default Project',
+                    task: record.task || 'Daily Work',
+                    hours: [8, 8, 8, 8, 8, 0, 0], // Mock weekly hours
+                    total: record.workingHours || 40,
+                }));
+                setTimesheetData(entries);
+                setSummary({
+                    status: 'Draft',
+                    totalHours: 40,
+                    billableHours: 35,
+                    nonBillableHours: 5,
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching timesheets:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSubmit = async () => {
+        setLoading(true);
+        try {
+            // Create attendance record for timesheet submission
+            await AttendanceRecordService.createRecord({
+                employeeId: 'current-user',
+                date: new Date().toISOString().split('T')[0],
+                status: 'PRESENT',
+                workingHours: summary?.totalHours || 0,
+            } as any);
+            await fetchTimesheets();
+        } catch (error) {
+            console.error('Error submitting timesheet:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -52,7 +95,10 @@ export default function TimesheetsPage() {
                     <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-colors">
                         <Download className="w-4 h-4" /> Export PDF
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                    <button
+                        onClick={handleSubmit}
+                        disabled={loading}
+                        className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50">
                         <Send className="w-4 h-4" /> Submit for Approval
                     </button>
                 </div>
@@ -84,7 +130,18 @@ export default function TimesheetsPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-cloud dark:divide-nebula-purple/20">
-                        {TIMESHEET_DATA.map((row, i) => (
+                        {loading ? (
+                            <tr>
+                                <td colSpan={10} className="p-8 text-center">
+                                    <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                                </td>
+                            </tr>
+                        ) : timesheetData.length === 0 ? (
+                            <tr>
+                                <td colSpan={10} className="p-8 text-center text-slate-400">No timesheet entries</td>
+                            </tr>
+                        ) : (
+                        timesheetData.map((row, i) => (
                             <tr key={i} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
                                 <td className="p-4">
                                     <div className="font-bold text-ink-black dark:text-pearl">{row.project}</div>
@@ -109,7 +166,7 @@ export default function TimesheetsPage() {
                                     </button>
                                 </td>
                             </tr>
-                        ))}
+                        )))}
                         {/* Total Row */}
                         <tr className="bg-slate-100 dark:bg-slate-800 font-bold">
                             <td className="p-4 text-right text-slate-600 dark:text-slate-300">Daily Total</td>

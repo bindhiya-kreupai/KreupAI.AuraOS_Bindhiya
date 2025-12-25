@@ -1,23 +1,48 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Activity,
     CheckCircle2,
     BarChart2,
     Play
 } from 'lucide-react';
+import { SurveyService } from '../services';
 
 export default function PulseSurveysPage() {
-    const activeSurveys = [
-        { title: 'Weekly Check-in: Dec 06', type: 'Pulse', questions: 5, time: '2 mins', status: 'Active' },
-        { title: 'Q4 Employee Satisfaction', type: 'Deep Dive', questions: 25, time: '10 mins', status: 'Active' },
-    ];
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const pastSurveys = [
-        { title: 'Remote Work Experience', date: 'Nov 15', responseRate: '85%', score: 4.2 },
-        { title: 'Management Feedback', date: 'Oct 01', responseRate: '92%', score: 3.8 },
-    ];
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const surveys = await SurveyService.getSurveys();
+            setData(surveys);
+        } catch (error) {
+            console.error('Error fetching surveys:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Fallback mock data
+    const activeSurveys = data.filter(s => s.status === 'active').length > 0
+        ? data.filter(s => s.status === 'active')
+        : [
+            { title: 'Weekly Check-in: Dec 06', type: 'Pulse', questions: 5, time: '2 mins', status: 'Active' },
+            { title: 'Q4 Employee Satisfaction', type: 'Deep Dive', questions: 25, time: '10 mins', status: 'Active' },
+        ];
+
+    const pastSurveys = data.filter(s => s.status === 'closed').length > 0
+        ? data.filter(s => s.status === 'closed')
+        : [
+            { title: 'Remote Work Experience', date: 'Nov 15', responseRate: '85%', score: 4.2 },
+            { title: 'Management Feedback', date: 'Oct 01', responseRate: '92%', score: 3.8 },
+        ];
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">

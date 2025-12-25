@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Heart,
     MessageCircle,
@@ -10,14 +10,34 @@ import {
     Send,
     ThumbsUp
 } from 'lucide-react';
-
-const POSTS = [
-    { id: 1, from: 'Sarah Jenkins', to: 'Design Team', message: 'Incredible work on the new mobile app design! The user feedback has been amazing.', tags: ['Teamwork', 'Excellence'], time: '2 hours ago', likes: 12, comments: 2 },
-    { id: 2, from: 'Mike Ross', to: 'David Kim', message: 'Huge thanks for debugging that critical issue on production last night. You are a lifesaver!', tags: ['Going Above & Beyond'], time: '4 hours ago', likes: 24, comments: 5 },
-    { id: 3, from: 'Alice Chen', to: 'Bob Smith', message: 'Congratulations on your 5 year work anniversary! Here is to many more.', tags: ['Milestone'], time: 'Yesterday', likes: 45, comments: 10 },
-];
+import { SocialFeedService } from '../services';
 
 export default function KudosWallPage() {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const posts = await SocialFeedService.getPosts();
+            setData(posts.filter(p => p.type === 'kudos' || p.type === 'recognition'));
+        } catch (error) {
+            console.error('Error fetching kudos posts:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Fallback mock data
+    const POSTS = data.length > 0 ? data : [
+        { id: 1, from: 'Sarah Jenkins', to: 'Design Team', message: 'Incredible work on the new mobile app design! The user feedback has been amazing.', tags: ['Teamwork', 'Excellence'], time: '2 hours ago', likes: 12, comments: 2 },
+        { id: 2, from: 'Mike Ross', to: 'David Kim', message: 'Huge thanks for debugging that critical issue on production last night. You are a lifesaver!', tags: ['Going Above & Beyond'], time: '4 hours ago', likes: 24, comments: 5 },
+        { id: 3, from: 'Alice Chen', to: 'Bob Smith', message: 'Congratulations on your 5 year work anniversary! Here is to many more.', tags: ['Milestone'], time: 'Yesterday', likes: 45, comments: 10 },
+    ];
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

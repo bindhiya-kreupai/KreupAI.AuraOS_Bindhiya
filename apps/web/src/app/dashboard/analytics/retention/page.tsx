@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Users,
     TrendingDown,
@@ -10,6 +10,7 @@ import {
     ArrowDownRight,
     Layers
 } from 'lucide-react';
+import { StandardReportService } from '../services';
 
 const COHORTS = [
     { month: 'Jan 2024', joined: 45, m1: '100%', m2: '98%', m3: '95%', m4: '92%', m5: '90%', m6: '88%' },
@@ -20,6 +21,24 @@ const COHORTS = [
 ];
 
 export default function RetentionPage() {
+    const [reports, setReports] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchReports();
+    }, []);
+
+    const fetchReports = async () => {
+        try {
+            const data = await StandardReportService.getAllReports();
+            setReports(data);
+        } catch (error) {
+            console.error('Error fetching retention reports:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

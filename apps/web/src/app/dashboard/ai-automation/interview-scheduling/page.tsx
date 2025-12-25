@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Calendar as CalendarIcon,
     Clock,
@@ -8,19 +8,42 @@ import {
     Video,
     Check
 } from 'lucide-react';
-
-// --- MOCK DATA ---
-
-const SLOTS = [
-    { time: '09:00 AM', available: true, score: 95, reason: 'High Focus Time' },
-    { time: '10:00 AM', available: false, reason: 'Conflict: Team Standup' },
-    { time: '11:00 AM', available: true, score: 85, reason: 'Good Slot' },
-    { time: '01:00 PM', available: true, score: 98, reason: 'Optimal: Post-Lunch' },
-    { time: '02:00 PM', available: false, reason: 'Conflict: Client Call' },
-    { time: '03:00 PM', available: true, score: 80, reason: 'Acceptable' },
-];
+import { interviewScheduling } from '@/lib/services/ai-automation-client';
 
 export default function InterviewSchedulingPage() {
+    const [slots, setSlots] = useState<any[]>([]);
+    const [schedules, setSchedules] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            const result = await interviewScheduling.getSchedules();
+            if (result.success) {
+                setSchedules(result.data?.schedules || []);
+                setSlots(result.data?.suggestedSlots || []);
+            }
+        } catch (error) {
+            console.error('Error fetching interview data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSchedule = async (slotData: any) => {
+        setLoading(true);
+        try {
+            await interviewScheduling.scheduleInterview(slotData);
+            await fetchData();
+        } catch (error) {
+            console.error('Error scheduling interview:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -78,7 +101,7 @@ export default function InterviewSchedulingPage() {
                     <h2 className="text-lg font-bold text-ink-black dark:text-pearl mb-4">Recommended Slots (Tomorrow)</h2>
 
                     <div className="space-y-3">
-                        {SLOTS.map((slot, i) => (
+                        {slots.map((slot, i) => (
                             <div key={i} className={`flex items-center justify-between p-4 rounded-xl border transition-all ${slot.available
                                     ? 'border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50 dark:bg-emerald-900/10 dark:border-emerald-800 cursor-pointer'
                                     : 'border-slate-100 bg-slate-50 opacity-60 dark:bg-slate-800/50 dark:border-slate-700 cursor-not-allowed'

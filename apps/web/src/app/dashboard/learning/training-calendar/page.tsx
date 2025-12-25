@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CalendarDays,
     ChevronLeft,
@@ -8,8 +8,29 @@ import {
     MapPin,
     Clock
 } from 'lucide-react';
+import { TrainingSessionService } from '../services';
 
 export default function TrainingCalendarPage() {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const result = await TrainingSessionService.getTrainingSessions();
+                setData(result);
+            } catch (error) {
+                console.error('Error fetching training sessions:', error);
+                setData([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">

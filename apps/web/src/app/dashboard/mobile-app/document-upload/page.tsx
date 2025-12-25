@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     UploadCloud,
     FileText,
@@ -12,8 +12,32 @@ import {
     DownloadCloud,
     CheckCircle2
 } from 'lucide-react';
+import { DocumentUploadService } from '../services';
 
 export default function DocumentUploadPage() {
+    const [config, setConfig] = useState<any>(null);
+    const [documents, setDocuments] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [configData, documentsData] = await Promise.all([
+                DocumentUploadService.getConfig(),
+                DocumentUploadService.getAllDocuments()
+            ]);
+            if (configData) setConfig(configData);
+            if (documentsData.length > 0) setDocuments(documentsData);
+        } catch (error) {
+            console.error('Error fetching document upload data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}

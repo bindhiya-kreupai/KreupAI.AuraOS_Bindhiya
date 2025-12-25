@@ -1,6 +1,7 @@
+// Attendance rules configuration using AttendanceSettingsService
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Settings,
     MapPin,
@@ -9,8 +10,75 @@ import {
     Shield,
     Smartphone
 } from 'lucide-react';
+import { AttendanceSettingsService } from '../services';
+
+interface RulesConfig {
+    gracePeriodMinutes: number;
+    earlyExitBufferMinutes: number;
+    autoCheckout: boolean;
+    halfDayThresholdHours: number;
+    allowMobilePunch: boolean;
+}
+
+interface LocationPolicy {
+    name: string;
+    type: string;
+    value: string;
+    status: string;
+}
 
 export default function AttendanceRulesPage() {
+    const [config, setConfig] = useState<RulesConfig>({
+        gracePeriodMinutes: 15,
+        earlyExitBufferMinutes: 10,
+        autoCheckout: true,
+        halfDayThresholdHours: 4.0,
+        allowMobilePunch: true
+    });
+    const [locations, setLocations] = useState<LocationPolicy[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchRules();
+    }, []);
+
+    const fetchRules = async () => {
+        try {
+            setLoading(true);
+            const settings = await AttendanceSettingsService.getSettings();
+            if (settings) {
+                // Map settings to config format
+                setConfig({
+                    gracePeriodMinutes: 15, // Default - not in settings
+                    earlyExitBufferMinutes: 10, // Default - not in settings
+                    autoCheckout: settings.autoMarkAbsent || true,
+                    halfDayThresholdHours: 4.0, // Default - not in settings
+                    allowMobilePunch: settings.enableMobileCheckIn || true
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching rules:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleToggle = async (field: keyof RulesConfig) => {
+        const newValue = !config[field];
+        setConfig({ ...config, [field]: newValue });
+        setLoading(true);
+        try {
+            // Update settings via AttendanceSettingsService
+            await AttendanceSettingsService.updateSettings({
+                autoMarkAbsent: field === 'autoCheckout' ? newValue : undefined,
+                enableMobileCheckIn: field === 'allowMobilePunch' ? newValue : undefined,
+            } as any);
+        } catch (error) {
+            console.error('Error updating rules:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -40,7 +108,7 @@ export default function AttendanceRulesPage() {
                                 <div className="text-xs text-slate-500">Allow late entry without penalty</div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-sm font-bold bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg">15 mins</span>
+                                <span className="text-sm font-bold bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg">{config.gracePeriodMinutes} mins</span>
                             </div>
                         </div>
                         <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800">
@@ -49,7 +117,7 @@ export default function AttendanceRulesPage() {
                                 <div className="text-xs text-slate-500">Allowed early leave duration</div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-sm font-bold bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg">10 mins</span>
+                                <span className="text-sm font-bold bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg">{config.earlyExitBufferMinutes} mins</span>
                             </div>
                         </div>
                         <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800">
@@ -57,8 +125,10 @@ export default function AttendanceRulesPage() {
                                 <div className="font-bold text-sm">Auto-Checkout</div>
                                 <div className="text-xs text-slate-500">System auto-out at shift end + buffer</div>
                             </div>
-                            <div className="w-10 h-5 bg-emerald-500 rounded-full relative cursor-pointer">
-                                <div className="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div>
+                            <div
+                                onClick={() => handleToggle('autoCheckout')}
+                                className={`w-10 h-5 rounded-full relative cursor-pointer transition-colors ${config.autoCheckout ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${config.autoCheckout ? 'right-1' : 'left-1'}`}></div>
                             </div>
                         </div>
                         <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800">
@@ -66,7 +136,7 @@ export default function AttendanceRulesPage() {
                                 <div className="font-bold text-sm">Half-Day Threshold</div>
                                 <div className="text-xs text-slate-500">Min hours to count as half day</div>
                             </div>
-                            <span className="text-sm font-bold bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg">4.0 hrs</span>
+                            <span className="text-sm font-bold bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg">{config.halfDayThresholdHours} hrs</span>
                         </div>
                     </div>
                 </div>
@@ -78,12 +148,14 @@ export default function AttendanceRulesPage() {
                             <MapPin className="w-5 h-5 text-emerald-500" /> Geo-Fencing & IP
                         </h3>
                         <div className="space-y-4">
-                            {[
-                                { name: 'Head Quarters', type: 'Geo-Fence', value: 'Lat: 25.2048, Long: 55.2708 (Radius: 200m)', status: 'Active' },
-                                { name: 'Warehouse A', type: 'Geo-Fence', value: 'Lat: 25.1111, Long: 55.3333 (Radius: 500m)', status: 'Active' },
-                                { name: 'Office Network', type: 'IP Range', value: '192.168.1.0/24', status: 'Active' },
-                                { name: 'Guest Wi-Fi', type: 'IP Range', value: '10.0.0.0/8', status: 'Blocked' },
-                            ].map((l, i) => (
+                            {loading ? (
+                                <div className="p-8 text-center">
+                                    <div className="animate-spin w-6 h-6 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                                </div>
+                            ) : locations.length === 0 ? (
+                                <div className="p-4 text-center text-slate-400 text-sm">No location policies configured</div>
+                            ) : (
+                            locations.map((l, i) => (
                                 <div key={i} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl flex justify-between items-center">
                                     <div>
                                         <div className="font-bold text-sm flex items-center gap-2">
@@ -96,7 +168,7 @@ export default function AttendanceRulesPage() {
                                         {l.status}
                                     </span>
                                 </div>
-                            ))}
+                            )))}
                         </div>
                         <button className="w-full mt-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700">
                             + Add New Location Policy
@@ -112,8 +184,10 @@ export default function AttendanceRulesPage() {
                                 <div className="font-bold">Allow Mobile Punch</div>
                                 <div className="text-xs text-slate-500">Only from verified devices</div>
                             </div>
-                            <div className="w-10 h-5 bg-purple-500 rounded-full relative cursor-pointer">
-                                <div className="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div>
+                            <div
+                                onClick={() => handleToggle('allowMobilePunch')}
+                                className={`w-10 h-5 rounded-full relative cursor-pointer transition-colors ${config.allowMobilePunch ? 'bg-purple-500' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${config.allowMobilePunch ? 'right-1' : 'left-1'}`}></div>
                             </div>
                         </div>
                     </div>

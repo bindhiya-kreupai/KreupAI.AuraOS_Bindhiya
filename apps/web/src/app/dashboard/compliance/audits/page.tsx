@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ClipboardCheck,
     AlertCircle,
@@ -10,8 +10,26 @@ import {
     UploadCloud,
     PieChart
 } from 'lucide-react';
+import { ComplianceAuditService } from '../services';
 
 export default function ComplianceAuditsPage() {
+    const [audits, setAudits] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchAudits();
+    }, []);
+
+    const fetchAudits = async () => {
+        try {
+            const data = await ComplianceAuditService.getAudits();
+            setAudits(data);
+        } catch (error) {
+            console.error('Error fetching audits:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Lightbulb,
     Send,
@@ -8,8 +8,28 @@ import {
     MessageSquare,
     Filter
 } from 'lucide-react';
+import { InnovationService } from '../services';
 
 export default function SuggestionBoxPage() {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const ideas = await InnovationService.getIdeas();
+            setData(ideas);
+        } catch (error) {
+            console.error('Error fetching suggestions:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">

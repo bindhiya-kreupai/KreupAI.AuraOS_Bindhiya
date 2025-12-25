@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Bell,
     Mail,
@@ -8,8 +8,28 @@ import {
     CheckCircle2,
     Send
 } from 'lucide-react';
+import { BenefitSettingsService } from '../services';
 
 export default function NotificationPage() {
+    const [settings, setSettings] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchSettings();
+    }, []);
+
+    const fetchSettings = async () => {
+        try {
+            setLoading(true);
+            const data = await BenefitSettingsService.getSettings();
+            setSettings(data);
+        } catch (error) {
+            console.error('Error fetching benefit settings:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, GripVertical, Plus, BoxSelect } from 'lucide-react';
+import { FormBuilderService } from '../services';
 
 const FORM_FIELDS = [
     { id: 1, label: 'Employee Name', type: 'Text Input', required: true },
@@ -11,6 +12,26 @@ const FORM_FIELDS = [
 ];
 
 export default function FormBuilderPage() {
+    const [forms, setForms] = useState<any[]>([]);
+    const [formFields, setFormFields] = useState<any[]>(FORM_FIELDS);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchForms();
+    }, []);
+
+    const fetchForms = async () => {
+        try {
+            setLoading(true);
+            const data = await FormBuilderService.getForms();
+            setForms(data);
+        } catch (error) {
+            console.error('Error fetching forms:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

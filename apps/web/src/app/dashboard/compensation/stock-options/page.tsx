@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     PieChart,
     TrendingUp,
@@ -14,8 +14,27 @@ import {
     Cell,
     PieChart as RePieChart
 } from 'recharts';
+import { StockGrantService } from '../services';
 
 export default function StockOptionsPage() {
+    const [grants, setGrants] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const data = await StockGrantService.getGrants();
+            setGrants(data);
+        } catch (error) {
+            console.error('Error fetching stock grants:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     const data = [
         { name: 'Vested', value: 35000, color: '#10b981' },
         { name: 'Unvested', value: 65000, color: '#6366f1' },

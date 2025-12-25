@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Receipt,
     Check,
@@ -9,8 +9,75 @@ import {
     Paperclip,
     Filter
 } from 'lucide-react';
+import { ReimbursementService } from '../services';
+
+interface Reimbursement {
+    id: string;
+    employeeId: string;
+    employeeName: string;
+    type: string;
+    amount: number;
+    description: string;
+    date: string;
+    status: string;
+    createdAt: string;
+}
 
 export default function ReimbursementsPage() {
+    const [claims, setClaims] = useState<Reimbursement[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<'PENDING' | 'APPROVED' | 'REJECTED'>('PENDING');
+
+    useEffect(() => {
+        fetchClaims();
+    }, [activeTab]);
+
+    const fetchClaims = async () => {
+        try {
+            setLoading(true);
+            const result = await ReimbursementService.getClaims();
+            if (result.length > 0) {
+                setClaims(result);
+            }
+        } catch (error) {
+            console.error('Error fetching reimbursement claims:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleApprove = async (id: string) => {
+        try {
+            await ReimbursementService.updateClaimStatus(id, 'APPROVED');
+            fetchClaims();
+        } catch (error) {
+            console.error('Error approving claim:', error);
+        }
+    };
+
+    const handleReject = async (id: string) => {
+        try {
+            await ReimbursementService.updateClaimStatus(id, 'REJECTED');
+            fetchClaims();
+        } catch (error) {
+            console.error('Error rejecting claim:', error);
+        }
+    };
+
+    const getTimeAgo = (dateString: string) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+        if (diffDays > 0) return `${diffDays} days ago`;
+        if (diffHours > 0) return `${diffHours} hours ago`;
+        return 'Just now';
+    };
+
+    const pendingCount = claims.filter(c => c.status === 'PENDING').length;
+
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -31,46 +98,67 @@ export default function ReimbursementsPage() {
 
             {/* Filter Tabs */}
             <div className="flex gap-4 border-b border-slate-200 dark:border-slate-800">
-                <button className="pb-3 px-2 text-indigo-600 font-bold border-b-2 border-indigo-600 text-sm">Pending Approval (4)</button>
-                <button className="pb-3 px-2 text-slate-500 font-medium hover:text-slate-700 text-sm transition-colors">Approved</button>
-                <button className="pb-3 px-2 text-slate-500 font-medium hover:text-slate-700 text-sm transition-colors">Rejected</button>
+                <button
+                    onClick={() => setActiveTab('PENDING')}
+                    className={`pb-3 px-2 text-sm transition-colors ${activeTab === 'PENDING' ? 'text-indigo-600 font-bold border-b-2 border-indigo-600' : 'text-slate-500 font-medium hover:text-slate-700'}`}
+                >
+                    Pending Approval ({pendingCount})
+                </button>
+                <button
+                    onClick={() => setActiveTab('APPROVED')}
+                    className={`pb-3 px-2 text-sm transition-colors ${activeTab === 'APPROVED' ? 'text-indigo-600 font-bold border-b-2 border-indigo-600' : 'text-slate-500 font-medium hover:text-slate-700'}`}
+                >
+                    Approved
+                </button>
+                <button
+                    onClick={() => setActiveTab('REJECTED')}
+                    className={`pb-3 px-2 text-sm transition-colors ${activeTab === 'REJECTED' ? 'text-indigo-600 font-bold border-b-2 border-indigo-600' : 'text-slate-500 font-medium hover:text-slate-700'}`}
+                >
+                    Rejected
+                </button>
             </div>
 
             {/* Claims List */}
-            <div className="space-y-4">
-                {[
-                    { type: 'Travel', amount: 450, desc: 'Flight to NYC for client meeting', date: '2 days ago', user: 'Sarah Connor' },
-                    { type: 'Internet', amount: 50, desc: 'Monthly reimbursement', date: '1 day ago', user: 'Mike Ross' },
-                    { type: 'Team Lunch', amount: 200, desc: 'Q3 Team Lunch', date: '3 hours ago', user: 'Jessica Pearson' },
-                    { type: 'Software', amount: 120, desc: 'Adobe Creative Cloud License', date: 'Just now', user: 'Harvey Specter' },
-                ].map((claim, i) => (
-                    <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-start gap-4">
-                            <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-                                <Receipt className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-lg text-slate-900 dark:text-slate-100">{claim.type} - ${claim.amount}</h4>
-                                <p className="text-sm text-slate-500">{claim.desc}</p>
-                                <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
-                                    <span className="font-medium text-slate-600 dark:text-slate-300">{claim.user}</span>
-                                    <span>•</span>
-                                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {claim.date}</span>
-                                    <span>•</span>
-                                    <span className="flex items-center gap-1 text-indigo-600 cursor-pointer hover:underline"><Paperclip className="w-3 h-3" /> View Receipt</span>
+            {loading ? (
+                <div className="text-center py-8">Loading...</div>
+            ) : (
+                <div className="space-y-4">
+                    {claims.map((claim) => (
+                        <div key={claim.id} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-start gap-4">
+                                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                    <Receipt className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-lg text-slate-900 dark:text-slate-100">{claim.type} - ${claim.amount}</h4>
+                                    <p className="text-sm text-slate-500">{claim.description}</p>
+                                    <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
+                                        <span className="font-medium text-slate-600 dark:text-slate-300">{claim.employeeName}</span>
+                                        <span>•</span>
+                                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {getTimeAgo(claim.date)}</span>
+                                        <span>•</span>
+                                        <span className="flex items-center gap-1 text-indigo-600 cursor-pointer hover:underline"><Paperclip className="w-3 h-3" /> View Receipt</span>
+                                    </div>
                                 </div>
                             </div>
+                            {activeTab === 'PENDING' && (
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => handleReject(claim.id)}
+                                        className="px-4 py-2 bg-rose-50 text-rose-600 rounded-lg text-sm font-bold border border-rose-100 hover:bg-rose-100 transition-colors flex items-center gap-2"
+                                    >
+                                        <X className="w-4 h-4" /> Reject
+                                    </button>
+                                    <button
+                                        onClick={() => handleApprove(claim.id)}
+                                        className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-lg text-sm font-bold border border-emerald-100 hover:bg-emerald-100 transition-colors flex items-center gap-2"
+                                    >
+                                        <Check className="w-4 h-4" /> Approve
+                                    </button>
+                                </div>
+                            )}
                         </div>
-                        <div className="flex gap-2">
-                            <button className="px-4 py-2 bg-rose-50 text-rose-600 rounded-lg text-sm font-bold border border-rose-100 hover:bg-rose-100 transition-colors flex items-center gap-2">
-                                <X className="w-4 h-4" /> Reject
-                            </button>
-                            <button className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-lg text-sm font-bold border border-emerald-100 hover:bg-emerald-100 transition-colors flex items-center gap-2">
-                                <Check className="w-4 h-4" /> Approve
-                            </button>
-                        </div>
-                    </div>
-                ))}
+                    ))}
             </div>
         </div>
     );

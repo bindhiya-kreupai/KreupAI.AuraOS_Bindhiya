@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Brain,
   TrendingUp,
@@ -19,6 +19,7 @@ import {
   Filter,
   Calendar
 } from 'lucide-react';
+import { predictiveAttrition, performanceInsights } from '@/lib/services/ai-automation-client';
 
 // ============================================================================
 // MOCK DATA - In production, this would come from the AI services
@@ -171,10 +172,41 @@ function ProgressBar({ label, value, max = 100, color = 'bg-indigo-500' }: Progr
 export default function AIAnalyticsPage() {
   const [timeRange, setTimeRange] = useState('30d');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [attritionData, setAttritionData] = useState<any>(ATTRITION_DATA);
+  const [performanceData, setPerformanceData] = useState<any>(PERFORMANCE_DATA);
+  const [loading, setLoading] = useState(true);
 
-  const handleRefresh = () => {
+  useEffect(() => {
+    fetchAnalytics();
+  }, []);
+
+  const fetchAnalytics = async () => {
+    try {
+      const [attritionResult, performanceResult] = await Promise.all([
+        predictiveAttrition.getRiskScores(),
+        performanceInsights.getInsights(),
+      ]);
+
+      if (attritionResult.success) {
+        setAttritionData(attritionResult.data || ATTRITION_DATA);
+      }
+      if (performanceResult.success) {
+        setPerformanceData(performanceResult.data || PERFORMANCE_DATA);
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
     setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 1500);
+    try {
+      await fetchAnalytics();
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 1500);
+    }
   };
 
   return (

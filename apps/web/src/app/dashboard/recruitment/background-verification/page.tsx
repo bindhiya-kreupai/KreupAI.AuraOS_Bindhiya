@@ -1,6 +1,7 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { BackgroundCheckService } from '../services';
 import {
     ShieldCheck,
     AlertCircle,
@@ -11,6 +12,39 @@ import {
 } from 'lucide-react';
 
 export default function BackgroundVerificationPage() {
+    const [checks, setChecks] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({ inProgress: 0, completed: 0, flagged: 0 });
+
+    useEffect(() => {
+        fetchChecks();
+    }, []);
+
+    const fetchChecks = async () => {
+        try {
+            const data = await BackgroundCheckService.getBackgroundChecks();
+            setChecks(data);
+
+            const inProgress = data.filter((c: any) => c.status === 'in-progress').length;
+            const completed = data.filter((c: any) => c.status === 'completed').length;
+            const flagged = data.filter((c: any) => c.status === 'flagged').length;
+            setStats({ inProgress, completed, flagged });
+        } catch (error) {
+            console.error('Error fetching background checks:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleInitiateCheck = async (data: any) => {
+        try {
+            await BackgroundCheckService.initiateBackgroundCheck(data);
+            await fetchChecks();
+        } catch (error) {
+            console.error('Error initiating check:', error);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}

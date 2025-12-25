@@ -1,14 +1,32 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Handshake,
     Calendar,
     FileText,
     TrendingUp
 } from 'lucide-react';
+import { UnionService } from '../services';
 
 export default function CollectiveBargainingPage() {
+    const [agreements, setAgreements] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchAgreements();
+    }, []);
+
+    const fetchAgreements = async () => {
+        try {
+            const data = await UnionService.getCBAgreements();
+            setAgreements(data);
+        } catch (error) {
+            console.error('Error fetching collective bargaining agreements:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">

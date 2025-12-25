@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Mic,
     MicOff,
@@ -10,8 +10,32 @@ import {
     Settings,
     Play
 } from 'lucide-react';
+import { VoiceCommandsService } from '../services';
 
 export default function VoiceCommandsPage() {
+    const [config, setConfig] = useState<any>(null);
+    const [interactions, setInteractions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [configData, interactionsData] = await Promise.all([
+                VoiceCommandsService.getConfig(),
+                VoiceCommandsService.getAllInteractions()
+            ]);
+            if (configData) setConfig(configData);
+            if (interactionsData.length > 0) setInteractions(interactionsData);
+        } catch (error) {
+            console.error('Error fetching voice commands data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}

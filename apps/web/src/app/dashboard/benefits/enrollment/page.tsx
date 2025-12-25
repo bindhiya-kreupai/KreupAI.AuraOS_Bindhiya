@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Heart,
     Smile,
@@ -13,6 +13,7 @@ import {
     ChevronRight,
     ShoppingCart
 } from 'lucide-react';
+import { EnrollmentService, BenefitPlanService } from '../services';
 
 // --- MOCK DATA ---
 
@@ -130,6 +131,25 @@ export default function BenefitsEnrollmentPage() {
         dental: 'd-basic',
         vision: 'v-basic'
     });
+    const [enrollments, setEnrollments] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchEnrollments();
+    }, []);
+
+    const fetchEnrollments = async () => {
+        try {
+            setLoading(true);
+            // Fetch existing enrollments for the current employee
+            const data = await EnrollmentService.getEnrollments({ employeeId: 'EMP-001' });
+            setEnrollments(data);
+        } catch (error) {
+            console.error('Error fetching enrollments:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleSelect = (categoryId: string, planId: string) => {
         setSelections(prev => ({ ...prev, [categoryId]: planId }));

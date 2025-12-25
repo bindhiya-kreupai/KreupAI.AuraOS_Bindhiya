@@ -1,13 +1,35 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ArrowRightCircle,
     Archive,
     AlertCircle
 } from 'lucide-react';
+import { CarryForwardService } from '../services';
+import { CarryForward } from '../types';
 
 export default function CarryForwardPage() {
+    const [carryForwards, setCarryForwards] = useState<CarryForward[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchCarryForwards();
+    }, []);
+
+    const fetchCarryForwards = async () => {
+        try {
+            setLoading(true);
+            const result = await CarryForwardService.getCarryForwards();
+            if (result.length > 0) {
+                setCarryForwards(result);
+            }
+        } catch (error) {
+            console.error('Error fetching carry forwards:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
@@ -45,19 +67,25 @@ export default function CarryForwardPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                            {[
-                                { name: 'John Doe', bal: 15, carry: 10, lapse: 5, status: 'Pending' },
-                                { name: 'Jane Smith', bal: 8, carry: 8, lapse: 0, status: 'Processed' },
-                                { name: 'Mike Ross', bal: 22, carry: 10, lapse: 12, status: 'Pending' },
-                            ].map((emp, i) => (
-                                <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                    <td className="px-6 py-4 font-bold">{emp.name}</td>
-                                    <td className="px-6 py-4 font-bold text-slate-600 dark:text-slate-400">{emp.bal}</td>
-                                    <td className="px-6 py-4 font-bold text-indigo-600">{emp.carry}</td>
-                                    <td className="px-6 py-4 font-bold text-rose-600">{emp.lapse}</td>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                                        Loading carry forward data...
+                                    </td>
+                                </tr>
+                            ) : (carryForwards.length > 0 ? carryForwards : [
+                                { id: '1', employeeId: 'E001', employeeName: 'John Doe', leaveTypeId: 'AL', fromYear: 2024, toYear: 2025, previousBalance: 15, carryForwardDays: 10, lapsedDays: 5, status: 'pending' as const },
+                                { id: '2', employeeId: 'E002', employeeName: 'Jane Smith', leaveTypeId: 'AL', fromYear: 2024, toYear: 2025, previousBalance: 8, carryForwardDays: 8, lapsedDays: 0, status: 'processed' as const },
+                                { id: '3', employeeId: 'E003', employeeName: 'Mike Ross', leaveTypeId: 'AL', fromYear: 2024, toYear: 2025, previousBalance: 22, carryForwardDays: 10, lapsedDays: 12, status: 'pending' as const },
+                            ] as CarryForward[]).map((emp, i) => (
+                                <tr key={emp.id || i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                    <td className="px-6 py-4 font-bold">{emp.employeeName}</td>
+                                    <td className="px-6 py-4 font-bold text-slate-600 dark:text-slate-400">{emp.previousBalance}</td>
+                                    <td className="px-6 py-4 font-bold text-indigo-600">{emp.carryForwardDays}</td>
+                                    <td className="px-6 py-4 font-bold text-rose-600">{emp.lapsedDays}</td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded text-xs font-bold ${emp.status === 'Processed' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-600'
-                                            }`}>{emp.status}</span>
+                                        <span className={`px-2 py-1 rounded text-xs font-bold ${emp.status === 'processed' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-600'
+                                            }`}>{emp.status === 'processed' ? 'Processed' : 'Pending'}</span>
                                     </td>
                                 </tr>
                             ))}

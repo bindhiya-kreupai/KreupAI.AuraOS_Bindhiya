@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Settings,
     Calendar,
@@ -15,6 +15,7 @@ import {
     AlertCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { PayrollSettingsService } from '../../payroll/services';
 
 // --- MOCK DATA ---
 
@@ -45,6 +46,26 @@ export default function PayrollSettingsPage() {
 
     const [payslipConfig, setPayslipConfig] = useState(PAYSLIP_FIELDS);
     const [selectedLayout, setSelectedLayout] = useState('Modern');
+    const [settings, setSettings] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await PayrollSettingsService.getSettings();
+            if (result) {
+                setSettings(result);
+            }
+        } catch (error) {
+            console.error('Error fetching payroll settings:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const toggleField = (id: string) => {
         setPayslipConfig(payslipConfig.map(f => f.id === id ? { ...f, enabled: !f.enabled } : f));

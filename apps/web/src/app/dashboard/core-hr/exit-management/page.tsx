@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     DoorOpen,
     AlertCircle,
@@ -9,9 +9,27 @@ import {
     ArrowRight,
     X
 } from 'lucide-react';
+import { ExitService } from '../services';
 
 export default function ExitManagementPage() {
     const [showModal, setShowModal] = useState(false);
+    const [exitProcesses, setExitProcesses] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchExitProcesses();
+    }, []);
+
+    const fetchExitProcesses = async () => {
+        try {
+            const data = await ExitService.getAllExitProcesses();
+            setExitProcesses(data);
+        } catch (error) {
+            console.error('Error fetching exit processes:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">

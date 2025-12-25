@@ -1,14 +1,36 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Banknote,
     Wallet,
     History,
     CheckCircle2
 } from 'lucide-react';
+import { EncashmentService } from '../services';
+import { LeaveEncashment } from '../types';
 
 export default function LeaveEncashmentPage() {
+    const [encashments, setEncashments] = useState<LeaveEncashment[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchEncashments();
+    }, []);
+
+    const fetchEncashments = async () => {
+        try {
+            setLoading(true);
+            const result = await EncashmentService.getEncashments();
+            if (result.length > 0) {
+                setEncashments(result);
+            }
+        } catch (error) {
+            console.error('Error fetching encashments:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
@@ -45,23 +67,31 @@ export default function LeaveEncashmentPage() {
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                     <h3 className="font-bold text-lg mb-4">Encashment History</h3>
                     <div className="space-y-4">
-                        {[
-                            { year: '2023', date: 'Dec 15, 2023', days: 8, amount: '$2,800.00', status: 'Paid' },
-                            { year: '2022', date: 'Dec 20, 2022', days: 5, amount: '$1,650.00', status: 'Paid' },
-                        ].map((req, i) => (
-                            <div key={i} className="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                                <div>
-                                    <div className="font-bold text-lg">{req.year} Year-End</div>
-                                    <div className="text-sm text-slate-500 flex items-center gap-2">
-                                        <History className="w-3 h-3" /> Requested on {req.date}
+                        {loading ? (
+                            <div className="text-center py-8 text-slate-500">
+                                Loading encashment history...
+                            </div>
+                        ) : (encashments.length > 0 ? encashments : [
+                            { id: '1', employeeId: 'E001', employeeName: 'Current User', year: 2023, daysEncashed: 8, amountPerDay: 350, totalAmount: 2800, requestedDate: '2023-12-15', status: 'approved' as const },
+                            { id: '2', employeeId: 'E001', employeeName: 'Current User', year: 2022, daysEncashed: 5, amountPerDay: 330, totalAmount: 1650, requestedDate: '2022-12-20', status: 'approved' as const },
+                        ] as LeaveEncashment[]).map((req, i) => {
+                            const requestDate = new Date(req.requestedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                            return (
+                                <div key={req.id || i} className="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <div>
+                                        <div className="font-bold text-lg">{req.year} Year-End</div>
+                                        <div className="text-sm text-slate-500 flex items-center gap-2">
+                                            <History className="w-3 h-3" /> Requested on {requestDate}
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="font-bold text-emerald-600">${req.totalAmount.toFixed(2)}</div>
+                                        <div className="text-xs font-bold text-slate-400">{req.daysEncashed} Days Encashed</div>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <div className="font-bold text-emerald-600">{req.amount}</div>
-                                    <div className="text-xs font-bold text-slate-400">{req.days} Days Encashed</div>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </div>

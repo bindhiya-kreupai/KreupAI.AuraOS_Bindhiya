@@ -1,15 +1,33 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Hash,
     Save,
     RotateCcw,
     CheckCircle2
 } from 'lucide-react';
+import { AutoNumberService } from '../services';
 
 export default function AutoNumberingPage() {
     const [saved, setSaved] = useState(false);
+    const [sequences, setSequences] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchSequences();
+    }, []);
+
+    const fetchSequences = async () => {
+        try {
+            const data = await AutoNumberService.getAllSequences();
+            setSequences(data);
+        } catch (error) {
+            console.error('Error fetching auto number sequences:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Mock State
     const [settings, setSettings] = useState([

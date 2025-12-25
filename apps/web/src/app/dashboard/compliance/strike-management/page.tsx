@@ -1,14 +1,32 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Megaphone,
     Shield,
     Users,
     AlertTriangle
 } from 'lucide-react';
+import { StrikeService } from '../services';
 
 export default function StrikeManagementPage() {
+    const [strikes, setStrikes] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchStrikes();
+    }, []);
+
+    const fetchStrikes = async () => {
+        try {
+            const data = await StrikeService.getStrikes();
+            setStrikes(data);
+        } catch (error) {
+            console.error('Error fetching strikes:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Clock,
     Plus,
@@ -12,57 +12,59 @@ import {
     Coffee,
     Briefcase
 } from 'lucide-react';
+import { ShiftService } from '../services';
 
-// --- MOCK DATA ---
+const iconMap: Record<string, any> = {
+    Sun,
+    Moon,
+    Coffee,
+    Briefcase
+};
 
-const SHIFTS = [
-    {
-        id: 'S-001',
-        name: 'General Shift',
-        start: '09:00 AM',
-        end: '06:00 PM',
-        break_duration: '60 mins',
-        type: 'Regular',
-        color: 'bg-blue-500',
-        icon: Sun,
-        employees: 142
-    },
-    {
-        id: 'S-002',
-        name: 'Morning Shift',
-        start: '06:00 AM',
-        end: '03:00 PM',
-        break_duration: '45 mins',
-        type: 'Rotational',
-        color: 'bg-amber-500',
-        icon: Coffee,
-        employees: 28
-    },
-    {
-        id: 'S-003',
-        name: 'Night Shift',
-        start: '08:00 PM',
-        end: '05:00 AM',
-        break_duration: '60 mins',
-        type: 'Night',
-        color: 'bg-indigo-500',
-        icon: Moon,
-        employees: 45
-    },
-    {
-        id: 'S-004',
-        name: 'Executive Shift',
-        start: '10:00 AM',
-        end: '07:00 PM',
-        break_duration: '60 mins',
-        type: 'Flexible',
-        color: 'bg-emerald-500',
-        icon: Briefcase,
-        employees: 12
-    }
-];
+interface Shift {
+    id: string;
+    name: string;
+    start: string;
+    end: string;
+    break_duration: string;
+    type: string;
+    color: string;
+    icon: string;
+    employees: number;
+}
 
 export default function ShiftManagementPage() {
+    const [shiftList, setShiftList] = useState<Shift[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchShifts();
+    }, []);
+
+    const fetchShifts = async () => {
+        try {
+            const result = await ShiftService.getShifts();
+            if (result.length > 0) {
+                setShiftList(result as any);
+            }
+        } catch (error) {
+            console.error('Error fetching shifts:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        setLoading(true);
+        try {
+            await ShiftService.deleteShift(id);
+            await fetchShifts();
+        } catch (error) {
+            console.error('Error deleting shift:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -81,13 +83,22 @@ export default function ShiftManagementPage() {
 
             {/* Shift Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {SHIFTS.map((shift) => (
+                {loading ? (
+                    <div className="col-span-full p-8 text-center">
+                        <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                    </div>
+                ) : shiftList.length === 0 ? (
+                    <div className="col-span-full p-8 text-center text-slate-400">No shifts configured</div>
+                ) : (
+                shiftList.map((shift) => {
+                    const IconComponent = iconMap[shift.icon] || Sun;
+                    return (
                     <div key={shift.id} className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden hover:shadow-md transition-all group">
                         <div className={`h-2 ${shift.color}`} />
                         <div className="p-5">
                             <div className="flex justify-between items-start mb-4">
                                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${shift.color} bg-opacity-10 text-opacity-100`}>
-                                    <shift.icon className={`w-5 h-5 ${shift.color.replace('bg-', 'text-')}`} />
+                                    <IconComponent className={`w-5 h-5 ${shift.color.replace('bg-', 'text-')}`} />
                                 </div>
                                 <button className="p-1 hover:bg-slate-50 dark:hover:bg-slate-800 rounded">
                                     <MoreHorizontal className="w-4 h-4 text-slate-400" />
@@ -120,12 +131,16 @@ export default function ShiftManagementPage() {
                             <button className="flex-1 py-3 text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 transition-colors flex items-center justify-center gap-2">
                                 <Edit2 className="w-3.5 h-3.5" /> Edit
                             </button>
-                            <button className="flex-1 py-3 text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-rose-600 transition-colors flex items-center justify-center gap-2">
+                            <button
+                                onClick={() => handleDelete(shift.id)}
+                                disabled={loading}
+                                className="flex-1 py-3 text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-rose-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
                                 <Trash2 className="w-3.5 h-3.5" /> Delete
                             </button>
                         </div>
                     </div>
-                ))}
+                    );
+                }))}
             </div>
 
             {/* Visual Timeline (Mock) */}
@@ -156,7 +171,7 @@ export default function ShiftManagementPage() {
                 </div>
 
                 <div className="flex justify-center gap-6 mt-4">
-                    {SHIFTS.map(s => (
+                    {shiftList.map(s => (
                         <div key={s.id} className="flex items-center gap-2">
                             <div className={`w-3 h-3 ${s.color} rounded-sm`} />
                             <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{s.name}</span>

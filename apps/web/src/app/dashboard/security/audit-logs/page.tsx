@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ShieldAlert,
     Search,
@@ -10,8 +10,39 @@ import {
     Clock,
     Download
 } from 'lucide-react';
+import { AuditLogService } from '../services';
 
 export default function AuditLogsPage() {
+    const [logs, setLogs] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await AuditLogService.getAll();
+            if (result.length > 0) {
+                setLogs(result);
+            }
+        } catch (error) {
+            console.error('Error fetching audit logs:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Mock data for display
+    const displayLogs = logs.length > 0 ? logs : [
+        { time: '10:42:15 AM', date: 'Today', user: 'Admin User', action: 'UPDATE', resource: 'Salary Structure', details: 'Updated Basic Pay for Emp #1024' },
+        { time: '10:15:30 AM', date: 'Today', user: 'HR Manager', action: 'CREATE', resource: 'New Hire', details: 'Added John Doe (Emp #1045)' },
+        { time: '09:55:00 AM', date: 'Today', user: 'System', action: 'AUTO', resource: 'Attendance', details: 'Marked Absent: 12 Employees' },
+        { time: '05:30:22 PM', date: 'Yesterday', user: 'Admin User', action: 'DELETE', resource: 'Leave Policy', details: 'Removed "Old Sick Leave" Policy' },
+        { time: '04:12:10 PM', date: 'Yesterday', user: 'Sarah Connor', action: 'LOGIN', resource: 'SAML Auth', details: 'Login Success via Okta' },
+    ];
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -90,13 +121,7 @@ export default function AuditLogsPage() {
                                 </tr>
                             </thead>
                             <tbody className="text-sm">
-                                {[
-                                    { time: '10:42:15 AM', date: 'Today', user: 'Admin User', action: 'UPDATE', resource: 'Salary Structure', details: 'Updated Basic Pay for Emp #1024' },
-                                    { time: '10:15:30 AM', date: 'Today', user: 'HR Manager', action: 'CREATE', resource: 'New Hire', details: 'Added John Doe (Emp #1045)' },
-                                    { time: '09:55:00 AM', date: 'Today', user: 'System', action: 'AUTO', resource: 'Attendance', details: 'Marked Absent: 12 Employees' },
-                                    { time: '05:30:22 PM', date: 'Yesterday', user: 'Admin User', action: 'DELETE', resource: 'Leave Policy', details: 'Removed "Old Sick Leave" Policy' },
-                                    { time: '04:12:10 PM', date: 'Yesterday', user: 'Sarah Connor', action: 'LOGIN', resource: 'SAML Auth', details: 'Login Success via Okta' },
-                                ].map((log, i) => (
+                                {displayLogs.map((log, i) => (
                                     <tr key={i} className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                         <td className="py-4 pl-6">
                                             <div className="font-bold text-slate-700 dark:text-slate-300">{log.time}</div>

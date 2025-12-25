@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     LayoutDashboard,
     TrendingUp,
@@ -16,6 +16,7 @@ import {
     BarChart, Bar,
     PieChart, Pie, Cell
 } from 'recharts';
+import { ExecutiveDashboardService } from '../services';
 
 // --- MOCK DATA ---
 

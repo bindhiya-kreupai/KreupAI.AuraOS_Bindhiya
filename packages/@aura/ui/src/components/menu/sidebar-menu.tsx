@@ -112,11 +112,11 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
       <div className="flex items-center justify-between p-4 border-b border-cloud dark:border-nebula-purple">
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-celestial-indigo to-quantum-rose flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center">
               <span className="text-white font-bold text-sm">A</span>
             </div>
             <span className="font-display font-semibold text-ink-black dark:text-pearl">
-              AURA
+              AuraOS
             </span>
           </div>
         )}

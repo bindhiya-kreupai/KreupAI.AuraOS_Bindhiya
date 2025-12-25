@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CalendarDays,
     Clock,
@@ -10,9 +10,30 @@ import {
     ChevronRight,
     Plus
 } from 'lucide-react';
+import { EventService } from '../services';
 
 export default function EventCalendarPage() {
-    const events = [
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const eventsData = await EventService.getEvents();
+            setData(eventsData);
+        } catch (error) {
+            console.error('Error fetching events:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Fallback mock data
+    const events = data.length > 0 ? data : [
         { title: 'Town Hall Meeting', date: 'Dec 15', time: '10:00 AM', location: 'Auditorium A', attendees: 142, type: 'Company Wide', color: 'bg-indigo-500' },
         { title: 'Design Sprint Workshop', date: 'Dec 18', time: '02:00 PM', location: 'Conference Room B', attendees: 12, type: 'Workshop', color: 'bg-emerald-500' },
         { title: 'Holiday Party', date: 'Dec 22', time: '06:00 PM', location: 'Rooftop Lounge', attendees: 200, type: 'Social', color: 'bg-rose-500' },

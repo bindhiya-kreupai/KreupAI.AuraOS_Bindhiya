@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     PieChart, Pie, Cell,
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -17,6 +17,7 @@ import {
     ArrowUpRight,
     ArrowDownRight
 } from 'lucide-react';
+import { PredictiveAnalyticsService } from '../services';
 
 // --- MOCK DATA ---
 

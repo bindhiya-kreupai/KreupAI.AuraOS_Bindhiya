@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Zap,
     GripVertical,
@@ -15,8 +15,29 @@ import {
     Clock,
     Briefcase
 } from 'lucide-react';
+import { QuickActionsService } from '../services';
 
 export default function QuickActionsPage() {
+    const [quickActions, setQuickActions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await QuickActionsService.getAllQuickActions();
+            if (result.length > 0) {
+                setQuickActions(result);
+            }
+        } catch (error) {
+            console.error('Error fetching quick actions:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}

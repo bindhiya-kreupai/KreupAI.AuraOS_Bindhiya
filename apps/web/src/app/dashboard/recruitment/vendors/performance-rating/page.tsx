@@ -1,6 +1,7 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { RecruitmentSettingsService } from '../../services';
 import {
     Star,
     Award,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     BookOpen,
     Search,
@@ -16,6 +16,7 @@ import {
     Star
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CourseService } from '../services';
 
 // --- MOCK DATA ---
 
@@ -104,8 +105,29 @@ const DIGITAL_RESOURCES = [
 export default function LibraryPage() {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const filteredBooks = BOOKS.filter(book =>
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const result = await CourseService.getCourses();
+                setData(result.length > 0 ? result : BOOKS);
+            } catch (error) {
+                console.error('Error fetching library data:', error);
+                setData(BOOKS);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const displayData = data.length > 0 ? data : BOOKS;
+
+    const filteredBooks = displayData.filter(book =>
         (selectedCategory === 'All' || book.category === selectedCategory) &&
         (book.title.toLowerCase().includes(searchQuery.toLowerCase()) || book.author.toLowerCase().includes(searchQuery.toLowerCase()))
     );

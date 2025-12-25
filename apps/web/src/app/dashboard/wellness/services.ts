@@ -3,6 +3,7 @@
  * API-ready service layer for wellness operations
  */
 
+import { APIClient } from '@/lib/api-client';
 import {
   HealthProgram,
   ProgramEnrollment,
@@ -23,61 +24,56 @@ import {
   WellnessSettings,
 } from './types';
 
-// Storage keys
-const STORAGE_KEYS = {
-  PROGRAMS: 'wellness_programs',
-  ENROLLMENTS: 'wellness_enrollments',
-  MENTAL_SERVICES: 'wellness_mental_services',
-  MENTAL_SESSIONS: 'wellness_mental_sessions',
-  HRA: 'wellness_hra',
-  HRA_RESPONSES: 'wellness_hra_responses',
-  CHALLENGES: 'wellness_challenges',
-  PARTICIPANTS: 'wellness_participants',
-  TEAMS: 'wellness_teams',
-  POINTS: 'wellness_points',
-  TRANSACTIONS: 'wellness_transactions',
-  REDEMPTIONS: 'wellness_redemptions',
-  REWARDS_CATALOG: 'wellness_rewards_catalog',
-  GYM_MEMBERSHIPS: 'wellness_gym_memberships',
-  GYM_PROVIDERS: 'wellness_gym_providers',
-  SETTINGS: 'wellness_settings',
-};
-
 // ============================================================================
 // Health Programs Service
 // ============================================================================
 
 export class HealthProgramService {
+  private static endpoint = '/wellness/programs';
+
   static async getPrograms(): Promise<HealthProgram[]> {
-    const stored = localStorage.getItem(STORAGE_KEYS.PROGRAMS);
-    return stored ? JSON.parse(stored) : [];
+    try {
+      return await APIClient.get<HealthProgram[]>(this.endpoint);
+    } catch (error) {
+      console.error('Error fetching programs:', error);
+      throw error;
+    }
   }
 
   static async getProgramById(id: string): Promise<HealthProgram | null> {
-    const programs = await this.getPrograms();
-    return programs.find((p) => p.id === id) || null;
+    try {
+      return await APIClient.get<HealthProgram>(`${this.endpoint}/${id}`);
+    } catch (error) {
+      console.error('Error fetching program:', error);
+      return null;
+    }
   }
 
   static async createProgram(data: HealthProgram): Promise<HealthProgram> {
-    const programs = await this.getPrograms();
-    programs.push(data);
-    localStorage.setItem(STORAGE_KEYS.PROGRAMS, JSON.stringify(programs));
-    return data;
+    try {
+      return await APIClient.post<HealthProgram>(this.endpoint, data);
+    } catch (error) {
+      console.error('Error creating program:', error);
+      throw error;
+    }
   }
 
   static async updateProgram(id: string, updates: Partial<HealthProgram>): Promise<HealthProgram> {
-    const programs = await this.getPrograms();
-    const index = programs.findIndex((p) => p.id === id);
-    if (index === -1) throw new Error('Program not found');
-    programs[index] = { ...programs[index], ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.PROGRAMS, JSON.stringify(programs));
-    return programs[index];
+    try {
+      return await APIClient.put<HealthProgram>(`${this.endpoint}/${id}`, updates);
+    } catch (error) {
+      console.error('Error updating program:', error);
+      throw error;
+    }
   }
 
   static async deleteProgram(id: string): Promise<void> {
-    const programs = await this.getPrograms();
-    const filtered = programs.filter((p) => p.id !== id);
-    localStorage.setItem(STORAGE_KEYS.PROGRAMS, JSON.stringify(filtered));
+    try {
+      await APIClient.delete<void>(`${this.endpoint}/${id}`);
+    } catch (error) {
+      console.error('Error deleting program:', error);
+      throw error;
+    }
   }
 
   static async enrollEmployee(
@@ -85,45 +81,34 @@ export class HealthProgramService {
     employeeId: string,
     employeeName: string
   ): Promise<ProgramEnrollment> {
-    const program = await this.getProgramById(programId);
-    if (!program) throw new Error('Program not found');
-
-    const enrollment: ProgramEnrollment = {
-      id: `enroll-${Date.now()}`,
-      programId,
-      employeeId,
-      employeeName,
-      enrollmentDate: new Date().toISOString(),
-      status: 'enrolled',
-      progress: 0,
-      pointsEarned: 0,
-    };
-
-    const enrollments = await this.getEnrollments();
-    enrollments.push(enrollment);
-    localStorage.setItem(STORAGE_KEYS.ENROLLMENTS, JSON.stringify(enrollments));
-
-    // Update program participant count
-    await this.updateProgram(programId, {
-      currentParticipants: program.currentParticipants + 1,
-    });
-
-    return enrollment;
+    try {
+      return await APIClient.post<ProgramEnrollment>(`${this.endpoint}/${programId}/enroll`, {
+        employeeId,
+        employeeName,
+      });
+    } catch (error) {
+      console.error('Error enrolling employee:', error);
+      throw error;
+    }
   }
 
   static async getEnrollments(programId?: string): Promise<ProgramEnrollment[]> {
-    const stored = localStorage.getItem(STORAGE_KEYS.ENROLLMENTS);
-    const enrollments = stored ? JSON.parse(stored) : [];
-    return programId ? enrollments.filter((e: ProgramEnrollment) => e.programId === programId) : enrollments;
+    try {
+      const params = programId ? { programId } : undefined;
+      return await APIClient.get<ProgramEnrollment[]>(`${this.endpoint}/enrollments`, params);
+    } catch (error) {
+      console.error('Error fetching enrollments:', error);
+      throw error;
+    }
   }
 
   static async updateEnrollment(id: string, updates: Partial<ProgramEnrollment>): Promise<ProgramEnrollment> {
-    const enrollments = await this.getEnrollments();
-    const index = enrollments.findIndex((e) => e.id === id);
-    if (index === -1) throw new Error('Enrollment not found');
-    enrollments[index] = { ...enrollments[index], ...updates };
-    localStorage.setItem(STORAGE_KEYS.ENROLLMENTS, JSON.stringify(enrollments));
-    return enrollments[index];
+    try {
+      return await APIClient.put<ProgramEnrollment>(`${this.endpoint}/enrollments/${id}`, updates);
+    } catch (error) {
+      console.error('Error updating enrollment:', error);
+      throw error;
+    }
   }
 }
 
@@ -132,59 +117,79 @@ export class HealthProgramService {
 // ============================================================================
 
 export class MentalHealthServiceLayer {
+  private static endpoint = '/wellness/mental-health';
+
   static async getServices(): Promise<MentalHealthService[]> {
-    const stored = localStorage.getItem(STORAGE_KEYS.MENTAL_SERVICES);
-    return stored ? JSON.parse(stored) : [];
+    try {
+      return await APIClient.get<MentalHealthService[]>(this.endpoint);
+    } catch (error) {
+      console.error('Error fetching mental health services:', error);
+      throw error;
+    }
   }
 
   static async getServiceById(id: string): Promise<MentalHealthService | null> {
-    const services = await this.getServices();
-    return services.find((s) => s.id === id) || null;
+    try {
+      return await APIClient.get<MentalHealthService>(`${this.endpoint}/${id}`);
+    } catch (error) {
+      console.error('Error fetching mental health service:', error);
+      return null;
+    }
   }
 
   static async createService(data: MentalHealthService): Promise<MentalHealthService> {
-    const services = await this.getServices();
-    services.push(data);
-    localStorage.setItem(STORAGE_KEYS.MENTAL_SERVICES, JSON.stringify(services));
-    return data;
+    try {
+      return await APIClient.post<MentalHealthService>(this.endpoint, data);
+    } catch (error) {
+      console.error('Error creating mental health service:', error);
+      throw error;
+    }
   }
 
   static async updateService(id: string, updates: Partial<MentalHealthService>): Promise<MentalHealthService> {
-    const services = await this.getServices();
-    const index = services.findIndex((s) => s.id === id);
-    if (index === -1) throw new Error('Service not found');
-    services[index] = { ...services[index], ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.MENTAL_SERVICES, JSON.stringify(services));
-    return services[index];
+    try {
+      return await APIClient.put<MentalHealthService>(`${this.endpoint}/${id}`, updates);
+    } catch (error) {
+      console.error('Error updating mental health service:', error);
+      throw error;
+    }
   }
 
   static async getSessions(serviceId?: string): Promise<MentalHealthSession[]> {
-    const stored = localStorage.getItem(STORAGE_KEYS.MENTAL_SESSIONS);
-    const sessions = stored ? JSON.parse(stored) : [];
-    return serviceId ? sessions.filter((s: MentalHealthSession) => s.serviceId === serviceId) : sessions;
+    try {
+      const params = serviceId ? { serviceId } : undefined;
+      return await APIClient.get<MentalHealthSession[]>(`${this.endpoint}/sessions`, params);
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
+      throw error;
+    }
   }
 
   static async createSession(data: MentalHealthSession): Promise<MentalHealthSession> {
-    const sessions = await this.getSessions();
-    sessions.push(data);
-    localStorage.setItem(STORAGE_KEYS.MENTAL_SESSIONS, JSON.stringify(sessions));
-    return data;
+    try {
+      return await APIClient.post<MentalHealthSession>(`${this.endpoint}/sessions`, data);
+    } catch (error) {
+      console.error('Error creating session:', error);
+      throw error;
+    }
   }
 
   static async updateSession(id: string, updates: Partial<MentalHealthSession>): Promise<MentalHealthSession> {
-    const sessions = await this.getSessions();
-    const index = sessions.findIndex((s) => s.id === id);
-    if (index === -1) throw new Error('Session not found');
-    sessions[index] = { ...sessions[index], ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.MENTAL_SESSIONS, JSON.stringify(sessions));
-    return sessions[index];
+    try {
+      return await APIClient.put<MentalHealthSession>(`${this.endpoint}/sessions/${id}`, updates);
+    } catch (error) {
+      console.error('Error updating session:', error);
+      throw error;
+    }
   }
 
   static async confirmAttendance(sessionId: string): Promise<void> {
-    await this.updateSession(sessionId, {
-      attendanceConfirmed: true,
-      status: 'completed',
-    });
+    try {
+      await APIClient.post<void>(`${this.endpoint}/sessions/${sessionId}/confirm-attendance`);
+    } catch (error) {
+      console.error('Error confirming attendance:', error);
+      throw error;
+    }
   }
 }
 
@@ -193,67 +198,79 @@ export class MentalHealthServiceLayer {
 // ============================================================================
 
 export class HRAService {
+  private static endpoint = '/wellness/hra';
+
   static async getAssessments(): Promise<HealthRiskAssessment[]> {
-    const stored = localStorage.getItem(STORAGE_KEYS.HRA);
-    return stored ? JSON.parse(stored) : [];
+    try {
+      return await APIClient.get<HealthRiskAssessment[]>(this.endpoint);
+    } catch (error) {
+      console.error('Error fetching assessments:', error);
+      throw error;
+    }
   }
 
   static async getAssessmentById(id: string): Promise<HealthRiskAssessment | null> {
-    const assessments = await this.getAssessments();
-    return assessments.find((a) => a.id === id) || null;
+    try {
+      return await APIClient.get<HealthRiskAssessment>(`${this.endpoint}/${id}`);
+    } catch (error) {
+      console.error('Error fetching assessment:', error);
+      return null;
+    }
   }
 
   static async createAssessment(data: HealthRiskAssessment): Promise<HealthRiskAssessment> {
-    const assessments = await this.getAssessments();
-    assessments.push(data);
-    localStorage.setItem(STORAGE_KEYS.HRA, JSON.stringify(assessments));
-    return data;
+    try {
+      return await APIClient.post<HealthRiskAssessment>(this.endpoint, data);
+    } catch (error) {
+      console.error('Error creating assessment:', error);
+      throw error;
+    }
   }
 
   static async updateAssessment(id: string, updates: Partial<HealthRiskAssessment>): Promise<HealthRiskAssessment> {
-    const assessments = await this.getAssessments();
-    const index = assessments.findIndex((a) => a.id === id);
-    if (index === -1) throw new Error('Assessment not found');
-    assessments[index] = { ...assessments[index], ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.HRA, JSON.stringify(assessments));
-    return assessments[index];
+    try {
+      return await APIClient.put<HealthRiskAssessment>(`${this.endpoint}/${id}`, updates);
+    } catch (error) {
+      console.error('Error updating assessment:', error);
+      throw error;
+    }
   }
 
   static async getResponses(hraId?: string): Promise<HRAResponse[]> {
-    const stored = localStorage.getItem(STORAGE_KEYS.HRA_RESPONSES);
-    const responses = stored ? JSON.parse(stored) : [];
-    return hraId ? responses.filter((r: HRAResponse) => r.hraId === hraId) : responses;
+    try {
+      const params = hraId ? { hraId } : undefined;
+      return await APIClient.get<HRAResponse[]>(`${this.endpoint}/responses`, params);
+    } catch (error) {
+      console.error('Error fetching responses:', error);
+      throw error;
+    }
   }
 
   static async submitResponse(data: HRAResponse): Promise<HRAResponse> {
-    const responses = await this.getResponses();
-    responses.push(data);
-    localStorage.setItem(STORAGE_KEYS.HRA_RESPONSES, JSON.stringify(responses));
-
-    // Update HRA stats
-    const hra = await this.getAssessmentById(data.hraId);
-    if (hra) {
-      await this.updateAssessment(data.hraId, {
-        totalResponses: hra.totalResponses + 1,
-      });
+    try {
+      return await APIClient.post<HRAResponse>(`${this.endpoint}/responses`, data);
+    } catch (error) {
+      console.error('Error submitting response:', error);
+      throw error;
     }
-
-    return data;
   }
 
   static async updateResponse(id: string, updates: Partial<HRAResponse>): Promise<HRAResponse> {
-    const responses = await this.getResponses();
-    const index = responses.findIndex((r) => r.id === id);
-    if (index === -1) throw new Error('Response not found');
-    responses[index] = { ...responses[index], ...updates };
-    localStorage.setItem(STORAGE_KEYS.HRA_RESPONSES, JSON.stringify(responses));
-    return responses[index];
+    try {
+      return await APIClient.put<HRAResponse>(`${this.endpoint}/responses/${id}`, updates);
+    } catch (error) {
+      console.error('Error updating response:', error);
+      throw error;
+    }
   }
 
   static async calculateRiskScore(responses: Record<string, any>, hra: HealthRiskAssessment): Promise<number> {
-    // TODO: Implement actual risk scoring algorithm based on hra.scoringAlgorithm
-    // This is a placeholder implementation
-    return Math.floor(Math.random() * 100);
+    try {
+      return await APIClient.post<number>(`${this.endpoint}/calculate-risk`, { responses, hra });
+    } catch (error) {
+      console.error('Error calculating risk score:', error);
+      throw error;
+    }
   }
 }
 
@@ -262,30 +279,42 @@ export class HRAService {
 // ============================================================================
 
 export class ChallengeService {
+  private static endpoint = '/wellness/challenges';
+
   static async getChallenges(): Promise<WellnessChallenge[]> {
-    const stored = localStorage.getItem(STORAGE_KEYS.CHALLENGES);
-    return stored ? JSON.parse(stored) : [];
+    try {
+      return await APIClient.get<WellnessChallenge[]>(this.endpoint);
+    } catch (error) {
+      console.error('Error fetching challenges:', error);
+      throw error;
+    }
   }
 
   static async getChallengeById(id: string): Promise<WellnessChallenge | null> {
-    const challenges = await this.getChallenges();
-    return challenges.find((c) => c.id === id) || null;
+    try {
+      return await APIClient.get<WellnessChallenge>(`${this.endpoint}/${id}`);
+    } catch (error) {
+      console.error('Error fetching challenge:', error);
+      return null;
+    }
   }
 
   static async createChallenge(data: WellnessChallenge): Promise<WellnessChallenge> {
-    const challenges = await this.getChallenges();
-    challenges.push(data);
-    localStorage.setItem(STORAGE_KEYS.CHALLENGES, JSON.stringify(challenges));
-    return data;
+    try {
+      return await APIClient.post<WellnessChallenge>(this.endpoint, data);
+    } catch (error) {
+      console.error('Error creating challenge:', error);
+      throw error;
+    }
   }
 
   static async updateChallenge(id: string, updates: Partial<WellnessChallenge>): Promise<WellnessChallenge> {
-    const challenges = await this.getChallenges();
-    const index = challenges.findIndex((c) => c.id === id);
-    if (index === -1) throw new Error('Challenge not found');
-    challenges[index] = { ...challenges[index], ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.CHALLENGES, JSON.stringify(challenges));
-    return challenges[index];
+    try {
+      return await APIClient.put<WellnessChallenge>(`${this.endpoint}/${id}`, updates);
+    } catch (error) {
+      console.error('Error updating challenge:', error);
+      throw error;
+    }
   }
 
   static async registerParticipant(
@@ -294,96 +323,76 @@ export class ChallengeService {
     employeeName: string,
     teamId?: string
   ): Promise<ChallengeParticipant> {
-    const challenge = await this.getChallengeById(challengeId);
-    if (!challenge) throw new Error('Challenge not found');
-
-    const participant: ChallengeParticipant = {
-      id: `part-${Date.now()}`,
-      challengeId,
-      employeeId,
-      employeeName,
-      teamId,
-      registrationDate: new Date().toISOString(),
-      status: 'registered',
-      currentProgress: 0,
-      dailyProgress: [],
-      pointsEarned: 0,
-      badgesEarned: [],
-      milestonesReached: [],
-      postsCount: 0,
-      likesReceived: 0,
-    };
-
-    const participants = await this.getParticipants();
-    participants.push(participant);
-    localStorage.setItem(STORAGE_KEYS.PARTICIPANTS, JSON.stringify(participants));
-
-    // Update challenge participant count
-    await this.updateChallenge(challengeId, {
-      totalParticipants: challenge.totalParticipants + 1,
-    });
-
-    return participant;
+    try {
+      return await APIClient.post<ChallengeParticipant>(`${this.endpoint}/${challengeId}/register`, {
+        employeeId,
+        employeeName,
+        teamId,
+      });
+    } catch (error) {
+      console.error('Error registering participant:', error);
+      throw error;
+    }
   }
 
   static async getParticipants(challengeId?: string): Promise<ChallengeParticipant[]> {
-    const stored = localStorage.getItem(STORAGE_KEYS.PARTICIPANTS);
-    const participants = stored ? JSON.parse(stored) : [];
-    return challengeId ? participants.filter((p: ChallengeParticipant) => p.challengeId === challengeId) : participants;
+    try {
+      const params = challengeId ? { challengeId } : undefined;
+      return await APIClient.get<ChallengeParticipant[]>(`${this.endpoint}/participants`, params);
+    } catch (error) {
+      console.error('Error fetching participants:', error);
+      throw error;
+    }
   }
 
   static async updateParticipant(id: string, updates: Partial<ChallengeParticipant>): Promise<ChallengeParticipant> {
-    const participants = await this.getParticipants();
-    const index = participants.findIndex((p) => p.id === id);
-    if (index === -1) throw new Error('Participant not found');
-    participants[index] = { ...participants[index], ...updates };
-    localStorage.setItem(STORAGE_KEYS.PARTICIPANTS, JSON.stringify(participants));
-    return participants[index];
+    try {
+      return await APIClient.put<ChallengeParticipant>(`${this.endpoint}/participants/${id}`, updates);
+    } catch (error) {
+      console.error('Error updating participant:', error);
+      throw error;
+    }
   }
 
   static async createTeam(challengeId: string, data: ChallengeTeam): Promise<ChallengeTeam> {
-    const teams = await this.getTeams();
-    teams.push(data);
-    localStorage.setItem(STORAGE_KEYS.TEAMS, JSON.stringify(teams));
-    return data;
+    try {
+      return await APIClient.post<ChallengeTeam>(`${this.endpoint}/${challengeId}/teams`, data);
+    } catch (error) {
+      console.error('Error creating team:', error);
+      throw error;
+    }
   }
 
   static async getTeams(challengeId?: string): Promise<ChallengeTeam[]> {
-    const stored = localStorage.getItem(STORAGE_KEYS.TEAMS);
-    const teams = stored ? JSON.parse(stored) : [];
-    return teams; // Could filter by challengeId if team model includes it
+    try {
+      const params = challengeId ? { challengeId } : undefined;
+      return await APIClient.get<ChallengeTeam[]>(`${this.endpoint}/teams`, params);
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+      throw error;
+    }
   }
 
   static async updateTeam(id: string, updates: Partial<ChallengeTeam>): Promise<ChallengeTeam> {
-    const teams = await this.getTeams();
-    const index = teams.findIndex((t) => t.id === id);
-    if (index === -1) throw new Error('Team not found');
-    teams[index] = { ...teams[index], ...updates };
-    localStorage.setItem(STORAGE_KEYS.TEAMS, JSON.stringify(teams));
-    return teams[index];
+    try {
+      return await APIClient.put<ChallengeTeam>(`${this.endpoint}/teams/${id}`, updates);
+    } catch (error) {
+      console.error('Error updating team:', error);
+      throw error;
+    }
   }
 
   static async logProgress(participantId: string, value: number, date: string, notes?: string): Promise<void> {
-    const participants = await this.getParticipants();
-    const participant = participants.find((p) => p.id === participantId);
-    if (!participant) throw new Error('Participant not found');
-
-    const dailyProgress = participant.dailyProgress || [];
-    dailyProgress.push({
-      date,
-      value,
-      notes,
-      verified: false,
-    });
-
-    const totalProgress = dailyProgress.reduce((sum, p) => sum + p.value, 0);
-
-    await this.updateParticipant(participantId, {
-      dailyProgress,
-      currentProgress: totalProgress,
-      lastActivityDate: new Date().toISOString(),
-      status: 'active',
-    });
+    try {
+      await APIClient.post<void>(`${this.endpoint}/participants/${participantId}/progress`, {
+        value,
+        date,
+        notes,
+      });
+    } catch (error) {
+      console.error('Error logging progress:', error);
+      throw error;
+    }
   }
 }
 
@@ -392,42 +401,27 @@ export class ChallengeService {
 // ============================================================================
 
 export class WellnessPointsService {
+  private static endpoint = '/wellness/points';
+
   static async getPoints(employeeId: string): Promise<WellnessPoints | null> {
-    const stored = localStorage.getItem(STORAGE_KEYS.POINTS);
-    const allPoints: WellnessPoints[] = stored ? JSON.parse(stored) : [];
-    return allPoints.find((p) => p.employeeId === employeeId) || null;
+    try {
+      return await APIClient.get<WellnessPoints>(`${this.endpoint}/${employeeId}`);
+    } catch (error) {
+      console.error('Error fetching points:', error);
+      return null;
+    }
   }
 
   static async initializePoints(employeeId: string, employeeName: string): Promise<WellnessPoints> {
-    const points: WellnessPoints = {
-      employeeId,
-      employeeName,
-      totalPointsEarned: 0,
-      totalPointsRedeemed: 0,
-      currentBalance: 0,
-      pointsExpiringSoon: 0,
-      transactions: [],
-      currentTier: {
-        tierId: 'tier-1',
-        tierName: 'Bronze',
-        tierLevel: 1,
-        minPoints: 0,
-        maxPoints: 999,
-        benefits: [],
-        badgeUrl: '',
-        color: '#CD7F32',
-      },
-      activitiesCompleted: 0,
-      challengesCompleted: 0,
-      programsCompleted: 0,
-      lastUpdated: new Date().toISOString(),
-    };
-
-    const stored = localStorage.getItem(STORAGE_KEYS.POINTS);
-    const allPoints: WellnessPoints[] = stored ? JSON.parse(stored) : [];
-    allPoints.push(points);
-    localStorage.setItem(STORAGE_KEYS.POINTS, JSON.stringify(allPoints));
-    return points;
+    try {
+      return await APIClient.post<WellnessPoints>(this.endpoint, {
+        employeeId,
+        employeeName,
+      });
+    } catch (error) {
+      console.error('Error initializing points:', error);
+      throw error;
+    }
   }
 
   static async awardPoints(
@@ -438,91 +432,40 @@ export class WellnessPointsService {
     description: string,
     expiryDate?: string
   ): Promise<PointsTransaction> {
-    let employeePoints = await this.getPoints(employeeId);
-    if (!employeePoints) {
-      employeePoints = await this.initializePoints(employeeId, 'Employee');
+    try {
+      return await APIClient.post<PointsTransaction>(`${this.endpoint}/${employeeId}/award`, {
+        points,
+        source,
+        sourceId,
+        description,
+        expiryDate,
+      });
+    } catch (error) {
+      console.error('Error awarding points:', error);
+      throw error;
     }
-
-    const transaction: PointsTransaction = {
-      id: `txn-${Date.now()}`,
-      transactionDate: new Date().toISOString(),
-      type: 'earned',
-      points,
-      source,
-      sourceId,
-      description,
-      balance: employeePoints.currentBalance + points,
-      expiryDate,
-    };
-
-    const transactions = await this.getTransactions(employeeId);
-    transactions.push(transaction);
-    localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
-
-    // Update balance
-    const updatedPoints = {
-      ...employeePoints,
-      totalPointsEarned: employeePoints.totalPointsEarned + points,
-      currentBalance: employeePoints.currentBalance + points,
-      transactions,
-      lastUpdated: new Date().toISOString(),
-    };
-
-    const stored = localStorage.getItem(STORAGE_KEYS.POINTS);
-    const allPoints: WellnessPoints[] = stored ? JSON.parse(stored) : [];
-    const index = allPoints.findIndex((p) => p.employeeId === employeeId);
-    if (index !== -1) {
-      allPoints[index] = updatedPoints;
-      localStorage.setItem(STORAGE_KEYS.POINTS, JSON.stringify(allPoints));
-    }
-
-    return transaction;
   }
 
   static async getTransactions(employeeId?: string): Promise<PointsTransaction[]> {
-    const stored = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
-    const transactions = stored ? JSON.parse(stored) : [];
-    if (!employeeId) return transactions;
-
-    const points = await this.getPoints(employeeId);
-    return points?.transactions || [];
+    try {
+      const params = employeeId ? { employeeId } : undefined;
+      return await APIClient.get<PointsTransaction[]>(`${this.endpoint}/transactions`, params);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      throw error;
+    }
   }
 
   static async redeemPoints(employeeId: string, points: number, rewardId: string, rewardName: string): Promise<void> {
-    const employeePoints = await this.getPoints(employeeId);
-    if (!employeePoints) throw new Error('Employee points not found');
-    if (employeePoints.currentBalance < points) throw new Error('Insufficient points');
-
-    const transaction: PointsTransaction = {
-      id: `txn-${Date.now()}`,
-      transactionDate: new Date().toISOString(),
-      type: 'redeemed',
-      points: -points,
-      source: 'rewards',
-      sourceId: rewardId,
-      description: `Redeemed for ${rewardName}`,
-      balance: employeePoints.currentBalance - points,
-    };
-
-    const transactions = await this.getTransactions(employeeId);
-    transactions.push(transaction);
-    localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
-
-    // Update balance
-    const updatedPoints = {
-      ...employeePoints,
-      totalPointsRedeemed: employeePoints.totalPointsRedeemed + points,
-      currentBalance: employeePoints.currentBalance - points,
-      transactions,
-      lastUpdated: new Date().toISOString(),
-    };
-
-    const stored = localStorage.getItem(STORAGE_KEYS.POINTS);
-    const allPoints: WellnessPoints[] = stored ? JSON.parse(stored) : [];
-    const index = allPoints.findIndex((p) => p.employeeId === employeeId);
-    if (index !== -1) {
-      allPoints[index] = updatedPoints;
-      localStorage.setItem(STORAGE_KEYS.POINTS, JSON.stringify(allPoints));
+    try {
+      await APIClient.post<void>(`${this.endpoint}/${employeeId}/redeem`, {
+        points,
+        rewardId,
+        rewardName,
+      });
+    } catch (error) {
+      console.error('Error redeeming points:', error);
+      throw error;
     }
   }
 }
@@ -532,30 +475,42 @@ export class WellnessPointsService {
 // ============================================================================
 
 export class RewardsService {
+  private static endpoint = '/wellness/rewards';
+
   static async getCatalog(): Promise<RewardsCatalog[]> {
-    const stored = localStorage.getItem(STORAGE_KEYS.REWARDS_CATALOG);
-    return stored ? JSON.parse(stored) : [];
+    try {
+      return await APIClient.get<RewardsCatalog[]>(this.endpoint);
+    } catch (error) {
+      console.error('Error fetching rewards catalog:', error);
+      throw error;
+    }
   }
 
   static async getRewardById(id: string): Promise<RewardsCatalog | null> {
-    const catalog = await this.getCatalog();
-    return catalog.find((r) => r.id === id) || null;
+    try {
+      return await APIClient.get<RewardsCatalog>(`${this.endpoint}/${id}`);
+    } catch (error) {
+      console.error('Error fetching reward:', error);
+      return null;
+    }
   }
 
   static async createReward(data: RewardsCatalog): Promise<RewardsCatalog> {
-    const catalog = await this.getCatalog();
-    catalog.push(data);
-    localStorage.setItem(STORAGE_KEYS.REWARDS_CATALOG, JSON.stringify(catalog));
-    return data;
+    try {
+      return await APIClient.post<RewardsCatalog>(this.endpoint, data);
+    } catch (error) {
+      console.error('Error creating reward:', error);
+      throw error;
+    }
   }
 
   static async updateReward(id: string, updates: Partial<RewardsCatalog>): Promise<RewardsCatalog> {
-    const catalog = await this.getCatalog();
-    const index = catalog.findIndex((r) => r.id === id);
-    if (index === -1) throw new Error('Reward not found');
-    catalog[index] = { ...catalog[index], ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.REWARDS_CATALOG, JSON.stringify(catalog));
-    return catalog[index];
+    try {
+      return await APIClient.put<RewardsCatalog>(`${this.endpoint}/${id}`, updates);
+    } catch (error) {
+      console.error('Error updating reward:', error);
+      throw error;
+    }
   }
 
   static async redeemReward(
@@ -563,45 +518,34 @@ export class RewardsService {
     employeeName: string,
     rewardId: string
   ): Promise<RewardsRedemption> {
-    const reward = await this.getRewardById(rewardId);
-    if (!reward) throw new Error('Reward not found');
-    if (!reward.available) throw new Error('Reward not available');
-
-    const redemption: RewardsRedemption = {
-      id: `redeem-${Date.now()}`,
-      employeeId,
-      employeeName,
-      rewardId,
-      rewardName: reward.rewardName,
-      pointsRedeemed: reward.pointsCost,
-      redemptionDate: new Date().toISOString(),
-      status: 'pending',
-      deliveryMethod: 'email',
-    };
-
-    const redemptions = await this.getRedemptions();
-    redemptions.push(redemption);
-    localStorage.setItem(STORAGE_KEYS.REDEMPTIONS, JSON.stringify(redemptions));
-
-    // Deduct points
-    await WellnessPointsService.redeemPoints(employeeId, reward.pointsCost, rewardId, reward.rewardName);
-
-    return redemption;
+    try {
+      return await APIClient.post<RewardsRedemption>(`${this.endpoint}/${rewardId}/redeem`, {
+        employeeId,
+        employeeName,
+      });
+    } catch (error) {
+      console.error('Error redeeming reward:', error);
+      throw error;
+    }
   }
 
   static async getRedemptions(employeeId?: string): Promise<RewardsRedemption[]> {
-    const stored = localStorage.getItem(STORAGE_KEYS.REDEMPTIONS);
-    const redemptions = stored ? JSON.parse(stored) : [];
-    return employeeId ? redemptions.filter((r: RewardsRedemption) => r.employeeId === employeeId) : redemptions;
+    try {
+      const params = employeeId ? { employeeId } : undefined;
+      return await APIClient.get<RewardsRedemption[]>(`${this.endpoint}/redemptions`, params);
+    } catch (error) {
+      console.error('Error fetching redemptions:', error);
+      throw error;
+    }
   }
 
   static async updateRedemption(id: string, updates: Partial<RewardsRedemption>): Promise<RewardsRedemption> {
-    const redemptions = await this.getRedemptions();
-    const index = redemptions.findIndex((r) => r.id === id);
-    if (index === -1) throw new Error('Redemption not found');
-    redemptions[index] = { ...redemptions[index], ...updates };
-    localStorage.setItem(STORAGE_KEYS.REDEMPTIONS, JSON.stringify(redemptions));
-    return redemptions[index];
+    try {
+      return await APIClient.put<RewardsRedemption>(`${this.endpoint}/redemptions/${id}`, updates);
+    } catch (error) {
+      console.error('Error updating redemption:', error);
+      throw error;
+    }
   }
 }
 
@@ -610,67 +554,87 @@ export class RewardsService {
 // ============================================================================
 
 export class GymMembershipService {
+  private static endpoint = '/wellness/gym';
+
   static async getMemberships(): Promise<GymMembership[]> {
-    const stored = localStorage.getItem(STORAGE_KEYS.GYM_MEMBERSHIPS);
-    return stored ? JSON.parse(stored) : [];
+    try {
+      return await APIClient.get<GymMembership[]>(this.endpoint);
+    } catch (error) {
+      console.error('Error fetching gym memberships:', error);
+      throw error;
+    }
   }
 
   static async getMembershipById(id: string): Promise<GymMembership | null> {
-    const memberships = await this.getMemberships();
-    return memberships.find((m) => m.id === id) || null;
+    try {
+      return await APIClient.get<GymMembership>(`${this.endpoint}/${id}`);
+    } catch (error) {
+      console.error('Error fetching gym membership:', error);
+      return null;
+    }
   }
 
   static async createMembership(data: GymMembership): Promise<GymMembership> {
-    const memberships = await this.getMemberships();
-    memberships.push(data);
-    localStorage.setItem(STORAGE_KEYS.GYM_MEMBERSHIPS, JSON.stringify(memberships));
-    return data;
+    try {
+      return await APIClient.post<GymMembership>(this.endpoint, data);
+    } catch (error) {
+      console.error('Error creating gym membership:', error);
+      throw error;
+    }
   }
 
   static async updateMembership(id: string, updates: Partial<GymMembership>): Promise<GymMembership> {
-    const memberships = await this.getMemberships();
-    const index = memberships.findIndex((m) => m.id === id);
-    if (index === -1) throw new Error('Membership not found');
-    memberships[index] = { ...memberships[index], ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.GYM_MEMBERSHIPS, JSON.stringify(memberships));
-    return memberships[index];
+    try {
+      return await APIClient.put<GymMembership>(`${this.endpoint}/${id}`, updates);
+    } catch (error) {
+      console.error('Error updating gym membership:', error);
+      throw error;
+    }
   }
 
   static async getProviders(): Promise<GymProvider[]> {
-    const stored = localStorage.getItem(STORAGE_KEYS.GYM_PROVIDERS);
-    return stored ? JSON.parse(stored) : [];
+    try {
+      return await APIClient.get<GymProvider[]>(`${this.endpoint}/providers`);
+    } catch (error) {
+      console.error('Error fetching gym providers:', error);
+      throw error;
+    }
   }
 
   static async getProviderById(id: string): Promise<GymProvider | null> {
-    const providers = await this.getProviders();
-    return providers.find((p) => p.id === id) || null;
+    try {
+      return await APIClient.get<GymProvider>(`${this.endpoint}/providers/${id}`);
+    } catch (error) {
+      console.error('Error fetching gym provider:', error);
+      return null;
+    }
   }
 
   static async createProvider(data: GymProvider): Promise<GymProvider> {
-    const providers = await this.getProviders();
-    providers.push(data);
-    localStorage.setItem(STORAGE_KEYS.GYM_PROVIDERS, JSON.stringify(providers));
-    return data;
+    try {
+      return await APIClient.post<GymProvider>(`${this.endpoint}/providers`, data);
+    } catch (error) {
+      console.error('Error creating gym provider:', error);
+      throw error;
+    }
   }
 
   static async updateProvider(id: string, updates: Partial<GymProvider>): Promise<GymProvider> {
-    const providers = await this.getProviders();
-    const index = providers.findIndex((p) => p.id === id);
-    if (index === -1) throw new Error('Provider not found');
-    providers[index] = { ...providers[index], ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.GYM_PROVIDERS, JSON.stringify(providers));
-    return providers[index];
+    try {
+      return await APIClient.put<GymProvider>(`${this.endpoint}/providers/${id}`, updates);
+    } catch (error) {
+      console.error('Error updating gym provider:', error);
+      throw error;
+    }
   }
 
   static async logVisit(membershipId: string): Promise<void> {
-    const membership = await this.getMembershipById(membershipId);
-    if (!membership) throw new Error('Membership not found');
-
-    await this.updateMembership(membershipId, {
-      visitsThisMonth: membership.visitsThisMonth + 1,
-      totalVisits: membership.totalVisits + 1,
-      lastVisitDate: new Date().toISOString(),
-    });
+    try {
+      await APIClient.post<void>(`${this.endpoint}/${membershipId}/log-visit`);
+    } catch (error) {
+      console.error('Error logging visit:', error);
+      throw error;
+    }
   }
 }
 
@@ -679,63 +643,15 @@ export class GymMembershipService {
 // ============================================================================
 
 export class WellnessAnalyticsService {
+  private static endpoint = '/wellness/analytics';
+
   static async getMetrics(): Promise<WellnessMetrics> {
-    const programs = await HealthProgramService.getPrograms();
-    const enrollments = await HealthProgramService.getEnrollments();
-    const mentalSessions = await MentalHealthServiceLayer.getSessions();
-    const hraResponses = await HRAService.getResponses();
-    const challenges = await ChallengeService.getChallenges();
-    const participants = await ChallengeService.getParticipants();
-    const memberships = await GymMembershipService.getMemberships();
-
-    // Calculate metrics
-    const activePrograms = programs.filter((p) => p.status === 'active').length;
-    const activeMemberships = memberships.filter((m) => m.status === 'active').length;
-    const activeChallenges = challenges.filter((c) => c.status === 'active').length;
-
-    return {
-      totalPrograms: programs.length,
-      activePrograms,
-      totalProgramEnrollments: enrollments.length,
-      averageProgramCompletionRate: 72.5,
-
-      totalMentalHealthSessions: mentalSessions.length,
-      mentalHealthUtilizationRate: 28.3,
-      averageMentalHealthSatisfaction: 4.7,
-
-      hraCompletionRate: 68.4,
-      averageRiskScore: 42.5,
-      highRiskEmployees: 12,
-      highRiskPercentage: 8.2,
-      improvementRate: 15.3,
-
-      activeChallenges,
-      challengeParticipationRate: 45.7,
-      averageChallengeCompletionRate: 63.2,
-
-      totalPointsIssued: 125000,
-      totalPointsRedeemed: 78000,
-      pointsRedemptionRate: 62.4,
-      averagePointsPerEmployee: 850,
-
-      activeGymMemberships: activeMemberships,
-      gymUtilizationRate: 72.8,
-      averageGymVisitsPerMonth: 8.5,
-
-      overallWellnessEngagement: 56.3,
-      employeeSatisfactionScore: 4.3,
-      recommendationScore: 38,
-
-      totalInvestment: 250000,
-      estimatedHealthcareSavings: 425000,
-      roi: 1.7,
-
-      participationTrends: [],
-      healthOutcomeTrends: [],
-      engagementTrends: [],
-
-      lastUpdated: new Date().toISOString(),
-    };
+    try {
+      return await APIClient.get<WellnessMetrics>(this.endpoint);
+    } catch (error) {
+      console.error('Error fetching analytics metrics:', error);
+      throw error;
+    }
   }
 }
 
@@ -744,94 +660,23 @@ export class WellnessAnalyticsService {
 // ============================================================================
 
 export class WellnessSettingsService {
+  private static endpoint = '/wellness/settings';
+
   static async getSettings(): Promise<WellnessSettings> {
-    const stored = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-    if (stored) return JSON.parse(stored);
-
-    const defaultSettings: WellnessSettings = {
-      enableHealthPrograms: true,
-      requireProgramApproval: false,
-      maxProgramsPerEmployee: 5,
-
-      enableMentalHealth: true,
-      mentalHealthConfidentiality: 'full',
-      maxSessionsPerYear: 8,
-      crisisHotline: '1-800-XXX-XXXX',
-
-      enableHRA: true,
-      hraFrequency: 'annual',
-      hraMandatory: false,
-      hraAnonymous: true,
-      hraIncentivePoints: 100,
-
-      enableChallenges: true,
-      allowEmployeeCreatedChallenges: false,
-      requireChallengeApproval: true,
-      maxChallengesPerQuarter: 4,
-
-      enablePointsSystem: true,
-      pointsExpiryMonths: 12,
-      enableTierSystem: true,
-      tiers: [
-        {
-          tierId: 'tier-1',
-          tierName: 'Bronze',
-          tierLevel: 1,
-          minPoints: 0,
-          maxPoints: 999,
-          benefits: [],
-          badgeUrl: '',
-          color: '#CD7F32',
-        },
-        {
-          tierId: 'tier-2',
-          tierName: 'Silver',
-          tierLevel: 2,
-          minPoints: 1000,
-          maxPoints: 2499,
-          benefits: [],
-          badgeUrl: '',
-          color: '#C0C0C0',
-        },
-        {
-          tierId: 'tier-3',
-          tierName: 'Gold',
-          tierLevel: 3,
-          minPoints: 2500,
-          benefits: [],
-          badgeUrl: '',
-          color: '#FFD700',
-        },
-      ],
-
-      enableGymSubsidy: true,
-      maxGymSubsidyPerMonth: 50,
-      subsidyPercentage: 50,
-      requireUsageMinimum: true,
-      minimumVisitsPerMonth: 4,
-
-      enableNotifications: true,
-      notifyProgramLaunch: true,
-      notifyChallengeMilestones: true,
-      notifyPointsExpiry: true,
-      notifyNewRewards: true,
-
-      dataRetentionMonths: 36,
-      allowDataExport: true,
-      requireConsent: true,
-
-      createdDate: new Date().toISOString(),
-      lastModified: new Date().toISOString(),
-    };
-
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(defaultSettings));
-    return defaultSettings;
+    try {
+      return await APIClient.get<WellnessSettings>(this.endpoint);
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      throw error;
+    }
   }
 
   static async updateSettings(updates: Partial<WellnessSettings>): Promise<WellnessSettings> {
-    const settings = await this.getSettings();
-    const updated = { ...settings, ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated));
-    return updated;
+    try {
+      return await APIClient.put<WellnessSettings>(this.endpoint, updates);
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      throw error;
+    }
   }
 }

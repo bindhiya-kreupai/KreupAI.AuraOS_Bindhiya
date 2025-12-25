@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import ReactFlow, {
     MiniMap,
     Controls,
@@ -25,6 +25,7 @@ import {
     Bell,
     CheckCircle2
 } from 'lucide-react';
+import { workflowGenerator } from '@/lib/services/ai-automation-client';
 
 // --- CUSTOM STYLES ---
 
@@ -85,17 +86,55 @@ const initialEdges: Edge[] = [
 export default function WorkflowGeneratorPage() {
     const [prompt, setPrompt] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
+    useEffect(() => {
+        fetchWorkflows();
+    }, []);
+
+    const fetchWorkflows = async () => {
+        try {
+            const result = await workflowGenerator.getWorkflows();
+            if (result.success && result.data?.workflows?.length > 0) {
+                const workflow = result.data.workflows[0];
+                if (workflow.nodes) setNodes(workflow.nodes);
+                if (workflow.edges) setEdges(workflow.edges);
+            }
+        } catch (error) {
+            console.error('Error fetching workflows:', error);
+        }
+    };
+
     const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
-    const handleGenerate = () => {
+    const handleGenerate = async () => {
+        if (!prompt.trim()) return;
         setIsGenerating(true);
-        // Simulate generation
-        setTimeout(() => {
+        try {
+            const result = await workflowGenerator.generateWorkflow(prompt);
+            if (result.success && result.data) {
+                if (result.data.nodes) setNodes(result.data.nodes);
+                if (result.data.edges) setEdges(result.data.edges);
+            }
+        } catch (error) {
+            console.error('Error generating workflow:', error);
+        } finally {
             setIsGenerating(false);
-        }, 2000);
+        }
+    };
+
+    const handleActivate = async () => {
+        setLoading(true);
+        try {
+            await workflowGenerator.saveWorkflow({ nodes, edges, prompt });
+            await fetchWorkflows();
+        } catch (error) {
+            console.error('Error saving workflow:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -198,8 +237,11 @@ export default function WorkflowGeneratorPage() {
                                 This automated workflow is estimated to save <strong>4.5 hours</strong> of manual work per hire.
                             </p>
                         </div>
-                        <button className="w-full mt-4 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-lg hover:opacity-90 transition-opacity">
-                            Activate Workflow
+                        <button
+                            onClick={handleActivate}
+                            disabled={loading}
+                            className="w-full mt-4 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
+                            {loading ? 'Activating...' : 'Activate Workflow'}
                         </button>
                     </div>
                 </div>

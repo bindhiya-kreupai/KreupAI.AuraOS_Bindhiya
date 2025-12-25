@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Heart,
     Cake,
@@ -10,8 +10,27 @@ import {
     Check,
     X as XIcon
 } from 'lucide-react';
+import { LifeEventService } from '../services';
 
 export default function LifeEventsPage() {
+    const [employeeLifeEvents, setEmployeeLifeEvents] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchEmployeeLifeEvents();
+    }, []);
+
+    const fetchEmployeeLifeEvents = async () => {
+        try {
+            const data = await LifeEventService.getAllLifeEvents();
+            setEmployeeLifeEvents(data);
+        } catch (error) {
+            console.error('Error fetching employee life events:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Mock Data
     const [requests, setRequests] = useState([
         { id: 1, name: 'Michael Chen', type: 'Marriage', date: 'Nov 20, 2023', icon: Ring, color: 'text-rose-500 bg-rose-50', status: 'Pending' },

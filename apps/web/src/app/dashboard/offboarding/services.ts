@@ -1,6 +1,7 @@
 // Offboarding Module Services
 // Complete service layer for employee offboarding management
 
+import { APIClient } from '@/lib/api-client';
 import type {
   ResignationLetter,
   TerminationNotice,
@@ -21,23 +22,6 @@ import type {
   HandoverItem,
 } from './types';
 
-// Storage keys
-const STORAGE_KEYS = {
-  RESIGNATIONS: 'offboarding_resignations',
-  TERMINATIONS: 'offboarding_terminations',
-  INSTANCES: 'offboarding_instances',
-  EQUIPMENT_RETURNS: 'offboarding_equipment_returns',
-  ACCESS_REVOCATIONS: 'offboarding_access_revocations',
-  CLEARANCES: 'offboarding_clearances',
-  KNOWLEDGE_TRANSFERS: 'offboarding_knowledge_transfers',
-  EXIT_INTERVIEWS: 'offboarding_exit_interviews',
-  EXIT_SURVEYS: 'offboarding_exit_surveys',
-  FINAL_SETTLEMENTS: 'offboarding_final_settlements',
-  ALUMNI: 'offboarding_alumni',
-  METRICS: 'offboarding_metrics',
-  SETTINGS: 'offboarding_settings',
-};
-
 // ============================================================================
 // RESIGNATION SERVICE
 // ============================================================================
@@ -48,53 +32,57 @@ export class ResignationService {
     status?: string;
     departmentId?: string;
   }): Promise<ResignationLetter[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.RESIGNATIONS);
-    let resignations: ResignationLetter[] = data ? JSON.parse(data) : [];
-
-    if (filters) {
-      if (filters.employeeId) {
-        resignations = resignations.filter((r) => r.employeeId === filters.employeeId);
-      }
-      if (filters.status) {
-        resignations = resignations.filter((r) => r.status === filters.status);
-      }
-      if (filters.departmentId) {
-        resignations = resignations.filter((r) => r.departmentId === filters.departmentId);
-      }
+    try {
+      const response = await APIClient.get<{ resignations?: ResignationLetter[] }>(
+        '/offboarding/resignations',
+        filters
+      );
+      return response.resignations || [];
+    } catch (error) {
+      console.error('Error fetching resignations:', error);
+      return [];
     }
-
-    return resignations;
   }
 
   static async getResignationById(id: string): Promise<ResignationLetter | null> {
-    const resignations = await this.getResignations();
-    return resignations.find((r) => r.id === id) || null;
+    try {
+      const response = await APIClient.get<{ resignation?: ResignationLetter }>(
+        `/offboarding/resignations/${id}`
+      );
+      return response.resignation || null;
+    } catch (error) {
+      console.error(`Error fetching resignation ${id}:`, error);
+      return null;
+    }
   }
 
   static async submitResignation(resignation: ResignationLetter): Promise<ResignationLetter> {
-    // TODO: Replace with actual API call
-    const resignations = await this.getResignations();
-    resignations.push(resignation);
-    localStorage.setItem(STORAGE_KEYS.RESIGNATIONS, JSON.stringify(resignations));
-    return resignation;
+    try {
+      const response = await APIClient.post<{ resignation?: ResignationLetter }>(
+        '/offboarding/resignations',
+        resignation
+      );
+      return response.resignation || resignation;
+    } catch (error) {
+      console.error('Error submitting resignation:', error);
+      throw error;
+    }
   }
 
   static async updateResignation(
     id: string,
     updates: Partial<ResignationLetter>
   ): Promise<ResignationLetter> {
-    // TODO: Replace with actual API call
-    const resignations = await this.getResignations();
-    const index = resignations.findIndex((r) => r.id === id);
-
-    if (index === -1) {
-      throw new Error('Resignation not found');
+    try {
+      const response = await APIClient.put<{ resignation?: ResignationLetter }>(
+        `/offboarding/resignations/${id}`,
+        updates
+      );
+      return response.resignation || { ...updates, id } as ResignationLetter;
+    } catch (error) {
+      console.error(`Error updating resignation ${id}:`, error);
+      throw error;
     }
-
-    resignations[index] = { ...resignations[index], ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.RESIGNATIONS, JSON.stringify(resignations));
-    return resignations[index];
   }
 
   static async acceptResignation(
@@ -153,50 +141,57 @@ export class TerminationService {
     employeeId?: string;
     departmentId?: string;
   }): Promise<TerminationNotice[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.TERMINATIONS);
-    let terminations: TerminationNotice[] = data ? JSON.parse(data) : [];
-
-    if (filters) {
-      if (filters.employeeId) {
-        terminations = terminations.filter((t) => t.employeeId === filters.employeeId);
-      }
-      if (filters.departmentId) {
-        terminations = terminations.filter((t) => t.departmentId === filters.departmentId);
-      }
+    try {
+      const response = await APIClient.get<{ terminations?: TerminationNotice[] }>(
+        '/offboarding/terminations',
+        filters
+      );
+      return response.terminations || [];
+    } catch (error) {
+      console.error('Error fetching terminations:', error);
+      return [];
     }
-
-    return terminations;
   }
 
   static async getTerminationById(id: string): Promise<TerminationNotice | null> {
-    const terminations = await this.getTerminations();
-    return terminations.find((t) => t.id === id) || null;
+    try {
+      const response = await APIClient.get<{ termination?: TerminationNotice }>(
+        `/offboarding/terminations/${id}`
+      );
+      return response.termination || null;
+    } catch (error) {
+      console.error(`Error fetching termination ${id}:`, error);
+      return null;
+    }
   }
 
   static async createTermination(termination: TerminationNotice): Promise<TerminationNotice> {
-    // TODO: Replace with actual API call
-    const terminations = await this.getTerminations();
-    terminations.push(termination);
-    localStorage.setItem(STORAGE_KEYS.TERMINATIONS, JSON.stringify(terminations));
-    return termination;
+    try {
+      const response = await APIClient.post<{ termination?: TerminationNotice }>(
+        '/offboarding/terminations',
+        termination
+      );
+      return response.termination || termination;
+    } catch (error) {
+      console.error('Error creating termination:', error);
+      throw error;
+    }
   }
 
   static async updateTermination(
     id: string,
     updates: Partial<TerminationNotice>
   ): Promise<TerminationNotice> {
-    // TODO: Replace with actual API call
-    const terminations = await this.getTerminations();
-    const index = terminations.findIndex((t) => t.id === id);
-
-    if (index === -1) {
-      throw new Error('Termination notice not found');
+    try {
+      const response = await APIClient.put<{ termination?: TerminationNotice }>(
+        `/offboarding/terminations/${id}`,
+        updates
+      );
+      return response.termination || { ...updates, id } as TerminationNotice;
+    } catch (error) {
+      console.error(`Error updating termination ${id}:`, error);
+      throw error;
     }
-
-    terminations[index] = { ...terminations[index], ...updates };
-    localStorage.setItem(STORAGE_KEYS.TERMINATIONS, JSON.stringify(terminations));
-    return terminations[index];
   }
 }
 
@@ -210,57 +205,57 @@ export class OffboardingInstanceService {
     status?: OffboardingStatus;
     departmentId?: string;
   }): Promise<OffboardingInstance[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.INSTANCES);
-    let instances: OffboardingInstance[] = data ? JSON.parse(data) : [];
-
-    if (filters) {
-      if (filters.employeeId) {
-        instances = instances.filter((i) => i.employeeId === filters.employeeId);
-      }
-      if (filters.status) {
-        instances = instances.filter((i) => i.status === filters.status);
-      }
-      if (filters.departmentId) {
-        instances = instances.filter((i) => i.departmentId === filters.departmentId);
-      }
+    try {
+      const response = await APIClient.get<{ instances?: OffboardingInstance[] }>(
+        '/offboarding/instances',
+        filters
+      );
+      return response.instances || [];
+    } catch (error) {
+      console.error('Error fetching offboarding instances:', error);
+      return [];
     }
-
-    return instances;
   }
 
   static async getInstanceById(id: string): Promise<OffboardingInstance | null> {
-    const instances = await this.getInstances();
-    return instances.find((i) => i.id === id) || null;
+    try {
+      const response = await APIClient.get<{ instance?: OffboardingInstance }>(
+        `/offboarding/instances/${id}`
+      );
+      return response.instance || null;
+    } catch (error) {
+      console.error(`Error fetching instance ${id}:`, error);
+      return null;
+    }
   }
 
   static async createInstance(instance: OffboardingInstance): Promise<OffboardingInstance> {
-    // TODO: Replace with actual API call
-    const instances = await this.getInstances();
-    instances.push(instance);
-    localStorage.setItem(STORAGE_KEYS.INSTANCES, JSON.stringify(instances));
-    return instance;
+    try {
+      const response = await APIClient.post<{ instance?: OffboardingInstance }>(
+        '/offboarding/instances',
+        instance
+      );
+      return response.instance || instance;
+    } catch (error) {
+      console.error('Error creating offboarding instance:', error);
+      throw error;
+    }
   }
 
   static async updateInstance(
     id: string,
     updates: Partial<OffboardingInstance>
   ): Promise<OffboardingInstance> {
-    // TODO: Replace with actual API call
-    const instances = await this.getInstances();
-    const index = instances.findIndex((i) => i.id === id);
-
-    if (index === -1) {
-      throw new Error('Offboarding instance not found');
+    try {
+      const response = await APIClient.put<{ instance?: OffboardingInstance }>(
+        `/offboarding/instances/${id}`,
+        updates
+      );
+      return response.instance || { ...updates, id } as OffboardingInstance;
+    } catch (error) {
+      console.error(`Error updating instance ${id}:`, error);
+      throw error;
     }
-
-    instances[index] = {
-      ...instances[index],
-      ...updates,
-      lastModified: new Date().toISOString(),
-    };
-    localStorage.setItem(STORAGE_KEYS.INSTANCES, JSON.stringify(instances));
-    return instances[index];
   }
 
   static async startOffboarding(id: string): Promise<OffboardingInstance> {
@@ -284,18 +279,23 @@ export class OffboardingInstanceService {
   }
 
   static async updateProgress(id: string): Promise<OffboardingInstance> {
-    const instance = await this.getInstanceById(id);
-    if (!instance) throw new Error('Instance not found');
+    try {
+      const instance = await this.getInstanceById(id);
+      if (!instance) throw new Error('Instance not found');
 
-    const completedTasks = instance.tasks.filter((t) => t.status === 'completed').length;
-    const totalTasks = instance.tasks.filter((t) => t.isMandatory).length;
-    const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+      const completedTasks = instance.tasks.filter((t) => t.status === 'completed').length;
+      const totalTasks = instance.tasks.filter((t) => t.isMandatory).length;
+      const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-    return this.updateInstance(id, {
-      completedTasks,
-      overdueTasks: instance.tasks.filter((t) => t.status === 'overdue').length,
-      progress,
-    });
+      return this.updateInstance(id, {
+        completedTasks,
+        overdueTasks: instance.tasks.filter((t) => t.status === 'overdue').length,
+        progress,
+      });
+    } catch (error) {
+      console.error(`Error updating progress for instance ${id}:`, error);
+      throw error;
+    }
   }
 }
 
@@ -310,37 +310,52 @@ export class OffboardingTaskService {
     status: 'pending' | 'in_progress' | 'completed' | 'overdue' | 'cancelled' | 'not_applicable',
     completedBy?: string
   ): Promise<OffboardingInstance> {
-    const instance = await OffboardingInstanceService.getInstanceById(instanceId);
-    if (!instance) throw new Error('Instance not found');
+    try {
+      const instance = await OffboardingInstanceService.getInstanceById(instanceId);
+      if (!instance) throw new Error('Instance not found');
 
-    const taskIndex = instance.tasks.findIndex((t) => t.id === taskId);
-    if (taskIndex === -1) throw new Error('Task not found');
+      const taskIndex = instance.tasks.findIndex((t) => t.id === taskId);
+      if (taskIndex === -1) throw new Error('Task not found');
 
-    instance.tasks[taskIndex] = {
-      ...instance.tasks[taskIndex],
-      status,
-      completedDate: status === 'completed' ? new Date().toISOString() : undefined,
-      completedBy: status === 'completed' ? completedBy : undefined,
-    };
+      instance.tasks[taskIndex] = {
+        ...instance.tasks[taskIndex],
+        status,
+        completedDate: status === 'completed' ? new Date().toISOString() : undefined,
+        completedBy: status === 'completed' ? completedBy : undefined,
+      };
 
-    await OffboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
-    return OffboardingInstanceService.updateProgress(instanceId);
+      await OffboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
+      return OffboardingInstanceService.updateProgress(instanceId);
+    } catch (error) {
+      console.error(`Error updating task status:`, error);
+      throw error;
+    }
   }
 
   static async addTask(instanceId: string, task: OffboardingTask): Promise<OffboardingInstance> {
-    const instance = await OffboardingInstanceService.getInstanceById(instanceId);
-    if (!instance) throw new Error('Instance not found');
+    try {
+      const instance = await OffboardingInstanceService.getInstanceById(instanceId);
+      if (!instance) throw new Error('Instance not found');
 
-    instance.tasks.push(task);
-    return OffboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
+      instance.tasks.push(task);
+      return OffboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
+    } catch (error) {
+      console.error('Error adding task:', error);
+      throw error;
+    }
   }
 
   static async removeTask(instanceId: string, taskId: string): Promise<OffboardingInstance> {
-    const instance = await OffboardingInstanceService.getInstanceById(instanceId);
-    if (!instance) throw new Error('Instance not found');
+    try {
+      const instance = await OffboardingInstanceService.getInstanceById(instanceId);
+      if (!instance) throw new Error('Instance not found');
 
-    instance.tasks = instance.tasks.filter((t) => t.id !== taskId);
-    return OffboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
+      instance.tasks = instance.tasks.filter((t) => t.id !== taskId);
+      return OffboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
+    } catch (error) {
+      console.error('Error removing task:', error);
+      throw error;
+    }
   }
 }
 
@@ -356,24 +371,29 @@ export class EquipmentReturnService {
     condition: 'good' | 'fair' | 'damaged' | 'lost',
     conditionNotes?: string
   ): Promise<OffboardingInstance> {
-    const instance = await OffboardingInstanceService.getInstanceById(instanceId);
-    if (!instance) throw new Error('Instance not found');
+    try {
+      const instance = await OffboardingInstanceService.getInstanceById(instanceId);
+      if (!instance) throw new Error('Instance not found');
 
-    const equipIndex = instance.equipmentReturns.findIndex((e) => e.id === equipmentId);
-    if (equipIndex === -1) throw new Error('Equipment not found');
+      const equipIndex = instance.equipmentReturns.findIndex((e) => e.id === equipmentId);
+      if (equipIndex === -1) throw new Error('Equipment not found');
 
-    instance.equipmentReturns[equipIndex] = {
-      ...instance.equipmentReturns[equipIndex],
-      status: condition === 'lost' ? 'lost' : condition === 'damaged' ? 'damaged' : 'returned',
-      actualReturnDate: new Date().toISOString(),
-      condition,
-      conditionNotes,
-      receivedBy,
-    };
+      instance.equipmentReturns[equipIndex] = {
+        ...instance.equipmentReturns[equipIndex],
+        status: condition === 'lost' ? 'lost' : condition === 'damaged' ? 'damaged' : 'returned',
+        actualReturnDate: new Date().toISOString(),
+        condition,
+        conditionNotes,
+        receivedBy,
+      };
 
-    return OffboardingInstanceService.updateInstance(instanceId, {
-      equipmentReturns: instance.equipmentReturns,
-    });
+      return OffboardingInstanceService.updateInstance(instanceId, {
+        equipmentReturns: instance.equipmentReturns,
+      });
+    } catch (error) {
+      console.error('Error marking equipment as returned:', error);
+      throw error;
+    }
   }
 
   static async applyCharge(
@@ -382,21 +402,26 @@ export class EquipmentReturnService {
     chargeType: 'damage' | 'lost',
     amount: number
   ): Promise<OffboardingInstance> {
-    const instance = await OffboardingInstanceService.getInstanceById(instanceId);
-    if (!instance) throw new Error('Instance not found');
+    try {
+      const instance = await OffboardingInstanceService.getInstanceById(instanceId);
+      if (!instance) throw new Error('Instance not found');
 
-    const equipIndex = instance.equipmentReturns.findIndex((e) => e.id === equipmentId);
-    if (equipIndex === -1) throw new Error('Equipment not found');
+      const equipIndex = instance.equipmentReturns.findIndex((e) => e.id === equipmentId);
+      if (equipIndex === -1) throw new Error('Equipment not found');
 
-    if (chargeType === 'damage') {
-      instance.equipmentReturns[equipIndex].damageCharge = amount;
-    } else {
-      instance.equipmentReturns[equipIndex].lostCharge = amount;
+      if (chargeType === 'damage') {
+        instance.equipmentReturns[equipIndex].damageCharge = amount;
+      } else {
+        instance.equipmentReturns[equipIndex].lostCharge = amount;
+      }
+
+      return OffboardingInstanceService.updateInstance(instanceId, {
+        equipmentReturns: instance.equipmentReturns,
+      });
+    } catch (error) {
+      console.error('Error applying charge:', error);
+      throw error;
     }
-
-    return OffboardingInstanceService.updateInstance(instanceId, {
-      equipmentReturns: instance.equipmentReturns,
-    });
   }
 
   static async waiveCharge(
@@ -405,22 +430,27 @@ export class EquipmentReturnService {
     reason: string,
     waivedBy: string
   ): Promise<OffboardingInstance> {
-    const instance = await OffboardingInstanceService.getInstanceById(instanceId);
-    if (!instance) throw new Error('Instance not found');
+    try {
+      const instance = await OffboardingInstanceService.getInstanceById(instanceId);
+      if (!instance) throw new Error('Instance not found');
 
-    const equipIndex = instance.equipmentReturns.findIndex((e) => e.id === equipmentId);
-    if (equipIndex === -1) throw new Error('Equipment not found');
+      const equipIndex = instance.equipmentReturns.findIndex((e) => e.id === equipmentId);
+      if (equipIndex === -1) throw new Error('Equipment not found');
 
-    instance.equipmentReturns[equipIndex] = {
-      ...instance.equipmentReturns[equipIndex],
-      chargeWaived: true,
-      waiverReason: reason,
-      waivedBy,
-    };
+      instance.equipmentReturns[equipIndex] = {
+        ...instance.equipmentReturns[equipIndex],
+        chargeWaived: true,
+        waiverReason: reason,
+        waivedBy,
+      };
 
-    return OffboardingInstanceService.updateInstance(instanceId, {
-      equipmentReturns: instance.equipmentReturns,
-    });
+      return OffboardingInstanceService.updateInstance(instanceId, {
+        equipmentReturns: instance.equipmentReturns,
+      });
+    } catch (error) {
+      console.error('Error waiving charge:', error);
+      throw error;
+    }
   }
 }
 
@@ -434,22 +464,27 @@ export class AccessRevocationService {
     accessId: string,
     revokedBy: string
   ): Promise<OffboardingInstance> {
-    const instance = await OffboardingInstanceService.getInstanceById(instanceId);
-    if (!instance) throw new Error('Instance not found');
+    try {
+      const instance = await OffboardingInstanceService.getInstanceById(instanceId);
+      if (!instance) throw new Error('Instance not found');
 
-    const accessIndex = instance.accessRevocations.findIndex((a) => a.id === accessId);
-    if (accessIndex === -1) throw new Error('Access not found');
+      const accessIndex = instance.accessRevocations.findIndex((a) => a.id === accessId);
+      if (accessIndex === -1) throw new Error('Access not found');
 
-    instance.accessRevocations[accessIndex] = {
-      ...instance.accessRevocations[accessIndex],
-      status: 'revoked',
-      actualRevocationDate: new Date().toISOString(),
-      revokedBy,
-    };
+      instance.accessRevocations[accessIndex] = {
+        ...instance.accessRevocations[accessIndex],
+        status: 'revoked',
+        actualRevocationDate: new Date().toISOString(),
+        revokedBy,
+      };
 
-    return OffboardingInstanceService.updateInstance(instanceId, {
-      accessRevocations: instance.accessRevocations,
-    });
+      return OffboardingInstanceService.updateInstance(instanceId, {
+        accessRevocations: instance.accessRevocations,
+      });
+    } catch (error) {
+      console.error('Error revoking access:', error);
+      throw error;
+    }
   }
 
   static async markRevocationFailed(
@@ -457,24 +492,29 @@ export class AccessRevocationService {
     accessId: string,
     failureReason: string
   ): Promise<OffboardingInstance> {
-    const instance = await OffboardingInstanceService.getInstanceById(instanceId);
-    if (!instance) throw new Error('Instance not found');
+    try {
+      const instance = await OffboardingInstanceService.getInstanceById(instanceId);
+      if (!instance) throw new Error('Instance not found');
 
-    const accessIndex = instance.accessRevocations.findIndex((a) => a.id === accessId);
-    if (accessIndex === -1) throw new Error('Access not found');
+      const accessIndex = instance.accessRevocations.findIndex((a) => a.id === accessId);
+      if (accessIndex === -1) throw new Error('Access not found');
 
-    const currentRetryCount = instance.accessRevocations[accessIndex].retryCount || 0;
+      const currentRetryCount = instance.accessRevocations[accessIndex].retryCount || 0;
 
-    instance.accessRevocations[accessIndex] = {
-      ...instance.accessRevocations[accessIndex],
-      status: 'failed',
-      failureReason,
-      retryCount: currentRetryCount + 1,
-    };
+      instance.accessRevocations[accessIndex] = {
+        ...instance.accessRevocations[accessIndex],
+        status: 'failed',
+        failureReason,
+        retryCount: currentRetryCount + 1,
+      };
 
-    return OffboardingInstanceService.updateInstance(instanceId, {
-      accessRevocations: instance.accessRevocations,
-    });
+      return OffboardingInstanceService.updateInstance(instanceId, {
+        accessRevocations: instance.accessRevocations,
+      });
+    } catch (error) {
+      console.error('Error marking revocation as failed:', error);
+      throw error;
+    }
   }
 }
 
@@ -489,23 +529,28 @@ export class ClearanceService {
     clearedBy: string,
     comments?: string
   ): Promise<OffboardingInstance> {
-    const instance = await OffboardingInstanceService.getInstanceById(instanceId);
-    if (!instance) throw new Error('Instance not found');
+    try {
+      const instance = await OffboardingInstanceService.getInstanceById(instanceId);
+      if (!instance) throw new Error('Instance not found');
 
-    const clearanceIndex = instance.clearances.findIndex((c) => c.id === clearanceId);
-    if (clearanceIndex === -1) throw new Error('Clearance not found');
+      const clearanceIndex = instance.clearances.findIndex((c) => c.id === clearanceId);
+      if (clearanceIndex === -1) throw new Error('Clearance not found');
 
-    instance.clearances[clearanceIndex] = {
-      ...instance.clearances[clearanceIndex],
-      status: 'cleared',
-      clearedDate: new Date().toISOString(),
-      clearedBy,
-      comments,
-    };
+      instance.clearances[clearanceIndex] = {
+        ...instance.clearances[clearanceIndex],
+        status: 'cleared',
+        clearedDate: new Date().toISOString(),
+        clearedBy,
+        comments,
+      };
 
-    return OffboardingInstanceService.updateInstance(instanceId, {
-      clearances: instance.clearances,
-    });
+      return OffboardingInstanceService.updateInstance(instanceId, {
+        clearances: instance.clearances,
+      });
+    } catch (error) {
+      console.error('Error clearing department:', error);
+      throw error;
+    }
   }
 
   static async reportIssue(
@@ -518,24 +563,29 @@ export class ClearanceService {
       amountDue?: number;
     }
   ): Promise<OffboardingInstance> {
-    const instance = await OffboardingInstanceService.getInstanceById(instanceId);
-    if (!instance) throw new Error('Instance not found');
+    try {
+      const instance = await OffboardingInstanceService.getInstanceById(instanceId);
+      if (!instance) throw new Error('Instance not found');
 
-    const clearanceIndex = instance.clearances.findIndex((c) => c.id === clearanceId);
-    if (clearanceIndex === -1) throw new Error('Clearance not found');
+      const clearanceIndex = instance.clearances.findIndex((c) => c.id === clearanceId);
+      if (clearanceIndex === -1) throw new Error('Clearance not found');
 
-    const issues = instance.clearances[clearanceIndex].issues || [];
-    issues.push(issue);
+      const issues = instance.clearances[clearanceIndex].issues || [];
+      issues.push(issue);
 
-    instance.clearances[clearanceIndex] = {
-      ...instance.clearances[clearanceIndex],
-      status: 'issues',
-      issues,
-    };
+      instance.clearances[clearanceIndex] = {
+        ...instance.clearances[clearanceIndex],
+        status: 'issues',
+        issues,
+      };
 
-    return OffboardingInstanceService.updateInstance(instanceId, {
-      clearances: instance.clearances,
-    });
+      return OffboardingInstanceService.updateInstance(instanceId, {
+        clearances: instance.clearances,
+      });
+    } catch (error) {
+      console.error('Error reporting issue:', error);
+      throw error;
+    }
   }
 }
 
@@ -548,79 +598,91 @@ export class KnowledgeTransferService {
     offboardingId?: string;
     employeeId?: string;
   }): Promise<KnowledgeTransfer[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.KNOWLEDGE_TRANSFERS);
-    let transfers: KnowledgeTransfer[] = data ? JSON.parse(data) : [];
-
-    if (filters) {
-      if (filters.offboardingId) {
-        transfers = transfers.filter((t) => t.offboardingId === filters.offboardingId);
-      }
-      if (filters.employeeId) {
-        transfers = transfers.filter((t) => t.employeeId === filters.employeeId);
-      }
+    try {
+      const response = await APIClient.get<{ transfers?: KnowledgeTransfer[] }>(
+        '/offboarding/knowledge-transfers',
+        filters
+      );
+      return response.transfers || [];
+    } catch (error) {
+      console.error('Error fetching knowledge transfers:', error);
+      return [];
     }
-
-    return transfers;
   }
 
   static async createKnowledgeTransfer(transfer: KnowledgeTransfer): Promise<KnowledgeTransfer> {
-    // TODO: Replace with actual API call
-    const transfers = await this.getKnowledgeTransfers();
-    transfers.push(transfer);
-    localStorage.setItem(STORAGE_KEYS.KNOWLEDGE_TRANSFERS, JSON.stringify(transfers));
-    return transfer;
+    try {
+      const response = await APIClient.post<{ transfer?: KnowledgeTransfer }>(
+        '/offboarding/knowledge-transfers',
+        transfer
+      );
+      return response.transfer || transfer;
+    } catch (error) {
+      console.error('Error creating knowledge transfer:', error);
+      throw error;
+    }
   }
 
   static async updateKnowledgeTransfer(
     id: string,
     updates: Partial<KnowledgeTransfer>
   ): Promise<KnowledgeTransfer> {
-    // TODO: Replace with actual API call
-    const transfers = await this.getKnowledgeTransfers();
-    const index = transfers.findIndex((t) => t.id === id);
-
-    if (index === -1) {
-      throw new Error('Knowledge transfer not found');
+    try {
+      const response = await APIClient.put<{ transfer?: KnowledgeTransfer }>(
+        `/offboarding/knowledge-transfers/${id}`,
+        updates
+      );
+      return response.transfer || { ...updates, id } as KnowledgeTransfer;
+    } catch (error) {
+      console.error(`Error updating knowledge transfer ${id}:`, error);
+      throw error;
     }
-
-    transfers[index] = { ...transfers[index], ...updates };
-    localStorage.setItem(STORAGE_KEYS.KNOWLEDGE_TRANSFERS, JSON.stringify(transfers));
-    return transfers[index];
   }
 
   static async addSession(
     id: string,
     session: KnowledgeTransferSession
   ): Promise<KnowledgeTransfer> {
-    const transfer = (await this.getKnowledgeTransfers()).find((t) => t.id === id);
-    if (!transfer) throw new Error('Knowledge transfer not found');
+    try {
+      const transfers = await this.getKnowledgeTransfers();
+      const transfer = transfers.find((t) => t.id === id);
+      if (!transfer) throw new Error('Knowledge transfer not found');
 
-    const sessions = [...transfer.sessions, session];
-    return this.updateKnowledgeTransfer(id, { sessions });
+      const sessions = [...transfer.sessions, session];
+      return this.updateKnowledgeTransfer(id, { sessions });
+    } catch (error) {
+      console.error('Error adding session:', error);
+      throw error;
+    }
   }
 
   static async completeHandoverItem(
     id: string,
     itemId: string
   ): Promise<KnowledgeTransfer> {
-    const transfer = (await this.getKnowledgeTransfers()).find((t) => t.id === id);
-    if (!transfer) throw new Error('Knowledge transfer not found');
+    try {
+      const transfers = await this.getKnowledgeTransfers();
+      const transfer = transfers.find((t) => t.id === id);
+      if (!transfer) throw new Error('Knowledge transfer not found');
 
-    const handoverChecklist = transfer.handoverChecklist.map((item) =>
-      item.id === itemId
-        ? { ...item, status: 'completed' as const, completedDate: new Date().toISOString() }
-        : item
-    );
+      const handoverChecklist = transfer.handoverChecklist.map((item) =>
+        item.id === itemId
+          ? { ...item, status: 'completed' as const, completedDate: new Date().toISOString() }
+          : item
+      );
 
-    const completedItems = handoverChecklist.filter((i) => i.status === 'completed').length;
-    const progress = Math.round((completedItems / handoverChecklist.length) * 100);
+      const completedItems = handoverChecklist.filter((i) => i.status === 'completed').length;
+      const progress = Math.round((completedItems / handoverChecklist.length) * 100);
 
-    return this.updateKnowledgeTransfer(id, {
-      handoverChecklist,
-      completedItems,
-      progress,
-    });
+      return this.updateKnowledgeTransfer(id, {
+        handoverChecklist,
+        completedItems,
+        progress,
+      });
+    } catch (error) {
+      console.error('Error completing handover item:', error);
+      throw error;
+    }
   }
 }
 
@@ -633,45 +695,45 @@ export class ExitInterviewService {
     offboardingId?: string;
     status?: string;
   }): Promise<ExitInterview[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.EXIT_INTERVIEWS);
-    let interviews: ExitInterview[] = data ? JSON.parse(data) : [];
-
-    if (filters) {
-      if (filters.offboardingId) {
-        interviews = interviews.filter((i) => i.offboardingId === filters.offboardingId);
-      }
-      if (filters.status) {
-        interviews = interviews.filter((i) => i.status === filters.status);
-      }
+    try {
+      const response = await APIClient.get<{ interviews?: ExitInterview[] }>(
+        '/offboarding/exit-interviews',
+        filters
+      );
+      return response.interviews || [];
+    } catch (error) {
+      console.error('Error fetching exit interviews:', error);
+      return [];
     }
-
-    return interviews;
   }
 
   static async createExitInterview(interview: ExitInterview): Promise<ExitInterview> {
-    // TODO: Replace with actual API call
-    const interviews = await this.getExitInterviews();
-    interviews.push(interview);
-    localStorage.setItem(STORAGE_KEYS.EXIT_INTERVIEWS, JSON.stringify(interviews));
-    return interview;
+    try {
+      const response = await APIClient.post<{ interview?: ExitInterview }>(
+        '/offboarding/exit-interviews',
+        interview
+      );
+      return response.interview || interview;
+    } catch (error) {
+      console.error('Error creating exit interview:', error);
+      throw error;
+    }
   }
 
   static async updateExitInterview(
     id: string,
     updates: Partial<ExitInterview>
   ): Promise<ExitInterview> {
-    // TODO: Replace with actual API call
-    const interviews = await this.getExitInterviews();
-    const index = interviews.findIndex((i) => i.id === id);
-
-    if (index === -1) {
-      throw new Error('Exit interview not found');
+    try {
+      const response = await APIClient.put<{ interview?: ExitInterview }>(
+        `/offboarding/exit-interviews/${id}`,
+        updates
+      );
+      return response.interview || { ...updates, id } as ExitInterview;
+    } catch (error) {
+      console.error(`Error updating exit interview ${id}:`, error);
+      throw error;
     }
-
-    interviews[index] = { ...interviews[index], ...updates };
-    localStorage.setItem(STORAGE_KEYS.EXIT_INTERVIEWS, JSON.stringify(interviews));
-    return interviews[index];
   }
 
   static async completeInterview(
@@ -695,28 +757,29 @@ export class ExitSurveyService {
     offboardingId?: string;
     status?: string;
   }): Promise<ExitSurvey[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.EXIT_SURVEYS);
-    let surveys: ExitSurvey[] = data ? JSON.parse(data) : [];
-
-    if (filters) {
-      if (filters.offboardingId) {
-        surveys = surveys.filter((s) => s.offboardingId === filters.offboardingId);
-      }
-      if (filters.status) {
-        surveys = surveys.filter((s) => s.status === filters.status);
-      }
+    try {
+      const response = await APIClient.get<{ surveys?: ExitSurvey[] }>(
+        '/offboarding/exit-surveys',
+        filters
+      );
+      return response.surveys || [];
+    } catch (error) {
+      console.error('Error fetching exit surveys:', error);
+      return [];
     }
-
-    return surveys;
   }
 
   static async createExitSurvey(survey: ExitSurvey): Promise<ExitSurvey> {
-    // TODO: Replace with actual API call
-    const surveys = await this.getExitSurveys();
-    surveys.push(survey);
-    localStorage.setItem(STORAGE_KEYS.EXIT_SURVEYS, JSON.stringify(surveys));
-    return survey;
+    try {
+      const response = await APIClient.post<{ survey?: ExitSurvey }>(
+        '/offboarding/exit-surveys',
+        survey
+      );
+      return response.survey || survey;
+    } catch (error) {
+      console.error('Error creating exit survey:', error);
+      throw error;
+    }
   }
 
   static async submitSurvey(
@@ -727,27 +790,24 @@ export class ExitSurveyService {
     wouldRecommend?: boolean,
     comments?: string
   ): Promise<ExitSurvey> {
-    // TODO: Replace with actual API call
-    const surveys = await this.getExitSurveys();
-    const index = surveys.findIndex((s) => s.id === id);
-
-    if (index === -1) {
-      throw new Error('Exit survey not found');
+    try {
+      const response = await APIClient.put<{ survey?: ExitSurvey }>(
+        `/offboarding/exit-surveys/${id}/submit`,
+        {
+          questions: answers,
+          overallRating,
+          wouldReturn: wouldReturn ?? false,
+          wouldRecommend: wouldRecommend ?? false,
+          comments,
+          status: 'completed',
+          completedDate: new Date().toISOString(),
+        }
+      );
+      return response.survey || { id, status: 'completed' } as ExitSurvey;
+    } catch (error) {
+      console.error(`Error submitting exit survey ${id}:`, error);
+      throw error;
     }
-
-    surveys[index] = {
-      ...surveys[index],
-      status: 'completed',
-      completedDate: new Date().toISOString(),
-      questions: answers,
-      overallRating,
-      wouldReturn: wouldReturn ?? false,
-      wouldRecommend: wouldRecommend ?? false,
-      comments,
-    };
-
-    localStorage.setItem(STORAGE_KEYS.EXIT_SURVEYS, JSON.stringify(surveys));
-    return surveys[index];
   }
 }
 
@@ -760,45 +820,45 @@ export class FinalSettlementService {
     offboardingId?: string;
     status?: string;
   }): Promise<FinalSettlement[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.FINAL_SETTLEMENTS);
-    let settlements: FinalSettlement[] = data ? JSON.parse(data) : [];
-
-    if (filters) {
-      if (filters.offboardingId) {
-        settlements = settlements.filter((s) => s.offboardingId === filters.offboardingId);
-      }
-      if (filters.status) {
-        settlements = settlements.filter((s) => s.status === filters.status);
-      }
+    try {
+      const response = await APIClient.get<{ settlements?: FinalSettlement[] }>(
+        '/offboarding/final-settlements',
+        filters
+      );
+      return response.settlements || [];
+    } catch (error) {
+      console.error('Error fetching final settlements:', error);
+      return [];
     }
-
-    return settlements;
   }
 
   static async createFinalSettlement(settlement: FinalSettlement): Promise<FinalSettlement> {
-    // TODO: Replace with actual API call
-    const settlements = await this.getFinalSettlements();
-    settlements.push(settlement);
-    localStorage.setItem(STORAGE_KEYS.FINAL_SETTLEMENTS, JSON.stringify(settlements));
-    return settlement;
+    try {
+      const response = await APIClient.post<{ settlement?: FinalSettlement }>(
+        '/offboarding/final-settlements',
+        settlement
+      );
+      return response.settlement || settlement;
+    } catch (error) {
+      console.error('Error creating final settlement:', error);
+      throw error;
+    }
   }
 
   static async updateFinalSettlement(
     id: string,
     updates: Partial<FinalSettlement>
   ): Promise<FinalSettlement> {
-    // TODO: Replace with actual API call
-    const settlements = await this.getFinalSettlements();
-    const index = settlements.findIndex((s) => s.id === id);
-
-    if (index === -1) {
-      throw new Error('Final settlement not found');
+    try {
+      const response = await APIClient.put<{ settlement?: FinalSettlement }>(
+        `/offboarding/final-settlements/${id}`,
+        updates
+      );
+      return response.settlement || { ...updates, id } as FinalSettlement;
+    } catch (error) {
+      console.error(`Error updating final settlement ${id}:`, error);
+      throw error;
     }
-
-    settlements[index] = { ...settlements[index], ...updates };
-    localStorage.setItem(STORAGE_KEYS.FINAL_SETTLEMENTS, JSON.stringify(settlements));
-    return settlements[index];
   }
 
   static async approveSettlement(id: string, approvedBy: string): Promise<FinalSettlement> {
@@ -832,45 +892,45 @@ export class AlumniService {
     status?: string;
     departmentId?: string;
   }): Promise<AlumniRecord[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.ALUMNI);
-    let alumni: AlumniRecord[] = data ? JSON.parse(data) : [];
-
-    if (filters) {
-      if (filters.status) {
-        alumni = alumni.filter((a) => a.status === filters.status);
-      }
-      if (filters.departmentId) {
-        alumni = alumni.filter((a) => a.departmentId === filters.departmentId);
-      }
+    try {
+      const response = await APIClient.get<{ alumni?: AlumniRecord[] }>(
+        '/offboarding/alumni',
+        filters
+      );
+      return response.alumni || [];
+    } catch (error) {
+      console.error('Error fetching alumni:', error);
+      return [];
     }
-
-    return alumni;
   }
 
   static async createAlumniRecord(record: AlumniRecord): Promise<AlumniRecord> {
-    // TODO: Replace with actual API call
-    const alumni = await this.getAlumni();
-    alumni.push(record);
-    localStorage.setItem(STORAGE_KEYS.ALUMNI, JSON.stringify(alumni));
-    return record;
+    try {
+      const response = await APIClient.post<{ alumniRecord?: AlumniRecord }>(
+        '/offboarding/alumni',
+        record
+      );
+      return response.alumniRecord || record;
+    } catch (error) {
+      console.error('Error creating alumni record:', error);
+      throw error;
+    }
   }
 
   static async updateAlumniRecord(
     id: string,
     updates: Partial<AlumniRecord>
   ): Promise<AlumniRecord> {
-    // TODO: Replace with actual API call
-    const alumni = await this.getAlumni();
-    const index = alumni.findIndex((a) => a.id === id);
-
-    if (index === -1) {
-      throw new Error('Alumni record not found');
+    try {
+      const response = await APIClient.put<{ alumniRecord?: AlumniRecord }>(
+        `/offboarding/alumni/${id}`,
+        updates
+      );
+      return response.alumniRecord || { ...updates, id } as AlumniRecord;
+    } catch (error) {
+      console.error(`Error updating alumni record ${id}:`, error);
+      throw error;
     }
-
-    alumni[index] = { ...alumni[index], ...updates };
-    localStorage.setItem(STORAGE_KEYS.ALUMNI, JSON.stringify(alumni));
-    return alumni[index];
   }
 
   static async optOut(id: string): Promise<AlumniRecord> {
@@ -887,44 +947,45 @@ export class AlumniService {
 
 export class OffboardingAnalyticsService {
   static async getMetrics(): Promise<OffboardingMetrics> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.METRICS);
-    if (data) {
-      return JSON.parse(data);
+    try {
+      const response = await APIClient.get<{ metrics?: OffboardingMetrics }>(
+        '/offboarding/analytics/metrics'
+      );
+      return response.metrics || {
+        totalOffboarding: 0,
+        activeOffboarding: 0,
+        completedOffboarding: 0,
+        averageCompletionTime: 0,
+        averageNoticePeriod: 0,
+        offboardingByType: [],
+        offboardingByDepartment: [],
+        turnoverRate: 0,
+        voluntaryTurnover: 0,
+        involuntaryTurnover: 0,
+        retirementRate: 0,
+        avgTenure: 0,
+        topExitReasons: [],
+        rehireEligibilityStats: {
+          eligible: 0,
+          notEligible: 0,
+          restricted: 0,
+          underReview: 0,
+        },
+        exitInterviewParticipation: 0,
+        exitSurveyResponse: 0,
+        averageExitRating: 0,
+        npsScore: 0,
+        equipmentReturnRate: 0,
+        clearanceCompletionRate: 0,
+        knowledgeTransferCompletionRate: 0,
+        alumniEngagementRate: 0,
+        costPerOffboarding: 0,
+        retentionRiskDepartments: [],
+      };
+    } catch (error) {
+      console.error('Error fetching offboarding metrics:', error);
+      return {} as OffboardingMetrics;
     }
-
-    // Return default metrics
-    return {
-      totalOffboarding: 0,
-      activeOffboarding: 0,
-      completedOffboarding: 0,
-      averageCompletionTime: 0,
-      averageNoticePeriod: 0,
-      offboardingByType: [],
-      offboardingByDepartment: [],
-      turnoverRate: 0,
-      voluntaryTurnover: 0,
-      involuntaryTurnover: 0,
-      retirementRate: 0,
-      avgTenure: 0,
-      topExitReasons: [],
-      rehireEligibilityStats: {
-        eligible: 0,
-        notEligible: 0,
-        restricted: 0,
-        underReview: 0,
-      },
-      exitInterviewParticipation: 0,
-      exitSurveyResponse: 0,
-      averageExitRating: 0,
-      npsScore: 0,
-      equipmentReturnRate: 0,
-      clearanceCompletionRate: 0,
-      knowledgeTransferCompletionRate: 0,
-      alumniEngagementRate: 0,
-      costPerOffboarding: 0,
-      retentionRiskDepartments: [],
-    };
   }
 }
 
@@ -934,46 +995,52 @@ export class OffboardingAnalyticsService {
 
 export class OffboardingSettingsService {
   static async getSettings(): Promise<OffboardingSettings> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-    if (data) {
-      return JSON.parse(data);
+    try {
+      const response = await APIClient.get<{ settings?: OffboardingSettings }>(
+        '/offboarding/settings'
+      );
+      return response.settings || {
+        defaultNoticePeriod: 30,
+        autoInitiateOffboarding: true,
+        requireExitInterview: true,
+        requireExitSurvey: true,
+        exitSurveyAnonymous: false,
+        exitSurveyExpiry: 30,
+        sendExitSurveyAfter: 0,
+        requireKnowledgeTransfer: true,
+        knowledgeTransferDuration: 14,
+        autoRevokeAccessOnExit: true,
+        accessRevocationLeadTime: 0,
+        autoCreateAlumniRecord: true,
+        alumniOptInRequired: false,
+        equipmentReturnReminder: 7,
+        clearanceReminderFrequency: 'weekly',
+        finalSettlementDays: 45,
+        allowCounterOffer: true,
+        counterOfferApprovalRequired: true,
+        notificationEmail: 'hr@company.com',
+        hrNotificationEmail: 'hr@company.com',
+        itNotificationEmail: 'it@company.com',
+        financeNotificationEmail: 'finance@company.com',
+      };
+    } catch (error) {
+      console.error('Error fetching offboarding settings:', error);
+      return {} as OffboardingSettings;
     }
-
-    // Return default settings
-    return {
-      defaultNoticePeriod: 30,
-      autoInitiateOffboarding: true,
-      requireExitInterview: true,
-      requireExitSurvey: true,
-      exitSurveyAnonymous: false,
-      exitSurveyExpiry: 30,
-      sendExitSurveyAfter: 0,
-      requireKnowledgeTransfer: true,
-      knowledgeTransferDuration: 14,
-      autoRevokeAccessOnExit: true,
-      accessRevocationLeadTime: 0,
-      autoCreateAlumniRecord: true,
-      alumniOptInRequired: false,
-      equipmentReturnReminder: 7,
-      clearanceReminderFrequency: 'weekly',
-      finalSettlementDays: 45,
-      allowCounterOffer: true,
-      counterOfferApprovalRequired: true,
-      notificationEmail: 'hr@company.com',
-      hrNotificationEmail: 'hr@company.com',
-      itNotificationEmail: 'it@company.com',
-      financeNotificationEmail: 'finance@company.com',
-    };
   }
 
   static async updateSettings(
     updates: Partial<OffboardingSettings>
   ): Promise<OffboardingSettings> {
-    // TODO: Replace with actual API call
-    const settings = await this.getSettings();
-    const updated = { ...settings, ...updates };
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated));
-    return updated;
+    try {
+      const response = await APIClient.put<{ settings?: OffboardingSettings }>(
+        '/offboarding/settings',
+        updates
+      );
+      return response.settings || updates as OffboardingSettings;
+    } catch (error) {
+      console.error('Error updating offboarding settings:', error);
+      throw error;
+    }
   }
 }

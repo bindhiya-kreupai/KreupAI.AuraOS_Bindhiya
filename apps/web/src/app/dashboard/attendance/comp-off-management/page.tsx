@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Gift,
     Plus,
@@ -8,8 +8,51 @@ import {
     Calendar,
     ArrowRight
 } from 'lucide-react';
+import { CompOffManagementService } from '../services';
+
+interface CompOffData {
+    balance: number;
+    expiringDays: number;
+    expiringSoon: number;
+    transactions: Array<{
+        id: number;
+        dateWorked: string;
+        reason: string;
+        credit: number;
+        expiry: string;
+        status: string;
+    }>;
+}
 
 export default function CompOffManagementPage() {
+    const [data, setData] = useState<CompOffData>({
+        balance: 0,
+        expiringDays: 60,
+        expiringSoon: 0,
+        transactions: []
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await CompOffManagementService.getCompOffData();
+            if (result && result.length > 0) {
+                setData({
+                    ...data,
+                    transactions: result
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching comp-off data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -35,11 +78,11 @@ export default function CompOffManagementPage() {
                         <p className="text-xs text-silver-mist">Accumulated validity: 60 days</p>
                     </div>
                     <div>
-                        <div className="text-4xl font-bold text-indigo-600 mb-1">3.0 <span className="text-lg text-slate-500">Days</span></div>
+                        <div className="text-4xl font-bold text-indigo-600 mb-1">{data.balance} <span className="text-lg text-slate-500">Days</span></div>
                         <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2">
-                            <div className="bg-indigo-500 h-2 rounded-full w-3/4"></div>
+                            <div className="bg-indigo-500 h-2 rounded-full" style={{width: `${(data.balance / 5) * 100}%`}}></div>
                         </div>
-                        <p className="text-xs text-slate-400 mt-2 text-right">1.0 expiring in 12 days</p>
+                        <p className="text-xs text-slate-400 mt-2 text-right">{data.expiringSoon} expiring in {data.expiringDays} days</p>
                     </div>
                 </div>
 

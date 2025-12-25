@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Wallet, Search, MapPin } from 'lucide-react';
+import { TravelSettingsService } from '../services';
 
 const LOCATIONS = [
     { city: 'London, UK', tier: 'Tier 1', currency: 'GBP', lodging: '£250', meals: '£90', incidentals: '£20' },
@@ -12,6 +13,24 @@ const LOCATIONS = [
 
 export default function PerDiemPage() {
     const [search, setSearch] = useState('');
+    const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const settings = await TravelSettingsService.getSettings();
+            setData(settings);
+        } catch (error) {
+            console.error('Failed to fetch per diem settings:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const filtered = LOCATIONS.filter(l => l.city.toLowerCase().includes(search.toLowerCase()));
 

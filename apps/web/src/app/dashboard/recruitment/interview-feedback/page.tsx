@@ -1,6 +1,7 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { InterviewFeedbackService } from '../services';
 import {
     MessageCircle,
     Star,
@@ -12,6 +13,39 @@ import {
 } from 'lucide-react';
 
 export default function InterviewFeedbackPage() {
+    const [feedbacks, setFeedbacks] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchFeedback();
+    }, []);
+
+    const fetchFeedback = async () => {
+        try {
+            // getFeedback requires an interviewId, but for listing all feedbacks
+            // we'll need to get all interviews first or modify the approach
+            // For now, fetching feedbacks without specific interviewId filter
+            setLoading(true);
+            const data = await InterviewFeedbackService.getFeedback('');
+            if (data && data.length > 0) {
+                setFeedbacks(data);
+            }
+        } catch (error) {
+            console.error('Error fetching feedback:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSubmitFeedback = async (feedbackData: any) => {
+        try {
+            await InterviewFeedbackService.submitFeedback(feedbackData);
+            await fetchFeedback();
+        } catch (error) {
+            console.error('Error submitting feedback:', error);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}

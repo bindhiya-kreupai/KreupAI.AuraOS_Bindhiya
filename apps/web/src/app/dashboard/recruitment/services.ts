@@ -1,10 +1,10 @@
 /**
  * Recruitment Module - Service Layer
- * 
- * API-ready service classes with localStorage persistence.
- * Replace localStorage calls with real API endpoints when backend is ready.
+ *
+ * API-integrated service classes using APIClient pattern.
  */
 
+import { APIClient } from '@/lib/api-client';
 import type {
     JobRequisition,
     JobPosting,
@@ -23,72 +23,34 @@ import type {
     BackgroundCheckStatus,
 } from './types';
 
-// Storage keys
-const STORAGE_KEYS = {
-    JOB_REQUISITIONS: 'recruitment_job_requisitions',
-    JOB_POSTINGS: 'recruitment_job_postings',
-    APPLICATIONS: 'recruitment_applications',
-    INTERVIEWS: 'recruitment_interviews',
-    INTERVIEW_FEEDBACK: 'recruitment_interview_feedback',
-    JOB_OFFERS: 'recruitment_job_offers',
-    BACKGROUND_CHECKS: 'recruitment_background_checks',
-    HIRING_PIPELINES: 'recruitment_hiring_pipelines',
-    SETTINGS: 'recruitment_settings',
-};
-
-// Helper for simulating API delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-// Storage helper
-class StorageService {
-    static load<T>(key: string): T | null {
-        if (typeof window === 'undefined') return null;
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : null;
-    }
-
-    static save<T>(key: string, data: T): void {
-        if (typeof window === 'undefined') return;
-        localStorage.setItem(key, JSON.stringify(data));
-    }
-}
-
 export class JobRequisitionService {
+    private static endpoint = '/recruitment/requisitions';
+
     static async getRequisitions(filters?: { status?: RequisitionStatus; departmentId?: string }): Promise<JobRequisition[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<JobRequisition[]>(STORAGE_KEYS.JOB_REQUISITIONS);
-        let requisitions = stored || [];
-        
-        if (filters?.status) {
-            requisitions = requisitions.filter(r => r.status === filters.status);
+        try {
+            const params = new URLSearchParams();
+            if (filters?.status) params.append('status', filters.status);
+            if (filters?.departmentId) params.append('departmentId', filters.departmentId);
+
+            const queryString = params.toString();
+            const url = queryString ? `${this.endpoint}?${queryString}` : this.endpoint;
+
+            const response = await APIClient.get<{ items?: JobRequisition[] }>(url);
+            return response.items || [];
+        } catch (error) {
+            console.error('Error fetching requisitions:', error);
+            return [];
         }
-        if (filters?.departmentId) {
-            requisitions = requisitions.filter(r => r.departmentId === filters.departmentId);
-        }
-        
-        return requisitions;
     }
 
     static async createRequisition(data: JobRequisition): Promise<JobRequisition> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<JobRequisition[]>(STORAGE_KEYS.JOB_REQUISITIONS) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.JOB_REQUISITIONS, stored);
-        return data;
+        const response = await APIClient.post<JobRequisition>(this.endpoint, data);
+        return response;
     }
 
     static async updateRequisition(id: string, updates: Partial<JobRequisition>): Promise<JobRequisition> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<JobRequisition[]>(STORAGE_KEYS.JOB_REQUISITIONS) || [];
-        const index = stored.findIndex(r => r.id === id);
-        if (index === -1) throw new Error('Requisition not found');
-        
-        stored[index] = { ...stored[index], ...updates, updatedAt: new Date().toISOString() };
-        StorageService.save(STORAGE_KEYS.JOB_REQUISITIONS, stored);
-        return stored[index];
+        const response = await APIClient.put<JobRequisition>(`${this.endpoint}/${id}`, updates);
+        return response;
     }
 
     static async approveRequisition(id: string, approvedBy: string): Promise<JobRequisition> {
@@ -108,38 +70,32 @@ export class JobRequisitionService {
 }
 
 export class JobPostingService {
+    private static endpoint = '/recruitment/jobs';
+
     static async getPostings(filters?: { isActive?: boolean }): Promise<JobPosting[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<JobPosting[]>(STORAGE_KEYS.JOB_POSTINGS);
-        let postings = stored || [];
-        
-        if (filters?.isActive !== undefined) {
-            postings = postings.filter(p => p.isActive === filters.isActive);
+        try {
+            const params = new URLSearchParams();
+            if (filters?.isActive !== undefined) params.append('isActive', String(filters.isActive));
+
+            const queryString = params.toString();
+            const url = queryString ? `${this.endpoint}?${queryString}` : this.endpoint;
+
+            const response = await APIClient.get<{ items?: JobPosting[] }>(url);
+            return response.items || [];
+        } catch (error) {
+            console.error('Error fetching job postings:', error);
+            return [];
         }
-        
-        return postings;
     }
 
     static async createPosting(data: JobPosting): Promise<JobPosting> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<JobPosting[]>(STORAGE_KEYS.JOB_POSTINGS) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.JOB_POSTINGS, stored);
-        return data;
+        const response = await APIClient.post<JobPosting>(this.endpoint, data);
+        return response;
     }
 
     static async updatePosting(id: string, updates: Partial<JobPosting>): Promise<JobPosting> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<JobPosting[]>(STORAGE_KEYS.JOB_POSTINGS) || [];
-        const index = stored.findIndex(p => p.id === id);
-        if (index === -1) throw new Error('Job posting not found');
-        
-        stored[index] = { ...stored[index], ...updates, updatedAt: new Date().toISOString() };
-        StorageService.save(STORAGE_KEYS.JOB_POSTINGS, stored);
-        return stored[index];
+        const response = await APIClient.put<JobPosting>(`${this.endpoint}/${id}`, updates);
+        return response;
     }
 
     static async publishPosting(id: string): Promise<JobPosting> {
@@ -155,55 +111,33 @@ export class JobPostingService {
 }
 
 export class CandidateApplicationService {
+    private static endpoint = '/recruitment/applications';
+
     static async getApplications(filters?: { jobPostingId?: string; status?: ApplicationStatus }): Promise<CandidateApplication[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<CandidateApplication[]>(STORAGE_KEYS.APPLICATIONS);
-        let applications = stored || [];
-        
-        if (filters?.jobPostingId) {
-            applications = applications.filter(a => a.jobPostingId === filters.jobPostingId);
+        try {
+            const params = new URLSearchParams();
+            if (filters?.jobPostingId) params.append('jobPostingId', filters.jobPostingId);
+            if (filters?.status) params.append('status', filters.status);
+
+            const queryString = params.toString();
+            const url = queryString ? `${this.endpoint}?${queryString}` : this.endpoint;
+
+            const response = await APIClient.get<{ items?: CandidateApplication[] }>(url);
+            return response.items || [];
+        } catch (error) {
+            console.error('Error fetching applications:', error);
+            return [];
         }
-        if (filters?.status) {
-            applications = applications.filter(a => a.status === filters.status);
-        }
-        
-        return applications;
     }
 
     static async createApplication(data: CandidateApplication): Promise<CandidateApplication> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<CandidateApplication[]>(STORAGE_KEYS.APPLICATIONS) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.APPLICATIONS, stored);
-        
-        // Update job posting application count
-        const postings = StorageService.load<JobPosting[]>(STORAGE_KEYS.JOB_POSTINGS) || [];
-        const posting = postings.find(p => p.id === data.jobPostingId);
-        if (posting) {
-            posting.applicationCount += 1;
-            StorageService.save(STORAGE_KEYS.JOB_POSTINGS, postings);
-        }
-        
-        return data;
+        const response = await APIClient.post<CandidateApplication>(this.endpoint, data);
+        return response;
     }
 
     static async updateApplication(id: string, updates: Partial<CandidateApplication>): Promise<CandidateApplication> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<CandidateApplication[]>(STORAGE_KEYS.APPLICATIONS) || [];
-        const index = stored.findIndex(a => a.id === id);
-        if (index === -1) throw new Error('Application not found');
-        
-        stored[index] = { 
-            ...stored[index], 
-            ...updates, 
-            lastActivityDate: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
-        StorageService.save(STORAGE_KEYS.APPLICATIONS, stored);
-        return stored[index];
+        const response = await APIClient.put<CandidateApplication>(`${this.endpoint}/${id}`, updates);
+        return response;
     }
 
     static async moveToStage(id: string, stage: string, status: ApplicationStatus): Promise<CandidateApplication> {
@@ -220,38 +154,32 @@ export class CandidateApplicationService {
 }
 
 export class InterviewService {
+    private static endpoint = '/recruitment/interviews';
+
     static async getInterviews(filters?: { applicationId?: string }): Promise<Interview[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<Interview[]>(STORAGE_KEYS.INTERVIEWS);
-        let interviews = stored || [];
-        
-        if (filters?.applicationId) {
-            interviews = interviews.filter(i => i.applicationId === filters.applicationId);
+        try {
+            const params = new URLSearchParams();
+            if (filters?.applicationId) params.append('applicationId', filters.applicationId);
+
+            const queryString = params.toString();
+            const url = queryString ? `${this.endpoint}?${queryString}` : this.endpoint;
+
+            const response = await APIClient.get<{ items?: Interview[] }>(url);
+            return response.items || [];
+        } catch (error) {
+            console.error('Error fetching interviews:', error);
+            return [];
         }
-        
-        return interviews;
     }
 
     static async scheduleInterview(data: Interview): Promise<Interview> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<Interview[]>(STORAGE_KEYS.INTERVIEWS) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.INTERVIEWS, stored);
-        return data;
+        const response = await APIClient.post<Interview>(this.endpoint, data);
+        return response;
     }
 
     static async updateInterview(id: string, updates: Partial<Interview>): Promise<Interview> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<Interview[]>(STORAGE_KEYS.INTERVIEWS) || [];
-        const index = stored.findIndex(i => i.id === id);
-        if (index === -1) throw new Error('Interview not found');
-        
-        stored[index] = { ...stored[index], ...updates, updatedAt: new Date().toISOString() };
-        StorageService.save(STORAGE_KEYS.INTERVIEWS, stored);
-        return stored[index];
+        const response = await APIClient.put<Interview>(`${this.endpoint}/${id}`, updates);
+        return response;
     }
 
     static async cancelInterview(id: string, reason?: string): Promise<Interview> {
@@ -267,59 +195,52 @@ export class InterviewService {
 }
 
 export class InterviewFeedbackService {
+    private static endpoint = '/recruitment/interviews/feedback';
+
     static async getFeedback(interviewId: string): Promise<InterviewFeedback[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<InterviewFeedback[]>(STORAGE_KEYS.INTERVIEW_FEEDBACK);
-        return (stored || []).filter(f => f.interviewId === interviewId);
+        try {
+            const response = await APIClient.get<{ items?: InterviewFeedback[] }>(`${this.endpoint}?interviewId=${interviewId}`);
+            return response.items || [];
+        } catch (error) {
+            console.error('Error fetching interview feedback:', error);
+            return [];
+        }
     }
 
     static async submitFeedback(data: InterviewFeedback): Promise<InterviewFeedback> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<InterviewFeedback[]>(STORAGE_KEYS.INTERVIEW_FEEDBACK) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.INTERVIEW_FEEDBACK, stored);
-        return data;
+        const response = await APIClient.post<InterviewFeedback>(this.endpoint, data);
+        return response;
     }
 }
 
 export class JobOfferService {
+    private static endpoint = '/recruitment/offers';
+
     static async getOffers(filters?: { applicationId?: string; status?: OfferStatus }): Promise<JobOffer[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<JobOffer[]>(STORAGE_KEYS.JOB_OFFERS);
-        let offers = stored || [];
-        
-        if (filters?.applicationId) {
-            offers = offers.filter(o => o.applicationId === filters.applicationId);
+        try {
+            const params = new URLSearchParams();
+            if (filters?.applicationId) params.append('applicationId', filters.applicationId);
+            if (filters?.status) params.append('status', filters.status);
+
+            const queryString = params.toString();
+            const url = queryString ? `${this.endpoint}?${queryString}` : this.endpoint;
+
+            const response = await APIClient.get<{ items?: JobOffer[] }>(url);
+            return response.items || [];
+        } catch (error) {
+            console.error('Error fetching job offers:', error);
+            return [];
         }
-        if (filters?.status) {
-            offers = offers.filter(o => o.status === filters.status);
-        }
-        
-        return offers;
     }
 
     static async createOffer(data: JobOffer): Promise<JobOffer> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<JobOffer[]>(STORAGE_KEYS.JOB_OFFERS) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.JOB_OFFERS, stored);
-        return data;
+        const response = await APIClient.post<JobOffer>(this.endpoint, data);
+        return response;
     }
 
     static async updateOffer(id: string, updates: Partial<JobOffer>): Promise<JobOffer> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<JobOffer[]>(STORAGE_KEYS.JOB_OFFERS) || [];
-        const index = stored.findIndex(o => o.id === id);
-        if (index === -1) throw new Error('Offer not found');
-        
-        stored[index] = { ...stored[index], ...updates, updatedAt: new Date().toISOString() };
-        StorageService.save(STORAGE_KEYS.JOB_OFFERS, stored);
-        return stored[index];
+        const response = await APIClient.put<JobOffer>(`${this.endpoint}/${id}`, updates);
+        return response;
     }
 
     static async approveOffer(id: string, approvedBy: string): Promise<JobOffer> {
@@ -354,47 +275,41 @@ export class JobOfferService {
 }
 
 export class BackgroundCheckService {
+    private static endpoint = '/recruitment/background-checks';
+
     static async getBackgroundChecks(applicationId?: string): Promise<BackgroundCheck[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<BackgroundCheck[]>(STORAGE_KEYS.BACKGROUND_CHECKS);
-        let checks = stored || [];
-        
-        if (applicationId) {
-            checks = checks.filter(c => c.applicationId === applicationId);
+        try {
+            const url = applicationId ? `${this.endpoint}?applicationId=${applicationId}` : this.endpoint;
+            const response = await APIClient.get<{ items?: BackgroundCheck[] }>(url);
+            return response.items || [];
+        } catch (error) {
+            console.error('Error fetching background checks:', error);
+            return [];
         }
-        
-        return checks;
     }
 
     static async initiateBackgroundCheck(data: BackgroundCheck): Promise<BackgroundCheck> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<BackgroundCheck[]>(STORAGE_KEYS.BACKGROUND_CHECKS) || [];
-        stored.push(data);
-        StorageService.save(STORAGE_KEYS.BACKGROUND_CHECKS, stored);
-        return data;
+        const response = await APIClient.post<BackgroundCheck>(this.endpoint, data);
+        return response;
     }
 
     static async updateBackgroundCheck(id: string, updates: Partial<BackgroundCheck>): Promise<BackgroundCheck> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<BackgroundCheck[]>(STORAGE_KEYS.BACKGROUND_CHECKS) || [];
-        const index = stored.findIndex(c => c.id === id);
-        if (index === -1) throw new Error('Background check not found');
-        
-        stored[index] = { ...stored[index], ...updates, updatedAt: new Date().toISOString() };
-        StorageService.save(STORAGE_KEYS.BACKGROUND_CHECKS, stored);
-        return stored[index];
+        const response = await APIClient.put<BackgroundCheck>(`${this.endpoint}/${id}`, updates);
+        return response;
     }
 }
 
 export class HiringPipelineService {
+    private static endpoint = '/recruitment/pipeline';
+
     static async getPipelines(): Promise<HiringPipeline[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const stored = StorageService.load<HiringPipeline[]>(STORAGE_KEYS.HIRING_PIPELINES);
-        return stored || [];
+        try {
+            const response = await APIClient.get<{ items?: HiringPipeline[] }>(this.endpoint);
+            return response.items || [];
+        } catch (error) {
+            console.error('Error fetching hiring pipelines:', error);
+            return [];
+        }
     }
 
     static async getDefaultPipeline(): Promise<HiringPipeline | null> {
@@ -404,56 +319,47 @@ export class HiringPipelineService {
 }
 
 export class RecruitmentSettingsService {
+    private static endpoint = '/recruitment/settings';
+
     static async getSettings(): Promise<RecruitmentSettings | null> {
-        await delay(300);
-        // TODO: Replace with real API call
-        return StorageService.load<RecruitmentSettings>(STORAGE_KEYS.SETTINGS);
+        try {
+            const response = await APIClient.get<RecruitmentSettings>(this.endpoint);
+            return response;
+        } catch (error) {
+            console.error('Error fetching recruitment settings:', error);
+            return null;
+        }
     }
 
     static async updateSettings(updates: Partial<RecruitmentSettings>): Promise<RecruitmentSettings> {
-        await delay(500);
-        // TODO: Replace with real API call
-        const current = StorageService.load<RecruitmentSettings>(STORAGE_KEYS.SETTINGS);
-        const updated = { ...current, ...updates } as RecruitmentSettings;
-        StorageService.save(STORAGE_KEYS.SETTINGS, updated);
-        return updated;
+        const response = await APIClient.put<RecruitmentSettings>(this.endpoint, updates);
+        return response;
     }
 }
 
 export class RecruitmentAnalyticsService {
+    private static endpoint = '/recruitment/analytics';
+
     static async getStats(): Promise<RecruitmentStats> {
-        await delay(300);
-        // TODO: Replace with real API call
-        const requisitions = StorageService.load<JobRequisition[]>(STORAGE_KEYS.JOB_REQUISITIONS) || [];
-        const applications = StorageService.load<CandidateApplication[]>(STORAGE_KEYS.APPLICATIONS) || [];
-        const interviews = StorageService.load<Interview[]>(STORAGE_KEYS.INTERVIEWS) || [];
-        const offers = StorageService.load<JobOffer[]>(STORAGE_KEYS.JOB_OFFERS) || [];
-
-        const applicationsBySource = applications.reduce((acc, app) => {
-            acc[app.source] = (acc[app.source] || 0) + 1;
-            return acc;
-        }, {} as Record<string, number>);
-
-        const applicationsByStatus = applications.reduce((acc, app) => {
-            acc[app.status] = (acc[app.status] || 0) + 1;
-            return acc;
-        }, {} as Record<string, number>);
-
-        const acceptedOffers = offers.filter(o => o.status === 'accepted').length;
-        const sentOffers = offers.filter(o => o.status === 'sent' || o.status === 'accepted' || o.status === 'declined').length;
-
-        return {
-            totalRequisitions: requisitions.length,
-            openRequisitions: requisitions.filter(r => r.status === 'open').length,
-            totalApplications: applications.length,
-            applicationsBySource: applicationsBySource as any,
-            applicationsByStatus: applicationsByStatus as any,
-            averageTimeToHire: 30, // TODO: Calculate from actual data
-            averageTimeToInterview: 7, // TODO: Calculate from actual data
-            offerAcceptanceRate: sentOffers > 0 ? (acceptedOffers / sentOffers) * 100 : 0,
-            interviewsScheduled: interviews.filter(i => i.status === 'scheduled').length,
-            offersExtended: offers.length,
-            hires: applications.filter(a => a.status === 'hired').length,
-        };
+        try {
+            const response = await APIClient.get<RecruitmentStats>(this.endpoint);
+            return response;
+        } catch (error) {
+            console.error('Error fetching recruitment analytics:', error);
+            // Return default/empty stats on error
+            return {
+                totalRequisitions: 0,
+                openRequisitions: 0,
+                totalApplications: 0,
+                applicationsBySource: {} as any,
+                applicationsByStatus: {} as any,
+                averageTimeToHire: 0,
+                averageTimeToInterview: 0,
+                offerAcceptanceRate: 0,
+                interviewsScheduled: 0,
+                offersExtended: 0,
+                hires: 0,
+            };
+        }
     }
 }

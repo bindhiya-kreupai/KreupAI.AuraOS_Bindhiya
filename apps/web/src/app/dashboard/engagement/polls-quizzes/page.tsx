@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     BarChart2,
     CheckCircle2,
@@ -9,8 +9,28 @@ import {
     Trophy,
     ArrowRight
 } from 'lucide-react';
+import { SurveyService } from '../services';
 
 export default function PollsQuizzesPage() {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const surveys = await SurveyService.getSurveys();
+            setData(surveys.filter(s => s.type === 'poll' || s.type === 'quiz'));
+        } catch (error) {
+            console.error('Error fetching polls and quizzes:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">

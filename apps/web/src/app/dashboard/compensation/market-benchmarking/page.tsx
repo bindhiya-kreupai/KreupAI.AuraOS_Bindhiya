@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Globe,
     BarChart3,
@@ -17,8 +17,27 @@ import {
     Legend,
     ResponsiveContainer
 } from 'recharts';
+import { MarketBenchmarkService } from '../services';
 
 export default function MarketBenchmarkingPage() {
+    const [benchmarks, setBenchmarks] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const data = await MarketBenchmarkService.getBenchmarks();
+            setBenchmarks(data);
+        } catch (error) {
+            console.error('Error fetching market benchmarks:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     const data = [
         { name: 'L1: Junior', internal: 60, market: 65 },
         { name: 'L2: Mid', internal: 95, market: 100 },

@@ -1,10 +1,29 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plane, Calendar, MapPin, Briefcase, ChevronRight, CheckCircle } from 'lucide-react';
+import { TravelRequestService } from '../services';
 
 export default function TravelRequestPage() {
     const [step, setStep] = useState(1);
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const requests = await TravelRequestService.getRequests();
+            setData(requests);
+        } catch (error) {
+            console.error('Failed to fetch travel requests:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">

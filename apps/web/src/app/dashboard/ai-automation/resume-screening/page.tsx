@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FileText,
     Users,
@@ -12,18 +12,41 @@ import {
     ArrowRight,
     BrainCircuit
 } from 'lucide-react';
-
-// --- MOCK DATA ---
-
-const CANDIDATES = [
-    { id: 1, name: 'Emily Chen', role: 'Senior React Dev', score: 95, skills: ['React', 'Node', 'AWS'], status: 'Top Match', bias_flag: false },
-    { id: 2, name: 'David Miller', role: 'Senior React Dev', score: 92, skills: ['React', 'Next.js', 'PostgreSQL'], status: 'Strong', bias_flag: false },
-    { id: 3, name: 'Sarah Jones', role: 'Senior React Dev', score: 88, skills: ['React', 'Angular', 'Java'], status: 'Good', bias_flag: true, bias_reason: 'School Prestige Weighting' },
-    { id: 4, name: 'Michael Brown', role: 'Senior React Dev', score: 75, skills: ['Vue', 'PHP', 'MySQL'], status: 'Potential', bias_flag: false },
-    { id: 5, name: 'Lisa Axle', role: 'Senior React Dev', score: 60, skills: ['Python', 'Django'], status: 'No Match', bias_flag: false },
-];
+import { resumeParsing } from '@/lib/services/ai-automation-client';
 
 export default function ResumeScreeningPage() {
+    const [candidates, setCandidates] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [uploadFile, setUploadFile] = useState<File | null>(null);
+
+    useEffect(() => {
+        fetchResumes();
+    }, []);
+
+    const fetchResumes = async () => {
+        try {
+            const result = await resumeParsing.getParsedResumes();
+            if (result.success) {
+                setCandidates(result.data?.resumes || []);
+            }
+        } catch (error) {
+            console.error('Error fetching resumes:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUpload = async (file: File) => {
+        setLoading(true);
+        try {
+            await resumeParsing.parseResume(file);
+            await fetchResumes();
+        } catch (error) {
+            console.error('Error uploading resume:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -88,7 +111,7 @@ export default function ResumeScreeningPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-cloud dark:divide-nebula-purple/20">
-                            {CANDIDATES.map((c, i) => (
+                            {candidates.map((c, i) => (
                                 <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                                     <td className="px-6 py-4 font-mono text-slate-400">#{i + 1}</td>
                                     <td className="px-6 py-4">

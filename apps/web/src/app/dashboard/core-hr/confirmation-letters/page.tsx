@@ -1,14 +1,33 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FileCheck,
     Send,
     Download,
     Eye
 } from 'lucide-react';
+import { ConfirmationLetterService } from '../services';
 
 export default function ConfirmationLettersPage() {
+    const [confirmationLetters, setConfirmationLetters] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchConfirmationLetters();
+    }, []);
+
+    const fetchConfirmationLetters = async () => {
+        try {
+            const data = await ConfirmationLetterService.getAllConfirmationLetters();
+            setConfirmationLetters(data);
+        } catch (error) {
+            console.error('Error fetching confirmation letters:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const [pending, setPending] = useState([
         { id: 1, name: 'Michael Chen', date: 'Confirmed on Dec 01', status: 'Pending Issue' }
     ]);

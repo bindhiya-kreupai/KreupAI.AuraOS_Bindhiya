@@ -15,78 +15,72 @@ import type {
   OrganizationNode,
   DepartmentHeadcount
 } from './types';
-
-const STORAGE_KEYS = {
-  DEPARTMENTS: 'org_departments',
-  POSITIONS: 'org_positions',
-  RELATIONSHIPS: 'org_relationships',
-  LEVELS: 'org_levels',
-  POSITION_REQUESTS: 'org_position_requests',
-  ORG_CHANGES: 'org_changes',
-  TRANSFERS: 'org_transfers',
-  METRICS: 'org_metrics',
-  SETTINGS: 'org_settings',
-  VIEWS: 'org_views',
-  POSITION_HISTORY: 'org_position_history',
-};
+import { APIClient, APIError } from '@/lib/api-client';
 
 export class DepartmentService {
+  private static readonly BASE_ENDPOINT = '/departments';
+
   static async getDepartments(filters?: { type?: string; parentId?: string; managerId?: string }): Promise<Department[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.DEPARTMENTS);
-    let departments: Department[] = data ? JSON.parse(data) : [];
+    try {
+      const params: Record<string, any> = {};
+      if (filters?.type) params.type = filters.type;
+      if (filters?.parentId) params.parentId = filters.parentId;
+      if (filters?.managerId) params.managerId = filters.managerId;
 
-    if (filters) {
-      if (filters.type) departments = departments.filter(d => d.departmentType === filters.type);
-      if (filters.parentId) departments = departments.filter(d => d.parentDepartmentId === filters.parentId);
-      if (filters.managerId) departments = departments.filter(d => d.managerId === filters.managerId);
+      return await APIClient.get<Department[]>(this.BASE_ENDPOINT, params);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to fetch departments: ${error.message}`);
+      }
+      throw error;
     }
-
-    return departments;
   }
 
   static async getDepartmentById(id: string): Promise<Department | null> {
-    const departments = await this.getDepartments();
-    return departments.find(d => d.id === id) || null;
+    try {
+      return await APIClient.get<Department>(`${this.BASE_ENDPOINT}/${id}`);
+    } catch (error) {
+      if (error instanceof APIError && error.statusCode === 404) {
+        return null;
+      }
+      if (error instanceof APIError) {
+        throw new Error(`Failed to fetch department: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   static async createDepartment(department: Department): Promise<Department> {
-    // TODO: Replace with actual API call
-    const departments = await this.getDepartments();
-    departments.push(department);
-    localStorage.setItem(STORAGE_KEYS.DEPARTMENTS, JSON.stringify(departments));
-    return department;
+    try {
+      return await APIClient.post<Department>(this.BASE_ENDPOINT, department);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to create department: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   static async updateDepartment(id: string, updates: Partial<Department>): Promise<Department> {
-    // TODO: Replace with actual API call
-    const departments = await this.getDepartments();
-    const index = departments.findIndex(d => d.id === id);
-    if (index === -1) throw new Error('Department not found');
-
-    departments[index] = { ...departments[index], ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.DEPARTMENTS, JSON.stringify(departments));
-    return departments[index];
+    try {
+      return await APIClient.put<Department>(`${this.BASE_ENDPOINT}/${id}`, updates);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to update department: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   static async deleteDepartment(id: string): Promise<void> {
-    // TODO: Replace with actual API call
-    const departments = await this.getDepartments();
-
-    // Check if department has sub-departments
-    const hasSubDepartments = departments.some(d => d.parentDepartmentId === id);
-    if (hasSubDepartments) {
-      throw new Error('Cannot delete department with sub-departments');
+    try {
+      await APIClient.delete<void>(`${this.BASE_ENDPOINT}/${id}`);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to delete department: ${error.message}`);
+      }
+      throw error;
     }
-
-    // Check if department has positions
-    const positions = await PositionService.getPositions({ departmentId: id });
-    if (positions.length > 0) {
-      throw new Error('Cannot delete department with active positions');
-    }
-
-    const filtered = departments.filter(d => d.id !== id);
-    localStorage.setItem(STORAGE_KEYS.DEPARTMENTS, JSON.stringify(filtered));
   }
 
   static async updateHeadcount(id: string, headcount: DepartmentHeadcount): Promise<Department> {
@@ -94,14 +88,17 @@ export class DepartmentService {
   }
 
   static async getDepartmentHierarchy(rootId?: string): Promise<Department[]> {
-    // TODO: Replace with actual API call
-    const departments = await this.getDepartments();
+    try {
+      const params: Record<string, any> = { hierarchy: true };
+      if (rootId) params.rootId = rootId;
 
-    if (rootId) {
-      return this.buildDepartmentTree(departments, rootId);
+      return await APIClient.get<Department[]>(this.BASE_ENDPOINT, params);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to fetch department hierarchy: ${error.message}`);
+      }
+      throw error;
     }
-
-    return departments.filter(d => !d.parentDepartmentId);
   }
 
   private static buildDepartmentTree(departments: Department[], parentId: string): Department[] {
@@ -114,138 +111,162 @@ export class DepartmentService {
 }
 
 export class PositionService {
+  private static readonly BASE_ENDPOINT = '/positions';
+
   static async getPositions(filters?: { departmentId?: string; status?: string; type?: string }): Promise<Position[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.POSITIONS);
-    let positions: Position[] = data ? JSON.parse(data) : [];
+    try {
+      const params: Record<string, any> = {};
+      if (filters?.departmentId) params.departmentId = filters.departmentId;
+      if (filters?.status) params.status = filters.status;
+      if (filters?.type) params.type = filters.type;
 
-    if (filters) {
-      if (filters.departmentId) positions = positions.filter(p => p.departmentId === filters.departmentId);
-      if (filters.status) positions = positions.filter(p => p.status === filters.status);
-      if (filters.type) positions = positions.filter(p => p.positionType === filters.type);
+      return await APIClient.get<Position[]>(this.BASE_ENDPOINT, params);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to fetch positions: ${error.message}`);
+      }
+      throw error;
     }
-
-    return positions;
   }
 
   static async getPositionById(id: string): Promise<Position | null> {
-    const positions = await this.getPositions();
-    return positions.find(p => p.id === id) || null;
+    try {
+      return await APIClient.get<Position>(`${this.BASE_ENDPOINT}/${id}`);
+    } catch (error) {
+      if (error instanceof APIError && error.statusCode === 404) {
+        return null;
+      }
+      if (error instanceof APIError) {
+        throw new Error(`Failed to fetch position: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   static async createPosition(position: Position): Promise<Position> {
-    // TODO: Replace with actual API call
-    const positions = await this.getPositions();
-    positions.push(position);
-    localStorage.setItem(STORAGE_KEYS.POSITIONS, JSON.stringify(positions));
+    try {
+      const created = await APIClient.post<Position>(this.BASE_ENDPOINT, position);
 
-    // Add to position history
-    if (position.currentEmployee) {
-      await this.addPositionHistory({
-        id: `history-${Date.now()}`,
-        positionId: position.id,
-        employeeId: position.currentEmployee.employeeId,
-        employeeName: position.currentEmployee.employeeName,
-        startDate: position.currentEmployee.startDate,
-        departmentId: position.departmentId,
-        departmentName: position.departmentName,
-        title: position.jobTitle,
-        level: position.level,
-        changedBy: position.createdBy,
-        changedDate: position.createdDate
-      });
+      // Add to position history
+      if (position.currentEmployee) {
+        await this.addPositionHistory({
+          id: `history-${Date.now()}`,
+          positionId: created.id,
+          employeeId: position.currentEmployee.employeeId,
+          employeeName: position.currentEmployee.employeeName,
+          startDate: position.currentEmployee.startDate,
+          departmentId: position.departmentId,
+          departmentName: position.departmentName,
+          title: position.jobTitle,
+          level: position.level,
+          changedBy: position.createdBy,
+          changedDate: position.createdDate
+        });
+      }
+
+      return created;
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to create position: ${error.message}`);
+      }
+      throw error;
     }
-
-    return position;
   }
 
   static async updatePosition(id: string, updates: Partial<Position>): Promise<Position> {
-    // TODO: Replace with actual API call
-    const positions = await this.getPositions();
-    const index = positions.findIndex(p => p.id === id);
-    if (index === -1) throw new Error('Position not found');
+    try {
+      const updated = await APIClient.put<Position>(`${this.BASE_ENDPOINT}/${id}`, updates);
 
-    const oldPosition = positions[index];
-    positions[index] = { ...oldPosition, ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.POSITIONS, JSON.stringify(positions));
+      // Track significant changes in history
+      if (updates.currentEmployee) {
+        const currentPosition = await this.getPositionById(id);
+        if (currentPosition && updates.currentEmployee.employeeId !== currentPosition.currentEmployee?.employeeId) {
+          await this.addPositionHistory({
+            id: `history-${Date.now()}`,
+            positionId: id,
+            employeeId: updates.currentEmployee.employeeId,
+            employeeName: updates.currentEmployee.employeeName,
+            startDate: updates.currentEmployee.startDate,
+            departmentId: currentPosition.departmentId,
+            departmentName: currentPosition.departmentName,
+            title: currentPosition.jobTitle,
+            level: currentPosition.level,
+            changedBy: 'system',
+            changedDate: new Date().toISOString()
+          });
+        }
+      }
 
-    // Track significant changes in history
-    if (updates.currentEmployee && updates.currentEmployee.employeeId !== oldPosition.currentEmployee?.employeeId) {
-      await this.addPositionHistory({
-        id: `history-${Date.now()}`,
-        positionId: id,
-        employeeId: updates.currentEmployee.employeeId,
-        employeeName: updates.currentEmployee.employeeName,
-        startDate: updates.currentEmployee.startDate,
-        departmentId: positions[index].departmentId,
-        departmentName: positions[index].departmentName,
-        title: positions[index].jobTitle,
-        level: positions[index].level,
-        changedBy: 'system',
-        changedDate: new Date().toISOString()
-      });
+      return updated;
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to update position: ${error.message}`);
+      }
+      throw error;
     }
-
-    return positions[index];
   }
 
   static async deletePosition(id: string): Promise<void> {
-    // TODO: Replace with actual API call
-    const position = await this.getPositionById(id);
-    if (!position) throw new Error('Position not found');
-
-    if (position.currentEmployee) {
-      throw new Error('Cannot delete position with current employee assignment');
+    try {
+      await APIClient.delete<void>(`${this.BASE_ENDPOINT}/${id}`);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to delete position: ${error.message}`);
+      }
+      throw error;
     }
-
-    const positions = await this.getPositions();
-    const filtered = positions.filter(p => p.id !== id);
-    localStorage.setItem(STORAGE_KEYS.POSITIONS, JSON.stringify(filtered));
   }
 
   static async assignEmployee(positionId: string, employeeId: string, employeeName: string, employeeEmail: string, startDate: string): Promise<Position> {
-    const position = await this.getPositionById(positionId);
-    if (!position) throw new Error('Position not found');
-
-    if (position.currentEmployee) {
-      throw new Error('Position already filled. Please remove current employee first.');
+    try {
+      return await this.updatePosition(positionId, {
+        currentEmployee: {
+          employeeId,
+          employeeName,
+          employeeEmail,
+          startDate,
+          isPrimary: true,
+          allocationPercentage: 100
+        },
+        status: 'active'
+      });
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to assign employee: ${error.message}`);
+      }
+      throw error;
     }
-
-    return this.updatePosition(positionId, {
-      currentEmployee: {
-        employeeId,
-        employeeName,
-        employeeEmail,
-        startDate,
-        isPrimary: true,
-        allocationPercentage: 100
-      },
-      status: 'active'
-    });
   }
 
   static async removeEmployee(positionId: string): Promise<Position> {
-    const position = await this.getPositionById(positionId);
-    if (!position) throw new Error('Position not found');
+    try {
+      const position = await this.getPositionById(positionId);
+      if (!position) throw new Error('Position not found');
 
-    // End current assignment in history
-    if (position.currentEmployee) {
-      const history = await this.getPositionHistory(positionId);
-      const currentHistory = history.find(h =>
-        h.employeeId === position.currentEmployee!.employeeId && !h.endDate
-      );
+      // End current assignment in history
+      if (position.currentEmployee) {
+        const history = await this.getPositionHistory(positionId);
+        const currentHistory = history.find(h =>
+          h.employeeId === position.currentEmployee!.employeeId && !h.endDate
+        );
 
-      if (currentHistory) {
-        await this.updatePositionHistory(currentHistory.id, {
-          endDate: new Date().toISOString()
-        });
+        if (currentHistory) {
+          await this.updatePositionHistory(currentHistory.id, {
+            endDate: new Date().toISOString()
+          });
+        }
       }
-    }
 
-    return this.updatePosition(positionId, {
-      currentEmployee: undefined,
-      status: 'vacant'
-    });
+      return await this.updatePosition(positionId, {
+        currentEmployee: undefined,
+        status: 'vacant'
+      });
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to remove employee: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   static async getVacantPositions(): Promise<Position[]> {
@@ -253,64 +274,90 @@ export class PositionService {
   }
 
   static async getPositionHistory(positionId: string): Promise<PositionHistory[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.POSITION_HISTORY);
-    const history: PositionHistory[] = data ? JSON.parse(data) : [];
-    return history.filter(h => h.positionId === positionId);
+    try {
+      return await APIClient.get<PositionHistory[]>(
+        `${this.BASE_ENDPOINT}/${positionId}/history`
+      );
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to fetch position history: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   private static async addPositionHistory(history: PositionHistory): Promise<void> {
-    const data = localStorage.getItem(STORAGE_KEYS.POSITION_HISTORY);
-    const historyList: PositionHistory[] = data ? JSON.parse(data) : [];
-    historyList.push(history);
-    localStorage.setItem(STORAGE_KEYS.POSITION_HISTORY, JSON.stringify(historyList));
+    try {
+      await APIClient.post<PositionHistory>(
+        `/position-history`,
+        history
+      );
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to add position history: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   private static async updatePositionHistory(id: string, updates: Partial<PositionHistory>): Promise<void> {
-    const data = localStorage.getItem(STORAGE_KEYS.POSITION_HISTORY);
-    const historyList: PositionHistory[] = data ? JSON.parse(data) : [];
-    const index = historyList.findIndex(h => h.id === id);
-
-    if (index !== -1) {
-      historyList[index] = { ...historyList[index], ...updates };
-      localStorage.setItem(STORAGE_KEYS.POSITION_HISTORY, JSON.stringify(historyList));
+    try {
+      await APIClient.put<PositionHistory>(
+        `/position-history/${id}`,
+        updates
+      );
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to update position history: ${error.message}`);
+      }
+      throw error;
     }
   }
 }
 
 export class ReportingRelationshipService {
+  private static readonly BASE_ENDPOINT = '/reporting-relationships';
+
   static async getRelationships(filters?: { managerId?: string; subordinateId?: string }): Promise<ReportingRelationship[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.RELATIONSHIPS);
-    let relationships: ReportingRelationship[] = data ? JSON.parse(data) : [];
+    try {
+      const params: Record<string, any> = {};
+      if (filters?.managerId) params.managerId = filters.managerId;
+      if (filters?.subordinateId) params.subordinateId = filters.subordinateId;
 
-    if (filters) {
-      if (filters.managerId) relationships = relationships.filter(r => r.managerId === filters.managerId);
-      if (filters.subordinateId) relationships = relationships.filter(r => r.subordinateId === filters.subordinateId);
+      return await APIClient.get<ReportingRelationship[]>(this.BASE_ENDPOINT, params);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to fetch reporting relationships: ${error.message}`);
+      }
+      throw error;
     }
-
-    return relationships;
   }
 
   static async createRelationship(relationship: ReportingRelationship): Promise<ReportingRelationship> {
-    // TODO: Replace with actual API call
-    const relationships = await this.getRelationships();
+    try {
+      // Check for circular reporting
+      if (await this.hasCircularReporting(relationship.subordinateId, relationship.managerId)) {
+        throw new Error('Circular reporting relationship detected');
+      }
 
-    // Check for circular reporting
-    if (await this.hasCircularReporting(relationship.subordinateId, relationship.managerId)) {
-      throw new Error('Circular reporting relationship detected');
+      return await APIClient.post<ReportingRelationship>(this.BASE_ENDPOINT, relationship);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to create reporting relationship: ${error.message}`);
+      }
+      throw error;
     }
-
-    relationships.push(relationship);
-    localStorage.setItem(STORAGE_KEYS.RELATIONSHIPS, JSON.stringify(relationships));
-    return relationship;
   }
 
   static async deleteRelationship(id: string): Promise<void> {
-    // TODO: Replace with actual API call
-    const relationships = await this.getRelationships();
-    const filtered = relationships.filter(r => r.id !== id);
-    localStorage.setItem(STORAGE_KEYS.RELATIONSHIPS, JSON.stringify(filtered));
+    try {
+      await APIClient.delete<void>(`${this.BASE_ENDPOINT}/${id}`);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to delete reporting relationship: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   static async getDirectReports(managerId: string): Promise<ReportingRelationship[]> {
@@ -318,355 +365,397 @@ export class ReportingRelationshipService {
   }
 
   static async getManager(subordinateId: string): Promise<ReportingRelationship | null> {
-    const relationships = await this.getRelationships({ subordinateId });
-    return relationships.find(r => r.isPrimary) || relationships[0] || null;
+    try {
+      const relationships = await this.getRelationships({ subordinateId });
+      return relationships.find(r => r.isPrimary) || relationships[0] || null;
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to fetch manager: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   private static async hasCircularReporting(employeeId: string, potentialManagerId: string): Promise<boolean> {
-    if (employeeId === potentialManagerId) return true;
+    try {
+      if (employeeId === potentialManagerId) return true;
 
-    const managerRelationship = await this.getManager(potentialManagerId);
-    if (!managerRelationship) return false;
+      const managerRelationship = await this.getManager(potentialManagerId);
+      if (!managerRelationship) return false;
 
-    return this.hasCircularReporting(employeeId, managerRelationship.managerId);
+      return this.hasCircularReporting(employeeId, managerRelationship.managerId);
+    } catch (error) {
+      // If error occurs during circular check, assume false to allow operation
+      return false;
+    }
   }
 
   static async calculateSpanOfControl(managerId: string): Promise<SpanOfControl> {
-    const directReports = await this.getDirectReports(managerId);
+    try {
+      const directReports = await this.getDirectReports(managerId);
 
-    let totalReports = directReports.length;
-    let maxLevels = 1;
-    const departments = new Set<string>();
-    const locations = new Set<string>();
+      let totalReports = directReports.length;
+      let maxLevels = 1;
+      const departments = new Set<string>();
+      const locations = new Set<string>();
 
-    // Recursively calculate total reports
-    for (const report of directReports) {
-      const subReports = await this.getDirectReports(report.subordinateId);
-      totalReports += subReports.length;
-      maxLevels = Math.max(maxLevels, 2);
-      departments.add(report.departmentId);
+      // Recursively calculate total reports
+      for (const report of directReports) {
+        const subReports = await this.getDirectReports(report.subordinateId);
+        totalReports += subReports.length;
+        maxLevels = Math.max(maxLevels, 2);
+        departments.add(report.departmentId);
+      }
+
+      const manager = directReports[0];
+      const isOptimal = directReports.length >= 3 && directReports.length <= 9;
+
+      return {
+        managerId,
+        managerName: manager?.managerName || '',
+        managerTitle: manager?.managerTitle || '',
+        directReports: directReports.length,
+        totalReports,
+        levels: maxLevels,
+        departments: departments.size,
+        locations: Array.from(locations),
+        isOptimal,
+        recommendation: isOptimal ? undefined : directReports.length < 3 ? 'Consider consolidating roles' : 'Consider delegating to additional managers'
+      };
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to calculate span of control: ${error.message}`);
+      }
+      throw error;
     }
-
-    const manager = directReports[0];
-    const isOptimal = directReports.length >= 3 && directReports.length <= 9;
-
-    return {
-      managerId,
-      managerName: manager?.managerName || '',
-      managerTitle: manager?.managerTitle || '',
-      directReports: directReports.length,
-      totalReports,
-      levels: maxLevels,
-      departments: departments.size,
-      locations: Array.from(locations),
-      isOptimal,
-      recommendation: isOptimal ? undefined : directReports.length < 3 ? 'Consider consolidating roles' : 'Consider delegating to additional managers'
-    };
   }
 }
 
 export class OrganizationLevelService {
+  private static readonly BASE_ENDPOINT = '/organization-levels';
+
   static async getLevels(): Promise<OrganizationLevel[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.LEVELS);
-    return data ? JSON.parse(data) : [];
+    try {
+      return await APIClient.get<OrganizationLevel[]>(this.BASE_ENDPOINT);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to fetch organization levels: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   static async createLevel(level: OrganizationLevel): Promise<OrganizationLevel> {
-    // TODO: Replace with actual API call
-    const levels = await this.getLevels();
-    levels.push(level);
-    localStorage.setItem(STORAGE_KEYS.LEVELS, JSON.stringify(levels));
-    return level;
+    try {
+      return await APIClient.post<OrganizationLevel>(this.BASE_ENDPOINT, level);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to create organization level: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   static async updateLevel(id: string, updates: Partial<OrganizationLevel>): Promise<OrganizationLevel> {
-    // TODO: Replace with actual API call
-    const levels = await this.getLevels();
-    const index = levels.findIndex(l => l.id === id);
-    if (index === -1) throw new Error('Level not found');
-
-    levels[index] = { ...levels[index], ...updates };
-    localStorage.setItem(STORAGE_KEYS.LEVELS, JSON.stringify(levels));
-    return levels[index];
+    try {
+      return await APIClient.put<OrganizationLevel>(`${this.BASE_ENDPOINT}/${id}`, updates);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to update organization level: ${error.message}`);
+      }
+      throw error;
+    }
   }
 }
 
 export class PositionRequestService {
+  private static readonly BASE_ENDPOINT = '/position-requests';
+
   static async getRequests(filters?: { departmentId?: string; status?: string }): Promise<PositionRequest[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.POSITION_REQUESTS);
-    let requests: PositionRequest[] = data ? JSON.parse(data) : [];
+    try {
+      const params: Record<string, any> = {};
+      if (filters?.departmentId) params.departmentId = filters.departmentId;
+      if (filters?.status) params.status = filters.status;
 
-    if (filters) {
-      if (filters.departmentId) requests = requests.filter(r => r.departmentId === filters.departmentId);
-      if (filters.status) requests = requests.filter(r => r.status === filters.status);
+      return await APIClient.get<PositionRequest[]>(this.BASE_ENDPOINT, params);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to fetch position requests: ${error.message}`);
+      }
+      throw error;
     }
-
-    return requests;
   }
 
   static async submitRequest(request: PositionRequest): Promise<PositionRequest> {
-    // TODO: Replace with actual API call
-    const requests = await this.getRequests();
-    requests.push(request);
-    localStorage.setItem(STORAGE_KEYS.POSITION_REQUESTS, JSON.stringify(requests));
-    return request;
+    try {
+      return await APIClient.post<PositionRequest>(this.BASE_ENDPOINT, request);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to submit position request: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   static async approveRequest(id: string, approverId: string, approverName: string, approverTitle: string, level: number): Promise<PositionRequest> {
-    // TODO: Replace with actual API call
-    const requests = await this.getRequests();
-    const index = requests.findIndex(r => r.id === id);
-    if (index === -1) throw new Error('Request not found');
+    try {
+      const approval = {
+        approverId,
+        approverName,
+        approverTitle,
+        level,
+        status: 'approved' as const,
+        approvedDate: new Date().toISOString()
+      };
 
-    const approval = {
-      approverId,
-      approverName,
-      approverTitle,
-      level,
-      status: 'approved' as const,
-      approvedDate: new Date().toISOString()
-    };
-
-    requests[index].approvalChain.push(approval);
-
-    // Check if all required approvals are complete
-    const requiredApprovals = requests[index].approvalChain.length;
-    const completedApprovals = requests[index].approvalChain.filter(a => a.status === 'approved').length;
-
-    if (completedApprovals === requiredApprovals) {
-      requests[index].status = 'approved';
-
-      // Create position if request is for new position
-      if (requests[index].requestType === 'new_position' && requests[index].requestedPosition) {
-        await PositionService.createPosition(requests[index].requestedPosition as Position);
+      return await APIClient.post<PositionRequest>(
+        `${this.BASE_ENDPOINT}/${id}/approve`,
+        approval
+      );
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to approve position request: ${error.message}`);
       }
+      throw error;
     }
-
-    requests[index].lastModified = new Date().toISOString();
-    localStorage.setItem(STORAGE_KEYS.POSITION_REQUESTS, JSON.stringify(requests));
-    return requests[index];
   }
 
   static async rejectRequest(id: string, approverId: string, approverName: string, approverTitle: string, level: number, comments: string): Promise<PositionRequest> {
-    // TODO: Replace with actual API call
-    const requests = await this.getRequests();
-    const index = requests.findIndex(r => r.id === id);
-    if (index === -1) throw new Error('Request not found');
+    try {
+      const approval = {
+        approverId,
+        approverName,
+        approverTitle,
+        level,
+        status: 'rejected' as const,
+        approvedDate: new Date().toISOString(),
+        comments
+      };
 
-    const approval = {
-      approverId,
-      approverName,
-      approverTitle,
-      level,
-      status: 'rejected' as const,
-      approvedDate: new Date().toISOString(),
-      comments
-    };
-
-    requests[index].approvalChain.push(approval);
-    requests[index].status = 'rejected';
-    requests[index].lastModified = new Date().toISOString();
-
-    localStorage.setItem(STORAGE_KEYS.POSITION_REQUESTS, JSON.stringify(requests));
-    return requests[index];
+      return await APIClient.post<PositionRequest>(
+        `${this.BASE_ENDPOINT}/${id}/reject`,
+        approval
+      );
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to reject position request: ${error.message}`);
+      }
+      throw error;
+    }
   }
 }
 
 export class OrganizationChangeService {
+  private static readonly BASE_ENDPOINT = '/organization-changes';
+
   static async getChanges(filters?: { status?: string }): Promise<OrganizationChange[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.ORG_CHANGES);
-    let changes: OrganizationChange[] = data ? JSON.parse(data) : [];
+    try {
+      const params: Record<string, any> = {};
+      if (filters?.status) params.status = filters.status;
 
-    if (filters?.status) {
-      changes = changes.filter(c => c.status === filters.status);
+      return await APIClient.get<OrganizationChange[]>(this.BASE_ENDPOINT, params);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to fetch organization changes: ${error.message}`);
+      }
+      throw error;
     }
-
-    return changes;
   }
 
   static async createChange(change: OrganizationChange): Promise<OrganizationChange> {
-    // TODO: Replace with actual API call
-    const changes = await this.getChanges();
-    changes.push(change);
-    localStorage.setItem(STORAGE_KEYS.ORG_CHANGES, JSON.stringify(changes));
-    return change;
+    try {
+      return await APIClient.post<OrganizationChange>(this.BASE_ENDPOINT, change);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to create organization change: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   static async updateChange(id: string, updates: Partial<OrganizationChange>): Promise<OrganizationChange> {
-    // TODO: Replace with actual API call
-    const changes = await this.getChanges();
-    const index = changes.findIndex(c => c.id === id);
-    if (index === -1) throw new Error('Change not found');
-
-    changes[index] = { ...changes[index], ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.ORG_CHANGES, JSON.stringify(changes));
-    return changes[index];
+    try {
+      return await APIClient.put<OrganizationChange>(`${this.BASE_ENDPOINT}/${id}`, updates);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to update organization change: ${error.message}`);
+      }
+      throw error;
+    }
   }
 }
 
 export class DepartmentTransferService {
+  private static readonly BASE_ENDPOINT = '/department-transfers';
+
   static async getTransfers(filters?: { employeeId?: string; status?: string }): Promise<DepartmentTransfer[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.TRANSFERS);
-    let transfers: DepartmentTransfer[] = data ? JSON.parse(data) : [];
+    try {
+      const params: Record<string, any> = {};
+      if (filters?.employeeId) params.employeeId = filters.employeeId;
+      if (filters?.status) params.status = filters.status;
 
-    if (filters) {
-      if (filters.employeeId) transfers = transfers.filter(t => t.employeeId === filters.employeeId);
-      if (filters.status) transfers = transfers.filter(t => t.status === filters.status);
+      return await APIClient.get<DepartmentTransfer[]>(this.BASE_ENDPOINT, params);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to fetch department transfers: ${error.message}`);
+      }
+      throw error;
     }
-
-    return transfers;
   }
 
   static async createTransfer(transfer: DepartmentTransfer): Promise<DepartmentTransfer> {
-    // TODO: Replace with actual API call
-    const transfers = await this.getTransfers();
-    transfers.push(transfer);
-    localStorage.setItem(STORAGE_KEYS.TRANSFERS, JSON.stringify(transfers));
-    return transfer;
+    try {
+      return await APIClient.post<DepartmentTransfer>(this.BASE_ENDPOINT, transfer);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to create department transfer: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   static async approveTransfer(id: string, approverId: string, approverName: string): Promise<DepartmentTransfer> {
-    // TODO: Replace with actual API call
-    const transfers = await this.getTransfers();
-    const index = transfers.findIndex(t => t.id === id);
-    if (index === -1) throw new Error('Transfer not found');
+    try {
+      const approval = {
+        approverId,
+        approverName,
+        approvedDate: new Date().toISOString()
+      };
 
-    transfers[index].status = 'approved';
-    transfers[index].approvedBy = approverId;
-    transfers[index].approvedByName = approverName;
-
-    localStorage.setItem(STORAGE_KEYS.TRANSFERS, JSON.stringify(transfers));
-    return transfers[index];
+      return await APIClient.post<DepartmentTransfer>(
+        `${this.BASE_ENDPOINT}/${id}/approve`,
+        approval
+      );
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to approve department transfer: ${error.message}`);
+      }
+      throw error;
+    }
   }
 }
 
 export class OrganizationAnalyticsService {
+  private static readonly BASE_ENDPOINT = '/organization-metrics';
+
   static async getMetrics(): Promise<OrganizationMetrics> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.METRICS);
-    return data ? JSON.parse(data) : {
-      totalDepartments: 0,
-      totalPositions: 0,
-      filledPositions: 0,
-      vacantPositions: 0,
-      totalHeadcount: 0,
-      fullTimeEmployees: 0,
-      partTimeEmployees: 0,
-      contractors: 0,
-      averageSpanOfControl: 0,
-      organizationLevels: 0,
-      departmentsByType: [],
-      positionsByType: [],
-      headcountByDepartment: [],
-      headcountByLocation: [],
-      vacancyRate: 0,
-      turnoverImpact: 0,
-      topLevelManagers: 0,
-      managerToEmployeeRatio: 0,
-      costCenterDistribution: [],
-      growthTrend: []
-    };
+    try {
+      return await APIClient.get<OrganizationMetrics>(this.BASE_ENDPOINT);
+    } catch (error) {
+      if (error instanceof APIError) {
+        // Return default metrics if API fails
+        console.warn('Failed to fetch metrics, using defaults:', error.message);
+        return {
+          totalDepartments: 0,
+          totalPositions: 0,
+          filledPositions: 0,
+          vacantPositions: 0,
+          totalHeadcount: 0,
+          fullTimeEmployees: 0,
+          partTimeEmployees: 0,
+          contractors: 0,
+          averageSpanOfControl: 0,
+          organizationLevels: 0,
+          departmentsByType: [],
+          positionsByType: [],
+          headcountByDepartment: [],
+          headcountByLocation: [],
+          vacancyRate: 0,
+          turnoverImpact: 0,
+          topLevelManagers: 0,
+          managerToEmployeeRatio: 0,
+          costCenterDistribution: [],
+          growthTrend: []
+        };
+      }
+      throw error;
+    }
   }
 
   static async calculateMetrics(): Promise<OrganizationMetrics> {
-    const departments = await DepartmentService.getDepartments();
-    const positions = await PositionService.getPositions();
-
-    const filledPositions = positions.filter(p => p.status === 'active' && p.currentEmployee).length;
-    const vacantPositions = positions.filter(p => p.status === 'vacant').length;
-
-    const metrics: OrganizationMetrics = {
-      totalDepartments: departments.length,
-      totalPositions: positions.length,
-      filledPositions,
-      vacantPositions,
-      totalHeadcount: filledPositions,
-      fullTimeEmployees: positions.filter(p => p.employmentType === 'full_time' && p.currentEmployee).length,
-      partTimeEmployees: positions.filter(p => p.employmentType === 'part_time' && p.currentEmployee).length,
-      contractors: positions.filter(p => p.employmentType === 'contract' && p.currentEmployee).length,
-      averageSpanOfControl: 0,
-      organizationLevels: Math.max(...departments.map(d => d.level), 0),
-      departmentsByType: [],
-      positionsByType: [],
-      headcountByDepartment: departments.map(d => ({
-        departmentId: d.id,
-        departmentName: d.departmentName,
-        headcount: d.headcount.total
-      })),
-      headcountByLocation: [],
-      vacancyRate: positions.length > 0 ? (vacantPositions / positions.length) * 100 : 0,
-      turnoverImpact: 0,
-      topLevelManagers: 0,
-      managerToEmployeeRatio: 0,
-      costCenterDistribution: [],
-      growthTrend: []
-    };
-
-    localStorage.setItem(STORAGE_KEYS.METRICS, JSON.stringify(metrics));
-    return metrics;
+    try {
+      return await APIClient.post<OrganizationMetrics>(`${this.BASE_ENDPOINT}/calculate`, {});
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to calculate metrics: ${error.message}`);
+      }
+      throw error;
+    }
   }
 }
 
 export class OrganizationSettingsService {
+  private static readonly BASE_ENDPOINT = '/organization-settings';
+
   static async getSettings(): Promise<OrganizationSettings> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-    return data ? JSON.parse(data) : {
-      enableDepartmentHierarchy: true,
-      maxOrganizationLevels: 10,
-      requirePositionApproval: true,
-      approvalLevels: 2,
-      allowMatrixReporting: true,
-      maxReportingRelationships: 3,
-      enableCostCenters: true,
-      enableBudgetTracking: true,
-      enableSuccessionPlanning: true,
-      autoUpdateOrgChart: true,
-      showVacantPositions: true,
-      showContractors: true,
-      enablePositionVersioning: true,
-      positionCodeFormat: 'POS-{YYYY}-{####}',
-      departmentCodeFormat: 'DEPT-{####}',
-      fiscalYearStart: '01-01',
-      defaultCurrency: 'USD'
-    };
+    try {
+      return await APIClient.get<OrganizationSettings>(this.BASE_ENDPOINT);
+    } catch (error) {
+      if (error instanceof APIError) {
+        // Return default settings if API fails
+        console.warn('Failed to fetch settings, using defaults:', error.message);
+        return {
+          enableDepartmentHierarchy: true,
+          maxOrganizationLevels: 10,
+          requirePositionApproval: true,
+          approvalLevels: 2,
+          allowMatrixReporting: true,
+          maxReportingRelationships: 3,
+          enableCostCenters: true,
+          enableBudgetTracking: true,
+          enableSuccessionPlanning: true,
+          autoUpdateOrgChart: true,
+          showVacantPositions: true,
+          showContractors: true,
+          enablePositionVersioning: true,
+          positionCodeFormat: 'POS-{YYYY}-{####}',
+          departmentCodeFormat: 'DEPT-{####}',
+          fiscalYearStart: '01-01',
+          defaultCurrency: 'USD'
+        };
+      }
+      throw error;
+    }
   }
 
   static async updateSettings(updates: Partial<OrganizationSettings>): Promise<OrganizationSettings> {
-    // TODO: Replace with actual API call
-    const settings = await this.getSettings();
-    const updated = { ...settings, ...updates };
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated));
-    return updated;
+    try {
+      return await APIClient.put<OrganizationSettings>(this.BASE_ENDPOINT, updates);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to update organization settings: ${error.message}`);
+      }
+      throw error;
+    }
   }
 }
 
 export class OrgChartService {
+  private static readonly BASE_ENDPOINT = '/org-chart';
+
   static async getViews(): Promise<OrgChartView[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.VIEWS);
-    return data ? JSON.parse(data) : [];
+    try {
+      return await APIClient.get<OrgChartView[]>(`${this.BASE_ENDPOINT}/views`);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to fetch org chart views: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   static async buildOrgChart(rootDepartmentId?: string): Promise<OrganizationNode> {
-    const departments = await DepartmentService.getDepartments();
-    const positions = await PositionService.getPositions();
-    const relationships = await ReportingRelationshipService.getRelationships();
+    try {
+      const params: Record<string, any> = {};
+      if (rootDepartmentId) params.rootDepartmentId = rootDepartmentId;
 
-    // Build tree structure starting from root
-    const rootDept = rootDepartmentId
-      ? departments.find(d => d.id === rootDepartmentId)
-      : departments.find(d => !d.parentDepartmentId);
-
-    if (!rootDept) {
-      throw new Error('Root department not found');
+      return await APIClient.get<OrganizationNode>(`${this.BASE_ENDPOINT}/build`, params);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw new Error(`Failed to build org chart: ${error.message}`);
+      }
+      throw error;
     }
-
-    return this.buildDepartmentNode(rootDept, departments, positions, relationships);
   }
 
   private static buildDepartmentNode(

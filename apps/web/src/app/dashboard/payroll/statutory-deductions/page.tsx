@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     PiggyBank,
     Calendar,
@@ -11,8 +11,29 @@ import {
     DollarSign,
     MoreVertical
 } from 'lucide-react';
+import { StatutoryReportService } from '../services';
 
 export default function StatutoryDeductionsPage() {
+    const [reports, setReports] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await StatutoryReportService.getReports();
+            if (result.length > 0) {
+                setReports(result);
+            }
+        } catch (error) {
+            console.error('Error fetching statutory reports:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     const deductions = [
         {
             id: 1,

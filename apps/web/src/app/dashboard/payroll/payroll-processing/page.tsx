@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CheckCircle2,
     AlertCircle,
@@ -14,6 +14,7 @@ import {
     Play
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PayrollRunService } from '../services';
 
 // --- MOCK DATA ---
 
@@ -35,6 +36,26 @@ const STEPS = [
 export default function PayrollRunPage() {
     const [currentStep, setCurrentStep] = useState(1);
     const [payrollData, setPayrollData] = useState(EMPLOYEES);
+    const [payrollRuns, setPayrollRuns] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await PayrollRunService.getPayrollRuns();
+            if (result.length > 0) {
+                setPayrollRuns(result);
+            }
+        } catch (error) {
+            console.error('Error fetching payroll runs:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const totalCost = payrollData.reduce((acc, emp) => {
         const dailyRate = emp.salary / 22;

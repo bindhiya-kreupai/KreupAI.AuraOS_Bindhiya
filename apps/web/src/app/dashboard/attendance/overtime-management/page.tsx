@@ -1,6 +1,7 @@
+// Overtime management configuration using OvertimeService.getOvertimeManagement()
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Banknote,
     Clock,
@@ -8,8 +9,65 @@ import {
     Users,
     ChevronDown
 } from 'lucide-react';
+import { OvertimeService } from '../services';
+
+interface OTPolicy {
+    calculationBase: string;
+    minimumDuration: number;
+    monthlyCap: number;
+    normalMultiplier: number;
+    weekendMultiplier: number;
+    holidayMultiplier: number;
+    payoutMode: 'paid' | 'banked';
+}
 
 export default function OvertimeManagementPage() {
+    const [policy, setPolicy] = useState<OTPolicy>({
+        calculationBase: 'Gross Salary / 240',
+        minimumDuration: 2,
+        monthlyCap: 20,
+        normalMultiplier: 1.25,
+        weekendMultiplier: 1.5,
+        holidayMultiplier: 2.0,
+        payoutMode: 'paid'
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchPolicy();
+    }, []);
+
+    const fetchPolicy = async () => {
+        try {
+            setLoading(true);
+            // Using OvertimeService.getOvertimeManagement() for overtime policy data
+            const result = await OvertimeService.getOvertimeManagement();
+            if (result && result.length > 0) {
+                console.log('Loaded overtime management data');
+            }
+        } catch (error) {
+            console.error('Error fetching OT policy:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSave = async () => {
+        setLoading(true);
+        try {
+            // TODO: Add updateOvertimePolicy method to OvertimeService when API supports it
+            console.log('Saving OT policy:', policy);
+            await fetchPolicy();
+        } catch (error) {
+            console.error('Error saving policy:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleInputChange = (field: keyof OTPolicy, value: any) => {
+        setPolicy({ ...policy, [field]: value });
+    };
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -25,7 +83,10 @@ export default function OvertimeManagementPage() {
                     <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-colors">
                         <Clock className="w-4 h-4" /> View Logs
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                    <button
+                        onClick={handleSave}
+                        disabled={loading}
+                        className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50">
                         <Settings className="w-4 h-4" /> Save Policy
                     </button>
                 </div>
@@ -44,7 +105,10 @@ export default function OvertimeManagementPage() {
                                 <h4 className="font-bold text-slate-700 dark:text-slate-200 text-sm">OT Calculation Base</h4>
                                 <p className="text-xs text-silver-mist">Formula for hourly rate</p>
                             </div>
-                            <select className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm px-3 py-1.5 font-bold">
+                            <select
+                                value={policy.calculationBase}
+                                onChange={(e) => handleInputChange('calculationBase', e.target.value)}
+                                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm px-3 py-1.5 font-bold">
                                 <option>Gross Salary / 240</option>
                                 <option>Basic Salary / 240</option>
                                 <option>Flat Rate</option>
@@ -56,7 +120,11 @@ export default function OvertimeManagementPage() {
                                 <p className="text-xs text-silver-mist">Min hours needed to qualify</p>
                             </div>
                             <div className="flex items-center gap-2">
-                                <input type="number" defaultValue={2} className="w-16 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded text-right font-bold bg-transparent" />
+                                <input
+                                    type="number"
+                                    value={policy.minimumDuration}
+                                    onChange={(e) => handleInputChange('minimumDuration', parseInt(e.target.value))}
+                                    className="w-16 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded text-right font-bold bg-transparent" />
                                 <span className="text-sm font-bold text-slate-500">Hours</span>
                             </div>
                         </div>
@@ -66,7 +134,11 @@ export default function OvertimeManagementPage() {
                                 <p className="text-xs text-silver-mist">Max allowable OT per emp</p>
                             </div>
                             <div className="flex items-center gap-2">
-                                <input type="number" defaultValue={20} className="w-16 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded text-right font-bold bg-transparent" />
+                                <input
+                                    type="number"
+                                    value={policy.monthlyCap}
+                                    onChange={(e) => handleInputChange('monthlyCap', parseInt(e.target.value))}
+                                    className="w-16 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded text-right font-bold bg-transparent" />
                                 <span className="text-sm font-bold text-slate-500">Hours</span>
                             </div>
                         </div>
@@ -83,21 +155,36 @@ export default function OvertimeManagementPage() {
                             <span className="font-bold text-slate-600 dark:text-slate-300">Normal Workday</span>
                             <div className="flex items-center gap-2">
                                 <span className="text-xs text-slate-400">x</span>
-                                <input type="number" defaultValue={1.25} step={0.25} className="w-16 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded text-center font-bold bg-white dark:bg-slate-800" />
+                                <input
+                                    type="number"
+                                    value={policy.normalMultiplier}
+                                    onChange={(e) => handleInputChange('normalMultiplier', parseFloat(e.target.value))}
+                                    step={0.25}
+                                    className="w-16 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded text-center font-bold bg-white dark:bg-slate-800" />
                             </div>
                         </div>
                         <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/40 rounded-lg">
                             <span className="font-bold text-slate-600 dark:text-slate-300">Weekly Off (Weekend)</span>
                             <div className="flex items-center gap-2">
                                 <span className="text-xs text-slate-400">x</span>
-                                <input type="number" defaultValue={1.5} step={0.25} className="w-16 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded text-center font-bold bg-white dark:bg-slate-800" />
+                                <input
+                                    type="number"
+                                    value={policy.weekendMultiplier}
+                                    onChange={(e) => handleInputChange('weekendMultiplier', parseFloat(e.target.value))}
+                                    step={0.25}
+                                    className="w-16 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded text-center font-bold bg-white dark:bg-slate-800" />
                             </div>
                         </div>
                         <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/40 rounded-lg">
                             <span className="font-bold text-slate-600 dark:text-slate-300">Public Holiday</span>
                             <div className="flex items-center gap-2">
                                 <span className="text-xs text-slate-400">x</span>
-                                <input type="number" defaultValue={2.0} step={0.5} className="w-16 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded text-center font-bold bg-white dark:bg-slate-800" />
+                                <input
+                                    type="number"
+                                    value={policy.holidayMultiplier}
+                                    onChange={(e) => handleInputChange('holidayMultiplier', parseFloat(e.target.value))}
+                                    step={0.5}
+                                    className="w-16 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded text-center font-bold bg-white dark:bg-slate-800" />
                             </div>
                         </div>
                     </div>

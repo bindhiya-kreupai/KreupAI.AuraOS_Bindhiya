@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     BookOpen,
     PlayCircle,
@@ -9,43 +9,48 @@ import {
     TrendingUp,
     Star
 } from 'lucide-react';
-
-// --- MOCK DATA ---
-
-const COURSES = [
-    {
-        id: 1,
-        title: 'Advanced React Patterns',
-        provider: 'Frontend Masters',
-        duration: '4h 30m',
-        rating: 4.8,
-        reason: 'Required for "Senior Dev" role',
-        skill: 'React',
-        image: 'bg-indigo-500'
-    },
-    {
-        id: 2,
-        title: 'Emotional Intelligence 101',
-        provider: 'LinkedIn Learning',
-        duration: '1h 15m',
-        rating: 4.5,
-        reason: 'Improve "Team Leadership" score',
-        skill: 'Soft Skills',
-        image: 'bg-emerald-500'
-    },
-    {
-        id: 3,
-        title: 'AWS Certified Solutions Architect',
-        provider: 'Udemy Business',
-        duration: '22h',
-        rating: 4.9,
-        reason: 'Trending in Engineering Dept',
-        skill: 'Cloud',
-        image: 'bg-orange-500'
-    }
-];
+import { ldRecommendation } from '@/lib/services/ai-automation-client';
 
 export default function LDRecommendationsPage() {
+    const [courses, setCourses] = useState<any[]>([]);
+    const [skillGaps, setSkillGaps] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            const [recommendationsResult, skillGapsResult] = await Promise.all([
+                ldRecommendation.getRecommendations(),
+                ldRecommendation.getSkillGaps(),
+            ]);
+
+            if (recommendationsResult.success) {
+                setCourses(recommendationsResult.data?.courses || []);
+            }
+            if (skillGapsResult.success) {
+                setSkillGaps(skillGapsResult.data?.gaps || []);
+            }
+        } catch (error) {
+            console.error('Error fetching L&D data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEnroll = async (courseId: string) => {
+        setLoading(true);
+        try {
+            await ldRecommendation.enrollCourse(courseId);
+            await fetchData();
+        } catch (error) {
+            console.error('Error enrolling in course:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -85,7 +90,7 @@ export default function LDRecommendationsPage() {
                         Top Picks for You
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {COURSES.map((course) => (
+                        {courses.map((course) => (
                             <div key={course.id} className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden hover:shadow-md transition-shadow group cursor-pointer">
                                 <div className={`h-32 ${course.image} relative`}>
                                     <div className="absolute top-3 right-3 bg-black/40 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1">

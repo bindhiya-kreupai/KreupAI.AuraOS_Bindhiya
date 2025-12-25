@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CreditCard,
     FileSpreadsheet,
@@ -10,8 +10,26 @@ import {
     ArrowRight,
     RefreshCw
 } from 'lucide-react';
+import { BankFileService } from '../services';
 
 export default function BankFileGenerationPage() {
+    const [bankFiles, setBankFiles] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            // BankFileService doesn't have a getAll method, keeping mock data
+        } catch (error) {
+            console.error('Error fetching bank files:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     const banks = [
         { id: 1, name: 'HDFC Bank', format: 'Excel (.xlsx)', status: 'Ready', lastGenerated: '2 mins ago' },
         { id: 2, name: 'ICICI Bank', format: 'Text (.txt)', status: 'Pending', lastGenerated: '1 month ago' },

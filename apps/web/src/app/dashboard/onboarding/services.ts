@@ -1,10 +1,11 @@
 /**
  * Onboarding Module - Service Layer
  *
- * API-ready service classes with localStorage persistence
- * 11 service classes covering all onboarding workflows
+ * API-ready service classes with APIClient integration
+ * 14 service classes covering all onboarding workflows
  */
 
+import { APIClient } from '@/lib/api-client';
 import {
     OnboardingProgram,
     OnboardingInstance,
@@ -24,73 +25,50 @@ import {
     OnboardingStatus,
 } from './types';
 
-const STORAGE_KEYS = {
-    PROGRAMS: 'onboarding_programs',
-    INSTANCES: 'onboarding_instances',
-    BUDDY_ASSIGNMENTS: 'onboarding_buddy_assignments',
-    DAY_PLANS: 'onboarding_day_plans',
-    SURVEYS: 'onboarding_surveys',
-    FEEDBACK: 'onboarding_feedback',
-    PRE_BOARDING: 'onboarding_pre_boarding',
-    SETTINGS: 'onboarding_settings',
-};
-
-// TODO: Replace localStorage with actual API calls
-
 /**
  * Onboarding Program Service
  * Manages onboarding program templates and configurations
  */
 export class OnboardingProgramService {
+    private static endpoint = '/onboarding/programs';
+
     static async getPrograms(): Promise<OnboardingProgram[]> {
-        const stored = localStorage.getItem(STORAGE_KEYS.PROGRAMS);
-        return stored ? JSON.parse(stored) : [];
+        try {
+            const response = await APIClient.get<{ programs?: OnboardingProgram[] }>(this.endpoint);
+            return response.programs || [];
+        } catch (error) {
+            console.error('Error fetching programs:', error);
+            return [];
+        }
     }
 
     static async getProgramById(id: string): Promise<OnboardingProgram | null> {
-        const programs = await this.getPrograms();
-        return programs.find(p => p.id === id) || null;
+        try {
+            const response = await APIClient.get<{ program: OnboardingProgram }>(`${this.endpoint}/${id}`);
+            return response.program;
+        } catch (error) {
+            console.error('Error fetching program:', error);
+            return null;
+        }
     }
 
     static async createProgram(data: OnboardingProgram): Promise<OnboardingProgram> {
-        const programs = await this.getPrograms();
-        programs.push({ ...data, updatedAt: new Date().toISOString() });
-        localStorage.setItem(STORAGE_KEYS.PROGRAMS, JSON.stringify(programs));
-        return data;
+        const response = await APIClient.post<{ program: OnboardingProgram }>(this.endpoint, data);
+        return response.program;
     }
 
     static async updateProgram(id: string, updates: Partial<OnboardingProgram>): Promise<OnboardingProgram> {
-        const programs = await this.getPrograms();
-        const index = programs.findIndex(p => p.id === id);
-        if (index === -1) throw new Error('Program not found');
-
-        programs[index] = { ...programs[index], ...updates, updatedAt: new Date().toISOString() };
-        localStorage.setItem(STORAGE_KEYS.PROGRAMS, JSON.stringify(programs));
-        return programs[index];
+        const response = await APIClient.put<{ program: OnboardingProgram }>(`${this.endpoint}/${id}`, updates);
+        return response.program;
     }
 
     static async deleteProgram(id: string): Promise<void> {
-        const programs = await this.getPrograms();
-        const filtered = programs.filter(p => p.id !== id);
-        localStorage.setItem(STORAGE_KEYS.PROGRAMS, JSON.stringify(filtered));
+        await APIClient.delete(`${this.endpoint}/${id}`);
     }
 
     static async cloneProgram(id: string, newName: string): Promise<OnboardingProgram> {
-        const program = await this.getProgramById(id);
-        if (!program) throw new Error('Program not found');
-
-        const newProgram: OnboardingProgram = {
-            ...program,
-            id: `prog_${Date.now()}`,
-            programCode: `${program.programCode}_COPY`,
-            programName: newName,
-            isTemplate: true,
-            usageCount: 0,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
-
-        return this.createProgram(newProgram);
+        const response = await APIClient.post<{ program: OnboardingProgram }>(`${this.endpoint}/${id}/clone`, { newName });
+        return response.program;
     }
 }
 
@@ -99,66 +77,61 @@ export class OnboardingProgramService {
  * Manages individual employee onboarding instances
  */
 export class OnboardingInstanceService {
+    private static endpoint = '/onboarding/instances';
+
     static async getInstances(): Promise<OnboardingInstance[]> {
-        const stored = localStorage.getItem(STORAGE_KEYS.INSTANCES);
-        return stored ? JSON.parse(stored) : [];
+        try {
+            const response = await APIClient.get<{ instances?: OnboardingInstance[] }>(this.endpoint);
+            return response.instances || [];
+        } catch (error) {
+            console.error('Error fetching instances:', error);
+            return [];
+        }
     }
 
     static async getInstanceById(id: string): Promise<OnboardingInstance | null> {
-        const instances = await this.getInstances();
-        return instances.find(i => i.id === id) || null;
+        try {
+            const response = await APIClient.get<{ instance: OnboardingInstance }>(`${this.endpoint}/${id}`);
+            return response.instance;
+        } catch (error) {
+            console.error('Error fetching instance:', error);
+            return null;
+        }
     }
 
     static async getByEmployeeId(employeeId: string): Promise<OnboardingInstance | null> {
-        const instances = await this.getInstances();
-        return instances.find(i => i.employeeId === employeeId) || null;
+        try {
+            const response = await APIClient.get<{ instance: OnboardingInstance }>(`${this.endpoint}/employee/${employeeId}`);
+            return response.instance;
+        } catch (error) {
+            console.error('Error fetching employee instance:', error);
+            return null;
+        }
     }
 
     static async createInstance(data: OnboardingInstance): Promise<OnboardingInstance> {
-        const instances = await this.getInstances();
-        instances.push({ ...data, updatedAt: new Date().toISOString() });
-        localStorage.setItem(STORAGE_KEYS.INSTANCES, JSON.stringify(instances));
-        return data;
+        const response = await APIClient.post<{ instance: OnboardingInstance }>(this.endpoint, data);
+        return response.instance;
     }
 
     static async updateInstance(id: string, updates: Partial<OnboardingInstance>): Promise<OnboardingInstance> {
-        const instances = await this.getInstances();
-        const index = instances.findIndex(i => i.id === id);
-        if (index === -1) throw new Error('Instance not found');
-
-        instances[index] = { ...instances[index], ...updates, updatedAt: new Date().toISOString() };
-        localStorage.setItem(STORAGE_KEYS.INSTANCES, JSON.stringify(instances));
-        return instances[index];
+        const response = await APIClient.put<{ instance: OnboardingInstance }>(`${this.endpoint}/${id}`, updates);
+        return response.instance;
     }
 
     static async startOnboarding(id: string): Promise<OnboardingInstance> {
-        return this.updateInstance(id, {
-            status: 'in_progress',
-            currentPhase: 'first_day',
-        });
+        const response = await APIClient.post<{ instance: OnboardingInstance }>(`${this.endpoint}/${id}/start`, {});
+        return response.instance;
     }
 
     static async completeOnboarding(id: string): Promise<OnboardingInstance> {
-        return this.updateInstance(id, {
-            status: 'completed',
-            actualCompletionDate: new Date().toISOString(),
-            progress: 100,
-        });
+        const response = await APIClient.post<{ instance: OnboardingInstance }>(`${this.endpoint}/${id}/complete`, {});
+        return response.instance;
     }
 
     static async updateProgress(id: string): Promise<OnboardingInstance> {
-        const instance = await this.getInstanceById(id);
-        if (!instance) throw new Error('Instance not found');
-
-        const completedTasks = instance.tasks.filter(t => t.status === 'completed').length;
-        const totalTasks = instance.tasks.filter(t => t.isMandatory).length;
-        const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-        return this.updateInstance(id, {
-            completedTasks,
-            overdueTasks: instance.tasks.filter(t => t.status === 'overdue').length,
-            progress,
-        });
+        const response = await APIClient.post<{ instance: OnboardingInstance }>(`${this.endpoint}/${id}/progress`, {});
+        return response.instance;
     }
 }
 
@@ -167,27 +140,19 @@ export class OnboardingInstanceService {
  * Manages onboarding tasks
  */
 export class OnboardingTaskService {
+    private static endpoint = '/onboarding/tasks';
+
     static async updateTaskStatus(
         instanceId: string,
         taskId: string,
         status: TaskStatus,
         completedBy?: string
     ): Promise<OnboardingInstance> {
-        const instance = await OnboardingInstanceService.getInstanceById(instanceId);
-        if (!instance) throw new Error('Instance not found');
-
-        const taskIndex = instance.tasks.findIndex(t => t.id === taskId);
-        if (taskIndex === -1) throw new Error('Task not found');
-
-        instance.tasks[taskIndex] = {
-            ...instance.tasks[taskIndex],
-            status,
-            completedDate: status === 'completed' ? new Date().toISOString() : undefined,
-            completedBy: status === 'completed' ? completedBy : undefined,
-        };
-
-        await OnboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
-        return OnboardingInstanceService.updateProgress(instanceId);
+        const response = await APIClient.put<{ instance: OnboardingInstance }>(
+            `${this.endpoint}/${instanceId}/tasks/${taskId}/status`,
+            { status, completedBy }
+        );
+        return response.instance;
     }
 
     static async addTaskComment(
@@ -195,15 +160,11 @@ export class OnboardingTaskService {
         taskId: string,
         comment: string
     ): Promise<OnboardingInstance> {
-        const instance = await OnboardingInstanceService.getInstanceById(instanceId);
-        if (!instance) throw new Error('Instance not found');
-
-        const taskIndex = instance.tasks.findIndex(t => t.id === taskId);
-        if (taskIndex === -1) throw new Error('Task not found');
-
-        instance.tasks[taskIndex].comments = comment;
-
-        return OnboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
+        const response = await APIClient.post<{ instance: OnboardingInstance }>(
+            `${this.endpoint}/${instanceId}/tasks/${taskId}/comment`,
+            { comment }
+        );
+        return response.instance;
     }
 
     static async assignTask(
@@ -212,20 +173,11 @@ export class OnboardingTaskService {
         assignedTo: string,
         assignedToName: string
     ): Promise<OnboardingInstance> {
-        const instance = await OnboardingInstanceService.getInstanceById(instanceId);
-        if (!instance) throw new Error('Instance not found');
-
-        const taskIndex = instance.tasks.findIndex(t => t.id === taskId);
-        if (taskIndex === -1) throw new Error('Task not found');
-
-        instance.tasks[taskIndex] = {
-            ...instance.tasks[taskIndex],
-            assignedTo,
-            assignedToName,
-            status: 'in_progress',
-        };
-
-        return OnboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
+        const response = await APIClient.post<{ instance: OnboardingInstance }>(
+            `${this.endpoint}/${instanceId}/tasks/${taskId}/assign`,
+            { assignedTo, assignedToName }
+        );
+        return response.instance;
     }
 }
 
@@ -234,6 +186,8 @@ export class OnboardingTaskService {
  * Manages onboarding document collection
  */
 export class OnboardingDocumentService {
+    private static endpoint = '/onboarding/documents';
+
     static async uploadDocument(
         instanceId: string,
         documentId: string,
@@ -241,22 +195,11 @@ export class OnboardingDocumentService {
         fileName: string,
         fileSize: number
     ): Promise<OnboardingInstance> {
-        const instance = await OnboardingInstanceService.getInstanceById(instanceId);
-        if (!instance) throw new Error('Instance not found');
-
-        const docIndex = instance.documents.findIndex(d => d.documentId === documentId);
-        if (docIndex === -1) throw new Error('Document not found');
-
-        instance.documents[docIndex] = {
-            ...instance.documents[docIndex],
-            status: 'submitted',
-            uploadedDate: new Date().toISOString(),
-            fileUrl,
-            fileName,
-            fileSize,
-        };
-
-        return OnboardingInstanceService.updateInstance(instanceId, { documents: instance.documents });
+        const response = await APIClient.post<{ instance: OnboardingInstance }>(
+            `${this.endpoint}/${instanceId}/upload/${documentId}`,
+            { fileUrl, fileName, fileSize }
+        );
+        return response.instance;
     }
 
     static async verifyDocument(
@@ -266,23 +209,11 @@ export class OnboardingDocumentService {
         approved: boolean,
         rejectionReason?: string
     ): Promise<OnboardingInstance> {
-        const instance = await OnboardingInstanceService.getInstanceById(instanceId);
-        if (!instance) throw new Error('Instance not found');
-
-        const docIndex = instance.documents.findIndex(d => d.documentId === documentId);
-        if (docIndex === -1) throw new Error('Document not found');
-
-        instance.documents[docIndex] = {
-            ...instance.documents[docIndex],
-            status: approved ? 'approved' : 'rejected',
-            verifiedBy,
-            verifiedDate: new Date().toISOString(),
-            approvedBy: approved ? verifiedBy : undefined,
-            approvedDate: approved ? new Date().toISOString() : undefined,
-            rejectionReason,
-        };
-
-        return OnboardingInstanceService.updateInstance(instanceId, { documents: instance.documents });
+        const response = await APIClient.post<{ instance: OnboardingInstance }>(
+            `${this.endpoint}/${instanceId}/verify/${documentId}`,
+            { verifiedBy, approved, rejectionReason }
+        );
+        return response.instance;
     }
 }
 
@@ -291,25 +222,18 @@ export class OnboardingDocumentService {
  * Manages equipment provisioning
  */
 export class OnboardingEquipmentService {
+    private static endpoint = '/onboarding/equipment';
+
     static async requestEquipment(
         instanceId: string,
         equipmentId: string,
         requestedBy: string
     ): Promise<OnboardingInstance> {
-        const instance = await OnboardingInstanceService.getInstanceById(instanceId);
-        if (!instance) throw new Error('Instance not found');
-
-        const equipIndex = instance.equipment.findIndex(e => e.equipmentId === equipmentId);
-        if (equipIndex === -1) throw new Error('Equipment not found');
-
-        instance.equipment[equipIndex] = {
-            ...instance.equipment[equipIndex],
-            status: 'requested',
-            requestedDate: new Date().toISOString(),
-            requestedBy,
-        };
-
-        return OnboardingInstanceService.updateInstance(instanceId, { equipment: instance.equipment });
+        const response = await APIClient.post<{ instance: OnboardingInstance }>(
+            `${this.endpoint}/${instanceId}/request/${equipmentId}`,
+            { requestedBy }
+        );
+        return response.instance;
     }
 
     static async approveEquipment(
@@ -317,20 +241,11 @@ export class OnboardingEquipmentService {
         equipmentId: string,
         approvedBy: string
     ): Promise<OnboardingInstance> {
-        const instance = await OnboardingInstanceService.getInstanceById(instanceId);
-        if (!instance) throw new Error('Instance not found');
-
-        const equipIndex = instance.equipment.findIndex(e => e.equipmentId === equipmentId);
-        if (equipIndex === -1) throw new Error('Equipment not found');
-
-        instance.equipment[equipIndex] = {
-            ...instance.equipment[equipIndex],
-            status: 'approved',
-            approvedBy,
-            approvedDate: new Date().toISOString(),
-        };
-
-        return OnboardingInstanceService.updateInstance(instanceId, { equipment: instance.equipment });
+        const response = await APIClient.post<{ instance: OnboardingInstance }>(
+            `${this.endpoint}/${instanceId}/approve/${equipmentId}`,
+            { approvedBy }
+        );
+        return response.instance;
     }
 
     static async assignEquipment(
@@ -339,21 +254,11 @@ export class OnboardingEquipmentService {
         assetTag: string,
         serialNumber?: string
     ): Promise<OnboardingInstance> {
-        const instance = await OnboardingInstanceService.getInstanceById(instanceId);
-        if (!instance) throw new Error('Instance not found');
-
-        const equipIndex = instance.equipment.findIndex(e => e.equipmentId === equipmentId);
-        if (equipIndex === -1) throw new Error('Equipment not found');
-
-        instance.equipment[equipIndex] = {
-            ...instance.equipment[equipIndex],
-            status: 'assigned',
-            assignedDate: new Date().toISOString(),
-            assetTag,
-            serialNumber,
-        };
-
-        return OnboardingInstanceService.updateInstance(instanceId, { equipment: instance.equipment });
+        const response = await APIClient.post<{ instance: OnboardingInstance }>(
+            `${this.endpoint}/${instanceId}/assign/${equipmentId}`,
+            { assetTag, serialNumber }
+        );
+        return response.instance;
     }
 }
 
@@ -362,25 +267,18 @@ export class OnboardingEquipmentService {
  * Manages system access provisioning
  */
 export class OnboardingAccessService {
+    private static endpoint = '/onboarding/access';
+
     static async requestAccess(
         instanceId: string,
         accessId: string,
         requestedBy: string
     ): Promise<OnboardingInstance> {
-        const instance = await OnboardingInstanceService.getInstanceById(instanceId);
-        if (!instance) throw new Error('Instance not found');
-
-        const accessIndex = instance.access.findIndex(a => a.accessId === accessId);
-        if (accessIndex === -1) throw new Error('Access not found');
-
-        instance.access[accessIndex] = {
-            ...instance.access[accessIndex],
-            status: 'requested',
-            requestedDate: new Date().toISOString(),
-            requestedBy,
-        };
-
-        return OnboardingInstanceService.updateInstance(instanceId, { access: instance.access });
+        const response = await APIClient.post<{ instance: OnboardingInstance }>(
+            `${this.endpoint}/${instanceId}/request/${accessId}`,
+            { requestedBy }
+        );
+        return response.instance;
     }
 
     static async grantAccess(
@@ -390,22 +288,11 @@ export class OnboardingAccessService {
         username: string,
         accountId?: string
     ): Promise<OnboardingInstance> {
-        const instance = await OnboardingInstanceService.getInstanceById(instanceId);
-        if (!instance) throw new Error('Instance not found');
-
-        const accessIndex = instance.access.findIndex(a => a.accessId === accessId);
-        if (accessIndex === -1) throw new Error('Access not found');
-
-        instance.access[accessIndex] = {
-            ...instance.access[accessIndex],
-            status: 'granted',
-            grantedDate: new Date().toISOString(),
-            grantedBy,
-            username,
-            accountId,
-        };
-
-        return OnboardingInstanceService.updateInstance(instanceId, { access: instance.access });
+        const response = await APIClient.post<{ instance: OnboardingInstance }>(
+            `${this.endpoint}/${instanceId}/grant/${accessId}`,
+            { grantedBy, username, accountId }
+        );
+        return response.instance;
     }
 }
 
@@ -414,6 +301,8 @@ export class OnboardingAccessService {
  * Manages onboarding training and induction
  */
 export class OnboardingTrainingService {
+    private static endpoint = '/onboarding/training';
+
     static async scheduleTraining(
         instanceId: string,
         moduleId: string,
@@ -421,21 +310,11 @@ export class OnboardingTrainingService {
         location?: string,
         meetingLink?: string
     ): Promise<OnboardingInstance> {
-        const instance = await OnboardingInstanceService.getInstanceById(instanceId);
-        if (!instance) throw new Error('Instance not found');
-
-        const trainingIndex = instance.training.findIndex(t => t.moduleId === moduleId);
-        if (trainingIndex === -1) throw new Error('Training not found');
-
-        instance.training[trainingIndex] = {
-            ...instance.training[trainingIndex],
-            status: 'in_progress',
-            scheduledDate,
-            location,
-            meetingLink,
-        };
-
-        return OnboardingInstanceService.updateInstance(instanceId, { training: instance.training });
+        const response = await APIClient.post<{ instance: OnboardingInstance }>(
+            `${this.endpoint}/${instanceId}/schedule/${moduleId}`,
+            { scheduledDate, location, meetingLink }
+        );
+        return response.instance;
     }
 
     static async completeTraining(
@@ -444,23 +323,11 @@ export class OnboardingTrainingService {
         assessmentScore?: number,
         feedback?: string
     ): Promise<OnboardingInstance> {
-        const instance = await OnboardingInstanceService.getInstanceById(instanceId);
-        if (!instance) throw new Error('Instance not found');
-
-        const trainingIndex = instance.training.findIndex(t => t.moduleId === moduleId);
-        if (trainingIndex === -1) throw new Error('Training not found');
-
-        instance.training[trainingIndex] = {
-            ...instance.training[trainingIndex],
-            status: 'completed',
-            completedDate: new Date().toISOString(),
-            attendanceMarked: true,
-            assessmentScore,
-            assessmentPassed: assessmentScore ? assessmentScore >= 70 : undefined,
-            feedback,
-        };
-
-        return OnboardingInstanceService.updateInstance(instanceId, { training: instance.training });
+        const response = await APIClient.post<{ instance: OnboardingInstance }>(
+            `${this.endpoint}/${instanceId}/complete/${moduleId}`,
+            { assessmentScore, feedback }
+        );
+        return response.instance;
     }
 }
 
@@ -469,38 +336,41 @@ export class OnboardingTrainingService {
  * Manages buddy program and assignments
  */
 export class BuddyAssignmentService {
+    private static endpoint = '/onboarding/buddies';
+
     static async getAssignments(): Promise<BuddyAssignment[]> {
-        const stored = localStorage.getItem(STORAGE_KEYS.BUDDY_ASSIGNMENTS);
-        return stored ? JSON.parse(stored) : [];
+        try {
+            const response = await APIClient.get<{ assignments?: BuddyAssignment[] }>(this.endpoint);
+            return response.assignments || [];
+        } catch (error) {
+            console.error('Error fetching buddy assignments:', error);
+            return [];
+        }
     }
 
     static async getAssignmentById(id: string): Promise<BuddyAssignment | null> {
-        const assignments = await this.getAssignments();
-        return assignments.find(a => a.id === id) || null;
+        try {
+            const response = await APIClient.get<{ assignment: BuddyAssignment }>(`${this.endpoint}/${id}`);
+            return response.assignment;
+        } catch (error) {
+            console.error('Error fetching buddy assignment:', error);
+            return null;
+        }
     }
 
     static async createAssignment(data: BuddyAssignment): Promise<BuddyAssignment> {
-        const assignments = await this.getAssignments();
-        assignments.push(data);
-        localStorage.setItem(STORAGE_KEYS.BUDDY_ASSIGNMENTS, JSON.stringify(assignments));
-        return data;
+        const response = await APIClient.post<{ assignment: BuddyAssignment }>(this.endpoint, data);
+        return response.assignment;
     }
 
     static async updateAssignment(id: string, updates: Partial<BuddyAssignment>): Promise<BuddyAssignment> {
-        const assignments = await this.getAssignments();
-        const index = assignments.findIndex(a => a.id === id);
-        if (index === -1) throw new Error('Assignment not found');
-
-        assignments[index] = { ...assignments[index], ...updates };
-        localStorage.setItem(STORAGE_KEYS.BUDDY_ASSIGNMENTS, JSON.stringify(assignments));
-        return assignments[index];
+        const response = await APIClient.put<{ assignment: BuddyAssignment }>(`${this.endpoint}/${id}`, updates);
+        return response.assignment;
     }
 
     static async completeAssignment(id: string): Promise<BuddyAssignment> {
-        return this.updateAssignment(id, {
-            status: 'completed',
-            completionDate: new Date().toISOString(),
-        });
+        const response = await APIClient.post<{ assignment: BuddyAssignment }>(`${this.endpoint}/${id}/complete`, {});
+        return response.assignment;
     }
 }
 
@@ -509,31 +379,36 @@ export class BuddyAssignmentService {
  * Manages milestone plans and reviews
  */
 export class Day30_60_90PlanService {
+    private static endpoint = '/onboarding/day-plans';
+
     static async getPlans(): Promise<Day30_60_90Plan[]> {
-        const stored = localStorage.getItem(STORAGE_KEYS.DAY_PLANS);
-        return stored ? JSON.parse(stored) : [];
+        try {
+            const response = await APIClient.get<{ plans?: Day30_60_90Plan[] }>(this.endpoint);
+            return response.plans || [];
+        } catch (error) {
+            console.error('Error fetching day plans:', error);
+            return [];
+        }
     }
 
     static async getPlanById(id: string): Promise<Day30_60_90Plan | null> {
-        const plans = await this.getPlans();
-        return plans.find(p => p.id === id) || null;
+        try {
+            const response = await APIClient.get<{ plan: Day30_60_90Plan }>(`${this.endpoint}/${id}`);
+            return response.plan;
+        } catch (error) {
+            console.error('Error fetching day plan:', error);
+            return null;
+        }
     }
 
     static async createPlan(data: Day30_60_90Plan): Promise<Day30_60_90Plan> {
-        const plans = await this.getPlans();
-        plans.push(data);
-        localStorage.setItem(STORAGE_KEYS.DAY_PLANS, JSON.stringify(plans));
-        return data;
+        const response = await APIClient.post<{ plan: Day30_60_90Plan }>(this.endpoint, data);
+        return response.plan;
     }
 
     static async updatePlan(id: string, updates: Partial<Day30_60_90Plan>): Promise<Day30_60_90Plan> {
-        const plans = await this.getPlans();
-        const index = plans.findIndex(p => p.id === id);
-        if (index === -1) throw new Error('Plan not found');
-
-        plans[index] = { ...plans[index], ...updates };
-        localStorage.setItem(STORAGE_KEYS.DAY_PLANS, JSON.stringify(plans));
-        return plans[index];
+        const response = await APIClient.put<{ plan: Day30_60_90Plan }>(`${this.endpoint}/${id}`, updates);
+        return response.plan;
     }
 
     static async reviewMilestone(
@@ -543,19 +418,11 @@ export class Day30_60_90PlanService {
         managerFeedback: string,
         achievementPercentage: number
     ): Promise<Day30_60_90Plan> {
-        const plan = await this.getPlanById(planId);
-        if (!plan) throw new Error('Plan not found');
-
-        const milestoneKey = `${phase}Goals` as 'day30Goals' | 'day60Goals' | 'day90Goals';
-        const milestone = plan[milestoneKey];
-
-        milestone.reviewDate = new Date().toISOString();
-        milestone.reviewedBy = reviewedBy;
-        milestone.managerFeedback = managerFeedback;
-        milestone.achievementPercentage = achievementPercentage;
-        milestone.status = achievementPercentage >= 80 ? 'completed' : 'in_progress';
-
-        return this.updatePlan(planId, { [milestoneKey]: milestone });
+        const response = await APIClient.post<{ plan: Day30_60_90Plan }>(
+            `${this.endpoint}/${planId}/review/${phase}`,
+            { reviewedBy, managerFeedback, achievementPercentage }
+        );
+        return response.plan;
     }
 }
 
@@ -564,21 +431,31 @@ export class Day30_60_90PlanService {
  * Manages onboarding surveys and feedback
  */
 export class OnboardingSurveyService {
+    private static endpoint = '/onboarding/surveys';
+
     static async getSurveys(): Promise<OnboardingSurvey[]> {
-        const stored = localStorage.getItem(STORAGE_KEYS.SURVEYS);
-        return stored ? JSON.parse(stored) : [];
+        try {
+            const response = await APIClient.get<{ surveys?: OnboardingSurvey[] }>(this.endpoint);
+            return response.surveys || [];
+        } catch (error) {
+            console.error('Error fetching surveys:', error);
+            return [];
+        }
     }
 
     static async getSurveyById(id: string): Promise<OnboardingSurvey | null> {
-        const surveys = await this.getSurveys();
-        return surveys.find(s => s.id === id) || null;
+        try {
+            const response = await APIClient.get<{ survey: OnboardingSurvey }>(`${this.endpoint}/${id}`);
+            return response.survey;
+        } catch (error) {
+            console.error('Error fetching survey:', error);
+            return null;
+        }
     }
 
     static async createSurvey(data: OnboardingSurvey): Promise<OnboardingSurvey> {
-        const surveys = await this.getSurveys();
-        surveys.push(data);
-        localStorage.setItem(STORAGE_KEYS.SURVEYS, JSON.stringify(surveys));
-        return data;
+        const response = await APIClient.post<{ survey: OnboardingSurvey }>(this.endpoint, data);
+        return response.survey;
     }
 
     static async completeSurvey(
@@ -587,21 +464,11 @@ export class OnboardingSurveyService {
         overallRating: number,
         comments?: string
     ): Promise<OnboardingSurvey> {
-        const surveys = await this.getSurveys();
-        const index = surveys.findIndex(s => s.id === surveyId);
-        if (index === -1) throw new Error('Survey not found');
-
-        surveys[index] = {
-            ...surveys[index],
-            status: 'completed',
-            completedDate: new Date().toISOString(),
-            responses,
-            overallRating,
-            comments,
-        };
-
-        localStorage.setItem(STORAGE_KEYS.SURVEYS, JSON.stringify(surveys));
-        return surveys[index];
+        const response = await APIClient.post<{ survey: OnboardingSurvey }>(
+            `${this.endpoint}/${surveyId}/complete`,
+            { responses, overallRating, comments }
+        );
+        return response.survey;
     }
 }
 
@@ -610,16 +477,21 @@ export class OnboardingSurveyService {
  * Manages new hire and manager feedback
  */
 export class FeedbackService {
+    private static endpoint = '/onboarding/feedback';
+
     static async getFeedback(): Promise<NewHireFeedback[]> {
-        const stored = localStorage.getItem(STORAGE_KEYS.FEEDBACK);
-        return stored ? JSON.parse(stored) : [];
+        try {
+            const response = await APIClient.get<{ feedback?: NewHireFeedback[] }>(this.endpoint);
+            return response.feedback || [];
+        } catch (error) {
+            console.error('Error fetching feedback:', error);
+            return [];
+        }
     }
 
     static async createFeedback(data: NewHireFeedback): Promise<NewHireFeedback> {
-        const feedback = await this.getFeedback();
-        feedback.push(data);
-        localStorage.setItem(STORAGE_KEYS.FEEDBACK, JSON.stringify(feedback));
-        return data;
+        const response = await APIClient.post<{ feedback: NewHireFeedback }>(this.endpoint, data);
+        return response.feedback;
     }
 }
 
@@ -628,51 +500,41 @@ export class FeedbackService {
  * Manages pre-boarding packages and materials
  */
 export class PreBoardingService {
+    private static endpoint = '/onboarding/pre-boarding';
+
     static async getPackages(): Promise<PreBoardingPackage[]> {
-        const stored = localStorage.getItem(STORAGE_KEYS.PRE_BOARDING);
-        return stored ? JSON.parse(stored) : [];
+        try {
+            const response = await APIClient.get<{ packages?: PreBoardingPackage[] }>(this.endpoint);
+            return response.packages || [];
+        } catch (error) {
+            console.error('Error fetching packages:', error);
+            return [];
+        }
     }
 
     static async getPackageById(id: string): Promise<PreBoardingPackage | null> {
-        const packages = await this.getPackages();
-        return packages.find(p => p.id === id) || null;
+        try {
+            const response = await APIClient.get<{ package: PreBoardingPackage }>(`${this.endpoint}/${id}`);
+            return response.package;
+        } catch (error) {
+            console.error('Error fetching package:', error);
+            return null;
+        }
     }
 
     static async createPackage(data: PreBoardingPackage): Promise<PreBoardingPackage> {
-        const packages = await this.getPackages();
-        packages.push(data);
-        localStorage.setItem(STORAGE_KEYS.PRE_BOARDING, JSON.stringify(packages));
-        return data;
+        const response = await APIClient.post<{ package: PreBoardingPackage }>(this.endpoint, data);
+        return response.package;
     }
 
     static async sendPackage(packageId: string): Promise<PreBoardingPackage> {
-        const packages = await this.getPackages();
-        const index = packages.findIndex(p => p.id === packageId);
-        if (index === -1) throw new Error('Package not found');
-
-        packages[index] = {
-            ...packages[index],
-            status: 'sent',
-            sentDate: new Date().toISOString(),
-        };
-
-        localStorage.setItem(STORAGE_KEYS.PRE_BOARDING, JSON.stringify(packages));
-        return packages[index];
+        const response = await APIClient.post<{ package: PreBoardingPackage }>(`${this.endpoint}/${packageId}/send`, {});
+        return response.package;
     }
 
     static async acknowledgePackage(packageId: string): Promise<PreBoardingPackage> {
-        const packages = await this.getPackages();
-        const index = packages.findIndex(p => p.id === packageId);
-        if (index === -1) throw new Error('Package not found');
-
-        packages[index] = {
-            ...packages[index],
-            status: 'acknowledged',
-            acknowledgedDate: new Date().toISOString(),
-        };
-
-        localStorage.setItem(STORAGE_KEYS.PRE_BOARDING, JSON.stringify(packages));
-        return packages[index];
+        const response = await APIClient.post<{ package: PreBoardingPackage }>(`${this.endpoint}/${packageId}/acknowledge`, {});
+        return response.package;
     }
 }
 
@@ -681,31 +543,33 @@ export class PreBoardingService {
  * Provides onboarding metrics and analytics
  */
 export class OnboardingAnalyticsService {
+    private static endpoint = '/onboarding/analytics';
+
     static async getMetrics(): Promise<OnboardingMetrics> {
-        const instances = await OnboardingInstanceService.getInstances();
-
-        const total = instances.length;
-        const active = instances.filter(i => i.status === 'in_progress').length;
-        const completed = instances.filter(i => i.status === 'completed').length;
-
-        return {
-            totalOnboardings: total,
-            activeOnboardings: active,
-            completedOnboardings: completed,
-            averageDuration: 0,
-            completionRate: total > 0 ? (completed / total) * 100 : 0,
-            onTimeCompletionRate: 0,
-            averageTaskCompletionRate: 0,
-            averageSatisfactionScore: 0,
-            byPhase: [],
-            byDepartment: [],
-            commonChallenges: [],
-            topPerformingBuddies: [],
-            documentCompletionRate: 0,
-            equipmentDeliveryTime: 0,
-            accessProvisioningTime: 0,
-            trainingCompletionRate: 0,
-        };
+        try {
+            const response = await APIClient.get<{ metrics: OnboardingMetrics }>(this.endpoint);
+            return response.metrics;
+        } catch (error) {
+            console.error('Error fetching metrics:', error);
+            return {
+                totalOnboardings: 0,
+                activeOnboardings: 0,
+                completedOnboardings: 0,
+                averageDuration: 0,
+                completionRate: 0,
+                onTimeCompletionRate: 0,
+                averageTaskCompletionRate: 0,
+                averageSatisfactionScore: 0,
+                byPhase: [],
+                byDepartment: [],
+                commonChallenges: [],
+                topPerformingBuddies: [],
+                documentCompletionRate: 0,
+                equipmentDeliveryTime: 0,
+                accessProvisioningTime: 0,
+                trainingCompletionRate: 0,
+            };
+        }
     }
 }
 
@@ -714,46 +578,46 @@ export class OnboardingAnalyticsService {
  * Manages onboarding module configuration
  */
 export class OnboardingSettingsService {
+    private static endpoint = '/onboarding/settings';
+
     static async getSettings(): Promise<OnboardingSettings> {
-        const stored = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-        if (stored) return JSON.parse(stored);
-
-        const defaults: OnboardingSettings = {
-            autoAssignBuddy: true,
-            buddyMatchingCriteria: 'department',
-            autoSendPreBoarding: true,
-            preBoardingDaysBeforeStart: 7,
-            autoCreateTasks: true,
-            sendTaskReminders: true,
-            reminderDaysBefore: 2,
-            enableSurveys: true,
-            enable30_60_90Plan: true,
-            requireManagerReview: true,
-            managerReviewFrequency: 'weekly',
-            autoNotifications: {
-                newHireWelcome: true,
-                preBoardingPackage: true,
-                taskAssigned: true,
-                taskDue: true,
-                taskOverdue: true,
-                documentPending: true,
-                equipmentReady: true,
-                accessGranted: true,
-                surveyDue: true,
-                buddyAssigned: true,
-                milestoneReached: true,
-                completionCertificate: true,
-            },
-        };
-
-        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(defaults));
-        return defaults;
+        try {
+            const response = await APIClient.get<{ settings: OnboardingSettings }>(this.endpoint);
+            return response.settings;
+        } catch (error) {
+            console.error('Error fetching settings:', error);
+            return {
+                autoAssignBuddy: true,
+                buddyMatchingCriteria: 'department',
+                autoSendPreBoarding: true,
+                preBoardingDaysBeforeStart: 7,
+                autoCreateTasks: true,
+                sendTaskReminders: true,
+                reminderDaysBefore: 2,
+                enableSurveys: true,
+                enable30_60_90Plan: true,
+                requireManagerReview: true,
+                managerReviewFrequency: 'weekly',
+                autoNotifications: {
+                    newHireWelcome: true,
+                    preBoardingPackage: true,
+                    taskAssigned: true,
+                    taskDue: true,
+                    taskOverdue: true,
+                    documentPending: true,
+                    equipmentReady: true,
+                    accessGranted: true,
+                    surveyDue: true,
+                    buddyAssigned: true,
+                    milestoneReached: true,
+                    completionCertificate: true,
+                },
+            };
+        }
     }
 
     static async updateSettings(updates: Partial<OnboardingSettings>): Promise<OnboardingSettings> {
-        const current = await this.getSettings();
-        const updated = { ...current, ...updates };
-        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated));
-        return updated;
+        const response = await APIClient.put<{ settings: OnboardingSettings }>(this.endpoint, updates);
+        return response.settings;
     }
 }

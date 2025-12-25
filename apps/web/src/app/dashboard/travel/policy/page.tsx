@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ScrollText,
     ShieldAlert,
@@ -10,8 +10,28 @@ import {
     Car,
     Coffee
 } from 'lucide-react';
+import { TravelSettingsService } from '../services';
 
 export default function TravelPolicyPage() {
+    const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const settings = await TravelSettingsService.getSettings();
+            setData(settings);
+        } catch (error) {
+            console.error('Failed to fetch travel settings:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

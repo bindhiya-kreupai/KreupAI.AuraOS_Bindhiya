@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FileBarChart,
     Users,
@@ -16,6 +16,7 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     PieChart, Pie, Cell
 } from 'recharts';
+import { StandardReportService } from '../services';
 
 // --- MOCK DATA ---
 
@@ -87,6 +88,25 @@ const MOCK_CHART_DATA = [
 
 export default function StandardReportsPage() {
     const [selectedReport, setSelectedReport] = useState<typeof REPORTS[0] | null>(null);
+    const [reports, setReports] = useState<any[]>(REPORTS);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchReports();
+    }, []);
+
+    const fetchReports = async () => {
+        try {
+            const data = await StandardReportService.getAllReports();
+            if (data.length > 0) {
+                setReports(data);
+            }
+        } catch (error) {
+            console.error('Error fetching standard reports:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
@@ -101,7 +121,7 @@ export default function StandardReportsPage() {
 
             {/* Reports Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {REPORTS.map((report) => (
+                {reports.map((report) => (
                     <div
                         key={report.id}
                         className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 hover:shadow-lg hover:border-indigo-500 dark:hover:border-indigo-500 transition-all cursor-pointer group flex flex-col h-full"

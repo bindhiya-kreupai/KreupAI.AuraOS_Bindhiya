@@ -1,14 +1,43 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Calendar as CalendarIcon,
     ChevronLeft,
     ChevronRight,
     Filter
 } from 'lucide-react';
+import { HolidayService, LeaveRequestService } from '../services';
+import { Holiday, LeaveRequest } from '../types';
 
 export default function LeaveCalendarPage() {
+    const [holidays, setHolidays] = useState<Holiday[]>([]);
+    const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchCalendarData();
+    }, []);
+
+    const fetchCalendarData = async () => {
+        try {
+            setLoading(true);
+            const [holidaysData, leavesData] = await Promise.all([
+                HolidayService.getHolidays(2024),
+                LeaveRequestService.getRequests({ status: 'approved' })
+            ]);
+            if (holidaysData.length > 0) {
+                setHolidays(holidaysData);
+            }
+            if (leavesData.length > 0) {
+                setLeaves(leavesData);
+            }
+        } catch (error) {
+            console.error('Error fetching calendar data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">

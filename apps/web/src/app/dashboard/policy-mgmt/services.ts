@@ -1,5 +1,78 @@
+// Policy Management Services - API Integrated
+import { APIClient } from '@/lib/api-client';
 import { Policy, PolicySettings, PolicyAlert } from './types';
-const SK = { POLICIES: 'policy_mgmt_policies', SETTINGS: 'policy_mgmt_settings', ALERTS: 'policy_mgmt_alerts' };
-export class PolicyService { static async getAll(): Promise<Policy[]> { const d = localStorage.getItem(SK.POLICIES); return d ? JSON.parse(d) : []; } static async create(data: Partial<Policy>): Promise<Policy> { const list = await this.getAll(); const item: Policy = { policyId: 'pol-' + Date.now(), policyName: data.policyName || '', policyNumber: data.policyNumber || 'POL-' + Date.now(), category: data.category || '', version: data.version || 1, effectiveDate: data.effectiveDate || new Date().toISOString().split('T')[0], content: data.content || '', approvers: data.approvers || [], acknowledgements: data.acknowledgements || [], status: data.status || 'draft', createdBy: data.createdBy || '', createdAt: new Date().toISOString(), ...data }; list.push(item); localStorage.setItem(SK.POLICIES, JSON.stringify(list)); return item; } static async update(id: string, updates: Partial<Policy>): Promise<Policy> { const list = await this.getAll(); const idx = list.findIndex(p => p.policyId === id); if (idx === -1) throw new Error('Not found'); list[idx] = { ...list[idx], ...updates, updatedAt: new Date().toISOString() }; localStorage.setItem(SK.POLICIES, JSON.stringify(list)); return list[idx]; } }
-export class PolicySettingsService { static async get(): Promise<PolicySettings | null> { const d = localStorage.getItem(SK.SETTINGS); return d ? JSON.parse(d) : null; } static async update(s: Partial<PolicySettings>): Promise<PolicySettings> { const c = await this.get(); const u: PolicySettings = { ...c, ...s, updatedAt: new Date().toISOString() } as PolicySettings; localStorage.setItem(SK.SETTINGS, JSON.stringify(u)); return u; } }
-export class AlertsService { static async getAll(): Promise<PolicyAlert[]> { const d = localStorage.getItem(SK.ALERTS); return d ? JSON.parse(d) : []; } static async create(data: Partial<PolicyAlert>): Promise<PolicyAlert> { const list = await this.getAll(); const item: PolicyAlert = { alertId: 'alert-' + Date.now(), alertType: data.alertType || 'approval', severity: data.severity || 'low', title: data.title || '', message: data.message || '', relatedEntity: data.relatedEntity || {} as any, status: data.status || 'active', createdAt: new Date().toISOString(), ...data }; list.push(item); localStorage.setItem(SK.ALERTS, JSON.stringify(list)); return item; } }
+
+export class PolicyService {
+  private static endpoint = '/policy-mgmt/policies';
+
+  static async getAll(): Promise<Policy[]> {
+    try {
+      const response = await APIClient.get<{ policies?: Policy[] }>(this.endpoint);
+      return response.policies || [];
+    } catch (error) {
+      console.error('Error fetching policies:', error);
+      return [];
+    }
+  }
+
+  static async create(data: Partial<Policy>): Promise<Policy> {
+    const response = await APIClient.post<{ policy: Policy }>(this.endpoint, data);
+    return response.policy;
+  }
+
+  static async update(id: string, updates: Partial<Policy>): Promise<Policy> {
+    const response = await APIClient.put<{ policy: Policy }>(`${this.endpoint}/${id}`, updates);
+    return response.policy;
+  }
+
+  static async delete(id: string): Promise<void> {
+    await APIClient.delete(`${this.endpoint}/${id}`);
+  }
+}
+
+export class PolicySettingsService {
+  private static endpoint = '/policy-mgmt/settings';
+
+  static async get(): Promise<PolicySettings | null> {
+    try {
+      const response = await APIClient.get<{ settings?: PolicySettings }>(this.endpoint);
+      return response.settings || null;
+    } catch (error) {
+      console.error('Error fetching policy settings:', error);
+      return null;
+    }
+  }
+
+  static async update(s: Partial<PolicySettings>): Promise<PolicySettings> {
+    const response = await APIClient.put<{ settings: PolicySettings }>(this.endpoint, s);
+    return response.settings;
+  }
+}
+
+export class AlertsService {
+  private static endpoint = '/policy-mgmt/alerts';
+
+  static async getAll(): Promise<PolicyAlert[]> {
+    try {
+      const response = await APIClient.get<{ alerts?: PolicyAlert[] }>(this.endpoint);
+      return response.alerts || [];
+    } catch (error) {
+      console.error('Error fetching policy alerts:', error);
+      return [];
+    }
+  }
+
+  static async create(data: Partial<PolicyAlert>): Promise<PolicyAlert> {
+    const response = await APIClient.post<{ alert: PolicyAlert }>(this.endpoint, data);
+    return response.alert;
+  }
+
+  static async update(id: string, updates: Partial<PolicyAlert>): Promise<PolicyAlert> {
+    const response = await APIClient.put<{ alert: PolicyAlert }>(`${this.endpoint}/${id}`, updates);
+    return response.alert;
+  }
+
+  static async delete(id: string): Promise<void> {
+    await APIClient.delete(`${this.endpoint}/${id}`);
+  }
+}

@@ -54,11 +54,11 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, className }) => {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-celestial-indigo to-quantum-rose flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center">
             <span className="text-white font-bold text-sm">A</span>
           </div>
           <span className="hidden sm:block font-display font-semibold text-ink-black dark:text-pearl">
-            AURA
+            AuraOS
           </span>
         </Link>
 

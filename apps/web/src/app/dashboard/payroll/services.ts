@@ -1,8 +1,9 @@
 /**
  * Payroll Service Layer
- * Production-ready service layer with localStorage persistence and API-ready structure
+ * Production-ready service layer with API integration
  */
 
+import { APIClient } from '@/lib/api-client';
 import {
     PayrollRun,
     Payslip,
@@ -18,166 +19,75 @@ import {
 } from './types';
 
 // ============================================================================
-// CONSTANTS
-// ============================================================================
-
-const API_BASE = '/api/payroll'; // TODO: Replace with actual API endpoint
-const STORAGE_KEYS = {
-    PAYROLL_RUNS: 'payroll_runs',
-    PAYSLIPS: 'payslips',
-    EMPLOYEE_SALARIES: 'employee_salaries',
-    TAX_DECLARATIONS: 'tax_declarations',
-    REIMBURSEMENTS: 'reimbursement_claims',
-    LOANS: 'employee_loans',
-    BONUSES: 'bonuses',
-    BANK_FILES: 'bank_files',
-    STATUTORY_REPORTS: 'statutory_reports',
-    SETTINGS: 'payroll_settings',
-};
-
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-// ============================================================================
-// STORAGE SERVICE
-// ============================================================================
-
-class StorageService {
-    static save<T>(key: string, data: T): void {
-        if (typeof window === 'undefined') return;
-        localStorage.setItem(key, JSON.stringify(data));
-    }
-
-    static load<T>(key: string): T | null {
-        if (typeof window === 'undefined') return null;
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : null;
-    }
-
-    static remove(key: string): void {
-        if (typeof window === 'undefined') return;
-        localStorage.removeItem(key);
-    }
-}
-
-// ============================================================================
 // PAYROLL RUNS SERVICE
 // ============================================================================
 
 export class PayrollRunService {
+    private static endpoint = '/payroll';
+
     /**
      * Get all payroll runs
      */
     static async getPayrollRuns(): Promise<PayrollRun[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/runs`);
-        // return response.json();
-
-        const stored = StorageService.load<PayrollRun[]>(STORAGE_KEYS.PAYROLL_RUNS);
-        return stored || [];
+        try {
+            const response = await APIClient.get<{ runs?: PayrollRun[] }>(this.endpoint);
+            return response.runs || [];
+        } catch (error) {
+            console.error('Error fetching payroll runs:', error);
+            return [];
+        }
     }
 
     /**
      * Get single payroll run
      */
     static async getPayrollRun(id: string): Promise<PayrollRun | null> {
-        await delay(200);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/runs/${id}`);
-        // return response.json();
-
-        const runs = await this.getPayrollRuns();
-        return runs.find(run => run.id === id) || null;
+        try {
+            const response = await APIClient.get<{ run?: PayrollRun }>(`${this.endpoint}/${id}`);
+            return response.run || null;
+        } catch (error) {
+            console.error('Error fetching payroll run:', error);
+            return null;
+        }
     }
 
     /**
      * Create new payroll run
      */
-    static async createPayrollRun(run: PayrollRun): Promise<PayrollRun> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/runs`, {
-        //     method: 'POST',
-        //     body: JSON.stringify(run),
-        // });
-        // return response.json();
-
-        const runs = await this.getPayrollRuns();
-        runs.unshift(run);
-        StorageService.save(STORAGE_KEYS.PAYROLL_RUNS, runs);
-        return run;
+    static async createPayrollRun(run: Partial<PayrollRun>): Promise<PayrollRun> {
+        const response = await APIClient.post<{ run: PayrollRun }>(this.endpoint, run);
+        return response.run;
     }
 
     /**
      * Update payroll run
      */
     static async updatePayrollRun(id: string, updates: Partial<PayrollRun>): Promise<PayrollRun> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/runs/${id}`, {
-        //     method: 'PUT',
-        //     body: JSON.stringify(updates),
-        // });
-        // return response.json();
-
-        const runs = await this.getPayrollRuns();
-        const index = runs.findIndex(run => run.id === id);
-        if (index === -1) throw new Error('Payroll run not found');
-
-        runs[index] = { ...runs[index], ...updates, updatedAt: new Date().toISOString() };
-        StorageService.save(STORAGE_KEYS.PAYROLL_RUNS, runs);
-        return runs[index];
+        const response = await APIClient.put<{ run: PayrollRun }>(`${this.endpoint}/${id}`, updates);
+        return response.run;
     }
 
     /**
      * Delete payroll run
      */
     static async deletePayrollRun(id: string): Promise<void> {
-        await delay(200);
-        // TODO: Replace with real API call
-        // await fetch(`${API_BASE}/runs/${id}`, { method: 'DELETE' });
-
-        const runs = await this.getPayrollRuns();
-        const filtered = runs.filter(run => run.id !== id);
-        StorageService.save(STORAGE_KEYS.PAYROLL_RUNS, filtered);
+        await APIClient.delete(`${this.endpoint}/${id}`);
     }
 
     /**
      * Process payroll run (move to next step)
      */
     static async processStep(id: string, step: PayrollRun['currentStep']): Promise<PayrollRun> {
-        await delay(500);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/runs/${id}/process`, {
-        //     method: 'POST',
-        //     body: JSON.stringify({ step }),
-        // });
-        // return response.json();
-
-        return this.updatePayrollRun(id, { currentStep: step });
+        const response = await APIClient.post<{ run: PayrollRun }>(`${this.endpoint}/${id}/process`, { step });
+        return response.run;
     }
 
     /**
      * Approve and disburse payroll
      */
     static async approvePayroll(id: string, approvedBy: string): Promise<PayrollRun> {
-        await delay(500);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/runs/${id}/approve`, {
-        //     method: 'POST',
-        //     body: JSON.stringify({ approvedBy }),
-        // });
-        // return response.json();
-
-        return this.updatePayrollRun(id, {
-            status: 'approved',
-            approvedBy,
-            approvedAt: new Date().toISOString(),
-        });
+        const response = await APIClient.post<{ run: PayrollRun }>(`${this.endpoint}/${id}/approve`, { approvedBy });
+        return response.run;
     }
 }
 
@@ -186,60 +96,49 @@ export class PayrollRunService {
 // ============================================================================
 
 export class PayslipService {
+    private static endpoint = '/payroll/payslips';
+
     /**
      * Get all payslips (optionally filtered by employee)
      */
     static async getPayslips(employeeId?: string): Promise<Payslip[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const url = employeeId ? `${API_BASE}/payslips?employeeId=${employeeId}` : `${API_BASE}/payslips`;
-        // const response = await fetch(url);
-        // return response.json();
-
-        const stored = StorageService.load<Payslip[]>(STORAGE_KEYS.PAYSLIPS) || [];
-        return employeeId ? stored.filter(p => p.employeeId === employeeId) : stored;
+        try {
+            const url = employeeId ? `${this.endpoint}?employeeId=${employeeId}` : this.endpoint;
+            const response = await APIClient.get<{ payslips?: Payslip[] }>(url);
+            return response.payslips || [];
+        } catch (error) {
+            console.error('Error fetching payslips:', error);
+            return [];
+        }
     }
 
     /**
      * Get single payslip
      */
     static async getPayslip(id: string): Promise<Payslip | null> {
-        await delay(200);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/payslips/${id}`);
-        // return response.json();
-
-        const payslips = await this.getPayslips();
-        return payslips.find(p => p.id === id) || null;
+        try {
+            const response = await APIClient.get<{ payslip?: Payslip }>(`${this.endpoint}/${id}`);
+            return response.payslip || null;
+        } catch (error) {
+            console.error('Error fetching payslip:', error);
+            return null;
+        }
     }
 
     /**
      * Generate payslips for a payroll run
      */
     static async generatePayslips(payrollRunId: string): Promise<Payslip[]> {
-        await delay(1000);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/payslips/generate`, {
-        //     method: 'POST',
-        //     body: JSON.stringify({ payrollRunId }),
-        // });
-        // return response.json();
-
-        // For now, return empty array (would be generated based on employee salaries)
-        return [];
+        const response = await APIClient.post<{ payslips: Payslip[] }>(`${this.endpoint}/generate`, { payrollRunId });
+        return response.payslips;
     }
 
     /**
      * Download payslip as PDF
      */
     static async downloadPayslip(id: string): Promise<Blob> {
-        await delay(500);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/payslips/${id}/pdf`);
-        // return response.blob();
-
-        // Mock PDF blob
-        return new Blob(['Mock PDF content'], { type: 'application/pdf' });
+        const response = await APIClient.get<Blob>(`${this.endpoint}/${id}/pdf`);
+        return response;
     }
 }
 
@@ -248,51 +147,40 @@ export class PayslipService {
 // ============================================================================
 
 export class EmployeeSalaryService {
+    private static endpoint = '/payroll/employee-salaries';
+
     /**
      * Get all employee salaries
      */
     static async getEmployeeSalaries(): Promise<EmployeeSalary[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/salaries`);
-        // return response.json();
-
-        const stored = StorageService.load<EmployeeSalary[]>(STORAGE_KEYS.EMPLOYEE_SALARIES);
-        return stored || [];
+        try {
+            const response = await APIClient.get<{ salaries?: EmployeeSalary[] }>(this.endpoint);
+            return response.salaries || [];
+        } catch (error) {
+            console.error('Error fetching employee salaries:', error);
+            return [];
+        }
     }
 
     /**
      * Get employee salary
      */
     static async getEmployeeSalary(employeeId: string): Promise<EmployeeSalary | null> {
-        await delay(200);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/salaries/${employeeId}`);
-        // return response.json();
-
-        const salaries = await this.getEmployeeSalaries();
-        return salaries.find(s => s.employeeId === employeeId) || null;
+        try {
+            const response = await APIClient.get<{ salary?: EmployeeSalary }>(`${this.endpoint}/${employeeId}`);
+            return response.salary || null;
+        } catch (error) {
+            console.error('Error fetching employee salary:', error);
+            return null;
+        }
     }
 
     /**
      * Update employee salary
      */
     static async updateEmployeeSalary(employeeId: string, updates: Partial<EmployeeSalary>): Promise<EmployeeSalary> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/salaries/${employeeId}`, {
-        //     method: 'PUT',
-        //     body: JSON.stringify(updates),
-        // });
-        // return response.json();
-
-        const salaries = await this.getEmployeeSalaries();
-        const index = salaries.findIndex(s => s.employeeId === employeeId);
-        if (index === -1) throw new Error('Employee salary not found');
-
-        salaries[index] = { ...salaries[index], ...updates, updatedAt: new Date().toISOString() };
-        StorageService.save(STORAGE_KEYS.EMPLOYEE_SALARIES, salaries);
-        return salaries[index];
+        const response = await APIClient.put<{ salary: EmployeeSalary }>(`${this.endpoint}/${employeeId}`, updates);
+        return response.salary;
     }
 }
 
@@ -301,75 +189,52 @@ export class EmployeeSalaryService {
 // ============================================================================
 
 export class TaxDeclarationService {
+    private static endpoint = '/payroll/tax-calculation';
+
     /**
      * Get tax declarations (optionally filtered by employee)
      */
     static async getTaxDeclarations(employeeId?: string): Promise<TaxDeclaration[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const url = employeeId ? `${API_BASE}/tax-declarations?employeeId=${employeeId}` : `${API_BASE}/tax-declarations`;
-        // const response = await fetch(url);
-        // return response.json();
-
-        const stored = StorageService.load<TaxDeclaration[]>(STORAGE_KEYS.TAX_DECLARATIONS) || [];
-        return employeeId ? stored.filter(d => d.employeeId === employeeId) : stored;
+        try {
+            const url = employeeId ? `${this.endpoint}?employeeId=${employeeId}` : this.endpoint;
+            const response = await APIClient.get<{ declarations?: TaxDeclaration[] }>(url);
+            return response.declarations || [];
+        } catch (error) {
+            console.error('Error fetching tax declarations:', error);
+            return [];
+        }
     }
 
     /**
      * Get single tax declaration
      */
     static async getTaxDeclaration(id: string): Promise<TaxDeclaration | null> {
-        await delay(200);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/tax-declarations/${id}`);
-        // return response.json();
-
-        const declarations = await this.getTaxDeclarations();
-        return declarations.find(d => d.id === id) || null;
+        try {
+            const response = await APIClient.get<{ declaration?: TaxDeclaration }>(`${this.endpoint}/${id}`);
+            return response.declaration || null;
+        } catch (error) {
+            console.error('Error fetching tax declaration:', error);
+            return null;
+        }
     }
 
     /**
      * Create/Update tax declaration
      */
-    static async saveDeclaration(declaration: TaxDeclaration): Promise<TaxDeclaration> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/tax-declarations`, {
-        //     method: 'POST',
-        //     body: JSON.stringify(declaration),
-        // });
-        // return response.json();
-
-        const declarations = await this.getTaxDeclarations();
-        const index = declarations.findIndex(d => d.id === declaration.id);
-
-        if (index >= 0) {
-            declarations[index] = { ...declaration, updatedAt: new Date().toISOString() };
-        } else {
-            declarations.unshift(declaration);
-        }
-
-        StorageService.save(STORAGE_KEYS.TAX_DECLARATIONS, declarations);
-        return declaration;
+    static async saveDeclaration(declaration: Partial<TaxDeclaration>): Promise<TaxDeclaration> {
+        const response = await APIClient.post<{ declaration: TaxDeclaration }>(this.endpoint, declaration);
+        return response.declaration;
     }
 
     /**
      * Upload tax proof document
      */
     static async uploadProof(declarationId: string, categoryId: string, file: File): Promise<string> {
-        await delay(500);
-        // TODO: Replace with real API call
-        // const formData = new FormData();
-        // formData.append('file', file);
-        // const response = await fetch(`${API_BASE}/tax-declarations/${declarationId}/proofs`, {
-        //     method: 'POST',
-        //     body: formData,
-        // });
-        // const data = await response.json();
-        // return data.url;
-
-        // Mock file URL
-        return `https://storage.example.com/tax-proofs/${declarationId}/${file.name}`;
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('categoryId', categoryId);
+        const response = await APIClient.post<{ url: string }>(`${this.endpoint}/${declarationId}/proofs`, formData);
+        return response.url;
     }
 }
 
@@ -378,65 +243,40 @@ export class TaxDeclarationService {
 // ============================================================================
 
 export class ReimbursementService {
+    private static endpoint = '/payroll/reimbursements';
+
     /**
      * Get reimbursement claims (optionally filtered by employee)
      */
     static async getClaims(employeeId?: string): Promise<ReimbursementClaim[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const url = employeeId ? `${API_BASE}/reimbursements?employeeId=${employeeId}` : `${API_BASE}/reimbursements`;
-        // const response = await fetch(url);
-        // return response.json();
-
-        const stored = StorageService.load<ReimbursementClaim[]>(STORAGE_KEYS.REIMBURSEMENTS) || [];
-        return employeeId ? stored.filter(c => c.employeeId === employeeId) : stored;
+        try {
+            const url = employeeId ? `${this.endpoint}?employeeId=${employeeId}` : this.endpoint;
+            const response = await APIClient.get<{ claims?: ReimbursementClaim[] }>(url);
+            return response.claims || [];
+        } catch (error) {
+            console.error('Error fetching reimbursement claims:', error);
+            return [];
+        }
     }
 
     /**
      * Create reimbursement claim
      */
-    static async createClaim(claim: ReimbursementClaim): Promise<ReimbursementClaim> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/reimbursements`, {
-        //     method: 'POST',
-        //     body: JSON.stringify(claim),
-        // });
-        // return response.json();
-
-        const claims = await this.getClaims();
-        claims.unshift(claim);
-        StorageService.save(STORAGE_KEYS.REIMBURSEMENTS, claims);
-        return claim;
+    static async createClaim(claim: Partial<ReimbursementClaim>): Promise<ReimbursementClaim> {
+        const response = await APIClient.post<{ claim: ReimbursementClaim }>(this.endpoint, claim);
+        return response.claim;
     }
 
     /**
      * Update claim status (approve/reject)
      */
     static async updateClaimStatus(id: string, status: ReimbursementClaim['status'], approver?: string, rejectionReason?: string): Promise<ReimbursementClaim> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/reimbursements/${id}/status`, {
-        //     method: 'PUT',
-        //     body: JSON.stringify({ status, approver, rejectionReason }),
-        // });
-        // return response.json();
-
-        const claims = await this.getClaims();
-        const index = claims.findIndex(c => c.id === id);
-        if (index === -1) throw new Error('Claim not found');
-
-        claims[index] = {
-            ...claims[index],
+        const response = await APIClient.put<{ claim: ReimbursementClaim }>(`${this.endpoint}/${id}/status`, {
             status,
             approver,
-            rejectionReason,
-            approvedAt: status === 'approved' ? new Date().toISOString() : undefined,
-            updatedAt: new Date().toISOString(),
-        };
-
-        StorageService.save(STORAGE_KEYS.REIMBURSEMENTS, claims);
-        return claims[index];
+            rejectionReason
+        });
+        return response.claim;
     }
 }
 
@@ -445,57 +285,36 @@ export class ReimbursementService {
 // ============================================================================
 
 export class LoanService {
+    private static endpoint = '/payroll/loan-recovery';
+
     /**
      * Get employee loans (optionally filtered by employee)
      */
     static async getLoans(employeeId?: string): Promise<EmployeeLoan[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const url = employeeId ? `${API_BASE}/loans?employeeId=${employeeId}` : `${API_BASE}/loans`;
-        // const response = await fetch(url);
-        // return response.json();
-
-        const stored = StorageService.load<EmployeeLoan[]>(STORAGE_KEYS.LOANS) || [];
-        return employeeId ? stored.filter(l => l.employeeId === employeeId) : stored;
+        try {
+            const url = employeeId ? `${this.endpoint}?employeeId=${employeeId}` : this.endpoint;
+            const response = await APIClient.get<{ loans?: EmployeeLoan[] }>(url);
+            return response.loans || [];
+        } catch (error) {
+            console.error('Error fetching loans:', error);
+            return [];
+        }
     }
 
     /**
      * Create employee loan
      */
-    static async createLoan(loan: EmployeeLoan): Promise<EmployeeLoan> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/loans`, {
-        //     method: 'POST',
-        //     body: JSON.stringify(loan),
-        // });
-        // return response.json();
-
-        const loans = await this.getLoans();
-        loans.unshift(loan);
-        StorageService.save(STORAGE_KEYS.LOANS, loans);
-        return loan;
+    static async createLoan(loan: Partial<EmployeeLoan>): Promise<EmployeeLoan> {
+        const response = await APIClient.post<{ loan: EmployeeLoan }>(this.endpoint, loan);
+        return response.loan;
     }
 
     /**
      * Update loan (approve/reject/disburse)
      */
     static async updateLoan(id: string, updates: Partial<EmployeeLoan>): Promise<EmployeeLoan> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/loans/${id}`, {
-        //     method: 'PUT',
-        //     body: JSON.stringify(updates),
-        // });
-        // return response.json();
-
-        const loans = await this.getLoans();
-        const index = loans.findIndex(l => l.id === id);
-        if (index === -1) throw new Error('Loan not found');
-
-        loans[index] = { ...loans[index], ...updates, updatedAt: new Date().toISOString() };
-        StorageService.save(STORAGE_KEYS.LOANS, loans);
-        return loans[index];
+        const response = await APIClient.put<{ loan: EmployeeLoan }>(`${this.endpoint}/${id}`, updates);
+        return response.loan;
     }
 }
 
@@ -504,64 +323,39 @@ export class LoanService {
 // ============================================================================
 
 export class BonusService {
+    private static endpoint = '/payroll/bonus';
+
     /**
      * Get bonuses (optionally filtered by employee)
      */
     static async getBonuses(employeeId?: string): Promise<Bonus[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const url = employeeId ? `${API_BASE}/bonuses?employeeId=${employeeId}` : `${API_BASE}/bonuses`;
-        // const response = await fetch(url);
-        // return response.json();
-
-        const stored = StorageService.load<Bonus[]>(STORAGE_KEYS.BONUSES) || [];
-        return employeeId ? stored.filter(b => b.employeeId === employeeId) : stored;
+        try {
+            const url = employeeId ? `${this.endpoint}?employeeId=${employeeId}` : this.endpoint;
+            const response = await APIClient.get<{ bonuses?: Bonus[] }>(url);
+            return response.bonuses || [];
+        } catch (error) {
+            console.error('Error fetching bonuses:', error);
+            return [];
+        }
     }
 
     /**
      * Create bonus
      */
-    static async createBonus(bonus: Bonus): Promise<Bonus> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/bonuses`, {
-        //     method: 'POST',
-        //     body: JSON.stringify(bonus),
-        // });
-        // return response.json();
-
-        const bonuses = await this.getBonuses();
-        bonuses.unshift(bonus);
-        StorageService.save(STORAGE_KEYS.BONUSES, bonuses);
-        return bonus;
+    static async createBonus(bonus: Partial<Bonus>): Promise<Bonus> {
+        const response = await APIClient.post<{ bonus: Bonus }>(this.endpoint, bonus);
+        return response.bonus;
     }
 
     /**
      * Update bonus status
      */
     static async updateBonusStatus(id: string, status: Bonus['status'], approvedBy?: string): Promise<Bonus> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/bonuses/${id}/status`, {
-        //     method: 'PUT',
-        //     body: JSON.stringify({ status, approvedBy }),
-        // });
-        // return response.json();
-
-        const bonuses = await this.getBonuses();
-        const index = bonuses.findIndex(b => b.id === id);
-        if (index === -1) throw new Error('Bonus not found');
-
-        bonuses[index] = {
-            ...bonuses[index],
+        const response = await APIClient.put<{ bonus: Bonus }>(`${this.endpoint}/${id}/status`, {
             status,
-            approvedBy,
-            approvedAt: status === 'approved' ? new Date().toISOString() : undefined,
-            updatedAt: new Date().toISOString(),
-        };
-
-        StorageService.save(STORAGE_KEYS.BONUSES, bonuses);
-        return bonuses[index];
+            approvedBy
+        });
+        return response.bonus;
     }
 }
 
@@ -570,44 +364,25 @@ export class BonusService {
 // ============================================================================
 
 export class BankFileService {
+    private static endpoint = '/payroll/bank-file';
+
     /**
      * Generate bank file for payroll disbursement
      */
     static async generateBankFile(payrollRunId: string, fileType: BankFile['fileType']): Promise<BankFile> {
-        await delay(1000);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/bank-files/generate`, {
-        //     method: 'POST',
-        //     body: JSON.stringify({ payrollRunId, fileType }),
-        // });
-        // return response.json();
-
-        const bankFile: BankFile = {
-            id: `bf_${Date.now()}`,
+        const response = await APIClient.post<{ bankFile: BankFile }>(`${this.endpoint}/generate`, {
             payrollRunId,
-            fileName: `payroll_${payrollRunId}_${fileType}.txt`,
-            fileType,
-            totalAmount: 0, // Would be calculated
-            totalTransactions: 0,
-            generatedAt: new Date().toISOString(),
-            generatedBy: 'System',
-            uploadedToBank: false,
-        };
-
-        return bankFile;
+            fileType
+        });
+        return response.bankFile;
     }
 
     /**
      * Download bank file
      */
     static async downloadBankFile(id: string): Promise<Blob> {
-        await delay(500);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/bank-files/${id}/download`);
-        // return response.blob();
-
-        // Mock file blob
-        return new Blob(['Mock bank file content'], { type: 'text/plain' });
+        const response = await APIClient.get<Blob>(`${this.endpoint}/${id}/download`);
+        return response;
     }
 }
 
@@ -616,43 +391,31 @@ export class BankFileService {
 // ============================================================================
 
 export class StatutoryReportService {
+    private static endpoint = '/payroll/statutory-deductions';
+
     /**
      * Get statutory reports
      */
     static async getReports(): Promise<StatutoryReport[]> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/statutory-reports`);
-        // return response.json();
-
-        const stored = StorageService.load<StatutoryReport[]>(STORAGE_KEYS.STATUTORY_REPORTS);
-        return stored || [];
+        try {
+            const response = await APIClient.get<{ reports?: StatutoryReport[] }>(this.endpoint);
+            return response.reports || [];
+        } catch (error) {
+            console.error('Error fetching statutory reports:', error);
+            return [];
+        }
     }
 
     /**
      * Generate statutory report
      */
     static async generateReport(reportType: StatutoryReport['reportType'], month: string, year: number): Promise<StatutoryReport> {
-        await delay(1000);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/statutory-reports/generate`, {
-        //     method: 'POST',
-        //     body: JSON.stringify({ reportType, month, year }),
-        // });
-        // return response.json();
-
-        const report: StatutoryReport = {
-            id: `sr_${Date.now()}`,
+        const response = await APIClient.post<{ report: StatutoryReport }>(`${this.endpoint}/generate`, {
             reportType,
             month,
-            year,
-            totalEmployees: 0,
-            totalAmount: 0,
-            dueDate: new Date().toISOString(),
-            status: 'pending',
-        };
-
-        return report;
+            year
+        });
+        return response.report;
     }
 }
 
@@ -661,32 +424,27 @@ export class StatutoryReportService {
 // ============================================================================
 
 export class PayrollSettingsService {
+    private static endpoint = '/payroll/settings';
+
     /**
      * Get payroll settings
      */
     static async getSettings(): Promise<PayrollSettings | null> {
-        await delay(200);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/settings`);
-        // return response.json();
-
-        return StorageService.load<PayrollSettings>(STORAGE_KEYS.SETTINGS);
+        try {
+            const response = await APIClient.get<{ settings?: PayrollSettings }>(this.endpoint);
+            return response.settings || null;
+        } catch (error) {
+            console.error('Error fetching payroll settings:', error);
+            return null;
+        }
     }
 
     /**
      * Update payroll settings
      */
-    static async updateSettings(settings: PayrollSettings): Promise<PayrollSettings> {
-        await delay(300);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/settings`, {
-        //     method: 'PUT',
-        //     body: JSON.stringify(settings),
-        // });
-        // return response.json();
-
-        StorageService.save(STORAGE_KEYS.SETTINGS, settings);
-        return settings;
+    static async updateSettings(settings: Partial<PayrollSettings>): Promise<PayrollSettings> {
+        const response = await APIClient.put<{ settings: PayrollSettings }>(this.endpoint, settings);
+        return response.settings;
     }
 }
 
@@ -695,37 +453,50 @@ export class PayrollSettingsService {
 // ============================================================================
 
 export class PayrollAnalyticsService {
+    private static endpoint = '/payroll/reports';
+
     /**
      * Get payroll statistics
      */
     static async getStats(): Promise<PayrollStats> {
-        await delay(500);
-        // TODO: Replace with real API call
-        // const response = await fetch(`${API_BASE}/analytics/stats`);
-        // return response.json();
-
-        // Mock stats calculation
-        const salaries = await EmployeeSalaryService.getEmployeeSalaries();
-        const reimbursements = await ReimbursementService.getClaims();
-        const loans = await LoanService.getLoans();
-        const bonuses = await BonusService.getBonuses();
-
-        const stats: PayrollStats = {
-            totalEmployees: salaries.length,
-            activePayrolls: 1,
-            monthlyPayrollCost: salaries.reduce((sum, s) => sum + s.monthlyCTC, 0),
-            averageSalary: salaries.length > 0 ? salaries.reduce((sum, s) => sum + s.monthlyCTC, 0) / salaries.length : 0,
-            highestSalary: Math.max(...salaries.map(s => s.monthlyCTC), 0),
-            lowestSalary: Math.min(...salaries.map(s => s.monthlyCTC), 0),
-            totalReimbursements: reimbursements.filter(r => r.status === 'approved').reduce((sum, r) => sum + r.amount, 0),
-            totalLoans: loans.filter(l => l.status === 'active').reduce((sum, l) => sum + l.remainingBalance, 0),
-            totalBonuses: bonuses.filter(b => b.status === 'approved').reduce((sum, b) => sum + b.amount, 0),
-            payrollTrend: [],
-            departmentCosts: [],
-            pendingStatutoryReturns: 0,
-            overdueReturns: 0,
-        };
-
-        return stats;
+        try {
+            const response = await APIClient.get<{ stats?: PayrollStats }>(`${this.endpoint}/stats`);
+            if (response.stats) {
+                return response.stats;
+            }
+            // Return default stats if none available
+            return {
+                totalEmployees: 0,
+                activePayrolls: 0,
+                monthlyPayrollCost: 0,
+                averageSalary: 0,
+                highestSalary: 0,
+                lowestSalary: 0,
+                totalReimbursements: 0,
+                totalLoans: 0,
+                totalBonuses: 0,
+                payrollTrend: [],
+                departmentCosts: [],
+                pendingStatutoryReturns: 0,
+                overdueReturns: 0,
+            };
+        } catch (error) {
+            console.error('Error fetching payroll stats:', error);
+            return {
+                totalEmployees: 0,
+                activePayrolls: 0,
+                monthlyPayrollCost: 0,
+                averageSalary: 0,
+                highestSalary: 0,
+                lowestSalary: 0,
+                totalReimbursements: 0,
+                totalLoans: 0,
+                totalBonuses: 0,
+                payrollTrend: [],
+                departmentCosts: [],
+                pendingStatutoryReturns: 0,
+                overdueReturns: 0,
+            };
+        }
     }
 }

@@ -22,6 +22,16 @@ import { logger } from '@/lib/logger';
   validateQueryParams,
 } from '@/lib/validators';
 
+// Generic schema for entities without specific schemas
+const GenericCreateSchema = z.object({
+  code: z.string().optional(),
+  name: z.string().min(1),
+  description: z.string().optional(),
+  status: z.enum(['Active', 'Inactive']).optional().default('Active'),
+}).passthrough();
+
+const GenericUpdateSchema = GenericCreateSchema.partial();
+
 // Entity configuration
 const ENTITIES: Record<string, {
   model: any;
@@ -32,6 +42,7 @@ const ENTITIES: Record<string, {
   include?: any;
   unique?: string;
 }> = {
+  // Geographic entities
   countries: {
     model: prisma.country,
     createSchema: CreateCountrySchema,
@@ -55,6 +66,8 @@ const ENTITIES: Record<string, {
     searchFields: ['name'],
     include: { state: { select: { id: true, name: true, country: { select: { id: true, name: true } } } } },
   },
+
+  // Currency and language
   currencies: {
     model: prisma.currency,
     createSchema: CreateCurrencySchema,
@@ -66,6 +79,223 @@ const ENTITIES: Record<string, {
     model: prisma.language,
     createSchema: CreateLanguageSchema,
     updateSchema: UpdateLanguageSchema,
+    searchFields: ['name', 'code'],
+    unique: 'code',
+  },
+
+  // Organizational structure
+  companies: {
+    model: prisma.company,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+    unique: 'code',
+  },
+  departments: {
+    model: prisma.department,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+    unique: 'code',
+  },
+  locations: {
+    model: prisma.location,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+  },
+  'business-units': {
+    model: prisma.businessUnit,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+    unique: 'code',
+  },
+  'cost-centers': {
+    model: prisma.costCenter,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+    unique: 'code',
+  },
+
+  // Job structure
+  designations: {
+    model: prisma.designation,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+  },
+  grades: {
+    model: prisma.grade,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+    unique: 'code',
+  },
+  'job-families': {
+    model: prisma.jobFamily,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+  },
+  'job-functions': {
+    model: prisma.jobFunction,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+  },
+  'job-profiles': {
+    model: prisma.jobProfile,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['title', 'code'],
+  },
+
+  // Skills and competencies
+  skills: {
+    model: prisma.skill,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name'],
+  },
+  competencies: {
+    model: prisma.competency,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+  },
+
+  // Banking and finance
+  banks: {
+    model: prisma.bank,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+  },
+
+  // Time and attendance
+  holidays: {
+    model: prisma.holiday,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name'],
+  },
+  'leave-types': {
+    model: prisma.leaveType,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+    unique: 'code',
+  },
+  'shift-types': {
+    model: prisma.shiftType,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+  },
+
+  // Document types
+  'document-types': {
+    model: prisma.documentType,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+  },
+
+  // Employment
+  'employment-types': {
+    model: prisma.employmentType,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name'],
+  },
+  'employment-statuses': {
+    model: prisma.employeeStatus,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name'],
+  },
+
+  // Education and relationships
+  'education-levels': {
+    model: prisma.educationLevel,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name'],
+  },
+  relationships: {
+    model: prisma.relationship,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name'],
+  },
+
+  // Exit reasons
+  'exit-reasons': {
+    model: prisma.exitReason,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name'],
+  },
+
+  // Payroll
+  'pay-components': {
+    model: prisma.payComponent,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+    unique: 'code',
+  },
+  'salary-structures': {
+    model: prisma.salaryStructure,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+  },
+
+  // Compliance
+  statutory: {
+    model: prisma.statutory,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+  },
+  'tax-regimes': {
+    model: prisma.taxRegime,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'code'],
+  },
+
+  // Admin
+  'roles-permissions': {
+    model: prisma.role,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
+    searchFields: ['name', 'description'],
+  },
+  'system-settings': {
+    model: prisma.systemSetting,
+    createSchema: z.object({
+      key: z.string().min(1),
+      value: z.string(),
+      group: z.string().optional(),
+      description: z.string().optional(),
+    }).passthrough(),
+    updateSchema: z.object({
+      key: z.string().optional(),
+      value: z.string().optional(),
+      group: z.string().optional(),
+      description: z.string().optional(),
+    }).passthrough(),
+    searchFields: ['key', 'group'],
+    unique: 'key',
+  },
+  tenants: {
+    model: prisma.tenant,
+    createSchema: GenericCreateSchema,
+    updateSchema: GenericUpdateSchema,
     searchFields: ['name', 'code'],
     unique: 'code',
   },

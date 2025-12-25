@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     AlertCircle,
     CheckCircle,
@@ -10,17 +10,74 @@ import {
     Calendar,
     ArrowRight
 } from 'lucide-react';
+import { AttendanceAnalyticsService } from '../services';
 
-// --- MOCK DATA ---
+interface Exception {
+    id: number | string;
+    emp: string;
+    date: string;
+    type: string;
+    actual: string;
+    expected: string;
+    status: string;
+}
 
-const EXCEPTIONS = [
-    { id: 1, emp: 'Alice Smith', date: '02 Apr 2025', type: 'Late In', actual: '09:45 AM', expected: '09:00 AM', status: 'Pending' },
-    { id: 2, emp: 'Bob Jones', date: '02 Apr 2025', type: 'Early Out', actual: '04:30 PM', expected: '06:00 PM', status: 'Pending' },
-    { id: 3, emp: 'Charlie Day', date: '01 Apr 2025', type: 'Absent (No Punch)', actual: '--:--', expected: '09:00 AM', status: 'Flagged' },
-    { id: 4, emp: 'Diana Prince', date: '01 Apr 2025', type: 'Late In', actual: '09:15 AM', expected: '09:00 AM', status: 'Auto-Regularized' },
-];
+interface ExceptionStats {
+    total: number;
+    lateIn: number;
+    earlyOut: number;
+    absent: number;
+}
 
 export default function AttendanceExceptionsPage() {
+    const [exceptionList, setExceptionList] = useState<Exception[]>([]);
+    const [stats, setStats] = useState<ExceptionStats>({
+        total: 0,
+        lateIn: 0,
+        earlyOut: 0,
+        absent: 0
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchExceptions();
+    }, []);
+
+    const fetchExceptions = async () => {
+        try {
+            const exceptions = await AttendanceAnalyticsService.getExceptions();
+            if (exceptions.length > 0) {
+                setExceptionList(exceptions as any);
+                // Calculate stats from exceptions
+                const lateIn = exceptions.filter((e: any) => e.type?.includes('Late')).length;
+                const earlyOut = exceptions.filter((e: any) => e.type?.includes('Early')).length;
+                const absent = exceptions.filter((e: any) => e.type?.includes('Absent')).length;
+                setStats({
+                    total: exceptions.length,
+                    lateIn,
+                    earlyOut,
+                    absent,
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching exceptions:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResolve = async (id: string | number, action: 'regularize' | 'deduct') => {
+        setLoading(true);
+        try {
+            // TODO: Implement exception resolution via API
+            console.log('Resolving exception:', id, action);
+            await fetchExceptions();
+        } catch (error) {
+            console.error('Error resolving exception:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -46,19 +103,19 @@ export default function AttendanceExceptionsPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="p-4 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <p className="text-xs font-bold text-silver-mist uppercase">Total Exceptions</p>
-                    <h3 className="text-2xl font-bold text-ink-black dark:text-pearl">42</h3>
+                    <h3 className="text-2xl font-bold text-ink-black dark:text-pearl">{stats.total}</h3>
                 </div>
                 <div className="p-4 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <p className="text-xs font-bold text-silver-mist uppercase">Late In</p>
-                    <h3 className="text-2xl font-bold text-amber-500">18</h3>
+                    <h3 className="text-2xl font-bold text-amber-500">{stats.lateIn}</h3>
                 </div>
                 <div className="p-4 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <p className="text-xs font-bold text-silver-mist uppercase">Early Out</p>
-                    <h3 className="text-2xl font-bold text-indigo-500">12</h3>
+                    <h3 className="text-2xl font-bold text-indigo-500">{stats.earlyOut}</h3>
                 </div>
                 <div className="p-4 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <p className="text-xs font-bold text-silver-mist uppercase">Absent</p>
-                    <h3 className="text-2xl font-bold text-rose-500">12</h3>
+                    <h3 className="text-2xl font-bold text-rose-500">{stats.absent}</h3>
                 </div>
             </div>
 
@@ -76,7 +133,18 @@ export default function AttendanceExceptionsPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-cloud dark:divide-nebula-purple/20">
-                        {EXCEPTIONS.map((row) => (
+                        {loading ? (
+                            <tr>
+                                <td colSpan={6} className="p-8 text-center">
+                                    <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                                </td>
+                            </tr>
+                        ) : exceptionList.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} className="p-8 text-center text-slate-400">No exceptions found</td>
+                            </tr>
+                        ) : (
+                        exceptionList.map((row) => (
                             <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                                 <td className="px-6 py-4 font-bold text-ink-black dark:text-pearl">{row.emp}</td>
                                 <td className="px-6 py-4 flex items-center gap-2 text-slate-600 dark:text-slate-300">
@@ -101,15 +169,24 @@ export default function AttendanceExceptionsPage() {
                                     <span className="text-xs font-bold text-slate-500">{row.status}</span>
                                 </td>
                                 <td className="px-6 py-4 flex justify-center gap-2">
-                                    <button className="p-1.5 bg-emerald-100 text-emerald-600 rounded hover:bg-emerald-200 transition-colors" title="Regularize">
+                                    <button
+                                        onClick={() => handleResolve(row.id, 'regularize')}
+                                        disabled={loading}
+                                        className="p-1.5 bg-emerald-100 text-emerald-600 rounded hover:bg-emerald-200 transition-colors disabled:opacity-50"
+                                        title="Regularize">
                                         <CheckCircle className="w-4 h-4" />
                                     </button>
-                                    <button className="p-1.5 bg-rose-100 text-rose-600 rounded hover:bg-rose-200 transition-colors" title="Deduct Leave">
+                                    <button
+                                        onClick={() => handleResolve(row.id, 'deduct')}
+                                        disabled={loading}
+                                        className="p-1.5 bg-rose-100 text-rose-600 rounded hover:bg-rose-200 transition-colors disabled:opacity-50"
+                                        title="Deduct Leave">
                                         <XCircle className="w-4 h-4" />
                                     </button>
                                 </td>
                             </tr>
-                        ))}
+                        )))
+                        }
                     </tbody>
                 </table>
             </div>

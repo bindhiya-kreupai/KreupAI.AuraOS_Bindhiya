@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Crown,
     Users,
@@ -16,6 +16,7 @@ import {
     Briefcase
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CourseService } from '../services';
 
 // --- MOCK DATA ---
 
@@ -52,6 +53,26 @@ const HIPOS = [
 ];
 
 export default function LeadershipPage() {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const result = await CourseService.getCourses();
+                setData(result);
+            } catch (error) {
+                console.error('Error fetching leadership courses:', error);
+                setData([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
             {/* Header */}

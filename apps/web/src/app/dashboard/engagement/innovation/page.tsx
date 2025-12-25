@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Lightbulb,
     ThumbsUp,
@@ -18,6 +18,7 @@ import {
     ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { InnovationService } from '../services';
 
 // --- MOCK DATA ---
 
@@ -67,9 +68,30 @@ const LEADERBOARD = [
 ];
 
 export default function InnovationBoxPage() {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('Trending');
     const [showSubmitModal, setShowSubmitModal] = useState(false);
     const [ideas, setIdeas] = useState(IDEAS);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const ideasData = await InnovationService.getIdeas();
+            if (ideasData.length > 0) {
+                setIdeas(ideasData);
+                setData(ideasData);
+            }
+        } catch (error) {
+            console.error('Error fetching ideas:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleVote = (id: number) => {
         setIdeas(prev => prev.map(idea => {

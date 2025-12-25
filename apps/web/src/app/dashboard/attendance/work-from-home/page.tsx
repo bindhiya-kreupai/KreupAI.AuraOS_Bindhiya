@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Home,
     Calendar,
@@ -9,8 +9,55 @@ import {
     Coffee,
     Wifi
 } from 'lucide-react';
+import { WFHService } from '../services';
+
+interface WFHRequest {
+    id: string;
+    employeeId: string;
+    startDate: string;
+    endDate: string;
+    reason: string;
+    status: string;
+    isRecurring: boolean;
+}
+
+interface WFHSummary {
+    availableDays: number;
+    usedDaysThisMonth: number;
+    yearlyLimit: number;
+}
 
 export default function WorkFromHomePage() {
+    const [wfhRequests, setWfhRequests] = useState<WFHRequest[]>([]);
+    const [summary, setSummary] = useState<WFHSummary | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchWFHData();
+    }, []);
+
+    const fetchWFHData = async () => {
+        try {
+            setLoading(true);
+            const result = await WFHService.getWFHRequests();
+            if (result && result.length > 0) {
+                setWfhRequests(result);
+            }
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const summaryData = await WFHService.getWFHSummary('current-user-id', currentMonth);
+            if (summaryData) {
+                setSummary({
+                    availableDays: summaryData.remainingDays || 0,
+                    usedDaysThisMonth: summaryData.usedDays || 0,
+                    yearlyLimit: summaryData.totalDays || 0
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching WFH data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -36,13 +83,13 @@ export default function WorkFromHomePage() {
                     </div>
                     <div className="relative z-10">
                         <p className="text-indigo-100 font-medium mb-1">Available Balance</p>
-                        <h2 className="text-4xl font-bold mb-4">4 Days</h2>
+                        <h2 className="text-4xl font-bold mb-4">{summary?.availableDays || 0} Days</h2>
                         <div className="flex gap-4 text-sm text-indigo-100">
                             <div>
-                                <span className="block font-bold text-white">2</span> used this month
+                                <span className="block font-bold text-white">{summary?.usedDaysThisMonth || 0}</span> used this month
                             </div>
                             <div>
-                                <span className="block font-bold text-white">8</span> yearly cap
+                                <span className="block font-bold text-white">{summary?.yearlyLimit || 0}</span> yearly cap
                             </div>
                         </div>
                     </div>

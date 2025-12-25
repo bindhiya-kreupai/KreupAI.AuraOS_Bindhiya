@@ -13,7 +13,16 @@ import { logger } from '@/lib/logger';
   validationErrorResponse,
 } from '@/lib/validators';
 
+// Generic update schema for entities without specific schemas
+const GenericUpdateSchema = z.object({
+  code: z.string().optional(),
+  name: z.string().optional(),
+  description: z.string().optional(),
+  status: z.enum(['Active', 'Inactive']).optional(),
+}).passthrough();
+
 const ENTITIES: Record<string, { model: any; updateSchema: z.ZodType; include?: any }> = {
+  // Geographic
   countries: { model: prisma.country, updateSchema: UpdateCountrySchema },
   states: {
     model: prisma.state,
@@ -27,6 +36,61 @@ const ENTITIES: Record<string, { model: any; updateSchema: z.ZodType; include?: 
   },
   currencies: { model: prisma.currency, updateSchema: UpdateCurrencySchema },
   languages: { model: prisma.language, updateSchema: UpdateLanguageSchema },
+
+  // Organizational
+  companies: { model: prisma.company, updateSchema: GenericUpdateSchema },
+  departments: { model: prisma.department, updateSchema: GenericUpdateSchema },
+  locations: { model: prisma.location, updateSchema: GenericUpdateSchema },
+  'business-units': { model: prisma.businessUnit, updateSchema: GenericUpdateSchema },
+  'cost-centers': { model: prisma.costCenter, updateSchema: GenericUpdateSchema },
+
+  // Job structure
+  designations: { model: prisma.designation, updateSchema: GenericUpdateSchema },
+  grades: { model: prisma.grade, updateSchema: GenericUpdateSchema },
+  'job-families': { model: prisma.jobFamily, updateSchema: GenericUpdateSchema },
+  'job-functions': { model: prisma.jobFunction, updateSchema: GenericUpdateSchema },
+  'job-profiles': { model: prisma.jobProfile, updateSchema: GenericUpdateSchema },
+
+  // Skills
+  skills: { model: prisma.skill, updateSchema: GenericUpdateSchema },
+  competencies: { model: prisma.competency, updateSchema: GenericUpdateSchema },
+
+  // Banking and time
+  banks: { model: prisma.bank, updateSchema: GenericUpdateSchema },
+  holidays: { model: prisma.holiday, updateSchema: GenericUpdateSchema },
+  'leave-types': { model: prisma.leaveType, updateSchema: GenericUpdateSchema },
+  'shift-types': { model: prisma.shiftType, updateSchema: GenericUpdateSchema },
+
+  // Document and employment
+  'document-types': { model: prisma.documentType, updateSchema: GenericUpdateSchema },
+  'employment-types': { model: prisma.employmentType, updateSchema: GenericUpdateSchema },
+  'employment-statuses': { model: prisma.employeeStatus, updateSchema: GenericUpdateSchema },
+
+  // Education and relationships
+  'education-levels': { model: prisma.educationLevel, updateSchema: GenericUpdateSchema },
+  relationships: { model: prisma.relationship, updateSchema: GenericUpdateSchema },
+  'exit-reasons': { model: prisma.exitReason, updateSchema: GenericUpdateSchema },
+
+  // Payroll
+  'pay-components': { model: prisma.payComponent, updateSchema: GenericUpdateSchema },
+  'salary-structures': { model: prisma.salaryStructure, updateSchema: GenericUpdateSchema },
+
+  // Compliance
+  statutory: { model: prisma.statutory, updateSchema: GenericUpdateSchema },
+  'tax-regimes': { model: prisma.taxRegime, updateSchema: GenericUpdateSchema },
+
+  // Admin
+  'roles-permissions': { model: prisma.role, updateSchema: GenericUpdateSchema },
+  'system-settings': {
+    model: prisma.systemSetting,
+    updateSchema: z.object({
+      key: z.string().optional(),
+      value: z.string().optional(),
+      group: z.string().optional(),
+      description: z.string().optional(),
+    }).passthrough(),
+  },
+  tenants: { model: prisma.tenant, updateSchema: GenericUpdateSchema },
 };
 
 // GET - Fetch single entity

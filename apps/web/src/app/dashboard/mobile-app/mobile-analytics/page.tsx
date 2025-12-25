@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     BarChart2,
     Smartphone,
@@ -12,8 +12,29 @@ import {
     AlertOctagon,
     PieChart
 } from 'lucide-react';
+import { MobileAnalyticsService } from '../services';
 
 export default function MobileAnalyticsPage() {
+    const [analytics, setAnalytics] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await MobileAnalyticsService.getAnalytics();
+            if (result) {
+                setAnalytics(result);
+            }
+        } catch (error) {
+            console.error('Error fetching analytics:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}

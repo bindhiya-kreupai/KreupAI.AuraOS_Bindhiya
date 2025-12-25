@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     GitMerge,
     User,
@@ -9,37 +9,28 @@ import {
     X,
     Star
 } from 'lucide-react';
-
-// --- MOCK DATA ---
-
-const MATCHES = [
-    {
-        role: "Product Manager (Internal)",
-        match_score: 94,
-        skill_gap: 5,
-        strengths: ["Domain Knowledge", "Stakeholder Mgmt"],
-        gaps: ["SQL (Minor)"],
-        action: "Recommended"
-    },
-    {
-        role: "Senior QA Lead",
-        match_score: 82,
-        skill_gap: 15,
-        strengths: ["Testing Frameworks", "Team Leadership"],
-        gaps: ["Automation Strategy"],
-        action: "Training Required"
-    },
-    {
-        role: "Solutions Architect",
-        match_score: 65,
-        skill_gap: 35,
-        strengths: ["System Design"],
-        gaps: ["Cloud Certifications", "Client Facing Exp"],
-        action: "Not Recommended"
-    }
-];
+import { jobMatching } from '@/lib/services/ai-automation-client';
 
 export default function JobMatchingPage() {
+    const [matches, setMatches] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchMatches();
+    }, []);
+
+    const fetchMatches = async () => {
+        try {
+            const result = await jobMatching.getMatches();
+            if (result.success) {
+                setMatches(result.data?.matches || []);
+            }
+        } catch (error) {
+            console.error('Error fetching job matches:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -85,7 +76,7 @@ export default function JobMatchingPage() {
                 <div className="lg:col-span-2 space-y-4">
                     <h2 className="text-lg font-bold text-ink-black dark:text-pearl">Open Opportunities</h2>
 
-                    {MATCHES.map((match, i) => (
+                    {matches.map((match, i) => (
                         <div key={i} className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm relative overflow-hidden">
                             {match.action === 'Recommended' && (
                                 <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-bl-lg">

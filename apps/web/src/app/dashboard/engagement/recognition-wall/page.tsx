@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Award,
     Heart,
@@ -9,9 +9,30 @@ import {
     Plus,
     ThumbsUp
 } from 'lucide-react';
+import { SocialFeedService } from '../services';
 
 export default function RecognitionWallPage() {
-    const posts = [
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const posts = await SocialFeedService.getPosts();
+            setData(posts.filter(p => p.type === 'recognition'));
+        } catch (error) {
+            console.error('Error fetching recognition posts:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Fallback mock data
+    const posts = data.length > 0 ? data : [
         {
             author: 'Sarah Connor',
             authorRole: 'Head of Product',

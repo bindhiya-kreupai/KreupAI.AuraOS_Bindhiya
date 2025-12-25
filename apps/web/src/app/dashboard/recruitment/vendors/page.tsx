@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { RecruitmentSettingsService } from '../services';
 import {
     Briefcase,
     Plus,
@@ -84,6 +85,29 @@ const SPEND_DATA = [
 ];
 
 export default function VendorManagementPage() {
+    const [vendors, setVendors] = useState<Vendor[]>(VENDORS);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchVendors();
+    }, []);
+
+    const fetchVendors = async () => {
+        try {
+            setLoading(true);
+            const data = await RecruitmentSettingsService.getSettings();
+            if (data) {
+                // Vendor data would be part of recruitment settings
+                // For now keeping mock data
+                setVendors(VENDORS);
+            }
+        } catch (error) {
+            console.error('Error fetching vendors:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -134,7 +158,7 @@ export default function VendorManagementPage() {
 
                 {/* Vendor List */}
                 <div className="md:col-span-3 space-y-4">
-                    {VENDORS.map(vendor => (
+                    {vendors.map(vendor => (
                         <div key={vendor.id} className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm hover:shadow-md transition-shadow group">
                             <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
                                 <div className="flex items-start gap-4">

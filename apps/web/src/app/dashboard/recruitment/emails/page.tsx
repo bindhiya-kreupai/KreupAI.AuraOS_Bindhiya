@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { RecruitmentSettingsService } from '../services';
 import {
     Mail,
     Plus,
@@ -21,6 +22,29 @@ const EMAIL_TEMPLATES = [
 ];
 
 export default function RecruitmentEmailsPage() {
+    const [templates, setTemplates] = useState<any[]>(EMAIL_TEMPLATES);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchTemplates();
+    }, []);
+
+    const fetchTemplates = async () => {
+        try {
+            setLoading(true);
+            const data = await RecruitmentSettingsService.getSettings();
+            if (data) {
+                // Email templates would be part of recruitment settings
+                // For now keeping mock data
+                setTemplates(EMAIL_TEMPLATES);
+            }
+        } catch (error) {
+            console.error('Error fetching email templates:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -38,7 +62,7 @@ export default function RecruitmentEmailsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto pb-20">
-                {EMAIL_TEMPLATES.map(tpl => (
+                {templates.map(tpl => (
                     <div key={tpl.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-all">
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex items-center gap-3">

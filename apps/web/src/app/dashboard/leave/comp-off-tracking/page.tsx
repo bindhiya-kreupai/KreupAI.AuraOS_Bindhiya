@@ -1,14 +1,36 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Clock,
     PlusCircle,
     CalendarCheck,
     CheckCircle
 } from 'lucide-react';
+import { CompOffService } from '../services';
+import { CompOff } from '../types';
 
 export default function CompOffTrackingPage() {
+    const [compOffs, setCompOffs] = useState<CompOff[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchCompOffs();
+    }, []);
+
+    const fetchCompOffs = async () => {
+        try {
+            setLoading(true);
+            const result = await CompOffService.getCompOffs();
+            if (result.length > 0) {
+                setCompOffs(result);
+            }
+        } catch (error) {
+            console.error('Error fetching comp-offs:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
@@ -42,26 +64,34 @@ export default function CompOffTrackingPage() {
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                 <h3 className="font-bold text-lg mb-4">Pending Claims</h3>
                 <div className="space-y-4">
-                    {[
-                        { emp: 'Sarah Lee', date: 'Sunday, Oct 27', reason: 'Urgent Client Deployment', hours: 8, status: 'Pending Approval' },
-                        { emp: 'Tom Hardy', date: 'Saturday, Oct 26', reason: 'Server Maintenance', hours: 6, status: 'Pending Approval' },
-                    ].map((claim, i) => (
-                        <div key={i} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                            <div>
-                                <div className="font-bold text-lg">{claim.emp}</div>
-                                <div className="text-sm text-slate-500 flex items-center gap-2">
-                                    <CalendarCheck className="w-3 h-3" /> Worked on {claim.date} • {claim.hours} Hours
-                                </div>
-                                <div className="text-xs text-slate-400 mt-1 italic">"{claim.reason}"</div>
-                            </div>
-                            <div className="flex gap-2 mt-4 md:mt-0">
-                                <button className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-bold flex items-center gap-2">
-                                    <CheckCircle className="w-4 h-4" /> Approve
-                                </button>
-                                <button className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-sm font-bold">Reject</button>
-                            </div>
+                    {loading ? (
+                        <div className="text-center py-8 text-slate-500">
+                            Loading comp-off claims...
                         </div>
-                    ))}
+                    ) : (compOffs.filter(c => c.status === 'pending').length > 0 ? compOffs.filter(c => c.status === 'pending') : [
+                        { id: '1', employeeId: 'E005', employeeName: 'Sarah Lee', workedDate: '2024-10-27', reason: 'Urgent Client Deployment', hoursWorked: 8, status: 'pending' as const, daysEarned: 1 },
+                        { id: '2', employeeId: 'E006', employeeName: 'Tom Hardy', workedDate: '2024-10-26', reason: 'Server Maintenance', hoursWorked: 6, status: 'pending' as const, daysEarned: 0.75 },
+                    ] as CompOff[]).map((claim, i) => {
+                        const workedDate = new Date(claim.workedDate).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+
+                        return (
+                            <div key={claim.id || i} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                                <div>
+                                    <div className="font-bold text-lg">{claim.employeeName}</div>
+                                    <div className="text-sm text-slate-500 flex items-center gap-2">
+                                        <CalendarCheck className="w-3 h-3" /> Worked on {workedDate} • {claim.hoursWorked} Hours
+                                    </div>
+                                    <div className="text-xs text-slate-400 mt-1 italic">&quot;{claim.reason}&quot;</div>
+                                </div>
+                                <div className="flex gap-2 mt-4 md:mt-0">
+                                    <button className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-bold flex items-center gap-2">
+                                        <CheckCircle className="w-4 h-4" /> Approve
+                                    </button>
+                                    <button className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-sm font-bold">Reject</button>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>

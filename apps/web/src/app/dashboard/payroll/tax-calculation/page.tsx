@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FileText,
     UploadCloud,
@@ -18,6 +18,7 @@ import {
     FileIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { TaxDeclarationService } from '../services';
 
 // --- MOCK DATA ---
 
@@ -80,6 +81,26 @@ const INVESTMENT_CATEGORIES = [
 export default function TaxDeclarationsPage() {
     const [regime, setRegime] = useState<'old' | 'new'>('old');
     const [selectedCategory, setSelectedCategory] = useState<typeof INVESTMENT_CATEGORIES[0] | null>(null);
+    const [declarations, setDeclarations] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await TaxDeclarationService.getTaxDeclarations();
+            if (result.length > 0) {
+                setDeclarations(result);
+            }
+        } catch (error) {
+            console.error('Error fetching tax declarations:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const toggleRegime = () => setRegime(prev => prev === 'old' ? 'new' : 'old');
 

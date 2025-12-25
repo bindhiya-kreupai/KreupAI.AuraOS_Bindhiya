@@ -1,4 +1,5 @@
 // Goal Management Services
+import { APIClient } from '@/lib/api-client';
 import type {
   Goal,
   KeyResult,
@@ -14,42 +15,16 @@ import type {
   SMARTCriteria
 } from './types';
 
-const STORAGE_KEYS = {
-  GOALS: 'goals',
-  KEY_RESULTS: 'key_results',
-  CHECK_INS: 'goal_check_ins',
-  CYCLES: 'goal_cycles',
-  TEMPLATES: 'goal_templates',
-  ALIGNMENTS: 'goal_alignments',
-  REVIEWS: 'goal_reviews',
-  ANALYTICS: 'goal_analytics',
-  SETTINGS: 'goal_settings',
-};
-
 export class GoalService {
   static async getGoals(filters?: { ownerId?: string; cycleId?: string; status?: string; type?: string }): Promise<Goal[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.GOALS);
-    let goals: Goal[] = data ? JSON.parse(data) : [];
-
-    if (filters) {
-      if (filters.ownerId) goals = goals.filter(g => g.ownerId === filters.ownerId);
-      if (filters.cycleId) goals = goals.filter(g => g.cycleId === filters.cycleId);
-      if (filters.status) goals = goals.filter(g => g.status === filters.status);
-      if (filters.type) goals = goals.filter(g => g.goalType === filters.type);
-    }
-
-    return goals;
+    return APIClient.get<Goal[]>('/goals/goals', filters);
   }
 
   static async getGoalById(id: string): Promise<Goal | null> {
-    const goals = await this.getGoals();
-    return goals.find(g => g.id === id) || null;
+    return APIClient.get<Goal | null>(`/goals/goals/${id}`);
   }
 
   static async createGoal(goal: Goal): Promise<Goal> {
-    // TODO: Replace with actual API call
-
     // Validate SMART criteria if enabled
     if (goal.isSMART) {
       goal.smartCriteria = this.validateSMART(goal);
@@ -58,20 +33,14 @@ export class GoalService {
     // Calculate initial metrics
     goal.metrics = this.calculateMetrics(goal);
 
-    const goals = await this.getGoals();
-    goals.push(goal);
-    localStorage.setItem(STORAGE_KEYS.GOALS, JSON.stringify(goals));
-
-    return goal;
+    return APIClient.post<Goal>('/goals/goals', goal);
   }
 
   static async updateGoal(id: string, updates: Partial<Goal>): Promise<Goal> {
-    // TODO: Replace with actual API call
-    const goals = await this.getGoals();
-    const index = goals.findIndex(g => g.id === id);
-    if (index === -1) throw new Error('Goal not found');
+    const goal = await this.getGoalById(id);
+    if (!goal) throw new Error('Goal not found');
 
-    const updated = { ...goals[index], ...updates, lastModified: new Date().toISOString() };
+    const updated = { ...goal, ...updates, lastModified: new Date().toISOString() };
 
     // Recalculate metrics
     updated.metrics = this.calculateMetrics(updated);
@@ -79,14 +48,10 @@ export class GoalService {
     // Update progress status based on progress
     updated.progressStatus = this.determineProgressStatus(updated);
 
-    goals[index] = updated;
-    localStorage.setItem(STORAGE_KEYS.GOALS, JSON.stringify(goals));
-
-    return goals[index];
+    return APIClient.put<Goal>(`/goals/goals/${id}`, updated);
   }
 
   static async deleteGoal(id: string): Promise<void> {
-    // TODO: Replace with actual API call
     const goal = await this.getGoalById(id);
     if (!goal) throw new Error('Goal not found');
 
@@ -94,9 +59,7 @@ export class GoalService {
       throw new Error('Cannot delete goal with child goals');
     }
 
-    const goals = await this.getGoals();
-    const filtered = goals.filter(g => g.id !== id);
-    localStorage.setItem(STORAGE_KEYS.GOALS, JSON.stringify(filtered));
+    return APIClient.delete<void>(`/goals/goals/${id}`);
   }
 
   static async completeGoal(id: string): Promise<Goal> {
@@ -316,22 +279,11 @@ export class GoalService {
 
 export class GoalCheckInService {
   static async getCheckIns(goalId?: string): Promise<GoalCheckIn[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.CHECK_INS);
-    let checkIns: GoalCheckIn[] = data ? JSON.parse(data) : [];
-
-    if (goalId) {
-      checkIns = checkIns.filter(c => c.goalId === goalId);
-    }
-
-    return checkIns;
+    return APIClient.get<GoalCheckIn[]>('/goals/check-ins', goalId ? { goalId } : undefined);
   }
 
   static async createCheckIn(checkIn: GoalCheckIn): Promise<GoalCheckIn> {
-    // TODO: Replace with actual API call
-    const checkIns = await this.getCheckIns();
-    checkIns.push(checkIn);
-    localStorage.setItem(STORAGE_KEYS.CHECK_INS, JSON.stringify(checkIns));
+    const created = await APIClient.post<GoalCheckIn>('/goals/check-ins', checkIn);
 
     // Update goal progress based on check-in
     const goal = await GoalService.getGoalById(checkIn.goalId);
@@ -374,59 +326,30 @@ export class GoalCheckInService {
       }
     }
 
-    return checkIn;
+    return created;
   }
 
   static async addFeedback(checkInId: string, feedback: any): Promise<GoalCheckIn> {
-    // TODO: Replace with actual API call
-    const checkIns = await this.getCheckIns();
-    const index = checkIns.findIndex(c => c.id === checkInId);
-    if (index === -1) throw new Error('Check-in not found');
-
-    checkIns[index].feedback = feedback;
-    localStorage.setItem(STORAGE_KEYS.CHECK_INS, JSON.stringify(checkIns));
-
-    return checkIns[index];
+    return APIClient.put<GoalCheckIn>(`/goals/check-ins/${checkInId}/feedback`, { feedback });
   }
 }
 
 export class GoalCycleService {
   static async getCycles(filters?: { isActive?: boolean }): Promise<GoalCycle[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.CYCLES);
-    let cycles: GoalCycle[] = data ? JSON.parse(data) : [];
-
-    if (filters?.isActive !== undefined) {
-      cycles = cycles.filter(c => c.isActive === filters.isActive);
-    }
-
-    return cycles;
+    return APIClient.get<GoalCycle[]>('/goals/cycles', filters);
   }
 
   static async createCycle(cycle: GoalCycle): Promise<GoalCycle> {
-    // TODO: Replace with actual API call
-    const cycles = await this.getCycles();
-    cycles.push(cycle);
-    localStorage.setItem(STORAGE_KEYS.CYCLES, JSON.stringify(cycles));
-    return cycle;
+    return APIClient.post<GoalCycle>('/goals/cycles', cycle);
   }
 
   static async updateCycle(id: string, updates: Partial<GoalCycle>): Promise<GoalCycle> {
-    // TODO: Replace with actual API call
-    const cycles = await this.getCycles();
-    const index = cycles.findIndex(c => c.id === id);
-    if (index === -1) throw new Error('Cycle not found');
-
-    cycles[index] = { ...cycles[index], ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.CYCLES, JSON.stringify(cycles));
-    return cycles[index];
+    const updatedData = { ...updates, lastModified: new Date().toISOString() };
+    return APIClient.put<GoalCycle>(`/goals/cycles/${id}`, updatedData);
   }
 
   static async deleteCycle(id: string): Promise<void> {
-    // TODO: Replace with actual API call
-    const cycles = await this.getCycles();
-    const filtered = cycles.filter(c => c.id !== id);
-    localStorage.setItem(STORAGE_KEYS.CYCLES, JSON.stringify(filtered));
+    return APIClient.delete<void>(`/goals/cycles/${id}`);
   }
 
   static async activateCycle(id: string): Promise<GoalCycle> {
@@ -444,64 +367,30 @@ export class GoalCycleService {
 
 export class GoalTemplateService {
   static async getTemplates(filters?: { goalType?: string; isPublic?: boolean }): Promise<GoalTemplate[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.TEMPLATES);
-    let templates: GoalTemplate[] = data ? JSON.parse(data) : [];
-
-    if (filters) {
-      if (filters.goalType) templates = templates.filter(t => t.goalType === filters.goalType);
-      if (filters.isPublic !== undefined) templates = templates.filter(t => t.isPublic === filters.isPublic);
-    }
-
-    return templates;
+    return APIClient.get<GoalTemplate[]>('/goals/templates', filters);
   }
 
   static async createTemplate(template: GoalTemplate): Promise<GoalTemplate> {
-    // TODO: Replace with actual API call
-    const templates = await this.getTemplates();
-    templates.push(template);
-    localStorage.setItem(STORAGE_KEYS.TEMPLATES, JSON.stringify(templates));
-    return template;
+    return APIClient.post<GoalTemplate>('/goals/templates', template);
   }
 
   static async updateTemplate(id: string, updates: Partial<GoalTemplate>): Promise<GoalTemplate> {
-    // TODO: Replace with actual API call
-    const templates = await this.getTemplates();
-    const index = templates.findIndex(t => t.id === id);
-    if (index === -1) throw new Error('Template not found');
-
-    templates[index] = { ...templates[index], ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.TEMPLATES, JSON.stringify(templates));
-    return templates[index];
+    const updatedData = { ...updates, lastModified: new Date().toISOString() };
+    return APIClient.put<GoalTemplate>(`/goals/templates/${id}`, updatedData);
   }
 
   static async deleteTemplate(id: string): Promise<void> {
-    // TODO: Replace with actual API call
-    const templates = await this.getTemplates();
-    const filtered = templates.filter(t => t.id !== id);
-    localStorage.setItem(STORAGE_KEYS.TEMPLATES, JSON.stringify(filtered));
+    return APIClient.delete<void>(`/goals/templates/${id}`);
   }
 }
 
 export class GoalAlignmentService {
   static async getAlignments(filters?: { sourceGoalId?: string; targetGoalId?: string }): Promise<GoalAlignment[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.ALIGNMENTS);
-    let alignments: GoalAlignment[] = data ? JSON.parse(data) : [];
-
-    if (filters) {
-      if (filters.sourceGoalId) alignments = alignments.filter(a => a.sourceGoalId === filters.sourceGoalId);
-      if (filters.targetGoalId) alignments = alignments.filter(a => a.targetGoalId === filters.targetGoalId);
-    }
-
-    return alignments;
+    return APIClient.get<GoalAlignment[]>('/goals/alignments', filters);
   }
 
   static async createAlignment(alignment: GoalAlignment): Promise<GoalAlignment> {
-    // TODO: Replace with actual API call
-    const alignments = await this.getAlignments();
-    alignments.push(alignment);
-    localStorage.setItem(STORAGE_KEYS.ALIGNMENTS, JSON.stringify(alignments));
+    const created = await APIClient.post<GoalAlignment>('/goals/alignments', alignment);
 
     // Update aligned goals list
     const sourceGoal = await GoalService.getGoalById(alignment.sourceGoalId);
@@ -510,11 +399,10 @@ export class GoalAlignmentService {
       await GoalService.updateGoal(alignment.sourceGoalId, { alignedGoals: sourceGoal.alignedGoals });
     }
 
-    return alignment;
+    return created;
   }
 
   static async deleteAlignment(id: string): Promise<void> {
-    // TODO: Replace with actual API call
     const alignments = await this.getAlignments();
     const alignment = alignments.find(a => a.id === id);
 
@@ -527,8 +415,7 @@ export class GoalAlignmentService {
       }
     }
 
-    const filtered = alignments.filter(a => a.id !== id);
-    localStorage.setItem(STORAGE_KEYS.ALIGNMENTS, JSON.stringify(filtered));
+    return APIClient.delete<void>(`/goals/alignments/${id}`);
   }
 
   static async cascadeGoal(parentGoalId: string, childGoal: Partial<Goal>): Promise<Goal> {
@@ -568,118 +455,33 @@ export class GoalAlignmentService {
 
 export class GoalReviewService {
   static async getReviews(filters?: { goalId?: string }): Promise<GoalReview[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.REVIEWS);
-    let reviews: GoalReview[] = data ? JSON.parse(data) : [];
-
-    if (filters?.goalId) {
-      reviews = reviews.filter(r => r.goalId === filters.goalId);
-    }
-
-    return reviews;
+    return APIClient.get<GoalReview[]>('/goals/reviews', filters);
   }
 
   static async createReview(review: GoalReview): Promise<GoalReview> {
-    // TODO: Replace with actual API call
-    const reviews = await this.getReviews();
-    reviews.push(review);
-    localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(reviews));
-    return review;
+    return APIClient.post<GoalReview>('/goals/reviews', review);
   }
 
   static async acknowledgeReview(id: string, acknowledgedBy: string): Promise<GoalReview> {
-    // TODO: Replace with actual API call
-    const reviews = await this.getReviews();
-    const index = reviews.findIndex(r => r.id === id);
-    if (index === -1) throw new Error('Review not found');
-
-    reviews[index].status = 'acknowledged';
-    reviews[index].acknowledgedBy = acknowledgedBy;
-    reviews[index].acknowledgedDate = new Date().toISOString();
-
-    localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(reviews));
-    return reviews[index];
+    return APIClient.put<GoalReview>(`/goals/reviews/${id}/acknowledge`, {
+      acknowledgedBy,
+      acknowledgedDate: new Date().toISOString()
+    });
   }
 }
 
 export class GoalAnalyticsService {
   static async getAnalytics(): Promise<GoalAnalytics> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.ANALYTICS);
-    return data ? JSON.parse(data) : {
-      totalGoals: 0,
-      activeGoals: 0,
-      completedGoals: 0,
-      onTrackGoals: 0,
-      atRiskGoals: 0,
-      behindGoals: 0,
-      averageProgress: 0,
-      completionRate: 0,
-      averageHealthScore: 0,
-      goalsByType: [],
-      goalsByCategory: [],
-      goalsByStatus: [],
-      goalsByDepartment: [],
-      topPerformers: [],
-      alignmentScore: 0,
-      checkInCompliance: 0,
-      averageCheckInFrequency: 0,
-      cycleProgress: [],
-      keyResultMetrics: {
-        totalKeyResults: 0,
-        completedKeyResults: 0,
-        completionRate: 0,
-        averageProgress: 0
-      },
-      trends: []
-    };
+    return APIClient.get<GoalAnalytics>('/goals/analytics');
   }
 }
 
 export class GoalSettingsService {
   static async getSettings(): Promise<GoalSettings> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-    return data ? JSON.parse(data) : {
-      enableGoalManagement: true,
-      enableOKRs: true,
-      enableGoalAlignment: true,
-      enableGoalTemplates: true,
-      requireGoalApproval: false,
-      approvalRequired: false,
-      approvalLevels: 1,
-      defaultCycleDuration: 90,
-      defaultCheckInFrequency: 'weekly',
-      mandatoryCheckIns: false,
-      checkInReminderDays: 1,
-      enablePrivateGoals: true,
-      enableGoalCollaboration: true,
-      enableGoalComments: true,
-      enableGoalReviews: true,
-      enableSMARTValidation: true,
-      minKeyResults: 1,
-      maxKeyResults: 5,
-      defaultGoalVisibility: 'team',
-      allowCascading: true,
-      maxGoalDepth: 5,
-      enableNotifications: true,
-      notifyOnCheckInDue: true,
-      notifyOnGoalDue: true,
-      notifyOnFeedback: true,
-      goalDueSoonDays: 7,
-      enableGoalWeighting: false,
-      enableRiskTracking: true,
-      enableDependencyTracking: true,
-      fiscalYearStart: '01-01',
-      defaultCurrency: 'USD'
-    };
+    return APIClient.get<GoalSettings>('/goals/settings');
   }
 
   static async updateSettings(updates: Partial<GoalSettings>): Promise<GoalSettings> {
-    // TODO: Replace with actual API call
-    const settings = await this.getSettings();
-    const updated = { ...settings, ...updates };
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated));
-    return updated;
+    return APIClient.put<GoalSettings>('/goals/settings', updates);
   }
 }

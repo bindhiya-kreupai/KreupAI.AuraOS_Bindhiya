@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Clock,
     DollarSign,
@@ -13,8 +13,7 @@ import {
     FileText,
     PieChart
 } from 'lucide-react';
-
-// --- MOCK DATA ---
+import { OvertimeService } from '../services';
 
 interface OTClaim {
     id: string;
@@ -27,40 +26,66 @@ interface OTClaim {
     approver: string;
 }
 
-const OT_CLAIMS: OTClaim[] = [
-    {
-        id: 'OT-1042',
-        date: 'Dec 03, 2024',
-        project: 'Project Phoenix Deployment',
-        hours: 3.5,
-        multiplier: 1.5,
-        amount: 105,
-        status: 'Approved',
-        approver: 'Sarah Miller'
-    },
-    {
-        id: 'OT-1045',
-        date: 'Dec 05, 2024',
-        project: 'Client Urgent Fixes',
-        hours: 2.0,
-        multiplier: 1.5,
-        amount: 60,
-        status: 'Pending',
-        approver: '-'
-    },
-    {
-        id: 'OT-1039',
-        date: 'Nov 26, 2024 (Sun)',
-        project: 'Database Migration',
-        hours: 5.0,
-        multiplier: 2.0,
-        amount: 200,
-        status: 'Approved',
-        approver: 'Sarah Miller'
-    }
-];
+interface OvertimeSummary {
+    totalHours: number;
+    weekdayHours: number;
+    weekendHours: number;
+    approvedHours: number;
+    totalEarnings: number;
+    pendingEarnings: number;
+}
 
 export default function OvertimePage() {
+    const [overtimeRecords, setOvertimeRecords] = useState<OTClaim[]>([]);
+    const [summary, setSummary] = useState<OvertimeSummary | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [showForm, setShowForm] = useState(false);
+
+    useEffect(() => {
+        fetchOvertimeData();
+    }, []);
+
+    const fetchOvertimeData = async () => {
+        try {
+            const records = await OvertimeService.getOvertimeRequests();
+            if (records.length > 0) {
+                setOvertimeRecords(records as any);
+                // Calculate summary from records
+                const approved = records.filter((r: any) => r.status === 'Approved');
+                const totalHours = records.reduce((sum: number, r: any) => sum + (r.hours || 0), 0);
+                setSummary({
+                    totalHours,
+                    weekdayHours: totalHours * 0.6,
+                    weekendHours: totalHours * 0.4,
+                    approvedHours: approved.reduce((sum: number, r: any) => sum + (r.hours || 0), 0),
+                    totalEarnings: records.reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
+                    pendingEarnings: records.filter((r: any) => r.status === 'Pending').reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching overtime data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSubmitOvertime = async (data: any) => {
+        setLoading(true);
+        try {
+            await OvertimeService.submitOvertimeRequest({
+                employeeId: 'current-user',
+                date: data.date,
+                overtimeMinutes: data.hours * 60,
+                reason: data.reason,
+            } as any);
+            await fetchOvertimeData();
+            setShowForm(false);
+        } catch (error) {
+            console.error('Error submitting overtime:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -89,7 +114,7 @@ export default function OvertimePage() {
                                 <span className="text-sm font-bold uppercase tracking-wider">Estimated Payout</span>
                             </div>
                             <div className="flex items-baseline gap-1 mb-2">
-                                <span className="text-4xl font-bold">$365.00</span>
+                                <span className="text-4xl font-bold">${summary?.pendingEarnings || 0}</span>
                                 <span className="text-lg font-medium opacity-80">Pending</span>
                             </div>
                             <div className="text-xs bg-white/20 inline-flex px-3 py-1 rounded-full backdrop-blur-sm flex items-center gap-1">
@@ -107,20 +132,20 @@ export default function OvertimePage() {
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <span className="text-sm text-slate-600 dark:text-slate-300">Total Hours Logged</span>
-                                <span className="font-bold text-ink-black dark:text-pearl">10.5 Hrs</span>
+                                <span className="font-bold text-ink-black dark:text-pearl">{summary?.totalHours || 0} Hrs</span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-sm text-slate-600 dark:text-slate-300">Weekdays (1.5x)</span>
-                                <span className="font-bold text-ink-black dark:text-pearl">5.5 Hrs</span>
+                                <span className="font-bold text-ink-black dark:text-pearl">{summary?.weekdayHours || 0} Hrs</span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-sm text-slate-600 dark:text-slate-300">Weekends (2.0x)</span>
-                                <span className="font-bold text-ink-black dark:text-pearl">5.0 Hrs</span>
+                                <span className="font-bold text-ink-black dark:text-pearl">{summary?.weekendHours || 0} Hrs</span>
                             </div>
                             <div className="h-px bg-slate-100 dark:bg-slate-800 my-2"></div>
                             <div className="flex justify-between items-center">
                                 <span className="text-sm text-slate-600 dark:text-slate-300">Approved</span>
-                                <span className="font-bold text-emerald-600">8.5 Hrs</span>
+                                <span className="font-bold text-emerald-600">{summary?.approvedHours || 0} Hrs</span>
                             </div>
                         </div>
                     </div>
@@ -156,8 +181,18 @@ export default function OvertimePage() {
                             <button className="text-xs font-bold text-celestial-indigo hover:underline">View All</button>
                         </div>
 
-                        <div className="space-y-4">
-                            {OT_CLAIMS.map(claim => (
+                        {loading ? (
+                            <div className="p-8 text-center">
+                                <div className="animate-spin w-8 h-8 border-4 border-celestial-indigo border-t-transparent rounded-full mx-auto"></div>
+                                <p className="mt-2 text-slate-500">Loading...</p>
+                            </div>
+                        ) : overtimeRecords.length === 0 ? (
+                            <div className="p-8 text-center text-slate-400">
+                                <p>No overtime records found</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                            {overtimeRecords.map(claim => (
                                 <div key={claim.id} className="p-4 rounded-xl border border-cloud dark:border-nebula-purple/20 hover:border-celestial-indigo/30 hover:bg-slate-50 dark:hover:bg-deep-cosmos/30 transition-all group">
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="flex items-center gap-3">
@@ -194,6 +229,7 @@ export default function OvertimePage() {
                                 </div>
                             ))}
                         </div>
+                        )}
                     </div>
                 </div>
             </div>

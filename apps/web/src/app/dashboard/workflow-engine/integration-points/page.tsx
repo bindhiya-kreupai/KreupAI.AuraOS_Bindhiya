@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plug, Check, Power, RefreshCw, Key } from 'lucide-react';
+import { IntegrationService } from '../services';
 
 const APPS = [
     { id: 1, name: 'Slack', description: 'Send notifications to channels', status: 'Connected', icon: 'bg-indigo-500' },
@@ -11,6 +12,27 @@ const APPS = [
 ];
 
 export default function IntegrationPointsPage() {
+    const [apps, setApps] = useState<any[]>(APPS);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchIntegrations();
+    }, []);
+
+    const fetchIntegrations = async () => {
+        try {
+            setLoading(true);
+            const data = await IntegrationService.getIntegrations();
+            if (data.length > 0) {
+                setApps(data);
+            }
+        } catch (error) {
+            console.error('Error fetching integrations:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -27,7 +49,7 @@ export default function IntegrationPointsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {APPS.map(app => (
+                {apps.map(app => (
                     <div key={app.id} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between h-[180px]">
                         <div className="flex justify-between items-start">
                             <div className={`w-12 h-12 rounded-xl ${app.icon} flex items-center justify-center text-white font-bold text-lg`}>

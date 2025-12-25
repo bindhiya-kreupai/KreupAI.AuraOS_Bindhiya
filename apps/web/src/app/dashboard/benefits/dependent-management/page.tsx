@@ -1,14 +1,45 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Baby,
     UserPlus,
     FileText,
     MoreVertical
 } from 'lucide-react';
+import { DependentService } from '../services';
 
 export default function DependentManagementPage() {
+    const [dependents, setDependents] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchDependents();
+    }, []);
+
+    const fetchDependents = async () => {
+        try {
+            setLoading(true);
+            const data = await DependentService.getDependents({ employeeId: 'EMP-001' });
+            if (data.length === 0) {
+                setDependents(mockDependents);
+            } else {
+                setDependents(data);
+            }
+        } catch (error) {
+            console.error('Error fetching dependents:', error);
+            setDependents(mockDependents);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const mockDependents = [
+        { name: 'Sarah Miller', relation: 'Spouse', dob: '1988-04-12', status: 'Verified', coverage: ['Health', 'Dental'] },
+        { name: 'Timmy Miller', relation: 'Child', dob: '2015-08-22', status: 'Verified', coverage: ['Health', 'Vision'] },
+        { name: 'Jessica Miller', relation: 'Child', dob: '2018-01-05', status: 'Pending Verification', coverage: ['Health'] },
+    ];
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -26,11 +57,11 @@ export default function DependentManagementPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto pb-20">
-                {[
-                    { name: 'Sarah Miller', relation: 'Spouse', dob: '1988-04-12', status: 'Verified', coverage: ['Health', 'Dental'] },
-                    { name: 'Timmy Miller', relation: 'Child', dob: '2015-08-22', status: 'Verified', coverage: ['Health', 'Vision'] },
-                    { name: 'Jessica Miller', relation: 'Child', dob: '2018-01-05', status: 'Pending Verification', coverage: ['Health'] },
-                ].map((dep, i) => (
+                {loading ? (
+                    <div className="col-span-full flex justify-center items-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                    </div>
+                ) : dependents.map((dep, i) => (
                     <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 relative">
                         <button className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
                             <MoreVertical className="w-4 h-4" />

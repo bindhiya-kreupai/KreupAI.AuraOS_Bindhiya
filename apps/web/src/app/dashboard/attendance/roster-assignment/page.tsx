@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CalendarDays,
     ChevronLeft,
@@ -11,8 +11,7 @@ import {
     Upload,
     MoreHorizontal
 } from 'lucide-react';
-
-// --- MOCK DATA ---
+import { RosterService } from '../services';
 
 const DATES = [
     { day: 'Mon', date: '01' },
@@ -24,14 +23,6 @@ const DATES = [
     { day: 'Sun', date: '07' },
 ];
 
-const EMPLOYEES = [
-    { id: 'E001', name: 'Alice Smith', role: 'Frontend Dev', avatar: 'AS' },
-    { id: 'E002', name: 'Bob Jones', role: 'UI Designer', avatar: 'BJ' },
-    { id: 'E003', name: 'Charlie Day', role: 'Backend Dev', avatar: 'CB' },
-    { id: 'E004', name: 'Diana Prince', role: 'Project Mgr', avatar: 'DP' },
-    { id: 'E005', name: 'Evan Peters', role: 'QA Tester', avatar: 'EP' },
-];
-
 const SHIFT_TYPES = {
     'G': { label: 'General', color: 'bg-blue-100 text-blue-700 border-blue-200' },
     'M': { label: 'Morning', color: 'bg-amber-100 text-amber-700 border-amber-200' },
@@ -39,15 +30,42 @@ const SHIFT_TYPES = {
     'WO': { label: 'Week Off', color: 'bg-slate-100 text-slate-500 border-slate-200' },
 };
 
-// Simple randomized shifts for demo
 const getMockShift = (idx: number, dateIdx: number) => {
-    if (dayIndex(dateIdx) > 5) return 'WO'; // Weekend mock
+    if (dayIndex(dateIdx) > 5) return 'WO';
     return ['G', 'M', 'N'][idx % 3];
 };
 
 const dayIndex = (i: number) => i + 1;
 
+interface Employee {
+    id: string;
+    name: string;
+    role: string;
+    avatar: string;
+}
+
 export default function RosterAssignmentPage() {
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [rosters, setRosters] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchRosters();
+    }, []);
+
+    const fetchRosters = async () => {
+        try {
+            setLoading(true);
+            const result = await RosterService.getRosters();
+            if (result && result.length > 0) {
+                setRosters(result);
+            }
+        } catch (error) {
+            console.error('Error fetching rosters:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -120,7 +138,18 @@ export default function RosterAssignmentPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-cloud dark:divide-nebula-purple/20">
-                        {EMPLOYEES.map((emp, empIdx) => (
+                        {loading ? (
+                            <tr>
+                                <td colSpan={9} className="p-8 text-center">
+                                    <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                                </td>
+                            </tr>
+                        ) : employees.length === 0 ? (
+                            <tr>
+                                <td colSpan={9} className="p-8 text-center text-slate-400">No employees found</td>
+                            </tr>
+                        ) : (
+                        employees.map((emp, empIdx) => (
                             <tr key={emp.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                                 <td className="p-4 border-r border-cloud dark:border-nebula-purple/50 sticky left-0 bg-white dark:bg-stellar-blue z-10 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50">
                                     <div className="flex items-center gap-3">
@@ -154,7 +183,7 @@ export default function RosterAssignmentPage() {
                                     45h
                                 </td>
                             </tr>
-                        ))}
+                        )))}
                     </tbody>
                 </table>
             </div>

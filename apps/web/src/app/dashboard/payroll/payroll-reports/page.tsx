@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     BarChart,
     FileText,
@@ -8,8 +8,29 @@ import {
     Table,
     PieChart
 } from 'lucide-react';
+import { PayrollAnalyticsService } from '../services';
 
 export default function PayrollReportsPage() {
+    const [stats, setStats] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await PayrollAnalyticsService.getStats();
+            if (result) {
+                setStats(result);
+            }
+        } catch (error) {
+            console.error('Error fetching payroll stats:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     const reports = [
         { name: 'Salary Register', desc: 'Detailed monthly salary breakdown per employee.', icon: Table },
         { name: 'Tax Liability Report', desc: 'Summary of TDS deducted and liable payments.', icon: FileText },

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     DollarSign,
     Calculator,
@@ -9,8 +9,27 @@ import {
     Edit2,
     CheckCircle2
 } from 'lucide-react';
+import { SalaryStructureService } from '../services';
 
 export default function SalaryStructurePage() {
+    const [structures, setStructures] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const data = await SalaryStructureService.getStructures();
+            setStructures(data);
+        } catch (error) {
+            console.error('Error fetching salary structures:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

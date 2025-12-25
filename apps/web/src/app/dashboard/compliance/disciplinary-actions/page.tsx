@@ -1,14 +1,32 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Gavel,
     UserX,
     AlertTriangle,
     FileWarning
 } from 'lucide-react';
+import { DisciplinaryService } from '../services';
 
 export default function DisciplinaryActionsPage() {
+    const [records, setRecords] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchRecords();
+    }, []);
+
+    const fetchRecords = async () => {
+        try {
+            const data = await DisciplinaryService.getRecords();
+            setRecords(data);
+        } catch (error) {
+            console.error('Error fetching disciplinary records:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">

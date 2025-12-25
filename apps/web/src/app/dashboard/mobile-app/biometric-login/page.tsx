@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Fingerprint,
     ScanFace,
@@ -13,12 +13,36 @@ import {
     UserCheck,
     History
 } from 'lucide-react';
+import { BiometricService } from '../services';
 
 export default function BiometricLoginPage() {
     const [faceId, setFaceId] = useState(true);
     const [touchId, setTouchId] = useState(true);
     const [fallbackPin, setFallbackPin] = useState(true);
     const [sessionTimeout, setSessionTimeout] = useState('30');
+    const [config, setConfig] = useState<any>(null);
+    const [enrollments, setEnrollments] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [configData, enrollmentsData] = await Promise.all([
+                BiometricService.getConfig(),
+                BiometricService.getAllEnrollments()
+            ]);
+            if (configData) setConfig(configData);
+            if (enrollmentsData.length > 0) setEnrollments(enrollmentsData);
+        } catch (error) {
+            console.error('Error fetching biometric data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     MapPin,
     Plus,
@@ -9,14 +9,50 @@ import {
     Trash2,
     Edit2
 } from 'lucide-react';
+import { GeoFencingService } from '../services';
 
-const LOCATIONS = [
-    { id: 1, name: 'Dubai HQ', address: 'Sheikh Zayed Rd, Dubai, UAE', coord: '25.2048° N, 55.2708° E', radius: 500, active: true },
-    { id: 2, name: 'London Office', address: 'Canary Wharf, London, UK', coord: '51.5054° N, 0.0235° W', radius: 200, active: true },
-    { id: 3, name: 'Singapore Hub', address: 'Marina Bay, Singapore', coord: '1.2800° N, 103.8509° E', radius: 300, active: false }
-];
+interface GeoFence {
+    id: number | string;
+    name: string;
+    address: string;
+    coord: string;
+    radius: number;
+    active: boolean;
+}
 
 export default function GeoFencingPage() {
+    const [locations, setLocations] = useState<GeoFence[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchGeoFences();
+    }, []);
+
+    const fetchGeoFences = async () => {
+        try {
+            setLoading(true);
+            const result = await GeoFencingService.getGeoFences();
+            if (result && result.length > 0) {
+                setLocations(result as any);
+            }
+        } catch (error) {
+            console.error('Error fetching geo-fences:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id: string | number) => {
+        setLoading(true);
+        try {
+            await GeoFencingService.deleteGeoFence(String(id));
+            await fetchGeoFences();
+        } catch (error) {
+            console.error('Error deleting geo-fence:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -37,7 +73,14 @@ export default function GeoFencingPage() {
 
                 {/* Location List */}
                 <div className="col-span-1 space-y-4">
-                    {LOCATIONS.map((loc) => (
+                    {loading ? (
+                        <div className="p-8 text-center">
+                            <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                        </div>
+                    ) : locations.length === 0 ? (
+                        <div className="p-8 text-center text-slate-400">No geo-fences configured</div>
+                    ) : (
+                    locations.map((loc) => (
                         <div key={loc.id} className={`p-4 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group ${loc.active ? '' : 'opacity-60'}`}>
                             <div className="flex justify-between items-start mb-2">
                                 <div className="flex items-center gap-2">
@@ -57,12 +100,15 @@ export default function GeoFencingPage() {
                                 <button className="flex-1 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center gap-1">
                                     <Edit2 className="w-3 h-3" /> Edit
                                 </button>
-                                <button className="flex-1 py-1.5 text-xs font-bold text-rose-600 bg-rose-50 dark:bg-rose-900/20 rounded hover:bg-rose-100 dark:hover:bg-rose-900/40 flex items-center justify-center gap-1">
+                                <button
+                                    onClick={() => handleDelete(loc.id)}
+                                    disabled={loading}
+                                    className="flex-1 py-1.5 text-xs font-bold text-rose-600 bg-rose-50 dark:bg-rose-900/20 rounded hover:bg-rose-100 dark:hover:bg-rose-900/40 flex items-center justify-center gap-1 disabled:opacity-50">
                                     <Trash2 className="w-3 h-3" /> Remove
                                 </button>
                             </div>
                         </div>
-                    ))}
+                    )))}
                 </div>
 
                 {/* Map Simulation */}

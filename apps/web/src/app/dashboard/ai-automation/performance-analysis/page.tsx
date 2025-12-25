@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     BarChart3,
     Trophy,
@@ -19,6 +19,7 @@ import {
     Legend,
     ReferenceLine
 } from 'recharts';
+import { performanceInsights } from '@/lib/services/ai-automation-client';
 
 // --- MOCK DATA ---
 
@@ -31,6 +32,26 @@ const BELL_CURVE_DATA = [
 ];
 
 export default function PerformanceAnalysisPage() {
+    const [insights, setInsights] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchInsights();
+    }, []);
+
+    const fetchInsights = async () => {
+        try {
+            const result = await performanceInsights.getInsights();
+            if (result.success) {
+                setInsights(result.data);
+            }
+        } catch (error) {
+            console.error('Error fetching performance insights:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}

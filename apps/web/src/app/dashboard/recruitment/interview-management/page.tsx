@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { InterviewService } from '../services';
 import {
     Calendar as CalendarIcon,
     Clock,
@@ -78,6 +79,34 @@ const TIME_SLOTS = [
 
 export default function InterviewSchedulingPage() {
     const [view, setView] = useState<'Day' | 'Week'>('Day');
+    const [interviews, setInterviews] = useState<Interview[]>(UPCOMING_INTERVIEWS);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchInterviews();
+    }, []);
+
+    const fetchInterviews = async () => {
+        try {
+            const data = await InterviewService.getInterviews();
+            if (data.length > 0) {
+                setInterviews(data);
+            }
+        } catch (error) {
+            console.error('Error fetching interviews:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSchedule = async (interviewData: any) => {
+        try {
+            await InterviewService.scheduleInterview(interviewData);
+            await fetchInterviews();
+        } catch (error) {
+            console.error('Error scheduling interview:', error);
+        }
+    };
 
     return (
         <div className="space-y-6 pb-10">

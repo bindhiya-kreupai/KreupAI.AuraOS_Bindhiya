@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FileText,
     Printer,
@@ -8,8 +8,27 @@ import {
     Eye,
     Download
 } from 'lucide-react';
+import { LetterService } from '../services';
 
 export default function LetterGenerationPage() {
+    const [letterRequests, setLetterRequests] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchLetterRequests();
+    }, []);
+
+    const fetchLetterRequests = async () => {
+        try {
+            const data = await LetterService.getAllLetterRequests();
+            setLetterRequests(data);
+        } catch (error) {
+            console.error('Error fetching letter requests:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleAction = (action: string, letterType: string) => {
         alert(`${action} for ${letterType}`);
     };

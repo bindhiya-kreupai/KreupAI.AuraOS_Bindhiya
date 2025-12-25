@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     GitPullRequest,
     Plus,
@@ -10,8 +10,59 @@ import {
     Copy,
     Save
 } from 'lucide-react';
+import { ApprovalWorkflowService } from '../services';
+
+interface WorkflowConfig {
+    eventType: string;
+    levels: Array<{
+        level: number;
+        approver: string;
+        sla: string;
+        condition?: string;
+    }>;
+}
 
 export default function ApprovalWorkflowPage() {
+    const [workflows, setWorkflows] = useState<WorkflowConfig[]>([]);
+    const [selectedEvent, setSelectedEvent] = useState('Regularization Request');
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchWorkflows();
+    }, []);
+
+    const fetchWorkflows = async () => {
+        try {
+            setLoading(true);
+            const result = await ApprovalWorkflowService.getWorkflows();
+            if (result && result.length > 0) {
+                setWorkflows(result);
+            }
+        } catch (error) {
+            console.error('Error fetching workflows:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSave = async () => {
+        setLoading(true);
+        try {
+            await ApprovalWorkflowService.createWorkflow({
+                name: selectedEvent,
+                type: selectedEvent,
+                levels: [
+                    { level: 1, approver: 'Reporting Manager', sla: '24 hours' },
+                    { level: 2, approver: 'Department Head', sla: '48 hours' }
+                ]
+            });
+            await fetchWorkflows();
+        } catch (error) {
+            console.error('Error saving workflow:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -24,10 +75,16 @@ export default function ApprovalWorkflowPage() {
                     <p className="text-silver-mist text-sm mt-1">Configure hierarchy for attendance and leave requests.</p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-colors">
+                    <button
+                        onClick={fetchWorkflows}
+                        disabled={loading}
+                        className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50">
                         <Copy className="w-4 h-4" /> Duplicate
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                    <button
+                        onClick={handleSave}
+                        disabled={loading}
+                        className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50">
                         <Save className="w-4 h-4" /> Save Workflow
                     </button>
                 </div>

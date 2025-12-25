@@ -1,7 +1,107 @@
+import { APIClient } from '@/lib/api-client';
 import { Volunteer, FieldMission, Donor, NonprofitSettings, NonprofitAlert } from './types';
-const STORAGE_KEYS = { VOLUNTEERS: 'nonprofit_volunteers', MISSIONS: 'nonprofit_missions', DONORS: 'nonprofit_donors', SETTINGS: 'nonprofit_settings', ALERTS: 'nonprofit_alerts' };
-export class VolunteerService { static async getAll(): Promise<Volunteer[]> { const d = localStorage.getItem(STORAGE_KEYS.VOLUNTEERS); return d ? JSON.parse(d) : []; } static async create(data: Partial<Volunteer>): Promise<Volunteer> { const list = await this.getAll(); const item: Volunteer = { volunteerId: 'vol-' + Date.now(), name: data.name || '', email: data.email || '', phone: data.phone || '', skills: data.skills || [], availability: data.availability || [], hoursContributed: data.hoursContributed || 0, assignedMissions: data.assignedMissions || [], status: data.status || 'pending_approval', createdAt: new Date().toISOString(), ...data }; list.push(item); localStorage.setItem(STORAGE_KEYS.VOLUNTEERS, JSON.stringify(list)); return item; } static async update(id: string, updates: Partial<Volunteer>): Promise<Volunteer> { const list = await this.getAll(); const idx = list.findIndex(v => v.volunteerId === id); if (idx === -1) throw new Error('Not found'); list[idx] = { ...list[idx], ...updates }; localStorage.setItem(STORAGE_KEYS.VOLUNTEERS, JSON.stringify(list)); return list[idx]; } }
-export class MissionService { static async getAll(): Promise<FieldMission[]> { const d = localStorage.getItem(STORAGE_KEYS.MISSIONS); return d ? JSON.parse(d) : []; } static async create(data: Partial<FieldMission>): Promise<FieldMission> { const list = await this.getAll(); const item: FieldMission = { missionId: 'mission-' + Date.now(), missionName: data.missionName || '', location: data.location || '', startDate: data.startDate || '', endDate: data.endDate || '', volunteers: data.volunteers || [], objectives: data.objectives || [], budget: data.budget || 0, expenses: data.expenses || 0, status: data.status || 'planning', createdAt: new Date().toISOString(), ...data }; list.push(item); localStorage.setItem(STORAGE_KEYS.MISSIONS, JSON.stringify(list)); return item; } static async update(id: string, updates: Partial<FieldMission>): Promise<FieldMission> { const list = await this.getAll(); const idx = list.findIndex(m => m.missionId === id); if (idx === -1) throw new Error('Not found'); list[idx] = { ...list[idx], ...updates }; localStorage.setItem(STORAGE_KEYS.MISSIONS, JSON.stringify(list)); return list[idx]; } }
-export class DonorService { static async getAll(): Promise<Donor[]> { const d = localStorage.getItem(STORAGE_KEYS.DONORS); return d ? JSON.parse(d) : []; } static async create(data: Partial<Donor>): Promise<Donor> { const list = await this.getAll(); const item: Donor = { donorId: 'donor-' + Date.now(), donorName: data.donorName || '', donorType: data.donorType || 'individual', email: data.email || '', totalDonated: data.totalDonated || 0, lastDonationDate: data.lastDonationDate || '', recurring: data.recurring || false, communications: data.communications || [], createdAt: new Date().toISOString(), ...data }; list.push(item); localStorage.setItem(STORAGE_KEYS.DONORS, JSON.stringify(list)); return item; } }
-export class NonprofitSettingsService { static async get(): Promise<NonprofitSettings | null> { const d = localStorage.getItem(STORAGE_KEYS.SETTINGS); return d ? JSON.parse(d) : null; } static async update(settings: Partial<NonprofitSettings>): Promise<NonprofitSettings> { const c = await this.get(); const u: NonprofitSettings = { ...c, ...settings, updatedAt: new Date().toISOString() } as NonprofitSettings; localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(u)); return u; } }
-export class AlertsService { static async getAll(): Promise<NonprofitAlert[]> { const d = localStorage.getItem(STORAGE_KEYS.ALERTS); return d ? JSON.parse(d) : []; } static async create(data: Partial<NonprofitAlert>): Promise<NonprofitAlert> { const list = await this.getAll(); const item: NonprofitAlert = { alertId: 'alert-' + Date.now(), alertType: data.alertType || 'volunteer', severity: data.severity || 'low', title: data.title || '', message: data.message || '', relatedEntity: data.relatedEntity || {} as any, status: data.status || 'active', createdAt: new Date().toISOString(), ...data }; list.push(item); localStorage.setItem(STORAGE_KEYS.ALERTS, JSON.stringify(list)); return item; } }
+
+export class VolunteerService {
+  private static endpoint = '/industry-nonprofit/volunteers';
+
+  static async getAll(): Promise<Volunteer[]> {
+    try {
+      const response = await APIClient.get<{ volunteers?: Volunteer[] }>(this.endpoint);
+      return response.volunteers || [];
+    } catch (error) {
+      console.error('Error fetching volunteers:', error);
+      return [];
+    }
+  }
+
+  static async create(data: Partial<Volunteer>): Promise<Volunteer> {
+    const response = await APIClient.post<{ volunteer: Volunteer }>(this.endpoint, data);
+    return response.volunteer;
+  }
+
+  static async update(id: string, updates: Partial<Volunteer>): Promise<Volunteer> {
+    const response = await APIClient.put<{ volunteer: Volunteer }>(`${this.endpoint}/${id}`, updates);
+    return response.volunteer;
+  }
+}
+
+export class MissionService {
+  private static endpoint = '/industry-nonprofit/missions';
+
+  static async getAll(): Promise<FieldMission[]> {
+    try {
+      const response = await APIClient.get<{ missions?: FieldMission[] }>(this.endpoint);
+      return response.missions || [];
+    } catch (error) {
+      console.error('Error fetching missions:', error);
+      return [];
+    }
+  }
+
+  static async create(data: Partial<FieldMission>): Promise<FieldMission> {
+    const response = await APIClient.post<{ mission: FieldMission }>(this.endpoint, data);
+    return response.mission;
+  }
+
+  static async update(id: string, updates: Partial<FieldMission>): Promise<FieldMission> {
+    const response = await APIClient.put<{ mission: FieldMission }>(`${this.endpoint}/${id}`, updates);
+    return response.mission;
+  }
+}
+
+export class DonorService {
+  private static endpoint = '/industry-nonprofit/donors';
+
+  static async getAll(): Promise<Donor[]> {
+    try {
+      const response = await APIClient.get<{ donors?: Donor[] }>(this.endpoint);
+      return response.donors || [];
+    } catch (error) {
+      console.error('Error fetching donors:', error);
+      return [];
+    }
+  }
+
+  static async create(data: Partial<Donor>): Promise<Donor> {
+    const response = await APIClient.post<{ donor: Donor }>(this.endpoint, data);
+    return response.donor;
+  }
+}
+
+export class NonprofitSettingsService {
+  private static endpoint = '/industry-nonprofit/settings';
+
+  static async get(): Promise<NonprofitSettings | null> {
+    try {
+      const response = await APIClient.get<{ settings?: NonprofitSettings }>(this.endpoint);
+      return response.settings || null;
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      return null;
+    }
+  }
+
+  static async update(settings: Partial<NonprofitSettings>): Promise<NonprofitSettings> {
+    const response = await APIClient.put<{ settings: NonprofitSettings }>(this.endpoint, settings);
+    return response.settings;
+  }
+}
+
+export class AlertsService {
+  private static endpoint = '/industry-nonprofit/alerts';
+
+  static async getAll(): Promise<NonprofitAlert[]> {
+    try {
+      const response = await APIClient.get<{ alerts?: NonprofitAlert[] }>(this.endpoint);
+      return response.alerts || [];
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
+      return [];
+    }
+  }
+
+  static async create(data: Partial<NonprofitAlert>): Promise<NonprofitAlert> {
+    const response = await APIClient.post<{ alert: NonprofitAlert }>(this.endpoint, data);
+    return response.alert;
+  }
+}

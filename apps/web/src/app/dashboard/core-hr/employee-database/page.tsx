@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Users,
     Search,
@@ -13,14 +13,32 @@ import {
     X,
     Check
 } from 'lucide-react';
+import { EmployeeService } from '../services';
 
 export default function EmployeeDatabasePage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedDept, setSelectedDept] = useState('All');
+    const [employees, setEmployees] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // Mock Data
-    const allEmployees = [
+    useEffect(() => {
+        fetchEmployees();
+    }, []);
+
+    const fetchEmployees = async () => {
+        try {
+            const data = await EmployeeService.getAllEmployees();
+            setEmployees(data);
+        } catch (error) {
+            console.error('Error fetching employees:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Mock Data - fallback if no data from service
+    const mockEmployees = [
         { id: 1, name: 'Alice Cooper', role: 'Senior Product Designer', dept: 'Design', loc: 'San Francisco', img: 'https://i.pravatar.cc/150?u=a', email: 'alice@company.com', phone: '+1 555 0101' },
         { id: 2, name: 'Bob Marley', role: 'Frontend Engineer', dept: 'Engineering', loc: 'Remote', img: 'https://i.pravatar.cc/150?u=b', email: 'bob@company.com', phone: '+1 555 0102' },
         { id: 3, name: 'Charlie Puth', role: 'Marketing Manager', dept: 'Marketing', loc: 'New York', img: 'https://i.pravatar.cc/150?u=c', email: 'charlie@company.com', phone: '+1 555 0103' },
@@ -30,6 +48,8 @@ export default function EmployeeDatabasePage() {
         { id: 7, name: 'Grace Hopper', role: 'CTO', dept: 'Executive', loc: 'San Francisco', img: 'https://i.pravatar.cc/150?u=g', email: 'grace@company.com', phone: '+1 415 555 0100' },
         { id: 8, name: 'Harry Styles', role: 'Content Writer', dept: 'Marketing', loc: 'London', img: 'https://i.pravatar.cc/150?u=h', email: 'harry@company.com', phone: '+44 20 7987 6543' },
     ];
+
+    const allEmployees = employees.length > 0 ? employees : mockEmployees;
 
     const filteredEmployees = allEmployees.filter(emp => {
         const matchesSearch = emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

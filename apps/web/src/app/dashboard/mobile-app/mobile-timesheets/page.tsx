@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Clock,
     Calendar,
@@ -13,9 +13,30 @@ import {
     AlertCircle,
     Copy
 } from 'lucide-react';
+import { MobileTimesheetsService } from '../services';
 
 export default function MobileTimesheetsPage() {
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [timesheets, setTimesheets] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await MobileTimesheetsService.getAllTimesheets();
+            if (result.length > 0) {
+                setTimesheets(result);
+            }
+        } catch (error) {
+            console.error('Error fetching timesheets:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">

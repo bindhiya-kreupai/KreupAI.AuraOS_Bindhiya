@@ -1,9 +1,35 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download, FileText, Table as TableIcon, Image, Settings } from 'lucide-react';
+import { ReportExportService } from '../services';
 
 export default function ExportOptionsPage() {
+    const [exports, setExports] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchExports();
+    }, []);
+
+    const fetchExports = async () => {
+        try {
+            // Export service doesn't have a getAll method, but we can prepare for future use
+            setExports([]);
+        } catch (error) {
+            console.error('Error fetching exports:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleExport = async (reportId: string, format: string) => {
+        try {
+            await ReportExportService.exportReport(reportId, format);
+        } catch (error) {
+            console.error('Error exporting report:', error);
+        }
+    };
     return (
         <div className="p-6 space-y-8 min-h-screen">
             <div>

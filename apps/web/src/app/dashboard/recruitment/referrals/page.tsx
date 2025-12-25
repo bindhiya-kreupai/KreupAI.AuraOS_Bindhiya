@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { CandidateApplicationService, JobPostingService } from '../services';
 import {
     Gift,
     Briefcase,
@@ -83,6 +84,26 @@ const MY_REFERRALS = [
 
 export default function ReferralsPage() {
     const [searchTerm, setSearchTerm] = useState('');
+    const [jobs, setJobs] = useState<any[]>(HOT_JOBS);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchHotJobs();
+    }, []);
+
+    const fetchHotJobs = async () => {
+        try {
+            setLoading(true);
+            const data = await JobPostingService.getPostings({ isActive: true });
+            if (data && data.length > 0) {
+                setJobs(data);
+            }
+        } catch (error) {
+            console.error('Error fetching hot jobs:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
@@ -205,7 +226,7 @@ export default function ReferralsPage() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {HOT_JOBS.map(job => (
+                            {jobs.map(job => (
                                 <div key={job.id} className="p-5 border border-cloud dark:border-slate-800 rounded-xl hover:border-indigo-300 hover:shadow-lg dark:hover:border-indigo-500/50 hover:-translate-y-1 transition-all bg-white dark:bg-slate-900/40 group">
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="p-2 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg">

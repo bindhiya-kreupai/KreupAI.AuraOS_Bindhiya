@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FileText,
     TrendingUp,
@@ -8,8 +8,40 @@ import {
     Filter,
     ChevronRight
 } from 'lucide-react';
+import { ClaimService } from '../services';
 
 export default function ClaimsPage() {
+    const [claims, setClaims] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchClaims();
+    }, []);
+
+    const fetchClaims = async () => {
+        try {
+            setLoading(true);
+            const data = await ClaimService.getClaims({ employeeId: 'EMP-001' });
+            if (data.length === 0) {
+                setClaims(mockClaims);
+            } else {
+                setClaims(data);
+            }
+        } catch (error) {
+            console.error('Error fetching claims:', error);
+            setClaims(mockClaims);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const mockClaims = [
+        { id: 'CLM-001', date: 'Oct 24, 2024', provider: 'City Hospital', amount: '$150.00', status: 'Approved', type: 'Medical' },
+        { id: 'CLM-002', date: 'Oct 10, 2024', provider: 'LensCrafters', amount: '$220.00', status: 'Pending', type: 'Vision' },
+        { id: 'CLM-003', date: 'Sep 15, 2024', provider: 'Delta Dental', amount: '$850.00', status: 'Approved', type: 'Dental' },
+        { id: 'CLM-004', date: 'Aug 01, 2024', provider: 'Walgreens Pharmacy', amount: '$45.00', status: 'Rejected', type: 'Rx' },
+    ];
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -37,12 +69,11 @@ export default function ClaimsPage() {
                         Recent Claims
                     </div>
                     <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                        {[
-                            { id: 'CLM-001', date: 'Oct 24, 2024', provider: 'City Hospital', amount: '$150.00', status: 'Approved', type: 'Medical' },
-                            { id: 'CLM-002', date: 'Oct 10, 2024', provider: 'LensCrafters', amount: '$220.00', status: 'Pending', type: 'Vision' },
-                            { id: 'CLM-003', date: 'Sep 15, 2024', provider: 'Delta Dental', amount: '$850.00', status: 'Approved', type: 'Dental' },
-                            { id: 'CLM-004', date: 'Aug 01, 2024', provider: 'Walgreens Pharmacy', amount: '$45.00', status: 'Rejected', type: 'Rx' },
-                        ].map((claim, i) => (
+                        {loading ? (
+                            <div className="flex justify-center items-center py-20">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                            </div>
+                        ) : claims.map((claim, i) => (
                             <div key={i} className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl cursor-pointer group transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
                                 <div className="flex items-center gap-4">
                                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold

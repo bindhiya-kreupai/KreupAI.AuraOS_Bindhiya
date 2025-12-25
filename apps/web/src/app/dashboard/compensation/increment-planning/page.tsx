@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     PieChart,
     TrendingUp,
@@ -10,8 +10,32 @@ import {
     Save,
     Send
 } from 'lucide-react';
+import { IncrementCycleService, IncrementProposalService } from '../services';
 
 export default function CompPlanningPage() {
+    const [cycles, setCycles] = useState<any[]>([]);
+    const [proposals, setProposals] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [cyclesData, proposalsData] = await Promise.all([
+                IncrementCycleService.getCycles(),
+                IncrementProposalService.getProposals()
+            ]);
+            setCycles(cyclesData);
+            setProposals(proposalsData);
+        } catch (error) {
+            console.error('Error fetching increment data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

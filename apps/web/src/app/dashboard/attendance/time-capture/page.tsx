@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { AttendanceCheckService } from '../services';
 import {
     MapPin,
     Camera,
@@ -11,14 +12,80 @@ import {
     Wifi
 } from 'lucide-react';
 
+interface TimeCapture {
+    id: string;
+    type: 'CHECK_IN' | 'CHECK_OUT' | 'BREAK_START' | 'BREAK_END';
+    timestamp: string;
+    location?: {
+        address: string;
+    };
+}
+
+interface CaptureSummary {
+    currentStatus: 'CHECKED_IN' | 'CHECKED_OUT';
+    lastCheckIn: string | null;
+    lastCheckOut: string | null;
+}
+
 export default function TimeCapturePage() {
     const [time, setTime] = useState(new Date());
     const [status, setStatus] = useState<'OUT' | 'IN' | 'BREAK'>('OUT');
+    const [captures, setCaptures] = useState<TimeCapture[]>([]);
+    const [summary, setSummary] = useState<CaptureSummary | null>(null);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const interval = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        fetchCaptures();
+    }, []);
+
+    const fetchCaptures = async () => {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const captures = await AttendanceCheckService.getChecks({ date: today });
+
+            if (captures.length > 0) {
+                setCaptures(captures as any);
+                // Determine current status from latest check
+                const latestCheck = captures[captures.length - 1];
+                if (latestCheck.type === 'CHECK_IN' || latestCheck.type === 'BREAK_END') {
+                    setStatus('IN');
+                } else if (latestCheck.type === 'BREAK_START') {
+                    setStatus('BREAK');
+                } else {
+                    setStatus('OUT');
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching time captures:', error);
+        }
+    };
+
+    const handleCapture = async (type: 'CHECK_IN' | 'CHECK_OUT' | 'BREAK_START' | 'BREAK_END') => {
+        setLoading(true);
+        try {
+            await AttendanceCheckService.recordCheck({
+                employeeId: 'current-user', // This would come from auth context
+                type,
+                timestamp: new Date().toISOString(),
+                location: {
+                    latitude: 28.6139,
+                    longitude: 77.2090,
+                    address: 'Dubai Office HQ',
+                },
+            } as any);
+
+            await fetchCaptures();
+        } catch (error) {
+            console.error('Error capturing time:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const formatTime = (date: Date) => {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -56,25 +123,28 @@ export default function TimeCapturePage() {
                     <div className="flex gap-4 w-full">
                         {status === 'OUT' ? (
                             <button
-                                onClick={() => setStatus('IN')}
-                                className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-lg shadow-emerald-200 shadow-lg transform hover:scale-105 transition-all flex items-center justify-center gap-3"
+                                onClick={() => handleCapture('CHECK_IN')}
+                                disabled={loading}
+                                className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-300 text-white rounded-xl font-bold text-lg shadow-emerald-200 shadow-lg transform hover:scale-105 transition-all flex items-center justify-center gap-3"
                             >
-                                <LogIn className="w-6 h-6" /> Clock In
+                                <LogIn className="w-6 h-6" /> {loading ? 'Processing...' : 'Clock In'}
                             </button>
                         ) : (
                             <>
                                 <button
-                                    onClick={() => setStatus('OUT')}
-                                    className="flex-1 py-4 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-lg shadow-rose-200 shadow-lg transform hover:scale-105 transition-all flex items-center justify-center gap-3"
+                                    onClick={() => handleCapture('CHECK_OUT')}
+                                    disabled={loading}
+                                    className="flex-1 py-4 bg-rose-500 hover:bg-rose-600 disabled:bg-rose-300 text-white rounded-xl font-bold text-lg shadow-rose-200 shadow-lg transform hover:scale-105 transition-all flex items-center justify-center gap-3"
                                 >
-                                    <LogOut className="w-6 h-6" /> Clock Out
+                                    <LogOut className="w-6 h-6" /> {loading ? 'Processing...' : 'Clock Out'}
                                 </button>
                                 {status !== 'BREAK' && (
                                     <button
-                                        onClick={() => setStatus('BREAK')}
-                                        className="flex-1 py-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-lg shadow-amber-200 shadow-lg transform hover:scale-105 transition-all flex items-center justify-center gap-3"
+                                        onClick={() => handleCapture('BREAK_START')}
+                                        disabled={loading}
+                                        className="flex-1 py-4 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white rounded-xl font-bold text-lg shadow-amber-200 shadow-lg transform hover:scale-105 transition-all flex items-center justify-center gap-3"
                                     >
-                                        <Coffee className="w-6 h-6" /> Break
+                                        <Coffee className="w-6 h-6" /> {loading ? 'Processing...' : 'Break'}
                                     </button>
                                 )}
                             </>
@@ -124,11 +194,31 @@ export default function TimeCapturePage() {
                         <button className="text-xs text-indigo-600 font-bold hover:underline">View All</button>
                     </div>
                     <div className="p-4 space-y-4">
-                        {[
-                            { action: 'Punch In', time: '09:02 AM', location: 'Dubai HQ', icon: LogIn, color: 'text-emerald-500 bg-emerald-50' },
-                            { action: 'Break Start', time: '01:05 PM', location: 'Canteen', icon: Coffee, color: 'text-amber-500 bg-amber-50' },
-                            { action: 'Break End', time: '01:45 PM', location: 'Dubai HQ', icon: Coffee, color: 'text-amber-500 bg-amber-50' },
-                        ].map((log, i) => (
+                        {captures.length === 0 ? (
+                            <p className="text-center text-slate-400 text-sm py-8">No activity today</p>
+                        ) : captures.map((capture, i) => {
+                            const getActionDetails = (type: string) => {
+                                switch (type) {
+                                    case 'CHECK_IN':
+                                        return { action: 'Punch In', icon: LogIn, color: 'text-emerald-500 bg-emerald-50' };
+                                    case 'CHECK_OUT':
+                                        return { action: 'Punch Out', icon: LogOut, color: 'text-rose-500 bg-rose-50' };
+                                    case 'BREAK_START':
+                                        return { action: 'Break Start', icon: Coffee, color: 'text-amber-500 bg-amber-50' };
+                                    case 'BREAK_END':
+                                        return { action: 'Break End', icon: Coffee, color: 'text-amber-500 bg-amber-50' };
+                                    default:
+                                        return { action: type, icon: History, color: 'text-slate-500 bg-slate-50' };
+                                }
+                            };
+
+                            const log = {
+                                ...getActionDetails(capture.type),
+                                time: new Date(capture.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                                location: capture.location?.address || 'Unknown',
+                            };
+
+                            return (
                             <div key={i} className="flex items-start gap-3 relative pb-4 border-l-2 border-slate-100 dark:border-slate-800 last:border-0 pl-4 ml-2">
                                 <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-2 border-white ${log.color} flex items-center justify-center`}>
                                     <div className="w-1.5 h-1.5 rounded-full bg-current" />
@@ -143,7 +233,8 @@ export default function TimeCapturePage() {
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        )}
+                        )}
                     </div>
                 </div>
 

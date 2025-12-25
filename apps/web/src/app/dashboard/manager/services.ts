@@ -5,8 +5,9 @@
 
 'use client';
 
-import {
+import { APIClient } from '@/lib/api-client';
 import { logger } from '@/lib/logger';
+import {
   TeamMember,
   TeamMetrics,
   TeamGoal,
@@ -29,55 +30,25 @@ import { logger } from '@/lib/logger';
 // ============================================================================
 
 export class TeamDashboardService {
-  private static STORAGE_KEY = 'mss_team_members';
-  private static METRICS_KEY = 'mss_team_metrics';
-  private static GOALS_KEY = 'mss_team_goals';
-
   // Team Members
   static async getTeamMembers(managerId?: string): Promise<TeamMember[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(this.STORAGE_KEY);
-    const members: TeamMember[] = data ? JSON.parse(data) : [];
-
-    if (managerId) {
-      return members.filter((m) => m.reportingTo === managerId);
-    }
-    return members;
+    return APIClient.get<TeamMember[]>('/manager/team/members', managerId ? { managerId } : undefined);
   }
 
   static async getTeamMemberById(memberId: string): Promise<TeamMember> {
-    // TODO: Replace with actual API call
-    const members = await this.getTeamMembers();
-    const member = members.find((m) => m.id === memberId);
-    if (!member) throw new Error('Team member not found');
-    return member;
+    return APIClient.get<TeamMember>(`/manager/team/members/${memberId}`);
   }
 
   static async updateTeamMember(memberId: string, updates: Partial<TeamMember>): Promise<TeamMember> {
-    // TODO: Replace with actual API call
-    const members = await this.getTeamMembers();
-    const index = members.findIndex((m) => m.id === memberId);
-    if (index === -1) throw new Error('Team member not found');
-
-    const updated = { ...members[index], ...updates, updatedAt: new Date() };
-    members[index] = updated;
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(members));
-    return updated;
+    return APIClient.put<TeamMember>(`/manager/team/members/${memberId}`, updates);
   }
 
   // Team Metrics
   static async getTeamMetrics(managerId: string, period?: string): Promise<TeamMetrics> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(this.METRICS_KEY);
-    const metrics: TeamMetrics[] = data ? JSON.parse(data) : [];
-
-    const teamMetrics = metrics.find((m) => m.managerId === managerId);
-    if (!teamMetrics) throw new Error('Team metrics not found');
-    return teamMetrics;
+    return APIClient.get<TeamMetrics>('/manager/team/metrics', { managerId, period });
   }
 
   static async calculateTeamMetrics(managerId: string): Promise<TeamMetrics> {
-    // TODO: Replace with actual API call
     const members = await this.getTeamMembers(managerId);
 
     const metrics: TeamMetrics = {
@@ -126,85 +97,31 @@ export class TeamDashboardService {
       pendingReviews: 0,
     };
 
-    // Save calculated metrics
-    const allMetrics = await this.getAllMetrics();
-    const existingIndex = allMetrics.findIndex((m) => m.managerId === managerId);
-    if (existingIndex >= 0) {
-      allMetrics[existingIndex] = metrics;
-    } else {
-      allMetrics.push(metrics);
-    }
-    localStorage.setItem(this.METRICS_KEY, JSON.stringify(allMetrics));
-
-    return metrics;
-  }
-
-  private static async getAllMetrics(): Promise<TeamMetrics[]> {
-    const data = localStorage.getItem(this.METRICS_KEY);
-    return data ? JSON.parse(data) : [];
+    return APIClient.post<TeamMetrics>('/manager/team/metrics/calculate', { managerId, metrics });
   }
 
   // Team Goals
   static async getTeamGoals(managerId?: string): Promise<TeamGoal[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(this.GOALS_KEY);
-    return data ? JSON.parse(data) : [];
+    return APIClient.get<TeamGoal[]>('/manager/team/goals', managerId ? { managerId } : undefined);
   }
 
   static async getTeamGoalById(goalId: string): Promise<TeamGoal> {
-    // TODO: Replace with actual API call
-    const goals = await this.getTeamGoals();
-    const goal = goals.find((g) => g.goalId === goalId);
-    if (!goal) throw new Error('Team goal not found');
-    return goal;
+    return APIClient.get<TeamGoal>(`/manager/team/goals/${goalId}`);
   }
 
   static async createTeamGoal(goal: TeamGoal): Promise<TeamGoal> {
-    // TODO: Replace with actual API call
-    const goals = await this.getTeamGoals();
-    const newGoal = {
-      ...goal,
-      audit: {
-        createdAt: new Date(),
-        createdBy: 'current-user',
-        updatedAt: new Date(),
-        updatedBy: 'current-user',
-      },
-    };
-    goals.push(newGoal);
-    localStorage.setItem(this.GOALS_KEY, JSON.stringify(goals));
-    return newGoal;
+    return APIClient.post<TeamGoal>('/manager/team/goals', goal);
   }
 
   static async updateTeamGoal(goalId: string, updates: Partial<TeamGoal>): Promise<TeamGoal> {
-    // TODO: Replace with actual API call
-    const goals = await this.getTeamGoals();
-    const index = goals.findIndex((g) => g.goalId === goalId);
-    if (index === -1) throw new Error('Team goal not found');
-
-    const updated = {
-      ...goals[index],
-      ...updates,
-      audit: {
-        ...goals[index].audit,
-        updatedAt: new Date(),
-        updatedBy: 'current-user',
-      },
-    };
-    goals[index] = updated;
-    localStorage.setItem(this.GOALS_KEY, JSON.stringify(goals));
-    return updated;
+    return APIClient.put<TeamGoal>(`/manager/team/goals/${goalId}`, updates);
   }
 
   static async deleteTeamGoal(goalId: string): Promise<void> {
-    // TODO: Replace with actual API call
-    const goals = await this.getTeamGoals();
-    const filtered = goals.filter((g) => g.goalId !== goalId);
-    localStorage.setItem(this.GOALS_KEY, JSON.stringify(filtered));
+    return APIClient.delete<void>(`/manager/team/goals/${goalId}`);
   }
 
   static async updateGoalProgress(goalId: string, progress: number, remarks: string): Promise<TeamGoal> {
-    // TODO: Replace with actual API call
     const goal = await this.getTeamGoalById(goalId);
 
     const progressUpdate = {
@@ -237,73 +154,23 @@ export class TeamDashboardService {
 // ============================================================================
 
 export class ApprovalCenterService {
-  private static STORAGE_KEY = 'mss_approval_requests';
-
   static async getApprovalRequests(managerId?: string): Promise<ApprovalRequest[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(this.STORAGE_KEY);
-    const requests: ApprovalRequest[] = data ? JSON.parse(data) : [];
-
-    if (managerId) {
-      return requests.filter((r) => r.currentApproverId === managerId);
-    }
-    return requests;
+    return APIClient.get<ApprovalRequest[]>('/manager/approvals', managerId ? { managerId } : undefined);
   }
 
   static async getApprovalRequestById(requestId: string): Promise<ApprovalRequest> {
-    // TODO: Replace with actual API call
-    const requests = await this.getApprovalRequests();
-    const request = requests.find((r) => r.requestId === requestId);
-    if (!request) throw new Error('Approval request not found');
-    return request;
+    return APIClient.get<ApprovalRequest>(`/manager/approvals/${requestId}`);
   }
 
   static async getPendingApprovals(managerId: string): Promise<ApprovalRequest[]> {
-    // TODO: Replace with actual API call
-    const requests = await this.getApprovalRequests(managerId);
-    return requests.filter((r) => r.approvalStatus === 'pending');
+    return APIClient.get<ApprovalRequest[]>('/manager/approvals/pending', { managerId });
   }
 
   static async getApprovalSummary(managerId: string): Promise<ApprovalSummary> {
-    // TODO: Replace with actual API call
-    const requests = await this.getApprovalRequests(managerId);
-
-    const pending = requests.filter((r) => r.approvalStatus === 'pending');
-    const now = new Date();
-
-    return {
-      managerId,
-      managerName: 'Manager Name',
-
-      totalPending: pending.length,
-      totalApproved: requests.filter((r) => r.approvalStatus === 'approved').length,
-      totalRejected: requests.filter((r) => r.approvalStatus === 'rejected').length,
-
-      leaveRequests: requests.filter((r) => r.requestType === 'leave').length,
-      expenseRequests: requests.filter((r) => r.requestType === 'expense').length,
-      requisitionRequests: requests.filter((r) => r.requestType === 'requisition').length,
-      timesheetRequests: requests.filter((r) => r.requestType === 'timesheet').length,
-      otherRequests: requests.filter(
-        (r) => !['leave', 'expense', 'requisition', 'timesheet'].includes(r.requestType)
-      ).length,
-
-      criticalRequests: pending.filter((r) => r.priority === 'critical').length,
-      highPriorityRequests: pending.filter((r) => r.priority === 'high').length,
-
-      overdueRequests: pending.filter((r) => r.dueDate && new Date(r.dueDate) < now).length,
-      dueTodayRequests: pending.filter(
-        (r) =>
-          r.dueDate &&
-          new Date(r.dueDate).toDateString() === now.toDateString()
-      ).length,
-
-      averageApprovalTime: 24, // Mock value
-      oldestPendingRequest: pending.length > 0 ? new Date(Math.min(...pending.map((r) => new Date(r.requestDate).getTime()))) : undefined,
-    };
+    return APIClient.get<ApprovalSummary>('/manager/approvals/summary', { managerId });
   }
 
   static async approveRequest(requestId: string, approverId: string, remarks?: string): Promise<ApprovalRequest> {
-    // TODO: Replace with actual API call
     const request = await this.getApprovalRequestById(requestId);
 
     // Update workflow step
@@ -345,7 +212,6 @@ export class ApprovalCenterService {
   }
 
   static async rejectRequest(requestId: string, approverId: string, reason: string): Promise<ApprovalRequest> {
-    // TODO: Replace with actual API call
     const request = await this.getApprovalRequestById(requestId);
 
     // Update workflow step
@@ -380,7 +246,6 @@ export class ApprovalCenterService {
   }
 
   static async escalateRequest(requestId: string, escalateTo: string, reason: string): Promise<ApprovalRequest> {
-    // TODO: Replace with actual API call
     const request = await this.getApprovalRequestById(requestId);
 
     const updates: Partial<ApprovalRequest> = {
@@ -405,35 +270,10 @@ export class ApprovalCenterService {
   }
 
   static async addComment(requestId: string, comment: ApprovalComment): Promise<ApprovalRequest> {
-    // TODO: Replace with actual API call
-    const request = await this.getApprovalRequestById(requestId);
-
-    const newComment: ApprovalComment = {
-      ...comment,
-      commentId: `comment-${Date.now()}`,
-      commentDate: new Date(),
-    };
-
-    const updates: Partial<ApprovalRequest> = {
-      comments: [...request.comments, newComment],
-      history: [
-        ...request.history,
-        {
-          historyId: `history-${Date.now()}`,
-          action: 'commented',
-          actionBy: comment.commentedBy,
-          actionByName: comment.commentedByName,
-          actionDate: new Date(),
-          remarks: comment.commentText,
-        },
-      ],
-    };
-
-    return this.updateApprovalRequest(requestId, updates);
+    return APIClient.post<ApprovalRequest>(`/manager/approvals/${requestId}/comments`, comment);
   }
 
   static async bulkApprove(requestIds: string[], approverId: string, remarks?: string): Promise<ApprovalRequest[]> {
-    // TODO: Replace with actual API call
     const approved: ApprovalRequest[] = [];
     for (const requestId of requestIds) {
       try {
@@ -450,23 +290,7 @@ export class ApprovalCenterService {
     requestId: string,
     updates: Partial<ApprovalRequest>
   ): Promise<ApprovalRequest> {
-    // TODO: Replace with actual API call
-    const requests = await this.getApprovalRequests();
-    const index = requests.findIndex((r) => r.requestId === requestId);
-    if (index === -1) throw new Error('Approval request not found');
-
-    const updated = {
-      ...requests[index],
-      ...updates,
-      audit: {
-        ...requests[index].audit,
-        updatedAt: new Date(),
-        updatedBy: 'current-user',
-      },
-    };
-    requests[index] = updated;
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(requests));
-    return updated;
+    return APIClient.put<ApprovalRequest>(`/manager/approvals/${requestId}`, updates);
   }
 }
 
@@ -475,25 +299,12 @@ export class ApprovalCenterService {
 // ============================================================================
 
 export class TeamReportsService {
-  private static STORAGE_KEY = 'mss_team_reports';
-
   static async getReports(managerId?: string): Promise<TeamReport[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(this.STORAGE_KEY);
-    const reports: TeamReport[] = data ? JSON.parse(data) : [];
-
-    if (managerId) {
-      return reports.filter((r) => r.generatedFor === managerId);
-    }
-    return reports;
+    return APIClient.get<TeamReport[]>('/manager/reports', managerId ? { managerId } : undefined);
   }
 
   static async getReportById(reportId: string): Promise<TeamReport> {
-    // TODO: Replace with actual API call
-    const reports = await this.getReports();
-    const report = reports.find((r) => r.reportId === reportId);
-    if (!report) throw new Error('Report not found');
-    return report;
+    return APIClient.get<TeamReport>(`/manager/reports/${reportId}`);
   }
 
   static async generateReport(
@@ -502,8 +313,6 @@ export class TeamReportsService {
     periodStart: Date,
     periodEnd: Date
   ): Promise<TeamReport> {
-    // TODO: Replace with actual API call
-
     let reportData: any;
     let charts: any[] = [];
 
@@ -556,11 +365,7 @@ export class TeamReportsService {
       },
     };
 
-    const reports = await this.getReports();
-    reports.push(report);
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(reports));
-
-    return report;
+    return APIClient.post<TeamReport>('/manager/reports/generate', report);
   }
 
   private static async generatePerformanceReportData(
@@ -730,7 +535,6 @@ export class TeamReportsService {
   }
 
   static async exportReport(reportId: string, format: 'pdf' | 'excel' | 'csv' | 'pptx'): Promise<Blob> {
-    // TODO: Replace with actual export implementation
     const report = await this.getReportById(reportId);
 
     // Mock export
@@ -739,31 +543,11 @@ export class TeamReportsService {
   }
 
   static async shareReport(reportId: string, shareWith: string[]): Promise<TeamReport> {
-    // TODO: Replace with actual API call
-    const report = await this.getReportById(reportId);
-    const updates: Partial<TeamReport> = {
-      sharedWith: [...new Set([...report.sharedWith, ...shareWith])],
-    };
-    return this.updateReport(reportId, updates);
+    return APIClient.post<TeamReport>(`/manager/reports/${reportId}/share`, { shareWith });
   }
 
   private static async updateReport(reportId: string, updates: Partial<TeamReport>): Promise<TeamReport> {
-    const reports = await this.getReports();
-    const index = reports.findIndex((r) => r.reportId === reportId);
-    if (index === -1) throw new Error('Report not found');
-
-    const updated = {
-      ...reports[index],
-      ...updates,
-      audit: {
-        ...reports[index].audit,
-        updatedAt: new Date(),
-        updatedBy: 'current-user',
-      },
-    };
-    reports[index] = updated;
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(reports));
-    return updated;
+    return APIClient.put<TeamReport>(`/manager/reports/${reportId}`, updates);
   }
 }
 
@@ -772,76 +556,27 @@ export class TeamReportsService {
 // ============================================================================
 
 export class DelegationService {
-  private static STORAGE_KEY = 'mss_delegations';
-  private static SETTINGS_KEY = 'mss_delegation_settings';
-
   static async getDelegationRules(managerId?: string): Promise<DelegationRule[]> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(this.STORAGE_KEY);
-    const rules: DelegationRule[] = data ? JSON.parse(data) : [];
-
-    if (managerId) {
-      return rules.filter((r) => r.delegatorId === managerId || r.delegateId === managerId);
-    }
-    return rules;
+    return APIClient.get<DelegationRule[]>('/manager/delegations', managerId ? { managerId } : undefined);
   }
 
   static async getDelegationRuleById(delegationId: string): Promise<DelegationRule> {
-    // TODO: Replace with actual API call
-    const rules = await this.getDelegationRules();
-    const rule = rules.find((r) => r.delegationId === delegationId);
-    if (!rule) throw new Error('Delegation rule not found');
-    return rule;
+    return APIClient.get<DelegationRule>(`/manager/delegations/${delegationId}`);
   }
 
   static async createDelegationRule(rule: DelegationRule): Promise<DelegationRule> {
-    // TODO: Replace with actual API call
-    const rules = await this.getDelegationRules();
-
-    const newRule: DelegationRule = {
-      ...rule,
-      audit: {
-        createdAt: new Date(),
-        createdBy: 'current-user',
-        updatedAt: new Date(),
-        updatedBy: 'current-user',
-      },
-    };
-
-    rules.push(newRule);
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(rules));
-    return newRule;
+    return APIClient.post<DelegationRule>('/manager/delegations', rule);
   }
 
   static async updateDelegationRule(delegationId: string, updates: Partial<DelegationRule>): Promise<DelegationRule> {
-    // TODO: Replace with actual API call
-    const rules = await this.getDelegationRules();
-    const index = rules.findIndex((r) => r.delegationId === delegationId);
-    if (index === -1) throw new Error('Delegation rule not found');
-
-    const updated = {
-      ...rules[index],
-      ...updates,
-      audit: {
-        ...rules[index].audit,
-        updatedAt: new Date(),
-        updatedBy: 'current-user',
-      },
-    };
-    rules[index] = updated;
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(rules));
-    return updated;
+    return APIClient.put<DelegationRule>(`/manager/delegations/${delegationId}`, updates);
   }
 
   static async deleteDelegationRule(delegationId: string): Promise<void> {
-    // TODO: Replace with actual API call
-    const rules = await this.getDelegationRules();
-    const filtered = rules.filter((r) => r.delegationId !== delegationId);
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filtered));
+    return APIClient.delete<void>(`/manager/delegations/${delegationId}`);
   }
 
   static async activateDelegation(delegationId: string, reason: string): Promise<DelegationRule> {
-    // TODO: Replace with actual API call
     const rule = await this.getDelegationRuleById(delegationId);
 
     const activation = {
@@ -861,7 +596,6 @@ export class DelegationService {
   }
 
   static async deactivateDelegation(delegationId: string): Promise<DelegationRule> {
-    // TODO: Replace with actual API call
     const rule = await this.getDelegationRuleById(delegationId);
 
     const currentActivation = rule.activations.find((a) => a.isActive);
@@ -879,7 +613,6 @@ export class DelegationService {
   }
 
   static async revokeDelegation(delegationId: string, reason: string): Promise<DelegationRule> {
-    // TODO: Replace with actual API call
     const updates: Partial<DelegationRule> = {
       status: 'revoked',
       revocationReason: reason,
@@ -889,98 +622,23 @@ export class DelegationService {
   }
 
   static async getDelegationSummary(managerId: string): Promise<DelegationSummary> {
-    // TODO: Replace with actual API call
-    const rules = await this.getDelegationRules(managerId);
-
-    const activeDelegations = rules.filter((r) => r.status === 'active');
-    const created = rules.filter((r) => r.delegatorId === managerId);
-    const received = rules.filter((r) => r.delegateId === managerId);
-
-    const now = new Date();
-    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const expiringSoon = activeDelegations.filter(
-      (r) => new Date(r.endDate) <= sevenDaysFromNow && new Date(r.endDate) >= now
-    );
-
-    return {
-      managerId,
-      managerName: 'Manager Name',
-      activeDelegations: activeDelegations.length,
-      delegationsCreated: created.length,
-      delegationsReceived: received.length,
-      actionsPerformedByDelegates: created.reduce((acc, r) => acc + r.actionsPerformed.length, 0),
-      actionsPerformedAsDelegete: received.reduce((acc, r) => acc + r.actionsPerformed.length, 0),
-      expiringSoon,
-      averageResponseTimeWhenDelegated: 12, // Mock value in hours
-      complianceRate: 98.5, // Mock value
-    };
+    return APIClient.get<DelegationSummary>('/manager/delegations/summary', { managerId });
   }
 
   static async recordDelegationAction(delegationId: string, action: DelegationAction): Promise<DelegationRule> {
-    // TODO: Replace with actual API call
-    const rule = await this.getDelegationRuleById(delegationId);
-
-    const newAction: DelegationAction = {
-      ...action,
-      actionId: `action-${Date.now()}`,
-      actionDate: new Date(),
-    };
-
-    const updates: Partial<DelegationRule> = {
-      actionsPerformed: [...rule.actionsPerformed, newAction],
-    };
-
-    return this.updateDelegationRule(delegationId, updates);
+    return APIClient.post<DelegationRule>(`/manager/delegations/${delegationId}/actions`, action);
   }
 
   // Delegation Settings
   static async getDelegationSettings(managerId: string): Promise<DelegationSettings> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(this.SETTINGS_KEY);
-    const settings: DelegationSettings[] = data ? JSON.parse(data) : [];
-
-    const managerSettings = settings.find((s) => s.managerId === managerId);
-    if (!managerSettings) {
-      return this.getDefaultSettings(managerId);
-    }
-    return managerSettings;
+    return APIClient.get<DelegationSettings>('/manager/delegations/settings', { managerId });
   }
 
   static async updateDelegationSettings(
     managerId: string,
     updates: Partial<DelegationSettings>
   ): Promise<DelegationSettings> {
-    // TODO: Replace with actual API call
-    const allSettings = await this.getAllSettings();
-    const index = allSettings.findIndex((s) => s.managerId === managerId);
-
-    let updated: DelegationSettings;
-    if (index >= 0) {
-      updated = {
-        ...allSettings[index],
-        ...updates,
-        audit: {
-          ...allSettings[index].audit,
-          updatedAt: new Date(),
-          updatedBy: 'current-user',
-        },
-      };
-      allSettings[index] = updated;
-    } else {
-      updated = {
-        ...this.getDefaultSettings(managerId),
-        ...updates,
-      };
-      allSettings.push(updated);
-    }
-
-    localStorage.setItem(this.SETTINGS_KEY, JSON.stringify(allSettings));
-    return updated;
-  }
-
-  private static async getAllSettings(): Promise<DelegationSettings[]> {
-    const data = localStorage.getItem(this.SETTINGS_KEY);
-    return data ? JSON.parse(data) : [];
+    return APIClient.put<DelegationSettings>('/manager/delegations/settings', { managerId, ...updates });
   }
 
   private static getDefaultSettings(managerId: string): DelegationSettings {
@@ -1012,67 +670,7 @@ export class DelegationService {
 
 export class ManagerAnalyticsService {
   static async getAnalytics(managerId: string, period: string): Promise<ManagerAnalytics> {
-    // TODO: Replace with actual API call
-
-    const teamMetrics = await TeamDashboardService.getTeamMetrics(managerId);
-    const approvalSummary = await ApprovalCenterService.getApprovalSummary(managerId);
-    const delegationSummary = await DelegationService.getDelegationSummary(managerId);
-
-    return {
-      managerId,
-      managerName: 'Manager Name',
-      department: 'Engineering',
-      period: 'monthly',
-      periodStart: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-      periodEnd: new Date(),
-
-      teamMetrics,
-
-      approvalMetrics: {
-        totalApprovalsProcessed: approvalSummary.totalApproved + approvalSummary.totalRejected,
-        averageApprovalTime: approvalSummary.averageApprovalTime,
-        approvedCount: approvalSummary.totalApproved,
-        rejectedCount: approvalSummary.totalRejected,
-        approvalRate: (approvalSummary.totalApproved / (approvalSummary.totalApproved + approvalSummary.totalRejected || 1)) * 100,
-        slaCompliance: 95, // Mock value
-      },
-
-      performanceMetrics: {
-        averageRating: teamMetrics.averagePerformanceRating,
-        ratingDistribution: [
-          { rating: 5, count: Math.floor(teamMetrics.totalHeadcount * 0.2) },
-          { rating: 4, count: Math.floor(teamMetrics.totalHeadcount * 0.4) },
-          { rating: 3, count: Math.floor(teamMetrics.totalHeadcount * 0.3) },
-          { rating: 2, count: Math.floor(teamMetrics.totalHeadcount * 0.1) },
-          { rating: 1, count: 0 },
-        ],
-        goalsAchievementRate: teamMetrics.totalActiveGoals > 0
-          ? (teamMetrics.goalsOnTrack / teamMetrics.totalActiveGoals) * 100
-          : 0,
-        topPerformersCount: teamMetrics.highPerformers,
-        improvementNeededCount: teamMetrics.lowPerformers,
-      },
-
-      engagementMetrics: {
-        averageEngagementScore: teamMetrics.averageEngagementScore,
-        atRiskEmployees: teamMetrics.atRiskEmployees,
-        newJoinersRetained: teamMetrics.newJoiners,
-        separationRate: (teamMetrics.separations / teamMetrics.totalHeadcount || 1) * 100,
-      },
-
-      developmentMetrics: {
-        trainingHoursCompleted: 450, // Mock value
-        certificationsAchieved: 8, // Mock value
-        skillGapsClosed: 5, // Mock value
-        promotionsFromTeam: 2, // Mock value
-      },
-
-      delegationMetrics: {
-        activeDelegations: delegationSummary.activeDelegations,
-        delegationUsageRate: (delegationSummary.activeDelegations / teamMetrics.totalHeadcount || 1) * 100,
-        averageDelegationDuration: 30, // Mock value in days
-      },
-    };
+    return APIClient.get<ManagerAnalytics>('/manager/analytics', { managerId, period });
   }
 }
 
@@ -1081,52 +679,12 @@ export class ManagerAnalyticsService {
 // ============================================================================
 
 export class ManagerSettingsService {
-  private static STORAGE_KEY = 'mss_manager_settings';
-
   static async getSettings(managerId: string): Promise<ManagerSettings> {
-    // TODO: Replace with actual API call
-    const data = localStorage.getItem(this.STORAGE_KEY);
-    const settings: ManagerSettings[] = data ? JSON.parse(data) : [];
-
-    const managerSettings = settings.find((s) => s.managerId === managerId);
-    if (!managerSettings) {
-      return this.getDefaultSettings(managerId);
-    }
-    return managerSettings;
+    return APIClient.get<ManagerSettings>('/manager/settings', { managerId });
   }
 
   static async updateSettings(managerId: string, updates: Partial<ManagerSettings>): Promise<ManagerSettings> {
-    // TODO: Replace with actual API call
-    const allSettings = await this.getAllSettings();
-    const index = allSettings.findIndex((s) => s.managerId === managerId);
-
-    let updated: ManagerSettings;
-    if (index >= 0) {
-      updated = {
-        ...allSettings[index],
-        ...updates,
-        audit: {
-          ...allSettings[index].audit,
-          updatedAt: new Date(),
-          updatedBy: 'current-user',
-        },
-      };
-      allSettings[index] = updated;
-    } else {
-      updated = {
-        ...this.getDefaultSettings(managerId),
-        ...updates,
-      };
-      allSettings.push(updated);
-    }
-
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(allSettings));
-    return updated;
-  }
-
-  private static async getAllSettings(): Promise<ManagerSettings[]> {
-    const data = localStorage.getItem(this.STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    return APIClient.put<ManagerSettings>('/manager/settings', { managerId, ...updates });
   }
 
   private static getDefaultSettings(managerId: string): ManagerSettings {

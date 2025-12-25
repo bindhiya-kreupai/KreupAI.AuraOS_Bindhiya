@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { GitBranch, Plus, Box, ArrowRight, Settings, Play } from 'lucide-react';
+import { WorkflowService } from '../services';
 
 const WORKFLOW_NODES = [
     { id: 'start', type: 'trigger', label: 'Form Submitted', x: 50, y: 150, color: 'bg-emerald-500' },
@@ -13,6 +14,25 @@ const WORKFLOW_NODES = [
 ];
 
 export default function WorkflowDesignerPage() {
+    const [workflows, setWorkflows] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchWorkflows();
+    }, []);
+
+    const fetchWorkflows = async () => {
+        try {
+            setLoading(true);
+            const data = await WorkflowService.getWorkflows();
+            setWorkflows(data);
+        } catch (error) {
+            console.error('Error fetching workflows:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

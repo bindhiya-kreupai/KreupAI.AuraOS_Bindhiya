@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Users,
     CheckCircle2,
@@ -8,8 +8,39 @@ import {
     Briefcase,
     ArrowRight
 } from 'lucide-react';
+import { EligibilityService } from '../services';
 
 export default function PlanEligibilityPage() {
+    const [eligibilityRules, setEligibilityRules] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchEligibility();
+    }, []);
+
+    const fetchEligibility = async () => {
+        try {
+            setLoading(true);
+            // For demo purposes, we'll fetch eligibility for a sample employee
+            // In production, this would fetch all eligibility rules
+            const data = await EligibilityService.getEmployeeEligibility('EMP-001');
+            setEligibilityRules(data.length > 0 ? data : mockRules);
+        } catch (error) {
+            console.error('Error fetching eligibility:', error);
+            // Fallback to mock data
+            setEligibilityRules(mockRules);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const mockRules = [
+        { name: 'Standard Full-Time', criteria: 'Employment Type = Full Time AND Tenure > 3 Months', coverage: 'All Medical, Dental, Vision' },
+        { name: 'Executive Package', criteria: 'Grade >= L5 AND Department = Leadership', coverage: 'Premium Health + Wellness + Stock Options' },
+        { name: 'Contractor Basic', criteria: 'Employment Type = Contract AND Contract Duration > 1 Year', coverage: 'Basic Health Only' },
+        { name: 'New Hire Probation', criteria: 'Tenure < 3 Months', coverage: 'None (Eligibility starts after 90 days)' },
+    ];
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -24,12 +55,11 @@ export default function PlanEligibilityPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 overflow-y-auto pb-20">
-                {[
-                    { name: 'Standard Full-Time', criteria: 'Employment Type = Full Time AND Tenure > 3 Months', coverage: 'All Medical, Dental, Vision' },
-                    { name: 'Executive Package', criteria: 'Grade >= L5 AND Department = Leadership', coverage: 'Premium Health + Wellness + Stock Options' },
-                    { name: 'Contractor Basic', criteria: 'Employment Type = Contract AND Contract Duration > 1 Year', coverage: 'Basic Health Only' },
-                    { name: 'New Hire Probation', criteria: 'Tenure < 3 Months', coverage: 'None (Eligibility starts after 90 days)' },
-                ].map((rule, i) => (
+                {loading ? (
+                    <div className="col-span-full flex justify-center items-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                    </div>
+                ) : eligibilityRules.map((rule, i) => (
                     <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">

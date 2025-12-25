@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Gavel,
     AlertOctagon,
@@ -8,8 +8,39 @@ import {
     X,
     MessageSquare
 } from 'lucide-react';
+import { QualifyingEventService } from '../services';
 
 export default function ExceptionHandlingPage() {
+    const [events, setEvents] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchEvents();
+    }, []);
+
+    const fetchEvents = async () => {
+        try {
+            setLoading(true);
+            const data = await QualifyingEventService.getEvents();
+            if (data.length === 0) {
+                setEvents(mockEvents);
+            } else {
+                setEvents(data);
+            }
+        } catch (error) {
+            console.error('Error fetching qualifying events:', error);
+            setEvents(mockEvents);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const mockEvents = [
+        { id: 'EX-009', user: 'Michael Scott', type: 'Late Enrollment', reason: 'Hospitalized during window', status: 'Pending', date: '2 hours ago' },
+        { id: 'EX-008', user: 'Pam Beesly', type: 'Dependent Add', reason: 'Birth of child (Life Event)', status: 'Approved', date: 'Yesterday' },
+        { id: 'EX-007', user: 'Jim Halpert', type: 'Plan Upgrade', reason: 'Missed deadline by 1 day', status: 'Rejected', date: 'Oct 20, 2024' },
+    ];
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -24,11 +55,11 @@ export default function ExceptionHandlingPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 overflow-y-auto pb-20">
-                {[
-                    { id: 'EX-009', user: 'Michael Scott', type: 'Late Enrollment', reason: 'Hospitalized during window', status: 'Pending', date: '2 hours ago' },
-                    { id: 'EX-008', user: 'Pam Beesly', type: 'Dependent Add', reason: 'Birth of child (Life Event)', status: 'Approved', date: 'Yesterday' },
-                    { id: 'EX-007', user: 'Jim Halpert', type: 'Plan Upgrade', reason: 'Missed deadline by 1 day', status: 'Rejected', date: 'Oct 20, 2024' },
-                ].map((req, i) => (
+                {loading ? (
+                    <div className="col-span-full flex justify-center items-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                    </div>
+                ) : events.map((req, i) => (
                     <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row gap-6">
                         <div className="flex items-start gap-4 flex-1">
                             <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500">

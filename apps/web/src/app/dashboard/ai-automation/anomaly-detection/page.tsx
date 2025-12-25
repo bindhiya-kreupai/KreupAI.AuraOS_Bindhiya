@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Activity,
     ShieldAlert,
@@ -24,16 +24,7 @@ import {
     Legend,
     Cell
 } from 'recharts';
-
-// --- MOCK DATA ---
-
-const ANOMALIES = [
-    { id: 1, type: 'Payroll', severity: 'Critical', desc: 'Duplicate salary credit detected for E-492', time: '10 mins ago', user: 'System', icon: DollarSign },
-    { id: 2, type: 'Attendance', severity: 'High', desc: 'Geo-fencing violation: Clock-in from prohibited IP (Russia)', time: '45 mins ago', user: 'Alex M.', icon: MapPin },
-    { id: 3, type: 'Overtime', severity: 'Medium', desc: 'Unusually high overtime claim (18h) for single shift', time: '2 hours ago', user: 'Sarah K.', icon: Clock },
-    { id: 4, type: 'Access', severity: 'Medium', desc: 'Multiple failed login attempts from new device', time: '3 hours ago', user: 'John D.', icon: ShieldAlert },
-    { id: 5, type: 'Allowance', severity: 'Low', desc: 'Housing allowance mismatch with Grade B2', time: '5 hours ago', user: 'Admin', icon: DollarSign },
-];
+import { anomalyDetection } from '@/lib/services/ai-automation-client';
 
 const SEVERITY_STATS = [
     { name: 'Critical', count: 5, color: '#ef4444' },
@@ -49,10 +40,39 @@ const TYPE_STATS = [
     { name: 'Access', count: 21 },
 ];
 
-// --- COMPONENTS ---
-
 export default function AnomalyDetectionPage() {
     const [selectedTab, setSelectedTab] = useState('All');
+    const [anomalies, setAnomalies] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchAnomalies();
+    }, []);
+
+    const fetchAnomalies = async () => {
+        try {
+            const result = await anomalyDetection.getAnomalies();
+            if (result.success) {
+                setAnomalies(result.data?.anomalies || []);
+            }
+        } catch (error) {
+            console.error('Error fetching anomalies:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResolve = async (anomalyId: string, resolution: string) => {
+        setLoading(true);
+        try {
+            await anomalyDetection.resolveAnomaly(anomalyId, resolution);
+            await fetchAnomalies();
+        } catch (error) {
+            console.error('Error resolving anomaly:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="space-y-6 pb-10">
@@ -137,7 +157,7 @@ export default function AnomalyDetectionPage() {
                 </div>
 
                 <div className="divide-y divide-cloud dark:divide-nebula-purple/20">
-                    {ANOMALIES.map((item) => (
+                    {anomalies.map((item) => (
                         <div key={item.id} className="p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors flex flex-col md:flex-row gap-4 items-start md:items-center">
 
                             {/* Icon */}

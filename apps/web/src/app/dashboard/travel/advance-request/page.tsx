@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Banknote, Plus, Clock, CheckCircle } from 'lucide-react';
+import { TravelRequestService } from '../services';
 
 const ADVANCES = [
     { id: 1, trip: 'London Client Visit', amount: '$500.00', date: 'Nov 10, 2024', status: 'Approved', type: 'Cash' },
@@ -9,6 +10,25 @@ const ADVANCES = [
 ];
 
 export default function AdvanceRequestPage() {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const requests = await TravelRequestService.getRequests({ status: 'approved' });
+            setData(requests);
+        } catch (error) {
+            console.error('Failed to fetch advance requests:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

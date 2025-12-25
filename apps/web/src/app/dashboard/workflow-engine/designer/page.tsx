@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import ReactFlow, {
     useNodesState,
     useEdgesState,
@@ -32,6 +32,7 @@ import {
     MoreHorizontal,
     Trash2
 } from 'lucide-react';
+import { WorkflowService } from '../services';
 
 // --- CUSTOM NODE COMPONENTS ---
 
@@ -130,6 +131,24 @@ export default function WorkflowDesignerPage() {
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
+    const [workflows, setWorkflows] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchWorkflows();
+    }, []);
+
+    const fetchWorkflows = async () => {
+        try {
+            setLoading(true);
+            const data = await WorkflowService.getWorkflows();
+            setWorkflows(data);
+        } catch (error) {
+            console.error('Error fetching workflows:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge({ ...params, type: 'smoothstep', animated: true, markerEnd: { type: MarkerType.ArrowClosed } }, eds)), [setEdges]);
 

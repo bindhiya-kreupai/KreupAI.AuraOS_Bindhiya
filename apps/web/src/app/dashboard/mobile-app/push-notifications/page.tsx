@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Bell,
     Send,
@@ -13,14 +13,43 @@ import {
     AlertCircle,
     BarChart3
 } from 'lucide-react';
+import { PushNotificationService } from '../services';
 
 export default function PushNotificationsPage() {
     const [activeTab, setActiveTab] = useState<'compose' | 'history'>('compose');
     const [title, setTitle] = useState('');
     const [message, setMessage] = useState('');
     const [audience, setAudience] = useState('All Users');
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const history = [
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await PushNotificationService.getAllNotifications();
+            if (result.length > 0) {
+                setNotifications(result);
+            }
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const history = notifications.length > 0 ? notifications.slice(0, 5).map((notif: any) => ({
+        id: notif.notificationId,
+        title: notif.title,
+        message: notif.body,
+        audience: notif.targetType === 'all' ? 'All Users' : notif.targetType,
+        sentAt: notif.sentDate ? new Date(notif.sentDate).toLocaleString() : 'Not sent',
+        openRate: notif.openRate ? `${notif.openRate}%` : '0%',
+        status: notif.status === 'sent' ? 'Sent' : notif.status === 'failed' ? 'Failed' : 'Draft'
+    })) : [
         { id: 1, title: 'Server Maintenance Alert', message: 'System will be down for 30 mins tonight at 2 AM.', audience: 'All Users', sentAt: 'Mar 15, 10:00 AM', openRate: '68%', status: 'Sent' },
         { id: 2, title: 'New Benefits Policy', message: 'Check out the new health insurance options available.', audience: 'All Users', sentAt: 'Mar 12, 09:30 AM', openRate: '45%', status: 'Sent' },
         { id: 3, title: 'Sales Team Meeting', message: 'Urgent meeting in Conference Room B.', audience: 'Sales Dept', sentAt: 'Mar 10, 02:15 PM', openRate: '92%', status: 'Sent' },

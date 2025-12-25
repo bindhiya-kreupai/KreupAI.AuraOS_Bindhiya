@@ -1,6 +1,7 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { CandidateApplicationService } from '../services';
 import {
     Filter,
     CheckSquare,
@@ -11,6 +12,49 @@ import {
 } from 'lucide-react';
 
 export default function CandidateScreeningPage() {
+    const [candidates, setCandidates] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({ pending: 0, shortlisted: 0, rejected: 0 });
+
+    useEffect(() => {
+        fetchCandidates();
+    }, []);
+
+    const fetchCandidates = async () => {
+        try {
+            const data = await CandidateApplicationService.getApplications({ status: 'screening' });
+            setCandidates(data);
+
+            // Calculate stats
+            const pending = data.filter((c: any) => c.screeningStatus === 'pending').length;
+            const shortlisted = data.filter((c: any) => c.screeningStatus === 'shortlisted').length;
+            const rejected = data.filter((c: any) => c.screeningStatus === 'rejected').length;
+            setStats({ pending, shortlisted, rejected });
+        } catch (error) {
+            console.error('Error fetching candidates:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleShortlist = async (id: string) => {
+        try {
+            await CandidateApplicationService.updateApplication(id, { screeningStatus: 'shortlisted' });
+            await fetchCandidates();
+        } catch (error) {
+            console.error('Error shortlisting candidate:', error);
+        }
+    };
+
+    const handleReject = async (id: string) => {
+        try {
+            await CandidateApplicationService.updateApplication(id, { screeningStatus: 'rejected' });
+            await fetchCandidates();
+        } catch (error) {
+            console.error('Error rejecting candidate:', error);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ShoppingBag,
     Search,
@@ -18,6 +18,7 @@ import {
     User
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SocialFeedService } from '../services';
 
 // --- MOCK DATA ---
 
@@ -97,10 +98,28 @@ const ITEMS = [
 ];
 
 export default function ClassifiedsPage() {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [showPostModal, setShowPostModal] = useState(false);
     const [likedItems, setLikedItems] = useState<number[]>([]);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const posts = await SocialFeedService.getPosts();
+            setData(posts.filter(p => p.type === 'classified'));
+        } catch (error) {
+            console.error('Error fetching classifieds:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const toggleLike = (id: number) => {
         if (likedItems.includes(id)) {
@@ -110,7 +129,10 @@ export default function ClassifiedsPage() {
         }
     };
 
-    const filteredItems = ITEMS.filter(item =>
+    // Use fetched data if available, otherwise use mock data
+    const itemsToDisplay = data.length > 0 ? data : ITEMS;
+
+    const filteredItems = itemsToDisplay.filter(item =>
         (selectedCategory === 'All' || item.category === selectedCategory) &&
         (item.title.toLowerCase().includes(searchQuery.toLowerCase()) || item.description.toLowerCase().includes(searchQuery.toLowerCase()))
     );

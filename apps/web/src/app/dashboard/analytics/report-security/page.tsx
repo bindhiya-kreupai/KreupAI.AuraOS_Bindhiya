@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Lock, UserCheck, Eye, EyeOff } from 'lucide-react';
+import { ReportSecurityService } from '../services';
 
 const ROLES = [
     { id: 1, name: 'Super Admin', access: 'Full Access', users: 3 },
@@ -11,6 +12,24 @@ const ROLES = [
 ];
 
 export default function ReportSecurityPage() {
+    const [security, setSecurity] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchSecurity();
+    }, []);
+
+    const fetchSecurity = async () => {
+        try {
+            const data = await ReportSecurityService.getReportSecurity('default');
+            setSecurity(data);
+        } catch (error) {
+            console.error('Error fetching report security:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="p-6 space-y-8 min-h-screen">
             <div>

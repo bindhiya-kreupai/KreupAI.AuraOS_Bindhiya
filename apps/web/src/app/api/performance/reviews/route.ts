@@ -1,0 +1,56 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+
+export const GET = withEnhancedAuth(async (request, context) => {
+  try {
+    const { user } = context;
+    const { searchParams } = new URL(request.url);
+
+    // Mock data - replace with actual database queries
+    const reviews_UPPER = [];
+
+    return NextResponse.json({ reviews: reviews_UPPER }, { status: 200 });
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+});
+
+export const POST = withEnhancedAuth(async (request, context) => {
+  try {
+    const { user } = context;
+    const body = await request.json();
+
+    // Mock create - replace with actual database insert
+    const review = {
+      id: `review-${Date.now()}`,
+      ...body,
+      createdAt: new Date().toISOString(),
+      createdBy: user.userId,
+    };
+
+    return NextResponse.json({ review }, { status: 201 });
+  } catch (error) {
+    console.error('Error creating review:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+});
+
+export const PUT = withEnhancedAuth(async (request, context) => {
+  try {
+    const { user } = context;
+    const body = await request.json();
+
+    // Mock update - replace with actual database update
+    const review = {
+      ...body,
+      updatedAt: new Date().toISOString(),
+      updatedBy: user.userId,
+    };
+
+    return NextResponse.json({ review }, { status: 200 });
+  } catch (error) {
+    console.error('Error updating review:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+});

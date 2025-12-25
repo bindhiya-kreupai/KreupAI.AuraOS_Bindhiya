@@ -1,126 +1,121 @@
-// Grievance Management Services
+// Grievance Management Services - API Integrated
+import { APIClient } from '@/lib/api-client';
 import type { Grievance, GrievanceUpdate, Investigation, Resolution, GrievancePolicy, GrievanceMetrics, GrievanceSettings } from './types';
 
-const STORAGE_KEYS = {
-  GRIEVANCES: 'grievances',
-  INVESTIGATIONS: 'grievance_investigations',
-  RESOLUTIONS: 'grievance_resolutions',
-  POLICIES: 'grievance_policies',
-  METRICS: 'grievance_metrics',
-  SETTINGS: 'grievance_settings',
-};
-
 export class GrievanceService {
+  private static endpoint = '/grievance';
+
   static async getGrievances(filters?: { employeeId?: string; status?: string; departmentId?: string }): Promise<Grievance[]> {
-    const data = localStorage.getItem(STORAGE_KEYS.GRIEVANCES);
-    let grievances: Grievance[] = data ? JSON.parse(data) : [];
-    if (filters) {
-      if (filters.employeeId) grievances = grievances.filter(g => g.employeeId === filters.employeeId);
-      if (filters.status) grievances = grievances.filter(g => g.status === filters.status);
-      if (filters.departmentId) grievances = grievances.filter(g => g.departmentId === filters.departmentId);
+    try {
+      const response = await APIClient.get<{ grievances?: Grievance[] }>(this.endpoint, filters);
+      return response.grievances || [];
+    } catch (error) {
+      console.error('Error fetching grievances:', error);
+      return [];
     }
-    return grievances;
   }
 
   static async submitGrievance(grievance: Grievance): Promise<Grievance> {
-    const grievances = await this.getGrievances();
-    grievances.push(grievance);
-    localStorage.setItem(STORAGE_KEYS.GRIEVANCES, JSON.stringify(grievances));
-    return grievance;
+    const response = await APIClient.post<{ grievance: Grievance }>(this.endpoint, grievance);
+    return response.grievance;
   }
 
   static async updateGrievance(id: string, updates: Partial<Grievance>): Promise<Grievance> {
-    const grievances = await this.getGrievances();
-    const index = grievances.findIndex(g => g.id === id);
-    if (index === -1) throw new Error('Grievance not found');
-    grievances[index] = { ...grievances[index], ...updates, lastModified: new Date().toISOString() };
-    localStorage.setItem(STORAGE_KEYS.GRIEVANCES, JSON.stringify(grievances));
-    return grievances[index];
+    const response = await APIClient.put<{ grievance: Grievance }>(`${this.endpoint}/${id}`, updates);
+    return response.grievance;
   }
 
   static async addUpdate(id: string, update: GrievanceUpdate): Promise<Grievance> {
-    const grievance = (await this.getGrievances()).find(g => g.id === id);
-    if (!grievance) throw new Error('Grievance not found');
-    grievance.updates.push(update);
-    return this.updateGrievance(id, { updates: grievance.updates });
+    const response = await APIClient.post<{ grievance: Grievance }>(`${this.endpoint}/${id}/updates`, update);
+    return response.grievance;
   }
 
   static async acknowledgeGrievance(id: string, acknowledgedBy: string): Promise<Grievance> {
-    return this.updateGrievance(id, { status: 'acknowledged', assignedTo: acknowledgedBy, assignedToName: acknowledgedBy });
+    const response = await APIClient.post<{ grievance: Grievance }>(`${this.endpoint}/${id}/acknowledge`, { acknowledgedBy });
+    return response.grievance;
   }
 
   static async escalateGrievance(id: string, newLevel: string, reason: string): Promise<Grievance> {
-    return this.updateGrievance(id, { status: 'escalated', currentEscalationLevel: newLevel as any });
+    const response = await APIClient.post<{ grievance: Grievance }>(`${this.endpoint}/${id}/escalate`, { newLevel, reason });
+    return response.grievance;
   }
 
   static async resolveGrievance(id: string): Promise<Grievance> {
-    return this.updateGrievance(id, { status: 'resolved', actualResolutionDate: new Date().toISOString() });
+    const response = await APIClient.post<{ grievance: Grievance }>(`${this.endpoint}/${id}/resolve`);
+    return response.grievance;
   }
 
   static async closeGrievance(id: string): Promise<Grievance> {
-    return this.updateGrievance(id, { status: 'closed' });
+    const response = await APIClient.post<{ grievance: Grievance }>(`${this.endpoint}/${id}/close`);
+    return response.grievance;
   }
 }
 
 export class InvestigationService {
+  private static endpoint = '/grievance/investigations';
+
   static async createInvestigation(investigation: Investigation): Promise<Investigation> {
-    const data = localStorage.getItem(STORAGE_KEYS.INVESTIGATIONS);
-    const investigations: Investigation[] = data ? JSON.parse(data) : [];
-    investigations.push(investigation);
-    localStorage.setItem(STORAGE_KEYS.INVESTIGATIONS, JSON.stringify(investigations));
-    return investigation;
+    const response = await APIClient.post<{ investigation: Investigation }>(this.endpoint, investigation);
+    return response.investigation;
   }
 
   static async updateInvestigation(id: string, updates: Partial<Investigation>): Promise<Investigation> {
-    const data = localStorage.getItem(STORAGE_KEYS.INVESTIGATIONS);
-    const investigations: Investigation[] = data ? JSON.parse(data) : [];
-    const index = investigations.findIndex(i => i.id === id);
-    if (index === -1) throw new Error('Investigation not found');
-    investigations[index] = { ...investigations[index], ...updates };
-    localStorage.setItem(STORAGE_KEYS.INVESTIGATIONS, JSON.stringify(investigations));
-    return investigations[index];
+    const response = await APIClient.put<{ investigation: Investigation }>(`${this.endpoint}/${id}`, updates);
+    return response.investigation;
   }
 
   static async completeInvestigation(id: string, findings: string, recommendations: string[]): Promise<Investigation> {
-    return this.updateInvestigation(id, { status: 'completed', endDate: new Date().toISOString(), findings, recommendations });
+    const response = await APIClient.post<{ investigation: Investigation }>(`${this.endpoint}/${id}/complete`, { findings, recommendations });
+    return response.investigation;
   }
 }
 
 export class ResolutionService {
+  private static endpoint = '/grievance/resolutions';
+
   static async createResolution(resolution: Resolution): Promise<Resolution> {
-    const data = localStorage.getItem(STORAGE_KEYS.RESOLUTIONS);
-    const resolutions: Resolution[] = data ? JSON.parse(data) : [];
-    resolutions.push(resolution);
-    localStorage.setItem(STORAGE_KEYS.RESOLUTIONS, JSON.stringify(resolutions));
-    return resolution;
+    const response = await APIClient.post<{ resolution: Resolution }>(this.endpoint, resolution);
+    return response.resolution;
   }
 }
 
 export class GrievanceAnalyticsService {
+  private static endpoint = '/grievance/analytics';
+
   static async getMetrics(): Promise<GrievanceMetrics> {
-    const data = localStorage.getItem(STORAGE_KEYS.METRICS);
-    return data ? JSON.parse(data) : {
-      totalGrievances: 0, openGrievances: 0, resolvedGrievances: 0, averageResolutionDays: 0,
-      grievancesByType: [], grievancesBySeverity: [], grievancesByDepartment: [],
-      resolutionRate: 0, satisfactionScore: 0, escalationRate: 0, repeatGrievances: 0
-    };
+    try {
+      const response = await APIClient.get<{ metrics?: GrievanceMetrics }>(this.endpoint);
+      return response.metrics || {
+        totalGrievances: 0, openGrievances: 0, resolvedGrievances: 0, averageResolutionDays: 0,
+        grievancesByType: [], grievancesBySeverity: [], grievancesByDepartment: [],
+        resolutionRate: 0, satisfactionScore: 0, escalationRate: 0, repeatGrievances: 0
+      };
+    } catch (error) {
+      console.error('Error fetching grievance metrics:', error);
+      throw error;
+    }
   }
 }
 
 export class GrievanceSettingsService {
+  private static endpoint = '/grievance/settings';
+
   static async getSettings(): Promise<GrievanceSettings> {
-    const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-    return data ? JSON.parse(data) : {
-      allowAnonymousGrievances: true, requireManagerNotification: true, autoEscalationEnabled: true,
-      escalationThresholdDays: 7, slaTracking: true, satisfactionSurveyEnabled: true,
-      confidentialityByDefault: false, notificationEmail: 'hr@company.com', hrEmail: 'hr@company.com'
-    };
+    try {
+      const response = await APIClient.get<{ settings?: GrievanceSettings }>(this.endpoint);
+      return response.settings || {
+        allowAnonymousGrievances: true, requireManagerNotification: true, autoEscalationEnabled: true,
+        escalationThresholdDays: 7, slaTracking: true, satisfactionSurveyEnabled: true,
+        confidentialityByDefault: false, notificationEmail: 'hr@company.com', hrEmail: 'hr@company.com'
+      };
+    } catch (error) {
+      console.error('Error fetching grievance settings:', error);
+      throw error;
+    }
   }
 
   static async updateSettings(updates: Partial<GrievanceSettings>): Promise<GrievanceSettings> {
-    const settings = await this.getSettings();
-    const updated = { ...settings, ...updates };
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated));
-    return updated;
+    const response = await APIClient.put<{ settings: GrievanceSettings }>(this.endpoint, updates);
+    return response.settings;
   }
 }

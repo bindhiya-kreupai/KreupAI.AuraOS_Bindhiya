@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Folder,
     FileText,
@@ -12,10 +12,28 @@ import {
     Download,
     Trash
 } from 'lucide-react';
+import { DocumentService } from '../services';
 
 export default function DocumentManagementPage() {
     const [selectedFolder, setSelectedFolder] = useState('Employee Contracts');
     const [showUploadModal, setShowUploadModal] = useState(false);
+    const [documents, setDocuments] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchDocuments();
+    }, []);
+
+    const fetchDocuments = async () => {
+        try {
+            const data = await DocumentService.getAllDocuments();
+            setDocuments(data);
+        } catch (error) {
+            console.error('Error fetching documents:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Mock Data
     const folders = ['Employee Contracts', 'Company Policies', 'Tax Forms', 'Performance Reviews', 'Onboarding Kits'];

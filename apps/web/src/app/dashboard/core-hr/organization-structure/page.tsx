@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Network,
     ZoomIn,
@@ -10,10 +10,28 @@ import {
     User,
     RefreshCw
 } from 'lucide-react';
+import { OrganizationService } from '../services';
 
 export default function OrgStructurePage() {
     const [zoom, setZoom] = useState(1);
     const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({ 'ceo': true });
+    const [units, setUnits] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchUnits();
+    }, []);
+
+    const fetchUnits = async () => {
+        try {
+            const data = await OrganizationService.getAllUnits();
+            setUnits(data);
+        } catch (error) {
+            console.error('Error fetching organization units:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 1.5));
     const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.5));

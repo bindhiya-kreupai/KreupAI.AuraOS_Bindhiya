@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CheckSquare,
     ThumbsUp,
@@ -13,8 +13,29 @@ import {
     User,
     ArrowRight
 } from 'lucide-react';
+import { MobileApprovalsService } from '../services';
 
 export default function MobileApprovalsPage() {
+    const [approvals, setApprovals] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await MobileApprovalsService.getAllApprovals();
+            if (result.length > 0) {
+                setApprovals(result);
+            }
+        } catch (error) {
+            console.error('Error fetching approvals:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}

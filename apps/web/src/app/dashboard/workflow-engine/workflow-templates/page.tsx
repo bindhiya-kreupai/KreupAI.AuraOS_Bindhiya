@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { LayoutTemplate, Copy, ArrowRight } from 'lucide-react';
+import { WorkflowService } from '../services';
 
 const TEMPLATES = [
     { id: 1, name: 'Leave Approval Standard', category: 'HR', uses: 1240, color: 'bg-pink-500' },
@@ -13,6 +14,28 @@ const TEMPLATES = [
 ];
 
 export default function WorkflowTemplatesPage() {
+    const [templates, setTemplates] = useState<any[]>(TEMPLATES);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchTemplates();
+    }, []);
+
+    const fetchTemplates = async () => {
+        try {
+            setLoading(true);
+            const data = await WorkflowService.getWorkflows();
+            const templateWorkflows = data.filter((w: any) => w.isTemplate === true);
+            if (templateWorkflows.length > 0) {
+                setTemplates(templateWorkflows);
+            }
+        } catch (error) {
+            console.error('Error fetching templates:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -26,7 +49,7 @@ export default function WorkflowTemplatesPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {TEMPLATES.map(template => (
+                {templates.map(template => (
                     <div key={template.id} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-indigo-200 dark:hover:border-indigo-800 transition-all group cursor-pointer">
                         <div className="flex justify-between items-start mb-4">
                             <div className={`w-10 h-10 rounded-lg ${template.color} bg-opacity-10 flex items-center justify-center`}>

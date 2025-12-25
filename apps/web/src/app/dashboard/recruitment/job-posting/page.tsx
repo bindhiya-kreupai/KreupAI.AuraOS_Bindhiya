@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import CreateJobModal from '@/components/recruitment/create-job-modal';
 import { logger } from '@/lib/logger';
+import { JobPostingService } from '../services';
 
 interface JobPosting {
     id: string;
@@ -50,13 +51,12 @@ export default function JobPostingsPage() {
     useEffect(() => {
         const fetchJobs = async () => {
             try {
-                const res = await fetch('/api/recruitment/jobs');
-                if (!res.ok) throw new Error('Failed to fetch jobs');
-                const data = await res.json();
+                const data = await JobPostingService.getPostings();
 
                 const transformed = data.map((job: any) => ({
                     ...job,
                     postedDate: job.postedDate ? new Date(job.postedDate).toLocaleDateString() : '-',
+                    status: job.isActive ? 'Active' : 'Draft',
                     metrics: job.metrics || { views: 0, clicks: 0, applies: 0 },
                     channels: job.channels || { linkedin: false, indeed: false, website: false, glassdoor: false }
                 }));

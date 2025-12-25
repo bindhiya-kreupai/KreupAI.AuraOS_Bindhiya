@@ -13,12 +13,30 @@ import {
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
 } from 'recharts';
+import { RealtimeMetricsService } from '../services';
 
 export default function RealTimeAnalyticsPage() {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [activeUsers, setActiveUsers] = useState(124);
     const [serverLoad, setServerLoad] = useState(45);
     const [dataPoints, setDataPoints] = useState<{ time: string; value: number }[]>([]);
+    const [metrics, setMetrics] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchMetrics();
+    }, []);
+
+    const fetchMetrics = async () => {
+        try {
+            const data = await RealtimeMetricsService.getMetrics();
+            setMetrics(data);
+        } catch (error) {
+            console.error('Error fetching realtime metrics:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Simulate "ticking" live data
     useEffect(() => {

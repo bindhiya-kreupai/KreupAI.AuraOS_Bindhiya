@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { History, MapPin, Calendar, FileText, ChevronRight } from 'lucide-react';
+import { TravelRequestService } from '../services';
 
 const PAST_TRIPS = [
     { id: 1, dest: 'Paris, France', dates: 'Sep 10 - Sep 15, 2024', purpose: 'Q3 Plannning', cost: '$3,200', reports: 'Submitted' },
@@ -10,6 +11,25 @@ const PAST_TRIPS = [
 ];
 
 export default function TravelHistoryPage() {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const requests = await TravelRequestService.getRequests();
+            setData(requests);
+        } catch (error) {
+            console.error('Failed to fetch travel history:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

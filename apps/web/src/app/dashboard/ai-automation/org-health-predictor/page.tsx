@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Activity,
     HeartPulse,
@@ -23,18 +23,7 @@ import {
     Treemap,
     Cell
 } from 'recharts';
-
-// --- MOCK DATA ---
-
-const HEALTH_TRENDS = [
-    { month: 'Jan', score: 85, sentiment: 82, burnout: 15 },
-    { month: 'Feb', score: 84, sentiment: 80, burnout: 18 },
-    { month: 'Mar', score: 82, sentiment: 78, burnout: 22 },
-    { month: 'Apr', score: 80, sentiment: 75, burnout: 25 },
-    { month: 'May', score: 83, sentiment: 79, burnout: 20 },
-    { month: 'Jun', score: 86, sentiment: 85, burnout: 14 },
-    { month: 'Jul', score: 88, sentiment: 87, burnout: 12 },
-];
+import { orgHealthPredictor } from '@/lib/services/ai-automation-client';
 
 const BURNOUT_DATA = [
     {
@@ -131,6 +120,51 @@ const CustomizedTreemapContent = (props: any) => {
 };
 
 export default function OrgHealthPredictorPage() {
+    const [healthMetrics, setHealthMetrics] = useState<any>(null);
+    const [predictions, setPredictions] = useState<any>(null);
+    const [recommendations, setRecommendations] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            const [metricsResult, predictionsResult, recommendationsResult] = await Promise.all([
+                orgHealthPredictor.getHealthMetrics(),
+                orgHealthPredictor.getPredictions(),
+                orgHealthPredictor.getRecommendations(),
+            ]);
+
+            if (metricsResult.success) {
+                setHealthMetrics(metricsResult.data);
+            }
+            if (predictionsResult.success) {
+                setPredictions(predictionsResult.data);
+            }
+            if (recommendationsResult.success) {
+                setRecommendations(recommendationsResult.data?.recommendations || []);
+            }
+        } catch (error) {
+            console.error('Error fetching org health data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const healthTrends = healthMetrics?.trends || [
+        { month: 'Jan', score: 85, sentiment: 82, burnout: 15 },
+        { month: 'Feb', score: 84, sentiment: 80, burnout: 18 },
+        { month: 'Mar', score: 82, sentiment: 78, burnout: 22 },
+        { month: 'Apr', score: 80, sentiment: 75, burnout: 25 },
+        { month: 'May', score: 83, sentiment: 79, burnout: 20 },
+        { month: 'Jun', score: 86, sentiment: 85, burnout: 14 },
+        { month: 'Jul', score: 88, sentiment: 87, burnout: 12 },
+    ];
+
+    const drivers = recommendations.length > 0 ? recommendations : DRIVERS;
+
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -182,7 +216,7 @@ export default function OrgHealthPredictorPage() {
                     </h2>
                     <div className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={HEALTH_TRENDS}>
+                            <LineChart data={healthTrends}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                                 <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                                 <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} />
@@ -205,7 +239,7 @@ export default function OrgHealthPredictorPage() {
                     <p className="text-xs text-silver-mist mb-6">Factors currently impacting organizational score positively or negatively.</p>
 
                     <div className="space-y-4">
-                        {DRIVERS.map((driver, i) => (
+                        {drivers.map((driver, i) => (
                             <div key={i} className="flex items-center justify-between group">
                                 <div className="flex items-center gap-3">
                                     <div className={`w-1.5 h-8 rounded-full ${driver.impact === 'Positive' ? 'bg-emerald-500' : driver.impact === 'Negative' ? 'bg-rose-500' : 'bg-slate-300'}`} />

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Book, Search, FileText, Globe, DollarSign, Shield } from 'lucide-react';
+import { TravelSettingsService } from '../services';
 
 const SECTIONS = [
     { title: 'Global Travel Policy 2024', icon: Globe, desc: 'General guidelines for international and domestic travel.' },
@@ -10,6 +11,25 @@ const SECTIONS = [
 ];
 
 export default function TravelPolicyPage() {
+    const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const settings = await TravelSettingsService.getSettings();
+            setData(settings);
+        } catch (error) {
+            console.error('Failed to fetch travel settings:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

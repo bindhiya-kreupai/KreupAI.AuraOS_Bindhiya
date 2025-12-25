@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Briefcase,
     Users,
@@ -9,10 +9,28 @@ import {
     Filter,
     MoreHorizontal
 } from 'lucide-react';
+import { PositionService } from '../services';
 
 export default function PositionManagementPage() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [filterStatus, setFilterStatus] = useState('All');
+    const [positionsData, setPositionsData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchPositions();
+    }, []);
+
+    const fetchPositions = async () => {
+        try {
+            const data = await PositionService.getAllPositions();
+            setPositionsData(data);
+        } catch (error) {
+            console.error('Error fetching positions:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const positions = [
         { id: 'POS-ENG-001', title: 'Senior Backend Engineer', dept: 'Engineering', manager: 'Marcus Chen', fte: 1.0, status: 'Filled' },

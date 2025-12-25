@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Repeat,
     Calendar,
@@ -13,6 +13,7 @@ import {
     ArrowRight,
     MapPin
 } from 'lucide-react';
+import { ShiftSwapService } from '../services';
 
 // --- MOCK DATA ---
 
@@ -38,33 +39,62 @@ interface MarketShift {
     reason: string;
 }
 
-const MY_SHIFTS: Shift[] = [
-    { id: 'SH-001', date: 'Dec 11, 2024 (Mon)', time: '09:00 AM - 06:00 PM', type: 'Morning', location: 'HQ - Floor 4', status: 'Scheduled' },
-    { id: 'SH-002', date: 'Dec 12, 2024 (Tue)', time: '02:00 PM - 11:00 PM', type: 'Evening', location: 'HQ - Floor 4', status: 'Scheduled' },
-    { id: 'SH-003', date: 'Dec 15, 2024 (Fri)', time: '10:00 PM - 07:00 AM', type: 'Night', location: 'Remote', status: 'Swap Requested' },
-];
-
-const MARKETPLACE: MarketShift[] = [
-    {
-        id: 'MKT-101',
-        offeredBy: { name: 'Alice Johnson', role: 'Frontend Dev', avatar: 'bg-emerald-500' },
-        date: 'Dec 13, 2024 (Wed)',
-        time: '09:00 AM - 06:00 PM',
-        type: 'Morning',
-        reason: 'Doctor Appointment'
-    },
-    {
-        id: 'MKT-102',
-        offeredBy: { name: 'Bob Smith', role: 'QA Engineer', avatar: 'bg-indigo-500' },
-        date: 'Dec 14, 2024 (Thu)',
-        time: '02:00 PM - 11:00 PM',
-        type: 'Evening',
-        reason: 'Family Emergency'
-    }
-];
-
 export default function ShiftSwappingPage() {
     const [activeTab, setActiveTab] = useState<'My Shifts' | 'Marketplace'>('My Shifts');
+    const [myShifts, setMyShifts] = useState<Shift[]>([]);
+    const [marketplace, setMarketplace] = useState<MarketShift[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchShiftData();
+    }, []);
+
+    const fetchShiftData = async () => {
+        try {
+            setLoading(true);
+            const shiftsResult = await ShiftSwapService.getMyShifts('current-user-id');
+            if (shiftsResult && shiftsResult.length > 0) {
+                setMyShifts(shiftsResult as any);
+            }
+            const marketplaceResult = await ShiftSwapService.getMarketplace();
+            if (marketplaceResult && marketplaceResult.length > 0) {
+                setMarketplace(marketplaceResult as any);
+            }
+        } catch (error) {
+            console.error('Error fetching shift swaps:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRequestSwap = async (shiftId: string) => {
+        setLoading(true);
+        try {
+            await ShiftSwapService.requestSwap({
+                fromEmployeeId: 'current-user-id',
+                shiftId,
+                date: new Date().toISOString(),
+                reason: 'Shift swap request'
+            });
+            await fetchShiftData();
+        } catch (error) {
+            console.error('Error requesting swap:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAcceptSwap = async (marketplaceId: string) => {
+        setLoading(true);
+        try {
+            await ShiftSwapService.acceptSwap(marketplaceId, 'current-user-id');
+            await fetchShiftData();
+        } catch (error) {
+            console.error('Error accepting swap:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="space-y-6 pb-10">
@@ -95,7 +125,7 @@ export default function ShiftSwappingPage() {
 
             {activeTab === 'My Shifts' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-300">
-                    {MY_SHIFTS.map(shift => (
+                    {myShifts.map(shift => (
                         <div key={shift.id} className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm relative group">
                             {shift.status === 'Swap Requested' && (
                                 <div className="absolute top-4 right-4 bg-amber-100 dark:bg-amber-900/20 text-amber-600 text-[10px] font-bold uppercase px-2 py-1 rounded-full flex items-center gap-1">
@@ -128,7 +158,8 @@ export default function ShiftSwappingPage() {
                             </div>
 
                             <button
-                                disabled={shift.status !== 'Scheduled'}
+                                onClick={() => handleRequestSwap(shift.id)}
+                                disabled={shift.status !== 'Scheduled' || loading}
                                 className={`w-full py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 ${shift.status === 'Scheduled'
                                         ? 'border border-celestial-indigo text-celestial-indigo hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
                                         : 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
@@ -158,7 +189,7 @@ export default function ShiftSwappingPage() {
                     </div>
 
                     <div className="grid grid-cols-1 gap-4">
-                        {MARKETPLACE.map(item => (
+                        {marketplace.map(item => (
                             <div key={item.id} className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-col md:flex-row items-center gap-6 group hover:border-celestial-indigo/30 transition-colors">
                                 <div className="flex items-center gap-4 flex-1">
                                     <div className={`w-12 h-12 rounded-full ${item.offeredBy.avatar} flex items-center justify-center text-white font-bold text-lg shadow-md`}>
@@ -186,7 +217,10 @@ export default function ShiftSwappingPage() {
 
                                 <div className="w-full md:w-auto flex flex-col items-end gap-2">
                                     <div className="text-xs text-rose-500 font-medium italic mb-1">"{item.reason}"</div>
-                                    <button className="px-6 py-2.5 bg-celestial-indigo text-white rounded-xl text-sm font-bold shadow-lg shadow-celestial-indigo/20 hover:scale-105 transition-transform w-full md:w-auto">
+                                    <button
+                                        onClick={() => handleAcceptSwap(item.id)}
+                                        disabled={loading}
+                                        className="px-6 py-2.5 bg-celestial-indigo text-white rounded-xl text-sm font-bold shadow-lg shadow-celestial-indigo/20 hover:scale-105 transition-transform w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed">
                                         Accept Swap
                                     </button>
                                 </div>

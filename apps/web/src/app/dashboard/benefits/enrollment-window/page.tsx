@@ -1,14 +1,34 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CalendarDays,
     Clock,
     AlertCircle,
     CheckCircle
 } from 'lucide-react';
+import { EnrollmentWindowService } from '../services';
 
 export default function EnrollmentWindowPage() {
+    const [windows, setWindows] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchWindows();
+    }, []);
+
+    const fetchWindows = async () => {
+        try {
+            setLoading(true);
+            const data = await EnrollmentWindowService.getWindows();
+            setWindows(data);
+        } catch (error) {
+            console.error('Error fetching enrollment windows:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

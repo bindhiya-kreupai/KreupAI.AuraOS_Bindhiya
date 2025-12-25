@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Calendar,
     MapPin,
@@ -16,6 +16,7 @@ import {
     Star
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { EventService } from '../services';
 
 // --- MOCK DATA ---
 
@@ -68,8 +69,29 @@ const PAST_EVENTS = [
 ];
 
 export default function EventsPage() {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [events, setEvents] = useState(UPCOMING_EVENTS);
     const [filter, setFilter] = useState('All');
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const eventsData = await EventService.getEvents();
+            if (eventsData.length > 0) {
+                setEvents(eventsData);
+                setData(eventsData);
+            }
+        } catch (error) {
+            console.error('Error fetching events:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleRsvp = (id: number, status: string) => {
         setEvents(prev => prev.map(ev => ev.id === id ? { ...ev, status } : ev));

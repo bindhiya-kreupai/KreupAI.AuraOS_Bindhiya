@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CalendarDays,
     Sun,
@@ -24,6 +24,7 @@ import {
     PolarAngleAxis,
     PolarRadiusAxis
 } from 'recharts';
+import { leaveForecasting } from '@/lib/services/ai-automation-client';
 
 // --- MOCK DATA ---
 
@@ -61,6 +62,39 @@ const CRITICAL_DAYS = [
 // --- COMPONENTS ---
 
 export default function LeaveForecastingPage() {
+    const [forecastData, setForecastData] = useState<any[]>(FORECAST_DATA);
+    const [peakPeriods, setPeakPeriods] = useState<any[]>(CRITICAL_DAYS);
+    const [recommendations, setRecommendations] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchForecast();
+    }, []);
+
+    const fetchForecast = async () => {
+        try {
+            const [forecastResult, peakResult, recommendationsResult] = await Promise.all([
+                leaveForecasting.getForecast(),
+                leaveForecasting.getPeakPeriods(),
+                leaveForecasting.getRecommendations(),
+            ]);
+
+            if (forecastResult.success) {
+                setForecastData(forecastResult.data?.forecast || FORECAST_DATA);
+            }
+            if (peakResult.success) {
+                setPeakPeriods(peakResult.data?.peakPeriods || CRITICAL_DAYS);
+            }
+            if (recommendationsResult.success) {
+                setRecommendations(recommendationsResult.data?.recommendations || []);
+            }
+        } catch (error) {
+            console.error('Error fetching leave forecasting data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -85,7 +119,7 @@ export default function LeaveForecastingPage() {
                     </h2>
                     <div className="h-[350px]">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={FORECAST_DATA}>
+                            <AreaChart data={forecastData}>
                                 <defs>
                                     <linearGradient id="colorPredicted" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
@@ -147,7 +181,7 @@ export default function LeaveForecastingPage() {
                         Predicted Staff Shortages
                     </h3>
                     <div className="space-y-3">
-                        {CRITICAL_DAYS.map((day, i) => (
+                        {peakPeriods.map((day, i) => (
                             <div key={i} className="bg-white dark:bg-black/20 p-3 rounded-lg flex items-center justify-between border border-rose-100 dark:border-rose-900/50">
                                 <div>
                                     <div className="text-sm font-bold text-rose-900 dark:text-rose-300">{day.date}</div>

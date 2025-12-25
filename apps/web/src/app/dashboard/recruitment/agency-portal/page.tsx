@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { JobPostingService } from '../services';
 import {
     Briefcase,
     Users,
@@ -30,6 +31,27 @@ const SUBMISSIONS = [
 
 export default function AgencyPortalPage() {
     const [activeTab, setActiveTab] = useState<'Jobs' | 'Submissions' | 'Agencies'>('Jobs');
+    const [jobs, setJobs] = useState<any[]>(JOBS);
+    const [submissions, setSubmissions] = useState<any[]>(SUBMISSIONS);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchJobs();
+    }, []);
+
+    const fetchJobs = async () => {
+        try {
+            setLoading(true);
+            const data = await JobPostingService.getPostings();
+            if (data && data.length > 0) {
+                setJobs(data);
+            }
+        } catch (error) {
+            console.error('Error fetching jobs:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
@@ -70,7 +92,7 @@ export default function AgencyPortalPage() {
             <div className="flex-1 overflow-y-auto pb-20">
                 {activeTab === 'Jobs' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {JOBS.map(job => (
+                        {jobs.map(job => (
                             <div key={job.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-all">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg flex items-center justify-center text-indigo-600 font-bold text-xs">
@@ -116,7 +138,7 @@ export default function AgencyPortalPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                {SUBMISSIONS.map(sub => (
+                                {submissions.map(sub => (
                                     <tr key={sub.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                         <td className="p-4 font-bold text-slate-700 dark:text-slate-300">{sub.candidate}</td>
                                         <td className="p-4 text-slate-500">{sub.job}</td>

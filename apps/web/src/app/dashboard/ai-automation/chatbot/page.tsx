@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import ReactFlow, {
     MiniMap,
     Controls,
@@ -23,6 +23,7 @@ import {
     Plus,
     Box
 } from 'lucide-react';
+import { aiCoachingBot } from '@/lib/services/ai-automation-client';
 
 // --- CUSTOM NODE TYPES & STYLES ---
 
@@ -90,6 +91,35 @@ const initialEdges: Edge[] = [
 export default function ChatbotBuilderPage() {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        fetchSessions();
+    }, []);
+
+    const fetchSessions = async () => {
+        try {
+            const result = await aiCoachingBot.getSessions();
+            if (result.success && result.data?.flow) {
+                if (result.data.flow.nodes) setNodes(result.data.flow.nodes);
+                if (result.data.flow.edges) setEdges(result.data.flow.edges);
+            }
+        } catch (error) {
+            console.error('Error fetching chatbot sessions:', error);
+        }
+    };
+
+    const handleSaveFlow = async () => {
+        setLoading(true);
+        try {
+            await aiCoachingBot.sendMessage(JSON.stringify({ nodes, edges }));
+            await fetchSessions();
+        } catch (error) {
+            console.error('Error saving flow:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
@@ -114,8 +144,11 @@ export default function ChatbotBuilderPage() {
                     <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-50 transition-colors">
                         <Settings className="w-4 h-4" /> Settings
                     </button>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white text-sm font-bold rounded-lg hover:bg-emerald-600 transition-colors shadow-sm shadow-emerald-200">
-                        <Save className="w-4 h-4" /> Save Flow
+                    <button
+                        onClick={handleSaveFlow}
+                        disabled={loading}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white text-sm font-bold rounded-lg hover:bg-emerald-600 transition-colors shadow-sm shadow-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <Save className="w-4 h-4" /> {loading ? 'Saving...' : 'Save Flow'}
                     </button>
                 </div>
             </div>

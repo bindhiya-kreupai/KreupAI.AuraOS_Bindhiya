@@ -1,14 +1,34 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     BarChart3,
     TrendingUp,
     Users,
     DollarSign
 } from 'lucide-react';
+import { BenefitAnalyticsService } from '../services';
 
 export default function ReportingPage() {
+    const [stats, setStats] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchStats();
+    }, []);
+
+    const fetchStats = async () => {
+        try {
+            setLoading(true);
+            const data = await BenefitAnalyticsService.getStats();
+            setStats(data);
+        } catch (error) {
+            console.error('Error fetching benefit analytics:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

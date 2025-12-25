@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { History, GitCommit, GitMerge, RotateCcw } from 'lucide-react';
+import { WorkflowService } from '../services';
 
 const HISTORY = [
     { id: 'v1.4', message: 'Updated CFO approval limit', user: 'Admin User', date: '2 hours ago', active: true },
@@ -11,6 +12,31 @@ const HISTORY = [
 ];
 
 export default function VersionControlPage() {
+    const [history, setHistory] = useState<any[]>(HISTORY);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchVersionHistory();
+    }, []);
+
+    const fetchVersionHistory = async () => {
+        try {
+            setLoading(true);
+            const workflows = await WorkflowService.getWorkflows();
+            if (workflows.length > 0) {
+                // Get versions for the first workflow as example
+                const versions = await WorkflowService.getWorkflowVersions(workflows[0].id);
+                if (versions.length > 0) {
+                    setHistory(versions);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching version history:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -32,7 +58,7 @@ export default function VersionControlPage() {
                     <div className="absolute left-9 top-6 bottom-6 w-0.5 bg-slate-200 dark:bg-slate-700" />
 
                     <div className="space-y-8">
-                        {HISTORY.map((commit, idx) => (
+                        {history.map((commit, idx) => (
                             <div key={commit.id} className="relative flex items-start gap-6 group">
                                 <div className={`z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 bg-white dark:bg-slate-900 ${commit.active ? 'border-emerald-500 text-emerald-500' : 'border-slate-300 dark:border-slate-600 text-slate-300'}`}>
                                     <GitCommit className="w-3 h-3 fill-current" />

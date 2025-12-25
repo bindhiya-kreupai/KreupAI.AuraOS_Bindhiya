@@ -1,10 +1,30 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, Plane, Receipt, ShieldCheck } from 'lucide-react';
 import { ModuleGrid } from '@/components/dashboard/module-grid';
+import { TravelAnalyticsService } from '../services';
 
 export default function GenericDashboardPage() {
+    const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const metrics = await TravelAnalyticsService.getMetrics();
+            setData(metrics);
+        } catch (error) {
+            console.error('Failed to fetch travel metrics:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const shortcuts = [
         'Travel Request',
         'Expense Claims',

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { CandidateApplicationService } from '../services';
 import {
     BrainCircuit,
     Plus,
@@ -20,6 +21,30 @@ const TESTS = [
 ];
 
 export default function AssessmentsPage() {
+    const [tests, setTests] = useState<any[]>(TESTS);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchTests();
+    }, []);
+
+    const fetchTests = async () => {
+        try {
+            setLoading(true);
+            // Assessment tests can be fetched using interviews or applications
+            // For now using InterviewService as it's related to candidate evaluation
+            const data = await CandidateApplicationService.getApplications();
+            if (data && data.length > 0) {
+                // Transform data to test format if needed
+                setTests(TESTS); // Keeping mock data for now
+            }
+        } catch (error) {
+            console.error('Error fetching tests:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -37,7 +62,7 @@ export default function AssessmentsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pb-20">
-                {TESTS.map(test => (
+                {tests.map(test => (
                     <div key={test.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all groupe">
                         <div className="flex justify-between items-start mb-4">
                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center 

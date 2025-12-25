@@ -1,9 +1,29 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlayCircle, Terminal, Cpu } from 'lucide-react';
+import { WorkflowExecutionService } from '../services';
 
 export default function TestingModePage() {
+    const [executions, setExecutions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchExecutions();
+    }, []);
+
+    const fetchExecutions = async () => {
+        try {
+            setLoading(true);
+            const data = await WorkflowExecutionService.getExecutions();
+            setExecutions(data);
+        } catch (error) {
+            console.error('Error fetching executions:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

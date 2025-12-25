@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Cake,
     Gift,
@@ -8,9 +8,30 @@ import {
     PartyPopper,
     Calendar
 } from 'lucide-react';
+import { EventService } from '../services';
 
 export default function BirthdayAnniversaryPage() {
-    const celebrations = [
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const events = await EventService.getEvents();
+            setData(events.filter(e => e.type === 'birthday' || e.type === 'anniversary'));
+        } catch (error) {
+            console.error('Error fetching celebrations:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Fallback mock data
+    const celebrations = data.length > 0 ? data : [
         { name: 'Alex Morgan', type: 'Birthday', date: 'Today', img: 'https://i.pravatar.cc/150?u=alex', role: 'Product Designer' },
         { name: 'Sarah Connor', type: 'Workiversary', date: 'Tomorrow', years: 5, img: 'https://i.pravatar.cc/150?u=sarah', role: 'Head of Product' },
         { name: 'Kyle Reese', type: 'Birthday', date: 'Dec 10', img: 'https://i.pravatar.cc/150?u=kyle', role: 'Senior Developer' },

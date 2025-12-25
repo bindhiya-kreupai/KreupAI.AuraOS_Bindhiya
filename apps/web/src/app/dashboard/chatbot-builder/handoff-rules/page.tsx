@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ArrowRightLeft,
     Plus,
@@ -8,8 +8,29 @@ import {
     Clock,
     ThumbsDown
 } from 'lucide-react';
+import { HandoffRuleService } from '../services';
 
 export default function HandoffRulesPage() {
+    const [rules, setRules] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await HandoffRuleService.getAllRules();
+            if (result.length > 0) {
+                setRules(result);
+            }
+        } catch (error) {
+            console.error('Error fetching handoff rules:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

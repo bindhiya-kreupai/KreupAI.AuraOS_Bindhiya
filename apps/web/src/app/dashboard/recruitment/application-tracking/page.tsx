@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { CandidateApplicationService } from '../services';
 import {
     DndContext,
     closestCorners,
@@ -82,6 +83,49 @@ const INITIAL_CANDIDATES: Record<string, Candidate[]> = {
 export default function ApplicationTrackingPage() {
     const [items, setItems] = useState(INITIAL_CANDIDATES);
     const [activeId, setActiveId] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchApplications();
+    }, []);
+
+    const fetchApplications = async () => {
+        try {
+            const data = await CandidateApplicationService.getApplications();
+            if (data.length > 0) {
+                // Group applications by status
+                const grouped: Record<string, Candidate[]> = {
+                    applied: [],
+                    screening: [],
+                    interview: [],
+                    offer: []
+                };
+
+                data.forEach((app: any) => {
+                    const candidate = {
+                        id: app.id,
+                        name: app.candidateName || 'Unknown',
+                        role: app.positionAppliedFor || 'N/A',
+                        matchScore: app.matchScore || 0,
+                        rating: app.rating || 0,
+                        location: app.location || 'Unknown',
+                        avatar: app.avatar || `https://i.pravatar.cc/150?u=${app.id}`
+                    };
+
+                    const status = app.status?.toLowerCase() || 'applied';
+                    if (grouped[status]) {
+                        grouped[status].push(candidate);
+                    }
+                });
+
+                setItems(grouped);
+            }
+        } catch (error) {
+            console.error('Error fetching applications:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const sensors = useSensors(
         useSensor(PointerSensor),

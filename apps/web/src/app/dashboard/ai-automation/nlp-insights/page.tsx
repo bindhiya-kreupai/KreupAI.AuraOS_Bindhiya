@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Languages,
     MessageSquareQuote,
@@ -27,6 +27,7 @@ import {
     LineChart,
     Line
 } from 'recharts';
+import { sentimentAnalysis } from '@/lib/services/ai-automation-client';
 
 // --- MOCK DATA ---
 
@@ -65,6 +66,34 @@ const NEGATIVE_WORDS = [
 // --- COMPONENTS ---
 
 export default function NLPInsightsPage() {
+    const [sentimentData, setSentimentData] = useState<any>(null);
+    const [trends, setTrends] = useState<any[]>(SENTIMENT_TREND);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchSentiment();
+    }, []);
+
+    const fetchSentiment = async () => {
+        try {
+            const [sentimentResult, trendsResult] = await Promise.all([
+                sentimentAnalysis.getSentiment(),
+                sentimentAnalysis.getTrends(),
+            ]);
+
+            if (sentimentResult.success) {
+                setSentimentData(sentimentResult.data);
+            }
+            if (trendsResult.success) {
+                setTrends(trendsResult.data?.trends || SENTIMENT_TREND);
+            }
+        } catch (error) {
+            console.error('Error fetching sentiment data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}

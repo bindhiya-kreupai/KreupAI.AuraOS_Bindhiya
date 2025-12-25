@@ -1,6 +1,7 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { CandidateApplicationService } from '../services';
 import {
     Users,
     Search,
@@ -11,6 +12,24 @@ import {
 } from 'lucide-react';
 
 export default function TalentPoolPage() {
+    const [candidates, setCandidates] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchTalentPool();
+    }, []);
+
+    const fetchTalentPool = async () => {
+        try {
+            const data = await CandidateApplicationService.getApplications();
+            setCandidates(data);
+        } catch (error) {
+            console.error('Error fetching talent pool:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}

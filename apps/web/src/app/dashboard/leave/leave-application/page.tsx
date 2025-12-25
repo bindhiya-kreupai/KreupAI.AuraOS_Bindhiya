@@ -1,14 +1,36 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CalendarPlus,
     Clock,
     User,
     CheckCircle2
 } from 'lucide-react';
+import { LeaveRequestService } from '../services';
+import { LeaveRequest } from '../types';
 
 export default function LeaveApplicationPage() {
+    const [requests, setRequests] = useState<LeaveRequest[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchRequests();
+    }, []);
+
+    const fetchRequests = async () => {
+        try {
+            setLoading(true);
+            const result = await LeaveRequestService.getRequests({ status: 'pending' });
+            if (result.length > 0) {
+                setRequests(result);
+            }
+        } catch (error) {
+            console.error('Error fetching leave requests:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
@@ -26,36 +48,47 @@ export default function LeaveApplicationPage() {
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4">Pending Requests</h3>
                         <div className="space-y-4">
-                            {[
-                                { name: 'John Doe', type: 'Annual Leave', dates: 'Dec 20 - Dec 24', days: 5, reason: 'Family Vacation', status: 'Pending' },
-                                { name: 'Jane Smith', type: 'Sick Leave', dates: 'Oct 30', days: 1, reason: 'Flu', status: 'Pending' },
-                                { name: 'Mike Ross', type: 'Casual Leave', dates: 'Nov 15', days: 1, reason: 'Personal', status: 'Pending' },
-                            ].map((req, i) => (
-                                <div key={i} className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center font-bold text-indigo-600">
-                                                {req.name.split(' ').map(n => n[0]).join('')}
-                                            </div>
-                                            <div>
-                                                <div className="font-bold">{req.name}</div>
-                                                <div className="text-sm text-slate-500">{req.type}</div>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="font-bold text-indigo-600">{req.days} Day(s)</div>
-                                            <div className="text-xs text-slate-400">{req.dates}</div>
-                                        </div>
-                                    </div>
-                                    <p className="text-sm text-slate-600 dark:text-slate-300 italic mb-4">"{req.reason}"</p>
-                                    <div className="flex gap-2">
-                                        <button className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-1.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2">
-                                            <CheckCircle2 className="w-4 h-4" /> Approve
-                                        </button>
-                                        <button className="flex-1 bg-rose-500 hover:bg-rose-600 text-white py-1.5 rounded-lg text-sm font-bold">Reject</button>
-                                    </div>
+                            {loading ? (
+                                <div className="text-center py-8 text-slate-500">
+                                    Loading pending requests...
                                 </div>
-                            ))}
+                            ) : (requests.length > 0 ? requests : [
+                                { id: '1', employeeId: 'E001', employeeName: 'John Doe', leaveTypeId: 'AL', leaveTypeName: 'Annual Leave', fromDate: '2024-12-20', toDate: '2024-12-24', numberOfDays: 5, reason: 'Family Vacation', status: 'pending' as const },
+                                { id: '2', employeeId: 'E002', employeeName: 'Jane Smith', leaveTypeId: 'SL', leaveTypeName: 'Sick Leave', fromDate: '2024-10-30', toDate: '2024-10-30', numberOfDays: 1, reason: 'Flu', status: 'pending' as const },
+                                { id: '3', employeeId: 'E003', employeeName: 'Mike Ross', leaveTypeId: 'CL', leaveTypeName: 'Casual Leave', fromDate: '2024-11-15', toDate: '2024-11-15', numberOfDays: 1, reason: 'Personal', status: 'pending' as const },
+                            ] as LeaveRequest[]).map((req, i) => {
+                                const initials = req.employeeName?.split(' ').map(n => n[0]).join('') || 'NA';
+                                const dateRange = req.fromDate === req.toDate
+                                    ? new Date(req.fromDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                                    : `${new Date(req.fromDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(req.toDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+
+                                return (
+                                    <div key={req.id || i} className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center font-bold text-indigo-600">
+                                                    {initials}
+                                                </div>
+                                                <div>
+                                                    <div className="font-bold">{req.employeeName}</div>
+                                                    <div className="text-sm text-slate-500">{req.leaveTypeName}</div>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="font-bold text-indigo-600">{req.numberOfDays} Day(s)</div>
+                                                <div className="text-xs text-slate-400">{dateRange}</div>
+                                            </div>
+                                        </div>
+                                        <p className="text-sm text-slate-600 dark:text-slate-300 italic mb-4">&quot;{req.reason}&quot;</p>
+                                        <div className="flex gap-2">
+                                            <button className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-1.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2">
+                                                <CheckCircle2 className="w-4 h-4" /> Approve
+                                            </button>
+                                            <button className="flex-1 bg-rose-500 hover:bg-rose-600 text-white py-1.5 rounded-lg text-sm font-bold">Reject</button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

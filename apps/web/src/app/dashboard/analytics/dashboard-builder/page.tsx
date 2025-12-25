@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     PieChart,
     BarChart,
@@ -11,8 +11,38 @@ import {
     Calendar,
     Save
 } from 'lucide-react';
+import { DashboardService } from '../services';
 
 export default function ReportBuilderPage() {
+    const [dashboards, setDashboards] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchDashboards();
+    }, []);
+
+    const fetchDashboards = async () => {
+        try {
+            const data = await DashboardService.getAllDashboards();
+            setDashboards(data);
+        } catch (error) {
+            console.error('Error fetching dashboards:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSaveDashboard = async () => {
+        try {
+            await DashboardService.createDashboard({
+                dashboardName: 'New Dashboard',
+                widgets: [],
+            });
+            await fetchDashboards();
+        } catch (error) {
+            console.error('Error creating dashboard:', error);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

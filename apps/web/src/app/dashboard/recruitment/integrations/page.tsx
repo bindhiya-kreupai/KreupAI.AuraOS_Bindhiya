@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { RecruitmentSettingsService } from '../services';
 import {
     Share2,
     Globe,
@@ -20,6 +21,29 @@ const INTEGRATIONS = [
 ];
 
 export default function JobBoardsPage() {
+    const [integrations, setIntegrations] = useState<any[]>(INTEGRATIONS);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchIntegrations();
+    }, []);
+
+    const fetchIntegrations = async () => {
+        try {
+            setLoading(true);
+            const data = await RecruitmentSettingsService.getSettings();
+            if (data) {
+                // Integration settings would be part of recruitment settings
+                // For now keeping mock data
+                setIntegrations(INTEGRATIONS);
+            }
+        } catch (error) {
+            console.error('Error fetching integrations:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -34,7 +58,7 @@ export default function JobBoardsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pb-20">
-                {INTEGRATIONS.map(board => (
+                {integrations.map(board => (
                     <div key={board.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col items-center text-center hover:shadow-lg transition-all">
                         <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 
                             ${board.status === 'Connected' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}

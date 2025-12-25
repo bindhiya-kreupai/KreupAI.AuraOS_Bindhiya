@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Newspaper,
     Mail,
@@ -9,9 +9,30 @@ import {
     Users,
     ChevronRight
 } from 'lucide-react';
+import { NewsletterService } from '../services';
 
 export default function NewsletterPage() {
-    const articles = [
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const newsletters = await NewsletterService.getNewsletters();
+            setData(newsletters);
+        } catch (error) {
+            console.error('Error fetching newsletters:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Fallback mock data
+    const articles = data.length > 0 ? data : [
         { title: 'AuraOS hits 1M Users!', category: 'Company News', readTime: '5 min read', img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=300&h=200', excerpt: 'A milestone achievement for our entire team as we celebrate strictly organic growth...' },
         { title: 'Meet the New Product Team', category: 'Team Spotlight', readTime: '3 min read', img: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=300&h=200', excerpt: 'Get to know the brilliant minds behind our latest feature drops...' },
         { title: 'Q4 Strategic Goals', category: 'Leadership', readTime: '8 min read', img: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=300&h=200', excerpt: 'Our CEO outlines the roadmap for the upcoming quarter and beyond...' },

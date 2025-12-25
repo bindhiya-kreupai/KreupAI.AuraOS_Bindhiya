@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ClipboardList, Search, Filter, Download } from 'lucide-react';
+import { WorkflowExecutionService } from '../services';
 
 const LOGS = [
     { id: 'LOG-001', event: 'Workflow Executed', resource: 'Expense #442', user: 'System', time: '10:45 AM', status: 'Success' },
@@ -12,6 +13,38 @@ const LOGS = [
 ];
 
 export default function AuditLogPage() {
+    const [logs, setLogs] = useState<any[]>(LOGS);
+    const [executions, setExecutions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchAuditLogs();
+    }, []);
+
+    const fetchAuditLogs = async () => {
+        try {
+            setLoading(true);
+            const data = await WorkflowExecutionService.getExecutions();
+            setExecutions(data);
+            // Transform executions into audit log format if needed
+            if (data.length > 0) {
+                const auditLogs = data.map((exec: any) => ({
+                    id: exec.executionCode,
+                    event: 'Workflow Executed',
+                    resource: exec.workflowName,
+                    user: exec.initiatorName || 'System',
+                    time: new Date(exec.initiatedDate).toLocaleString(),
+                    status: exec.status === 'completed' ? 'Success' : exec.status === 'failed' ? 'Error' : 'Info'
+                }));
+                setLogs([...auditLogs, ...LOGS]);
+            }
+        } catch (error) {
+            console.error('Error fetching audit logs:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

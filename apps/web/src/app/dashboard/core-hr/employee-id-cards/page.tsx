@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CreditCard,
     Printer,
@@ -9,9 +9,28 @@ import {
     Check,
     Loader2
 } from 'lucide-react';
+import { IDCardService } from '../services';
 
 export default function IDCardsPage() {
     const [printing, setPrinting] = useState(false);
+    const [idCards, setIdCards] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchIDCards();
+    }, []);
+
+    const fetchIDCards = async () => {
+        try {
+            const data = await IDCardService.getAllIDCards();
+            setIdCards(data);
+        } catch (error) {
+            console.error('Error fetching ID cards:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const [queue, setQueue] = useState([
         { id: 1, name: 'Alice Cooper', status: 'Ready' },
         { id: 2, name: 'Bob Marley', status: 'Ready' },

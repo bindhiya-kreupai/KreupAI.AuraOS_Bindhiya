@@ -1,14 +1,35 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Map,
     Building2,
     AlertTriangle,
     CheckCircle2
 } from 'lucide-react';
+import { PayrollRunService } from '../services';
 
 export default function MultiStatePayrollPage() {
+    const [payrollRuns, setPayrollRuns] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await PayrollRunService.getPayrollRuns();
+            if (result.length > 0) {
+                setPayrollRuns(result);
+            }
+        } catch (error) {
+            console.error('Error fetching payroll runs:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     const states = [
         { name: 'California', taxId: 'CA-55291', status: 'Compliant', employees: 85 },
         { name: 'New York', taxId: 'NY-11202', status: 'Action Needed', employees: 42, alert: 'Tax rate update pending' },

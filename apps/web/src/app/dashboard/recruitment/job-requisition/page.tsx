@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Briefcase,
     Plus,
@@ -16,6 +16,7 @@ import {
     DollarSign,
     Calendar
 } from 'lucide-react';
+import { JobRequisitionService } from '../services';
 
 // --- MOCK DATA ---
 
@@ -93,6 +94,25 @@ const REQUISITIONS: JobRequisition[] = [
 
 export default function JobRequisitionsPage() {
     const [filterStatus, setFilterStatus] = useState<string>('All');
+    const [requisitions, setRequisitions] = useState<JobRequisition[]>(REQUISITIONS);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchRequisitions();
+    }, []);
+
+    const fetchRequisitions = async () => {
+        try {
+            const data = await JobRequisitionService.getRequisitions();
+            if (data.length > 0) {
+                setRequisitions(data);
+            }
+        } catch (error) {
+            console.error('Error fetching requisitions:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -181,7 +201,7 @@ export default function JobRequisitionsPage() {
 
             {/* Requisition Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
-                {REQUISITIONS.map(req => (
+                {requisitions.map(req => (
                     <div key={req.id} className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm hover:shadow-md transition-shadow group">
                         <div className="p-5">
                             {/* Card Header */}

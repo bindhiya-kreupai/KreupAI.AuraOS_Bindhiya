@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { CandidateApplicationService } from '../services';
 import {
     FileText,
     UploadCloud,
@@ -12,6 +13,35 @@ import {
 
 export default function ResumeParsingPage() {
     const [isParsing, setIsParsing] = useState(false);
+    const [parsedResumes, setParsedResumes] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchParsedResumes();
+    }, []);
+
+    const fetchParsedResumes = async () => {
+        try {
+            const data = await CandidateApplicationService.getApplications();
+            setParsedResumes(data);
+        } catch (error) {
+            console.error('Error fetching parsed resumes:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleParseResume = async (file: File) => {
+        setIsParsing(true);
+        try {
+            // Parse resume logic here
+            await fetchParsedResumes();
+        } catch (error) {
+            console.error('Error parsing resume:', error);
+        } finally {
+            setIsParsing(false);
+        }
+    };
 
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">

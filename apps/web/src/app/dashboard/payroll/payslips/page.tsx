@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Download,
     Eye,
@@ -22,6 +22,7 @@ import {
     Tooltip as RechartsTooltip,
     Legend
 } from 'recharts';
+import { PayslipService } from '../services';
 
 // --- MOCK DATA ---
 
@@ -67,6 +68,26 @@ const CHART_DATA = [
 export default function PayslipsPage() {
     const [selectedMonth, setSelectedMonth] = useState('August 2024');
     const [showHistory, setShowHistory] = useState(false);
+    const [payslips, setPayslips] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const result = await PayslipService.getPayslips();
+            if (result.length > 0) {
+                setPayslips(result);
+            }
+        } catch (error) {
+            console.error('Error fetching payslips:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const totalEarnings = CURRENT_PAYSLIP.earnings.reduce((sum, item) => sum + item.amount, 0);
     const totalDeductions = CURRENT_PAYSLIP.deductions.reduce((sum, item) => sum + item.amount, 0);

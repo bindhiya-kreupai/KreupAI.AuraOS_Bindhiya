@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Activity,
     CheckCircle,
@@ -8,8 +8,28 @@ import {
     XCircle,
     FileText
 } from 'lucide-react';
+import { ClaimService } from '../services';
 
 export default function ClaimStatusPage() {
+    const [claims, setClaims] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchClaimStatus();
+    }, []);
+
+    const fetchClaimStatus = async () => {
+        try {
+            setLoading(true);
+            const data = await ClaimService.getClaims({ employeeId: 'EMP-001' });
+            setClaims(data);
+        } catch (error) {
+            console.error('Error fetching claim status:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

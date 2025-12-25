@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     PencilRuler,
     Database,
@@ -10,10 +10,43 @@ import {
     Save,
     Play
 } from 'lucide-react';
+import { CustomReportService } from '../services';
 
 export default function CustomReportsPage() {
     const [step, setStep] = useState(1);
     const [selectedSource, setSelectedSource] = useState('');
+    const [savedReports, setSavedReports] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchReports();
+    }, []);
+
+    const fetchReports = async () => {
+        try {
+            const data = await CustomReportService.getAllReports();
+            setSavedReports(data);
+        } catch (error) {
+            console.error('Error fetching custom reports:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCreateReport = async () => {
+        try {
+            await CustomReportService.createReport({
+                reportName: 'New Custom Report',
+                filters: [],
+                columns: [],
+                groupings: [],
+                sortOrder: [],
+            });
+            await fetchReports();
+        } catch (error) {
+            console.error('Error creating report:', error);
+        }
+    };
 
     const DATA_SOURCES = [
         { id: 'src-emp', name: 'Employees', desc: 'Core employee master data', count: '1,240 Records' },

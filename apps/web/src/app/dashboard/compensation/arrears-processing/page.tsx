@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     History,
     Calendar,
@@ -8,8 +8,27 @@ import {
     CheckCircle2,
     Calculator
 } from 'lucide-react';
+import { ArrearsService } from '../services';
 
 export default function ArrearsPage() {
+    const [requests, setRequests] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const data = await ArrearsService.getRequests();
+            setRequests(data);
+        } catch (error) {
+            console.error('Error fetching arrears requests:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

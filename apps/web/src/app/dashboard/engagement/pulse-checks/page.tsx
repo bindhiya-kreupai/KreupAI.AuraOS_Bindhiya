@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Heart,
     TrendingUp,
@@ -13,6 +13,7 @@ import {
     Zap,
     Thermometer
 } from 'lucide-react';
+import { SurveyService } from '../services';
 import {
     LineChart,
     Line,
@@ -59,8 +60,26 @@ const WORD_CLOUD = [
 ];
 
 export default function PulseChecksPage() {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [currentMood, setCurrentMood] = useState(5);
     const [pulseSent, setPulseSent] = useState(false);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const surveys = await SurveyService.getSurveys();
+            setData(surveys);
+        } catch (error) {
+            console.error('Error fetching pulse data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleSendPulse = () => {
         setPulseSent(true);

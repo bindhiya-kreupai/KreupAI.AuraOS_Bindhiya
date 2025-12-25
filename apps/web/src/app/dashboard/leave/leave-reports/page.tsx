@@ -1,14 +1,36 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FileBarChart,
     Download,
     TrendingUp,
     Users
 } from 'lucide-react';
+import { LeaveAnalyticsService } from '../services';
+import { LeaveStats } from '../types';
 
 export default function LeaveReportsPage() {
+    const [stats, setStats] = useState<LeaveStats | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchStats();
+    }, []);
+
+    const fetchStats = async () => {
+        try {
+            setLoading(true);
+            const result = await LeaveAnalyticsService.getStats();
+            if (result) {
+                setStats(result);
+            }
+        } catch (error) {
+            console.error('Error fetching leave stats:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
@@ -69,21 +91,33 @@ export default function LeaveReportsPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-center text-center">
-                    <Users className="w-10 h-10 text-indigo-500 mx-auto mb-2" />
-                    <div className="text-3xl font-bold">142</div>
-                    <div className="text-sm text-slate-500">Employees on Leave Today</div>
-                </div>
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-center text-center">
-                    <TrendingUp className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
-                    <div className="text-3xl font-bold text-emerald-600">96.5%</div>
-                    <div className="text-sm text-slate-500">Attendance Rate</div>
-                </div>
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-center text-center">
-                    <TrendingUp className="w-10 h-10 text-rose-500 mx-auto mb-2 transform rotate-180" />
-                    <div className="text-3xl font-bold text-rose-600">3.5%</div>
-                    <div className="text-sm text-slate-500">Unplanned Absence</div>
-                </div>
+                {loading ? (
+                    <div className="col-span-3 text-center py-8 text-slate-500">
+                        Loading statistics...
+                    </div>
+                ) : (
+                    <>
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-center text-center">
+                            <Users className="w-10 h-10 text-indigo-500 mx-auto mb-2" />
+                            <div className="text-3xl font-bold">{stats?.onLeaveToday || 0}</div>
+                            <div className="text-sm text-slate-500">Employees on Leave Today</div>
+                        </div>
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-center text-center">
+                            <TrendingUp className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
+                            <div className="text-3xl font-bold text-emerald-600">
+                                {stats?.totalEmployees
+                                    ? ((stats.totalEmployees - stats.onLeaveToday) / stats.totalEmployees * 100).toFixed(1)
+                                    : '0'}%
+                            </div>
+                            <div className="text-sm text-slate-500">Attendance Rate</div>
+                        </div>
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-center text-center">
+                            <TrendingUp className="w-10 h-10 text-rose-500 mx-auto mb-2 transform rotate-180" />
+                            <div className="text-3xl font-bold text-rose-600">{stats?.pendingRequests || 0}</div>
+                            <div className="text-sm text-slate-500">Pending Requests</div>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

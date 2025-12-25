@@ -1,10 +1,11 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link2, ArrowRightLeft } from 'lucide-react';
 import {
     ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
+import { StandardReportService } from '../services';
 
 const SCATTER_DATA = [
     { x: 10, y: 30, z: 200 },

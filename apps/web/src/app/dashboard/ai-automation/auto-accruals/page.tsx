@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Calculator,
     Calendar,
@@ -28,6 +28,23 @@ const PROJECTIONS = [
 ];
 
 export default function AutoAccrualsPage() {
+    const [rules, setRules] = useState<any[]>(RULES);
+    const [projections, setProjections] = useState<any[]>(PROJECTIONS);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        // Could fetch accrual data from API if needed
+        // fetchAccruals();
+    }, []);
+
+    const handleRunCycle = () => {
+        setLoading(true);
+        // Simulate API call
+        setTimeout(() => {
+            setLoading(false);
+        }, 1500);
+    };
+
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -43,8 +60,11 @@ export default function AutoAccrualsPage() {
                     <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-colors">
                         <RotateCcw className="w-4 h-4" /> Reset
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
-                        <Play className="w-4 h-4" /> Run Cycle
+                    <button
+                        onClick={handleRunCycle}
+                        disabled={loading}
+                        className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        <Play className="w-4 h-4" /> {loading ? 'Processing...' : 'Run Cycle'}
                     </button>
                 </div>
             </div>
@@ -55,7 +75,7 @@ export default function AutoAccrualsPage() {
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <h2 className="text-lg font-bold text-ink-black dark:text-pearl mb-4">Active Logic Rules</h2>
                     <div className="space-y-3">
-                        {RULES.map((rule) => (
+                        {rules.map((rule) => (
                             <div key={rule.id} className="p-3 bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 rounded-lg">
                                 <div className="flex justify-between items-start mb-1">
                                     <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200">{rule.name}</h4>
@@ -98,7 +118,7 @@ export default function AutoAccrualsPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-cloud dark:divide-nebula-purple/20">
-                                {PROJECTIONS.map((row) => (
+                                {projections.map((row) => (
                                     <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                                         <td className="px-6 py-4 font-medium text-ink-black dark:text-pearl">
                                             {row.name}

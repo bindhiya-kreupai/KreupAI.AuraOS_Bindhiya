@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Monitor,
     Smartphone,
@@ -12,9 +12,27 @@ import {
     Laptop,
     Mouse
 } from 'lucide-react';
+import { AssetService } from '../services';
 
 export default function AssetManagementPage() {
     const [showModal, setShowModal] = useState(false);
+    const [assetsData, setAssetsData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchAssets();
+    }, []);
+
+    const fetchAssets = async () => {
+        try {
+            const data = await AssetService.getAllAssets();
+            setAssetsData(data);
+        } catch (error) {
+            console.error('Error fetching assets:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Mock Data
     const assets = [

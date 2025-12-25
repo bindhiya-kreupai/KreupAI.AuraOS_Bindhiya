@@ -3,8 +3,8 @@
  * @description Frontend service for Competency Library APIs with mock data fallback
  */
 
+import logger from '@/lib/logger';
 import type {
-import { logger } from '@/lib/logger';
     Competency,
     CompetencyCategory,
     ProficiencyFramework,
@@ -68,7 +68,7 @@ async function fetchWithFallback<T>(
 
         return await res.json();
     } catch (error) {
-        logger.warn(`[CompetencyService] Fetch failed, using mock data for: ${endpoint}`, error);
+        logger.warn({ error }, `[CompetencyService] Fetch failed, using mock data for: ${endpoint}`);
         return { success: true, data: fallbackData };
     }
 }

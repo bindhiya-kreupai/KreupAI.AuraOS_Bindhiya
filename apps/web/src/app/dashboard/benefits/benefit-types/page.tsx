@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     HeartPulse,
     Activity,
@@ -12,9 +12,31 @@ import {
     Edit2,
     Trash2
 } from 'lucide-react';
+import { BenefitPlanService } from '../services';
 
 export default function BenefitTypesPage() {
-    const benefits = [
+    const [benefits, setBenefits] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchBenefits();
+    }, []);
+
+    const fetchBenefits = async () => {
+        try {
+            setLoading(true);
+            const data = await BenefitPlanService.getPlans();
+            setBenefits(data);
+        } catch (error) {
+            console.error('Error fetching benefit plans:', error);
+            // Fallback to mock data
+            setBenefits(mockBenefits);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const mockBenefits = [
         {
             id: 'BEN-001',
             name: 'Comprehensive Health Insurance',
@@ -74,7 +96,11 @@ export default function BenefitTypesPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pb-20">
-                {benefits.map((benefit) => (
+                {loading ? (
+                    <div className="col-span-full flex justify-center items-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                    </div>
+                ) : benefits.map((benefit) => (
                     <div key={benefit.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:shadow-lg transition-all group">
                         <div className="flex justify-between items-start mb-4">
                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${benefit.color}`}>

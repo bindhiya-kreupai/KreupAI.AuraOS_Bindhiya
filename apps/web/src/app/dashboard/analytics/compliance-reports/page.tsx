@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Scale, CheckCircle, AlertTriangle, XCircle, FileText } from 'lucide-react';
+import { ComplianceReportService } from '../services';
 
 const COMPLIANCE_ITEMS = [
     { id: 1, standard: 'Labor Law (Fair Work Act)', status: 'Compliant', score: 98, issues: 0, date: 'Oct 20, 2024' },

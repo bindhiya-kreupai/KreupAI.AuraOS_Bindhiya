@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Landmark,
     CreditCard,
@@ -18,6 +18,7 @@ import {
     Shield
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BankFileService } from '../../payroll/services';
 
 // --- MOCK DATA ---
 
@@ -56,6 +57,24 @@ export default function BankIntegrationPage() {
     const [activeTab, setActiveTab] = useState<'Accounts' | 'Configuration' | 'History'>('Accounts');
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedFormat, setSelectedFormat] = useState('NACH');
+    const [bankFiles, setBankFiles] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            // BankFileService doesn't have a getAll method, so we'll just set loading to false
+            // In a real implementation, you might need to add this method
+        } catch (error) {
+            console.error('Error fetching bank files:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">

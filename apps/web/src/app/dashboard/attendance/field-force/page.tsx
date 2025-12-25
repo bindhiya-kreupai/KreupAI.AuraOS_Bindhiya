@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     MapPin,
     Navigation,
@@ -16,23 +16,61 @@ import {
     Map
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { FieldForceService } from '../services';
 
-// --- MOCK DATA ---
+interface FieldAgent {
+    id: number;
+    name: string;
+    role: string;
+    status: 'Active' | 'Idle' | 'Offline';
+    location: string;
+    lastSeen: string;
+    visits: number;
+    distance: string;
+    battery: string;
+    avatar: string;
+    lat: number;
+    lng: number;
+}
 
-const FIELD_AGENTS = [
-    { id: 1, name: 'John Doe', role: 'Sales Exec', status: 'Active', location: 'Downtown Plaza', lastSeen: '2 mins ago', visits: 4, distance: '12.5 km', battery: '82%', avatar: 'JD', lat: 40.7128, lng: -74.0060 },
-    { id: 2, name: 'Jane Smith', role: 'Service Eng', status: 'Idle', location: 'Tech Park', lastSeen: '15 mins ago', visits: 2, distance: '5.2 km', battery: '45%', avatar: 'JS', lat: 40.7282, lng: -73.9942 },
-    { id: 3, name: 'Mike Ross', role: 'Sales Lead', status: 'Offline', location: 'Home', lastSeen: '1 hour ago', visits: 5, distance: '18.1 km', battery: '-', avatar: 'MR', lat: 40.7580, lng: -73.9855 },
-];
-
-const VISIT_LOGS = [
-    { id: 1, agent: 'John Doe', client: 'Acme Corp', type: 'Sales Visit', time: '10:30 AM', status: 'Completed', notes: 'Discussed Q4 contract renewal.', outcome: 'Positive' },
-    { id: 2, agent: 'Jane Smith', client: 'Stark Ind', type: 'Maintenance', time: '11:15 AM', status: 'In Progress', notes: 'Servicing server unit #4.', outcome: 'Pending' },
-    { id: 3, agent: 'John Doe', client: 'Wayne Ent', type: 'Demo', time: '09:00 AM', status: 'Completed', notes: 'Product demo for IT team.', outcome: 'Lead Generated' },
-];
+interface VisitLog {
+    id: number;
+    agent: string;
+    client: string;
+    type: string;
+    time: string;
+    status: string;
+    notes: string;
+    outcome: string;
+}
 
 export default function FieldForcePage() {
-    const [selectedAgent, setSelectedAgent] = useState<typeof FIELD_AGENTS[0] | null>(null);
+    const [agents, setAgents] = useState<FieldAgent[]>([]);
+    const [visitLogs, setVisitLogs] = useState<VisitLog[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedAgent, setSelectedAgent] = useState<FieldAgent | null>(null);
+
+    useEffect(() => {
+        fetchFieldData();
+    }, []);
+
+    const fetchFieldData = async () => {
+        try {
+            setLoading(true);
+            const agentsResult = await FieldForceService.getFieldAgents();
+            if (agentsResult && agentsResult.length > 0) {
+                setAgents(agentsResult as any);
+            }
+            const visitsResult = await FieldForceService.getVisitLogs();
+            if (visitsResult && visitsResult.length > 0) {
+                setVisitLogs(visitsResult as any);
+            }
+        } catch (error) {
+            console.error('Error fetching field force data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
@@ -68,7 +106,7 @@ export default function FieldForcePage() {
 
                     {/* Agents List */}
                     <div className="bg-white dark:bg-stellar-blue p-4 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex-1 overflow-y-auto space-y-3">
-                        {FIELD_AGENTS.map(agent => (
+                        {agents.map(agent => (
                             <div
                                 key={agent.id}
                                 onClick={() => setSelectedAgent(agent)}
@@ -118,7 +156,7 @@ export default function FieldForcePage() {
                         <div className="absolute inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')] bg-cover bg-center opacity-10 dark:opacity-20 pointer-events-none"></div>
 
                         {/* Mock Pins */}
-                        {FIELD_AGENTS.map((agent, i) => agent.status !== 'Offline' && (
+                        {agents.map((agent, i) => agent.status !== 'Offline' && (
                             <div
                                 key={agent.id}
                                 className="absolute flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform"
@@ -150,7 +188,7 @@ export default function FieldForcePage() {
                         </div>
 
                         <div className="overflow-y-auto space-y-4 pr-1">
-                            {VISIT_LOGS.map(log => (
+                            {visitLogs.map(log => (
                                 <div key={log.id} className="flex gap-4 p-4 border border-cloud dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-800 transition-colors">
                                     <div className="flex flex-col items-center gap-1">
                                         <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs border border-indigo-100 dark:border-indigo-800">

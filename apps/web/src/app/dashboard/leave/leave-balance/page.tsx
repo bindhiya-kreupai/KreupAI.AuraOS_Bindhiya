@@ -1,14 +1,36 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     PieChart,
     Search,
     UserCircle,
     Download
 } from 'lucide-react';
+import { LeaveBalanceService } from '../services';
+import { LeaveBalance } from '../types';
 
 export default function LeaveBalancePage() {
+    const [balances, setBalances] = useState<LeaveBalance[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchBalances();
+    }, []);
+
+    const fetchBalances = async () => {
+        try {
+            setLoading(true);
+            const result = await LeaveBalanceService.getBalances();
+            if (result.length > 0) {
+                setBalances(result);
+            }
+        } catch (error) {
+            console.error('Error fetching leave balances:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
@@ -47,35 +69,52 @@ export default function LeaveBalancePage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {[
-                            { name: 'John Doe', dept: 'Engineering', img: 'JD', al: 12, sl: 5, cl: 2, comp: 0, total: 19 },
-                            { name: 'Jane Smith', dept: 'Marketing', img: 'JS', al: 8, sl: 8, cl: 4, comp: 1, total: 21 },
-                            { name: 'Robert Fox', dept: 'Sales', img: 'RF', al: 20, sl: 2, cl: 0, comp: 5, total: 27 },
-                            { name: 'Emily Davis', dept: 'HR', img: 'ED', al: 15, sl: 6, cl: 1, comp: 0, total: 22 },
-                        ].map((emp, i) => (
-                            <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-500">
-                                            {emp.img}
-                                        </div>
-                                        <div>
-                                            <div className="font-bold">{emp.name}</div>
-                                            <div className="text-xs text-slate-500">{emp.dept}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-center font-bold text-slate-600 dark:text-slate-400">{emp.al}</td>
-                                <td className="px-6 py-4 text-center font-bold text-slate-600 dark:text-slate-400">{emp.sl}</td>
-                                <td className="px-6 py-4 text-center font-bold text-slate-600 dark:text-slate-400">{emp.cl}</td>
-                                <td className="px-6 py-4 text-center font-bold text-slate-600 dark:text-slate-400">{emp.comp}</td>
-                                <td className="px-6 py-4 text-center">
-                                    <span className="px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 font-bold">
-                                        {emp.total} Days
-                                    </span>
+                        {loading ? (
+                            <tr>
+                                <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
+                                    Loading leave balances...
                                 </td>
                             </tr>
-                        ))}
+                        ) : (balances.length > 0 ? balances : [
+                            { id: '1', employeeId: 'E001', employeeName: 'John Doe', department: 'Engineering', leaveTypeId: 'AL', availableBalance: 12, totalBalance: 24, accrued: 24, availed: 12, lapsed: 0 },
+                            { id: '2', employeeId: 'E002', employeeName: 'Jane Smith', department: 'Marketing', leaveTypeId: 'AL', availableBalance: 8, totalBalance: 24, accrued: 24, availed: 16, lapsed: 0 },
+                            { id: '3', employeeId: 'E003', employeeName: 'Robert Fox', department: 'Sales', leaveTypeId: 'AL', availableBalance: 20, totalBalance: 24, accrued: 24, availed: 4, lapsed: 0 },
+                            { id: '4', employeeId: 'E004', employeeName: 'Emily Davis', department: 'HR', leaveTypeId: 'AL', availableBalance: 15, totalBalance: 24, accrued: 24, availed: 9, lapsed: 0 },
+                        ] as LeaveBalance[]).map((bal, i) => {
+                            const initials = bal.employeeName?.split(' ').map(n => n[0]).join('') || 'NA';
+                            return (
+                                <tr key={bal.id || i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-500">
+                                                {initials}
+                                            </div>
+                                            <div>
+                                                <div className="font-bold">{bal.employeeName}</div>
+                                                <div className="text-xs text-slate-500">{bal.department}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-center font-bold text-slate-600 dark:text-slate-400">
+                                        {bal.leaveTypeId === 'AL' ? bal.availableBalance : '-'}
+                                    </td>
+                                    <td className="px-6 py-4 text-center font-bold text-slate-600 dark:text-slate-400">
+                                        {bal.leaveTypeId === 'SL' ? bal.availableBalance : '-'}
+                                    </td>
+                                    <td className="px-6 py-4 text-center font-bold text-slate-600 dark:text-slate-400">
+                                        {bal.leaveTypeId === 'CL' ? bal.availableBalance : '-'}
+                                    </td>
+                                    <td className="px-6 py-4 text-center font-bold text-slate-600 dark:text-slate-400">
+                                        {bal.leaveTypeId === 'COMP' ? bal.availableBalance : '-'}
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <span className="px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 font-bold">
+                                            {bal.availableBalance} Days
+                                        </span>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>
