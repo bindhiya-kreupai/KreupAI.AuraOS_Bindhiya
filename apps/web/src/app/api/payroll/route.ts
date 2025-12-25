@@ -42,9 +42,10 @@
  *         $ref: '#/components/responses/ValidationError'
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { PayrollService } from '@/lib/services/payroll';
-import { SupportedCountryCode } from '@/lib/services/compliance/types';
+import type { SupportedCountryCode } from '@/lib/services/compliance/types';
 
 /**
  * POST /api/payroll
@@ -103,9 +104,8 @@ export async function POST(request: NextRequest) {
       success: true,
       data: payrollRun,
     });
-  } catch (error) {
-    console.error('Payroll processing error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process payroll',
         errorAr: 'فشل في معالجة الرواتب',
@@ -147,9 +147,8 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
-    console.error('Payroll fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch payroll runs', errorAr: 'فشل في جلب سجلات الرواتب' },
       { status: 500 }
     );

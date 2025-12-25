@@ -5,7 +5,7 @@
  * Handles attendance processing, overtime calculation, GPS validation
  */
 
-import {
+import type {
   AttendanceRecord,
   AttendancePunch,
   AttendanceStatus,
@@ -15,7 +15,6 @@ import {
   WorkLocation,
   OvertimeRecord,
   OvertimeType,
-  OvertimePolicy,
   GPSPunchRequest,
   GPSValidationResult,
   RegularizationRequest,
@@ -23,9 +22,11 @@ import {
   AttendanceProcessingResult,
   AttendanceProcessingError,
   MonthlyAttendanceSummary,
-  AttendanceCalendarEntry,
+  AttendanceCalendarEntry} from './types';
+import {
+  OvertimePolicy
 } from './types';
-import { SupportedCountryCode } from '../compliance/types';
+import type { SupportedCountryCode } from '../compliance/types';
 import { LabourLawService } from '../compliance/labour-law.service';
 
 // ============================================================================
@@ -112,7 +113,7 @@ export class AttendanceService {
         } else if (record.status === 'ABSENT') {
           absent++;
         }
-      } catch (error) {
+      } catch {
         errors.push({
           employeeId: employee.id,
           employeeName: employee.name,

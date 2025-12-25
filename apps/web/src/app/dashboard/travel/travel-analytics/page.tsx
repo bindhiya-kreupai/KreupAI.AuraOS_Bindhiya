@@ -28,9 +28,8 @@ export default function TravelAnalyticsPage() {
             setLoading(true);
             const metrics = await TravelAnalyticsService.getMetrics();
             setData(metrics);
-        } catch (error) {
-            console.error('Failed to fetch travel analytics:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

@@ -542,9 +542,9 @@ const FRAMEWORK_STATS = {
 
 const StatusBadge: React.FC<{ status: LevelStatus }> = ({ status }) => {
     const styles: Record<LevelStatus, string> = {
-        'Active': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-        'Draft': 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-        'Archived': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+        Active: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+        Draft: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+        Archived: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
     };
     return (
         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${styles[status]}`}>
@@ -555,10 +555,10 @@ const StatusBadge: React.FC<{ status: LevelStatus }> = ({ status }) => {
 
 const FrameworkTypeBadge: React.FC<{ type: ProficiencyFramework['type'] }> = ({ type }) => {
     const styles: Record<ProficiencyFramework['type'], string> = {
-        'Standard': 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
-        'Technical': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-        'Leadership': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-        'Custom': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+        Standard: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+        Technical: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+        Leadership: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+        Custom: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
     };
     return (
         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${styles[type]}`}>
@@ -569,10 +569,10 @@ const FrameworkTypeBadge: React.FC<{ type: ProficiencyFramework['type'] }> = ({ 
 
 const CategoryBadge: React.FC<{ category: BehavioralIndicator['category'] }> = ({ category }) => {
     const styles: Record<BehavioralIndicator['category'], string> = {
-        'Knowledge': 'bg-blue-50 text-blue-600 dark:bg-blue-900/20',
-        'Skills': 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20',
-        'Behavior': 'bg-purple-50 text-purple-600 dark:bg-purple-900/20',
-        'Output': 'bg-amber-50 text-amber-600 dark:bg-amber-900/20'
+        Knowledge: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20',
+        Skills: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20',
+        Behavior: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20',
+        Output: 'bg-amber-50 text-amber-600 dark:bg-amber-900/20'
     };
     return (
         <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${styles[category]}`}>
@@ -711,7 +711,7 @@ export default function ProficiencyLevelsPage() {
                     setExpandedFrameworks([result.data[0].id]);
                 }
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch frameworks:', error);
         } finally {
             setIsLoading(false);
@@ -869,7 +869,7 @@ export default function ProficiencyLevelsPage() {
             
             setIsSheetOpen(false);
             setEditingFramework(null);
-        } catch (error) {
+        } catch {
             logger.error('Failed to save framework:', error);
         } finally {
             setIsSaving(false);
@@ -888,7 +888,7 @@ export default function ProficiencyLevelsPage() {
                 if (result.success) {
                     setFrameworks(prev => prev.filter(f => f.id !== id));
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Failed to delete framework:', error);
             }
         }
@@ -967,7 +967,7 @@ export default function ProficiencyLevelsPage() {
                             <Check className="w-5 h-5" />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{frameworks.filter(fw => fw.levels.every(l => l.status === 'Active')).length}</div>
+                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{frameworks.filter(fw => fw.levels.every(l => l.status === &apos;Active')).length}</div>
                             <div className="text-xs text-silver-mist uppercase font-bold">Active</div>
                         </div>
                     </div>

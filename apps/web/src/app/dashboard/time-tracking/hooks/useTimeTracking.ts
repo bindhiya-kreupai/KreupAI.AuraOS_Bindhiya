@@ -23,7 +23,7 @@ export const useTimeTracking = () => {
       setIsLoading(true);
       const data = await TimesheetService.getTimesheets(filters);
       setTimesheets(data);
-    } catch (err) {
+    } catch {
       toast.error(`Failed to load timesheets: ${(err as Error).message}`);
     } finally {
       setIsLoading(false);
@@ -37,7 +37,7 @@ export const useTimeTracking = () => {
       setTimesheets(prev => [...prev, created]);
       toast.success('Timesheet created successfully');
       return created;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to create timesheet: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -52,7 +52,7 @@ export const useTimeTracking = () => {
       setTimesheets(prev => prev.map(t => t.id === id ? updated : t));
       toast.success('Timesheet updated successfully');
       return updated;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to update timesheet: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -67,7 +67,7 @@ export const useTimeTracking = () => {
       setTimesheets(prev => prev.map(t => t.id === id ? submitted : t));
       toast.success('Timesheet submitted for approval');
       return submitted;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to submit timesheet: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -82,7 +82,7 @@ export const useTimeTracking = () => {
       setTimesheets(prev => prev.map(t => t.id === id ? approved : t));
       toast.success('Timesheet approved');
       return approved;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to approve timesheet: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -97,7 +97,7 @@ export const useTimeTracking = () => {
       setTimesheets(prev => prev.map(t => t.id === timesheetId ? updated : t));
       toast.success('Time entry added');
       return updated;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to add entry: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -110,7 +110,7 @@ export const useTimeTracking = () => {
       setIsLoading(true);
       const data = await ProjectService.getProjects(filters);
       setProjects(data);
-    } catch (err) {
+    } catch {
       toast.error(`Failed to load projects: ${(err as Error).message}`);
     } finally {
       setIsLoading(false);
@@ -124,7 +124,7 @@ export const useTimeTracking = () => {
       setProjects(prev => [...prev, created]);
       toast.success('Project created successfully');
       return created;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to create project: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -139,7 +139,7 @@ export const useTimeTracking = () => {
       setTimers(prev => [...prev, started]);
       toast.success('Timer started');
       return started;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to start timer: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -154,7 +154,7 @@ export const useTimeTracking = () => {
       setTimers(prev => prev.map(t => t.id === id ? stopped : t));
       toast.success(`Timer stopped - ${stopped.duration?.toFixed(2)} hours logged`);
       return stopped;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to stop timer: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -166,7 +166,7 @@ export const useTimeTracking = () => {
     try {
       const data = await TimeTrackingAnalyticsService.getMetrics();
       setMetrics(data);
-    } catch (err) {
+    } catch {
       toast.error(`Failed to load metrics: ${(err as Error).message}`);
     }
   }, [toast]);
@@ -175,7 +175,7 @@ export const useTimeTracking = () => {
     try {
       const data = await TimeTrackingSettingsService.getSettings();
       setSettings(data);
-    } catch (err) {
+    } catch {
       toast.error(`Failed to load settings: ${(err as Error).message}`);
     }
   }, [toast]);
@@ -191,7 +191,7 @@ export const useTimeTracking = () => {
       await loadProjects();
       await loadMetrics();
       toast.success('Sample data initialized');
-    } catch (err) {
+    } catch {
       toast.error(`Failed to initialize data: ${(err as Error).message}`);
     } finally {
       setIsSaving(false);

@@ -306,9 +306,8 @@ export default function JobBoardsPage() {
         if (result.data?.boards) setBoards(result.data.boards);
         if (result.data?.postings) setPostings(result.data.postings);
       }
-    } catch (error) {
-      console.error('Error fetching job boards:', error);
-    } finally {
+    } catch {
+          } finally {
       setLoading(false);
     }
   };
@@ -318,9 +317,8 @@ export default function JobBoardsPage() {
     try {
       await jobBoards.postJob(jobData, selectedBoards);
       await fetchJobBoards();
-    } catch (error) {
-      console.error('Error posting job:', error);
-    } finally {
+    } catch {
+          } finally {
       setLoading(false);
     }
   };
@@ -330,9 +328,8 @@ export default function JobBoardsPage() {
     try {
       await jobBoards.syncCandidates();
       await fetchJobBoards();
-    } catch (error) {
-      console.error('Error syncing candidates:', error);
-    } finally {
+    } catch {
+          } finally {
       setLoading(false);
     }
   };
@@ -546,7 +543,7 @@ export default function JobBoardsPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-ink-black dark:text-pearl">{board.name}</h3>
-                    <p className="text-xs text-silver-mist">{board.region.join(', ')}</p>
+                    <p className="text-xs text-silver-mist">{board.region.join(&apos;, ')}</p>
                   </div>
                 </div>
                 {board.connected ? (

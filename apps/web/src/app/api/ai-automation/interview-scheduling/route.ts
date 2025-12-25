@@ -5,9 +5,8 @@ export const GET = withEnhancedAuth(async (request, context) => {
   try {
     const schedules = [];
     return NextResponse.json({ schedules }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching interview schedules:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
 
@@ -35,8 +34,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       createdDate: new Date().toISOString()
     };
     return NextResponse.json({ schedule }, { status: 201 });
-  } catch (error) {
-    console.error('Error creating interview schedule:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
@@ -24,7 +25,7 @@ export const GET = withEnhancedAuth(
       ];
 
       return NextResponse.json({ success: true, data: mockPosts });
-    } catch (error) {
+    } catch {
       logger.error('Error fetching posts:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch posts' }, { status: 500 });
     }
@@ -48,7 +49,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: newPost }, { status: 201 });
-    } catch (error) {
+    } catch {
       logger.error('Error creating post:', error);
       return NextResponse.json({ success: false, error: 'Failed to create post' }, { status: 500 });
     }
@@ -63,7 +64,7 @@ export const PUT = withEnhancedAuth(
 
       const body = await request.json();
       return NextResponse.json({ success: true, data: { ...body, lastModified: new Date().toISOString() } });
-    } catch (error) {
+    } catch {
       logger.error('Error updating post:', error);
       return NextResponse.json({ success: false, error: 'Failed to update post' }, { status: 500 });
     }

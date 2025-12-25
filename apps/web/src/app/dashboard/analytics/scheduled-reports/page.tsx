@@ -38,9 +38,8 @@ export default function ScheduledReportsPage() {
             if (data.length > 0) {
                 setSchedules(data as any);
             }
-        } catch (error) {
-            console.error('Error fetching scheduled reports:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -50,9 +49,8 @@ export default function ScheduledReportsPage() {
             await ScheduledReportService.createSchedule(scheduleData);
             await fetchSchedules();
             setShowModal(false);
-        } catch (error) {
-            console.error('Error creating schedule:', error);
-        }
+        } catch {
+                    }
     };
 
     return (

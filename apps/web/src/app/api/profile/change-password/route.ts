@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 import { withAuth } from '@/lib/auth';
@@ -103,7 +104,7 @@ export const POST = withAuth(async (request: NextRequest, { user }) => {
       success: true,
       message: 'Password changed successfully. All sessions have been revoked. Please login again.',
     });
-  } catch (error) {
+  } catch {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }

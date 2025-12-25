@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import {
+import type {
   Ticket,
   SLAPolicy,
   Agent,
@@ -135,7 +135,7 @@ export const useHelpdesk = () => {
       } else {
         setSettings(settingsData);
       }
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to load data');
       addToast({ type: 'error', message: 'Failed to load helpdesk data' });
     } finally {
@@ -155,7 +155,7 @@ export const useHelpdesk = () => {
       setTickets(await TicketManagementService.getAllTickets());
       addToast({ type: 'success', message: 'Ticket created successfully' });
       return newTicket;
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create ticket' });
       throw err;
     } finally {
@@ -170,7 +170,7 @@ export const useHelpdesk = () => {
       setTickets(await TicketManagementService.getAllTickets());
       addToast({ type: 'success', message: 'Ticket updated successfully' });
       return updated;
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update ticket' });
       throw err;
     } finally {
@@ -185,7 +185,7 @@ export const useHelpdesk = () => {
       setTickets(await TicketManagementService.getAllTickets());
       addToast({ type: 'success', message: 'Ticket assigned successfully' });
       return assigned;
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to assign ticket' });
       throw err;
     } finally {
@@ -200,7 +200,7 @@ export const useHelpdesk = () => {
       setTickets(await TicketManagementService.getAllTickets());
       addToast({ type: 'success', message: 'Comment added' });
       return updated;
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to add comment' });
       throw err;
     } finally {
@@ -216,7 +216,7 @@ export const useHelpdesk = () => {
       setSlaPolicies(await SLATrackingService.getAllPolicies());
       addToast({ type: 'success', message: 'SLA policy created' });
       return newPolicy;
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create SLA policy' });
       throw err;
     } finally {
@@ -231,7 +231,7 @@ export const useHelpdesk = () => {
       setSlaPolicies(await SLATrackingService.getAllPolicies());
       addToast({ type: 'success', message: 'SLA policy updated' });
       return updated;
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update SLA policy' });
       throw err;
     } finally {
@@ -247,7 +247,7 @@ export const useHelpdesk = () => {
       setAgents(await AgentManagementService.getAllAgents());
       addToast({ type: 'success', message: 'Agent created successfully' });
       return newAgent;
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create agent' });
       throw err;
     } finally {
@@ -262,7 +262,7 @@ export const useHelpdesk = () => {
       setAgents(await AgentManagementService.getAllAgents());
       addToast({ type: 'success', message: 'Agent updated successfully' });
       return updated;
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update agent' });
       throw err;
     } finally {
@@ -273,7 +273,7 @@ export const useHelpdesk = () => {
   const getAvailableAgents = async () => {
     try {
       return await AgentManagementService.getAvailableAgents();
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to retrieve available agents' });
       throw err;
     }
@@ -287,7 +287,7 @@ export const useHelpdesk = () => {
       setKnowledgeBase(await KnowledgeBaseService.getAllArticles());
       addToast({ type: 'success', message: 'Article created' });
       return newArticle;
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create article' });
       throw err;
     } finally {
@@ -302,7 +302,7 @@ export const useHelpdesk = () => {
       setKnowledgeBase(await KnowledgeBaseService.getAllArticles());
       addToast({ type: 'success', message: 'Article updated' });
       return updated;
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update article' });
       throw err;
     } finally {
@@ -313,7 +313,7 @@ export const useHelpdesk = () => {
   const searchArticles = async (query: string) => {
     try {
       return await KnowledgeBaseService.searchArticles(query);
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to search articles' });
       throw err;
     }
@@ -327,7 +327,7 @@ export const useHelpdesk = () => {
       setCannedResponses(await CannedResponseService.getAllResponses());
       addToast({ type: 'success', message: 'Canned response created' });
       return newResponse;
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create canned response' });
       throw err;
     } finally {
@@ -342,7 +342,7 @@ export const useHelpdesk = () => {
       setCannedResponses(await CannedResponseService.getAllResponses());
       addToast({ type: 'success', message: 'Canned response updated' });
       return updated;
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update canned response' });
       throw err;
     } finally {
@@ -358,7 +358,7 @@ export const useHelpdesk = () => {
       setEscalationMatrices(await EscalationMatrixService.getAllMatrices());
       addToast({ type: 'success', message: 'Escalation matrix created' });
       return newMatrix;
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create escalation matrix' });
       throw err;
     } finally {
@@ -373,7 +373,7 @@ export const useHelpdesk = () => {
       setEscalationMatrices(await EscalationMatrixService.getAllMatrices());
       addToast({ type: 'success', message: 'Escalation matrix updated' });
       return updated;
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update escalation matrix' });
       throw err;
     } finally {

@@ -26,9 +26,8 @@ export default function EscalationRulesPage() {
             if (data.length > 0) {
                 // Keep mock data as fallback
             }
-        } catch (error) {
-            console.error('Error fetching escalation rules:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

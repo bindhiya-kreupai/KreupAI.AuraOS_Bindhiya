@@ -3,10 +3,11 @@
  * Phase 2: Core Enhancement - Attendance Enhancement
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { AttendanceService } from '@/lib/services/attendance';
 import { LabourLawService } from '@/lib/services/compliance';
-import { SupportedCountryCode } from '@/lib/services/compliance/types';
+import type { SupportedCountryCode } from '@/lib/services/compliance/types';
 
 /**
  * GET /api/attendance/overtime
@@ -41,9 +42,8 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
-    console.error('Overtime fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch overtime records', errorAr: 'فشل في جلب سجلات العمل الإضافي' },
       { status: 500 }
     );
@@ -161,9 +161,8 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Overtime processing error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process overtime',
         errorAr: 'فشل في معالجة العمل الإضافي',

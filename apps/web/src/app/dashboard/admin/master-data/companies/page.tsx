@@ -33,7 +33,7 @@ export default function CompaniesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch companies:', error);
         } finally {
             setIsLoading(false);
@@ -108,7 +108,7 @@ export default function CompaniesPage() {
                 logger.error('Failed to save company:', errorData);
                 alert('Failed to save company');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving company:', error);
             alert('Error saving company');
         }
@@ -126,7 +126,7 @@ export default function CompaniesPage() {
                 } else {
                     alert('Failed to delete company');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting company:', error);
                 alert('Error deleting company');
             }

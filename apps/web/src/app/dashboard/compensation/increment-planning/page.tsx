@@ -30,9 +30,8 @@ export default function CompPlanningPage() {
             ]);
             setCycles(cyclesData);
             setProposals(proposalsData);
-        } catch (error) {
-            console.error('Error fetching increment data:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

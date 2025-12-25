@@ -3,7 +3,8 @@
  * Phase 4 Sprint 31-32: HR Agent Endpoints
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { HRAgentService } from '@/lib/services/agentic-ai';
 
 /**
@@ -25,9 +26,8 @@ export async function GET(request: NextRequest) {
         isActive: definition.isActive,
       },
     });
-  } catch (error) {
-    console.error('Error fetching HR agent:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { success: false, error: 'Failed to fetch HR agent' },
       { status: 500 }
     );
@@ -158,9 +158,8 @@ export async function POST(request: NextRequest) {
       success: true,
       data: result,
     });
-  } catch (error) {
-    console.error('Error executing HR agent action:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to execute action'

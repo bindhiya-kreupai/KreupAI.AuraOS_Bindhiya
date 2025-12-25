@@ -16,9 +16,8 @@ export default function ExportOptionsPage() {
         try {
             // Export service doesn't have a getAll method, but we can prepare for future use
             setExports([]);
-        } catch (error) {
-            console.error('Error fetching exports:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -26,9 +25,8 @@ export default function ExportOptionsPage() {
     const handleExport = async (reportId: string, format: string) => {
         try {
             await ReportExportService.exportReport(reportId, format);
-        } catch (error) {
-            console.error('Error exporting report:', error);
-        }
+        } catch {
+                    }
     };
     return (
         <div className="p-6 space-y-8 min-h-screen">

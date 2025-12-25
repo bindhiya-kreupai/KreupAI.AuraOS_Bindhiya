@@ -47,9 +47,8 @@ export default function CompOffManagementPage() {
                     transactions: result
                 });
             }
-        } catch (error) {
-            console.error('Error fetching comp-off data:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

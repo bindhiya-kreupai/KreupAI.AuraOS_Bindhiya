@@ -20,7 +20,7 @@ export const useAssets = () => {
       setIsLoading(true);
       const data = await AssetService.getAssets(filters);
       setAssets(data);
-    } catch (err) {
+    } catch {
       toast.error(`Failed to load assets: ${(err as Error).message}`);
     } finally {
       setIsLoading(false);
@@ -34,7 +34,7 @@ export const useAssets = () => {
       setAssets(prev => [...prev, created]);
       toast.success('Asset created successfully');
       return created;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to create asset: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -49,7 +49,7 @@ export const useAssets = () => {
       setAssets(prev => prev.map(a => a.id === id ? updated : a));
       toast.success('Asset updated successfully');
       return updated;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to update asset: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -63,7 +63,7 @@ export const useAssets = () => {
       await AssetService.deleteAsset(id);
       setAssets(prev => prev.filter(a => a.id !== id));
       toast.success('Asset deleted successfully');
-    } catch (err) {
+    } catch {
       toast.error(`Failed to delete asset: ${(err as Error).message}`);
     } finally {
       setIsSaving(false);
@@ -77,7 +77,7 @@ export const useAssets = () => {
       setRequests(prev => [...prev, submitted]);
       toast.success('Asset request submitted');
       return submitted;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to submit request: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -89,7 +89,7 @@ export const useAssets = () => {
     try {
       const data = await AssetAnalyticsService.getMetrics();
       setMetrics(data);
-    } catch (err) {
+    } catch {
       toast.error(`Failed to load metrics: ${(err as Error).message}`);
     }
   }, [toast]);
@@ -98,7 +98,7 @@ export const useAssets = () => {
     try {
       const data = await AssetSettingsService.getSettings();
       setSettings(data);
-    } catch (err) {
+    } catch {
       toast.error(`Failed to load settings: ${(err as Error).message}`);
     }
   }, [toast]);
@@ -112,7 +112,7 @@ export const useAssets = () => {
       await loadAssets();
       await loadMetrics();
       toast.success('Sample data initialized');
-    } catch (err) {
+    } catch {
       toast.error(`Failed to initialize data: ${(err as Error).message}`);
     } finally {
       setIsSaving(false);

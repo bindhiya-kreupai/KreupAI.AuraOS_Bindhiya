@@ -32,9 +32,8 @@ export default function RetentionPage() {
         try {
             const data = await StandardReportService.getAllReports();
             setReports(data);
-        } catch (error) {
-            console.error('Error fetching retention reports:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

@@ -48,7 +48,7 @@ export default function JobProfilesPage() {
             if (profilesRes.ok) setData(await profilesRes.json());
             if (familiesRes.ok) setJobFamilies(await familiesRes.json());
             if (gradesRes.ok) setGrades(await gradesRes.json());
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
@@ -68,7 +68,7 @@ export default function JobProfilesPage() {
             width: '180px',
             render: (row) => {
                 const family = jobFamilies.find(f => f.id === row.jobFamilyId);
-                return <span className="text-sm">{family?.name || 'Unknown'}</span>;
+                return <span className="text-sm">{family?.name || &apos;Unknown'}</span>;
             }
         },
         {
@@ -78,7 +78,7 @@ export default function JobProfilesPage() {
             render: (row) => {
                 const min = grades.find(g => g.id === row.minGradeId)?.code;
                 const max = grades.find(g => g.id === row.maxGradeId)?.code;
-                return <span className="text-xs font-mono text-silver-mist">{min || '?'} - {max || '?'}</span>;
+                return <span className="text-xs font-mono text-silver-mist">{min || &apos;?'} - {max || '?'}</span>;
             }
         },
     ];
@@ -105,7 +105,7 @@ export default function JobProfilesPage() {
             } else {
                 alert('Failed to save job profile');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving job profile:', error);
             alert('Error saving job profile');
         }
@@ -123,7 +123,7 @@ export default function JobProfilesPage() {
                 } else {
                     alert('Failed to delete job profile');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting job profile:', error);
                 alert('Error deleting job profile');
             }

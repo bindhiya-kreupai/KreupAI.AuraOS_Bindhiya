@@ -25,9 +25,8 @@ export default function EventCalendarPage() {
             setLoading(true);
             const eventsData = await EventService.getEvents();
             setData(eventsData);
-        } catch (error) {
-            console.error('Error fetching events:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -92,8 +91,8 @@ export default function EventCalendarPage() {
                         <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all group">
                             <div className="flex items-center gap-3 mb-3">
                                 <div className={`w-10 h-12 rounded-lg ${event.color} text-white flex flex-col items-center justify-center font-bold text-xs leading-none shadow-lg shadow-indigo-500/20`}>
-                                    <span>{event.date.split(' ')[0]}</span>
-                                    <span className="text-lg">{event.date.split(' ')[1]}</span>
+                                    <span>{event.date.split(&apos; ')[0]}</span>
+                                    <span className="text-lg">{event.date.split(&apos; ')[1]}</span>
                                 </div>
                                 <div>
                                     <h4 className="font-bold group-hover:text-indigo-600 transition-colors">{event.title}</h4>

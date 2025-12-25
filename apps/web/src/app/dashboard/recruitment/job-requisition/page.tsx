@@ -107,9 +107,8 @@ export default function JobRequisitionsPage() {
             if (data.length > 0) {
                 setRequisitions(data);
             }
-        } catch (error) {
-            console.error('Error fetching requisitions:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

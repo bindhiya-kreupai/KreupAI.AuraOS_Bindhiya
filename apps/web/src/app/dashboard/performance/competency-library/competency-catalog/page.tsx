@@ -762,9 +762,9 @@ const COMPETENCIES: Competency[] = [
 
 const StatusBadge: React.FC<{ status: CompetencyStatus }> = ({ status }) => {
     const styles: Record<CompetencyStatus, string> = {
-        'Active': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-        'Draft': 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-        'Archived': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+        Active: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+        Draft: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+        Archived: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
         'Under Review': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
     };
 
@@ -838,7 +838,7 @@ export default function CompetencyCatalogPage() {
                 // Cast data to local type since service uses shared types
                 setCompetencies(result.data as any);
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch competencies:', error);
         } finally {
             setIsLoading(false);
@@ -912,7 +912,7 @@ export default function CompetencyCatalogPage() {
             
             setIsSheetOpen(false);
             setEditingCompetency(null);
-        } catch (error) {
+        } catch {
             logger.error('Failed to save competency:', error);
         } finally {
             setIsSaving(false);
@@ -926,7 +926,7 @@ export default function CompetencyCatalogPage() {
                 if (result.success) {
                     setCompetencies(prev => prev.filter(c => c.id !== id));
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Failed to delete competency:', error);
             }
         }
@@ -1059,7 +1059,7 @@ export default function CompetencyCatalogPage() {
                             <Check className="w-5 h-5" />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{competencies.filter(c => c.status === 'Active').length}</div>
+                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{competencies.filter(c => c.status === &apos;Active').length}</div>
                             <div className="text-xs text-silver-mist uppercase font-bold">Active</div>
                         </div>
                     </div>

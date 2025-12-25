@@ -3,7 +3,8 @@
  * Provides real-time query performance metrics
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { queryMonitor } from '@/lib/monitoring/query-monitor';
 import { authenticateRequest } from '@/lib/middleware/auth';
 import { checkPermission } from '@/lib/middleware/rbac';
@@ -101,7 +102,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: summary,
     });
-  } catch (error) {
+  } catch {
     logger.error({ error }, 'Error fetching query monitoring stats');
     return NextResponse.json(
       { success: false, error: 'Failed to fetch monitoring stats' },
@@ -161,7 +162,7 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Query statistics reset successfully',
     });
-  } catch (error) {
+  } catch {
     logger.error({ error }, 'Error resetting query monitoring stats');
     return NextResponse.json(
       { success: false, error: 'Failed to reset monitoring stats' },

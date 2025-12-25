@@ -18,9 +18,8 @@ export default function GenericDashboardPage() {
             setLoading(true);
             const metrics = await TravelAnalyticsService.getMetrics();
             setData(metrics);
-        } catch (error) {
-            console.error('Failed to fetch travel metrics:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

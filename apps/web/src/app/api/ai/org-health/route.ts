@@ -3,7 +3,8 @@
  * Phase 3: Intelligence Layer - Organizational Analytics
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/ai/org-health
@@ -154,9 +155,8 @@ export async function GET(request: NextRequest) {
       success: true,
       data: healthData,
     });
-  } catch (error) {
-    console.error('Org health error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to fetch organization health',
         errorAr: 'فشل في جلب صحة المنظمة',
@@ -262,9 +262,8 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Org health analysis error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process organization health request',
         errorAr: 'فشل في معالجة طلب صحة المنظمة',

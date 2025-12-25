@@ -29,9 +29,8 @@ export default function BonusManagementPage() {
             ]);
             setSchemes(schemesData);
             setPayouts(payoutsData);
-        } catch (error) {
-            console.error('Error fetching bonus data:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

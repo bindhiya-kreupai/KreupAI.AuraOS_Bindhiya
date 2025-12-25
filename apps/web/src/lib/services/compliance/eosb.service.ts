@@ -3,11 +3,12 @@
  * Calculates termination benefits for GCC countries and India
  */
 
-import {
+import type {
   EOSBCalculationInput,
   EOSBCalculationResult,
+  SupportedCountryCode} from './types';
+import {
   TerminationType,
-  SupportedCountryCode,
   COUNTRY_CURRENCIES,
 } from './types';
 import { LabourLawService } from './labour-law.service';
@@ -216,7 +217,7 @@ export class EOSBService {
     const secondPeriodYears = Math.max(0, years - 5);
     const secondPeriodAmount = secondPeriodYears * 30 * dailyRate;
 
-    let grossAmount = firstPeriodAmount + secondPeriodAmount;
+    const grossAmount = firstPeriodAmount + secondPeriodAmount;
 
     // Resignation factor
     let resignationFactor = 1;

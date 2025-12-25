@@ -17,9 +17,8 @@ export default function TestingModePage() {
             setLoading(true);
             const data = await WorkflowExecutionService.getExecutions();
             setExecutions(data);
-        } catch (error) {
-            console.error('Error fetching executions:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -76,11 +75,11 @@ export default function TestingModePage() {
                     </h3>
                     <div className="space-y-2 text-xs">
                         <div className="text-slate-500">[10:45:01] Initializing simulation...</div>
-                        <div className="text-blue-400">[10:45:01] Trigger: 'Form Submitted' fired</div>
+                        <div className="text-blue-400">[10:45:01] Trigger: &apos;Form Submitted' fired</div>
                         <div>[10:45:01] Data: {"{"} amount: 5500 {"}"}</div>
                         <div className="text-amber-400">[10:45:02] Evaluating Condition: Amount &gt; 5000</div>
                         <div className="text-emerald-400">[10:45:02] Result: TRUE</div>
-                        <div className="text-blue-400">[10:45:02] Action: 'Route to CFO' initiated</div>
+                        <div className="text-blue-400">[10:45:02] Action: &apos;Route to CFO' initiated</div>
                         <div className="text-purple-400">[10:45:03] Notification: Email sent to cfo@company.com</div>
                         <div className="text-emerald-500 font-bold mt-4">✓ Workflow Completed Successfully</div>
                     </div>

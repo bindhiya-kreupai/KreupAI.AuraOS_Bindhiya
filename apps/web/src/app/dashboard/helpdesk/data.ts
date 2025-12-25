@@ -1,4 +1,4 @@
-import { Ticket, SLAPolicy, Agent, KnowledgeBaseArticle, CannedResponse, EscalationMatrix, HelpdeskSettings } from './types';
+import type { Ticket, SLAPolicy, Agent, KnowledgeBaseArticle, CannedResponse, EscalationMatrix, HelpdeskSettings } from './types';
 
 export const sampleTickets: Ticket[] = [
   {

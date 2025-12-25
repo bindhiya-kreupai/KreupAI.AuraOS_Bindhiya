@@ -1,7 +1,8 @@
 "use client";
 
 import React from 'react';
-import { LucideIcon, ArrowRight, LayoutGrid } from 'lucide-react';
+import type { LucideIcon} from 'lucide-react';
+import { ArrowRight, LayoutGrid } from 'lucide-react';
 import Link from 'next/link';
 
 interface ModuleGridProps {

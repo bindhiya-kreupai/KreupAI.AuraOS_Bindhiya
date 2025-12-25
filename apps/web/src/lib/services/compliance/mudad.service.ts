@@ -3,7 +3,7 @@
  * Handles salary file generation and submissions for KSA's Ministry of HRSD
  */
 
-import { EmployeeComplianceData } from './types';
+import type { EmployeeComplianceData } from './types';
 
 // ============================================================================
 // MUDAD TYPES

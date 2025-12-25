@@ -62,7 +62,7 @@ export default function JobPostingsPage() {
                 }));
 
                 setJobs(transformed);
-            } catch (err) {
+            } catch {
                 setError('Could not load job postings. Please try again later.');
                 logger.error(err);
             } finally {

@@ -19,9 +19,8 @@ export default function EnrollmentPage() {
                 setLoading(true);
                 const result = await EnrollmentService.getEnrollments();
                 setData(result);
-            } catch (error) {
-                console.error('Error fetching enrollments:', error);
-                setData([]);
+            } catch {
+                                setData([]);
             } finally {
                 setLoading(false);
             }

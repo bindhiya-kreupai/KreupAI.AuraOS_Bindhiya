@@ -10,7 +10,8 @@
  * - Statutory forms generation
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { IndiaFormsService } from '@/lib/services/india-statutory';
 import { IndiaStatutoryService } from '@/lib/services/compliance/india-statutory.service';
 
@@ -437,9 +438,8 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('India statutory error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process request',
         errorHi: 'अनुरोध संसाधित करने में विफल',
@@ -700,9 +700,8 @@ export async function GET(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('India statutory fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch statutory data', errorHi: 'वैधानिक डेटा प्राप्त करने में विफल' },
       { status: 500 }
     );

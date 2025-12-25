@@ -8,7 +8,7 @@ import {
     Clock
 } from 'lucide-react';
 import { LeavePolicyService } from '../services';
-import { LeavePolicy } from '../types';
+import type { LeavePolicy } from '../types';
 
 export default function LeavePolicyPage() {
     const [policies, setPolicies] = useState<LeavePolicy[]>([]);
@@ -25,9 +25,8 @@ export default function LeavePolicyPage() {
             if (result.length > 0) {
                 setPolicies(result);
             }
-        } catch (error) {
-            console.error('Error fetching leave policies:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -65,7 +64,7 @@ export default function LeavePolicyPage() {
                                 <span className="flex items-center gap-2 text-sm font-bold text-slate-500">
                                     <Users className="w-4 h-4" /> Assigned Group
                                 </span>
-                                <span className="font-bold text-sm">{pol.description || 'N/A'}</span>
+                                <span className="font-bold text-sm">{pol.description || &apos;N/A'}</span>
                             </div>
                             <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
                                 <span className="flex items-center gap-2 text-sm font-bold text-slate-500">

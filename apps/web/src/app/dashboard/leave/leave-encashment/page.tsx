@@ -8,7 +8,7 @@ import {
     CheckCircle2
 } from 'lucide-react';
 import { EncashmentService } from '../services';
-import { LeaveEncashment } from '../types';
+import type { LeaveEncashment } from '../types';
 
 export default function LeaveEncashmentPage() {
     const [encashments, setEncashments] = useState<LeaveEncashment[]>([]);
@@ -25,9 +25,8 @@ export default function LeaveEncashmentPage() {
             if (result.length > 0) {
                 setEncashments(result);
             }
-        } catch (error) {
-            console.error('Error fetching encashments:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

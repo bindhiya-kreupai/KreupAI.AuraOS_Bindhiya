@@ -23,9 +23,8 @@ export default function WhistleblowerPage() {
         try {
             const data = await WhistleblowerService.getReports();
             setReports(data);
-        } catch (error) {
-            console.error('Error fetching whistleblower reports:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

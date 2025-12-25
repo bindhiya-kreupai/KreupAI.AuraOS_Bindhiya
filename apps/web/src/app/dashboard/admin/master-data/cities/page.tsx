@@ -35,7 +35,7 @@ export default function CitiesPage() {
 
             if (citiesRes.ok) setData(await citiesRes.json());
             if (statesRes.ok) setStates(await statesRes.json());
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
@@ -54,7 +54,7 @@ export default function CitiesPage() {
             width: '180px',
             render: (row) => {
                 const state = states.find(s => s.id === row.stateId);
-                return <span className="text-sm">{state?.name || 'Unknown'}</span>;
+                return <span className="text-sm">{state?.name || &apos;Unknown'}</span>;
             }
         },
     ];
@@ -81,7 +81,7 @@ export default function CitiesPage() {
             } else {
                 alert('Failed to save city');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving city:', error);
             alert('Error saving city');
         }
@@ -99,7 +99,7 @@ export default function CitiesPage() {
                 } else {
                     alert('Failed to delete city');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting city:', error);
                 alert('Error deleting city');
             }

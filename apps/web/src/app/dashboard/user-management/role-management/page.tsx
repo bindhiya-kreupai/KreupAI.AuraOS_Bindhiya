@@ -21,7 +21,7 @@ export default function RolesPage() {
         try {
             const res = await fetch('/api/roles');
             if (res.ok) setData(await res.json());
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch roles:', error);
         } finally {
             setIsLoading(false);
@@ -64,7 +64,7 @@ export default function RolesPage() {
                 const error = await response.json();
                 alert(`Failed to save role: ${error.error}`);
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving role:', error);
             alert('Error saving role');
         }
@@ -76,7 +76,7 @@ export default function RolesPage() {
                 const response = await fetch(`/api/roles?id=${record.id}`, { method: 'DELETE' });
                 if (response.ok) fetchData();
                 else alert('Failed to delete role');
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting role:', error);
                 alert('Error deleting role');
             }

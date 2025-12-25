@@ -3,7 +3,7 @@
  * Tracks and manages Saudization ratios for companies in KSA
  */
 
-import { NitaqatBand, NitaqatStatus, NitaqatRecommendation } from './types';
+import type { NitaqatBand, NitaqatStatus, NitaqatRecommendation } from './types';
 
 // ============================================================================
 // NITAQAT THRESHOLDS BY COMPANY SIZE AND INDUSTRY
@@ -71,7 +71,7 @@ const DEFAULT_THRESHOLDS: NitaqatThreshold = {
 // Industry-specific thresholds
 const INDUSTRY_THRESHOLDS: Record<string, Partial<NitaqatThreshold>> = {
   // Retail Trade
-  '47': {
+  47: {
     small: {
       min: 6,
       max: 49,
@@ -86,7 +86,7 @@ const INDUSTRY_THRESHOLDS: Record<string, Partial<NitaqatThreshold>> = {
     },
   },
   // Construction
-  '41': {
+  41: {
     small: {
       min: 6,
       max: 49,
@@ -101,7 +101,7 @@ const INDUSTRY_THRESHOLDS: Record<string, Partial<NitaqatThreshold>> = {
     },
   },
   // IT & Technology
-  '62': {
+  62: {
     small: {
       min: 6,
       max: 49,
@@ -116,7 +116,7 @@ const INDUSTRY_THRESHOLDS: Record<string, Partial<NitaqatThreshold>> = {
     },
   },
   // Hospitality
-  '55': {
+  55: {
     small: {
       min: 6,
       max: 49,

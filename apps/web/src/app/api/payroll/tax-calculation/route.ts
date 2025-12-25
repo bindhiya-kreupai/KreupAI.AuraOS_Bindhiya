@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
@@ -31,15 +32,15 @@ export const GET = withEnhancedAuth(
         grossIncome: 2400000,
         declarations: {
           '80c': 150000,
-          'hra': 180000,
+          hra: 180000,
           '80d': 15000,
-          'lta': 0,
+          lta: 0,
         },
         verified: {
           '80c': 120000,
-          'hra': 150000,
+          hra: 150000,
           '80d': 15000,
-          'lta': 0,
+          lta: 0,
         },
         taxCalculation: {
           taxableIncome: 2055000,
@@ -52,7 +53,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: mockDeclarations,
       });
-    } catch (error) {
+    } catch {
       logger.error('Error fetching tax declarations:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch tax declarations' },
@@ -113,7 +114,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: result });
-    } catch (error) {
+    } catch {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -157,7 +158,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch (error) {
+    } catch {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

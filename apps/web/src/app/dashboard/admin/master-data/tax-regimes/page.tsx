@@ -45,7 +45,7 @@ export default function TaxRegimesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch tax regimes:', error);
         } finally {
             setIsLoading(false);
@@ -80,7 +80,7 @@ export default function TaxRegimesPage() {
             } else {
                 alert('Failed to save tax regime');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving tax regime:', error);
             alert('Error saving tax regime');
         }
@@ -98,7 +98,7 @@ export default function TaxRegimesPage() {
                 } else {
                     alert('Failed to delete tax regime');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting tax regime:', error);
                 alert('Error deleting tax regime');
             }

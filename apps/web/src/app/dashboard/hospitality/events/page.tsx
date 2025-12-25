@@ -40,7 +40,7 @@ export default function EventsPage() {
                         <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between hover:shadow-md transition-all">
                             <div className="flex items-center gap-4 mb-4 md:mb-0">
                                 <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center font-bold text-purple-600 text-center leading-none text-xs">
-                                    DEC<br /><span className="text-lg">{e.date.split(',')[0].split(' ')[1]}</span>
+                                    DEC<br /><span className="text-lg">{e.date.split(&apos;,')[0].split(' ')[1]}</span>
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-slate-800 dark:text-slate-200">{e.title}</h3>
@@ -53,7 +53,7 @@ export default function EventsPage() {
 
                             <div className="flex items-center gap-6">
                                 <div className="text-right">
-                                    <div className="text-lg font-bold text-slate-700 dark:text-slate-300">{e.staff.split(' ')[0]}</div>
+                                    <div className="text-lg font-bold text-slate-700 dark:text-slate-300">{e.staff.split(&apos; ')[0]}</div>
                                     <div className="text-xs text-slate-400">Staffing</div>
                                 </div>
 

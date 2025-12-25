@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { CandidateApplicationService } from '../services';
+import type {
+    DragStartEvent,
+    DragOverEvent,
+    DragEndEvent} from '@dnd-kit/core';
 import {
     DndContext,
     closestCorners,
@@ -10,10 +14,7 @@ import {
     useSensor,
     useSensors,
     DragOverlay,
-    defaultDropAnimationSideEffects,
-    DragStartEvent,
-    DragOverEvent,
-    DragEndEvent,
+    defaultDropAnimationSideEffects
 } from '@dnd-kit/core';
 import {
     arrayMove,
@@ -120,9 +121,8 @@ export default function ApplicationTrackingPage() {
 
                 setItems(grouped);
             }
-        } catch (error) {
-            console.error('Error fetching applications:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

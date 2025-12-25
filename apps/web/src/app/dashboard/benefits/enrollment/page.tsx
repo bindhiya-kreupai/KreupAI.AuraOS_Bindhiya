@@ -144,9 +144,8 @@ export default function BenefitsEnrollmentPage() {
             // Fetch existing enrollments for the current employee
             const data = await EnrollmentService.getEnrollments({ employeeId: 'EMP-001' });
             setEnrollments(data);
-        } catch (error) {
-            console.error('Error fetching enrollments:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

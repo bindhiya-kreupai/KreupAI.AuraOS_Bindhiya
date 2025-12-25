@@ -4,7 +4,7 @@
  */
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   CrewMemberProfile,
   FlightAssignment,
   DutyTime,
@@ -33,9 +33,8 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ crewMembers?: CrewMemberProfile[] }>(`${this.endpoint}/members`);
       return response.crewMembers || [];
-    } catch (error) {
-      console.error('Error fetching crew members:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -43,9 +42,8 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ crewMember?: CrewMemberProfile }>(`${this.endpoint}/members/${crewId}`);
       return response.crewMember || null;
-    } catch (error) {
-      console.error('Error fetching crew member:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -69,9 +67,8 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ assignments?: FlightAssignment[] }>(`${this.endpoint}/assignments`);
       return response.assignments || [];
-    } catch (error) {
-      console.error('Error fetching flight assignments:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -79,9 +76,8 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ assignment?: FlightAssignment }>(`${this.endpoint}/assignments/${assignmentId}`);
       return response.assignment || null;
-    } catch (error) {
-      console.error('Error fetching flight assignment:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -89,9 +85,8 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ assignments?: FlightAssignment[] }>(`${this.endpoint}/members/${crewId}/assignments`);
       return response.assignments || [];
-    } catch (error) {
-      console.error('Error fetching crew assignments:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -110,9 +105,8 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ dutyTimes?: DutyTime[] }>(`${this.endpoint}/duty-times`);
       return response.dutyTimes || [];
-    } catch (error) {
-      console.error('Error fetching duty times:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -120,9 +114,8 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ dutyTimes?: DutyTime[] }>(`${this.endpoint}/members/${crewId}/duty-times`);
       return response.dutyTimes || [];
-    } catch (error) {
-      console.error('Error fetching crew duty times:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -136,9 +129,8 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ restPeriods?: RestPeriod[] }>(`${this.endpoint}/rest-periods`);
       return response.restPeriods || [];
-    } catch (error) {
-      console.error('Error fetching rest periods:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -146,9 +138,8 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ restPeriods?: RestPeriod[] }>(`${this.endpoint}/members/${crewId}/rest-periods`);
       return response.restPeriods || [];
-    } catch (error) {
-      console.error('Error fetching crew rest periods:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -173,9 +164,8 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ pilots?: PilotProfile[] }>(`${this.endpoint}/pilots`);
       return response.pilots || [];
-    } catch (error) {
-      console.error('Error fetching pilots:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -183,9 +173,8 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ pilot?: PilotProfile }>(`${this.endpoint}/pilots/${pilotId}`);
       return response.pilot || null;
-    } catch (error) {
-      console.error('Error fetching pilot:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -209,9 +198,8 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ trainingRecords?: TrainingRecord[] }>(`${this.endpoint}/training-records`);
       return response.trainingRecords || [];
-    } catch (error) {
-      console.error('Error fetching training records:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -219,9 +207,8 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ trainingRecords?: TrainingRecord[] }>(`${this.endpoint}/pilots/${pilotId}/training-records`);
       return response.trainingRecords || [];
-    } catch (error) {
-      console.error('Error fetching pilot training records:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -240,9 +227,8 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ simulatorSessions?: SimulatorSession[] }>(`${this.endpoint}/simulator-sessions`);
       return response.simulatorSessions || [];
-    } catch (error) {
-      console.error('Error fetching simulator sessions:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -250,9 +236,8 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ simulatorSessions?: SimulatorSession[] }>(`${this.endpoint}/pilots/${pilotId}/simulator-sessions`);
       return response.simulatorSessions || [];
-    } catch (error) {
-      console.error('Error fetching pilot simulator sessions:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -271,9 +256,8 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ proficiencyChecks?: ProficiencyCheck[] }>(`${this.endpoint}/proficiency-checks`);
       return response.proficiencyChecks || [];
-    } catch (error) {
-      console.error('Error fetching proficiency checks:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -281,9 +265,8 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ proficiencyChecks?: ProficiencyCheck[] }>(`${this.endpoint}/pilots/${pilotId}/proficiency-checks`);
       return response.proficiencyChecks || [];
-    } catch (error) {
-      console.error('Error fetching pilot proficiency checks:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -309,9 +292,8 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ groundStaff?: GroundStaffMember[] }>(`${this.endpoint}/staff`);
       return response.groundStaff || [];
-    } catch (error) {
-      console.error('Error fetching ground staff:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -319,9 +301,8 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ groundStaff?: GroundStaffMember }>(`${this.endpoint}/staff/${staffId}`);
       return response.groundStaff || null;
-    } catch (error) {
-      console.error('Error fetching ground staff:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -345,9 +326,8 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ turnarounds?: TurnaroundAssignment[] }>(`${this.endpoint}/turnarounds`);
       return response.turnarounds || [];
-    } catch (error) {
-      console.error('Error fetching turnarounds:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -355,9 +335,8 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ turnaround?: TurnaroundAssignment }>(`${this.endpoint}/turnarounds/${assignmentId}`);
       return response.turnaround || null;
-    } catch (error) {
-      console.error('Error fetching turnaround:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -376,9 +355,8 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ equipment?: GroundEquipment[] }>(`${this.endpoint}/equipment`);
       return response.equipment || [];
-    } catch (error) {
-      console.error('Error fetching equipment:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -386,9 +364,8 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ equipment?: GroundEquipment }>(`${this.endpoint}/equipment/${equipmentId}`);
       return response.equipment || null;
-    } catch (error) {
-      console.error('Error fetching equipment:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -417,9 +394,8 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ procedures?: RampHandlingProcedure[] }>(`${this.endpoint}/procedures`);
       return response.procedures || [];
-    } catch (error) {
-      console.error('Error fetching procedures:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -427,9 +403,8 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ procedure?: RampHandlingProcedure }>(`${this.endpoint}/procedures/${procedureId}`);
       return response.procedure || null;
-    } catch (error) {
-      console.error('Error fetching procedure:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -448,9 +423,8 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ safetyCompliance?: SafetyCompliance[] }>(`${this.endpoint}/safety-compliance`);
       return response.safetyCompliance || [];
-    } catch (error) {
-      console.error('Error fetching safety compliance:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -458,9 +432,8 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ safetyCompliance?: SafetyCompliance }>(`${this.endpoint}/safety-compliance/${complianceId}`);
       return response.safetyCompliance || null;
-    } catch (error) {
-      console.error('Error fetching safety compliance:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -486,9 +459,8 @@ export class AviationSettingsService {
     try {
       const response = await APIClient.get<{ settings?: AviationSettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -509,9 +481,8 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: Alert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
-      console.error('Error fetching alerts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 

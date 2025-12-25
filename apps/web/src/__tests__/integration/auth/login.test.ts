@@ -7,7 +7,7 @@ import { NextRequest } from 'next/server';
 import { POST } from '@/app/api/auth/login/route';
 import { setupTestDb, teardownTestDb, resetDatabase } from '@/__tests__/helpers';
 import { mockUsers } from '@/__tests__/fixtures';
-import { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 
 describe('POST /api/auth/login', () => {
   let prisma: PrismaClient;

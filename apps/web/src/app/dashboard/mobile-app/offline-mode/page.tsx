@@ -33,9 +33,8 @@ export default function OfflineModePage() {
             ]);
             if (configData) setConfig(configData);
             if (syncData) setSyncStatus(syncData);
-        } catch (error) {
-            console.error('Error fetching offline mode data:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

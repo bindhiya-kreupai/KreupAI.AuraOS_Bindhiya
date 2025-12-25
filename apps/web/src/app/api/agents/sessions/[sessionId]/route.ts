@@ -3,7 +3,8 @@
  * Phase 4 Sprint 31-32: Session Management
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { AgentFrameworkService } from '@/lib/services/agentic-ai';
 
 /**
@@ -38,9 +39,8 @@ export async function GET(
         state: session.state,
       },
     });
-  } catch (error) {
-    console.error('Error fetching session:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { success: false, error: 'Failed to fetch session' },
       { status: 500 }
     );
@@ -72,9 +72,8 @@ export async function DELETE(
       success: true,
       message: 'Session ended successfully',
     });
-  } catch (error) {
-    console.error('Error ending session:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { success: false, error: 'Failed to end session' },
       { status: 500 }
     );

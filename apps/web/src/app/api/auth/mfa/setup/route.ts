@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { authenticator } from 'otplib';
 import QRCode from 'qrcode';
@@ -140,7 +141,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
       },
       message: 'MFA setup initiated. Scan the QR code with your authenticator app and verify with a code.',
     });
-  } catch (error) {
+  } catch {
     logger.error({ error, userId: user.userId }, 'Error in MFA setup');
 
     return NextResponse.json(
@@ -180,7 +181,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user }) => {
         verifiedDate: mfaSettings?.verifiedAt,
       },
     });
-  } catch (error) {
+  } catch {
     logger.error({ error, userId: user.userId }, 'Error checking MFA status');
 
     return NextResponse.json(

@@ -3,15 +3,16 @@
  * Comprehensive sample data for testing and development
  */
 
-import {
+import type {
     PayrollRun,
-    Payslip,
     EmployeeSalary,
     TaxDeclaration,
     ReimbursementClaim,
     EmployeeLoan,
     Bonus,
-    PayrollSettings,
+    PayrollSettings} from './types';
+import {
+    Payslip
 } from './types';
 
 // ============================================================================

@@ -25,9 +25,8 @@ export default function HandoffRulesPage() {
             if (result.length > 0) {
                 setRules(result);
             }
-        } catch (error) {
-            console.error('Error fetching handoff rules:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

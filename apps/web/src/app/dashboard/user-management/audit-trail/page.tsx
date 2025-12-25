@@ -23,7 +23,7 @@ export default function AuditTrailPage() {
         try {
             const res = await fetch('/api/audit-logs');
             if (res.ok) setData(await res.json());
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch audit logs:', error);
         } finally {
             setIsLoading(false);
@@ -41,7 +41,7 @@ export default function AuditTrailPage() {
             width: '180px',
             render: (row) => <span className="text-xs text-silver-mist">{new Date(row.timestamp).toLocaleString()}</span>
         },
-        { key: 'user', header: 'User', render: (row) => <span className="font-medium">{row.user?.email || 'System'}</span> },
+        { key: 'user', header: 'User', render: (row) => <span className="font-medium">{row.user?.email || &apos;System'}</span> },
         { key: 'action', header: 'Action', width: '120px' },
         { key: 'module', header: 'Module', width: '150px' },
         { key: 'details', header: 'Details' },

@@ -24,7 +24,7 @@
  *         $ref: '#/components/responses/NotFoundError'
  */
 
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { createProtectedRoute, getIpAddress } from '@/lib/api/route-wrapper';
 import companyService from '@/services/company.service';
 import { NotFoundError, BusinessRuleError } from '@/lib/errors';

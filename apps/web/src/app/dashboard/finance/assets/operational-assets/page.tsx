@@ -588,7 +588,7 @@ export default function OperationalAssetsPage() {
                                                 <td className="p-4">
                                                     <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold uppercase ${getStatusColor(status)} w-fit`}>
                                                         {getStatusIcon(status)}
-                                                        <span>{status.replace('-', ' ')}</span>
+                                                        <span>{status.replace(&apos;-', ' ')}</span>
                                                     </div>
                                                 </td>
                                                 <td className="p-4">

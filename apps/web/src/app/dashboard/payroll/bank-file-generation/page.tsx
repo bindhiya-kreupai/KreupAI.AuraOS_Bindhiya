@@ -24,9 +24,8 @@ export default function BankFileGenerationPage() {
         try {
             setLoading(true);
             // BankFileService doesn't have a getAll method, keeping mock data
-        } catch (error) {
-            console.error('Error fetching bank files:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

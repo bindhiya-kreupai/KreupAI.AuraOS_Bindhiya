@@ -9,7 +9,7 @@ import { GET as getById, PUT, DELETE } from '@/app/api/licenses/[id]/route';
 import { setupTestDb, teardownTestDb, resetDatabase } from '@/__tests__/helpers';
 import { mockUsers, mockLicenses } from '@/__tests__/fixtures';
 import { generateAccessToken } from '@/lib/auth/jwt';
-import { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 
 describe('Licenses API Integration Tests', () => {
   let prisma: PrismaClient;

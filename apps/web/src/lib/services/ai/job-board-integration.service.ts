@@ -519,7 +519,7 @@ class JobBoardIntegrationService {
         externalId,
         url: `${platformInfo.baseUrl}/view/${externalId}`,
       };
-    } catch (error) {
+    } catch {
       return {
         platform,
         success: false,
@@ -833,7 +833,7 @@ We Offer:
           const mockApplications = Math.floor(Math.random() * 5);
           synced += mockApplications;
           platformPosting.lastSyncedAt = new Date();
-        } catch (error) {
+        } catch {
           errors.push(`Failed to sync from ${platformPosting.platform}: ${error}`);
         }
       }

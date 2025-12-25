@@ -17,9 +17,8 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<ApiR
     const response = await fetch(`${API_BASE}${endpoint}`, options);
     const data = await response.json();
     return data;
-  } catch (error) {
-    console.error(`API call failed for ${endpoint}:`, error);
-    return {
+  } catch {
+        return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
     };

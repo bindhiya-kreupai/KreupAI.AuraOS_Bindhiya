@@ -30,9 +30,8 @@ export default function VoiceCommandsPage() {
             ]);
             if (configData) setConfig(configData);
             if (interactionsData.length > 0) setInteractions(interactionsData);
-        } catch (error) {
-            console.error('Error fetching voice commands data:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

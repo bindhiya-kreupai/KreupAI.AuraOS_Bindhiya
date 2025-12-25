@@ -32,9 +32,8 @@ export default function GlobalPositioningPage() {
             ]);
             if (configData) setConfig(configData);
             if (checkInsData.length > 0) setCheckIns(checkInsData);
-        } catch (error) {
-            console.error('Error fetching GPS attendance data:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

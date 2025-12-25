@@ -7,13 +7,12 @@
 
 import { APIClient } from '@/lib/api-client';
 import { logger } from '@/lib/logger';
-import {
+import type {
   TeamMember,
   TeamMetrics,
   TeamGoal,
   ApprovalRequest,
   ApprovalSummary,
-  ApprovalStatus,
   TeamReport,
   ReportType,
   DelegationRule,
@@ -22,7 +21,9 @@ import {
   ManagerAnalytics,
   ManagerSettings,
   ApprovalComment,
-  DelegationAction,
+  DelegationAction} from './types';
+import {
+  ApprovalStatus
 } from './types';
 
 // ============================================================================
@@ -279,7 +280,7 @@ export class ApprovalCenterService {
       try {
         const result = await this.approveRequest(requestId, approverId, remarks);
         approved.push(result);
-      } catch (error) {
+      } catch {
         logger.error(`Failed to approve request ${requestId}:`, error);
       }
     }

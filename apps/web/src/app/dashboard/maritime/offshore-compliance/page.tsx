@@ -70,7 +70,7 @@ export default function OffshoreCompliancePage() {
                             <FileCheck className="w-8 h-8 text-emerald-500" />
                             <div>
                                 <div className="font-bold text-sm">ISM Code Audit - PASSED</div>
-                                <div className="text-xs text-slate-500">MV Pacific Star • Conducted by Lloyd's Register</div>
+                                <div className="text-xs text-slate-500">MV Pacific Star • Conducted by Lloyd&apos;s Register</div>
                             </div>
                         </div>
                         <div className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl cursor-pointer transition-colors">

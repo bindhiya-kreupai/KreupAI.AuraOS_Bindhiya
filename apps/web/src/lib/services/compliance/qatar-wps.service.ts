@@ -177,17 +177,17 @@ export const QATAR_WPS_CONFIG: QatarWPSConfiguration = {
 
 // Qatar Bank Codes
 export const QATAR_BANKS = {
-  'QNBA': { name: 'Qatar National Bank', swift: 'QNBAQAQA' },
-  'CBQA': { name: 'Commercial Bank of Qatar', swift: 'CBQAQAQA' },
-  'DHBK': { name: 'Doha Bank', swift: 'DHBKQAQA' },
-  'ABQA': { name: 'Ahli Bank', swift: 'ABQAQAQA' },
-  'QIIB': { name: 'Qatar International Islamic Bank', swift: 'QIIBQAQA' },
-  'BARQ': { name: 'Barwa Bank', swift: 'BRKBQAQA' },
-  'MSQA': { name: 'Masraf Al Rayan', swift: 'MAFRQAQA' },
-  'QFIB': { name: 'Qatar First Bank', swift: 'QFBAQAQA' },
-  'DUIB': { name: 'Dukhan Bank', swift: 'DUKAQAQA' },
-  'HSBC': { name: 'HSBC Qatar', swift: 'HABORQAX' },
-  'SCBQ': { name: 'Standard Chartered Qatar', swift: 'SCBLQAQX' },
+  QNBA: { name: 'Qatar National Bank', swift: 'QNBAQAQA' },
+  CBQA: { name: 'Commercial Bank of Qatar', swift: 'CBQAQAQA' },
+  DHBK: { name: 'Doha Bank', swift: 'DHBKQAQA' },
+  ABQA: { name: 'Ahli Bank', swift: 'ABQAQAQA' },
+  QIIB: { name: 'Qatar International Islamic Bank', swift: 'QIIBQAQA' },
+  BARQ: { name: 'Barwa Bank', swift: 'BRKBQAQA' },
+  MSQA: { name: 'Masraf Al Rayan', swift: 'MAFRQAQA' },
+  QFIB: { name: 'Qatar First Bank', swift: 'QFBAQAQA' },
+  DUIB: { name: 'Dukhan Bank', swift: 'DUKAQAQA' },
+  HSBC: { name: 'HSBC Qatar', swift: 'HABORQAX' },
+  SCBQ: { name: 'Standard Chartered Qatar', swift: 'SCBLQAQX' },
 };
 
 // ============================================================================

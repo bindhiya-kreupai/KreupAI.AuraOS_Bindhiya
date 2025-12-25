@@ -32,9 +32,8 @@ export default function MarketBenchmarkingPage() {
             setLoading(true);
             const data = await MarketBenchmarkService.getBenchmarks();
             setBenchmarks(data);
-        } catch (error) {
-            console.error('Error fetching market benchmarks:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

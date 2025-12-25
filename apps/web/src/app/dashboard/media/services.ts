@@ -1,5 +1,5 @@
 import { APIClient } from '@/lib/api-client';
-import { ContentRights, BandwidthMetrics, AudienceMetrics, NetworkOperations, MediaSettings, MediaAlert } from './types';
+import type { ContentRights, BandwidthMetrics, AudienceMetrics, NetworkOperations, MediaSettings, MediaAlert } from './types';
 
 export class ContentRightsService {
   private static endpoint = '/industry-media/content-rights';
@@ -8,9 +8,8 @@ export class ContentRightsService {
     try {
       const response = await APIClient.get<{ rights?: ContentRights[] }>(this.endpoint);
       return response.rights || [];
-    } catch (error) {
-      console.error('Error fetching content rights:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -32,9 +31,8 @@ export class BandwidthAnalyticsService {
     try {
       const response = await APIClient.get<{ metrics?: BandwidthMetrics[] }>(this.endpoint);
       return response.metrics || [];
-    } catch (error) {
-      console.error('Error fetching bandwidth metrics:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -51,9 +49,8 @@ export class AudienceMetricsService {
     try {
       const response = await APIClient.get<{ metrics?: AudienceMetrics[] }>(this.endpoint);
       return response.metrics || [];
-    } catch (error) {
-      console.error('Error fetching audience metrics:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -70,9 +67,8 @@ export class NetworkOperationsService {
     try {
       const response = await APIClient.get<{ operations?: NetworkOperations[] }>(this.endpoint);
       return response.operations || [];
-    } catch (error) {
-      console.error('Error fetching network operations:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -94,9 +90,8 @@ export class MediaSettingsService {
     try {
       const response = await APIClient.get<{ settings?: MediaSettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -113,9 +108,8 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: MediaAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
-      console.error('Error fetching alerts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 

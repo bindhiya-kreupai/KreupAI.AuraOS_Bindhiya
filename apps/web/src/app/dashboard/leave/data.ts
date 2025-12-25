@@ -3,7 +3,7 @@
  * Comprehensive sample data for testing and development
  */
 
-import {
+import type {
     LeaveType,
     LeavePolicy,
     LeaveBalance,

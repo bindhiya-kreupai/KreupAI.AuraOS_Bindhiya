@@ -98,9 +98,8 @@ export default function ReferralsPage() {
             if (data && data.length > 0) {
                 setJobs(data);
             }
-        } catch (error) {
-            console.error('Error fetching hot jobs:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

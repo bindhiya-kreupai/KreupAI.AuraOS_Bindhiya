@@ -3,7 +3,8 @@
  * Phase 3: Intelligence Layer - Predictive Analytics
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { AttritionPredictionService } from '@/lib/services/ai';
 
 /**
@@ -97,9 +98,8 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Attrition prediction error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to predict attrition',
         errorAr: 'فشل في التنبؤ بمغادرة الموظفين',
@@ -151,9 +151,8 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
-    console.error('Attrition fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch attrition data', errorAr: 'فشل في جلب بيانات المغادرة' },
       { status: 500 }
     );

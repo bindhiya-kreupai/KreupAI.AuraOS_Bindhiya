@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
+import type {
   DemandForecast,
   SupplyAnalysis,
   GapAnalysis,
@@ -133,7 +133,7 @@ export function useWorkforcePlanning(): UseWorkforcePlanningReturn {
       setAcquisitionPlans(plansData);
       setMetrics(metricsData);
       setSettings(settingsData);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to load workforce planning data');
     } finally {
       setLoading(false);

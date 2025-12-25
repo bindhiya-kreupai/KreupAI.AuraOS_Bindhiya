@@ -3,9 +3,10 @@
  * Phase 4 Sprint 31-32: Task Management
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { AgentFrameworkService, AgentType } from '@/lib/services/agentic-ai';
-import type { TaskPriority } from '@/lib/services/agentic-ai';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+import { AgentFrameworkService } from '@/lib/services/agentic-ai';
+import type { TaskPriority , AgentType } from '@/lib/services/agentic-ai';
 
 /**
  * GET /api/agents/tasks
@@ -35,9 +36,8 @@ export async function GET(request: NextRequest) {
       success: true,
       data: tasks,
     });
-  } catch (error) {
-    console.error('Error fetching tasks:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { success: false, error: 'Failed to fetch tasks' },
       { status: 500 }
     );
@@ -86,9 +86,8 @@ export async function POST(request: NextRequest) {
       success: true,
       data: task,
     });
-  } catch (error) {
-    console.error('Error creating task:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { success: false, error: 'Failed to create task' },
       { status: 500 }
     );

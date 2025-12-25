@@ -506,7 +506,7 @@ export default function LabourLawPage() {
                 <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
                   <div className="text-sm text-slate-500 mb-1">Minimum Service Required</div>
                   <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{law.eosb.min} months</div>
-                  <div className="text-sm text-slate-500">{Math.round(law.eosb.min / 12)} year{law.eosb.min >= 24 ? 's' : ''}</div>
+                  <div className="text-sm text-slate-500">{Math.round(law.eosb.min / 12)} year{law.eosb.min >= 24 ? &apos;s' : ''}</div>
                   <div className="text-sm text-slate-500 mt-1" dir="rtl">الحد الأدنى للخدمة</div>
                 </div>
               </div>

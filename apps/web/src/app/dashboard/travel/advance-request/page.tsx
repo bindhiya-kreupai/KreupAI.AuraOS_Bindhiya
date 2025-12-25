@@ -22,9 +22,8 @@ export default function AdvanceRequestPage() {
             setLoading(true);
             const requests = await TravelRequestService.getRequests({ status: 'approved' });
             setData(requests);
-        } catch (error) {
-            console.error('Failed to fetch advance requests:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

@@ -49,10 +49,10 @@ export default function ImportExportPage() {
     const autoMap = () => {
         // Mock auto-mapping logic
         setMappedFields({
-            'sys_1': 'Emp_Ref_No',
-            'sys_2': 'F_Name',
-            'sys_3': 'L_Name',
-            'sys_4': 'Work_Email'
+            sys_1: 'Emp_Ref_No',
+            sys_2: 'F_Name',
+            sys_3: 'L_Name',
+            sys_4: 'Work_Email'
         });
     };
 

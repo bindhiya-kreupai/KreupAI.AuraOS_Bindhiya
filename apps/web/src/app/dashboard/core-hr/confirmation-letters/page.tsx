@@ -21,9 +21,8 @@ export default function ConfirmationLettersPage() {
         try {
             const data = await ConfirmationLetterService.getAllConfirmationLetters();
             setConfirmationLetters(data);
-        } catch (error) {
-            console.error('Error fetching confirmation letters:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

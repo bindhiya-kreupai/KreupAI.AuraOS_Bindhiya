@@ -2,7 +2,7 @@
  * Sample Employee Data
  */
 
-import { Employee } from './types';
+import type { Employee } from './types';
 
 export const generateSampleEmployees = (): Employee[] => [
     {

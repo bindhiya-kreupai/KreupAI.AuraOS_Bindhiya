@@ -30,8 +30,8 @@ export default function MissionsPage() {
                     </div>
                     <div className="h-10 w-px bg-indigo-400/50"></div>
                     <div>
-                        <div className="font-bold">You're on fire! 🔥</div>
-                        <div className="text-sm text-indigo-100">Complete today's missions to keep the streak alive.</div>
+                        <div className="font-bold">You&apos;re on fire! 🔥</div>
+                        <div className="text-sm text-indigo-100">Complete today&apos;s missions to keep the streak alive.</div>
                     </div>
                 </div>
                 <div className="hidden md:flex gap-2">
@@ -58,7 +58,7 @@ export default function MissionsPage() {
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${m.status === 'Completed' ? 'bg-emerald-500 text-white' :
                                     m.status === 'Locked' ? 'bg-slate-200 text-slate-400' : 'border-2 border-slate-300'
                                 }`}>
-                                {m.status === 'Completed' ? <CheckSquare className="w-4 h-4" /> : m.status === 'Locked' ? <Lock className="w-4 h-4" /> : null}
+                                {m.status === 'Completed' ? <CheckSquare className="w-4 h-4" /> : m.status === &apos;Locked' ? <Lock className="w-4 h-4" /> : null}
                             </div>
                             <div className={m.status === 'Completed' ? 'opacity-50 line-through' : ''}>
                                 <h4 className="font-bold">{m.title}</h4>

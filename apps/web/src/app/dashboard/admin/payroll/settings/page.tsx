@@ -60,9 +60,8 @@ export default function PayrollSettingsPage() {
             if (result) {
                 setSettings(result);
             }
-        } catch (error) {
-            console.error('Error fetching payroll settings:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

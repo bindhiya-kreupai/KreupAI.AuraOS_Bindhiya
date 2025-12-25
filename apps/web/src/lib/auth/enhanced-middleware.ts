@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { authenticate } from './middleware';
-import { Permission } from './permissions';
-import { JWTPayload } from './jwt';
+import type { Permission } from './permissions';
+import type { JWTPayload } from './jwt';
 import { logger } from '@/lib/logger';
 
 export interface EnhancedAuthContext {
@@ -124,7 +125,7 @@ export async function authenticateWithPermissions(
     };
 
     return { context, error: null };
-  } catch (error) {
+  } catch {
     logger.error({ error, userId: user!.userId }, 'Enhanced authentication error');
     return {
       context: null,

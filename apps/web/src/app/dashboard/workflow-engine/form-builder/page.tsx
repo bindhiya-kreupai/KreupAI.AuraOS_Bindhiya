@@ -25,9 +25,8 @@ export default function FormBuilderPage() {
             setLoading(true);
             const data = await FormBuilderService.getForms();
             setForms(data);
-        } catch (error) {
-            console.error('Error fetching forms:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

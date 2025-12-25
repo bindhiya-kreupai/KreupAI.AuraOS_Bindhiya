@@ -75,7 +75,7 @@ export default function COVIDTrackerPage() {
 
                     <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex gap-3 text-sm text-amber-800 dark:text-amber-200 border border-amber-100 dark:border-amber-800/50">
                         <AlertCircle className="w-5 h-5 shrink-0" />
-                        <p>New booster shots are available for eligible employees. Check the 'Health Checkups' page to schedule an appointment.</p>
+                        <p>New booster shots are available for eligible employees. Check the &apos;Health Checkups' page to schedule an appointment.</p>
                     </div>
                 </div>
             </div>

@@ -2,7 +2,7 @@
 // Handles all business logic and data operations for agriculture features
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   SeasonalWorker,
   LaborAssignment,
   SeasonalLaborPool,
@@ -29,9 +29,8 @@ export class SeasonalLaborService {
         `${this.endpoint}/workers`
       );
       return response.workers || [];
-    } catch (error) {
-      console.error('Error fetching seasonal workers:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -42,9 +41,8 @@ export class SeasonalLaborService {
         `${this.endpoint}/workers/${workerId}`
       );
       return response.worker || null;
-    } catch (error) {
-      console.error('Error fetching worker:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -91,9 +89,8 @@ export class SeasonalLaborService {
         { query, ...filters }
       );
       return response.workers || [];
-    } catch (error) {
-      console.error('Error searching workers:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -116,9 +113,8 @@ export class SeasonalLaborService {
         `${this.endpoint}/pools`
       );
       return response.pools || [];
-    } catch (error) {
-      console.error('Error fetching labor pools:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -148,9 +144,8 @@ export class HousingManagementService {
         `${this.endpoint}/facilities`
       );
       return response.facilities || [];
-    } catch (error) {
-      console.error('Error fetching housing facilities:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -163,9 +158,8 @@ export class HousingManagementService {
         `${this.endpoint}/facilities/${facilityId}`
       );
       return response.facility || null;
-    } catch (error) {
-      console.error('Error fetching facility:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -204,9 +198,8 @@ export class HousingManagementService {
         `${this.endpoint}/assignments`
       );
       return response.assignments || [];
-    } catch (error) {
-      console.error('Error fetching housing assignments:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -240,9 +233,8 @@ export class HousingManagementService {
         `${this.endpoint}/inspections`
       );
       return response.inspections || [];
-    } catch (error) {
-      console.error('Error fetching housing inspections:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -270,9 +262,8 @@ export class CropCycleService {
     try {
       const response = await APIClient.get<{ cycles?: CropCycle[] }>(this.endpoint);
       return response.cycles || [];
-    } catch (error) {
-      console.error('Error fetching crop cycles:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -283,9 +274,8 @@ export class CropCycleService {
         `${this.endpoint}/${cycleId}`
       );
       return response.cycle || null;
-    } catch (error) {
-      console.error('Error fetching crop cycle:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -336,9 +326,8 @@ export class CropCycleService {
         `${this.endpoint}/harvest-schedules`
       );
       return response.schedules || [];
-    } catch (error) {
-      console.error('Error fetching harvest schedules:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -368,9 +357,8 @@ export class AgricultureAnalyticsService {
         this.endpoint
       );
       return response.analytics;
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -382,9 +370,8 @@ export class AgricultureAnalyticsService {
         { format }
       );
       return response;
-    } catch (error) {
-      console.error('Error exporting report:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -403,9 +390,8 @@ export class AgricultureSettingsService {
         this.endpoint
       );
       return response.settings;
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 

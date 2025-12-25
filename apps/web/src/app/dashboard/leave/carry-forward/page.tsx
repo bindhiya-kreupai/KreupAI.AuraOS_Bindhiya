@@ -7,7 +7,7 @@ import {
     AlertCircle
 } from 'lucide-react';
 import { CarryForwardService } from '../services';
-import { CarryForward } from '../types';
+import type { CarryForward } from '../types';
 
 export default function CarryForwardPage() {
     const [carryForwards, setCarryForwards] = useState<CarryForward[]>([]);
@@ -24,9 +24,8 @@ export default function CarryForwardPage() {
             if (result.length > 0) {
                 setCarryForwards(result);
             }
-        } catch (error) {
-            console.error('Error fetching carry forwards:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -85,7 +84,7 @@ export default function CarryForwardPage() {
                                     <td className="px-6 py-4 font-bold text-rose-600">{emp.lapsedDays}</td>
                                     <td className="px-6 py-4">
                                         <span className={`px-2 py-1 rounded text-xs font-bold ${emp.status === 'processed' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-600'
-                                            }`}>{emp.status === 'processed' ? 'Processed' : 'Pending'}</span>
+                                            }`}>{emp.status === &apos;processed' ? 'Processed' : 'Pending'}</span>
                                     </td>
                                 </tr>
                             ))}

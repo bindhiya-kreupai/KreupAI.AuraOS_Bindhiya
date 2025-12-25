@@ -3,7 +3,7 @@
  * Comprehensive sample data for immediate testing
  */
 
-import {
+import type {
   Recognition,
   Badge,
   EmployeeBadge,
@@ -19,8 +19,10 @@ import {
   RecognitionSettings,
   CoreValue,
   RecognitionNotification,
-  RecognitionReport,
   RecognitionAuditLog
+} from './types';
+import {
+  RecognitionReport
 } from './types';
 
 // Core Company Values

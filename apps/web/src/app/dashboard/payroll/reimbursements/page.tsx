@@ -39,9 +39,8 @@ export default function ReimbursementsPage() {
             if (result.length > 0) {
                 setClaims(result);
             }
-        } catch (error) {
-            console.error('Error fetching reimbursement claims:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -50,18 +49,16 @@ export default function ReimbursementsPage() {
         try {
             await ReimbursementService.updateClaimStatus(id, 'APPROVED');
             fetchClaims();
-        } catch (error) {
-            console.error('Error approving claim:', error);
-        }
+        } catch {
+                    }
     };
 
     const handleReject = async (id: string) => {
         try {
             await ReimbursementService.updateClaimStatus(id, 'REJECTED');
             fetchClaims();
-        } catch (error) {
-            console.error('Error rejecting claim:', error);
-        }
+        } catch {
+                    }
     };
 
     const getTimeAgo = (dateString: string) => {

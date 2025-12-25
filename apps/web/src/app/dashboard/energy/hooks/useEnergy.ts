@@ -64,7 +64,7 @@ export const useEnergy = () => {
         loadSmartMeters(), loadWaterMeters(), loadRenewableAssets(),
         loadUtilityAccounts(), loadUtilityBills(), loadSettings()
       ]);
-    } catch (error) {
+    } catch {
       logger.error('Error loading data:', error);
       addToast({ type: 'error', message: 'Failed to load energy data' });
     } finally {
@@ -85,7 +85,7 @@ export const useEnergy = () => {
       await loadSmartMeters();
       addToast({ type: 'success', message: 'Smart meter created' });
       return meter;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create meter' });
       throw error;
     } finally {
@@ -100,7 +100,7 @@ export const useEnergy = () => {
       await loadSmartMeters();
       addToast({ type: 'success', message: 'Meter updated' });
       return meter;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update meter' });
       throw error;
     } finally {
@@ -114,7 +114,7 @@ export const useEnergy = () => {
       await SmartGridService.recordReading(meterId, reading);
       await loadSmartMeters();
       addToast({ type: 'success', message: 'Reading recorded' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to record reading' });
       throw error;
     } finally {
@@ -128,7 +128,7 @@ export const useEnergy = () => {
       await SmartGridService.addAlert(meterId, alert);
       await loadSmartMeters();
       addToast({ type: 'success', message: 'Alert added' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to add alert' });
       throw error;
     } finally {
@@ -147,7 +147,7 @@ export const useEnergy = () => {
       await SmartGridService.recordConsumption(consumptionData);
       await loadEnergyConsumption();
       addToast({ type: 'success', message: 'Consumption recorded' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to record consumption' });
       throw error;
     } finally {
@@ -167,7 +167,7 @@ export const useEnergy = () => {
       await loadLoadManagement();
       addToast({ type: 'success', message: 'Load management created' });
       return load;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create load management' });
       throw error;
     } finally {
@@ -181,7 +181,7 @@ export const useEnergy = () => {
       await SmartGridService.updateLoadManagement(loadId, updates);
       await loadLoadManagement();
       addToast({ type: 'success', message: 'Load management updated' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update load management' });
       throw error;
     } finally {
@@ -200,7 +200,7 @@ export const useEnergy = () => {
       await SmartGridService.recordGridEvent(eventData);
       await loadGridEvents();
       addToast({ type: 'success', message: 'Grid event recorded' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to record event' });
       throw error;
     } finally {
@@ -221,7 +221,7 @@ export const useEnergy = () => {
       await loadWaterMeters();
       addToast({ type: 'success', message: 'Water meter created' });
       return meter;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create water meter' });
       throw error;
     } finally {
@@ -236,7 +236,7 @@ export const useEnergy = () => {
       await loadWaterMeters();
       addToast({ type: 'success', message: 'Water meter updated' });
       return meter;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update water meter' });
       throw error;
     } finally {
@@ -255,7 +255,7 @@ export const useEnergy = () => {
       await WaterConservationService.recordWaterUsage(usageData);
       await loadWaterUsage();
       addToast({ type: 'success', message: 'Water usage recorded' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to record water usage' });
       throw error;
     } finally {
@@ -274,7 +274,7 @@ export const useEnergy = () => {
       await WaterConservationService.recordLeakDetection(leakData);
       await loadLeakDetections();
       addToast({ type: 'success', message: 'Leak detected and recorded' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to record leak' });
       throw error;
     } finally {
@@ -288,7 +288,7 @@ export const useEnergy = () => {
       await WaterConservationService.updateLeakStatus(leakId, updates);
       await loadLeakDetections();
       addToast({ type: 'success', message: 'Leak status updated' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update leak' });
       throw error;
     } finally {
@@ -308,7 +308,7 @@ export const useEnergy = () => {
       await loadConservationInitiatives();
       addToast({ type: 'success', message: 'Initiative created' });
       return initiative;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create initiative' });
       throw error;
     } finally {
@@ -322,7 +322,7 @@ export const useEnergy = () => {
       await WaterConservationService.updateInitiative(initiativeId, updates);
       await loadConservationInitiatives();
       addToast({ type: 'success', message: 'Initiative updated' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update initiative' });
       throw error;
     } finally {
@@ -343,7 +343,7 @@ export const useEnergy = () => {
       await loadRenewableAssets();
       addToast({ type: 'success', message: 'Renewable asset created' });
       return asset;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create asset' });
       throw error;
     } finally {
@@ -358,7 +358,7 @@ export const useEnergy = () => {
       await loadRenewableAssets();
       addToast({ type: 'success', message: 'Asset updated' });
       return asset;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update asset' });
       throw error;
     } finally {
@@ -372,7 +372,7 @@ export const useEnergy = () => {
       await RenewableAssetsService.recordMaintenance(assetId, maintenance);
       await loadRenewableAssets();
       addToast({ type: 'success', message: 'Maintenance recorded' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to record maintenance' });
       throw error;
     } finally {
@@ -391,7 +391,7 @@ export const useEnergy = () => {
       await RenewableAssetsService.recordProduction(productionData);
       await loadEnergyProduction();
       addToast({ type: 'success', message: 'Production recorded' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to record production' });
       throw error;
     } finally {
@@ -412,7 +412,7 @@ export const useEnergy = () => {
       await loadUtilityAccounts();
       addToast({ type: 'success', message: 'Utility account created' });
       return account;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create account' });
       throw error;
     } finally {
@@ -427,7 +427,7 @@ export const useEnergy = () => {
       await loadUtilityAccounts();
       addToast({ type: 'success', message: 'Account updated' });
       return account;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update account' });
       throw error;
     } finally {
@@ -447,7 +447,7 @@ export const useEnergy = () => {
       await loadUtilityBills();
       addToast({ type: 'success', message: 'Bill created' });
       return bill;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create bill' });
       throw error;
     } finally {
@@ -462,7 +462,7 @@ export const useEnergy = () => {
       await loadUtilityBills();
       addToast({ type: 'success', message: 'Bill updated' });
       return bill;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update bill' });
       throw error;
     } finally {
@@ -481,7 +481,7 @@ export const useEnergy = () => {
       await UtilityBillingService.recordPayment(paymentData);
       await Promise.all([loadPayments(), loadUtilityBills()]);
       addToast({ type: 'success', message: 'Payment recorded' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to record payment' });
       throw error;
     } finally {
@@ -502,7 +502,7 @@ export const useEnergy = () => {
       setSettings(updated);
       addToast({ type: 'success', message: 'Settings updated' });
       return updated;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update settings' });
       throw error;
     } finally {

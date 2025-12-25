@@ -26,8 +26,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     ];
 
     return NextResponse.json({ workflows }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching workflows:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

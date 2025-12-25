@@ -24,7 +24,7 @@ import {
     ResponsiveContainer
 } from 'recharts';
 import { LeaveRequestService, LeaveBalanceService } from '../services';
-import { LeaveRequest as LeaveRequestType, LeaveBalance as LeaveBalanceType } from '../types';
+import type { LeaveRequest as LeaveRequestType, LeaveBalance as LeaveBalanceType } from '../types';
 
 // --- MOCK DATA FOR UI STRUCTURE ---
 
@@ -67,9 +67,8 @@ export default function MyLeavesPage() {
             if (balancesData.length > 0) {
                 setLeaveBalances(balancesData);
             }
-        } catch (error) {
-            console.error('Error fetching my leaves:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -229,7 +228,7 @@ export default function MyLeavesPage() {
                                     <span className="text-lg font-bold">01</span>
                                 </div>
                                 <div>
-                                    <div className="font-bold text-ink-black dark:text-pearl">New Year's Day</div>
+                                    <div className="font-bold text-ink-black dark:text-pearl">New Year&apos;s Day</div>
                                     <div className="text-xs text-silver-mist">Wednesday</div>
                                 </div>
                             </div>

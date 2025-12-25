@@ -3,7 +3,7 @@
  * Comprehensive sample data for strategic workforce planning
  */
 
-import { DemandForecast, SupplyAnalysis, GapAnalysis, ScenarioModel, SuccessionReadiness, TalentAcquisitionPlan } from './types';
+import type { DemandForecast, SupplyAnalysis, GapAnalysis, ScenarioModel, SuccessionReadiness, TalentAcquisitionPlan } from './types';
 
 // ============================================================================
 // Sample Demand Forecasts

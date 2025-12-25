@@ -31,9 +31,8 @@ export default function MultiLingualPage() {
             if (translationsData.length > 0) {
                 setTranslations(translationsData);
             }
-        } catch (error) {
-            console.error('Error fetching multi-lingual data:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

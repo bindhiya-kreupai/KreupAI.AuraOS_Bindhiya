@@ -16,23 +16,23 @@ const LEVEL_1_DATA = [
 ];
 
 const LEVEL_2_DATA: Record<string, any[]> = {
-    'eng': [
+    eng: [
         { name: 'Frontend', value: 45 },
         { name: 'Backend', value: 50 },
         { name: 'DevOps', value: 15 },
         { name: 'QA', value: 10 },
     ],
-    'sales': [
+    sales: [
         { name: 'North America', value: 40 },
         { name: 'Europe', value: 30 },
         { name: 'APAC', value: 15 },
     ],
-    'mkt': [
+    mkt: [
         { name: 'Social', value: 10 },
         { name: 'Content', value: 15 },
         { name: 'Ads', value: 20 },
     ],
-    'hr': [
+    hr: [
         { name: 'Recruiting', value: 10 },
         { name: 'Ops', value: 15 },
     ]

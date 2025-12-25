@@ -5,7 +5,8 @@
  * can only access resources belonging to their own tenant
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { TenantIsolationError } from '@/lib/errors';
 import logger from '@/lib/logger';
 
@@ -165,7 +166,7 @@ export function withTenantIsolation(config: TenantIsolationConfig = {}) {
         const response = await handler(request, context);
 
         return response;
-      } catch (error) {
+      } catch {
         if (error instanceof TenantIsolationError) {
           if (onViolation) {
             onViolation(request, error.context);
@@ -293,7 +294,7 @@ export async function logTenantViolation(
       },
       'Tenant isolation violation logged to audit trail'
     );
-  } catch (error) {
+  } catch {
     logger.error(
       {
         error,

@@ -23,8 +23,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       modelVersion: 'v1.0.0'
     };
     return NextResponse.json({ insight }, { status: 200 });
-  } catch (error) {
-    console.error('Error extracting NLP insights:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

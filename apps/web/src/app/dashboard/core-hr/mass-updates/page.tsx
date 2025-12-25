@@ -25,9 +25,8 @@ export default function MassUpdatesPage() {
         try {
             const data = await MassUpdateService.getAllMassUpdates();
             setMassUpdates(data);
-        } catch (error) {
-            console.error('Error fetching mass updates:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

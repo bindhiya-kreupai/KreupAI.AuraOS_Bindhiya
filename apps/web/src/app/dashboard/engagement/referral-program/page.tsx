@@ -24,9 +24,8 @@ export default function ReferralProgramPage() {
             setLoading(true);
             const posts = await SocialFeedService.getPosts();
             setData(posts.filter(p => p.type === 'referral'));
-        } catch (error) {
-            console.error('Error fetching referrals:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

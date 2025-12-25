@@ -8,7 +8,7 @@ import {
     Download
 } from 'lucide-react';
 import { LeaveBalanceService } from '../services';
-import { LeaveBalance } from '../types';
+import type { LeaveBalance } from '../types';
 
 export default function LeaveBalancePage() {
     const [balances, setBalances] = useState<LeaveBalance[]>([]);
@@ -25,9 +25,8 @@ export default function LeaveBalancePage() {
             if (result.length > 0) {
                 setBalances(result);
             }
-        } catch (error) {
-            console.error('Error fetching leave balances:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

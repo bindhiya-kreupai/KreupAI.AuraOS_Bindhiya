@@ -1,6 +1,6 @@
 // Policy Management Services - API Integrated
 import { APIClient } from '@/lib/api-client';
-import { Policy, PolicySettings, PolicyAlert } from './types';
+import type { Policy, PolicySettings, PolicyAlert } from './types';
 
 export class PolicyService {
   private static endpoint = '/policy-mgmt/policies';
@@ -9,9 +9,8 @@ export class PolicyService {
     try {
       const response = await APIClient.get<{ policies?: Policy[] }>(this.endpoint);
       return response.policies || [];
-    } catch (error) {
-      console.error('Error fetching policies:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -37,9 +36,8 @@ export class PolicySettingsService {
     try {
       const response = await APIClient.get<{ settings?: PolicySettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
-      console.error('Error fetching policy settings:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -56,9 +54,8 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: PolicyAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
-      console.error('Error fetching policy alerts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 

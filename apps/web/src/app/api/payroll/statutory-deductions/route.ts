@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
@@ -50,7 +51,7 @@ export const GET = withEnhancedAuth(
           ? mockDeductions.deductions.find(d => d.employeeId === employeeId)
           : mockDeductions,
       });
-    } catch (error) {
+    } catch {
       logger.error('Error fetching statutory deductions:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch statutory deductions' },
@@ -109,7 +110,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: result });
-    } catch (error) {
+    } catch {
       logger.error('Error calculating statutory deductions:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to calculate statutory deductions' },

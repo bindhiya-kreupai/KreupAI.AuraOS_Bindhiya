@@ -28,9 +28,8 @@ export default function StatutoryDeductionsPage() {
             if (result.length > 0) {
                 setReports(result);
             }
-        } catch (error) {
-            console.error('Error fetching statutory reports:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

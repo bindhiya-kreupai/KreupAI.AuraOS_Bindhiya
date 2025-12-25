@@ -3,7 +3,8 @@
  * Finance Module - Budget Management
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/finance/budgets
@@ -29,9 +30,8 @@ export async function GET(request: NextRequest) {
         totalRemaining: 0,
       },
     });
-  } catch (error) {
-    console.error('Budget fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch budgets' },
       { status: 500 }
     );
@@ -86,9 +86,8 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Budget creation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to create budget' },
       { status: 500 }
     );
@@ -120,9 +119,8 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Budget update error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to update budget' },
       { status: 500 }
     );
@@ -149,9 +147,8 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Budget deleted successfully',
     });
-  } catch (error) {
-    console.error('Budget deletion error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to delete budget' },
       { status: 500 }
     );

@@ -1,5 +1,5 @@
 import { APIClient } from '@/lib/api-client';
-import { TipPool, Event, HousekeepingTask, HospitalitySettings, HospitalityAlert } from './types';
+import type { TipPool, Event, HousekeepingTask, HospitalitySettings, HospitalityAlert } from './types';
 
 export class TipManagementService {
   private static endpoint = '/industry-hospitality/tip-management';
@@ -8,9 +8,8 @@ export class TipManagementService {
     try {
       const response = await APIClient.get<{ pools?: TipPool[] }>(`${this.endpoint}/pools`);
       return response.pools || [];
-    } catch (error) {
-      console.error('Error fetching tip pools:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -32,9 +31,8 @@ export class EventStaffingService {
     try {
       const response = await APIClient.get<{ events?: Event[] }>(`${this.endpoint}/events`);
       return response.events || [];
-    } catch (error) {
-      console.error('Error fetching events:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -56,9 +54,8 @@ export class HousekeepingService {
     try {
       const response = await APIClient.get<{ tasks?: HousekeepingTask[] }>(`${this.endpoint}/tasks`);
       return response.tasks || [];
-    } catch (error) {
-      console.error('Error fetching tasks:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -80,9 +77,8 @@ export class HospitalitySettingsService {
     try {
       const response = await APIClient.get<{ settings?: HospitalitySettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -99,9 +95,8 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: HospitalityAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
-      console.error('Error fetching alerts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 

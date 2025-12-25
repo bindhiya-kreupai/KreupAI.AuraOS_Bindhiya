@@ -23,9 +23,8 @@ export default function BookingIntegrationPage() {
             setLoading(true);
             // TravelBookingService is available for form submission
             setData([]);
-        } catch (error) {
-            console.error('Failed to fetch bookings:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

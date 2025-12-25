@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { withAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
@@ -51,7 +52,7 @@ export const POST = withAuth(async (request: NextRequest, { user }) => {
       success: true,
       message: 'Logout successful',
     });
-  } catch (error) {
+  } catch {
     logger.error({
       error,
       userId: user.userId

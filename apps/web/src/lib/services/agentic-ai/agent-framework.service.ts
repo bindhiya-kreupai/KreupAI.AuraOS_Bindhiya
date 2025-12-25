@@ -3,7 +3,7 @@
  * Phase 4 Sprint 31-32: Core Autonomous Execution Engine
  */
 
-import {
+import type {
   AgentType,
   AgentDefinition,
   AgentTask,
@@ -13,15 +13,16 @@ import {
   ConversationMessage,
   DetectedIntent,
   ExtractedEntity,
-  ExecutionPlan,
-  ExecutionStep,
-  ExecutionContext,
   AuditEntry,
   AgentEvent,
   AgentMetrics,
   TaskStatus,
-  ActionStatus,
-  ActionType,
+  ActionType} from './types';
+import {
+  ExecutionPlan,
+  ExecutionStep,
+  ExecutionContext,
+  ActionStatus
 } from './types';
 
 /**
@@ -639,7 +640,7 @@ export class AgentFrameworkService {
           outcome: 'SUCCESS',
         });
 
-      } catch (error) {
+      } catch {
         action.status = 'FAILED';
         action.error = {
           code: 'EXECUTION_ERROR',
@@ -906,7 +907,7 @@ export class AgentFrameworkService {
 
       else if (action.name.toLowerCase().includes('candidates')) {
         const data = output as { total: number; shortlisted: number; candidates: { name: string; score: number; status: string }[] };
-        let candidateList = (data.candidates || []).map(c => `  - ${c.name}: Score ${c.score} (${c.status})`).join('\n');
+        const candidateList = (data.candidates || []).map(c => `  - ${c.name}: Score ${c.score} (${c.status})`).join('\n');
         results.push(`**Candidate Screening Results:**
 - Total Candidates: ${data.total || 0}
 - Shortlisted: ${data.shortlisted || 0}
@@ -1132,8 +1133,7 @@ ${candidateList}`);
    */
   static emitEvent(event: AgentEvent): void {
     // In production, publish to event bus
-    console.log('[AgentEvent]', event.type, event.payload);
-  }
+      }
 
   /**
    * Get agent metrics

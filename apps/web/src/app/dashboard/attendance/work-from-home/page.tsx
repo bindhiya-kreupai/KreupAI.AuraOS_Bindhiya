@@ -52,9 +52,8 @@ export default function WorkFromHomePage() {
                     yearlyLimit: summaryData.totalDays || 0
                 });
             }
-        } catch (error) {
-            console.error('Error fetching WFH data:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

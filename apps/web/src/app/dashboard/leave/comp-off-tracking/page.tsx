@@ -8,7 +8,7 @@ import {
     CheckCircle
 } from 'lucide-react';
 import { CompOffService } from '../services';
-import { CompOff } from '../types';
+import type { CompOff } from '../types';
 
 export default function CompOffTrackingPage() {
     const [compOffs, setCompOffs] = useState<CompOff[]>([]);
@@ -25,9 +25,8 @@ export default function CompOffTrackingPage() {
             if (result.length > 0) {
                 setCompOffs(result);
             }
-        } catch (error) {
-            console.error('Error fetching comp-offs:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

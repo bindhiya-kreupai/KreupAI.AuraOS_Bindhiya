@@ -26,9 +26,8 @@ export default function ConditionalLogicPage() {
             if (data.length > 0) {
                 // Keep mock data as fallback
             }
-        } catch (error) {
-            console.error('Error fetching conditional rules:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

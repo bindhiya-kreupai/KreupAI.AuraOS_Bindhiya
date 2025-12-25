@@ -1,7 +1,9 @@
-import {
-  DiversityMetric, DiversityDashboard, InclusionSurvey, SurveyAnalytics, PayEquityAnalysis,
+import type {
+  DiversityMetric, InclusionSurvey, SurveyAnalytics, PayEquityAnalysis,
   BiasTraining, EmployeeResourceGroup, MentorshipProgram, MentorProfile, MenteeProfile,
   AccessibilityRequest, DEIGoal, DEISettings
+} from './types';
+import { DiversityDashboard
 } from './types';
 
 // Sample Diversity Metrics

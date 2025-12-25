@@ -47,7 +47,7 @@ export default function DepartmentsPage() {
             if (depsRes.ok) setData(await depsRes.json());
             if (compsRes.ok) setCompanies(await compsRes.json());
             if (costsRes.ok) setCostCenters(await costsRes.json());
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
@@ -76,7 +76,7 @@ export default function DepartmentsPage() {
             width: '180px',
             render: (row) => {
                 const company = companies.find(c => c.id === row.companyId);
-                return <span className="text-sm">{company?.name || 'Unknown'}</span>;
+                return <span className="text-sm">{company?.name || &apos;Unknown'}</span>;
             }
         },
         {
@@ -116,7 +116,7 @@ export default function DepartmentsPage() {
             } else {
                 alert('Failed to save department');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving department:', error);
             alert('Error saving department');
         }
@@ -134,7 +134,7 @@ export default function DepartmentsPage() {
                 } else {
                     alert('Failed to delete department');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting department:', error);
                 alert('Error deleting department');
             }

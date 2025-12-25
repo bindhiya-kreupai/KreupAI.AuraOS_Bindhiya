@@ -3,15 +3,16 @@
  * Comprehensive sample data for immediate testing and development
  */
 
-import {
+import type {
   Whiteboard,
-  WhiteboardElement,
   KanbanBoard,
-  KanbanColumn,
-  KanbanCard,
   Standup,
   StandupResponse,
-  CollaborationSettings,
+  CollaborationSettings} from './types';
+import {
+  WhiteboardElement,
+  KanbanColumn,
+  KanbanCard
 } from './types';
 
 // ============================================================================

@@ -45,9 +45,8 @@ export default function OmanSPFPage() {
         if (data.success) {
           setReferenceData(data.data);
         }
-      } catch (error) {
-        console.error('Failed to fetch reference data:', error);
-      }
+      } catch {
+              }
     };
     fetchReferenceData();
   }, []);
@@ -76,9 +75,8 @@ export default function OmanSPFPage() {
         setResults(data.data.results);
         setTotals(data.data.totals);
       }
-    } catch (error) {
-      console.error('Calculation failed:', error);
-    } finally {
+    } catch {
+          } finally {
       setLoading(false);
     }
   };

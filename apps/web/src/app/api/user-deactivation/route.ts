@@ -66,7 +66,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
         totalPages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
+  } catch {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
@@ -185,7 +185,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }

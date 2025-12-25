@@ -21,9 +21,8 @@ export default function GrievanceManagementPage() {
         try {
             const data = await GrievanceService.getGrievances();
             setGrievances(data);
-        } catch (error) {
-            console.error('Error fetching grievances:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

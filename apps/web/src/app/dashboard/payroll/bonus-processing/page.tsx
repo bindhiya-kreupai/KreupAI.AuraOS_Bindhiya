@@ -38,9 +38,8 @@ export default function BonusProcessingPage() {
                 // In a real implementation, you'd filter by status
                 setPastCycles(result.slice(0, 3));
             }
-        } catch (error) {
-            console.error('Error fetching bonuses:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

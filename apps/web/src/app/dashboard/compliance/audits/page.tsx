@@ -24,9 +24,8 @@ export default function ComplianceAuditsPage() {
         try {
             const data = await ComplianceAuditService.getAudits();
             setAudits(data);
-        } catch (error) {
-            console.error('Error fetching audits:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

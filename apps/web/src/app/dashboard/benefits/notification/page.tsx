@@ -23,9 +23,8 @@ export default function NotificationPage() {
             setLoading(true);
             const data = await BenefitSettingsService.getSettings();
             setSettings(data);
-        } catch (error) {
-            console.error('Error fetching benefit settings:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

@@ -36,9 +36,10 @@
  *         description: Nitaqat status calculated
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { NitaqatService, NITAQAT_BAND_COLORS } from '@/lib/services/compliance';
-import { NitaqatBand } from '@/lib/services/compliance/types';
+import type { NitaqatBand } from '@/lib/services/compliance/types';
 
 /**
  * POST /api/compliance/nitaqat
@@ -79,9 +80,8 @@ export async function POST(request: NextRequest) {
         bandColor,
       },
     });
-  } catch (error) {
-    console.error('Nitaqat calculation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to calculate Nitaqat status', errorAr: 'فشل في حساب حالة نطاقات' },
       { status: 500 }
     );
@@ -177,9 +177,8 @@ export async function GET(request: NextRequest) {
         ],
       },
     });
-  } catch (error) {
-    console.error('Nitaqat reference data error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch Nitaqat reference data', errorAr: 'فشل في جلب بيانات نطاقات المرجعية' },
       { status: 500 }
     );

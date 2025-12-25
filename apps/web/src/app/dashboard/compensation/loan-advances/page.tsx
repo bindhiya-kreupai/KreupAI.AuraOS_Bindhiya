@@ -88,9 +88,8 @@ export default function LoansPage() {
             setLoading(true);
             const data = await LoanService.getLoans();
             setEmployeeLoans(data);
-        } catch (error) {
-            console.error('Error fetching employee loans:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

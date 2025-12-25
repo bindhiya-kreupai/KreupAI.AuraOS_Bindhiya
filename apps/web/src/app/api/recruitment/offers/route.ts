@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 
 /**
@@ -117,9 +118,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     }
 
     return NextResponse.json({ data: mockOffers }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching job offers:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );
@@ -147,9 +147,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json({ data: newOffer }, { status: 201 });
-  } catch (error) {
-    console.error('Error creating job offer:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );
@@ -187,9 +186,8 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json({ data: updatedOffer }, { status: 200 });
-  } catch (error) {
-    console.error('Error updating job offer:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );

@@ -10,9 +10,8 @@ export const GET = withEnhancedAuth(async (request, context) => {
     const tasks_UPPER = [];
 
     return NextResponse.json({ tasks: tasks_UPPER }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching tasks:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
 
@@ -30,9 +29,8 @@ export const POST = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ task }, { status: 201 });
-  } catch (error) {
-    console.error('Error creating task:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
 
@@ -49,8 +47,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ task }, { status: 200 });
-  } catch (error) {
-    console.error('Error updating task:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

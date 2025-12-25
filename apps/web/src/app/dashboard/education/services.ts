@@ -4,7 +4,7 @@
  */
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   FacultyMember, TenureApplication, ResearchGrant, AdjunctFaculty, AdjunctContract,
   AdjunctPool, EducationSettings, GrantReport, FacultyEvaluation
 } from './types';

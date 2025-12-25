@@ -6,7 +6,7 @@
  * survey responses, and communication patterns
  */
 
-import {
+import type {
   SentimentResult,
   SurveyAnalysis,
   EngagementInsight,

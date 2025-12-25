@@ -26,9 +26,8 @@ export default function WorkflowDesignerPage() {
             setLoading(true);
             const data = await WorkflowService.getWorkflows();
             setWorkflows(data);
-        } catch (error) {
-            console.error('Error fetching workflows:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

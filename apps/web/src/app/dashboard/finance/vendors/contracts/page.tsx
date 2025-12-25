@@ -228,10 +228,10 @@ export default function ContractsPage() {
         const labels: Record<string, string> = {
             'service-agreement': 'Service Agreement',
             'purchase-order': 'Purchase Order',
-            'nda': 'NDA',
-            'msa': 'MSA',
-            'sla': 'SLA',
-            'lease': 'Lease'
+            nda: 'NDA',
+            msa: 'MSA',
+            sla: 'SLA',
+            lease: 'Lease'
         };
         return labels[type] || type;
     };
@@ -240,10 +240,10 @@ export default function ContractsPage() {
         const colors: Record<string, string> = {
             'service-agreement': 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
             'purchase-order': 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
-            'nda': 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-            'msa': 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
-            'sla': 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400',
-            'lease': 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'
+            nda: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+            msa: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
+            sla: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400',
+            lease: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'
         };
         return colors[type] || 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
     };
@@ -572,7 +572,7 @@ export default function ContractsPage() {
                                                     <div className="flex flex-col gap-1">
                                                         <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold uppercase ${getStatusColor(contract.status)} w-fit`}>
                                                             {getStatusIcon(contract.status)}
-                                                            <span>{contract.status.replace('-', ' ')}</span>
+                                                            <span>{contract.status.replace(&apos;-', ' ')}</span>
                                                         </div>
                                                         {contract.notificationSent && (
                                                             <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">

@@ -24,9 +24,8 @@ export default function TotalRewardsPage() {
             setLoading(true);
             const data = await TotalRewardsService.getStatements();
             setStatements(data);
-        } catch (error) {
-            console.error('Error fetching total rewards statements:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

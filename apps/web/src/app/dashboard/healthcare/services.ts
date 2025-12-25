@@ -1,5 +1,5 @@
 import { APIClient } from '@/lib/api-client';
-import { HealthcareProvider, NurseSchedule, LocumProvider, LocumAssignment, HealthcareSettings, HealthcareAlert } from './types';
+import type { HealthcareProvider, NurseSchedule, LocumProvider, LocumAssignment, HealthcareSettings, HealthcareAlert } from './types';
 
 export class CredentialingService {
   private static endpoint = '/industry-healthcare/credentialing';
@@ -8,9 +8,8 @@ export class CredentialingService {
     try {
       const response = await APIClient.get<{ providers?: HealthcareProvider[] }>(this.endpoint);
       return response.providers || [];
-    } catch (error) {
-      console.error('Error fetching providers:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -18,9 +17,8 @@ export class CredentialingService {
     try {
       const response = await APIClient.get<{ provider?: HealthcareProvider }>(`${this.endpoint}/${id}`);
       return response.provider || null;
-    } catch (error) {
-      console.error('Error fetching provider:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -42,9 +40,8 @@ export class NurseRosteringService {
     try {
       const response = await APIClient.get<{ schedules?: NurseSchedule[] }>(this.endpoint);
       return response.schedules || [];
-    } catch (error) {
-      console.error('Error fetching schedules:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -52,9 +49,8 @@ export class NurseRosteringService {
     try {
       const response = await APIClient.get<{ schedule?: NurseSchedule }>(`${this.endpoint}/${id}`);
       return response.schedule || null;
-    } catch (error) {
-      console.error('Error fetching schedule:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -76,9 +72,8 @@ export class LocumManagementService {
     try {
       const response = await APIClient.get<{ providers?: LocumProvider[] }>(`${this.endpoint}/providers`);
       return response.providers || [];
-    } catch (error) {
-      console.error('Error fetching locum providers:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -86,9 +81,8 @@ export class LocumManagementService {
     try {
       const response = await APIClient.get<{ provider?: LocumProvider }>(`${this.endpoint}/providers/${id}`);
       return response.provider || null;
-    } catch (error) {
-      console.error('Error fetching locum provider:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -106,9 +100,8 @@ export class LocumManagementService {
     try {
       const response = await APIClient.get<{ assignments?: LocumAssignment[] }>(`${this.endpoint}/assignments`);
       return response.assignments || [];
-    } catch (error) {
-      console.error('Error fetching assignments:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -125,9 +118,8 @@ export class HealthcareSettingsService {
     try {
       const response = await APIClient.get<{ settings?: HealthcareSettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -144,9 +136,8 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: HealthcareAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
-      console.error('Error fetching alerts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 

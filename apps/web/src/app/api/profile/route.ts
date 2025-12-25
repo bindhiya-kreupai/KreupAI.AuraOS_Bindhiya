@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 import { withAuth } from '@/lib/auth';
@@ -90,7 +91,7 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
       success: true,
       data: userProfile,
     });
-  } catch (error) {
+  } catch {
     logger.error('Error fetching profile:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch profile' },
@@ -173,7 +174,7 @@ export const PUT = withAuth(async (request: NextRequest, { user }) => {
       data: updatedEmployee,
       message: 'Profile updated successfully',
     });
-  } catch (error) {
+  } catch {
     logger.error('Error updating profile:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update profile' },

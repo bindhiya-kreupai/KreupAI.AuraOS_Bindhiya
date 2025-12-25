@@ -12,18 +12,19 @@
  * - Succession Analytics
  */
 
-import {
+import type {
     CriticalPosition,
     SuccessionCandidate,
     SuccessionPool,
     DevelopmentPlan,
-    DevelopmentActivity,
     TalentReview,
     CareerPath,
     EmergencySuccession,
     SuccessionMetrics,
     SuccessionRiskAnalysis,
-    SuccessionSettings,
+    SuccessionSettings} from './types';
+import {
+    DevelopmentActivity,
     CompetencyGap,
     PoolCandidate,
     DevelopmentMilestone,

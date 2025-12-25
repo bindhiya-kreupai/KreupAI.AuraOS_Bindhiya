@@ -47,9 +47,8 @@ export const GET = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ settings }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching security settings:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
 
@@ -66,8 +65,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ settings }, { status: 200 });
-  } catch (error) {
-    console.error('Error updating security settings:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

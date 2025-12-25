@@ -40,8 +40,8 @@ export default function EventsReunionsPage() {
                                     </div>
                                 </div>
                                 <div className="text-center bg-slate-50 dark:bg-slate-800 rounded-lg p-2 min-w-[60px]">
-                                    <div className="text-xs uppercase font-bold text-slate-400">{event.date.split(' ')[0]}</div>
-                                    <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{event.date.split(' ')[1].replace(',', '')}</div>
+                                    <div className="text-xs uppercase font-bold text-slate-400">{event.date.split(&apos; ')[0]}</div>
+                                    <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{event.date.split(&apos; ')[1].replace(',', '')}</div>
                                 </div>
                             </div>
 

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { RateLimitError } from '@/lib/errors';
 import logger from '@/lib/logger';
 import { rateLimitConfig } from '@/lib/config/env';
@@ -255,7 +256,7 @@ export function rateLimit(options: RateLimitOptions = {}) {
         response.headers.set('X-RateLimit-Reset', new Date(Date.now() + windowMs).toISOString());
 
         return response;
-      } catch (error) {
+      } catch {
         if (error instanceof RateLimitError) {
           return NextResponse.json(
             {

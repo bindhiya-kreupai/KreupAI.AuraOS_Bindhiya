@@ -28,9 +28,8 @@ export const GET = withEnhancedAuth(async (request, context) => {
     ];
 
     return NextResponse.json({ sessions }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching coaching sessions:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
 
@@ -61,8 +60,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ session }, { status: 201 });
-  } catch (error) {
-    console.error('Error creating coaching session:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

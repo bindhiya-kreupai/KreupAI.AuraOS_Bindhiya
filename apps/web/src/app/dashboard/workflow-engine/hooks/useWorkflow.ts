@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
+import type {
   Workflow,
   WorkflowExecution,
   ApprovalChain,
@@ -147,7 +147,7 @@ export function useWorkflow(): UseWorkflowReturn {
       setForms(formsData);
       setMetrics(metricsData);
       setSettings(settingsData);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to load workflow data');
     } finally {
       setLoading(false);

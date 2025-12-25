@@ -3,8 +3,10 @@
  * Phase 4 Sprint 31-32: Agent Performance Metrics
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { AgentFrameworkService, AgentType } from '@/lib/services/agentic-ai';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+import type { AgentType } from '@/lib/services/agentic-ai';
+import { AgentFrameworkService } from '@/lib/services/agentic-ai';
 
 /**
  * GET /api/agents/metrics
@@ -44,9 +46,8 @@ export async function GET(request: NextRequest) {
       success: true,
       data: metrics,
     });
-  } catch (error) {
-    console.error('Error fetching agent metrics:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { success: false, error: 'Failed to fetch metrics' },
       { status: 500 }
     );

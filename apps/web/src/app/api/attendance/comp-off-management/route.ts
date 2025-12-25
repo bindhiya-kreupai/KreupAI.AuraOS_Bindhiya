@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
@@ -85,7 +86,7 @@ export const GET = withEnhancedAuth(
         data: { compOffs: filteredData, summary },
         meta: { total: filteredData.length },
       });
-    } catch (error) {
+    } catch {
       logger.error('Error fetching comp-off management data:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch comp-off management data' },

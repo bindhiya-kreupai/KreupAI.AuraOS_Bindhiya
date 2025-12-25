@@ -8,7 +8,7 @@ import {
     Plus
 } from 'lucide-react';
 import { HolidayService } from '../services';
-import { Holiday } from '../types';
+import type { Holiday } from '../types';
 
 export default function HolidayManagementPage() {
     const [holidays, setHolidays] = useState<Holiday[]>([]);
@@ -25,9 +25,8 @@ export default function HolidayManagementPage() {
             if (result.length > 0) {
                 setHolidays(result);
             }
-        } catch (error) {
-            console.error('Error fetching holidays:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

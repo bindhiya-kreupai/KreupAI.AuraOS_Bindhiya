@@ -4,18 +4,19 @@
  */
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
     LeaveType,
     LeavePolicy,
     LeaveBalance,
     LeaveRequest,
     Holiday,
-    HolidayCalendar,
     LeaveEncashment,
     CompOff,
     CarryForward,
     LeaveStats,
-    LeaveSettings,
+    LeaveSettings} from './types';
+import {
+    HolidayCalendar
 } from './types';
 
 // ============================================================================
@@ -41,9 +42,8 @@ export class LeaveTypeService {
                 '/leave/types'
             );
             return response.types || response.leaveTypes || [];
-        } catch (error) {
-            console.error('Error fetching leave types:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -56,9 +56,8 @@ export class LeaveTypeService {
                 `/leave/types/${id}`
             );
             return response.type || response.leaveType || null;
-        } catch (error) {
-            console.error(`Error fetching leave type ${id}:`, error);
-            return null;
+        } catch {
+                        return null;
         }
     }
 
@@ -106,9 +105,8 @@ export class LeavePolicyService {
                 '/leave/policy'
             );
             return response.policies || response.leavePolicies || [];
-        } catch (error) {
-            console.error('Error fetching leave policies:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -148,9 +146,8 @@ export class LeaveBalanceService {
             const url = employeeId ? `/leave/balance?employeeId=${employeeId}` : '/leave/balance';
             const response = await APIClient.get<{ balances?: LeaveBalance[]; leaveBalances?: LeaveBalance[] }>(url);
             return response.balances || response.leaveBalances || [];
-        } catch (error) {
-            console.error('Error fetching leave balances:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -163,9 +160,8 @@ export class LeaveBalanceService {
                 `/leave/balance/${employeeId}/${leaveTypeId}`
             );
             return response.balance || response.leaveBalance || null;
-        } catch (error) {
-            console.error(`Error fetching balance for employee ${employeeId}, type ${leaveTypeId}:`, error);
-            return null;
+        } catch {
+                        return null;
         }
     }
 
@@ -209,9 +205,8 @@ export class LeaveRequestService {
             const url = params.toString() ? `/leave?${params}` : '/leave';
             const response = await APIClient.get<{ requests?: LeaveRequest[]; leaveRequests?: LeaveRequest[] }>(url);
             return response.requests || response.leaveRequests || [];
-        } catch (error) {
-            console.error('Error fetching leave requests:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -224,9 +219,8 @@ export class LeaveRequestService {
                 `/leave/${id}`
             );
             return response.request || response.leaveRequest || null;
-        } catch (error) {
-            console.error(`Error fetching leave request ${id}:`, error);
-            return null;
+        } catch {
+                        return null;
         }
     }
 
@@ -299,9 +293,8 @@ export class HolidayService {
             const url = year ? `/leave/holidays?year=${year}` : '/leave/holidays';
             const response = await APIClient.get<{ holidays?: Holiday[] }>(url);
             return response.holidays || [];
-        } catch (error) {
-            console.error('Error fetching holidays:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -348,9 +341,8 @@ export class EncashmentService {
             const url = employeeId ? `/leave/encashment?employeeId=${employeeId}` : '/leave/encashment';
             const response = await APIClient.get<{ encashments?: LeaveEncashment[]; leaveEncashments?: LeaveEncashment[] }>(url);
             return response.encashments || response.leaveEncashments || [];
-        } catch (error) {
-            console.error('Error fetching encashments:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -390,9 +382,8 @@ export class CompOffService {
             const url = employeeId ? `/leave/comp-off?employeeId=${employeeId}` : '/leave/comp-off';
             const response = await APIClient.get<{ compOffs?: CompOff[]; compOffRequests?: CompOff[] }>(url);
             return response.compOffs || response.compOffRequests || [];
-        } catch (error) {
-            console.error('Error fetching comp-offs:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -432,9 +423,8 @@ export class CarryForwardService {
             const url = employeeId ? `/leave/carry-forward?employeeId=${employeeId}` : '/leave/carry-forward';
             const response = await APIClient.get<{ carryForwards?: CarryForward[]; records?: CarryForward[] }>(url);
             return response.carryForwards || response.records || [];
-        } catch (error) {
-            console.error('Error fetching carry forwards:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -464,9 +454,8 @@ export class LeaveSettingsService {
                 '/leave/settings'
             );
             return response.settings || response.leaveSettings || null;
-        } catch (error) {
-            console.error('Error fetching leave settings:', error);
-            return null;
+        } catch {
+                        return null;
         }
     }
 
@@ -527,9 +516,8 @@ export class LeaveAnalyticsService {
             };
 
             return stats;
-        } catch (error) {
-            console.error('Error fetching leave statistics:', error);
-            // Return empty stats on error
+        } catch {
+                        // Return empty stats on error
             return {
                 totalEmployees: 0,
                 onLeaveToday: 0,

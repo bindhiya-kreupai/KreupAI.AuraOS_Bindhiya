@@ -10,7 +10,8 @@
  * - Multi-currency payroll support
  */
 
-import { SupportedCountryCode, COUNTRY_CURRENCIES } from './types';
+import type { SupportedCountryCode} from './types';
+import { COUNTRY_CURRENCIES } from './types';
 
 // ============================================================================
 // TYPES & INTERFACES

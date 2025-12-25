@@ -4,7 +4,7 @@
  * Automatically tracks all Prisma database queries for performance monitoring
  */
 
-import { Prisma } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import { apm } from './apm';
 import { logger } from '../logger';
 
@@ -153,7 +153,7 @@ export const prismaAPMMiddleware: Prisma.Middleware = async (params, next) => {
     }
 
     return result;
-  } catch (error) {
+  } catch {
     // End span with error
     const duration = Date.now() - startTime;
     span.endTime = Date.now();

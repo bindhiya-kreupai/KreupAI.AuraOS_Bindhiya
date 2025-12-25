@@ -29,9 +29,8 @@ export default function WorkflowTemplatesPage() {
             if (templateWorkflows.length > 0) {
                 setTemplates(templateWorkflows);
             }
-        } catch (error) {
-            console.error('Error fetching templates:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

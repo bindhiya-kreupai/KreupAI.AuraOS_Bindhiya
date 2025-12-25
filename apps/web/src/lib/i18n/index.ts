@@ -138,8 +138,7 @@ export class I18nService {
     }
 
     if (!translation) {
-      console.warn(`Translation missing for key: ${key}`);
-      return key;
+            return key;
     }
 
     return replaceVariables(translation, variables);

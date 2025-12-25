@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { logger } from '@/lib/logger';
 
@@ -46,7 +47,7 @@ export async function GET(
             success: true,
             data: plan
         });
-    } catch (error) {
+    } catch {
         logger.error('Error fetching development plan:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch development plan' },
@@ -152,7 +153,7 @@ export async function PUT(
             data: plan,
             message: 'Development plan updated successfully'
         });
-    } catch (error) {
+    } catch {
         logger.error('Error updating development plan:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to update development plan' },
@@ -196,7 +197,7 @@ export async function DELETE(
             success: true,
             message: 'Development plan deleted successfully'
         });
-    } catch (error) {
+    } catch {
         logger.error('Error deleting development plan:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to delete development plan' },

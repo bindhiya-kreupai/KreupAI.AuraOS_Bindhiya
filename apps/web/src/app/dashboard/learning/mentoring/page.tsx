@@ -19,9 +19,8 @@ export default function MentoringPage() {
                 setLoading(true);
                 const result = await MentoringService.getMentoringPrograms();
                 setData(result);
-            } catch (error) {
-                console.error('Error fetching mentoring programs:', error);
-                setData([]);
+            } catch {
+                                setData([]);
             } finally {
                 setLoading(false);
             }

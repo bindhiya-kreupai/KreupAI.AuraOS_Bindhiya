@@ -4,7 +4,7 @@
  */
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   Workflow,
   WorkflowExecution,
   ExecutionStep,
@@ -14,7 +14,8 @@ import {
   WorkflowMetrics,
   WorkflowSettings,
   ApprovalDecision,
-  TaskCompletion,
+  TaskCompletion} from './types';
+import {
   ExecutionStatus,
 } from './types';
 

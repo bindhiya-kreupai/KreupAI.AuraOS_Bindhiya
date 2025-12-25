@@ -3,7 +3,7 @@
  * Centralized version management and migration logic
  */
 
-import { ApiVersion } from '@/lib/middleware/api-version';
+import type { ApiVersion } from '@/lib/middleware/api-version';
 
 /**
  * Version metadata

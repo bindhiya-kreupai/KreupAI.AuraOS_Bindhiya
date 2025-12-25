@@ -1,17 +1,18 @@
 // AI Automation Module - Sample Data
 // Comprehensive mock data for testing and development
 
-import {
+import type {
   OrgHealthPrediction,
   CoachingSession,
-  GeneratedWorkflow,
   ResumeScreening,
   AttritionPrediction,
-  LeaveForecast,
   DetectedAnomaly,
-  ChatbotConversation,
   InterviewSchedule,
-  AIAutomationSettings,
+  AIAutomationSettings} from './types';
+import {
+  GeneratedWorkflow,
+  LeaveForecast,
+  ChatbotConversation
 } from './types';
 
 // ============================================================================

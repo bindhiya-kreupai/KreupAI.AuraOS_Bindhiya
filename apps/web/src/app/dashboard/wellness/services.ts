@@ -4,7 +4,7 @@
  */
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   HealthProgram,
   ProgramEnrollment,
   MentalHealthService,
@@ -34,45 +34,40 @@ export class HealthProgramService {
   static async getPrograms(): Promise<HealthProgram[]> {
     try {
       return await APIClient.get<HealthProgram[]>(this.endpoint);
-    } catch (error) {
-      console.error('Error fetching programs:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async getProgramById(id: string): Promise<HealthProgram | null> {
     try {
       return await APIClient.get<HealthProgram>(`${this.endpoint}/${id}`);
-    } catch (error) {
-      console.error('Error fetching program:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
   static async createProgram(data: HealthProgram): Promise<HealthProgram> {
     try {
       return await APIClient.post<HealthProgram>(this.endpoint, data);
-    } catch (error) {
-      console.error('Error creating program:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateProgram(id: string, updates: Partial<HealthProgram>): Promise<HealthProgram> {
     try {
       return await APIClient.put<HealthProgram>(`${this.endpoint}/${id}`, updates);
-    } catch (error) {
-      console.error('Error updating program:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async deleteProgram(id: string): Promise<void> {
     try {
       await APIClient.delete<void>(`${this.endpoint}/${id}`);
-    } catch (error) {
-      console.error('Error deleting program:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -86,9 +81,8 @@ export class HealthProgramService {
         employeeId,
         employeeName,
       });
-    } catch (error) {
-      console.error('Error enrolling employee:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -96,18 +90,16 @@ export class HealthProgramService {
     try {
       const params = programId ? { programId } : undefined;
       return await APIClient.get<ProgramEnrollment[]>(`${this.endpoint}/enrollments`, params);
-    } catch (error) {
-      console.error('Error fetching enrollments:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateEnrollment(id: string, updates: Partial<ProgramEnrollment>): Promise<ProgramEnrollment> {
     try {
       return await APIClient.put<ProgramEnrollment>(`${this.endpoint}/enrollments/${id}`, updates);
-    } catch (error) {
-      console.error('Error updating enrollment:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -122,36 +114,32 @@ export class MentalHealthServiceLayer {
   static async getServices(): Promise<MentalHealthService[]> {
     try {
       return await APIClient.get<MentalHealthService[]>(this.endpoint);
-    } catch (error) {
-      console.error('Error fetching mental health services:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async getServiceById(id: string): Promise<MentalHealthService | null> {
     try {
       return await APIClient.get<MentalHealthService>(`${this.endpoint}/${id}`);
-    } catch (error) {
-      console.error('Error fetching mental health service:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
   static async createService(data: MentalHealthService): Promise<MentalHealthService> {
     try {
       return await APIClient.post<MentalHealthService>(this.endpoint, data);
-    } catch (error) {
-      console.error('Error creating mental health service:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateService(id: string, updates: Partial<MentalHealthService>): Promise<MentalHealthService> {
     try {
       return await APIClient.put<MentalHealthService>(`${this.endpoint}/${id}`, updates);
-    } catch (error) {
-      console.error('Error updating mental health service:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -159,36 +147,32 @@ export class MentalHealthServiceLayer {
     try {
       const params = serviceId ? { serviceId } : undefined;
       return await APIClient.get<MentalHealthSession[]>(`${this.endpoint}/sessions`, params);
-    } catch (error) {
-      console.error('Error fetching sessions:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async createSession(data: MentalHealthSession): Promise<MentalHealthSession> {
     try {
       return await APIClient.post<MentalHealthSession>(`${this.endpoint}/sessions`, data);
-    } catch (error) {
-      console.error('Error creating session:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateSession(id: string, updates: Partial<MentalHealthSession>): Promise<MentalHealthSession> {
     try {
       return await APIClient.put<MentalHealthSession>(`${this.endpoint}/sessions/${id}`, updates);
-    } catch (error) {
-      console.error('Error updating session:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async confirmAttendance(sessionId: string): Promise<void> {
     try {
       await APIClient.post<void>(`${this.endpoint}/sessions/${sessionId}/confirm-attendance`);
-    } catch (error) {
-      console.error('Error confirming attendance:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -203,36 +187,32 @@ export class HRAService {
   static async getAssessments(): Promise<HealthRiskAssessment[]> {
     try {
       return await APIClient.get<HealthRiskAssessment[]>(this.endpoint);
-    } catch (error) {
-      console.error('Error fetching assessments:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async getAssessmentById(id: string): Promise<HealthRiskAssessment | null> {
     try {
       return await APIClient.get<HealthRiskAssessment>(`${this.endpoint}/${id}`);
-    } catch (error) {
-      console.error('Error fetching assessment:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
   static async createAssessment(data: HealthRiskAssessment): Promise<HealthRiskAssessment> {
     try {
       return await APIClient.post<HealthRiskAssessment>(this.endpoint, data);
-    } catch (error) {
-      console.error('Error creating assessment:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateAssessment(id: string, updates: Partial<HealthRiskAssessment>): Promise<HealthRiskAssessment> {
     try {
       return await APIClient.put<HealthRiskAssessment>(`${this.endpoint}/${id}`, updates);
-    } catch (error) {
-      console.error('Error updating assessment:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -240,36 +220,32 @@ export class HRAService {
     try {
       const params = hraId ? { hraId } : undefined;
       return await APIClient.get<HRAResponse[]>(`${this.endpoint}/responses`, params);
-    } catch (error) {
-      console.error('Error fetching responses:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async submitResponse(data: HRAResponse): Promise<HRAResponse> {
     try {
       return await APIClient.post<HRAResponse>(`${this.endpoint}/responses`, data);
-    } catch (error) {
-      console.error('Error submitting response:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateResponse(id: string, updates: Partial<HRAResponse>): Promise<HRAResponse> {
     try {
       return await APIClient.put<HRAResponse>(`${this.endpoint}/responses/${id}`, updates);
-    } catch (error) {
-      console.error('Error updating response:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async calculateRiskScore(responses: Record<string, any>, hra: HealthRiskAssessment): Promise<number> {
     try {
       return await APIClient.post<number>(`${this.endpoint}/calculate-risk`, { responses, hra });
-    } catch (error) {
-      console.error('Error calculating risk score:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -284,36 +260,32 @@ export class ChallengeService {
   static async getChallenges(): Promise<WellnessChallenge[]> {
     try {
       return await APIClient.get<WellnessChallenge[]>(this.endpoint);
-    } catch (error) {
-      console.error('Error fetching challenges:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async getChallengeById(id: string): Promise<WellnessChallenge | null> {
     try {
       return await APIClient.get<WellnessChallenge>(`${this.endpoint}/${id}`);
-    } catch (error) {
-      console.error('Error fetching challenge:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
   static async createChallenge(data: WellnessChallenge): Promise<WellnessChallenge> {
     try {
       return await APIClient.post<WellnessChallenge>(this.endpoint, data);
-    } catch (error) {
-      console.error('Error creating challenge:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateChallenge(id: string, updates: Partial<WellnessChallenge>): Promise<WellnessChallenge> {
     try {
       return await APIClient.put<WellnessChallenge>(`${this.endpoint}/${id}`, updates);
-    } catch (error) {
-      console.error('Error updating challenge:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -329,9 +301,8 @@ export class ChallengeService {
         employeeName,
         teamId,
       });
-    } catch (error) {
-      console.error('Error registering participant:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -339,27 +310,24 @@ export class ChallengeService {
     try {
       const params = challengeId ? { challengeId } : undefined;
       return await APIClient.get<ChallengeParticipant[]>(`${this.endpoint}/participants`, params);
-    } catch (error) {
-      console.error('Error fetching participants:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateParticipant(id: string, updates: Partial<ChallengeParticipant>): Promise<ChallengeParticipant> {
     try {
       return await APIClient.put<ChallengeParticipant>(`${this.endpoint}/participants/${id}`, updates);
-    } catch (error) {
-      console.error('Error updating participant:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async createTeam(challengeId: string, data: ChallengeTeam): Promise<ChallengeTeam> {
     try {
       return await APIClient.post<ChallengeTeam>(`${this.endpoint}/${challengeId}/teams`, data);
-    } catch (error) {
-      console.error('Error creating team:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -367,18 +335,16 @@ export class ChallengeService {
     try {
       const params = challengeId ? { challengeId } : undefined;
       return await APIClient.get<ChallengeTeam[]>(`${this.endpoint}/teams`, params);
-    } catch (error) {
-      console.error('Error fetching teams:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateTeam(id: string, updates: Partial<ChallengeTeam>): Promise<ChallengeTeam> {
     try {
       return await APIClient.put<ChallengeTeam>(`${this.endpoint}/teams/${id}`, updates);
-    } catch (error) {
-      console.error('Error updating team:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -389,9 +355,8 @@ export class ChallengeService {
         date,
         notes,
       });
-    } catch (error) {
-      console.error('Error logging progress:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -406,9 +371,8 @@ export class WellnessPointsService {
   static async getPoints(employeeId: string): Promise<WellnessPoints | null> {
     try {
       return await APIClient.get<WellnessPoints>(`${this.endpoint}/${employeeId}`);
-    } catch (error) {
-      console.error('Error fetching points:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -418,9 +382,8 @@ export class WellnessPointsService {
         employeeId,
         employeeName,
       });
-    } catch (error) {
-      console.error('Error initializing points:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -440,9 +403,8 @@ export class WellnessPointsService {
         description,
         expiryDate,
       });
-    } catch (error) {
-      console.error('Error awarding points:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -450,9 +412,8 @@ export class WellnessPointsService {
     try {
       const params = employeeId ? { employeeId } : undefined;
       return await APIClient.get<PointsTransaction[]>(`${this.endpoint}/transactions`, params);
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -463,9 +424,8 @@ export class WellnessPointsService {
         rewardId,
         rewardName,
       });
-    } catch (error) {
-      console.error('Error redeeming points:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -480,36 +440,32 @@ export class RewardsService {
   static async getCatalog(): Promise<RewardsCatalog[]> {
     try {
       return await APIClient.get<RewardsCatalog[]>(this.endpoint);
-    } catch (error) {
-      console.error('Error fetching rewards catalog:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async getRewardById(id: string): Promise<RewardsCatalog | null> {
     try {
       return await APIClient.get<RewardsCatalog>(`${this.endpoint}/${id}`);
-    } catch (error) {
-      console.error('Error fetching reward:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
   static async createReward(data: RewardsCatalog): Promise<RewardsCatalog> {
     try {
       return await APIClient.post<RewardsCatalog>(this.endpoint, data);
-    } catch (error) {
-      console.error('Error creating reward:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateReward(id: string, updates: Partial<RewardsCatalog>): Promise<RewardsCatalog> {
     try {
       return await APIClient.put<RewardsCatalog>(`${this.endpoint}/${id}`, updates);
-    } catch (error) {
-      console.error('Error updating reward:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -523,9 +479,8 @@ export class RewardsService {
         employeeId,
         employeeName,
       });
-    } catch (error) {
-      console.error('Error redeeming reward:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -533,18 +488,16 @@ export class RewardsService {
     try {
       const params = employeeId ? { employeeId } : undefined;
       return await APIClient.get<RewardsRedemption[]>(`${this.endpoint}/redemptions`, params);
-    } catch (error) {
-      console.error('Error fetching redemptions:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateRedemption(id: string, updates: Partial<RewardsRedemption>): Promise<RewardsRedemption> {
     try {
       return await APIClient.put<RewardsRedemption>(`${this.endpoint}/redemptions/${id}`, updates);
-    } catch (error) {
-      console.error('Error updating redemption:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -559,81 +512,72 @@ export class GymMembershipService {
   static async getMemberships(): Promise<GymMembership[]> {
     try {
       return await APIClient.get<GymMembership[]>(this.endpoint);
-    } catch (error) {
-      console.error('Error fetching gym memberships:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async getMembershipById(id: string): Promise<GymMembership | null> {
     try {
       return await APIClient.get<GymMembership>(`${this.endpoint}/${id}`);
-    } catch (error) {
-      console.error('Error fetching gym membership:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
   static async createMembership(data: GymMembership): Promise<GymMembership> {
     try {
       return await APIClient.post<GymMembership>(this.endpoint, data);
-    } catch (error) {
-      console.error('Error creating gym membership:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateMembership(id: string, updates: Partial<GymMembership>): Promise<GymMembership> {
     try {
       return await APIClient.put<GymMembership>(`${this.endpoint}/${id}`, updates);
-    } catch (error) {
-      console.error('Error updating gym membership:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async getProviders(): Promise<GymProvider[]> {
     try {
       return await APIClient.get<GymProvider[]>(`${this.endpoint}/providers`);
-    } catch (error) {
-      console.error('Error fetching gym providers:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async getProviderById(id: string): Promise<GymProvider | null> {
     try {
       return await APIClient.get<GymProvider>(`${this.endpoint}/providers/${id}`);
-    } catch (error) {
-      console.error('Error fetching gym provider:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
   static async createProvider(data: GymProvider): Promise<GymProvider> {
     try {
       return await APIClient.post<GymProvider>(`${this.endpoint}/providers`, data);
-    } catch (error) {
-      console.error('Error creating gym provider:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateProvider(id: string, updates: Partial<GymProvider>): Promise<GymProvider> {
     try {
       return await APIClient.put<GymProvider>(`${this.endpoint}/providers/${id}`, updates);
-    } catch (error) {
-      console.error('Error updating gym provider:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async logVisit(membershipId: string): Promise<void> {
     try {
       await APIClient.post<void>(`${this.endpoint}/${membershipId}/log-visit`);
-    } catch (error) {
-      console.error('Error logging visit:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -648,9 +592,8 @@ export class WellnessAnalyticsService {
   static async getMetrics(): Promise<WellnessMetrics> {
     try {
       return await APIClient.get<WellnessMetrics>(this.endpoint);
-    } catch (error) {
-      console.error('Error fetching analytics metrics:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -665,18 +608,16 @@ export class WellnessSettingsService {
   static async getSettings(): Promise<WellnessSettings> {
     try {
       return await APIClient.get<WellnessSettings>(this.endpoint);
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateSettings(updates: Partial<WellnessSettings>): Promise<WellnessSettings> {
     try {
       return await APIClient.put<WellnessSettings>(this.endpoint, updates);
-    } catch (error) {
-      console.error('Error updating settings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }

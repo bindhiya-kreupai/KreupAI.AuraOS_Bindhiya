@@ -1,4 +1,4 @@
-import {
+import type {
   FacultyMember, TenureApplication, ResearchGrant, AdjunctFaculty, AdjunctContract,
   AdjunctPool, EducationSettings
 } from './types';

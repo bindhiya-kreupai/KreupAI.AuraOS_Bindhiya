@@ -23,9 +23,8 @@ export default function TalentPoolPage() {
         try {
             const data = await CandidateApplicationService.getApplications();
             setCandidates(data);
-        } catch (error) {
-            console.error('Error fetching talent pool:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

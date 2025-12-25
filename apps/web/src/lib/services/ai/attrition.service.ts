@@ -5,14 +5,15 @@
  * Uses machine learning to predict employee attrition risk
  */
 
-import {
+import type {
   AttritionRisk,
   AttritionFactor,
   AttritionAnalytics,
   RiskLevel,
   PredictionConfidence,
   Recommendation,
-  RiskTrend,
+  RiskTrend} from './types';
+import {
   ContributingFactor,
 } from './types';
 

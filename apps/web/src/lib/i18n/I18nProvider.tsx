@@ -5,8 +5,10 @@
  * Provides translation and localization throughout the app
  */
 
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import { I18nService, Locale, LocaleConfig, LOCALE_CONFIGS, Direction } from './index';
+import type { ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import type { Locale, LocaleConfig, Direction } from './index';
+import { I18nService, LOCALE_CONFIGS } from './index';
 
 interface I18nContextValue {
   locale: Locale;

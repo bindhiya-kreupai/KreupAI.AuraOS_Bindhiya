@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
@@ -125,7 +126,7 @@ export const GET = withEnhancedAuth(
         data: reportType ? report : reports,
         meta: { startDate, endDate, format },
       });
-    } catch (error) {
+    } catch {
       logger.error('Error generating leave report:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to generate report' },

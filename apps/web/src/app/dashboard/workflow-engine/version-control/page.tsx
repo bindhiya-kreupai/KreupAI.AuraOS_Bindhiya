@@ -30,9 +30,8 @@ export default function VersionControlPage() {
                     setHistory(versions);
                 }
             }
-        } catch (error) {
-            console.error('Error fetching version history:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

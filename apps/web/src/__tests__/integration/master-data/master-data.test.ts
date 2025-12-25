@@ -8,7 +8,7 @@ import { GET, POST } from '@/app/api/master-data/[entity]/route';
 import { setupTestDb, teardownTestDb, resetDatabase } from '@/__tests__/helpers';
 import { mockUsers, mockCountries } from '@/__tests__/fixtures';
 import { generateAccessToken } from '@/lib/auth/jwt';
-import { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 
 describe('Master Data API Integration Tests', () => {
   let prisma: PrismaClient;

@@ -25,9 +25,8 @@ export default function ReportBuilderPage() {
         try {
             const data = await DashboardService.getAllDashboards();
             setDashboards(data);
-        } catch (error) {
-            console.error('Error fetching dashboards:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -39,9 +38,8 @@ export default function ReportBuilderPage() {
                 widgets: [],
             });
             await fetchDashboards();
-        } catch (error) {
-            console.error('Error creating dashboard:', error);
-        }
+        } catch {
+                    }
     };
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">

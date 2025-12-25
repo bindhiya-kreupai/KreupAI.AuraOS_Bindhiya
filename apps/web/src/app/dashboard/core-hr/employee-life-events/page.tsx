@@ -24,9 +24,8 @@ export default function LifeEventsPage() {
         try {
             const data = await LifeEventService.getAllLifeEvents();
             setEmployeeLifeEvents(data);
-        } catch (error) {
-            console.error('Error fetching employee life events:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

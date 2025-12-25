@@ -25,9 +25,8 @@ export default function EmailNotificationsPage() {
             setLoading(true);
             const data = await WorkflowSettingsService.getSettings();
             setSettings(data);
-        } catch (error) {
-            console.error('Error fetching notification settings:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

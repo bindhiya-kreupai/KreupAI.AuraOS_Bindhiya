@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
@@ -72,7 +73,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: mockCarryForward,
       });
-    } catch (error) {
+    } catch {
       logger.error('Error fetching carry forward data:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch carry forward data' },
@@ -117,7 +118,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: result });
-    } catch (error) {
+    } catch {
       logger.error('Error processing carry forward:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to process carry forward' },

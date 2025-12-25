@@ -69,7 +69,7 @@ export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }
       if (storedFavorites) {
         setFavorites(JSON.parse(storedFavorites));
       }
-    } catch (error) {
+    } catch {
       logger.error('Failed to load activity from localStorage:', error);
     }
     setIsHydrated(true);
@@ -80,7 +80,7 @@ export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (isHydrated) {
       try {
         localStorage.setItem(STORAGE_KEYS.RECENT_ACTIVITY, JSON.stringify(recentActivity));
-      } catch (error) {
+      } catch {
         logger.error('Failed to save recent activity:', error);
       }
     }
@@ -91,7 +91,7 @@ export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (isHydrated) {
       try {
         localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(favorites));
-      } catch (error) {
+      } catch {
         logger.error('Failed to save favorites:', error);
       }
     }

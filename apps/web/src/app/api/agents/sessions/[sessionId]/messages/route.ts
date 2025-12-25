@@ -3,7 +3,8 @@
  * Phase 4 Sprint 31-32: Conversation Messages
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { AgentFrameworkService } from '@/lib/services/agentic-ai';
 
 /**
@@ -53,9 +54,8 @@ export async function POST(
         timestamp: response.timestamp,
       },
     });
-  } catch (error) {
-    console.error('Error processing message:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { success: false, error: 'Failed to process message' },
       { status: 500 }
     );
@@ -89,9 +89,8 @@ export async function GET(
         totalMessages: session.messages.length,
       },
     });
-  } catch (error) {
-    console.error('Error fetching messages:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { success: false, error: 'Failed to fetch messages' },
       { status: 500 }
     );

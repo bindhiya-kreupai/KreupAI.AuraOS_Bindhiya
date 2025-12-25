@@ -1,16 +1,17 @@
 // Agriculture Module - Sample Data
 // Comprehensive mock data for testing and development
 
-import {
+import type {
   SeasonalWorker,
   SeasonalLaborPool,
   HousingFacility,
-  HousingAssignment,
   HousingInspection,
   CropCycle,
   HarvestSchedule,
   AgricultureAnalytics,
-  AgricultureSettings,
+  AgricultureSettings} from './types';
+import {
+  HousingAssignment
 } from './types';
 
 // ============================================================================

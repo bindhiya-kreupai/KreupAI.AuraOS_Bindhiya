@@ -45,9 +45,10 @@
  *         $ref: '#/components/responses/ValidationError'
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { WPSService } from '@/lib/services/compliance';
-import { WPSConfiguration, WPSRecord } from '@/lib/services/compliance/types';
+import type { WPSConfiguration, WPSRecord } from '@/lib/services/compliance/types';
 
 /**
  * POST /api/compliance/wps
@@ -106,9 +107,8 @@ export async function POST(request: NextRequest) {
         validation,
       },
     });
-  } catch (error) {
-    console.error('WPS generation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to generate WPS file', errorAr: 'فشل في إنشاء ملف WPS' },
       { status: 500 }
     );
@@ -137,9 +137,8 @@ export async function GET() {
         },
       },
     });
-  } catch (error) {
-    console.error('WPS reference data error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch WPS reference data', errorAr: 'فشل في جلب بيانات WPS المرجعية' },
       { status: 500 }
     );

@@ -4,7 +4,7 @@
  */
 
 import { APIClient } from '@/lib/api-client';
-import { PulseSurvey, SurveyResponse, Event, RSVP, SocialPost, Idea, CSRActivity, Newsletter, EngagementMetrics, EngagementSettings } from './types';
+import type { PulseSurvey, SurveyResponse, Event, RSVP, SocialPost, Idea, CSRActivity, Newsletter, EngagementMetrics, EngagementSettings } from './types';
 
 export class SurveyService {
   static async getSurveys(): Promise<PulseSurvey[]> {

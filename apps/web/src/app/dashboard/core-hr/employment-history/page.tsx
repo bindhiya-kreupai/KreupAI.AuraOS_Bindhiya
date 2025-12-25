@@ -22,9 +22,8 @@ export default function EmploymentHistoryPage() {
         try {
             const data = await EmploymentHistoryService.getAllHistory();
             setHistory(data);
-        } catch (error) {
-            console.error('Error fetching employment history:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

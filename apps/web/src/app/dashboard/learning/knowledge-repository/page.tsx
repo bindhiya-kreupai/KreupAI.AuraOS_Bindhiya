@@ -19,9 +19,8 @@ export default function KnowledgeRepositoryPage() {
                 setLoading(true);
                 const result = await KnowledgeBaseService.getKnowledgeArticles();
                 setData(result);
-            } catch (error) {
-                console.error('Error fetching knowledge articles:', error);
-                setData([]);
+            } catch {
+                                setData([]);
             } finally {
                 setLoading(false);
             }

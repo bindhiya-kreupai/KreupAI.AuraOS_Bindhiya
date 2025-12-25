@@ -1,4 +1,4 @@
-import { ContentRights, BandwidthMetrics, AudienceMetrics, NetworkOperations, MediaSettings } from './types';
+import type { ContentRights, BandwidthMetrics, AudienceMetrics, NetworkOperations, MediaSettings } from './types';
 
 export const sampleContentRights: ContentRights[] = [{ rightsId: 'rights-001', contentId: 'content-001', contentTitle: 'Premium Sports Event 2024', contentType: 'video', rightsHolder: 'Global Sports Media Inc.', licenseType: 'Exclusive Broadcast Rights', territory: ['United States', 'Canada'], exclusivity: true, startDate: '2024-01-01', endDate: '2026-12-31', usageRights: { broadcast: true, streaming: true, digital: false, physical: false, derivative: false }, royalties: { royaltyType: 'hybrid', fixedAmount: 1000000, percentageRate: 15, minimumGuarantee: 500000, currency: 'USD', paymentSchedule: 'Quarterly' }, restrictions: ['No sublicensing to competitors'], sublicensing: false, status: 'active', createdAt: '2024-01-01T00:00:00Z' }];
 

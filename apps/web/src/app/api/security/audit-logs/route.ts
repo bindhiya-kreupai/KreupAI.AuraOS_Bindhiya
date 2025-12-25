@@ -37,9 +37,8 @@ export const GET = withEnhancedAuth(async (request, context) => {
     ];
 
     return NextResponse.json({ logs }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching audit logs:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
 
@@ -64,8 +63,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ log }, { status: 201 });
-  } catch (error) {
-    console.error('Error creating audit log:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

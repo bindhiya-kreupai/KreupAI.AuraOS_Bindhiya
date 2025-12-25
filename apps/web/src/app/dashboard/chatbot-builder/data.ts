@@ -1,6 +1,6 @@
 // Chatbot Builder Module - Sample Data
 
-import {
+import type {
   DialogueFlow, FlowTest, Entity, Intent, TrainingDataset, TrainingExample,
   ModelTraining, Channel, MessageTemplate, ConversationAnalytics,
   HandoffRule, HandoffQueue, Agent, Language, LocalizationSettings,

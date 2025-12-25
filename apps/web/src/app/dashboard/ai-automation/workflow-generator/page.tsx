@@ -1,6 +1,10 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from 'react';
+import type {
+    Connection,
+    Edge,
+    Node} from 'reactflow';
 import ReactFlow, {
     MiniMap,
     Controls,
@@ -8,9 +12,6 @@ import ReactFlow, {
     useNodesState,
     useEdgesState,
     addEdge,
-    Connection,
-    Edge,
-    Node,
     MarkerType
 } from 'reactflow';
 import 'reactflow/dist/style.css';
@@ -102,9 +103,8 @@ export default function WorkflowGeneratorPage() {
                 if (workflow.nodes) setNodes(workflow.nodes);
                 if (workflow.edges) setEdges(workflow.edges);
             }
-        } catch (error) {
-            console.error('Error fetching workflows:', error);
-        }
+        } catch {
+                    }
     };
 
     const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
@@ -118,9 +118,8 @@ export default function WorkflowGeneratorPage() {
                 if (result.data.nodes) setNodes(result.data.nodes);
                 if (result.data.edges) setEdges(result.data.edges);
             }
-        } catch (error) {
-            console.error('Error generating workflow:', error);
-        } finally {
+        } catch {
+                    } finally {
             setIsGenerating(false);
         }
     };
@@ -130,9 +129,8 @@ export default function WorkflowGeneratorPage() {
         try {
             await workflowGenerator.saveWorkflow({ nodes, edges, prompt });
             await fetchWorkflows();
-        } catch (error) {
-            console.error('Error saving workflow:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

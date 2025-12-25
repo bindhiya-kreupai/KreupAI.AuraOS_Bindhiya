@@ -47,9 +47,8 @@ export default function RoleBasedAccessPage() {
                 setRoles(mockRoles);
                 setSelectedRole(mockRoles[0]);
             }
-        } catch (error) {
-            console.error('Error fetching roles:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

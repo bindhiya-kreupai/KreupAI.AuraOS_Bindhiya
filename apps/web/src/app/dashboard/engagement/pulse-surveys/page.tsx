@@ -22,9 +22,8 @@ export default function PulseSurveysPage() {
             setLoading(true);
             const surveys = await SurveyService.getSurveys();
             setData(surveys);
-        } catch (error) {
-            console.error('Error fetching surveys:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
+import type {
   TeamMember,
   TeamMetrics,
   TeamGoal,
@@ -150,7 +150,7 @@ export function useManagerSelfService(managerId: string = 'manager-001'): UseMan
       setDelegationSettings(delSettingsData);
       setAnalytics(analyticsData);
       setSettings(settingsData);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to load manager data');
     } finally {
       setLoading(false);

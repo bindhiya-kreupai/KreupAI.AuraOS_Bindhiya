@@ -3,7 +3,7 @@
  * Comprehensive sample data for immediate testing and development
  */
 
-import {
+import type {
   PointsAccount,
   PointsTransaction,
   PointsRule,

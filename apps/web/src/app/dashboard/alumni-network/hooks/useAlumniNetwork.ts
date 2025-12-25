@@ -167,7 +167,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       const profiles = await AlumniDirectoryService.getAllAlumniProfiles();
       setAlumniProfiles(profiles);
-    } catch (error) {
+    } catch {
       setAlumniError(error instanceof Error ? error.message : 'Failed to fetch alumni profiles');
     } finally {
       setAlumniLoading(false);
@@ -180,7 +180,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       const profile = await AlumniDirectoryService.getAlumniProfileById(alumniId);
       setSelectedAlumniProfile(profile);
-    } catch (error) {
+    } catch {
       setAlumniError(error instanceof Error ? error.message : 'Failed to fetch alumni profile');
     } finally {
       setAlumniLoading(false);
@@ -194,7 +194,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
       const newProfile = await AlumniDirectoryService.createAlumniProfile(profile);
       setAlumniProfiles((prev) => [...prev, newProfile]);
       return newProfile;
-    } catch (error) {
+    } catch {
       setAlumniError(error instanceof Error ? error.message : 'Failed to create alumni profile');
       throw error;
     } finally {
@@ -213,7 +213,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
           setSelectedAlumniProfile(updatedProfile);
         }
         return updatedProfile;
-      } catch (error) {
+      } catch {
         setAlumniError(error instanceof Error ? error.message : 'Failed to update alumni profile');
         throw error;
       } finally {
@@ -233,7 +233,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
         if (selectedAlumniProfile?.alumniId === alumniId) {
           setSelectedAlumniProfile(null);
         }
-      } catch (error) {
+      } catch {
         setAlumniError(error instanceof Error ? error.message : 'Failed to delete alumni profile');
         throw error;
       } finally {
@@ -254,7 +254,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
           setSelectedAlumniProfile(updatedProfile);
         }
         return updatedProfile;
-      } catch (error) {
+      } catch {
         setAlumniError(error instanceof Error ? error.message : 'Failed to update alumni status');
         throw error;
       } finally {
@@ -270,7 +270,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       const directory = await AlumniDirectoryService.getAlumniDirectory();
       setAlumniDirectory(directory);
-    } catch (error) {
+    } catch {
       setAlumniError(error instanceof Error ? error.message : 'Failed to fetch alumni directory');
     } finally {
       setAlumniLoading(false);
@@ -283,7 +283,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       const searchResults = await AlumniDirectoryService.searchAlumni(query, filters, page);
       setAlumniSearch(searchResults);
-    } catch (error) {
+    } catch {
       setAlumniError(error instanceof Error ? error.message : 'Failed to search alumni');
     } finally {
       setAlumniLoading(false);
@@ -297,7 +297,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       const connections = await AlumniDirectoryService.getConnectionsByAlumniId(currentAlumniId);
       setAlumniConnections(connections);
-    } catch (error) {
+    } catch {
       setAlumniError(error instanceof Error ? error.message : 'Failed to fetch alumni connections');
     } finally {
       setAlumniLoading(false);
@@ -313,7 +313,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
         const newConnection = await AlumniDirectoryService.createConnection(currentAlumniId, toAlumniId, message);
         setAlumniConnections((prev) => [...prev, newConnection]);
         return newConnection;
-      } catch (error) {
+      } catch {
         setAlumniError(error instanceof Error ? error.message : 'Failed to create connection');
         throw error;
       } finally {
@@ -332,7 +332,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
         prev.map((c) => (c.connectionId === connectionId ? updatedConnection : c))
       );
       return updatedConnection;
-    } catch (error) {
+    } catch {
       setAlumniError(error instanceof Error ? error.message : 'Failed to update connection status');
       throw error;
     } finally {
@@ -347,7 +347,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       const eventsData = await EventsService.getAllEvents();
       setEvents(eventsData);
-    } catch (error) {
+    } catch {
       setEventsError(error instanceof Error ? error.message : 'Failed to fetch events');
     } finally {
       setEventsLoading(false);
@@ -360,7 +360,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       const event = await EventsService.getEventById(eventId);
       setSelectedEvent(event);
-    } catch (error) {
+    } catch {
       setEventsError(error instanceof Error ? error.message : 'Failed to fetch event');
     } finally {
       setEventsLoading(false);
@@ -374,7 +374,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
       const newEvent = await EventsService.createEvent(event);
       setEvents((prev) => [...prev, newEvent]);
       return newEvent;
-    } catch (error) {
+    } catch {
       setEventsError(error instanceof Error ? error.message : 'Failed to create event');
       throw error;
     } finally {
@@ -393,7 +393,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
           setSelectedEvent(updatedEvent);
         }
         return updatedEvent;
-      } catch (error) {
+      } catch {
         setEventsError(error instanceof Error ? error.message : 'Failed to update event');
         throw error;
       } finally {
@@ -413,7 +413,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
         if (selectedEvent?.eventId === eventId) {
           setSelectedEvent(null);
         }
-      } catch (error) {
+      } catch {
         setEventsError(error instanceof Error ? error.message : 'Failed to delete event');
         throw error;
       } finally {
@@ -434,7 +434,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
           setSelectedEvent(updatedEvent);
         }
         return updatedEvent;
-      } catch (error) {
+      } catch {
         setEventsError(error instanceof Error ? error.message : 'Failed to update event status');
         throw error;
       } finally {
@@ -456,7 +456,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
           setSelectedEvent(updatedEvent);
         }
         return updatedEvent;
-      } catch (error) {
+      } catch {
         setEventsError(error instanceof Error ? error.message : 'Failed to register for event');
         throw error;
       } finally {
@@ -477,7 +477,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
           setSelectedEvent(updatedEvent);
         }
         return updatedEvent;
-      } catch (error) {
+      } catch {
         setEventsError(error instanceof Error ? error.message : 'Failed to cancel registration');
         throw error;
       } finally {
@@ -498,7 +498,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
           setSelectedEvent(updatedEvent);
         }
         return updatedEvent;
-      } catch (error) {
+      } catch {
         setEventsError(error instanceof Error ? error.message : 'Failed to check in attendee');
         throw error;
       } finally {
@@ -520,7 +520,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
           setSelectedEvent(updatedEvent);
         }
         return updatedEvent;
-      } catch (error) {
+      } catch {
         setEventsError(error instanceof Error ? error.message : 'Failed to submit event feedback');
         throw error;
       } finally {
@@ -536,7 +536,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       const reunionsData = await EventsService.getAllReunions();
       setReunions(reunionsData);
-    } catch (error) {
+    } catch {
       setEventsError(error instanceof Error ? error.message : 'Failed to fetch reunions');
     } finally {
       setEventsLoading(false);
@@ -550,7 +550,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
       const newReunion = await EventsService.createReunion(reunion);
       setReunions((prev) => [...prev, newReunion]);
       return newReunion;
-    } catch (error) {
+    } catch {
       setEventsError(error instanceof Error ? error.message : 'Failed to create reunion');
       throw error;
     } finally {
@@ -565,7 +565,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       const jobsData = await JobsService.getAllJobs();
       setJobs(jobsData);
-    } catch (error) {
+    } catch {
       setJobsError(error instanceof Error ? error.message : 'Failed to fetch jobs');
     } finally {
       setJobsLoading(false);
@@ -578,7 +578,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       const job = await JobsService.getJobById(jobId);
       setSelectedJob(job);
-    } catch (error) {
+    } catch {
       setJobsError(error instanceof Error ? error.message : 'Failed to fetch job');
     } finally {
       setJobsLoading(false);
@@ -592,7 +592,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
       const newJob = await JobsService.createJob(job);
       setJobs((prev) => [...prev, newJob]);
       return newJob;
-    } catch (error) {
+    } catch {
       setJobsError(error instanceof Error ? error.message : 'Failed to create job');
       throw error;
     } finally {
@@ -611,7 +611,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
           setSelectedJob(updatedJob);
         }
         return updatedJob;
-      } catch (error) {
+      } catch {
         setJobsError(error instanceof Error ? error.message : 'Failed to update job');
         throw error;
       } finally {
@@ -631,7 +631,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
         if (selectedJob?.jobId === jobId) {
           setSelectedJob(null);
         }
-      } catch (error) {
+      } catch {
         setJobsError(error instanceof Error ? error.message : 'Failed to delete job');
         throw error;
       } finally {
@@ -653,7 +653,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
           setSelectedJob(updatedJob);
         }
         return updatedJob;
-      } catch (error) {
+      } catch {
         setJobsError(error instanceof Error ? error.message : 'Failed to apply for job');
         throw error;
       } finally {
@@ -674,7 +674,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
           setSelectedJob(updatedJob);
         }
         return updatedJob;
-      } catch (error) {
+      } catch {
         setJobsError(error instanceof Error ? error.message : 'Failed to update application status');
         throw error;
       } finally {
@@ -693,7 +693,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
         const newAlert = await JobsService.createJobAlert(currentAlumniId, alert);
         setJobAlerts((prev) => [...prev, newAlert]);
         return newAlert;
-      } catch (error) {
+      } catch {
         setJobsError(error instanceof Error ? error.message : 'Failed to create job alert');
         throw error;
       } finally {
@@ -710,7 +710,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       const alerts = await JobsService.getJobAlertsByAlumniId(currentAlumniId);
       setJobAlerts(alerts);
-    } catch (error) {
+    } catch {
       setJobsError(error instanceof Error ? error.message : 'Failed to fetch job alerts');
     } finally {
       setJobsLoading(false);
@@ -726,7 +726,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
         const saved = await JobsService.saveJob(jobId, currentAlumniId, notes);
         setSavedJobs((prev) => [...prev, saved]);
         return saved;
-      } catch (error) {
+      } catch {
         setJobsError(error instanceof Error ? error.message : 'Failed to save job');
         throw error;
       } finally {
@@ -743,7 +743,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       const saved = await JobsService.getSavedJobsByAlumniId(currentAlumniId);
       setSavedJobs(saved);
-    } catch (error) {
+    } catch {
       setJobsError(error instanceof Error ? error.message : 'Failed to fetch saved jobs');
     } finally {
       setJobsLoading(false);
@@ -756,7 +756,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       await JobsService.unsaveJob(savedId);
       setSavedJobs((prev) => prev.filter((s) => s.savedId !== savedId));
-    } catch (error) {
+    } catch {
       setJobsError(error instanceof Error ? error.message : 'Failed to unsave job');
       throw error;
     } finally {
@@ -770,7 +770,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       const analyticsData = await AlumniAnalyticsService.getAnalytics();
       setAnalytics(analyticsData);
-    } catch (error) {
+    } catch {
       logger.error('Failed to fetch analytics:', error);
     } finally {
       setAnalyticsLoading(false);
@@ -782,7 +782,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       const engagementData = await AlumniAnalyticsService.getAlumniEngagement(alumniId);
       setEngagement(engagementData);
-    } catch (error) {
+    } catch {
       logger.error('Failed to fetch engagement:', error);
     } finally {
       setAnalyticsLoading(false);
@@ -795,7 +795,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
     try {
       const settingsData = await AlumniSettingsService.getSettings();
       setSettings(settingsData);
-    } catch (error) {
+    } catch {
       logger.error('Failed to fetch settings:', error);
     } finally {
       setSettingsLoading(false);
@@ -808,7 +808,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
       const updatedSettings = await AlumniSettingsService.updateSettings(updates);
       setSettings(updatedSettings);
       return updatedSettings;
-    } catch (error) {
+    } catch {
       logger.error('Failed to update settings:', error);
       throw error;
     } finally {

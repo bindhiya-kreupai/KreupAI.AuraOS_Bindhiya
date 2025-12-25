@@ -19,9 +19,8 @@ export default function ELearningPlatformPage() {
                 setLoading(true);
                 const result = await CourseService.getCourses();
                 setData(result);
-            } catch (error) {
-                console.error('Error fetching courses:', error);
-                setData([]);
+            } catch {
+                                setData([]);
             } finally {
                 setLoading(false);
             }

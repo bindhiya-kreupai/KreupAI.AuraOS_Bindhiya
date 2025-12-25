@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
+import type {
   Budget,
   BudgetVarianceReport,
   BudgetTemplate,
@@ -166,7 +166,7 @@ export function useFinance(): UseFinanceReturn {
       setAssets(assetsData);
       setMetrics(metricsData);
       setSettings(settingsData);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to load finance data');
     } finally {
       setLoading(false);

@@ -22,9 +22,8 @@ export default function AutoNumberingPage() {
         try {
             const data = await AutoNumberService.getAllSequences();
             setSequences(data);
-        } catch (error) {
-            console.error('Error fetching auto number sequences:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

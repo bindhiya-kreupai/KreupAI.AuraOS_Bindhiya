@@ -52,7 +52,7 @@ export default function RelationshipsPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch relationships:', error);
         } finally {
             setIsLoading(false);
@@ -87,7 +87,7 @@ export default function RelationshipsPage() {
             } else {
                 alert('Failed to save relationship');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving relationship:', error);
             alert('Error saving relationship');
         }
@@ -105,7 +105,7 @@ export default function RelationshipsPage() {
                 } else {
                     alert('Failed to delete relationship');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting relationship:', error);
                 alert('Error deleting relationship');
             }

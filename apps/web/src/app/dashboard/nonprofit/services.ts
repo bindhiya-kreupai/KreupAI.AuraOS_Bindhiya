@@ -1,5 +1,5 @@
 import { APIClient } from '@/lib/api-client';
-import { Volunteer, FieldMission, Donor, NonprofitSettings, NonprofitAlert } from './types';
+import type { Volunteer, FieldMission, Donor, NonprofitSettings, NonprofitAlert } from './types';
 
 export class VolunteerService {
   private static endpoint = '/industry-nonprofit/volunteers';
@@ -8,9 +8,8 @@ export class VolunteerService {
     try {
       const response = await APIClient.get<{ volunteers?: Volunteer[] }>(this.endpoint);
       return response.volunteers || [];
-    } catch (error) {
-      console.error('Error fetching volunteers:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -32,9 +31,8 @@ export class MissionService {
     try {
       const response = await APIClient.get<{ missions?: FieldMission[] }>(this.endpoint);
       return response.missions || [];
-    } catch (error) {
-      console.error('Error fetching missions:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -56,9 +54,8 @@ export class DonorService {
     try {
       const response = await APIClient.get<{ donors?: Donor[] }>(this.endpoint);
       return response.donors || [];
-    } catch (error) {
-      console.error('Error fetching donors:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -75,9 +72,8 @@ export class NonprofitSettingsService {
     try {
       const response = await APIClient.get<{ settings?: NonprofitSettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -94,9 +90,8 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: NonprofitAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
-      console.error('Error fetching alerts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 

@@ -1012,7 +1012,7 @@ class GamificationService {
    * Get leaderboard
    */
   getLeaderboard(config: LeaderboardConfig): LeaderboardEntry[] {
-    let profiles = Array.from(this.profiles.values());
+    const profiles = Array.from(this.profiles.values());
 
     // Filter by scope
     if (config.scope === 'department') {

@@ -67,7 +67,7 @@ async function fetchWithFallback<T>(
         }
 
         return await res.json();
-    } catch (error) {
+    } catch {
         logger.warn({ error }, `[CompetencyService] Fetch failed, using mock data for: ${endpoint}`);
         return { success: true, data: fallbackData };
     }

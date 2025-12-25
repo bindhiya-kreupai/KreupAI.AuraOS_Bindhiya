@@ -22,9 +22,8 @@ export default function ReportingPage() {
             setLoading(true);
             const data = await BenefitAnalyticsService.getStats();
             setStats(data);
-        } catch (error) {
-            console.error('Error fetching benefit analytics:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

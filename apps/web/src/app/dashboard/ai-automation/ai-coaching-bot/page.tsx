@@ -84,9 +84,8 @@ export default function AICoachingBotPage() {
                     setSessionId(result.data.sessionId);
                 }
             }
-        } catch (error) {
-            console.error('Error sending message:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

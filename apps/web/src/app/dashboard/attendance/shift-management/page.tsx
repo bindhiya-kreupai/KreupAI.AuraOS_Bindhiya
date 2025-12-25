@@ -47,9 +47,8 @@ export default function ShiftManagementPage() {
             if (result.length > 0) {
                 setShiftList(result as any);
             }
-        } catch (error) {
-            console.error('Error fetching shifts:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -59,9 +58,8 @@ export default function ShiftManagementPage() {
         try {
             await ShiftService.deleteShift(id);
             await fetchShifts();
-        } catch (error) {
-            console.error('Error deleting shift:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

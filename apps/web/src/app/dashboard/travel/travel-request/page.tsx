@@ -18,9 +18,8 @@ export default function TravelRequestPage() {
             setLoading(true);
             const requests = await TravelRequestService.getRequests();
             setData(requests);
-        } catch (error) {
-            console.error('Failed to fetch travel requests:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

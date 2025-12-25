@@ -34,7 +34,7 @@ export default function JobCatalogPage() {
                 if (!res.ok) throw new Error('Failed to fetch job catalog');
                 const data = await res.json();
                 setJobs(data);
-            } catch (err) {
+            } catch {
                 logger.error(err);
                 setError('Failed to load job catalog');
             } finally {
@@ -112,7 +112,7 @@ export default function JobCatalogPage() {
                                     </div>
                                     {job.title}
                                 </td>
-                                <td className="px-6 py-4">{job.family?.name || '-'}</td>
+                                <td className="px-6 py-4">{job.family?.name || &apos;-'}</td>
                                 <td className="px-6 py-4">
                                     {job.grade ? (
                                         <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-xs font-bold">{job.grade.code}</span>

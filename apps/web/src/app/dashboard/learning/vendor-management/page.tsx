@@ -19,9 +19,8 @@ export default function VendorManagementPage() {
                 setLoading(true);
                 const result = await ExternalTrainingService.getExternalTraining();
                 setData(result);
-            } catch (error) {
-                console.error('Error fetching vendor data:', error);
-                setData([]);
+            } catch {
+                                setData([]);
             } finally {
                 setLoading(false);
             }

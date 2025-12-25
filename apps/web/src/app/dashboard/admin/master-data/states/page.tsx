@@ -33,7 +33,7 @@ export default function StatesPage() {
             if (response.ok) {
                 setData(await response.json());
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch states:', error);
         } finally {
             setIsLoading(false);
@@ -45,7 +45,7 @@ export default function StatesPage() {
         try {
             const countriesRes = await fetch('/api/master-data/countries');
             if (countriesRes.ok) setCountries(await countriesRes.json());
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch countries:', error);
         }
     };
@@ -63,7 +63,7 @@ export default function StatesPage() {
             width: '180px',
             render: (row) => {
                 const country = countries.find(c => c.id === row.countryId);
-                return <span className="text-sm">{country?.name || 'Unknown'}</span>;
+                return <span className="text-sm">{country?.name || &apos;Unknown'}</span>;
             }
         },
     ];
@@ -90,7 +90,7 @@ export default function StatesPage() {
             } else {
                 alert('Failed to save state');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving state:', error);
             alert('Error saving state');
         }
@@ -108,7 +108,7 @@ export default function StatesPage() {
                 } else {
                     alert('Failed to delete state');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting state:', error);
                 alert('Error deleting state');
             }

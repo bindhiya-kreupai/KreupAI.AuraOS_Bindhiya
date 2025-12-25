@@ -37,9 +37,8 @@ export class JobRequisitionService {
 
             const response = await APIClient.get<{ items?: JobRequisition[] }>(url);
             return response.items || [];
-        } catch (error) {
-            console.error('Error fetching requisitions:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -82,9 +81,8 @@ export class JobPostingService {
 
             const response = await APIClient.get<{ items?: JobPosting[] }>(url);
             return response.items || [];
-        } catch (error) {
-            console.error('Error fetching job postings:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -124,9 +122,8 @@ export class CandidateApplicationService {
 
             const response = await APIClient.get<{ items?: CandidateApplication[] }>(url);
             return response.items || [];
-        } catch (error) {
-            console.error('Error fetching applications:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -166,9 +163,8 @@ export class InterviewService {
 
             const response = await APIClient.get<{ items?: Interview[] }>(url);
             return response.items || [];
-        } catch (error) {
-            console.error('Error fetching interviews:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -201,9 +197,8 @@ export class InterviewFeedbackService {
         try {
             const response = await APIClient.get<{ items?: InterviewFeedback[] }>(`${this.endpoint}?interviewId=${interviewId}`);
             return response.items || [];
-        } catch (error) {
-            console.error('Error fetching interview feedback:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -227,9 +222,8 @@ export class JobOfferService {
 
             const response = await APIClient.get<{ items?: JobOffer[] }>(url);
             return response.items || [];
-        } catch (error) {
-            console.error('Error fetching job offers:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -282,9 +276,8 @@ export class BackgroundCheckService {
             const url = applicationId ? `${this.endpoint}?applicationId=${applicationId}` : this.endpoint;
             const response = await APIClient.get<{ items?: BackgroundCheck[] }>(url);
             return response.items || [];
-        } catch (error) {
-            console.error('Error fetching background checks:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -306,9 +299,8 @@ export class HiringPipelineService {
         try {
             const response = await APIClient.get<{ items?: HiringPipeline[] }>(this.endpoint);
             return response.items || [];
-        } catch (error) {
-            console.error('Error fetching hiring pipelines:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -325,9 +317,8 @@ export class RecruitmentSettingsService {
         try {
             const response = await APIClient.get<RecruitmentSettings>(this.endpoint);
             return response;
-        } catch (error) {
-            console.error('Error fetching recruitment settings:', error);
-            return null;
+        } catch {
+                        return null;
         }
     }
 
@@ -344,9 +335,8 @@ export class RecruitmentAnalyticsService {
         try {
             const response = await APIClient.get<RecruitmentStats>(this.endpoint);
             return response;
-        } catch (error) {
-            console.error('Error fetching recruitment analytics:', error);
-            // Return default/empty stats on error
+        } catch {
+                        // Return default/empty stats on error
             return {
                 totalRequisitions: 0,
                 openRequisitions: 0,

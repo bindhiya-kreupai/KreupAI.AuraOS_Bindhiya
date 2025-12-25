@@ -20,8 +20,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       parsedDate: new Date().toISOString()
     };
     return NextResponse.json({ parsing }, { status: 200 });
-  } catch (error) {
-    console.error('Error parsing email:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

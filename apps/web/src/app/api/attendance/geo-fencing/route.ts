@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
@@ -122,7 +123,7 @@ export const GET = withEnhancedAuth(
         data: { geoFences: filteredData, summary },
         meta: { total: filteredData.length },
       });
-    } catch (error) {
+    } catch {
       logger.error('Error fetching geo-fences:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch geo-fences' },
@@ -211,7 +212,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newGeoFence }, { status: 201 });
-    } catch (error) {
+    } catch {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -262,7 +263,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch (error) {
+    } catch {
       logger.error('Error updating geo-fence:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update geo-fence' },
@@ -300,7 +301,7 @@ export const DELETE = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, message: 'Geo-fence deleted successfully' });
-    } catch (error) {
+    } catch {
       logger.error('Error deleting geo-fence:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to delete geo-fence' },

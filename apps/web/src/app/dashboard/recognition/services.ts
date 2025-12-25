@@ -23,9 +23,8 @@ export class RecognitionService {
     try {
       const response = await APIClient.get<{ recognitions?: Recognition[] }>(this.endpoint, filters);
       return response.recognitions || [];
-    } catch (error) {
-      console.error('Error fetching recognitions:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -33,9 +32,8 @@ export class RecognitionService {
     try {
       const response = await APIClient.get<{ recognition?: Recognition }>(`${this.endpoint}/${id}`);
       return response.recognition || null;
-    } catch (error) {
-      console.error('Error fetching recognition:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -81,9 +79,8 @@ export class RecognitionService {
   static async incrementViewCount(id: string): Promise<void> {
     try {
       await APIClient.post(`${this.endpoint}/${id}/view`);
-    } catch (error) {
-      console.error('Error incrementing view count:', error);
-    }
+    } catch {
+          }
   }
 }
 
@@ -94,9 +91,8 @@ export class BadgeService {
     try {
       const response = await APIClient.get<{ badges?: Badge[] }>(this.endpoint, filters);
       return response.badges || [];
-    } catch (error) {
-      console.error('Error fetching badges:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -118,9 +114,8 @@ export class BadgeService {
     try {
       const response = await APIClient.get<{ employeeBadges?: EmployeeBadge[] }>(`${this.endpoint}/employee`, { employeeId });
       return response.employeeBadges || [];
-    } catch (error) {
-      console.error('Error fetching employee badges:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -149,9 +144,8 @@ export class RedemptionService {
     try {
       const response = await APIClient.get<{ items?: RewardsCatalog[] }>('/recognition/catalog', filters);
       return response.items || [];
-    } catch (error) {
-      console.error('Error fetching catalog items:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -173,9 +167,8 @@ export class RedemptionService {
     try {
       const response = await APIClient.get<{ redemptions?: Redemption[] }>(this.endpoint, filters);
       return response.redemptions || [];
-    } catch (error) {
-      console.error('Error fetching redemptions:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -225,9 +218,8 @@ export class PointsService {
         expiringSoon: 0,
         transactions: []
       };
-    } catch (error) {
-      console.error('Error fetching employee points:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -247,9 +239,8 @@ export class PointsService {
     try {
       const response = await APIClient.get<{ employeePoints?: EmployeePoints[] }>(`${this.endpoint}/all`);
       return response.employeePoints || [];
-    } catch (error) {
-      console.error('Error fetching all employee points:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -257,9 +248,8 @@ export class PointsService {
     try {
       const response = await APIClient.get<{ transactions?: PointsTransaction[] }>(`${this.endpoint}/transactions`, { employeeId });
       return response.transactions || [];
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -271,9 +261,8 @@ export class RecognitionProgramService {
     try {
       const response = await APIClient.get<{ programs?: RecognitionProgram[] }>(this.endpoint, filters);
       return response.programs || [];
-    } catch (error) {
-      console.error('Error fetching programs:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -336,9 +325,8 @@ export class RecognitionAnalyticsService {
         sentimentScore: 0,
         trends: []
       };
-    } catch (error) {
-      console.error('Error fetching recognition metrics:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -352,9 +340,8 @@ export class RecognitionAnalyticsService {
         rankings: [],
         lastUpdated: new Date().toISOString()
       };
-    } catch (error) {
-      console.error('Error fetching leaderboard:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -401,9 +388,8 @@ export class RecognitionSettingsService {
         enableMobileApp: true,
         enableIntegrations: false
       };
-    } catch (error) {
-      console.error('Error fetching recognition settings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 

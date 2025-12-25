@@ -3,7 +3,7 @@
  * Phase 2: Core Enhancement - Attendance Enhancement
  */
 
-import { SupportedCountryCode } from '../compliance/types';
+import type { SupportedCountryCode } from '../compliance/types';
 
 // ============================================================================
 // ATTENDANCE TYPES

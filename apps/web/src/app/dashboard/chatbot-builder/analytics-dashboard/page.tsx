@@ -29,9 +29,8 @@ export default function ChatbotAnalyticsPage() {
             if (result) {
                 setAnalytics(result);
             }
-        } catch (error) {
-            console.error('Error fetching analytics:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

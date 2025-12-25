@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { logger } from '@/lib/logger';
 
@@ -43,7 +44,7 @@ export async function GET(
                 relatedCompetencies: competency.relatedCompetencies.map(r => r.relatedCompetency)
             }
         });
-    } catch (error) {
+    } catch {
         logger.error('Error fetching competency:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch competency' },
@@ -162,7 +163,7 @@ export async function PUT(
             },
             message: 'Competency updated successfully'
         });
-    } catch (error) {
+    } catch {
         logger.error('Error updating competency:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to update competency' },
@@ -200,7 +201,7 @@ export async function DELETE(
             success: true,
             message: 'Competency deleted successfully'
         });
-    } catch (error) {
+    } catch {
         logger.error('Error deleting competency:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to delete competency' },

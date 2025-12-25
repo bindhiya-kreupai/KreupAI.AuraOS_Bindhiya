@@ -72,9 +72,8 @@ export default function EmailParsingPage() {
                     setCurrentEmail(result.data.emails[0]);
                 }
             }
-        } catch (error) {
-            console.error('Error fetching emails:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -99,9 +98,8 @@ export default function EmailParsingPage() {
                 await emailParser.processEmail(currentEmail.id, 'extract');
                 await fetchEmails();
             }
-        } catch (error) {
-            console.error('Error processing email:', error);
-            setIsProcessing(false);
+        } catch {
+                        setIsProcessing(false);
         }
     };
 
@@ -166,7 +164,7 @@ export default function EmailParsingPage() {
                                     <div className="flex-1">
                                         {/* @ts-ignore */}
                                         {typeof data.value === 'object' || !data.value ? (
-                                            <span className="text-slate-500">{'{'} ... {'}'}</span>
+                                            <span className="text-slate-500">{&apos;{'} ... {'}'}</span>
                                         ) : (
                                             <div className="flex items-center justify-between">
                                                 {/* @ts-ignore */}

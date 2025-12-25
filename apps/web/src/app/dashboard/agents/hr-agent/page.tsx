@@ -100,7 +100,7 @@ export default function HRAgentPage() {
         timestamp: new Date().toISOString()
       };
       setMessages(prev => [...prev, agentMessage]);
-    } catch (error) {
+    } catch {
       const agentMessage = {
         role: 'agent' as const,
         content: 'I apologize, but I encountered an error processing your request. Please try again.',

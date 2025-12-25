@@ -23,9 +23,8 @@ export default function DiversityPage() {
         try {
             const data = await StandardReportService.getAllReports();
             setReports(data);
-        } catch (error) {
-            console.error('Error fetching diversity reports:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

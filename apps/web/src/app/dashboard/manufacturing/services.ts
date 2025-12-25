@@ -1,5 +1,5 @@
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   Equipment,
   MaintenanceSchedule,
   WorkOrder,

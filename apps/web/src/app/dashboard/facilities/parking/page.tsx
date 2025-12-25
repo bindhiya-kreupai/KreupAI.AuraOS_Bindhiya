@@ -22,13 +22,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 const LEVELS = ['B1', 'B2', 'G (Visitor)'];
 
 const PARKING_LOTS = {
-    'B1': Array.from({ length: 40 }, (_, i) => ({
+    B1: Array.from({ length: 40 }, (_, i) => ({
         id: `B1-${i + 1}`,
         number: `A-${i + 1}`,
         status: i === 5 ? 'My Spot' : i % 3 === 0 ? 'Occupied' : i % 7 === 0 ? 'Reserved' : 'Available',
         type: i > 30 ? 'Bike' : 'Car'
     })),
-    'B2': Array.from({ length: 40 }, (_, i) => ({
+    B2: Array.from({ length: 40 }, (_, i) => ({
         id: `B2-${i + 1}`,
         number: `B-${i + 1}`,
         status: i % 2 === 0 ? 'Occupied' : 'Available',

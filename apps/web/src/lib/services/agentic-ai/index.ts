@@ -27,5 +27,4 @@ export { AnalyticsAgentService } from './analytics-agent.service';
 export function initializeAgents(): void {
   // Agents auto-initialize on import, but this function
   // can be called explicitly to ensure all agents are ready
-  console.log('[Agentic AI] All agents initialized');
-}
+  }

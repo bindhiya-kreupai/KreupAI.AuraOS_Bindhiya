@@ -3,7 +3,7 @@
  * Comprehensive sample data for immediate testing
  */
 
-import { Budget, BudgetTemplate, BudgetScenario, Vendor, VendorContract, PettyCashFund, FinancialAsset } from './types';
+import type { Budget, BudgetTemplate, BudgetScenario, Vendor, VendorContract, PettyCashFund, FinancialAsset } from './types';
 
 // ============================================================================
 // Sample Budgets

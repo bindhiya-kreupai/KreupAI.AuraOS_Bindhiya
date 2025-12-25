@@ -8,7 +8,7 @@ import {
     Users
 } from 'lucide-react';
 import { LeaveAnalyticsService } from '../services';
-import { LeaveStats } from '../types';
+import type { LeaveStats } from '../types';
 
 export default function LeaveReportsPage() {
     const [stats, setStats] = useState<LeaveStats | null>(null);
@@ -25,9 +25,8 @@ export default function LeaveReportsPage() {
             if (result) {
                 setStats(result);
             }
-        } catch (error) {
-            console.error('Error fetching leave stats:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

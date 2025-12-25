@@ -5,7 +5,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { PulseSurvey, Event, SocialPost, Idea, CSRActivity, Newsletter, EngagementMetrics, EngagementSettings } from '../types';
+import type { PulseSurvey, Event, SocialPost, Idea, CSRActivity, Newsletter, EngagementMetrics, EngagementSettings } from '../types';
 import { SurveyService, EventService, SocialFeedService, InnovationService, CSRService, NewsletterService, EngagementAnalyticsService, EngagementSettingsService } from '../services';
 
 export function useEngagement() {
@@ -31,7 +31,7 @@ export function useEngagement() {
       setNewsletters(await NewsletterService.getNewsletters());
       setMetrics(await EngagementAnalyticsService.getMetrics());
       setSettings(await EngagementSettingsService.getSettings());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to load engagement data');
     } finally {
       setLoading(false);

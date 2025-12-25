@@ -6,11 +6,12 @@
  * experience mapping, and candidate scoring
  */
 
-import {
+import type {
   ResumeData,
   CandidateScore,
-  SkillMatch,
-  JobMatch,
+  JobMatch} from './types';
+import {
+  SkillMatch
 } from './types';
 
 /**
@@ -48,15 +49,15 @@ const SKILL_CATEGORIES = {
  * Education level scoring
  */
 const EDUCATION_SCORES: Record<string, number> = {
-  'phd': 100,
-  'doctorate': 100,
-  'masters': 85,
-  'mba': 85,
-  'bachelors': 70,
-  'bachelor': 70,
-  'associate': 55,
-  'diploma': 50,
-  'certificate': 40,
+  phd: 100,
+  doctorate: 100,
+  masters: 85,
+  mba: 85,
+  bachelors: 70,
+  bachelor: 70,
+  associate: 55,
+  diploma: 50,
+  certificate: 40,
   'high school': 30,
 };
 
@@ -428,18 +429,18 @@ export class ResumeParserService {
    */
   private static inferCertIssuer(cert: string): string | undefined {
     const issuers: Record<string, string> = {
-      'pmp': 'PMI',
+      pmp: 'PMI',
       'scrum master': 'Scrum Alliance',
-      'csm': 'Scrum Alliance',
+      csm: 'Scrum Alliance',
       'aws certified': 'Amazon Web Services',
       'azure certified': 'Microsoft',
       'gcp certified': 'Google Cloud',
-      'cissp': 'ISC2',
-      'cisa': 'ISACA',
-      'cpa': 'AICPA',
-      'cfa': 'CFA Institute',
-      'phr': 'HRCI',
-      'sphr': 'HRCI',
+      cissp: 'ISC2',
+      cisa: 'ISACA',
+      cpa: 'AICPA',
+      cfa: 'CFA Institute',
+      phr: 'HRCI',
+      sphr: 'HRCI',
       'shrm-cp': 'SHRM',
       'shrm-scp': 'SHRM',
     };

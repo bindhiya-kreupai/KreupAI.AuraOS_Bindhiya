@@ -60,7 +60,7 @@ export default function PreBoardingPage() {
                     <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
                         <div className="text-center md:text-left">
                             <h2 className="text-3xl font-bold mb-2">{stats.daysToJoin} Days to Go! 🚀</h2>
-                            <p className="opacity-90">You're almost there. Complete {stats.totalTasks - stats.completedTasks} more tasks to be fully ready.</p>
+                            <p className="opacity-90">You&apos;re almost there. Complete {stats.totalTasks - stats.completedTasks} more tasks to be fully ready.</p>
                         </div>
                         <div className="flex items-center gap-4 bg-white/20 p-4 rounded-xl backdrop-blur-sm">
                             <div className="text-center">

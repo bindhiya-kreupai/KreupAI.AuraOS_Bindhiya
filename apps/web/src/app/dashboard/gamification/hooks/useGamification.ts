@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
+import type {
   PointsAccount,
   PointsTransaction,
   PointsRule,
@@ -20,10 +20,11 @@ import {
   Mission,
   UserMission,
   VirtualCurrency,
-  CurrencyAccount,
   Achievement,
   GamificationAnalytics,
-  GamificationSettings,
+  GamificationSettings} from '../types';
+import {
+  CurrencyAccount
 } from '../types';
 import {
   PointsService,
@@ -187,7 +188,7 @@ export function useGamification(userId: string = 'user-001'): UseGamificationRet
       setAchievements(achievementsData);
       setAnalytics(analyticsData);
       setSettings(settingsData);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to load gamification data');
     } finally {
       setLoading(false);

@@ -4,7 +4,7 @@
  */
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   ConstructionProject,
   ProjectTask,
   SafetyInspection,

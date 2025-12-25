@@ -3,7 +3,8 @@
  * Finance Module - Petty Cash Management
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/finance/petty-cash
@@ -23,9 +24,8 @@ export async function GET(request: NextRequest) {
         pendingReconciliations: 0,
       },
     });
-  } catch (error) {
-    console.error('Petty cash fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch petty cash funds' },
       { status: 500 }
     );
@@ -50,9 +50,8 @@ export async function POST(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Petty cash fund creation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to create petty cash fund' },
       { status: 500 }
     );
@@ -84,9 +83,8 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Petty cash fund update error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to update petty cash fund' },
       { status: 500 }
     );

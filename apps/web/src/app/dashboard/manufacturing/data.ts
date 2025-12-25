@@ -1,4 +1,4 @@
-import {
+import type {
   Equipment,
   MaintenanceSchedule,
   WorkOrder,

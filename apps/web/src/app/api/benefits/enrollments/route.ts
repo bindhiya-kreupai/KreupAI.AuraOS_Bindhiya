@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
@@ -29,7 +30,7 @@ export const GET = withEnhancedAuth(
       ];
 
       return NextResponse.json({ success: true, data: mockEnrollments });
-    } catch (error) {
+    } catch {
       logger.error('Error fetching enrollments:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch enrollments' }, { status: 500 });
     }
@@ -52,7 +53,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: newEnrollment }, { status: 201 });
-    } catch (error) {
+    } catch {
       logger.error('Error creating enrollment:', error);
       return NextResponse.json({ success: false, error: 'Failed to create enrollment' }, { status: 500 });
     }
@@ -67,7 +68,7 @@ export const PUT = withEnhancedAuth(
 
       const body = await request.json();
       return NextResponse.json({ success: true, data: { ...body, updatedAt: new Date().toISOString() } });
-    } catch (error) {
+    } catch {
       logger.error('Error updating enrollment:', error);
       return NextResponse.json({ success: false, error: 'Failed to update enrollment' }, { status: 500 });
     }

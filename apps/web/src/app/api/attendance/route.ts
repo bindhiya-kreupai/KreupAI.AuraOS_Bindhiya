@@ -3,7 +3,8 @@
  * Phase 2: Core Enhancement - Attendance Enhancement
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { AttendanceService } from '@/lib/services/attendance';
 
 /**
@@ -69,9 +70,8 @@ export async function GET(request: NextRequest) {
           },
         });
     }
-  } catch (error) {
-    console.error('Attendance fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch attendance data', errorAr: 'فشل في جلب بيانات الحضور' },
       { status: 500 }
     );
@@ -148,9 +148,8 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Attendance processing error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process attendance',
         errorAr: 'فشل في معالجة الحضور',

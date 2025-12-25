@@ -5,7 +5,7 @@
  * and ensure optimal database performance.
  */
 
-import { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 import { logger } from '@/lib/logger';
 
 /**

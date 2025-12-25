@@ -48,7 +48,7 @@ export default function GradesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch grades:', error);
         } finally {
             setIsLoading(false);
@@ -86,7 +86,7 @@ export default function GradesPage() {
             } else {
                 alert('Failed to save grade');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving grade:', error);
             alert('Error saving grade');
         }
@@ -104,7 +104,7 @@ export default function GradesPage() {
                 } else {
                     alert('Failed to delete grade');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting grade:', error);
                 alert('Error deleting grade');
             }

@@ -26,9 +26,8 @@ export default function CustomReportsPage() {
         try {
             const data = await CustomReportService.getAllReports();
             setSavedReports(data);
-        } catch (error) {
-            console.error('Error fetching custom reports:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -43,9 +42,8 @@ export default function CustomReportsPage() {
                 sortOrder: [],
             });
             await fetchReports();
-        } catch (error) {
-            console.error('Error creating report:', error);
-        }
+        } catch {
+                    }
     };
 
     const DATA_SOURCES = [

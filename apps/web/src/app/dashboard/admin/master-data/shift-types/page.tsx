@@ -47,7 +47,7 @@ export default function ShiftTypesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch shift types:', error);
         } finally {
             setIsLoading(false);
@@ -82,7 +82,7 @@ export default function ShiftTypesPage() {
             } else {
                 alert('Failed to save shift type');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving shift type:', error);
             alert('Error saving shift type');
         }
@@ -100,7 +100,7 @@ export default function ShiftTypesPage() {
                 } else {
                     alert('Failed to delete shift type');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting shift type:', error);
                 alert('Error deleting shift type');
             }

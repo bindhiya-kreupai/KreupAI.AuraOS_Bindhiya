@@ -32,9 +32,10 @@
  *         $ref: '#/components/responses/ValidationError'
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { BahrainSIOService } from '@/lib/services/compliance';
-import { BahrainSIOEmployee } from '@/lib/services/compliance/types';
+import type { BahrainSIOEmployee } from '@/lib/services/compliance/types';
 
 /**
  * POST /api/compliance/bahrain-sio
@@ -94,9 +95,8 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
-    console.error('Bahrain SIO calculation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to calculate SIO contributions', errorAr: 'فشل في حساب مساهمات التأمينات الاجتماعية' },
       { status: 500 }
     );
@@ -139,9 +139,8 @@ export async function GET() {
         ],
       },
     });
-  } catch (error) {
-    console.error('Bahrain SIO reference data error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch SIO reference data', errorAr: 'فشل في جلب البيانات المرجعية' },
       { status: 500 }
     );

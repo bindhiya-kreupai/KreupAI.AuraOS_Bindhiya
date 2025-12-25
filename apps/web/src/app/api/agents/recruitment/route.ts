@@ -3,7 +3,8 @@
  * Phase 4 Sprint 31-32: Recruitment Agent Endpoints
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { RecruitmentAgentService } from '@/lib/services/agentic-ai';
 
 /**
@@ -25,9 +26,8 @@ export async function GET(request: NextRequest) {
         isActive: definition.isActive,
       },
     });
-  } catch (error) {
-    console.error('Error fetching Recruitment agent:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { success: false, error: 'Failed to fetch Recruitment agent' },
       { status: 500 }
     );
@@ -199,9 +199,8 @@ export async function POST(request: NextRequest) {
       success: true,
       data: result,
     });
-  } catch (error) {
-    console.error('Error executing Recruitment agent action:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to execute action'

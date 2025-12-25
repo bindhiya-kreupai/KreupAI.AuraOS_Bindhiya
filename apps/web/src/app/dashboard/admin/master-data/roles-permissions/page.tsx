@@ -45,7 +45,7 @@ export default function RolesPermissionsPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch roles:', error);
         } finally {
             setIsLoading(false);
@@ -80,7 +80,7 @@ export default function RolesPermissionsPage() {
             } else {
                 alert('Failed to save role');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving role:', error);
             alert('Error saving role');
         }
@@ -98,7 +98,7 @@ export default function RolesPermissionsPage() {
                 } else {
                     alert('Failed to delete role');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting role:', error);
                 alert('Error deleting role');
             }

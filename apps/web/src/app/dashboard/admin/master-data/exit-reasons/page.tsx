@@ -53,7 +53,7 @@ export default function ExitReasonsPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch exit reasons:', error);
         } finally {
             setIsLoading(false);
@@ -86,7 +86,7 @@ export default function ExitReasonsPage() {
             } else {
                 alert('Failed to save exit reason');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving exit reason:', error);
             alert('Error saving exit reason');
         }
@@ -104,7 +104,7 @@ export default function ExitReasonsPage() {
                 } else {
                     alert('Failed to delete exit reason');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting exit reason:', error);
                 alert('Error deleting exit reason');
             }

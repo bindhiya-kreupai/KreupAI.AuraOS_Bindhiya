@@ -6,9 +6,8 @@
 'use client';
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   VisaApplication,
-  VisaStage,
   ImmigrationCompliance,
   ComplianceIssue,
   RelocationPackage,
@@ -19,7 +18,9 @@ import {
   TaxProjection,
   MobilityAnalytics,
   MobilitySettings,
-  Document,
+  Document} from './types';
+import {
+  VisaStage
 } from './types';
 
 // ============================================================================

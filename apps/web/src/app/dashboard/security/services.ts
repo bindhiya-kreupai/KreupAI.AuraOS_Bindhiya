@@ -2,7 +2,7 @@
 // Handles all business logic and data operations for security features
 
 import { APIClient } from '@/lib/api-client';
-import { AuditLog, RolePermission, SecuritySettings, SecurityAlert } from './types';
+import type { AuditLog, RolePermission, SecuritySettings, SecurityAlert } from './types';
 
 // ============================================================================
 // AUDIT LOG SERVICE
@@ -15,9 +15,8 @@ export class AuditLogService {
     try {
       const response = await APIClient.get<{ logs?: AuditLog[] }>(this.endpoint);
       return response.logs || [];
-    } catch (error) {
-      console.error('Error fetching audit logs:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -25,9 +24,8 @@ export class AuditLogService {
     try {
       const response = await APIClient.post<{ log: AuditLog }>(this.endpoint, data);
       return response.log;
-    } catch (error) {
-      console.error('Error creating audit log:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -35,9 +33,8 @@ export class AuditLogService {
     try {
       const response = await APIClient.get<{ log?: AuditLog }>(`${this.endpoint}/${logId}`);
       return response.log || null;
-    } catch (error) {
-      console.error('Error fetching audit log:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 }
@@ -53,9 +50,8 @@ export class RoleService {
     try {
       const response = await APIClient.get<{ roles?: RolePermission[] }>(this.endpoint);
       return response.roles || [];
-    } catch (error) {
-      console.error('Error fetching roles:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -63,9 +59,8 @@ export class RoleService {
     try {
       const response = await APIClient.post<{ role: RolePermission }>(this.endpoint, data);
       return response.role;
-    } catch (error) {
-      console.error('Error creating role:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -73,9 +68,8 @@ export class RoleService {
     try {
       const response = await APIClient.put<{ role: RolePermission }>(`${this.endpoint}/${id}`, updates);
       return response.role;
-    } catch (error) {
-      console.error('Error updating role:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -83,9 +77,8 @@ export class RoleService {
     try {
       await APIClient.delete(`${this.endpoint}/${id}`);
       return true;
-    } catch (error) {
-      console.error('Error deleting role:', error);
-      return false;
+    } catch {
+            return false;
     }
   }
 }
@@ -101,9 +94,8 @@ export class SecuritySettingsService {
     try {
       const response = await APIClient.get<{ settings: SecuritySettings }>(this.endpoint);
       return response.settings;
-    } catch (error) {
-      console.error('Error fetching security settings:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -111,9 +103,8 @@ export class SecuritySettingsService {
     try {
       const response = await APIClient.put<{ settings: SecuritySettings }>(this.endpoint, settings);
       return response.settings;
-    } catch (error) {
-      console.error('Error updating security settings:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 }
@@ -129,9 +120,8 @@ export class SecurityAlertService {
     try {
       const response = await APIClient.get<{ alerts?: SecurityAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
-      console.error('Error fetching security alerts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -139,9 +129,8 @@ export class SecurityAlertService {
     try {
       const response = await APIClient.post<{ alert: SecurityAlert }>(this.endpoint, data);
       return response.alert;
-    } catch (error) {
-      console.error('Error creating security alert:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -149,9 +138,8 @@ export class SecurityAlertService {
     try {
       const response = await APIClient.put<{ alert: SecurityAlert }>(`${this.endpoint}/${id}`, updates);
       return response.alert;
-    } catch (error) {
-      console.error('Error updating security alert:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -159,9 +147,8 @@ export class SecurityAlertService {
     try {
       const response = await APIClient.get<{ alerts?: SecurityAlert[] }>(`${this.endpoint}/active`);
       return response.alerts || [];
-    } catch (error) {
-      console.error('Error fetching active security alerts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }

@@ -10,16 +10,17 @@
  * - Employee profile updates
  */
 
-import {
+import type {
   AgentDefinition,
-  AgentCapability,
   AgentResponse,
   ConversationContext,
-  DetectedIntent,
   AgentAction,
   LeaveQueryIntent,
   AttendanceQueryIntent,
-  PayrollQueryIntent,
+  PayrollQueryIntent} from './types';
+import {
+  AgentCapability,
+  DetectedIntent,
   HRAgentCapabilities,
   ExecutionPlan,
   ExecutionStep,

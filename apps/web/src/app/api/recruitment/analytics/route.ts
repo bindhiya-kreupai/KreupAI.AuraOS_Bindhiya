@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 
 /**
@@ -211,9 +212,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json({ data: mockAnalytics }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching recruitment analytics:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );

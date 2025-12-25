@@ -38,8 +38,10 @@
  *         description: Mudad file generated successfully
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { MudadService, MudadConfiguration, MudadRecord } from '@/lib/services/compliance';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+import type { MudadConfiguration, MudadRecord } from '@/lib/services/compliance';
+import { MudadService } from '@/lib/services/compliance';
 
 /**
  * POST /api/compliance/mudad
@@ -116,9 +118,8 @@ export async function POST(request: NextRequest) {
         statistics: stats,
       },
     });
-  } catch (error) {
-    console.error('Mudad generation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to generate Mudad file', errorAr: 'فشل في إنشاء ملف مدد' },
       { status: 500 }
     );
@@ -151,9 +152,8 @@ export async function GET() {
         ],
       },
     });
-  } catch (error) {
-    console.error('Mudad reference data error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch Mudad reference data', errorAr: 'فشل في جلب بيانات مدد المرجعية' },
       { status: 500 }
     );

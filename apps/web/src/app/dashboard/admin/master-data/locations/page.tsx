@@ -57,7 +57,7 @@ export default function LocationsPage() {
             if (locsRes.ok) setData(await locsRes.json());
             if (compsRes.ok) setCompanies(await compsRes.json());
             if (addrRes.ok) setAddresses(await addrRes.json());
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
@@ -87,7 +87,7 @@ export default function LocationsPage() {
             width: '180px',
             render: (row) => {
                 const company = companies.find(c => c.id === row.companyId);
-                return <span className="text-sm">{company?.name || 'Unknown'}</span>;
+                return <span className="text-sm">{company?.name || &apos;Unknown'}</span>;
             }
         },
         {
@@ -96,7 +96,7 @@ export default function LocationsPage() {
             width: '200px',
             render: (row) => {
                 const addr = addresses.find(a => a.id === row.addressId);
-                return <span className="text-sm text-silver-mist">{addr ? `${addr.line1}, ${addr.city?.name}` : 'Unknown'}</span>;
+                return <span className="text-sm text-silver-mist">{addr ? `${addr.line1}, ${addr.city?.name}` : &apos;Unknown'}</span>;
             }
         },
     ];
@@ -123,7 +123,7 @@ export default function LocationsPage() {
             } else {
                 alert('Failed to save location');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving location:', error);
             alert('Error saving location');
         }
@@ -141,7 +141,7 @@ export default function LocationsPage() {
                 } else {
                     alert('Failed to delete location');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting location:', error);
                 alert('Error deleting location');
             }
@@ -213,7 +213,7 @@ export default function LocationsPage() {
                                 className="w-full px-3 py-2 bg-pearl dark:bg-stellar-blue rounded-lg text-sm border border-cloud dark:border-nebula-purple/50 focus:ring-2 focus:ring-celestial-indigo/50 outline-none"
                             >
                                 {locationTypes.map(t => (
-                                    <option key={t} value={t}>{t.replace('_', ' ')}</option>
+                                    <option key={t} value={t}>{t.replace(&apos;_', ' ')}</option>
                                 ))}
                             </select>
                         </div>

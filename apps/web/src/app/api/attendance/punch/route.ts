@@ -3,7 +3,8 @@
  * Phase 2: Core Enhancement - Attendance Enhancement
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { AttendanceService } from '@/lib/services/attendance';
 
 /**
@@ -89,9 +90,8 @@ export async function POST(request: NextRequest) {
         isWithinGeofence: validationResult.isWithinGeofence,
       },
     });
-  } catch (error) {
-    console.error('GPS punch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to record punch',
         errorAr: 'فشل في تسجيل البصمة',
@@ -126,9 +126,8 @@ export async function GET(request: NextRequest) {
         date: date || new Date().toISOString().split('T')[0],
       },
     });
-  } catch (error) {
-    console.error('Punch history fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch punch history', errorAr: 'فشل في جلب سجل البصمات' },
       { status: 500 }
     );

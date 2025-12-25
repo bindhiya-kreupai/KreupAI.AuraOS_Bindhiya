@@ -36,7 +36,7 @@ export default function JobFamiliesPage() {
 
             if (familiesRes.ok) setData(await familiesRes.json());
             if (functionsRes.ok) setJobFunctions(await functionsRes.json());
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
@@ -56,7 +56,7 @@ export default function JobFamiliesPage() {
             width: '180px',
             render: (row) => {
                 const func = jobFunctions.find(f => f.id === row.jobFunctionId);
-                return <span className="text-sm">{func?.name || 'Unknown'}</span>;
+                return <span className="text-sm">{func?.name || &apos;Unknown'}</span>;
             }
         },
     ];
@@ -83,7 +83,7 @@ export default function JobFamiliesPage() {
             } else {
                 alert('Failed to save job family');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving job family:', error);
             alert('Error saving job family');
         }
@@ -101,7 +101,7 @@ export default function JobFamiliesPage() {
                 } else {
                     alert('Failed to delete job family');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting job family:', error);
                 alert('Error deleting job family');
             }

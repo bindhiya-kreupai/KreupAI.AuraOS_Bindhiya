@@ -25,9 +25,8 @@ export default function PayrollReportsPage() {
             if (result) {
                 setStats(result);
             }
-        } catch (error) {
-            console.error('Error fetching payroll stats:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

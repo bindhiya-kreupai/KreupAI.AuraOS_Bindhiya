@@ -66,9 +66,8 @@ export default function CostModelingPage() {
             setLoading(true);
             const data = await BudgetSimulationService.getSimulations();
             setSimulations(data);
-        } catch (error) {
-            console.error('Error fetching budget simulations:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

@@ -38,9 +38,8 @@ export class ResignationService {
         filters
       );
       return response.resignations || [];
-    } catch (error) {
-      console.error('Error fetching resignations:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -50,9 +49,8 @@ export class ResignationService {
         `/offboarding/resignations/${id}`
       );
       return response.resignation || null;
-    } catch (error) {
-      console.error(`Error fetching resignation ${id}:`, error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -63,9 +61,8 @@ export class ResignationService {
         resignation
       );
       return response.resignation || resignation;
-    } catch (error) {
-      console.error('Error submitting resignation:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -79,9 +76,8 @@ export class ResignationService {
         updates
       );
       return response.resignation || { ...updates, id } as ResignationLetter;
-    } catch (error) {
-      console.error(`Error updating resignation ${id}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -147,9 +143,8 @@ export class TerminationService {
         filters
       );
       return response.terminations || [];
-    } catch (error) {
-      console.error('Error fetching terminations:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -159,9 +154,8 @@ export class TerminationService {
         `/offboarding/terminations/${id}`
       );
       return response.termination || null;
-    } catch (error) {
-      console.error(`Error fetching termination ${id}:`, error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -172,9 +166,8 @@ export class TerminationService {
         termination
       );
       return response.termination || termination;
-    } catch (error) {
-      console.error('Error creating termination:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -188,9 +181,8 @@ export class TerminationService {
         updates
       );
       return response.termination || { ...updates, id } as TerminationNotice;
-    } catch (error) {
-      console.error(`Error updating termination ${id}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -211,9 +203,8 @@ export class OffboardingInstanceService {
         filters
       );
       return response.instances || [];
-    } catch (error) {
-      console.error('Error fetching offboarding instances:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -223,9 +214,8 @@ export class OffboardingInstanceService {
         `/offboarding/instances/${id}`
       );
       return response.instance || null;
-    } catch (error) {
-      console.error(`Error fetching instance ${id}:`, error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -236,9 +226,8 @@ export class OffboardingInstanceService {
         instance
       );
       return response.instance || instance;
-    } catch (error) {
-      console.error('Error creating offboarding instance:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -252,9 +241,8 @@ export class OffboardingInstanceService {
         updates
       );
       return response.instance || { ...updates, id } as OffboardingInstance;
-    } catch (error) {
-      console.error(`Error updating instance ${id}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -292,9 +280,8 @@ export class OffboardingInstanceService {
         overdueTasks: instance.tasks.filter((t) => t.status === 'overdue').length,
         progress,
       });
-    } catch (error) {
-      console.error(`Error updating progress for instance ${id}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -326,9 +313,8 @@ export class OffboardingTaskService {
 
       await OffboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
       return OffboardingInstanceService.updateProgress(instanceId);
-    } catch (error) {
-      console.error(`Error updating task status:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -339,9 +325,8 @@ export class OffboardingTaskService {
 
       instance.tasks.push(task);
       return OffboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
-    } catch (error) {
-      console.error('Error adding task:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -352,9 +337,8 @@ export class OffboardingTaskService {
 
       instance.tasks = instance.tasks.filter((t) => t.id !== taskId);
       return OffboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
-    } catch (error) {
-      console.error('Error removing task:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -390,9 +374,8 @@ export class EquipmentReturnService {
       return OffboardingInstanceService.updateInstance(instanceId, {
         equipmentReturns: instance.equipmentReturns,
       });
-    } catch (error) {
-      console.error('Error marking equipment as returned:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -418,9 +401,8 @@ export class EquipmentReturnService {
       return OffboardingInstanceService.updateInstance(instanceId, {
         equipmentReturns: instance.equipmentReturns,
       });
-    } catch (error) {
-      console.error('Error applying charge:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -447,9 +429,8 @@ export class EquipmentReturnService {
       return OffboardingInstanceService.updateInstance(instanceId, {
         equipmentReturns: instance.equipmentReturns,
       });
-    } catch (error) {
-      console.error('Error waiving charge:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -481,9 +462,8 @@ export class AccessRevocationService {
       return OffboardingInstanceService.updateInstance(instanceId, {
         accessRevocations: instance.accessRevocations,
       });
-    } catch (error) {
-      console.error('Error revoking access:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -511,9 +491,8 @@ export class AccessRevocationService {
       return OffboardingInstanceService.updateInstance(instanceId, {
         accessRevocations: instance.accessRevocations,
       });
-    } catch (error) {
-      console.error('Error marking revocation as failed:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -547,9 +526,8 @@ export class ClearanceService {
       return OffboardingInstanceService.updateInstance(instanceId, {
         clearances: instance.clearances,
       });
-    } catch (error) {
-      console.error('Error clearing department:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -582,9 +560,8 @@ export class ClearanceService {
       return OffboardingInstanceService.updateInstance(instanceId, {
         clearances: instance.clearances,
       });
-    } catch (error) {
-      console.error('Error reporting issue:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -604,9 +581,8 @@ export class KnowledgeTransferService {
         filters
       );
       return response.transfers || [];
-    } catch (error) {
-      console.error('Error fetching knowledge transfers:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -617,9 +593,8 @@ export class KnowledgeTransferService {
         transfer
       );
       return response.transfer || transfer;
-    } catch (error) {
-      console.error('Error creating knowledge transfer:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -633,9 +608,8 @@ export class KnowledgeTransferService {
         updates
       );
       return response.transfer || { ...updates, id } as KnowledgeTransfer;
-    } catch (error) {
-      console.error(`Error updating knowledge transfer ${id}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -650,9 +624,8 @@ export class KnowledgeTransferService {
 
       const sessions = [...transfer.sessions, session];
       return this.updateKnowledgeTransfer(id, { sessions });
-    } catch (error) {
-      console.error('Error adding session:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -679,9 +652,8 @@ export class KnowledgeTransferService {
         completedItems,
         progress,
       });
-    } catch (error) {
-      console.error('Error completing handover item:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -701,9 +673,8 @@ export class ExitInterviewService {
         filters
       );
       return response.interviews || [];
-    } catch (error) {
-      console.error('Error fetching exit interviews:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -714,9 +685,8 @@ export class ExitInterviewService {
         interview
       );
       return response.interview || interview;
-    } catch (error) {
-      console.error('Error creating exit interview:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -730,9 +700,8 @@ export class ExitInterviewService {
         updates
       );
       return response.interview || { ...updates, id } as ExitInterview;
-    } catch (error) {
-      console.error(`Error updating exit interview ${id}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -763,9 +732,8 @@ export class ExitSurveyService {
         filters
       );
       return response.surveys || [];
-    } catch (error) {
-      console.error('Error fetching exit surveys:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -776,9 +744,8 @@ export class ExitSurveyService {
         survey
       );
       return response.survey || survey;
-    } catch (error) {
-      console.error('Error creating exit survey:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -804,9 +771,8 @@ export class ExitSurveyService {
         }
       );
       return response.survey || { id, status: 'completed' } as ExitSurvey;
-    } catch (error) {
-      console.error(`Error submitting exit survey ${id}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -826,9 +792,8 @@ export class FinalSettlementService {
         filters
       );
       return response.settlements || [];
-    } catch (error) {
-      console.error('Error fetching final settlements:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -839,9 +804,8 @@ export class FinalSettlementService {
         settlement
       );
       return response.settlement || settlement;
-    } catch (error) {
-      console.error('Error creating final settlement:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -855,9 +819,8 @@ export class FinalSettlementService {
         updates
       );
       return response.settlement || { ...updates, id } as FinalSettlement;
-    } catch (error) {
-      console.error(`Error updating final settlement ${id}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -898,9 +861,8 @@ export class AlumniService {
         filters
       );
       return response.alumni || [];
-    } catch (error) {
-      console.error('Error fetching alumni:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -911,9 +873,8 @@ export class AlumniService {
         record
       );
       return response.alumniRecord || record;
-    } catch (error) {
-      console.error('Error creating alumni record:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -927,9 +888,8 @@ export class AlumniService {
         updates
       );
       return response.alumniRecord || { ...updates, id } as AlumniRecord;
-    } catch (error) {
-      console.error(`Error updating alumni record ${id}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -982,9 +942,8 @@ export class OffboardingAnalyticsService {
         costPerOffboarding: 0,
         retentionRiskDepartments: [],
       };
-    } catch (error) {
-      console.error('Error fetching offboarding metrics:', error);
-      return {} as OffboardingMetrics;
+    } catch {
+            return {} as OffboardingMetrics;
     }
   }
 }
@@ -1023,9 +982,8 @@ export class OffboardingSettingsService {
         itNotificationEmail: 'it@company.com',
         financeNotificationEmail: 'finance@company.com',
       };
-    } catch (error) {
-      console.error('Error fetching offboarding settings:', error);
-      return {} as OffboardingSettings;
+    } catch {
+            return {} as OffboardingSettings;
     }
   }
 
@@ -1038,9 +996,8 @@ export class OffboardingSettingsService {
         updates
       );
       return response.settings || updates as OffboardingSettings;
-    } catch (error) {
-      console.error('Error updating offboarding settings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }

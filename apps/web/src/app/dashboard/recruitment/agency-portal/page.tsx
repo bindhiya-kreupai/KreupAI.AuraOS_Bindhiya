@@ -46,9 +46,8 @@ export default function AgencyPortalPage() {
             if (data && data.length > 0) {
                 setJobs(data);
             }
-        } catch (error) {
-            console.error('Error fetching jobs:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

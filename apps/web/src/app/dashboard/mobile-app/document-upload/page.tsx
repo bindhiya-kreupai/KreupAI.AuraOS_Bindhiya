@@ -32,9 +32,8 @@ export default function DocumentUploadPage() {
             ]);
             if (configData) setConfig(configData);
             if (documentsData.length > 0) setDocuments(documentsData);
-        } catch (error) {
-            console.error('Error fetching document upload data:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

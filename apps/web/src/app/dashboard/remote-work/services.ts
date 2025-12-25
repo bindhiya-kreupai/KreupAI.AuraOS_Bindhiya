@@ -1,6 +1,6 @@
 // Remote Work Services - API Integrated
 import { APIClient } from '@/lib/api-client';
-import { RemoteEmployee, RemoteWorkSettings, RemoteWorkAlert } from './types';
+import type { RemoteEmployee, RemoteWorkSettings, RemoteWorkAlert } from './types';
 
 export class RemoteEmployeeService {
   private static endpoint = '/remote-work/employees';
@@ -9,9 +9,8 @@ export class RemoteEmployeeService {
     try {
       const response = await APIClient.get<{ employees?: RemoteEmployee[] }>(this.endpoint);
       return response.employees || [];
-    } catch (error) {
-      console.error('Error fetching remote employees:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -19,9 +18,8 @@ export class RemoteEmployeeService {
     try {
       const response = await APIClient.post<{ employee: RemoteEmployee }>(this.endpoint, data);
       return response.employee;
-    } catch (error) {
-      console.error('Error creating remote employee:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -29,9 +27,8 @@ export class RemoteEmployeeService {
     try {
       const response = await APIClient.put<{ employee: RemoteEmployee }>(`${this.endpoint}/${id}`, updates);
       return response.employee;
-    } catch (error) {
-      console.error('Error updating remote employee:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -43,9 +40,8 @@ export class RemoteWorkSettingsService {
     try {
       const response = await APIClient.get<{ settings?: RemoteWorkSettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
-      console.error('Error fetching remote work settings:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -53,9 +49,8 @@ export class RemoteWorkSettingsService {
     try {
       const response = await APIClient.put<{ settings: RemoteWorkSettings }>(this.endpoint, s);
       return response.settings;
-    } catch (error) {
-      console.error('Error updating remote work settings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -67,9 +62,8 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: RemoteWorkAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
-      console.error('Error fetching remote work alerts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -77,9 +71,8 @@ export class AlertsService {
     try {
       const response = await APIClient.post<{ alert: RemoteWorkAlert }>(this.endpoint, data);
       return response.alert;
-    } catch (error) {
-      console.error('Error creating remote work alert:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }

@@ -3,7 +3,8 @@
  * Phase 2: Core Enhancement - Advanced Leave System
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { LeaveAccrualService } from '@/lib/services/leave';
 
 /**
@@ -35,9 +36,8 @@ export async function POST(request: NextRequest) {
       success: true,
       data: result,
     });
-  } catch (error) {
-    console.error('Leave accrual error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to process leave accrual', errorAr: 'فشل في معالجة استحقاق الإجازات' },
       { status: 500 }
     );
@@ -73,9 +73,8 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
-    console.error('Accrual history fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch accrual history', errorAr: 'فشل في جلب سجل الاستحقاق' },
       { status: 500 }
     );

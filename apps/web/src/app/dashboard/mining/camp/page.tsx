@@ -90,7 +90,7 @@ export default function CampPage() {
                                         </span>
                                     </div>
                                     <div className="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1">{r.resident}</div>
-                                    <div className="text-xs text-slate-400">{r.shift === '-' ? 'No Shift' : r.shift + ' Shift'}</div>
+                                    <div className="text-xs text-slate-400">{r.shift === &apos;-' ? 'No Shift' : r.shift + ' Shift'}</div>
 
                                     {r.status === 'Occupied' && (
                                         <button className="w-full mt-4 py-2 bg-slate-50 dark:bg-slate-800 text-indigo-600 rounded-lg text-xs font-bold hover:bg-slate-100">

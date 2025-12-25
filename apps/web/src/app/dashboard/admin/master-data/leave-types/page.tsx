@@ -55,7 +55,7 @@ export default function LeaveTypesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch leave types:', error);
         } finally {
             setIsLoading(false);
@@ -90,7 +90,7 @@ export default function LeaveTypesPage() {
             } else {
                 alert('Failed to save leave type');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving leave type:', error);
             alert('Error saving leave type');
         }
@@ -108,7 +108,7 @@ export default function LeaveTypesPage() {
                 } else {
                     alert('Failed to delete leave type');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting leave type:', error);
                 alert('Error deleting leave type');
             }

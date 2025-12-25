@@ -1,6 +1,10 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from 'react';
+import type {
+    Connection,
+    Edge,
+    Node} from 'reactflow';
 import ReactFlow, {
     MiniMap,
     Controls,
@@ -8,9 +12,6 @@ import ReactFlow, {
     useNodesState,
     useEdgesState,
     addEdge,
-    Connection,
-    Edge,
-    Node,
     MarkerType
 } from 'reactflow';
 import 'reactflow/dist/style.css';
@@ -104,9 +105,8 @@ export default function ChatbotBuilderPage() {
                 if (result.data.flow.nodes) setNodes(result.data.flow.nodes);
                 if (result.data.flow.edges) setEdges(result.data.flow.edges);
             }
-        } catch (error) {
-            console.error('Error fetching chatbot sessions:', error);
-        }
+        } catch {
+                    }
     };
 
     const handleSaveFlow = async () => {
@@ -114,9 +114,8 @@ export default function ChatbotBuilderPage() {
         try {
             await aiCoachingBot.sendMessage(JSON.stringify({ nodes, edges }));
             await fetchSessions();
-        } catch (error) {
-            console.error('Error saving flow:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

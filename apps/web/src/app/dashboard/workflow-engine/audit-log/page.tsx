@@ -38,9 +38,8 @@ export default function AuditLogPage() {
                 }));
                 setLogs([...auditLogs, ...LOGS]);
             }
-        } catch (error) {
-            console.error('Error fetching audit logs:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

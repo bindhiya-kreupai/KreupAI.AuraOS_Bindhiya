@@ -45,7 +45,7 @@ export const useExpenses = () => {
       setIsLoading(true);
       const data = await ExpenseReportService.getReports(filters);
       setReports(data);
-    } catch (err) {
+    } catch {
       toast.error(`Failed to load expense reports: ${(err as Error).message}`);
     } finally {
       setIsLoading(false);
@@ -59,7 +59,7 @@ export const useExpenses = () => {
       setReports(prev => [...prev, created]);
       toast.success('Expense report created successfully');
       return created;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to create expense report: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -74,7 +74,7 @@ export const useExpenses = () => {
       setReports(prev => prev.map(r => r.id === id ? updated : r));
       toast.success('Expense report updated successfully');
       return updated;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to update expense report: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -88,7 +88,7 @@ export const useExpenses = () => {
       await ExpenseReportService.deleteReport(id);
       setReports(prev => prev.filter(r => r.id !== id));
       toast.success('Expense report deleted successfully');
-    } catch (err) {
+    } catch {
       toast.error(`Failed to delete expense report: ${(err as Error).message}`);
     } finally {
       setIsSaving(false);
@@ -102,7 +102,7 @@ export const useExpenses = () => {
       setReports(prev => prev.map(r => r.id === id ? submitted : r));
       toast.success('Expense report submitted for approval');
       return submitted;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to submit expense report: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -117,7 +117,7 @@ export const useExpenses = () => {
       setReports(prev => prev.map(r => r.id === id ? approved : r));
       toast.success('Expense report approved');
       return approved;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to approve expense report: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -132,7 +132,7 @@ export const useExpenses = () => {
       setReports(prev => prev.map(r => r.id === id ? rejected : r));
       toast.success('Expense report rejected');
       return rejected;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to reject expense report: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -147,7 +147,7 @@ export const useExpenses = () => {
       setReports(prev => prev.map(r => r.id === reportId ? updated : r));
       toast.success('Expense item added');
       return updated;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to add expense item: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -162,7 +162,7 @@ export const useExpenses = () => {
       setReports(prev => prev.map(r => r.id === reportId ? updated : r));
       toast.success('Expense item removed');
       return updated;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to remove expense item: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -177,7 +177,7 @@ export const useExpenses = () => {
       const created = await ExpenseItemService.createItem(item);
       toast.success('Expense item created successfully');
       return created;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to create expense item: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -191,7 +191,7 @@ export const useExpenses = () => {
       const updated = await ExpenseItemService.updateItem(id, updates);
       toast.success('Expense item updated successfully');
       return updated;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to update expense item: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -205,7 +205,7 @@ export const useExpenses = () => {
       const splitItems = await ExpenseItemService.splitItem(id, amounts);
       toast.success('Expense item split successfully');
       return splitItems;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to split expense item: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -218,7 +218,7 @@ export const useExpenses = () => {
     try {
       const data = await ExpenseCategoryService.getCategories(filters);
       setCategories(data);
-    } catch (err) {
+    } catch {
       toast.error(`Failed to load expense categories: ${(err as Error).message}`);
     }
   }, [toast]);
@@ -230,7 +230,7 @@ export const useExpenses = () => {
       setCategories(prev => [...prev, created]);
       toast.success('Expense category created successfully');
       return created;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to create expense category: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -245,7 +245,7 @@ export const useExpenses = () => {
       setCategories(prev => prev.map(c => c.id === id ? updated : c));
       toast.success('Expense category updated successfully');
       return updated;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to update expense category: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -259,7 +259,7 @@ export const useExpenses = () => {
       await ExpenseCategoryService.deleteCategory(id);
       setCategories(prev => prev.filter(c => c.id !== id));
       toast.success('Expense category deleted successfully');
-    } catch (err) {
+    } catch {
       toast.error(`Failed to delete expense category: ${(err as Error).message}`);
     } finally {
       setIsSaving(false);
@@ -271,7 +271,7 @@ export const useExpenses = () => {
     try {
       const data = await ExpensePolicyService.getPolicies(filters);
       setPolicies(data);
-    } catch (err) {
+    } catch {
       toast.error(`Failed to load expense policies: ${(err as Error).message}`);
     }
   }, [toast]);
@@ -283,7 +283,7 @@ export const useExpenses = () => {
       setPolicies(prev => [...prev, created]);
       toast.success('Expense policy created successfully');
       return created;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to create expense policy: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -298,7 +298,7 @@ export const useExpenses = () => {
       setPolicies(prev => prev.map(p => p.id === id ? updated : p));
       toast.success('Expense policy updated successfully');
       return updated;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to update expense policy: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -311,7 +311,7 @@ export const useExpenses = () => {
     try {
       const data = await CorporateCardService.getCards(filters);
       setCorporateCards(data);
-    } catch (err) {
+    } catch {
       toast.error(`Failed to load corporate cards: ${(err as Error).message}`);
     }
   }, [toast]);
@@ -323,7 +323,7 @@ export const useExpenses = () => {
       setCorporateCards(prev => [...prev, created]);
       toast.success('Corporate card created successfully');
       return created;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to create corporate card: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -338,7 +338,7 @@ export const useExpenses = () => {
       setCorporateCards(prev => prev.map(c => c.id === id ? updated : c));
       toast.success('Corporate card updated successfully');
       return updated;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to update corporate card: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -353,7 +353,7 @@ export const useExpenses = () => {
       setCorporateCards(prev => prev.map(c => c.id === id ? suspended : c));
       toast.success('Corporate card suspended');
       return suspended;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to suspend corporate card: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -368,7 +368,7 @@ export const useExpenses = () => {
       setCorporateCards(prev => prev.map(c => c.id === id ? cancelled : c));
       toast.success('Corporate card cancelled');
       return cancelled;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to cancel corporate card: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -381,7 +381,7 @@ export const useExpenses = () => {
     try {
       const data = await ExpenseBudgetService.getBudgets(filters);
       setBudgets(data);
-    } catch (err) {
+    } catch {
       toast.error(`Failed to load budgets: ${(err as Error).message}`);
     }
   }, [toast]);
@@ -393,7 +393,7 @@ export const useExpenses = () => {
       setBudgets(prev => [...prev, created]);
       toast.success('Budget created successfully');
       return created;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to create budget: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -408,7 +408,7 @@ export const useExpenses = () => {
       setBudgets(prev => prev.map(b => b.id === id ? updated : b));
       toast.success('Budget updated successfully');
       return updated;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to update budget: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -420,7 +420,7 @@ export const useExpenses = () => {
     try {
       const available = await ExpenseBudgetService.checkBudgetAvailability(departmentId, categoryId, amount);
       return available;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to check budget availability: ${(err as Error).message}`);
       return false;
     }
@@ -431,7 +431,7 @@ export const useExpenses = () => {
     try {
       const data = await ReimbursementService.getReimbursements(filters);
       setReimbursements(data);
-    } catch (err) {
+    } catch {
       toast.error(`Failed to load reimbursements: ${(err as Error).message}`);
     }
   }, [toast]);
@@ -443,7 +443,7 @@ export const useExpenses = () => {
       setReimbursements(prev => prev.map(r => r.id === id ? processed : r));
       toast.success('Reimbursement processing started');
       return processed;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to process reimbursement: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -458,7 +458,7 @@ export const useExpenses = () => {
       setReimbursements(prev => prev.map(r => r.id === id ? paid : r));
       toast.success('Reimbursement marked as paid');
       return paid;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to mark reimbursement as paid: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -471,7 +471,7 @@ export const useExpenses = () => {
     try {
       const data = await ExpenseAnalyticsService.getMetrics();
       setMetrics(data);
-    } catch (err) {
+    } catch {
       toast.error(`Failed to load metrics: ${(err as Error).message}`);
     }
   }, [toast]);
@@ -481,7 +481,7 @@ export const useExpenses = () => {
     try {
       const data = await ExpenseSettingsService.getSettings();
       setSettings(data);
-    } catch (err) {
+    } catch {
       toast.error(`Failed to load settings: ${(err as Error).message}`);
     }
   }, [toast]);
@@ -493,7 +493,7 @@ export const useExpenses = () => {
       setSettings(updated);
       toast.success('Settings updated successfully');
       return updated;
-    } catch (err) {
+    } catch {
       toast.error(`Failed to update settings: ${(err as Error).message}`);
       throw err;
     } finally {
@@ -539,7 +539,7 @@ export const useExpenses = () => {
       await loadMetrics();
 
       toast.success('Sample data initialized');
-    } catch (err) {
+    } catch {
       toast.error(`Failed to initialize data: ${(err as Error).message}`);
     } finally {
       setIsSaving(false);

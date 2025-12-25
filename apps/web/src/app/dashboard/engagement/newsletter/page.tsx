@@ -24,9 +24,8 @@ export default function NewsletterPage() {
             setLoading(true);
             const newsletters = await NewsletterService.getNewsletters();
             setData(newsletters);
-        } catch (error) {
-            console.error('Error fetching newsletters:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

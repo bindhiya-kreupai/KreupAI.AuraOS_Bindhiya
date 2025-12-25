@@ -15,14 +15,16 @@ import {
     User,
     ArrowRight
 } from 'lucide-react';
+import type {
+    DragEndEvent
+} from '@dnd-kit/core';
 import {
     DndContext,
     closestCorners,
     KeyboardSensor,
     PointerSensor,
     useSensor,
-    useSensors,
-    DragEndEvent
+    useSensors
 } from '@dnd-kit/core';
 import {
     arrayMove,
@@ -127,9 +129,9 @@ export default function HelpdeskTicketsPage() {
 
     // Convert to structure for dnd-kit
     const [columns, setColumns] = useState<{ [key in TicketStatus]: Ticket[] }>({
-        'Open': TICKETS.filter(t => t.status === 'Open'),
+        Open: TICKETS.filter(t => t.status === 'Open'),
         'In Progress': TICKETS.filter(t => t.status === 'In Progress'),
-        'Resolved': TICKETS.filter(t => t.status === 'Resolved'),
+        Resolved: TICKETS.filter(t => t.status === 'Resolved'),
     });
 
     const sensors = useSensors(

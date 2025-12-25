@@ -3,7 +3,8 @@
  * Phase 3: Intelligence Layer - Advanced Reporting
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { ReportService } from '@/lib/services/reporting';
 
 /**
@@ -136,9 +137,8 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Report error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process report',
         errorAr: 'فشل في معالجة التقرير',
@@ -203,9 +203,8 @@ export async function GET(request: NextRequest) {
           },
         });
     }
-  } catch (error) {
-    console.error('Report fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch reports', errorAr: 'فشل في جلب التقارير' },
       { status: 500 }
     );

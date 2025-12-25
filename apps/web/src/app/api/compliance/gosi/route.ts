@@ -34,9 +34,10 @@
  *         description: GOSI file generated successfully
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { GOSIService } from '@/lib/services/compliance';
-import { GOSIConfiguration, GOSIRecord } from '@/lib/services/compliance/types';
+import type { GOSIConfiguration, GOSIRecord } from '@/lib/services/compliance/types';
 
 /**
  * POST /api/compliance/gosi
@@ -105,9 +106,8 @@ export async function POST(request: NextRequest) {
         liability: GOSIService.calculateCompanyLiability(records),
       },
     });
-  } catch (error) {
-    console.error('GOSI generation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to generate GOSI file', errorAr: 'فشل في إنشاء ملف التأمينات' },
       { status: 500 }
     );
@@ -136,9 +136,8 @@ export async function GET() {
         },
       },
     });
-  } catch (error) {
-    console.error('GOSI reference data error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch GOSI reference data', errorAr: 'فشل في جلب بيانات التأمينات المرجعية' },
       { status: 500 }
     );

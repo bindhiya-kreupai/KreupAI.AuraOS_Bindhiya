@@ -101,9 +101,8 @@ export default function StandardReportsPage() {
             if (data.length > 0) {
                 setReports(data);
             }
-        } catch (error) {
-            console.error('Error fetching standard reports:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

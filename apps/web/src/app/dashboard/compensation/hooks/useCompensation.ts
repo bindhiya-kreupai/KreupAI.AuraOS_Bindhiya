@@ -247,7 +247,7 @@ export function useCompensation(): UseCompensationReturn {
       setMetrics(await CompensationAnalyticsService.getMetrics());
       setSettings(await CompensationSettingsService.getSettings());
 
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to load compensation data');
       logger.error('Error initializing compensation data:', err);
     } finally {
@@ -265,7 +265,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await SalaryComponentService.getComponents();
       setComponents(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get components');
       return [];
     }
@@ -274,7 +274,7 @@ export function useCompensation(): UseCompensationReturn {
   const getComponentById = async (id: string): Promise<SalaryComponent | null> => {
     try {
       return await SalaryComponentService.getComponentById(id);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get component');
       return null;
     }
@@ -286,7 +286,7 @@ export function useCompensation(): UseCompensationReturn {
       const created = await SalaryComponentService.createComponent(data);
       setComponents(await SalaryComponentService.getComponents());
       return created;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to create component');
       throw err;
     } finally {
@@ -299,7 +299,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await SalaryComponentService.updateComponent(id, updates);
       setComponents(await SalaryComponentService.getComponents());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to update component');
       throw err;
     } finally {
@@ -312,7 +312,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await SalaryComponentService.deleteComponent(id);
       setComponents(await SalaryComponentService.getComponents());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to delete component');
       throw err;
     } finally {
@@ -326,7 +326,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await GradeService.getGrades();
       setGrades(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get grades');
       return [];
     }
@@ -335,7 +335,7 @@ export function useCompensation(): UseCompensationReturn {
   const getGradeById = async (id: string): Promise<Grade | null> => {
     try {
       return await GradeService.getGradeById(id);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get grade');
       return null;
     }
@@ -347,7 +347,7 @@ export function useCompensation(): UseCompensationReturn {
       const created = await GradeService.createGrade(data);
       setGrades(await GradeService.getGrades());
       return created;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to create grade');
       throw err;
     } finally {
@@ -360,7 +360,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await GradeService.updateGrade(id, updates);
       setGrades(await GradeService.getGrades());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to update grade');
       throw err;
     } finally {
@@ -373,7 +373,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await GradeService.deleteGrade(id);
       setGrades(await GradeService.getGrades());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to delete grade');
       throw err;
     } finally {
@@ -387,7 +387,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await SalaryStructureService.getStructures();
       setStructures(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get structures');
       return [];
     }
@@ -396,7 +396,7 @@ export function useCompensation(): UseCompensationReturn {
   const getStructureById = async (id: string): Promise<SalaryStructure | null> => {
     try {
       return await SalaryStructureService.getStructureById(id);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get structure');
       return null;
     }
@@ -408,7 +408,7 @@ export function useCompensation(): UseCompensationReturn {
       const created = await SalaryStructureService.createStructure(data);
       setStructures(await SalaryStructureService.getStructures());
       return created;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to create structure');
       throw err;
     } finally {
@@ -421,7 +421,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await SalaryStructureService.updateStructure(id, updates);
       setStructures(await SalaryStructureService.getStructures());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to update structure');
       throw err;
     } finally {
@@ -434,7 +434,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await SalaryStructureService.deleteStructure(id);
       setStructures(await SalaryStructureService.getStructures());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to delete structure');
       throw err;
     } finally {
@@ -448,7 +448,7 @@ export function useCompensation(): UseCompensationReturn {
       const cloned = await SalaryStructureService.cloneStructure(id, newName);
       setStructures(await SalaryStructureService.getStructures());
       return cloned;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to clone structure');
       throw err;
     } finally {
@@ -462,7 +462,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await EmployeeCompensationService.getCompensations();
       setEmployeeCompensations(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get employee compensations');
       return [];
     }
@@ -471,7 +471,7 @@ export function useCompensation(): UseCompensationReturn {
   const getCompensationById = async (id: string): Promise<EmployeeCompensation | null> => {
     try {
       return await EmployeeCompensationService.getCompensationById(id);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get compensation');
       return null;
     }
@@ -480,7 +480,7 @@ export function useCompensation(): UseCompensationReturn {
   const getCompensationByEmployeeId = async (employeeId: string): Promise<EmployeeCompensation | null> => {
     try {
       return await EmployeeCompensationService.getByEmployeeId(employeeId);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get employee compensation');
       return null;
     }
@@ -492,7 +492,7 @@ export function useCompensation(): UseCompensationReturn {
       const created = await EmployeeCompensationService.createCompensation(data);
       setEmployeeCompensations(await EmployeeCompensationService.getCompensations());
       return created;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to create compensation');
       throw err;
     } finally {
@@ -505,7 +505,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await EmployeeCompensationService.updateCompensation(id, updates);
       setEmployeeCompensations(await EmployeeCompensationService.getCompensations());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to update compensation');
       throw err;
     } finally {
@@ -518,7 +518,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await EmployeeCompensationService.reviseCompensation(id, newSalary, effectiveDate, reason);
       setEmployeeCompensations(await EmployeeCompensationService.getCompensations());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to revise compensation');
       throw err;
     } finally {
@@ -532,7 +532,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await IncrementCycleService.getCycles();
       setIncrementCycles(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get increment cycles');
       return [];
     }
@@ -541,7 +541,7 @@ export function useCompensation(): UseCompensationReturn {
   const getIncrementCycleById = async (id: string): Promise<IncrementCycle | null> => {
     try {
       return await IncrementCycleService.getCycleById(id);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get increment cycle');
       return null;
     }
@@ -553,7 +553,7 @@ export function useCompensation(): UseCompensationReturn {
       const created = await IncrementCycleService.createCycle(data);
       setIncrementCycles(await IncrementCycleService.getCycles());
       return created;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to create increment cycle');
       throw err;
     } finally {
@@ -566,7 +566,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await IncrementCycleService.updateCycle(id, updates);
       setIncrementCycles(await IncrementCycleService.getCycles());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to update increment cycle');
       throw err;
     } finally {
@@ -579,7 +579,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await IncrementCycleService.approveCycle(id);
       setIncrementCycles(await IncrementCycleService.getCycles());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to approve increment cycle');
       throw err;
     } finally {
@@ -593,7 +593,7 @@ export function useCompensation(): UseCompensationReturn {
       await IncrementCycleService.processCycle(id);
       setIncrementCycles(await IncrementCycleService.getCycles());
       setEmployeeCompensations(await EmployeeCompensationService.getCompensations());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to process increment cycle');
       throw err;
     } finally {
@@ -607,7 +607,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await IncrementProposalService.getProposals();
       setIncrementProposals(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get increment proposals');
       return [];
     }
@@ -616,7 +616,7 @@ export function useCompensation(): UseCompensationReturn {
   const getProposalById = async (id: string): Promise<IncrementProposal | null> => {
     try {
       return await IncrementProposalService.getProposalById(id);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get proposal');
       return null;
     }
@@ -626,7 +626,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       const all = await IncrementProposalService.getProposals();
       return all.filter(p => p.cycleId === cycleId);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get proposals by cycle');
       return [];
     }
@@ -638,7 +638,7 @@ export function useCompensation(): UseCompensationReturn {
       const created = await IncrementProposalService.createProposal(data);
       setIncrementProposals(await IncrementProposalService.getProposals());
       return created;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to create increment proposal');
       throw err;
     } finally {
@@ -651,7 +651,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await IncrementProposalService.updateProposal(id, updates);
       setIncrementProposals(await IncrementProposalService.getProposals());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to update increment proposal');
       throw err;
     } finally {
@@ -664,7 +664,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await IncrementProposalService.approveProposal(id, approvedBy);
       setIncrementProposals(await IncrementProposalService.getProposals());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to approve increment proposal');
       throw err;
     } finally {
@@ -677,7 +677,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await IncrementProposalService.rejectProposal(id, reason);
       setIncrementProposals(await IncrementProposalService.getProposals());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to reject increment proposal');
       throw err;
     } finally {
@@ -691,7 +691,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await BonusService.getSchemes();
       setBonusSchemes(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get bonus schemes');
       return [];
     }
@@ -700,7 +700,7 @@ export function useCompensation(): UseCompensationReturn {
   const getBonusSchemeById = async (id: string): Promise<BonusScheme | null> => {
     try {
       return await BonusService.getSchemeById(id);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get bonus scheme');
       return null;
     }
@@ -712,7 +712,7 @@ export function useCompensation(): UseCompensationReturn {
       const created = await BonusService.createScheme(data);
       setBonusSchemes(await BonusService.getSchemes());
       return created;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to create bonus scheme');
       throw err;
     } finally {
@@ -725,7 +725,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await BonusService.updateScheme(id, updates);
       setBonusSchemes(await BonusService.getSchemes());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to update bonus scheme');
       throw err;
     } finally {
@@ -738,7 +738,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await BonusService.getPayouts();
       setBonusPayouts(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get bonus payouts');
       return [];
     }
@@ -750,7 +750,7 @@ export function useCompensation(): UseCompensationReturn {
       const created = await BonusService.createPayout(data);
       setBonusPayouts(await BonusService.getPayouts());
       return created;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to create bonus payout');
       throw err;
     } finally {
@@ -763,7 +763,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await BonusService.approvePayout(id, approvedBy);
       setBonusPayouts(await BonusService.getPayouts());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to approve bonus payout');
       throw err;
     } finally {
@@ -777,7 +777,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await StockGrantService.getGrants();
       setStockGrants(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get stock grants');
       return [];
     }
@@ -786,7 +786,7 @@ export function useCompensation(): UseCompensationReturn {
   const getGrantById = async (id: string): Promise<StockGrant | null> => {
     try {
       return await StockGrantService.getGrantById(id);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get stock grant');
       return null;
     }
@@ -795,7 +795,7 @@ export function useCompensation(): UseCompensationReturn {
   const getGrantsByEmployee = async (employeeId: string): Promise<StockGrant[]> => {
     try {
       return await StockGrantService.getGrantsByEmployee(employeeId);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get employee stock grants');
       return [];
     }
@@ -807,7 +807,7 @@ export function useCompensation(): UseCompensationReturn {
       const created = await StockGrantService.createGrant(data);
       setStockGrants(await StockGrantService.getGrants());
       return created;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to create stock grant');
       throw err;
     } finally {
@@ -820,7 +820,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await StockGrantService.updateGrant(id, updates);
       setStockGrants(await StockGrantService.getGrants());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to update stock grant');
       throw err;
     } finally {
@@ -834,7 +834,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await LoanService.getSchemes();
       setLoanSchemes(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get loan schemes');
       return [];
     }
@@ -843,7 +843,7 @@ export function useCompensation(): UseCompensationReturn {
   const getLoanSchemeById = async (id: string): Promise<LoanScheme | null> => {
     try {
       return await LoanService.getSchemeById(id);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get loan scheme');
       return null;
     }
@@ -855,7 +855,7 @@ export function useCompensation(): UseCompensationReturn {
       const created = await LoanService.createScheme(data);
       setLoanSchemes(await LoanService.getSchemes());
       return created;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to create loan scheme');
       throw err;
     } finally {
@@ -868,7 +868,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await LoanService.getLoans();
       setEmployeeLoans(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get employee loans');
       return [];
     }
@@ -877,7 +877,7 @@ export function useCompensation(): UseCompensationReturn {
   const getLoanById = async (id: string): Promise<EmployeeLoan | null> => {
     try {
       return await LoanService.getLoanById(id);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get loan');
       return null;
     }
@@ -886,7 +886,7 @@ export function useCompensation(): UseCompensationReturn {
   const getLoansByEmployee = async (employeeId: string): Promise<EmployeeLoan[]> => {
     try {
       return await LoanService.getLoansByEmployee(employeeId);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get employee loans');
       return [];
     }
@@ -898,7 +898,7 @@ export function useCompensation(): UseCompensationReturn {
       const created = await LoanService.createLoan(data);
       setEmployeeLoans(await LoanService.getLoans());
       return created;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to create employee loan');
       throw err;
     } finally {
@@ -911,7 +911,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await LoanService.approveLoan(id, approvedBy);
       setEmployeeLoans(await LoanService.getLoans());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to approve loan');
       throw err;
     } finally {
@@ -925,7 +925,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await ArrearsService.getRequests();
       setArrearsRequests(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get arrears requests');
       return [];
     }
@@ -934,7 +934,7 @@ export function useCompensation(): UseCompensationReturn {
   const getArrearsById = async (id: string): Promise<ArrearsRequest | null> => {
     try {
       return await ArrearsService.getRequestById(id);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get arrears request');
       return null;
     }
@@ -946,7 +946,7 @@ export function useCompensation(): UseCompensationReturn {
       const created = await ArrearsService.createRequest(data);
       setArrearsRequests(await ArrearsService.getRequests());
       return created;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to create arrears request');
       throw err;
     } finally {
@@ -959,7 +959,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await ArrearsService.approveRequest(id, approvedBy);
       setArrearsRequests(await ArrearsService.getRequests());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to approve arrears request');
       throw err;
     } finally {
@@ -973,7 +973,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await TotalRewardsService.getStatements();
       setTotalRewardsStatements(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get total rewards statements');
       return [];
     }
@@ -982,7 +982,7 @@ export function useCompensation(): UseCompensationReturn {
   const getRewardsStatementById = async (id: string): Promise<TotalRewardsStatement | null> => {
     try {
       return await TotalRewardsService.getStatementById(id);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get rewards statement');
       return null;
     }
@@ -991,7 +991,7 @@ export function useCompensation(): UseCompensationReturn {
   const getRewardsStatementByEmployee = async (employeeId: string, fiscalYear: string): Promise<TotalRewardsStatement | null> => {
     try {
       return await TotalRewardsService.getStatementByEmployee(employeeId, fiscalYear);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get employee rewards statement');
       return null;
     }
@@ -1003,7 +1003,7 @@ export function useCompensation(): UseCompensationReturn {
       const generated = await TotalRewardsService.generateStatement(employeeId, fiscalYear);
       setTotalRewardsStatements(await TotalRewardsService.getStatements());
       return generated;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to generate rewards statement');
       throw err;
     } finally {
@@ -1017,7 +1017,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await MarketBenchmarkService.getBenchmarks();
       setMarketBenchmarks(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get market benchmarks');
       return [];
     }
@@ -1026,7 +1026,7 @@ export function useCompensation(): UseCompensationReturn {
   const getBenchmarkById = async (id: string): Promise<MarketBenchmark | null> => {
     try {
       return await MarketBenchmarkService.getBenchmarkById(id);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get market benchmark');
       return null;
     }
@@ -1038,7 +1038,7 @@ export function useCompensation(): UseCompensationReturn {
       const created = await MarketBenchmarkService.createBenchmark(data);
       setMarketBenchmarks(await MarketBenchmarkService.getBenchmarks());
       return created;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to create market benchmark');
       throw err;
     } finally {
@@ -1052,7 +1052,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await CompensationAnalyticsService.getMetrics();
       setMetrics(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get metrics');
       throw err;
     }
@@ -1063,7 +1063,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       const data = await CompensationAnalyticsService.getMetrics();
       setMetrics(data);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to refresh metrics');
       throw err;
     } finally {
@@ -1077,7 +1077,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await CompensationSettingsService.getSettings();
       setSettings(data);
       return data;
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to get settings');
       throw err;
     }
@@ -1088,7 +1088,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoading(true);
       await CompensationSettingsService.updateSettings(updates);
       setSettings(await CompensationSettingsService.getSettings());
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to update settings');
       throw err;
     } finally {

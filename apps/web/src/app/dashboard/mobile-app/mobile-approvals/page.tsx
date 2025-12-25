@@ -30,9 +30,8 @@ export default function MobileApprovalsPage() {
             if (result.length > 0) {
                 setApprovals(result);
             }
-        } catch (error) {
-            console.error('Error fetching approvals:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -103,7 +102,7 @@ export default function MobileApprovalsPage() {
                                 <span className="text-4xl font-bold">4.2h</span>
                                 <span className="text-sm text-indigo-200 mb-1.5">avg. time</span>
                             </div>
-                            <p className="text-xs text-indigo-200 mb-6">You're 15% faster than last week. Keep it up!</p>
+                            <p className="text-xs text-indigo-200 mb-6">You&apos;re 15% faster than last week. Keep it up!</p>
 
                             <div className="space-y-3">
                                 <div className="flex justify-between text-xs font-medium">

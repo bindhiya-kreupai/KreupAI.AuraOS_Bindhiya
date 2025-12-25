@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { z, ZodError } from 'zod';
+import type { z} from 'zod';
+import { ZodError } from 'zod';
 
 export * from './competency-library';
 export * from './user-management';
@@ -82,7 +83,7 @@ export function withValidation<T extends z.ZodType>(
       const body = await request.json();
       const validatedData = validateRequest(schema, body);
       return await handler(validatedData, request);
-    } catch (error) {
+    } catch {
       if (error instanceof ZodError) {
         return validationErrorResponse(error);
       }

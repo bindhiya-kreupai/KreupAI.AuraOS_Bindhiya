@@ -3,7 +3,8 @@
  * Finance Module - Variance Analysis
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/finance/variance-reports
@@ -24,9 +25,8 @@ export async function GET(request: NextRequest) {
         criticalVariances: 0,
       },
     });
-  } catch (error) {
-    console.error('Variance reports fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch variance reports' },
       { status: 500 }
     );
@@ -59,9 +59,8 @@ export async function POST(request: NextRequest) {
         createdDate: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Variance report generation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to generate variance report' },
       { status: 500 }
     );

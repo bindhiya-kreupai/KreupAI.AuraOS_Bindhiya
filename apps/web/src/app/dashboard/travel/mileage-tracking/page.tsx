@@ -23,9 +23,8 @@ export default function MileageTrackingPage() {
             setLoading(true);
             const requests = await TravelRequestService.getRequests();
             setData(requests);
-        } catch (error) {
-            console.error('Failed to fetch mileage tracking:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

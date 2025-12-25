@@ -35,7 +35,7 @@ export default function UsersPage() {
 
             if (usersRes.ok) setData(await usersRes.json());
             if (tenantsRes.ok) setTenants(await tenantsRes.json());
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
@@ -51,7 +51,7 @@ export default function UsersPage() {
         {
             key: 'tenantId',
             header: 'Tenant',
-            render: (row) => <span className="text-sm text-silver-mist">{row.tenant?.name || 'Unknown'}</span>
+            render: (row) => <span className="text-sm text-silver-mist">{row.tenant?.name || &apos;Unknown'}</span>
         },
         {
             key: 'createdAt',
@@ -84,7 +84,7 @@ export default function UsersPage() {
                 const error = await response.json();
                 alert(`Failed to save user: ${error.error}`);
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving user:', error);
             alert('Error saving user');
         }
@@ -102,7 +102,7 @@ export default function UsersPage() {
                 } else {
                     alert('Failed to delete user');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting user:', error);
                 alert('Error deleting user');
             }
@@ -150,7 +150,7 @@ export default function UsersPage() {
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-silver-mist mb-1">Password {record.id && '(Leave blank to keep unchanged)'}</label>
+                        <label className="block text-xs font-medium text-silver-mist mb-1">Password {record.id && &apos;(Leave blank to keep unchanged)'}</label>
                         <input
                             type="password"
                             // @ts-ignore

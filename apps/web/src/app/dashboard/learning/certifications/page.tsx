@@ -19,9 +19,8 @@ export default function CertificationsPage() {
                 setLoading(true);
                 const result = await CertificationService.getCertifications();
                 setData(result);
-            } catch (error) {
-                console.error('Error fetching certifications:', error);
-                setData([]);
+            } catch {
+                                setData([]);
             } finally {
                 setLoading(false);
             }

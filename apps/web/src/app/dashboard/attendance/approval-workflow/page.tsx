@@ -38,9 +38,8 @@ export default function ApprovalWorkflowPage() {
             if (result && result.length > 0) {
                 setWorkflows(result);
             }
-        } catch (error) {
-            console.error('Error fetching workflows:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -57,9 +56,8 @@ export default function ApprovalWorkflowPage() {
                 ]
             });
             await fetchWorkflows();
-        } catch (error) {
-            console.error('Error saving workflow:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -141,7 +139,7 @@ export default function ApprovalWorkflowPage() {
                                 <User className="w-4 h-4 text-slate-400" />
                             </div>
                             <h4 className="font-bold text-md text-ink-black dark:text-pearl">Department Head</h4>
-                            <p className="text-xs text-silver-mist mt-1">Condition: If {'{Duration}'} &gt; 3 Days</p>
+                            <p className="text-xs text-silver-mist mt-1">Condition: If {&apos;{Duration}'} &gt; 3 Days</p>
                         </div>
 
                         <ArrowDown className="w-5 h-5 text-slate-400 my-2" />

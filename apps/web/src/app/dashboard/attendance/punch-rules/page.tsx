@@ -59,9 +59,8 @@ export default function PunchRulesPage() {
                     nightShiftAllowance: false
                 });
             }
-        } catch (error) {
-            console.error('Error fetching punch rules:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -71,9 +70,8 @@ export default function PunchRulesPage() {
         try {
             await PunchRulesService.updatePunchRules(config);
             await fetchRules();
-        } catch (error) {
-            console.error('Error saving punch rules:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

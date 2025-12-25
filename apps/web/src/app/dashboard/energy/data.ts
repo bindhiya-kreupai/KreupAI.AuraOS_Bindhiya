@@ -1,4 +1,4 @@
-import {
+import type {
   SmartMeter, EnergyConsumption, LoadManagement, WaterMeter, WaterUsage,
   LeakDetection, ConservationInitiative, RenewableAsset, EnergyProduction,
   UtilityAccount, UtilityBill, EnergySettings

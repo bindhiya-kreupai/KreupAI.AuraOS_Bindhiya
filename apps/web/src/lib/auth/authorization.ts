@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { JWTPayload } from './jwt';
-import { Permission, hasPermission, Resource, Action, getRolePermissions } from './permissions';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+import type { JWTPayload } from './jwt';
+import type { Permission, Resource, Action} from './permissions';
+import { hasPermission, getRolePermissions } from './permissions';
 
 /**
  * Extended context with user permissions

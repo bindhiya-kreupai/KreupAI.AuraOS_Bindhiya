@@ -32,9 +32,10 @@
  *         $ref: '#/components/responses/ValidationError'
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { KuwaitPIFSSService } from '@/lib/services/compliance';
-import { KuwaitPIFSSEmployee } from '@/lib/services/compliance/types';
+import type { KuwaitPIFSSEmployee } from '@/lib/services/compliance/types';
 
 /**
  * POST /api/compliance/kuwait-pifss
@@ -99,9 +100,8 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
-    console.error('Kuwait PIFSS calculation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to calculate PIFSS contributions', errorAr: 'فشل في حساب مساهمات المؤسسة العامة للتأمينات الاجتماعية' },
       { status: 500 }
     );
@@ -150,9 +150,8 @@ export async function GET() {
         ],
       },
     });
-  } catch (error) {
-    console.error('Kuwait PIFSS reference data error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch PIFSS reference data', errorAr: 'فشل في جلب البيانات المرجعية' },
       { status: 500 }
     );

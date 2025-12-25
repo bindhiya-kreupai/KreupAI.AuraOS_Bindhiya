@@ -45,7 +45,7 @@ export default function CompetenciesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch competencies:', error);
         } finally {
             setIsLoading(false);
@@ -80,7 +80,7 @@ export default function CompetenciesPage() {
             } else {
                 alert('Failed to save competency');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving competency:', error);
             alert('Error saving competency');
         }
@@ -98,7 +98,7 @@ export default function CompetenciesPage() {
                 } else {
                     alert('Failed to delete competency');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting competency:', error);
                 alert('Error deleting competency');
             }

@@ -52,9 +52,10 @@
  *         $ref: '#/components/responses/UnauthorizedError'
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { EOSBService } from '@/lib/services/compliance';
-import { EOSBCalculationInput, SupportedCountryCode } from '@/lib/services/compliance/types';
+import type { EOSBCalculationInput, SupportedCountryCode } from '@/lib/services/compliance/types';
 
 /**
  * POST /api/compliance/eosb
@@ -101,9 +102,8 @@ export async function POST(request: NextRequest) {
       success: true,
       data: result,
     });
-  } catch (error) {
-    console.error('EOSB calculation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to calculate EOSB', errorAr: 'فشل في حساب مكافأة نهاية الخدمة' },
       { status: 500 }
     );
@@ -159,9 +159,8 @@ export async function GET(request: NextRequest) {
         currency: config.currency,
       },
     });
-  } catch (error) {
-    console.error('EOSB rules fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch EOSB rules', errorAr: 'فشل في جلب قواعد مكافأة نهاية الخدمة' },
       { status: 500 }
     );

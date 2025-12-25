@@ -82,7 +82,7 @@ export const useCoreHR = () => {
         loadEmployees(), loadOrganizationUnits(), loadPositions(), loadCostCenters(),
         loadAssets(), loadExitProcesses(), loadAnniversaries(), loadSettings()
       ]);
-    } catch (error) {
+    } catch {
       logger.error('Error loading data:', error);
       addToast({ type: 'error', message: 'Failed to load Core HR data' });
     } finally {
@@ -103,7 +103,7 @@ export const useCoreHR = () => {
       await loadEmployees();
       addToast({ type: 'success', message: 'Employee created successfully' });
       return employee;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create employee' });
       throw error;
     } finally {
@@ -118,7 +118,7 @@ export const useCoreHR = () => {
       await loadEmployees();
       addToast({ type: 'success', message: 'Employee updated successfully' });
       return employee;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update employee' });
       throw error;
     } finally {
@@ -132,7 +132,7 @@ export const useCoreHR = () => {
       await EmployeeService.terminateEmployee(employeeId, terminationDate, reason);
       await loadEmployees();
       addToast({ type: 'success', message: 'Employee terminated' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to terminate employee' });
       throw error;
     } finally {
@@ -145,7 +145,7 @@ export const useCoreHR = () => {
     try {
       const results = await EmployeeService.searchEmployees(searchTerm);
       return results;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Search failed' });
       throw error;
     } finally {
@@ -166,7 +166,7 @@ export const useCoreHR = () => {
       await loadOrganizationUnits();
       addToast({ type: 'success', message: 'Organization unit created' });
       return unit;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create unit' });
       throw error;
     } finally {
@@ -181,7 +181,7 @@ export const useCoreHR = () => {
       await loadOrganizationUnits();
       addToast({ type: 'success', message: 'Organization unit updated' });
       return unit;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update unit' });
       throw error;
     } finally {
@@ -194,7 +194,7 @@ export const useCoreHR = () => {
     try {
       const hierarchy = await OrganizationService.getHierarchy();
       return hierarchy;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to load hierarchy' });
       throw error;
     } finally {
@@ -209,7 +209,7 @@ export const useCoreHR = () => {
       const history = await EmploymentHistoryService.getEmployeeHistory(employeeId);
       setEmploymentHistory(history);
       return history;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to load history' });
       throw error;
     } finally {
@@ -223,7 +223,7 @@ export const useCoreHR = () => {
       const history = await EmploymentHistoryService.recordChange(historyData);
       addToast({ type: 'success', message: 'Change recorded successfully' });
       return history;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to record change' });
       throw error;
     } finally {
@@ -240,7 +240,7 @@ export const useCoreHR = () => {
         : await DocumentService.getAllDocuments();
       setDocuments(data);
       return data;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to load documents' });
       throw error;
     } finally {
@@ -255,7 +255,7 @@ export const useCoreHR = () => {
       await loadDocuments();
       addToast({ type: 'success', message: 'Document uploaded successfully' });
       return document;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to upload document' });
       throw error;
     } finally {
@@ -269,7 +269,7 @@ export const useCoreHR = () => {
       await DocumentService.verifyDocument(documentId, verifiedBy);
       await loadDocuments();
       addToast({ type: 'success', message: 'Document verified' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to verify document' });
       throw error;
     } finally {
@@ -295,7 +295,7 @@ export const useCoreHR = () => {
       await loadPositions();
       addToast({ type: 'success', message: 'Position created successfully' });
       return position;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create position' });
       throw error;
     } finally {
@@ -310,7 +310,7 @@ export const useCoreHR = () => {
       await loadPositions();
       addToast({ type: 'success', message: 'Position updated' });
       return position;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update position' });
       throw error;
     } finally {
@@ -324,7 +324,7 @@ export const useCoreHR = () => {
       await PositionService.closePosition(positionId);
       await loadPositions();
       addToast({ type: 'success', message: 'Position closed' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to close position' });
       throw error;
     } finally {
@@ -345,7 +345,7 @@ export const useCoreHR = () => {
       await loadCostCenters();
       addToast({ type: 'success', message: 'Cost center created' });
       return costCenter;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create cost center' });
       throw error;
     } finally {
@@ -360,7 +360,7 @@ export const useCoreHR = () => {
       await loadCostCenters();
       addToast({ type: 'success', message: 'Cost center updated' });
       return costCenter;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update cost center' });
       throw error;
     } finally {
@@ -374,7 +374,7 @@ export const useCoreHR = () => {
       await CostCenterService.allocateBudget(costCenterId, amount, year);
       await loadCostCenters();
       addToast({ type: 'success', message: 'Budget allocated' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to allocate budget' });
       throw error;
     } finally {
@@ -391,7 +391,7 @@ export const useCoreHR = () => {
         : await LifeEventService.getAllEvents();
       setLifeEvents(data);
       return data;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to load life events' });
       throw error;
     } finally {
@@ -406,7 +406,7 @@ export const useCoreHR = () => {
       await loadLifeEvents();
       addToast({ type: 'success', message: 'Life event recorded' });
       return event;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to record event' });
       throw error;
     } finally {
@@ -420,7 +420,7 @@ export const useCoreHR = () => {
       await LifeEventService.processEvent(eventId, processedBy);
       await loadLifeEvents();
       addToast({ type: 'success', message: 'Event processed' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to process event' });
       throw error;
     } finally {
@@ -441,7 +441,7 @@ export const useCoreHR = () => {
       await loadMassUpdates();
       addToast({ type: 'success', message: 'Mass update created' });
       return update;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create update' });
       throw error;
     } finally {
@@ -456,7 +456,7 @@ export const useCoreHR = () => {
       await loadMassUpdates();
       addToast({ type: 'success', message: `Update executed. ${result.successCount} successful, ${result.failureCount} failed` });
       return result;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to execute update' });
       throw error;
     } finally {
@@ -469,7 +469,7 @@ export const useCoreHR = () => {
     try {
       const preview = await MassUpdateService.previewUpdate(updateId);
       return preview;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to generate preview' });
       throw error;
     } finally {
@@ -486,7 +486,7 @@ export const useCoreHR = () => {
         : await IDCardService.getAllCards();
       setIDCards(data.filter(Boolean));
       return data;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to load ID cards' });
       throw error;
     } finally {
@@ -501,7 +501,7 @@ export const useCoreHR = () => {
       await loadIDCards();
       addToast({ type: 'success', message: 'ID card generated' });
       return card;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to generate ID card' });
       throw error;
     } finally {
@@ -515,7 +515,7 @@ export const useCoreHR = () => {
       await IDCardService.deactivateCard(cardId);
       await loadIDCards();
       addToast({ type: 'success', message: 'ID card deactivated' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to deactivate card' });
       throw error;
     } finally {
@@ -532,7 +532,7 @@ export const useCoreHR = () => {
         : await LetterService.getAllRequests();
       setLetterRequests(data);
       return data;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to load letter requests' });
       throw error;
     } finally {
@@ -547,7 +547,7 @@ export const useCoreHR = () => {
       await loadLetterRequests();
       addToast({ type: 'success', message: 'Letter request created' });
       return request;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create request' });
       throw error;
     } finally {
@@ -561,7 +561,7 @@ export const useCoreHR = () => {
       await LetterService.approveRequest(requestId, approvedBy, approverEmployeeId);
       await loadLetterRequests();
       addToast({ type: 'success', message: 'Letter approved and generated' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to approve letter' });
       throw error;
     } finally {
@@ -587,7 +587,7 @@ export const useCoreHR = () => {
       await loadExitProcesses();
       addToast({ type: 'success', message: 'Exit process initiated' });
       return exit;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to initiate exit' });
       throw error;
     } finally {
@@ -601,7 +601,7 @@ export const useCoreHR = () => {
       await ExitService.updateClearanceItem(exitId, itemId, status, approvedBy);
       await loadExitProcesses();
       addToast({ type: 'success', message: 'Clearance item updated' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update clearance' });
       throw error;
     } finally {
@@ -615,7 +615,7 @@ export const useCoreHR = () => {
       await ExitService.completeFinalSettlement(exitId, settlementData);
       await loadExitProcesses();
       addToast({ type: 'success', message: 'Final settlement completed' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to complete settlement' });
       throw error;
     } finally {
@@ -641,7 +641,7 @@ export const useCoreHR = () => {
       await loadAnniversaries();
       addToast({ type: 'success', message: `Generated ${count} anniversaries for ${year}` });
       return count;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to generate anniversaries' });
       throw error;
     } finally {
@@ -655,7 +655,7 @@ export const useCoreHR = () => {
       await AnniversaryService.sendNotifications(anniversaryId);
       await loadAnniversaries();
       addToast({ type: 'success', message: 'Notifications sent' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to send notifications' });
       throw error;
     } finally {
@@ -676,7 +676,7 @@ export const useCoreHR = () => {
       await loadAutoNumberSequences();
       addToast({ type: 'success', message: 'Sequence created' });
       return sequence;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create sequence' });
       throw error;
     } finally {
@@ -690,7 +690,7 @@ export const useCoreHR = () => {
       await AutoNumberService.resetSequence(sequenceId);
       await loadAutoNumberSequences();
       addToast({ type: 'success', message: 'Sequence reset' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to reset sequence' });
       throw error;
     } finally {
@@ -707,7 +707,7 @@ export const useCoreHR = () => {
         : await ProbationService.getAllRecords();
       setProbationRecords(data.filter(Boolean));
       return data;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to load probation records' });
       throw error;
     } finally {
@@ -721,7 +721,7 @@ export const useCoreHR = () => {
       await ProbationService.addReview(recordId, reviewData);
       await loadProbationRecords();
       addToast({ type: 'success', message: 'Review added' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to add review' });
       throw error;
     } finally {
@@ -735,7 +735,7 @@ export const useCoreHR = () => {
       await ProbationService.extendProbation(recordId, extensionDays, reason);
       await loadProbationRecords();
       addToast({ type: 'success', message: 'Probation extended' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to extend probation' });
       throw error;
     } finally {
@@ -752,7 +752,7 @@ export const useCoreHR = () => {
         : await ConfirmationService.getAllConfirmations();
       setConfirmationLetters(data);
       return data;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to load confirmations' });
       throw error;
     } finally {
@@ -767,7 +767,7 @@ export const useCoreHR = () => {
       await loadConfirmationLetters();
       addToast({ type: 'success', message: 'Confirmation letter generated' });
       return letter;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to generate letter' });
       throw error;
     } finally {
@@ -788,7 +788,7 @@ export const useCoreHR = () => {
       await loadAssets();
       addToast({ type: 'success', message: 'Asset created successfully' });
       return asset;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create asset' });
       throw error;
     } finally {
@@ -803,7 +803,7 @@ export const useCoreHR = () => {
       await loadAssets();
       addToast({ type: 'success', message: 'Asset updated' });
       return asset;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update asset' });
       throw error;
     } finally {
@@ -817,7 +817,7 @@ export const useCoreHR = () => {
       await AssetService.assignAsset(assetId, employeeId, employeeName);
       await loadAssets();
       addToast({ type: 'success', message: 'Asset assigned successfully' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to assign asset' });
       throw error;
     } finally {
@@ -831,7 +831,7 @@ export const useCoreHR = () => {
       await AssetService.returnAsset(assetId);
       await loadAssets();
       addToast({ type: 'success', message: 'Asset returned successfully' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to return asset' });
       throw error;
     } finally {
@@ -845,7 +845,7 @@ export const useCoreHR = () => {
       await AssetService.retireAsset(assetId, disposalMethod, disposalDate);
       await loadAssets();
       addToast({ type: 'success', message: 'Asset retired' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to retire asset' });
       throw error;
     } finally {
@@ -858,7 +858,7 @@ export const useCoreHR = () => {
     try {
       const assets = await AssetService.getEmployeeAssets(employeeId);
       return assets;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to load employee assets' });
       throw error;
     } finally {
@@ -879,7 +879,7 @@ export const useCoreHR = () => {
       setSettings(updated);
       addToast({ type: 'success', message: 'Settings updated successfully' });
       return updated;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update settings' });
       throw error;
     } finally {

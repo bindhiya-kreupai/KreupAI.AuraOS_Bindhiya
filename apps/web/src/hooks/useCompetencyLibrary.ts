@@ -44,7 +44,7 @@ function useAsyncData<T>(
             } else {
                 setError(result.error || 'Failed to fetch data');
             }
-        } catch (err) {
+        } catch {
             setError(err instanceof Error ? err.message : 'Unknown error');
         } finally {
             setLoading(false);
@@ -82,7 +82,7 @@ export function useCompetencies(params?: {
             } else {
                 setError('Failed to fetch competencies');
             }
-        } catch (err) {
+        } catch {
             setError(err instanceof Error ? err.message : 'Unknown error');
         } finally {
             setLoading(false);
@@ -178,7 +178,7 @@ export function useAssessments(params?: {
             } else {
                 setError('Failed to fetch assessments');
             }
-        } catch (err) {
+        } catch {
             setError(err instanceof Error ? err.message : 'Unknown error');
         } finally {
             setLoading(false);

@@ -650,7 +650,7 @@ class InterviewSchedulerService {
         message: `Interview scheduled for ${this.formatDateTime(slotToUse.slot.start)}`,
         messageAr: `تم جدولة المقابلة في ${this.formatDateTime(slotToUse.slot.start)}`,
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         message: `Failed to schedule interview: ${error instanceof Error ? error.message : 'Unknown error'}`,

@@ -23,9 +23,8 @@ export default function TravelHistoryPage() {
             setLoading(true);
             const requests = await TravelRequestService.getRequests();
             setData(requests);
-        } catch (error) {
-            console.error('Failed to fetch travel history:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

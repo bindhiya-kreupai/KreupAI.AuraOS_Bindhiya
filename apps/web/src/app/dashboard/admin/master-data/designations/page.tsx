@@ -32,7 +32,7 @@ const columns: Column<Designation>[] = [
         width: '150px',
         render: (row) => {
             const grade = grades.find(g => g.id === row.gradeId);
-            return <span className="text-sm text-silver-mist">{grade?.name || '-'}</span>;
+            return <span className="text-sm text-silver-mist">{grade?.name || &apos;-'}</span>;
         }
     },
     {
@@ -62,7 +62,7 @@ export default function DesignationsPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch designations:', error);
         } finally {
             setIsLoading(false);
@@ -97,7 +97,7 @@ export default function DesignationsPage() {
             } else {
                 alert('Failed to save designation');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving designation:', error);
             alert('Error saving designation');
         }
@@ -115,7 +115,7 @@ export default function DesignationsPage() {
                 } else {
                     alert('Failed to delete designation');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting designation:', error);
                 alert('Error deleting designation');
             }

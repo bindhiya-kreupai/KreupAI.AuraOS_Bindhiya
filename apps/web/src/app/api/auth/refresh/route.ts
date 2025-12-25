@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
-import { verifyToken, generateAccessToken, JWTPayload } from '@/lib/auth/jwt';
+import type { JWTPayload } from '@/lib/auth/jwt';
+import { verifyToken, generateAccessToken } from '@/lib/auth/jwt';
 import { validationErrorResponse } from '@/lib/validators';
 import { authRateLimit } from '@/lib/middleware/rate-limit';
 import { logger } from '@/lib/logger';
@@ -28,7 +30,7 @@ export const POST = authRateLimit(async function (request: NextRequest) {
     let decoded: JWTPayload;
     try {
       decoded = verifyToken(refreshToken);
-    } catch (error) {
+    } catch {
       logger.warn({ ipAddress }, 'Invalid refresh token attempt');
       return NextResponse.json(
         {
@@ -180,7 +182,7 @@ export const POST = authRateLimit(async function (request: NextRequest) {
       },
       message: 'Token refreshed successfully',
     });
-  } catch (error) {
+  } catch {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }

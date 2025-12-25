@@ -54,7 +54,7 @@ export default function HolidaysPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch holidays:', error);
         } finally {
             setIsLoading(false);
@@ -89,7 +89,7 @@ export default function HolidaysPage() {
             } else {
                 alert('Failed to save holiday');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving holiday:', error);
             alert('Error saving holiday');
         }
@@ -107,7 +107,7 @@ export default function HolidaysPage() {
                 } else {
                     alert('Failed to delete holiday');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting holiday:', error);
                 alert('Error deleting holiday');
             }

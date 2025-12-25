@@ -103,8 +103,8 @@ export default function ComplianceAuditPage() {
                             {UPCOMING_DEADLINES.map(task => (
                                 <div key={task.id} className="flex items-start gap-3 p-3 rounded-xl border border-cloud dark:border-slate-800 hover:border-indigo-300 transition-colors bg-white dark:bg-slate-900/40">
                                     <div className="flex-col items-center justify-center p-2 bg-slate-50 dark:bg-slate-800 rounded-lg min-w-[50px] text-center hidden sm:flex">
-                                        <span className="text-[10px] uppercase font-bold text-slate-400">{task.dueDate.split(' ')[0]}</span>
-                                        <span className="text-lg font-bold text-ink-black dark:text-pearl">{task.dueDate.split(' ')[1].replace(',', '')}</span>
+                                        <span className="text-[10px] uppercase font-bold text-slate-400">{task.dueDate.split(&apos; ')[0]}</span>
+                                        <span className="text-lg font-bold text-ink-black dark:text-pearl">{task.dueDate.split(&apos; ')[1].replace(',', '')}</span>
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex justify-between items-start">

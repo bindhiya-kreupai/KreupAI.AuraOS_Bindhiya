@@ -1,14 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { userService } from '@/services/user.service';
 import { roleService } from '@/services/role.service';
+import type {
+  TestTenant,
+  TestUser} from '../helpers/test-utils';
 import {
   createTestTenant,
   createTestUser,
   createTestRole,
   assignRoleToUser,
-  cleanupTestData,
-  TestTenant,
-  TestUser,
+  cleanupTestData
 } from '../helpers/test-utils';
 
 /**

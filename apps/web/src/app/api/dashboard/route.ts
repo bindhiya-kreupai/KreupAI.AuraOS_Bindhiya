@@ -3,7 +3,8 @@
  * Phase 3: Intelligence Layer - Analytics Dashboards
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { DashboardService } from '@/lib/services/reporting';
 
 /**
@@ -55,9 +56,8 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Dashboard error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process dashboard',
         errorAr: 'فشل في معالجة لوحة المعلومات',
@@ -176,9 +176,8 @@ export async function GET(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Dashboard fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch dashboard data', errorAr: 'فشل في جلب بيانات لوحة المعلومات' },
       { status: 500 }
     );

@@ -90,7 +90,7 @@
  *                       $ref: '#/components/schemas/Pagination'
  */
 
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { createProtectedRoute, getIpAddress } from '@/lib/api/route-wrapper';
 import {
   createDepartmentSchema,

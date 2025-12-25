@@ -38,9 +38,8 @@ export default function AssessmentsPage() {
                 // Transform data to test format if needed
                 setTests(TESTS); // Keeping mock data for now
             }
-        } catch (error) {
-            console.error('Error fetching tests:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

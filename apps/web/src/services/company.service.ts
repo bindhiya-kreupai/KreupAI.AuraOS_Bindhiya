@@ -8,7 +8,8 @@
  * @module services/company
  */
 
-import { PrismaClient, Company, CompanyStatus } from '@prisma/client';
+import type { Company, CompanyStatus } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { logger } from '@/lib/logger';
 
 const prisma = new PrismaClient();
@@ -262,7 +263,7 @@ export class CompanyService {
         success: true,
         data: company,
       };
-    } catch (error) {
+    } catch {
       logger.error(
         {
           error,
@@ -334,7 +335,7 @@ export class CompanyService {
       }
 
       return company;
-    } catch (error) {
+    } catch {
       logger.error(
         {
           error,
@@ -389,7 +390,7 @@ export class CompanyService {
       });
 
       return company;
-    } catch (error) {
+    } catch {
       logger.error(
         {
           error,
@@ -509,7 +510,7 @@ export class CompanyService {
           },
         },
       };
-    } catch (error) {
+    } catch {
       logger.error(
         {
           error,
@@ -636,7 +637,7 @@ export class CompanyService {
         success: true,
         data: updatedCompany,
       };
-    } catch (error) {
+    } catch {
       logger.error(
         {
           error,
@@ -745,7 +746,7 @@ export class CompanyService {
           message: 'Company successfully deactivated',
         },
       };
-    } catch (error) {
+    } catch {
       logger.error(
         {
           error,
@@ -831,7 +832,7 @@ export class CompanyService {
         success: true,
         data: stats,
       };
-    } catch (error) {
+    } catch {
       logger.error(
         {
           error,
@@ -919,7 +920,7 @@ export class CompanyService {
         success: true,
         data: updatedCompany,
       };
-    } catch (error) {
+    } catch {
       logger.error(
         {
           error,
@@ -1013,7 +1014,7 @@ export class CompanyService {
         success: true,
         data: updatedCompany,
       };
-    } catch (error) {
+    } catch {
       logger.error(
         {
           error,

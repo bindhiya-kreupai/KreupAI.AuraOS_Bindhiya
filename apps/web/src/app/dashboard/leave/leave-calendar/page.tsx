@@ -8,7 +8,7 @@ import {
     Filter
 } from 'lucide-react';
 import { HolidayService, LeaveRequestService } from '../services';
-import { Holiday, LeaveRequest } from '../types';
+import type { Holiday, LeaveRequest } from '../types';
 
 export default function LeaveCalendarPage() {
     const [holidays, setHolidays] = useState<Holiday[]>([]);
@@ -32,9 +32,8 @@ export default function LeaveCalendarPage() {
             if (leavesData.length > 0) {
                 setLeaves(leavesData);
             }
-        } catch (error) {
-            console.error('Error fetching calendar data:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

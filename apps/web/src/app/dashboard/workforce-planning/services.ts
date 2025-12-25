@@ -4,7 +4,7 @@
  */
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   DemandForecast,
   SupplyAnalysis,
   GapAnalysis,
@@ -26,9 +26,8 @@ export class DemandForecastService {
     try {
       const response = await APIClient.get<{ forecasts?: DemandForecast[] }>(this.endpoint);
       return response.forecasts || [];
-    } catch (error) {
-      console.error('Error fetching demand forecasts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -36,9 +35,8 @@ export class DemandForecastService {
     try {
       const response = await APIClient.get<{ forecast?: DemandForecast }>(`${this.endpoint}/${id}`);
       return response.forecast || null;
-    } catch (error) {
-      console.error('Error fetching forecast:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -83,9 +81,8 @@ export class SupplyAnalysisService {
     try {
       const response = await APIClient.get<{ analyses?: SupplyAnalysis[] }>(this.endpoint);
       return response.analyses || [];
-    } catch (error) {
-      console.error('Error fetching supply analyses:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -93,9 +90,8 @@ export class SupplyAnalysisService {
     try {
       const response = await APIClient.get<{ analysis?: SupplyAnalysis }>(`${this.endpoint}/${id}`);
       return response.analysis || null;
-    } catch (error) {
-      console.error('Error fetching supply analysis:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -130,9 +126,8 @@ export class GapAnalysisService {
     try {
       const response = await APIClient.get<{ analyses?: GapAnalysis[] }>(this.endpoint);
       return response.analyses || [];
-    } catch (error) {
-      console.error('Error fetching gap analyses:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -140,9 +135,8 @@ export class GapAnalysisService {
     try {
       const response = await APIClient.get<{ analysis?: GapAnalysis }>(`${this.endpoint}/${id}`);
       return response.analysis || null;
-    } catch (error) {
-      console.error('Error fetching gap analysis:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -180,9 +174,8 @@ export class ScenarioModelingService {
     try {
       const response = await APIClient.get<{ scenarios?: ScenarioModel[] }>(this.endpoint);
       return response.scenarios || [];
-    } catch (error) {
-      console.error('Error fetching scenarios:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -190,9 +183,8 @@ export class ScenarioModelingService {
     try {
       const response = await APIClient.get<{ scenario?: ScenarioModel }>(`${this.endpoint}/${id}`);
       return response.scenario || null;
-    } catch (error) {
-      console.error('Error fetching scenario:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -237,9 +229,8 @@ export class SuccessionReadinessService {
     try {
       const response = await APIClient.get<{ assessments?: SuccessionReadiness[] }>(this.endpoint);
       return response.assessments || [];
-    } catch (error) {
-      console.error('Error fetching succession assessments:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -247,9 +238,8 @@ export class SuccessionReadinessService {
     try {
       const response = await APIClient.get<{ assessment?: SuccessionReadiness }>(`${this.endpoint}/${id}`);
       return response.assessment || null;
-    } catch (error) {
-      console.error('Error fetching succession assessment:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -284,9 +274,8 @@ export class TalentAcquisitionPlanService {
     try {
       const response = await APIClient.get<{ plans?: TalentAcquisitionPlan[] }>(this.endpoint);
       return response.plans || [];
-    } catch (error) {
-      console.error('Error fetching acquisition plans:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -294,9 +283,8 @@ export class TalentAcquisitionPlanService {
     try {
       const response = await APIClient.get<{ plan?: TalentAcquisitionPlan }>(`${this.endpoint}/${id}`);
       return response.plan || null;
-    } catch (error) {
-      console.error('Error fetching acquisition plan:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -335,9 +323,8 @@ export class WorkforceAnalyticsService {
     try {
       const response = await APIClient.get<{ metrics?: WorkforceAnalytics }>(this.endpoint);
       return response.metrics || {} as WorkforceAnalytics;
-    } catch (error) {
-      console.error('Error fetching workforce analytics:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -353,9 +340,8 @@ export class WorkforcePlanningSettingsService {
     try {
       const response = await APIClient.get<{ settings?: WorkforcePlanningSettings }>(this.endpoint);
       return response.settings || {} as WorkforcePlanningSettings;
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 

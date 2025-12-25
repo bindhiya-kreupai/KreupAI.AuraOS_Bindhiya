@@ -79,7 +79,7 @@ export default function ServicePage() {
                                 <div className="grid grid-cols-2 gap-4 mb-4">
                                     <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-center">
                                         <div className="text-xs text-slate-400 uppercase font-bold">Efficiency</div>
-                                        <div className={`text-lg font-bold ${parseInt(t.efficiency) >= 100 ? 'text-emerald-500' : 'text-amber-500'}`}>{t.efficiency}</div>
+                                        <div className={`text-lg font-bold ${parseInt(t.efficiency) >= 100 ? &apos;text-emerald-500' : 'text-amber-500'}`}>{t.efficiency}</div>
                                     </div>
                                     <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-center">
                                         <div className="text-xs text-slate-400 uppercase font-bold">Hours</div>

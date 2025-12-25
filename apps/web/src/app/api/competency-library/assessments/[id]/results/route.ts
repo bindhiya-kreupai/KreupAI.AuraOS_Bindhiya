@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { logger } from '@/lib/logger';
 
@@ -106,7 +107,7 @@ export async function POST(
             data: createdResults,
             message: 'Results submitted successfully'
         });
-    } catch (error) {
+    } catch {
         logger.error('Error submitting results:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to submit results' },
@@ -139,7 +140,7 @@ export async function GET(
             success: true,
             data: results
         });
-    } catch (error) {
+    } catch {
         logger.error('Error fetching results:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch results' },

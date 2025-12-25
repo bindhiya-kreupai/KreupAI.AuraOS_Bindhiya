@@ -29,9 +29,8 @@ export default function NativeAppsPage() {
             if (result) {
                 setConfig(result);
             }
-        } catch (error) {
-            console.error('Error fetching mobile app config:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

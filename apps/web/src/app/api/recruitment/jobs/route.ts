@@ -9,7 +9,7 @@ export async function GET() {
             orderBy: { postedDate: 'desc' }
         });
         return NextResponse.json(jobs);
-    } catch (error) {
+    } catch {
         logger.error('Error fetching jobs:', error);
         return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
     }
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
             }
         });
         return NextResponse.json(job);
-    } catch (error) {
+    } catch {
         logger.error('Error creating job:', error);
         return NextResponse.json({ error: 'Failed to create job' }, { status: 500 });
     }

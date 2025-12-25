@@ -51,9 +51,9 @@ export default function TimeRoundingPage() {
                     30: 'Nearest 30 Minutes'
                 };
                 const directionMap: Record<string, string> = {
-                    'nearest': 'Normal Rounding',
-                    'down': 'Floor (Always Down)',
-                    'up': 'Ceiling (Always Up)'
+                    nearest: 'Normal Rounding',
+                    down: 'Floor (Always Down)',
+                    up: 'Ceiling (Always Up)'
                 };
                 setConfig({
                     ...config,
@@ -61,9 +61,8 @@ export default function TimeRoundingPage() {
                     direction: directionMap[result.roundingType] || 'Normal Rounding'
                 });
             }
-        } catch (error) {
-            console.error('Error fetching rounding rules:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -73,9 +72,8 @@ export default function TimeRoundingPage() {
         try {
             await TimeRoundingService.updateRoundingRules(config);
             await fetchRounding();
-        } catch (error) {
-            console.error('Error saving rounding rules:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

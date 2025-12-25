@@ -8,7 +8,7 @@ import {
     Plus
 } from 'lucide-react';
 import { LeaveTypeService } from '../services';
-import { LeaveType } from '../types';
+import type { LeaveType } from '../types';
 
 export default function LeaveTypesPage() {
     const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
@@ -25,9 +25,8 @@ export default function LeaveTypesPage() {
             if (result.length > 0) {
                 setLeaveTypes(result);
             }
-        } catch (error) {
-            console.error('Error fetching leave types:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -80,7 +79,7 @@ export default function LeaveTypesPage() {
                                 <td className="px-6 py-4 font-mono text-slate-500">{type.code}</td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 rounded text-xs font-bold ${type.isPaid ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-600'
-                                        }`}>{type.isPaid ? 'Paid' : 'Unpaid'}</span>
+                                        }`}>{type.isPaid ? &apos;Paid' : 'Unpaid'}</span>
                                 </td>
                                 <td className="px-6 py-4">
                                     {type.carryForwardLimit > 0 ? `Max ${type.carryForwardLimit} Days` : 'No'}

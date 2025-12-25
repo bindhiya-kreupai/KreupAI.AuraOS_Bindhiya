@@ -120,9 +120,8 @@ export async function GET() {
         ],
       },
     });
-  } catch (error) {
-    console.error('Compliance API error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch compliance API overview', errorAr: 'فشل في جلب نظرة عامة على واجهة الامتثال' },
       { status: 500 }
     );

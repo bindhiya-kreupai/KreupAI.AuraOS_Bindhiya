@@ -17,8 +17,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       generatedDate: new Date().toISOString()
     };
     return NextResponse.json({ recommendation }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching L&D recommendations:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

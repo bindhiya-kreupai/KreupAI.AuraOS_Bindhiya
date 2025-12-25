@@ -5,11 +5,9 @@
  * Handles automatic leave accrual, encashment, and carry forward processing
  */
 
-import {
-  LeaveBalance,
+import type {
   LeavePolicy,
   LeavePolicyEntitlement,
-  LeaveType,
   LeaveTypeCode,
   AccrualRunInput,
   AccrualResult,
@@ -19,9 +17,12 @@ import {
   EncashmentCalculation,
   CarryForwardRun,
   CarryForwardResult,
-  CarryForwardError,
+  CarryForwardError} from './types';
+import {
+  LeaveBalance,
+  LeaveType
 } from './types';
-import { SupportedCountryCode } from '../compliance/types';
+import type { SupportedCountryCode } from '../compliance/types';
 import { LabourLawService } from '../compliance/labour-law.service';
 
 // ============================================================================
@@ -58,7 +59,7 @@ export class LeaveAccrualService {
 
           // Update balance
           await this.updateLeaveBalance(employee.id, policy.leaveTypeCode, result, processDate);
-        } catch (error) {
+        } catch {
           errors.push({
             employeeId: employee.id,
             employeeName: employee.name,
@@ -260,7 +261,7 @@ export class LeaveAccrualService {
             toYear
           );
           results.push(result);
-        } catch (error) {
+        } catch {
           errors.push({
             employeeId: employee.id,
             employeeName: employee.name,

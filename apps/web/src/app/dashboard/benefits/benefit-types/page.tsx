@@ -27,9 +27,8 @@ export default function BenefitTypesPage() {
             setLoading(true);
             const data = await BenefitPlanService.getPlans();
             setBenefits(data);
-        } catch (error) {
-            console.error('Error fetching benefit plans:', error);
-            // Fallback to mock data
+        } catch {
+                        // Fallback to mock data
             setBenefits(mockBenefits);
         } finally {
             setLoading(false);

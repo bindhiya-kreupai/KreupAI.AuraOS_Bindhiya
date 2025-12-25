@@ -129,19 +129,19 @@ interface DepartmentGapSummary {
 // --- MOCK DATA ---
 
 const CATEGORY_STYLES: Record<CompetencyCategory, { icon: React.ReactNode; color: string; bgColor: string }> = {
-    'Technical': { icon: <Code className="w-3.5 h-3.5" />, color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
-    'Leadership': { icon: <Crown className="w-3.5 h-3.5" />, color: 'text-amber-600', bgColor: 'bg-amber-100 dark:bg-amber-900/30' },
-    'Behavioral': { icon: <Heart className="w-3.5 h-3.5" />, color: 'text-rose-600', bgColor: 'bg-rose-100 dark:bg-rose-900/30' },
-    'Functional': { icon: <Briefcase className="w-3.5 h-3.5" />, color: 'text-purple-600', bgColor: 'bg-purple-100 dark:bg-purple-900/30' },
-    'Core': { icon: <Star className="w-3.5 h-3.5" />, color: 'text-emerald-600', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30' },
+    Technical: { icon: <Code className="w-3.5 h-3.5" />, color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
+    Leadership: { icon: <Crown className="w-3.5 h-3.5" />, color: 'text-amber-600', bgColor: 'bg-amber-100 dark:bg-amber-900/30' },
+    Behavioral: { icon: <Heart className="w-3.5 h-3.5" />, color: 'text-rose-600', bgColor: 'bg-rose-100 dark:bg-rose-900/30' },
+    Functional: { icon: <Briefcase className="w-3.5 h-3.5" />, color: 'text-purple-600', bgColor: 'bg-purple-100 dark:bg-purple-900/30' },
+    Core: { icon: <Star className="w-3.5 h-3.5" />, color: 'text-emerald-600', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30' },
 };
 
 const SEVERITY_STYLES: Record<GapSeverity, { color: string; bgColor: string; borderColor: string }> = {
-    'Critical': { color: 'text-rose-600', bgColor: 'bg-rose-100 dark:bg-rose-900/30', borderColor: 'border-rose-300 dark:border-rose-700' },
-    'Significant': { color: 'text-orange-600', bgColor: 'bg-orange-100 dark:bg-orange-900/30', borderColor: 'border-orange-300 dark:border-orange-700' },
-    'Moderate': { color: 'text-amber-600', bgColor: 'bg-amber-100 dark:bg-amber-900/30', borderColor: 'border-amber-300 dark:border-amber-700' },
-    'Minor': { color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30', borderColor: 'border-blue-300 dark:border-blue-700' },
-    'None': { color: 'text-emerald-600', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30', borderColor: 'border-emerald-300 dark:border-emerald-700' },
+    Critical: { color: 'text-rose-600', bgColor: 'bg-rose-100 dark:bg-rose-900/30', borderColor: 'border-rose-300 dark:border-rose-700' },
+    Significant: { color: 'text-orange-600', bgColor: 'bg-orange-100 dark:bg-orange-900/30', borderColor: 'border-orange-300 dark:border-orange-700' },
+    Moderate: { color: 'text-amber-600', bgColor: 'bg-amber-100 dark:bg-amber-900/30', borderColor: 'border-amber-300 dark:border-amber-700' },
+    Minor: { color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30', borderColor: 'border-blue-300 dark:border-blue-700' },
+    None: { color: 'text-emerald-600', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30', borderColor: 'border-emerald-300 dark:border-emerald-700' },
 };
 
 const ORGANIZATION_GAPS: CompetencyGap[] = [
@@ -639,7 +639,7 @@ export default function GapAnalysisPage() {
                 }]);
             }
             setIsSheetOpen(false);
-        } catch (error) {
+        } catch {
             logger.error('Failed to save development plan:', error);
         } finally {
             setIsSaving(false);

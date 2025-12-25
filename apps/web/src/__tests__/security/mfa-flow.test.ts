@@ -2,12 +2,13 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mfaService } from '@/services/auth/mfa.service';
 import { authService } from '@/services/auth/auth.service';
 import { authenticator } from 'otplib';
+import type {
+  TestTenant,
+  TestUser} from '../helpers/test-utils';
 import {
   createTestTenant,
   createTestUser,
-  cleanupTestData,
-  TestTenant,
-  TestUser,
+  cleanupTestData
 } from '../helpers/test-utils';
 
 /**

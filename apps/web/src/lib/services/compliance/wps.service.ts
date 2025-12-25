@@ -3,7 +3,7 @@
  * Generates SIF files and manages WPS submissions for UAE payroll
  */
 
-import {
+import type {
   WPSConfiguration,
   WPSRecord,
   WPSSIFFile,

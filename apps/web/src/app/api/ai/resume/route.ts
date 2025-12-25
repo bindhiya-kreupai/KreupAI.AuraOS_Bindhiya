@@ -3,7 +3,8 @@
  * Phase 3: Intelligence Layer - Recruitment AI
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { ResumeParserService } from '@/lib/services/ai';
 
 /**
@@ -120,7 +121,7 @@ export async function POST(request: NextRequest) {
           body.resumes.map(async (r: { text: string; fileName?: string }) => {
             try {
               return await ResumeParserService.parseResume(r.text, r.fileName);
-            } catch (error) {
+            } catch {
               return {
                 error: true,
                 fileName: r.fileName,
@@ -196,9 +197,8 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Resume parsing error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process resume',
         errorAr: 'فشل في معالجة السيرة الذاتية',
@@ -243,9 +243,8 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
-    console.error('Resume fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch resume data', errorAr: 'فشل في جلب بيانات السيرة الذاتية' },
       { status: 500 }
     );

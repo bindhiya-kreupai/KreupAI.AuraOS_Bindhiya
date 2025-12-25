@@ -3,22 +3,23 @@
  * Phase 2: Core Enhancement - Multi-Country Payroll Engine
  */
 
-import {
+import type {
   PayrollRun,
   PayrollRunInput,
   Payslip,
   PayslipLine,
   StatutoryLine,
-  PayrollStatus,
-  PayslipStatus,
   PayrollSummary,
   PayrollValidationResult,
   PayrollValidationError,
   PayrollValidationWarning,
   EmployeeSalaryStructure,
-  SalaryComponent,
   TaxDetails,
-  TaxRegime,
+  TaxRegime} from './types';
+import {
+  PayrollStatus,
+  PayslipStatus,
+  SalaryComponent,
   INDIA_TAX_SLABS_OLD,
   INDIA_TAX_SLABS_NEW,
   INDIA_STANDARD_DEDUCTION_OLD,
@@ -32,7 +33,7 @@ import {
   INDIA_ESI_RATES,
   COUNTRY_CURRENCIES,
 } from './types';
-import { SupportedCountryCode } from '../compliance/types';
+import type { SupportedCountryCode } from '../compliance/types';
 import { GOSIService } from '../compliance/gosi.service';
 import { LabourLawService } from '../compliance/labour-law.service';
 

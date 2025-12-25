@@ -25,9 +25,8 @@ export default function PayrollReconciliationPage() {
             if (result.length > 0) {
                 setPayrollRuns(result);
             }
-        } catch (error) {
-            console.error('Error fetching payroll runs:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

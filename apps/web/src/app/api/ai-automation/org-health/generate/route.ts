@@ -40,8 +40,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ prediction }, { status: 201 });
-  } catch (error) {
-    console.error('Error generating prediction:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

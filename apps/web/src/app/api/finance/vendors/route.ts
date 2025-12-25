@@ -3,7 +3,8 @@
  * Finance Module - Vendor Management
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/finance/vendors
@@ -25,9 +26,8 @@ export async function GET(request: NextRequest) {
         totalSpend: 0,
       },
     });
-  } catch (error) {
-    console.error('Vendors fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch vendors' },
       { status: 500 }
     );
@@ -52,9 +52,8 @@ export async function POST(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Vendor creation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to create vendor' },
       { status: 500 }
     );
@@ -86,9 +85,8 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Vendor update error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to update vendor' },
       { status: 500 }
     );
@@ -115,9 +113,8 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Vendor deleted successfully',
     });
-  } catch (error) {
-    console.error('Vendor deletion error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to delete vendor' },
       { status: 500 }
     );

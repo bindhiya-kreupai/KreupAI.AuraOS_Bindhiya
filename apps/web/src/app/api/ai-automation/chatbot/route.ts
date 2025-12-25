@@ -5,9 +5,8 @@ export const GET = withEnhancedAuth(async (request, context) => {
   try {
     const conversations = [];
     return NextResponse.json({ conversations }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching chatbot conversations:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
 
@@ -29,8 +28,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       createdDate: new Date().toISOString()
     };
     return NextResponse.json({ conversation }, { status: 201 });
-  } catch (error) {
-    console.error('Error starting chatbot conversation:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

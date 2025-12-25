@@ -3,7 +3,8 @@
  * Phase 4 Sprint 31-32: Analytics Agent Endpoints
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { AnalyticsAgentService } from '@/lib/services/agentic-ai';
 import type { InsightRequest } from '@/lib/services/agentic-ai';
 
@@ -26,9 +27,8 @@ export async function GET(request: NextRequest) {
         isActive: definition.isActive,
       },
     });
-  } catch (error) {
-    console.error('Error fetching Analytics agent:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { success: false, error: 'Failed to fetch Analytics agent' },
       { status: 500 }
     );
@@ -134,9 +134,8 @@ export async function POST(request: NextRequest) {
       success: true,
       data: result,
     });
-  } catch (error) {
-    console.error('Error executing Analytics agent action:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to execute action'

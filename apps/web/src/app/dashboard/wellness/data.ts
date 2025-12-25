@@ -3,7 +3,7 @@
  * Comprehensive sample data for immediate testing
  */
 
-import {
+import type {
   HealthProgram,
   MentalHealthService,
   HealthRiskAssessment,

@@ -1,7 +1,7 @@
 // Automotive Module - Service Layer
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   Technician, TechnicianShift, RosterTemplate, ShiftSwapRequest, TimeOffRequest, WorkloadAnalysis,
   SalesCommission, VehicleSale, ServiceSale, CommissionStructure, CommissionReport, SalesPerson,
   Part, InventoryMovement, PurchaseOrder, StockAdjustment, InventoryAnalysis,
@@ -19,9 +19,8 @@ export class TechnicianService {
     try {
       const response = await APIClient.get<{ technicians?: Technician[] }>(this.endpoint);
       return response.technicians || [];
-    } catch (error) {
-      console.error('Error fetching technicians:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -29,9 +28,8 @@ export class TechnicianService {
     try {
       const response = await APIClient.get<{ technician?: Technician }>(`${this.endpoint}/${technicianId}`);
       return response.technician || null;
-    } catch (error) {
-      console.error('Error fetching technician:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -57,9 +55,8 @@ export class ShiftService {
     try {
       const response = await APIClient.get<{ shifts?: TechnicianShift[] }>(this.endpoint);
       return response.shifts || [];
-    } catch (error) {
-      console.error('Error fetching shifts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -70,9 +67,8 @@ export class ShiftService {
         endDate: endDate?.toISOString(),
       });
       return response.shifts || [];
-    } catch (error) {
-      console.error('Error fetching shifts by technician:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -82,9 +78,8 @@ export class ShiftService {
         date: date.toISOString(),
       });
       return response.shifts || [];
-    } catch (error) {
-      console.error('Error fetching shifts by date:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -111,9 +106,8 @@ export class RosterTemplateService {
     try {
       const response = await APIClient.get<{ templates?: RosterTemplate[] }>(this.endpoint);
       return response.templates || [];
-    } catch (error) {
-      console.error('Error fetching templates:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -138,9 +132,8 @@ export class ShiftSwapService {
     try {
       const response = await APIClient.get<{ swapRequests?: ShiftSwapRequest[] }>(this.endpoint);
       return response.swapRequests || [];
-    } catch (error) {
-      console.error('Error fetching swap requests:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -162,9 +155,8 @@ export class TimeOffService {
     try {
       const response = await APIClient.get<{ timeOffRequests?: TimeOffRequest[] }>(this.endpoint);
       return response.timeOffRequests || [];
-    } catch (error) {
-      console.error('Error fetching time-off requests:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -202,9 +194,8 @@ export class SalesPersonService {
     try {
       const response = await APIClient.get<{ salesPeople?: SalesPerson[] }>(this.endpoint);
       return response.salesPeople || [];
-    } catch (error) {
-      console.error('Error fetching sales people:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -221,9 +212,8 @@ export class CommissionService {
     try {
       const response = await APIClient.get<{ commissions?: SalesCommission[] }>(this.endpoint);
       return response.commissions || [];
-    } catch (error) {
-      console.error('Error fetching commissions:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -249,9 +239,8 @@ export class VehicleSaleService {
     try {
       const response = await APIClient.get<{ vehicleSales?: VehicleSale[] }>(this.endpoint);
       return response.vehicleSales || [];
-    } catch (error) {
-      console.error('Error fetching vehicle sales:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -268,9 +257,8 @@ export class ServiceSaleService {
     try {
       const response = await APIClient.get<{ serviceSales?: ServiceSale[] }>(this.endpoint);
       return response.serviceSales || [];
-    } catch (error) {
-      console.error('Error fetching service sales:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -287,9 +275,8 @@ export class CommissionStructureService {
     try {
       const response = await APIClient.get<{ structures?: CommissionStructure[] }>(this.endpoint);
       return response.structures || [];
-    } catch (error) {
-      console.error('Error fetching commission structures:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -324,9 +311,8 @@ export class PartService {
     try {
       const response = await APIClient.get<{ parts?: Part[] }>(this.endpoint);
       return response.parts || [];
-    } catch (error) {
-      console.error('Error fetching parts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -334,9 +320,8 @@ export class PartService {
     try {
       const response = await APIClient.get<{ part?: Part }>(`${this.endpoint}/${partId}`);
       return response.part || null;
-    } catch (error) {
-      console.error('Error fetching part:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -344,9 +329,8 @@ export class PartService {
     try {
       const response = await APIClient.get<{ parts?: Part[] }>(`${this.endpoint}/search`, { query });
       return response.parts || [];
-    } catch (error) {
-      console.error('Error searching parts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -364,9 +348,8 @@ export class PartService {
     try {
       const response = await APIClient.get<{ parts?: Part[] }>(`${this.endpoint}/low-stock`);
       return response.parts || [];
-    } catch (error) {
-      console.error('Error fetching low stock parts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -378,9 +361,8 @@ export class InventoryMovementService {
     try {
       const response = await APIClient.get<{ movements?: InventoryMovement[] }>(this.endpoint);
       return response.movements || [];
-    } catch (error) {
-      console.error('Error fetching inventory movements:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -393,9 +375,8 @@ export class InventoryMovementService {
     try {
       const response = await APIClient.get<{ movements?: InventoryMovement[] }>(`${this.endpoint}/part/${partId}`);
       return response.movements || [];
-    } catch (error) {
-      console.error('Error fetching movements by part:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -407,9 +388,8 @@ export class PurchaseOrderService {
     try {
       const response = await APIClient.get<{ purchaseOrders?: PurchaseOrder[] }>(this.endpoint);
       return response.purchaseOrders || [];
-    } catch (error) {
-      console.error('Error fetching purchase orders:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -436,9 +416,8 @@ export class StockAdjustmentService {
     try {
       const response = await APIClient.get<{ adjustments?: StockAdjustment[] }>(this.endpoint);
       return response.adjustments || [];
-    } catch (error) {
-      console.error('Error fetching stock adjustments:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 

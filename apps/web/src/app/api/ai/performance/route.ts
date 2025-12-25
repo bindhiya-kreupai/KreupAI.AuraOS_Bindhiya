@@ -3,7 +3,8 @@
  * Phase 3: Intelligence Layer - Predictive Analytics
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { PerformancePredictionService } from '@/lib/services/ai';
 
 /**
@@ -115,9 +116,8 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Performance prediction error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to predict performance',
         errorAr: 'فشل في التنبؤ بالأداء',
@@ -168,9 +168,8 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
-    console.error('Performance fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch performance data', errorAr: 'فشل في جلب بيانات الأداء' },
       { status: 500 }
     );

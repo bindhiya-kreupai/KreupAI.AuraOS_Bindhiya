@@ -3,7 +3,7 @@
  * Phase 2: Core Enhancement - Advanced Leave System
  */
 
-import { SupportedCountryCode } from '../compliance/types';
+import type { SupportedCountryCode } from '../compliance/types';
 
 // ============================================================================
 // LEAVE TYPES

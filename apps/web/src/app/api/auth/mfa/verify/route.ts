@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { authenticator } from 'otplib';
 import crypto from 'crypto';
@@ -119,7 +120,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
       success: true,
       message: 'MFA successfully enabled. You will now be required to enter a code when logging in.',
     });
-  } catch (error) {
+  } catch {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Invalid code format', details: error.errors },

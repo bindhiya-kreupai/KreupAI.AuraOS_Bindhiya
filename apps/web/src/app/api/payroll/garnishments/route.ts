@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
@@ -67,7 +68,7 @@ export const GET = withEnhancedAuth(
         data: filteredData,
         meta: { total: filteredData.length },
       });
-    } catch (error) {
+    } catch {
       logger.error('Error fetching garnishments:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch garnishments' },
@@ -106,7 +107,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newGarnishment }, { status: 201 });
-    } catch (error) {
+    } catch {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

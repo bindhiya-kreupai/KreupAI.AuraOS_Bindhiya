@@ -43,9 +43,8 @@ export class MobileAppConfigService {
     try {
       const response = await APIClient.get<{ config?: MobileAppConfig }>(this.endpoint);
       return response.config || ({} as MobileAppConfig);
-    } catch (error) {
-      console.error('Error fetching mobile app config:', error);
-      return {} as MobileAppConfig;
+    } catch {
+            return {} as MobileAppConfig;
     }
   }
 
@@ -53,9 +52,8 @@ export class MobileAppConfigService {
     try {
       const response = await APIClient.put<{ config: MobileAppConfig }>(this.endpoint, updates);
       return response.config;
-    } catch (error) {
-      console.error('Error updating mobile app config:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -84,9 +82,8 @@ export class PushNotificationService {
     try {
       const response = await APIClient.get<{ notifications?: PushNotification[] }>(this.endpoint);
       return response.notifications || [];
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -94,9 +91,8 @@ export class PushNotificationService {
     try {
       const response = await APIClient.get<{ notification?: PushNotification }>(`${this.endpoint}/${notificationId}`);
       return response.notification || ({} as PushNotification);
-    } catch (error) {
-      console.error('Error fetching notification:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -104,9 +100,8 @@ export class PushNotificationService {
     try {
       const response = await APIClient.post<{ notification: PushNotification }>(this.endpoint, notification);
       return response.notification;
-    } catch (error) {
-      console.error('Error creating notification:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -114,18 +109,16 @@ export class PushNotificationService {
     try {
       const response = await APIClient.post<{ notification: PushNotification }>(`${this.endpoint}/${notificationId}/send`, {});
       return response.notification;
-    } catch (error) {
-      console.error('Error sending notification:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async deleteNotification(notificationId: string): Promise<void> {
     try {
       await APIClient.delete(`${this.endpoint}/${notificationId}`);
-    } catch (error) {
-      console.error('Error deleting notification:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -134,9 +127,8 @@ export class PushNotificationService {
     try {
       const response = await APIClient.get<{ templates?: NotificationTemplate[] }>(this.templatesEndpoint);
       return response.templates || [];
-    } catch (error) {
-      console.error('Error fetching notification templates:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -144,9 +136,8 @@ export class PushNotificationService {
     try {
       const response = await APIClient.post<{ template: NotificationTemplate }>(this.templatesEndpoint, template);
       return response.template;
-    } catch (error) {
-      console.error('Error creating notification template:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -163,9 +154,8 @@ export class OfflineModeService {
     try {
       const response = await APIClient.get<{ config?: OfflineConfig }>(this.configEndpoint);
       return response.config || ({} as OfflineConfig);
-    } catch (error) {
-      console.error('Error fetching offline config:', error);
-      return {} as OfflineConfig;
+    } catch {
+            return {} as OfflineConfig;
     }
   }
 
@@ -173,9 +163,8 @@ export class OfflineModeService {
     try {
       const response = await APIClient.put<{ config: OfflineConfig }>(this.configEndpoint, updates);
       return response.config;
-    } catch (error) {
-      console.error('Error updating offline config:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -183,9 +172,8 @@ export class OfflineModeService {
     try {
       const response = await APIClient.get<{ status?: SyncStatus }>(`${this.syncEndpoint}/status`);
       return response.status || ({} as SyncStatus);
-    } catch (error) {
-      console.error('Error fetching sync status:', error);
-      return {} as SyncStatus;
+    } catch {
+            return {} as SyncStatus;
     }
   }
 
@@ -193,9 +181,8 @@ export class OfflineModeService {
     try {
       const response = await APIClient.post<{ status: SyncStatus }>(`${this.syncEndpoint}/sync`, {});
       return response.status;
-    } catch (error) {
-      console.error('Error syncing data:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -212,9 +199,8 @@ export class BiometricService {
     try {
       const response = await APIClient.get<{ config?: BiometricConfig }>(this.configEndpoint);
       return response.config || ({} as BiometricConfig);
-    } catch (error) {
-      console.error('Error fetching biometric config:', error);
-      return {} as BiometricConfig;
+    } catch {
+            return {} as BiometricConfig;
     }
   }
 
@@ -222,9 +208,8 @@ export class BiometricService {
     try {
       const response = await APIClient.put<{ config: BiometricConfig }>(this.configEndpoint, updates);
       return response.config;
-    } catch (error) {
-      console.error('Error updating biometric config:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -232,9 +217,8 @@ export class BiometricService {
     try {
       const response = await APIClient.get<{ enrollments?: BiometricEnrollment[] }>(this.enrollmentsEndpoint);
       return response.enrollments || [];
-    } catch (error) {
-      console.error('Error fetching biometric enrollments:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -242,9 +226,8 @@ export class BiometricService {
     try {
       const response = await APIClient.post<{ enrollment: BiometricEnrollment }>(this.enrollmentsEndpoint, enrollment);
       return response.enrollment;
-    } catch (error) {
-      console.error('Error enrolling biometric:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -252,9 +235,8 @@ export class BiometricService {
     try {
       const response = await APIClient.post<{ enrollment: BiometricEnrollment }>(`${this.enrollmentsEndpoint}/${enrollmentId}/revoke`, { reason });
       return response.enrollment;
-    } catch (error) {
-      console.error('Error revoking biometric:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -271,9 +253,8 @@ export class GPSAttendanceService {
     try {
       const response = await APIClient.get<{ config?: GPSAttendanceConfig }>(this.configEndpoint);
       return response.config || ({} as GPSAttendanceConfig);
-    } catch (error) {
-      console.error('Error fetching GPS config:', error);
-      return {} as GPSAttendanceConfig;
+    } catch {
+            return {} as GPSAttendanceConfig;
     }
   }
 
@@ -281,9 +262,8 @@ export class GPSAttendanceService {
     try {
       const response = await APIClient.put<{ config: GPSAttendanceConfig }>(this.configEndpoint, updates);
       return response.config;
-    } catch (error) {
-      console.error('Error updating GPS config:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -291,9 +271,8 @@ export class GPSAttendanceService {
     try {
       const response = await APIClient.get<{ checkins?: GPSCheckIn[] }>(this.checkinsEndpoint);
       return response.checkins || [];
-    } catch (error) {
-      console.error('Error fetching GPS check-ins:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -301,9 +280,8 @@ export class GPSAttendanceService {
     try {
       const response = await APIClient.post<{ checkin: GPSCheckIn }>(this.checkinsEndpoint, checkIn);
       return response.checkin;
-    } catch (error) {
-      console.error('Error recording check-in:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -319,9 +297,8 @@ export class MobileApprovalsService {
     try {
       const response = await APIClient.get<{ approvals?: MobileApproval[] }>(this.endpoint);
       return response.approvals || [];
-    } catch (error) {
-      console.error('Error fetching approvals:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -329,9 +306,8 @@ export class MobileApprovalsService {
     try {
       const response = await APIClient.get<{ approval?: MobileApproval }>(`${this.endpoint}/${approvalId}`);
       return response.approval || ({} as MobileApproval);
-    } catch (error) {
-      console.error('Error fetching approval:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -339,9 +315,8 @@ export class MobileApprovalsService {
     try {
       const response = await APIClient.post<{ approval: MobileApproval }>(`${this.endpoint}/${approvalId}/approve`, { comments });
       return response.approval;
-    } catch (error) {
-      console.error('Error approving request:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -349,9 +324,8 @@ export class MobileApprovalsService {
     try {
       const response = await APIClient.post<{ approval: MobileApproval }>(`${this.endpoint}/${approvalId}/reject`, { comments });
       return response.approval;
-    } catch (error) {
-      console.error('Error rejecting request:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -368,9 +342,8 @@ export class DocumentUploadService {
     try {
       const response = await APIClient.get<{ config?: DocumentUploadConfig }>(this.configEndpoint);
       return response.config || ({} as DocumentUploadConfig);
-    } catch (error) {
-      console.error('Error fetching document upload config:', error);
-      return {} as DocumentUploadConfig;
+    } catch {
+            return {} as DocumentUploadConfig;
     }
   }
 
@@ -378,9 +351,8 @@ export class DocumentUploadService {
     try {
       const response = await APIClient.post<{ document: UploadedDocument }>(this.documentsEndpoint, document);
       return response.document;
-    } catch (error) {
-      console.error('Error uploading document:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -388,9 +360,8 @@ export class DocumentUploadService {
     try {
       const response = await APIClient.get<{ documents?: UploadedDocument[] }>(this.documentsEndpoint);
       return response.documents || [];
-    } catch (error) {
-      console.error('Error fetching documents:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -406,9 +377,8 @@ export class MobileTimesheetsService {
     try {
       const response = await APIClient.get<{ timesheets?: MobileTimesheet[] }>(this.endpoint);
       return response.timesheets || [];
-    } catch (error) {
-      console.error('Error fetching timesheets:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -416,9 +386,8 @@ export class MobileTimesheetsService {
     try {
       const response = await APIClient.get<{ timesheet?: MobileTimesheet }>(`${this.endpoint}/${timesheetId}`);
       return response.timesheet || ({} as MobileTimesheet);
-    } catch (error) {
-      console.error('Error fetching timesheet:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -426,9 +395,8 @@ export class MobileTimesheetsService {
     try {
       const response = await APIClient.post<{ timesheet: MobileTimesheet }>(`${this.endpoint}/${timesheetId}/submit`, {});
       return response.timesheet;
-    } catch (error) {
-      console.error('Error submitting timesheet:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -444,9 +412,8 @@ export class QuickActionsService {
     try {
       const response = await APIClient.get<{ actions?: QuickAction[] }>(this.endpoint);
       return response.actions || [];
-    } catch (error) {
-      console.error('Error fetching quick actions:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -454,9 +421,8 @@ export class QuickActionsService {
     try {
       const response = await APIClient.put<{ action: QuickAction }>(`${this.endpoint}/${actionId}`, updates);
       return response.action;
-    } catch (error) {
-      console.error('Error updating quick action:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -473,9 +439,8 @@ export class VoiceCommandsService {
     try {
       const response = await APIClient.get<{ config?: VoiceCommandConfig }>(this.configEndpoint);
       return response.config || ({} as VoiceCommandConfig);
-    } catch (error) {
-      console.error('Error fetching voice config:', error);
-      return {} as VoiceCommandConfig;
+    } catch {
+            return {} as VoiceCommandConfig;
     }
   }
 
@@ -483,9 +448,8 @@ export class VoiceCommandsService {
     try {
       const response = await APIClient.post<{ interaction: VoiceInteraction }>(this.interactionsEndpoint, interaction);
       return response.interaction;
-    } catch (error) {
-      console.error('Error recording voice interaction:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -493,9 +457,8 @@ export class VoiceCommandsService {
     try {
       const response = await APIClient.get<{ interactions?: VoiceInteraction[] }>(this.interactionsEndpoint);
       return response.interactions || [];
-    } catch (error) {
-      console.error('Error fetching voice interactions:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -512,18 +475,16 @@ export class MobileAnalyticsService {
     try {
       const response = await APIClient.get<{ analytics?: MobileAnalytics }>(this.endpoint);
       return response.analytics || ({} as MobileAnalytics);
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-      return {} as MobileAnalytics;
+    } catch {
+            return {} as MobileAnalytics;
     }
   }
 
   static async recordSession(session: UserSession): Promise<void> {
     try {
       await APIClient.post(this.sessionsEndpoint, session);
-    } catch (error) {
-      console.error('Error recording session:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -540,9 +501,8 @@ export class ChatService {
     try {
       const response = await APIClient.get<{ conversations?: ChatConversation[] }>(this.conversationsEndpoint);
       return response.conversations || [];
-    } catch (error) {
-      console.error('Error fetching conversations:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -550,9 +510,8 @@ export class ChatService {
     try {
       const response = await APIClient.post<{ message: ChatMessage }>(this.messagesEndpoint, message);
       return response.message;
-    } catch (error) {
-      console.error('Error sending message:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -560,9 +519,8 @@ export class ChatService {
     try {
       const response = await APIClient.get<{ messages?: ChatMessage[] }>(this.messagesEndpoint);
       return response.messages || [];
-    } catch (error) {
-      console.error('Error fetching messages:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -578,9 +536,8 @@ export class MobileProfileService {
     try {
       const response = await APIClient.get<{ profile?: MobileUserProfile }>(this.endpoint);
       return response.profile || ({} as MobileUserProfile);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      return {} as MobileUserProfile;
+    } catch {
+            return {} as MobileUserProfile;
     }
   }
 
@@ -588,9 +545,8 @@ export class MobileProfileService {
     try {
       const response = await APIClient.put<{ profile: MobileUserProfile }>(this.endpoint, updates);
       return response.profile;
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -606,9 +562,8 @@ export class MobileSettingsService {
     try {
       const response = await APIClient.get<{ settings?: MobileAppSettings }>(this.endpoint);
       return response.settings || ({} as MobileAppSettings);
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      return {} as MobileAppSettings;
+    } catch {
+            return {} as MobileAppSettings;
     }
   }
 
@@ -616,9 +571,8 @@ export class MobileSettingsService {
     try {
       const response = await APIClient.put<{ settings: MobileAppSettings }>(this.endpoint, updates);
       return response.settings;
-    } catch (error) {
-      console.error('Error updating settings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }

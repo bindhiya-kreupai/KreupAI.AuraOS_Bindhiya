@@ -28,9 +28,8 @@ export default function DocumentManagementPage() {
         try {
             const data = await DocumentService.getAllDocuments();
             setDocuments(data);
-        } catch (error) {
-            console.error('Error fetching documents:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -117,9 +116,9 @@ export default function DocumentManagementPage() {
                             {currentFiles.map((file, i) => (
                                 <div key={i} className="border border-slate-200 dark:border-slate-800 p-4 rounded-xl hover:shadow-lg transition-all group relative flex flex-col bg-slate-50/50 dark:bg-slate-800/20 hover:bg-white dark:hover:bg-slate-800">
                                     <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex gap-1 bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700 p-1 transition-opacity">
-                                        <button onClick={() => handleFileAction('Preview', file.name)} className="p-1 hover:text-indigo-600" title="Preview"><Eye className="w-3 h-3" /></button>
-                                        <button onClick={() => handleFileAction('Download', file.name)} className="p-1 hover:text-emerald-600" title="Download"><Download className="w-3 h-3" /></button>
-                                        <button onClick={() => handleFileAction('Delete', file.name)} className="p-1 hover:text-rose-600" title="Delete"><Trash className="w-3 h-3" /></button>
+                                        <button onClick={() => handleFileAction(&apos;Preview', file.name)} className="p-1 hover:text-indigo-600" title="Preview"><Eye className="w-3 h-3" /></button>
+                                        <button onClick={() => handleFileAction(&apos;Download', file.name)} className="p-1 hover:text-emerald-600" title="Download"><Download className="w-3 h-3" /></button>
+                                        <button onClick={() => handleFileAction(&apos;Delete', file.name)} className="p-1 hover:text-rose-600" title="Delete"><Trash className="w-3 h-3" /></button>
                                     </div>
                                     <div className="w-10 h-10 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center mb-4">
                                         <FileText className="w-6 h-6" />

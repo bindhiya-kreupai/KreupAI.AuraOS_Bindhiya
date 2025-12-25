@@ -23,9 +23,8 @@ export default function TravelPolicyPage() {
             setLoading(true);
             const settings = await TravelSettingsService.getSettings();
             setData(settings);
-        } catch (error) {
-            console.error('Failed to fetch travel settings:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

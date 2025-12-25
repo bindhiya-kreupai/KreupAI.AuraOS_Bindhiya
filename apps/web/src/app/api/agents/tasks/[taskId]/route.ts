@@ -3,7 +3,8 @@
  * Phase 4 Sprint 31-32: Task Management
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { AgentFrameworkService } from '@/lib/services/agentic-ai';
 import type { TaskStatus } from '@/lib/services/agentic-ai';
 
@@ -30,9 +31,8 @@ export async function GET(
       success: true,
       data: task,
     });
-  } catch (error) {
-    console.error('Error fetching task:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { success: false, error: 'Failed to fetch task' },
       { status: 500 }
     );
@@ -83,9 +83,8 @@ export async function PATCH(
       success: true,
       data: task,
     });
-  } catch (error) {
-    console.error('Error updating task:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to update task'

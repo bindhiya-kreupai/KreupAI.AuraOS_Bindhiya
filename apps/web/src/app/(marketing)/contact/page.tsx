@@ -6,7 +6,7 @@ export default function ContactPage() {
         <div className="bg-pearl dark:bg-deep-cosmos min-h-screen pt-32 pb-24 flex items-center justify-center">
             <div className="max-w-5xl w-full mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-16">
                 <div>
-                    <h1 className="text-4xl font-display font-bold text-ink-black dark:text-pearl mb-6">Let's talk</h1>
+                    <h1 className="text-4xl font-display font-bold text-ink-black dark:text-pearl mb-6">Let&apos;s talk</h1>
                     <p className="text-lg text-twilight dark:text-silver-mist mb-8">
                         Have questions about AuraOS? Interested in a custom demo? Our team is ready to help.
                     </p>

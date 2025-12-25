@@ -6,7 +6,7 @@
  * and development recommendations
  */
 
-import {
+import type {
   PerformancePrediction,
   EmployeePerformanceData,
   GoalPrediction,
@@ -502,7 +502,7 @@ export class PerformancePredictionService {
         ],
         estimatedDuration: '3-6 months',
       },
-      'Attendance': {
+      Attendance: {
         type: 'BEHAVIORAL',
         priority: 'HIGH',
         title: 'Improve Attendance & Punctuality',
@@ -530,7 +530,7 @@ export class PerformancePredictionService {
         ],
         estimatedDuration: '1-2 months',
       },
-      'Initiative': {
+      Initiative: {
         type: 'ASSIGNMENT',
         priority: 'LOW',
         title: 'Take More Initiative',
@@ -721,7 +721,7 @@ export class PerformancePredictionService {
 
     // Needs attention (declining or score < 50)
     const needsAttention = predictions
-      .filter(p => p.trend === 'DECLINING' || p.predictedScore < 50)
+      .filter(p => p.trend === &apos;DECLINING' || p.predictedScore < 50)
       .map(p => p.employeeId);
 
     // Team trend

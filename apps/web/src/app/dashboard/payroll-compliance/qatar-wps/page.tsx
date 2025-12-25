@@ -34,9 +34,8 @@ export default function QatarWPSPage() {
         if (data.success) {
           setReferenceData(data.data);
         }
-      } catch (error) {
-        console.error('Failed to fetch reference data:', error);
-      }
+      } catch {
+              }
     };
     fetchReferenceData();
   }, []);
@@ -76,9 +75,8 @@ export default function QatarWPSPage() {
       if (data.success) {
         setValidationResult(data.data.validation);
       }
-    } catch (error) {
-      console.error('Generation failed:', error);
-    } finally {
+    } catch {
+          } finally {
       setLoading(false);
     }
   };

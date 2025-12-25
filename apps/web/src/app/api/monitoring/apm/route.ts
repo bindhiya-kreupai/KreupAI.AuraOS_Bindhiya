@@ -4,7 +4,8 @@
  * Provides access to Application Performance Monitoring metrics
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { apm, apmConfig } from '@/lib/monitoring/apm';
@@ -59,7 +60,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       success: true,
       data
     });
-  } catch (error) {
+  } catch {
     logger.error('Error fetching APM metrics:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch APM metrics' },
@@ -94,7 +95,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
           { status: 400 }
         );
     }
-  } catch (error) {
+  } catch {
     logger.error('Error performing APM action:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to perform APM action' },

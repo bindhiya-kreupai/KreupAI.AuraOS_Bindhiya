@@ -21,9 +21,8 @@ export default function ArbitrationPage() {
         try {
             const data = await ArbitrationService.getArbitrations();
             setArbitrations(data);
-        } catch (error) {
-            console.error('Error fetching arbitrations:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

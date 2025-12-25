@@ -3,7 +3,7 @@
  * Comprehensive sample workflows for immediate testing
  */
 
-import { Workflow, ApprovalChain, Integration, DynamicForm } from './types';
+import type { Workflow, ApprovalChain, Integration, DynamicForm } from './types';
 
 // ============================================================================
 // Sample Workflows

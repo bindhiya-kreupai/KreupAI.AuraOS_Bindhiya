@@ -27,9 +27,8 @@ export default function AuditLogsPage() {
             if (result.length > 0) {
                 setLogs(result);
             }
-        } catch (error) {
-            console.error('Error fetching audit logs:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

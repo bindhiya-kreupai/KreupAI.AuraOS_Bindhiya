@@ -31,7 +31,7 @@
  *                     $ref: '#/components/schemas/Department'
  */
 
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { createProtectedRoute } from '@/lib/api/route-wrapper';
 import departmentService from '@/services/department.service';
 import { BusinessRuleError } from '@/lib/errors';

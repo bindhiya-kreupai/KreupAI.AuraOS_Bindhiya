@@ -50,7 +50,7 @@ export const useAnalytics = () => {
         loadPredictiveAnalytics(),
         loadSettings(),
       ]);
-    } catch (error) {
+    } catch {
       logger.error('Error loading data:', error);
       addToast({ type: 'error', message: 'Failed to load analytics data' });
     } finally {
@@ -62,7 +62,7 @@ export const useAnalytics = () => {
     try {
       const reports = await StandardReportService.getAllReports();
       setStandardReports(reports);
-    } catch (error) {
+    } catch {
       logger.error('Error loading standard reports:', error);
     }
   };
@@ -73,7 +73,7 @@ export const useAnalytics = () => {
       const report = await StandardReportService.generateReport(reportId, parameters);
       addToast({ type: 'success', message: 'Report generated successfully' });
       return report;
-    } catch (error) {
+    } catch {
       logger.error('Error generating report:', error);
       addToast({ type: 'error', message: 'Failed to generate report' });
       throw error;
@@ -86,7 +86,7 @@ export const useAnalytics = () => {
     try {
       const reports = await CustomReportService.getAllReports();
       setCustomReports(reports);
-    } catch (error) {
+    } catch {
       logger.error('Error loading custom reports:', error);
     }
   };
@@ -98,7 +98,7 @@ export const useAnalytics = () => {
       await loadCustomReports();
       addToast({ type: 'success', message: 'Custom report created' });
       return report;
-    } catch (error) {
+    } catch {
       logger.error('Error creating report:', error);
       addToast({ type: 'error', message: 'Failed to create report' });
       throw error;
@@ -113,7 +113,7 @@ export const useAnalytics = () => {
       setDashboards(dashboardList);
       const defaultDash = dashboardList.find(d => d.isDefault);
       if (defaultDash) setSelectedDashboard(defaultDash);
-    } catch (error) {
+    } catch {
       logger.error('Error loading dashboards:', error);
     }
   };
@@ -125,7 +125,7 @@ export const useAnalytics = () => {
       await loadDashboards();
       addToast({ type: 'success', message: 'Dashboard created' });
       return dashboard;
-    } catch (error) {
+    } catch {
       logger.error('Error creating dashboard:', error);
       addToast({ type: 'error', message: 'Failed to create dashboard' });
       throw error;
@@ -138,7 +138,7 @@ export const useAnalytics = () => {
     try {
       const schedules = await ScheduledReportService.getAllScheduledReports();
       setScheduledReports(schedules);
-    } catch (error) {
+    } catch {
       logger.error('Error loading scheduled reports:', error);
     }
   };
@@ -150,7 +150,7 @@ export const useAnalytics = () => {
       await loadScheduledReports();
       addToast({ type: 'success', message: 'Report scheduled' });
       return schedule;
-    } catch (error) {
+    } catch {
       logger.error('Error scheduling report:', error);
       addToast({ type: 'error', message: 'Failed to schedule report' });
       throw error;
@@ -165,7 +165,7 @@ export const useAnalytics = () => {
       const exportRecord = await ReportExportService.exportReport(reportId, format);
       addToast({ type: 'success', message: \`Report exported as \${format.toUpperCase()}\` });
       return exportRecord;
-    } catch (error) {
+    } catch {
       logger.error('Error exporting report:', error);
       addToast({ type: 'error', message: 'Failed to export report' });
       throw error;
@@ -178,7 +178,7 @@ export const useAnalytics = () => {
     try {
       const metrics = await RealtimeMetricsService.getMetrics();
       setRealtimeMetrics(metrics);
-    } catch (error) {
+    } catch {
       logger.error('Error loading metrics:', error);
     }
   };
@@ -187,7 +187,7 @@ export const useAnalytics = () => {
     try {
       const reports = await ComplianceReportService.getAllReports();
       setComplianceReports(reports);
-    } catch (error) {
+    } catch {
       logger.error('Error loading compliance reports:', error);
     }
   };
@@ -196,7 +196,7 @@ export const useAnalytics = () => {
     try {
       const dashboardList = await ExecutiveDashboardService.getAllDashboards();
       setExecutiveDashboards(dashboardList);
-    } catch (error) {
+    } catch {
       logger.error('Error loading executive dashboards:', error);
     }
   };
@@ -205,7 +205,7 @@ export const useAnalytics = () => {
     try {
       const analytics = await PredictiveAnalyticsService.getAnalytics();
       setPredictiveAnalytics(analytics);
-    } catch (error) {
+    } catch {
       logger.error('Error loading predictive analytics:', error);
     }
   };
@@ -214,7 +214,7 @@ export const useAnalytics = () => {
     try {
       const settingsData = await AnalyticsSettingsService.getSettings();
       setSettings(settingsData);
-    } catch (error) {
+    } catch {
       logger.error('Error loading settings:', error);
     }
   };
@@ -226,7 +226,7 @@ export const useAnalytics = () => {
       setSettings(updated);
       addToast({ type: 'success', message: 'Settings updated' });
       return updated;
-    } catch (error) {
+    } catch {
       logger.error('Error updating settings:', error);
       addToast({ type: 'error', message: 'Failed to update settings' });
       throw error;

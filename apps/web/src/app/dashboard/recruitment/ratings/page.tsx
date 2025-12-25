@@ -34,9 +34,8 @@ export default function InterviewRatingsPage() {
             if (data && data.length > 0) {
                 setReviews(data);
             }
-        } catch (error) {
-            console.error('Error fetching reviews:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

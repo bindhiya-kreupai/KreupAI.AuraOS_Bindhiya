@@ -3,7 +3,7 @@
  * Phase 4: Enterprise Expansion - Integration Marketplace
  */
 
-import {
+import type {
   Integration,
   IntegrationCategory,
   MarketplaceCategory,

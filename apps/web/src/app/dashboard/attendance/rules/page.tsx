@@ -56,9 +56,8 @@ export default function AttendanceRulesPage() {
                     allowMobilePunch: settings.enableMobileCheckIn || true
                 });
             }
-        } catch (error) {
-            console.error('Error fetching rules:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -73,9 +72,8 @@ export default function AttendanceRulesPage() {
                 autoMarkAbsent: field === 'autoCheckout' ? newValue : undefined,
                 enableMobileCheckIn: field === 'allowMobilePunch' ? newValue : undefined,
             } as any);
-        } catch (error) {
-            console.error('Error updating rules:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

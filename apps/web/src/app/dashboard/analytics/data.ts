@@ -1,6 +1,6 @@
 // Analytics Module - Sample Data
 
-import { StandardReport, CustomReport, Dashboard, ScheduledReport, RealtimeMetric, ComplianceReport, ExecutiveDashboard, PredictiveAnalytics, AnalyticsSettings } from './types';
+import type { StandardReport, CustomReport, Dashboard, ScheduledReport, RealtimeMetric, ComplianceReport, ExecutiveDashboard, PredictiveAnalytics, AnalyticsSettings } from './types';
 
 export const sampleStandardReports: StandardReport[] = [
   {

@@ -23,9 +23,8 @@ export default function ClaimStatusPage() {
             setLoading(true);
             const data = await ClaimService.getClaims({ employeeId: 'EMP-001' });
             setClaims(data);
-        } catch (error) {
-            console.error('Error fetching claim status:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

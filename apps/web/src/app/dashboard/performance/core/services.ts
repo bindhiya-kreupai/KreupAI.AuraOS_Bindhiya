@@ -16,9 +16,8 @@ export class PerformanceReviewService {
         try {
             const response = await APIClient.get<{ reviews?: PerformanceReview[] }>(this.endpoint, filters);
             return response.reviews || [];
-        } catch (error) {
-            console.error('Error fetching reviews:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -45,9 +44,8 @@ export class ReviewCycleService {
         try {
             const response = await APIClient.get<{ cycles?: ReviewCycle[] }>(this.endpoint, filters);
             return response.cycles || [];
-        } catch (error) {
-            console.error('Error fetching cycles:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -64,9 +62,8 @@ export class GoalService {
         try {
             const response = await APIClient.get<{ goals?: Goal[] }>(this.endpoint, filters);
             return response.goals || [];
-        } catch (error) {
-            console.error('Error fetching goals:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -88,9 +85,8 @@ export class CompetencyService {
         try {
             const response = await APIClient.get<{ competencies?: Competency[] }>(this.endpoint);
             return response.competencies || [];
-        } catch (error) {
-            console.error('Error fetching competencies:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -107,9 +103,8 @@ export class DevelopmentPlanService {
         try {
             const response = await APIClient.get<{ plans?: DevelopmentPlan[] }>(this.endpoint, filters);
             return response.plans || [];
-        } catch (error) {
-            console.error('Error fetching plans:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -126,9 +121,8 @@ export class CalibrationService {
         try {
             const response = await APIClient.get<{ sessions?: CalibrationSession[] }>(this.endpoint, filters);
             return response.sessions || [];
-        } catch (error) {
-            console.error('Error fetching sessions:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -145,9 +139,8 @@ export class PerformanceAnalyticsService {
         try {
             const response = await APIClient.get<{ stats: PerformanceStats }>(this.endpoint);
             return response.stats;
-        } catch (error) {
-            console.error('Error fetching stats:', error);
-            return {
+        } catch {
+                        return {
                 totalReviews: 0,
                 completedReviews: 0,
                 averageRating: 0,

@@ -3,7 +3,8 @@
  * Phase 3: Intelligence Layer - Intelligent Recruitment
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -135,9 +136,8 @@ export async function POST(request: NextRequest) {
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
-  } catch (error) {
-    console.error('Job matching error:', error);
-    return NextResponse.json({ error: 'Failed to process job matching' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Failed to process job matching' }, { status: 500 });
   }
 }
 
@@ -157,8 +157,7 @@ export async function GET(request: NextRequest) {
         pendingReview: 23,
       },
     });
-  } catch (error) {
-    console.error('Job matching fetch error:', error);
-    return NextResponse.json({ error: 'Failed to fetch job matching data' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Failed to fetch job matching data' }, { status: 500 });
   }
 }

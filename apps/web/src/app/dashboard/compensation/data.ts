@@ -3,7 +3,7 @@
  * Comprehensive sample data for immediate testing
  */
 
-import {
+import type {
   SalaryComponent,
   Grade,
   SalaryBand,

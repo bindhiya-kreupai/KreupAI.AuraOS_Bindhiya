@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
@@ -39,7 +40,7 @@ export const GET = withEnhancedAuth(
       ];
 
       return NextResponse.json({ success: true, data: mockPlans });
-    } catch (error) {
+    } catch {
       logger.error('Error fetching benefit plans:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch benefit plans' }, { status: 500 });
     }
@@ -56,7 +57,7 @@ export const POST = withEnhancedAuth(
       const newPlan = { ...body, id: `plan-${Date.now()}`, createdAt: new Date().toISOString() };
 
       return NextResponse.json({ success: true, data: newPlan }, { status: 201 });
-    } catch (error) {
+    } catch {
       logger.error('Error creating benefit plan:', error);
       return NextResponse.json({ success: false, error: 'Failed to create benefit plan' }, { status: 500 });
     }
@@ -71,7 +72,7 @@ export const PUT = withEnhancedAuth(
 
       const body = await request.json();
       return NextResponse.json({ success: true, data: { ...body, updatedAt: new Date().toISOString() } });
-    } catch (error) {
+    } catch {
       logger.error('Error updating benefit plan:', error);
       return NextResponse.json({ success: false, error: 'Failed to update benefit plan' }, { status: 500 });
     }
@@ -85,7 +86,7 @@ export const DELETE = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       return NextResponse.json({ success: true, message: 'Benefit plan deleted' });
-    } catch (error) {
+    } catch {
       logger.error('Error deleting benefit plan:', error);
       return NextResponse.json({ success: false, error: 'Failed to delete benefit plan' }, { status: 500 });
     }

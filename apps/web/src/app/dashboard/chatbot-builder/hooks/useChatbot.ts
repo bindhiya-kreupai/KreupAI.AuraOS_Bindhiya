@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
-  DialogueFlow, FlowTest, Entity, Intent, IntentMatch, TrainingDataset, TrainingExample,
-  ModelTraining, Channel, ChannelMessage, MessageTemplate, ConversationAnalytics,
-  UserFeedback, ConversationSession, HandoffRule, HandoffQueue, HandoffRequest, Agent,
-  Language, Translation, LanguageContent, LanguageDetection, LocalizationSettings,
+import type {
+  DialogueFlow, FlowTest, Entity, Intent, TrainingDataset, TrainingExample,
+  ModelTraining, Channel, MessageTemplate, ConversationAnalytics, HandoffRule, Agent,
+  Language, LocalizationSettings,
   ChatbotSettings, Toast
+} from '../types';
+import { IntentMatch, ChannelMessage,
+  UserFeedback, ConversationSession, HandoffQueue, HandoffRequest, Translation, LanguageContent, LanguageDetection
 } from '../types';
 import {
   DialogueFlowService, FlowTestService, EntityService, IntentService, IntentMatchService,
@@ -71,9 +73,8 @@ export const useChatbot = () => {
         loadTrainingDatasets(), loadChannels(), loadHandoffRules(), loadAgents(),
         loadLanguages(), loadSettings()
       ]);
-    } catch (error) {
-      console.error('Error loading data:', error);
-      addToast({ type: 'error', message: 'Failed to load chatbot data' });
+    } catch {
+            addToast({ type: 'error', message: 'Failed to load chatbot data' });
     } finally {
       setLoading(false);
     }
@@ -92,7 +93,7 @@ export const useChatbot = () => {
       await loadDialogueFlows();
       addToast({ type: 'success', message: 'Dialogue flow created' });
       return flow;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create flow' });
       throw error;
     } finally {
@@ -107,7 +108,7 @@ export const useChatbot = () => {
       await loadDialogueFlows();
       addToast({ type: 'success', message: 'Flow updated' });
       return flow;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update flow' });
       throw error;
     } finally {
@@ -121,7 +122,7 @@ export const useChatbot = () => {
       await DialogueFlowService.publishFlow(flowId);
       await loadDialogueFlows();
       addToast({ type: 'success', message: 'Flow published' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to publish flow' });
       throw error;
     } finally {
@@ -135,7 +136,7 @@ export const useChatbot = () => {
       await DialogueFlowService.deleteFlow(flowId);
       await loadDialogueFlows();
       addToast({ type: 'success', message: 'Flow deleted' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to delete flow' });
       throw error;
     } finally {
@@ -156,7 +157,7 @@ export const useChatbot = () => {
       await loadEntities();
       addToast({ type: 'success', message: 'Entity created' });
       return entity;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create entity' });
       throw error;
     } finally {
@@ -171,7 +172,7 @@ export const useChatbot = () => {
       await loadEntities();
       addToast({ type: 'success', message: 'Entity updated' });
       return entity;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update entity' });
       throw error;
     } finally {
@@ -185,7 +186,7 @@ export const useChatbot = () => {
       await EntityService.deleteEntity(entityId);
       await loadEntities();
       addToast({ type: 'success', message: 'Entity deleted' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to delete entity' });
       throw error;
     } finally {
@@ -206,7 +207,7 @@ export const useChatbot = () => {
       await loadIntents();
       addToast({ type: 'success', message: 'Intent created' });
       return intent;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create intent' });
       throw error;
     } finally {
@@ -221,7 +222,7 @@ export const useChatbot = () => {
       await loadIntents();
       addToast({ type: 'success', message: 'Intent updated' });
       return intent;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update intent' });
       throw error;
     } finally {
@@ -235,7 +236,7 @@ export const useChatbot = () => {
       await IntentService.deleteIntent(intentId);
       await loadIntents();
       addToast({ type: 'success', message: 'Intent deleted' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to delete intent' });
       throw error;
     } finally {
@@ -256,7 +257,7 @@ export const useChatbot = () => {
       await loadTrainingDatasets();
       addToast({ type: 'success', message: 'Dataset created' });
       return dataset;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create dataset' });
       throw error;
     } finally {
@@ -270,7 +271,7 @@ export const useChatbot = () => {
       const training = await ModelTrainingService.startTraining(trainingData);
       addToast({ type: 'success', message: 'Training started' });
       return training;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to start training' });
       throw error;
     } finally {
@@ -291,7 +292,7 @@ export const useChatbot = () => {
       await loadChannels();
       addToast({ type: 'success', message: 'Channel created' });
       return channel;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create channel' });
       throw error;
     } finally {
@@ -306,7 +307,7 @@ export const useChatbot = () => {
       await loadChannels();
       addToast({ type: 'success', message: 'Channel updated' });
       return channel;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update channel' });
       throw error;
     } finally {
@@ -320,7 +321,7 @@ export const useChatbot = () => {
       const result = await ChannelService.testChannel(channelId);
       addToast({ type: 'success', message: result ? 'Channel test successful' : 'Channel test failed' });
       return result;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Channel test failed' });
       throw error;
     } finally {
@@ -341,7 +342,7 @@ export const useChatbot = () => {
       await loadHandoffRules();
       addToast({ type: 'success', message: 'Handoff rule created' });
       return rule;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create rule' });
       throw error;
     } finally {
@@ -361,7 +362,7 @@ export const useChatbot = () => {
       await LanguageService.enableLanguage(languageCode);
       await loadLanguages();
       addToast({ type: 'success', message: 'Language enabled' });
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to enable language' });
       throw error;
     } finally {
@@ -382,7 +383,7 @@ export const useChatbot = () => {
       setSettings(updated);
       addToast({ type: 'success', message: 'Settings updated' });
       return updated;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update settings' });
       throw error;
     } finally {
@@ -403,7 +404,7 @@ export const useChatbot = () => {
       await loadFlowTests();
       addToast({ type: 'success', message: `Test ${result.lastRunResult}` });
       return result;
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: 'Test failed' });
       throw error;
     } finally {

@@ -23,9 +23,8 @@ export default function SuggestionBoxPage() {
             setLoading(true);
             const ideas = await InnovationService.getIdeas();
             setData(ideas);
-        } catch (error) {
-            console.error('Error fetching suggestions:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

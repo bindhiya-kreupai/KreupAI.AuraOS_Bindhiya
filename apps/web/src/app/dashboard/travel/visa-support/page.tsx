@@ -22,9 +22,8 @@ export default function VisaSupportPage() {
             setLoading(true);
             const requests = await TravelRequestService.getRequests();
             setData(requests);
-        } catch (error) {
-            console.error('Failed to fetch visa support requests:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

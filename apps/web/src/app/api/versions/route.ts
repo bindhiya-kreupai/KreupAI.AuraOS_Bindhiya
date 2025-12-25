@@ -3,7 +3,8 @@
  * Public endpoint providing API version information and migration guides
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import {
   API_VERSIONS,
   DEFAULT_API_VERSION,
@@ -134,7 +135,7 @@ export async function GET(request: NextRequest) {
         announcements,
       },
     });
-  } catch (error) {
+  } catch {
     logger.error({ error }, 'Error fetching API version information');
     return NextResponse.json(
       {

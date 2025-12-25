@@ -27,9 +27,8 @@ export default function ExceptionHandlingPage() {
             } else {
                 setEvents(data);
             }
-        } catch (error) {
-            console.error('Error fetching qualifying events:', error);
-            setEvents(mockEvents);
+        } catch {
+                        setEvents(mockEvents);
         } finally {
             setLoading(false);
         }

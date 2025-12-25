@@ -27,9 +27,8 @@ export class CriticalPositionService {
         try {
             const response = await APIClient.get<{ positions?: CriticalPosition[] }>(this.endpoint, filters);
             return response.positions || [];
-        } catch (error) {
-            console.error('Error fetching critical positions:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -55,9 +54,8 @@ export class SuccessionCandidateService {
         try {
             const response = await APIClient.get<{ candidates?: SuccessionCandidate[] }>(this.endpoint, filters);
             return response.candidates || [];
-        } catch (error) {
-            console.error('Error fetching succession candidates:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -79,9 +77,8 @@ export class SuccessionCandidateService {
     private static async updateSuccessionDepth(positionId: string): Promise<void> {
         try {
             await APIClient.post(`${this.endpoint}/update-succession-depth`, { positionId });
-        } catch (error) {
-            console.error('Error updating succession depth:', error);
-        }
+        } catch {
+                    }
     }
 }
 
@@ -92,9 +89,8 @@ export class SuccessionPoolService {
         try {
             const response = await APIClient.get<{ pools?: SuccessionPool[] }>(this.endpoint, filters);
             return response.pools || [];
-        } catch (error) {
-            console.error('Error fetching succession pools:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -116,9 +112,8 @@ export class DevelopmentPlanService {
         try {
             const response = await APIClient.get<{ plans?: DevelopmentPlan[] }>(this.endpoint, filters);
             return response.plans || [];
-        } catch (error) {
-            console.error('Error fetching development plans:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -150,9 +145,8 @@ export class TalentReviewService {
         try {
             const response = await APIClient.get<{ reviews?: TalentReview[] }>(this.endpoint, filters);
             return response.reviews || [];
-        } catch (error) {
-            console.error('Error fetching talent reviews:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -179,9 +173,8 @@ export class CareerPathService {
         try {
             const response = await APIClient.get<{ paths?: CareerPath[] }>(this.endpoint, filters);
             return response.paths || [];
-        } catch (error) {
-            console.error('Error fetching career paths:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -203,9 +196,8 @@ export class EmergencySuccessionService {
         try {
             const response = await APIClient.get<{ plans?: EmergencySuccession[] }>(this.endpoint, filters);
             return response.plans || [];
-        } catch (error) {
-            console.error('Error fetching emergency plans:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -227,9 +219,8 @@ export class SuccessionAnalyticsService {
         try {
             const response = await APIClient.get<{ metrics?: SuccessionMetrics }>(`${this.endpoint}/metrics`);
             return response.metrics || {} as SuccessionMetrics;
-        } catch (error) {
-            console.error('Error fetching succession metrics:', error);
-            throw error;
+        } catch {
+                        throw error;
         }
     }
 
@@ -237,9 +228,8 @@ export class SuccessionAnalyticsService {
         try {
             const response = await APIClient.get<{ analysis?: SuccessionRiskAnalysis[] }>(`${this.endpoint}/risk-analysis`);
             return response.analysis || [];
-        } catch (error) {
-            console.error('Error fetching risk analysis:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -269,9 +259,8 @@ export class SuccessionSettingsService {
         try {
             const response = await APIClient.get<{ settings?: SuccessionSettings }>(this.endpoint);
             return response.settings || null;
-        } catch (error) {
-            console.error('Error fetching succession settings:', error);
-            return null;
+        } catch {
+                        return null;
         }
     }
 

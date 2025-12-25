@@ -3,8 +3,10 @@
  * Provides migration guides between API versions
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { ApiVersion, isValidVersion } from '@/lib/middleware/api-version';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+import type { ApiVersion} from '@/lib/middleware/api-version';
+import { isValidVersion } from '@/lib/middleware/api-version';
 import { MigrationGuide } from '@/lib/versioning/version-manager';
 import { logger } from '@/lib/logger';
 
@@ -146,7 +148,7 @@ export async function GET(request: NextRequest) {
         checklist,
       },
     });
-  } catch (error) {
+  } catch {
     logger.error({ error }, 'Error generating migration guide');
     return NextResponse.json(
       {

@@ -22,9 +22,8 @@ export default function LetterGenerationPage() {
         try {
             const data = await LetterService.getAllLetterRequests();
             setLetterRequests(data);
-        } catch (error) {
-            console.error('Error fetching letter requests:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -91,9 +90,9 @@ export default function LetterGenerationPage() {
                                         <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{row.type}</td>
                                         <td className="px-6 py-4 text-slate-500">{row.date}</td>
                                         <td className="px-6 py-4 flex justify-end gap-2 text-slate-400">
-                                            <button onClick={() => handleAction('Preview', row.type)} className="hover:text-indigo-600 hover:bg-slate-100 p-1 rounded transition-colors" title="View"><Eye className="w-4 h-4" /></button>
-                                            <button onClick={() => handleAction('Download', row.type)} className="hover:text-indigo-600 hover:bg-slate-100 p-1 rounded transition-colors" title="Download"><Download className="w-4 h-4" /></button>
-                                            <button onClick={() => handleAction('Print', row.type)} className="hover:text-indigo-600 hover:bg-slate-100 p-1 rounded transition-colors" title="Print"><Printer className="w-4 h-4" /></button>
+                                            <button onClick={() => handleAction(&apos;Preview', row.type)} className="hover:text-indigo-600 hover:bg-slate-100 p-1 rounded transition-colors" title="View"><Eye className="w-4 h-4" /></button>
+                                            <button onClick={() => handleAction(&apos;Download', row.type)} className="hover:text-indigo-600 hover:bg-slate-100 p-1 rounded transition-colors" title="Download"><Download className="w-4 h-4" /></button>
+                                            <button onClick={() => handleAction(&apos;Print', row.type)} className="hover:text-indigo-600 hover:bg-slate-100 p-1 rounded transition-colors" title="Print"><Printer className="w-4 h-4" /></button>
                                         </td>
                                     </tr>
                                 ))}

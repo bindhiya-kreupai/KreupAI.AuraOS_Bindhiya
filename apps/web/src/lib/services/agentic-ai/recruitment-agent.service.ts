@@ -10,14 +10,15 @@
  * - Candidate communication
  */
 
-import {
+import type {
   AgentDefinition,
   AgentResponse,
   ConversationContext,
   CandidateScreeningIntent,
   ScreeningCriteria,
   InterviewScheduleIntent,
-  CandidateMatch,
+  CandidateMatch} from './types';
+import {
   RecruitmentAgentCapabilities,
 } from './types';
 import { AgentFrameworkService } from './agent-framework.service';
@@ -389,7 +390,7 @@ export class RecruitmentAgentService {
       try {
         await this.updateCandidateStatus(candidateId, tenantId, 'SHORTLISTED', 'SCREENING');
         shortlisted++;
-      } catch (error) {
+      } catch {
         errors.push({
           id: candidateId,
           error: error instanceof Error ? error.message : 'Unknown error',
@@ -723,7 +724,7 @@ export class RecruitmentAgentService {
       try {
         await this.sendCandidateUpdate(id, tenantId, 'APPLICATION_RECEIVED');
         sent++;
-      } catch (error) {
+      } catch {
         errors.push({
           id,
           error: error instanceof Error ? error.message : 'Failed to send',

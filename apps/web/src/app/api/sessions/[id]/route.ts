@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
@@ -62,7 +63,7 @@ export const DELETE = withEnhancedAuth(
         success: true,
         message: 'Session revoked successfully',
       });
-    } catch (error) {
+    } catch {
       logger.error('Error revoking session:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to revoke session' },

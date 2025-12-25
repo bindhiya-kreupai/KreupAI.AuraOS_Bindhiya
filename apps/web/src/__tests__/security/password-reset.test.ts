@@ -2,13 +2,14 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { authService } from '@/services/auth/auth.service';
 import { prisma } from '@aura/database';
 import bcrypt from 'bcryptjs';
+import type {
+  TestTenant,
+  TestUser} from '../helpers/test-utils';
 import {
   createTestTenant,
   createTestUser,
   cleanupTestData,
-  sleep,
-  TestTenant,
-  TestUser,
+  sleep
 } from '../helpers/test-utils';
 
 /**

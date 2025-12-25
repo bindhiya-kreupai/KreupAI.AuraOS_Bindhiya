@@ -3,7 +3,8 @@
  * Phase 2: Core Enhancement - Advanced Leave System
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { LeaveAccrualService } from '@/lib/services/leave';
 
 /**
@@ -68,9 +69,8 @@ export async function GET(request: NextRequest) {
           },
         });
     }
-  } catch (error) {
-    console.error('Leave fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch leave data', errorAr: 'فشل في جلب بيانات الإجازات' },
       { status: 500 }
     );
@@ -122,9 +122,8 @@ export async function POST(request: NextRequest) {
         createdAt: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Leave submission error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to submit leave request', errorAr: 'فشل في تقديم طلب الإجازة' },
       { status: 500 }
     );

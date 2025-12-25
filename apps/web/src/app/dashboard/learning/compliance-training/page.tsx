@@ -18,9 +18,8 @@ export default function ComplianceTrainingPage() {
                 setLoading(true);
                 const result = await CourseService.getCourses();
                 setData(result);
-            } catch (error) {
-                console.error('Error fetching compliance training:', error);
-                setData([]);
+            } catch {
+                                setData([]);
             } finally {
                 setLoading(false);
             }

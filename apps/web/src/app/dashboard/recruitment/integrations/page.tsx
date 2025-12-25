@@ -37,9 +37,8 @@ export default function JobBoardsPage() {
                 // For now keeping mock data
                 setIntegrations(INTEGRATIONS);
             }
-        } catch (error) {
-            console.error('Error fetching integrations:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

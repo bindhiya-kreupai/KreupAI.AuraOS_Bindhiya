@@ -3,7 +3,8 @@
  * Phase 3: Intelligence Layer - External Recruitment
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -90,9 +91,8 @@ export async function POST(request: NextRequest) {
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
-  } catch (error) {
-    console.error('Job boards error:', error);
-    return NextResponse.json({ error: 'Failed to process job boards request' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Failed to process job boards request' }, { status: 500 });
   }
 }
 
@@ -115,9 +115,8 @@ export async function GET(request: NextRequest) {
         pendingSync: 3,
       },
     });
-  } catch (error) {
-    console.error('Job boards fetch error:', error);
-    return NextResponse.json({ error: 'Failed to fetch job boards data' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Failed to fetch job boards data' }, { status: 500 });
   }
 }
 
@@ -137,8 +136,7 @@ export async function DELETE(request: NextRequest) {
         removedFrom: ['LinkedIn', 'Indeed', 'Glassdoor'],
       },
     });
-  } catch (error) {
-    console.error('Job boards delete error:', error);
-    return NextResponse.json({ error: 'Failed to delete job posting' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Failed to delete job posting' }, { status: 500 });
   }
 }

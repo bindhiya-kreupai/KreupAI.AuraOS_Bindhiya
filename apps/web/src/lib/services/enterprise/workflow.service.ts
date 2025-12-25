@@ -3,7 +3,7 @@
  * Phase 4: Enterprise Expansion - Approval Workflows
  */
 
-import {
+import type {
   WorkflowDefinition,
   WorkflowInstance,
   WorkflowTask,
@@ -13,7 +13,8 @@ import {
   WorkflowAudit,
   DelegationRule,
   ApproverConfig,
-  PendingApprover,
+  PendingApprover} from './types';
+import {
   StepExecution,
 } from './types';
 

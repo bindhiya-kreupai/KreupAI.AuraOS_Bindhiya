@@ -1,5 +1,5 @@
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   CivilServiceGrade,
   SecurityClearance,
   PensionScheme,
@@ -14,9 +14,8 @@ export class CivilServiceGradeService {
     try {
       const response = await APIClient.get<{ grades?: CivilServiceGrade[] }>(this.endpoint);
       return response.grades || [];
-    } catch (error) {
-      console.error('Error fetching grades:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -34,9 +33,8 @@ export class CivilServiceGradeService {
     try {
       const response = await APIClient.get<{ grade?: CivilServiceGrade }>(`${this.endpoint}/employee/${employeeId}`);
       return response.grade || null;
-    } catch (error) {
-      console.error('Error fetching grade:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 }
@@ -48,9 +46,8 @@ export class SecurityClearanceService {
     try {
       const response = await APIClient.get<{ clearances?: SecurityClearance[] }>(this.endpoint);
       return response.clearances || [];
-    } catch (error) {
-      console.error('Error fetching clearances:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -68,9 +65,8 @@ export class SecurityClearanceService {
     try {
       const response = await APIClient.get<{ clearance?: SecurityClearance }>(`${this.endpoint}/employee/${employeeId}`);
       return response.clearance || null;
-    } catch (error) {
-      console.error('Error fetching clearance:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -78,9 +74,8 @@ export class SecurityClearanceService {
     try {
       const response = await APIClient.get<{ clearances?: SecurityClearance[] }>(`${this.endpoint}/expiring`, { days });
       return response.clearances || [];
-    } catch (error) {
-      console.error('Error fetching expiring clearances:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -92,9 +87,8 @@ export class PensionSchemeService {
     try {
       const response = await APIClient.get<{ pensions?: PensionScheme[] }>(this.endpoint);
       return response.pensions || [];
-    } catch (error) {
-      console.error('Error fetching pensions:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -112,9 +106,8 @@ export class PensionSchemeService {
     try {
       const response = await APIClient.get<{ pension?: PensionScheme }>(`${this.endpoint}/employee/${employeeId}`);
       return response.pension || null;
-    } catch (error) {
-      console.error('Error fetching pension:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -122,9 +115,8 @@ export class PensionSchemeService {
     try {
       const response = await APIClient.get<{ pensions?: PensionScheme[] }>(`${this.endpoint}/retirement-eligible`);
       return response.pensions || [];
-    } catch (error) {
-      console.error('Error fetching retirement eligible:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -136,9 +128,8 @@ export class GovernmentSettingsService {
     try {
       const response = await APIClient.get<{ settings?: GovernmentSettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -155,9 +146,8 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: GovernmentAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
-      console.error('Error fetching alerts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 

@@ -32,9 +32,10 @@
  *         $ref: '#/components/responses/ValidationError'
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { OmanSPFService } from '@/lib/services/compliance';
-import { OmanSPFEmployee } from '@/lib/services/compliance/types';
+import type { OmanSPFEmployee } from '@/lib/services/compliance/types';
 
 /**
  * POST /api/compliance/oman-spf
@@ -96,9 +97,8 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
-    console.error('Oman SPF calculation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to calculate SPF contributions', errorAr: 'فشل في حساب مساهمات صندوق الحماية الاجتماعية' },
       { status: 500 }
     );
@@ -141,9 +141,8 @@ export async function GET() {
         ],
       },
     });
-  } catch (error) {
-    console.error('Oman SPF reference data error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch SPF reference data', errorAr: 'فشل في جلب البيانات المرجعية' },
       { status: 500 }
     );

@@ -33,9 +33,8 @@ export default function DisciplinaryPage() {
             if (data.length > 0) {
                 setRecords(data);
             }
-        } catch (error) {
-            console.error('Error fetching disciplinary records:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

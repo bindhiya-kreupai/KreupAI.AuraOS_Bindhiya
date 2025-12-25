@@ -168,11 +168,9 @@ export class AuthService {
    *
    * if (result.success && !result.mfaRequired) {
    *   // Use access token for authenticated requests
-   *   console.log(result.accessToken);
-   * } else if (result.mfaRequired) {
+   *      * } else if (result.mfaRequired) {
    *   // Proceed to MFA verification
-   *   console.log('MFA required for user:', result.userId);
-   * }
+   *      * }
    * ```
    */
   async login(
@@ -456,8 +454,7 @@ export class AuthService {
    *   'user@example.com',
    *   'tenant-789'
    * );
-   * console.log(tokens.accessToken);
-   * ```
+   *    * ```
    */
   async refreshToken(
     userId: string,
@@ -520,11 +517,9 @@ export class AuthService {
    * });
    *
    * // Always returns success to prevent email enumeration
-   * console.log(result.message);
-   * // In development, token is returned for testing
+   *    * // In development, token is returned for testing
    * if (result.devToken) {
-   *   console.log('Reset token:', result.devToken);
-   * }
+   *      * }
    * ```
    */
   async requestPasswordReset(request: PasswordResetRequest): Promise<PasswordResetResult> {
@@ -665,11 +660,9 @@ export class AuthService {
    *
    * if (result.success) {
    *   // Redirect to login
-   *   console.log(result.message);
-   * } else {
+   *      * } else {
    *   // Show error
-   *   console.error(result.error);
-   * }
+   *      * }
    * ```
    */
   async resetPassword(confirm: PasswordResetConfirm): Promise<{ success: boolean; message: string; error?: string }> {
@@ -809,8 +802,7 @@ export class AuthService {
    *
    * if (result.valid) {
    *   // Proceed with sensitive operation
-   *   console.log('User verified:', result.userId);
-   * }
+   *      * }
    * ```
    */
   async verifyCredentials(email: string, password: string): Promise<{ valid: boolean; userId?: string }> {
@@ -858,8 +850,7 @@ export class AuthService {
    *   '192.168.1.100',
    *   'Password changed by user'
    * );
-   * console.log(`Revoked ${revokedCount} sessions`);
-   * ```
+   *    * ```
    */
   async revokeAllSessions(userId: string, ipAddress: string, reason: string): Promise<number> {
     const result = await prisma.userSession.updateMany({
@@ -902,8 +893,7 @@ export class AuthService {
    * ```typescript
    * const sessions = await authService.getActiveSessions('user-123');
    * sessions.forEach(session => {
-   *   console.log(`${session.device} from ${session.ipAddress}`);
-   * });
+   *      * });
    * ```
    */
   async getActiveSessions(userId: string) {

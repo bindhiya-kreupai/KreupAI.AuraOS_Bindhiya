@@ -19,8 +19,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       confidenceLevel: 'high'
     };
     return NextResponse.json({ analysis }, { status: 200 });
-  } catch (error) {
-    console.error('Error analyzing performance:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

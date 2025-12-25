@@ -3,7 +3,7 @@
  * Phase 4: Enterprise Expansion - Entity Hierarchy
  */
 
-import {
+import type {
   LegalEntity,
   EntityHierarchy,
   EntityTransfer,

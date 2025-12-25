@@ -19,9 +19,8 @@ export default function AssessmentEnginePage() {
                 setLoading(true);
                 const result = await AssessmentService.getAssessments();
                 setData(result);
-            } catch (error) {
-                console.error('Error fetching assessments:', error);
-                setData([]);
+            } catch {
+                                setData([]);
             } finally {
                 setLoading(false);
             }

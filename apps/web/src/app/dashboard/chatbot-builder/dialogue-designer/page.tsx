@@ -27,9 +27,8 @@ export default function DialogueDesignerPage() {
             if (result.length > 0) {
                 setFlows(result);
             }
-        } catch (error) {
-            console.error('Error fetching dialogue flows:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
@@ -99,7 +100,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
       success: true,
       message: 'MFA has been disabled for your account',
     });
-  } catch (error) {
+  } catch {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Validation failed', details: error.errors },

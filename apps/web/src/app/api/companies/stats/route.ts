@@ -39,7 +39,7 @@
  *                       type: integer
  */
 
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { createProtectedRoute } from '@/lib/api/route-wrapper';
 import companyService from '@/services/company.service';
 import { BusinessRuleError } from '@/lib/errors';

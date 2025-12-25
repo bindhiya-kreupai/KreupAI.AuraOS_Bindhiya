@@ -101,7 +101,7 @@ export default function LocumPage() {
                                 <div key={i} className="flex justify-between items-center p-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
                                     <div>
                                         <div className="font-bold text-sm">{a.name}</div>
-                                        <div className="flex text-xs text-slate-400 gap-1">{[1, 2, 3, 4].map(x => '⭐')} <span className="text-slate-600 font-bold">{a.rating}</span></div>
+                                        <div className="flex text-xs text-slate-400 gap-1">{[1, 2, 3, 4].map(x => &apos;⭐')} <span className="text-slate-600 font-bold">{a.rating}</span></div>
                                     </div>
                                     <span className={`text-[10px] font-bold px-2 py-1 rounded bg-slate-100 dark:bg-slate-800
                                         ${a.reliability === 'High' ? 'text-emerald-500' : a.reliability === 'Medium' ? 'text-amber-500' : 'text-rose-500'}

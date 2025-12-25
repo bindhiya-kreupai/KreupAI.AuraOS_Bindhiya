@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import type {
+    Connection,
+    Edge,
+    Node} from 'reactflow';
 import ReactFlow, {
     useNodesState,
     useEdgesState,
     addEdge,
     Controls,
     Background,
-    Connection,
-    Edge,
-    Node,
     Handle,
     Position,
     ReactFlowProvider,
@@ -143,9 +144,8 @@ export default function WorkflowDesignerPage() {
             setLoading(true);
             const data = await WorkflowService.getWorkflows();
             setWorkflows(data);
-        } catch (error) {
-            console.error('Error fetching workflows:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

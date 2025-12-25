@@ -24,10 +24,10 @@ const DATES = [
 ];
 
 const SHIFT_TYPES = {
-    'G': { label: 'General', color: 'bg-blue-100 text-blue-700 border-blue-200' },
-    'M': { label: 'Morning', color: 'bg-amber-100 text-amber-700 border-amber-200' },
-    'N': { label: 'Night', color: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
-    'WO': { label: 'Week Off', color: 'bg-slate-100 text-slate-500 border-slate-200' },
+    G: { label: 'General', color: 'bg-blue-100 text-blue-700 border-blue-200' },
+    M: { label: 'Morning', color: 'bg-amber-100 text-amber-700 border-amber-200' },
+    N: { label: 'Night', color: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
+    WO: { label: 'Week Off', color: 'bg-slate-100 text-slate-500 border-slate-200' },
 };
 
 const getMockShift = (idx: number, dateIdx: number) => {
@@ -60,9 +60,8 @@ export default function RosterAssignmentPage() {
             if (result && result.length > 0) {
                 setRosters(result);
             }
-        } catch (error) {
-            console.error('Error fetching rosters:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

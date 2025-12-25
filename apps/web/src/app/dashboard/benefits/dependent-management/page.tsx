@@ -26,9 +26,8 @@ export default function DependentManagementPage() {
             } else {
                 setDependents(data);
             }
-        } catch (error) {
-            console.error('Error fetching dependents:', error);
-            setDependents(mockDependents);
+        } catch {
+                        setDependents(mockDependents);
         } finally {
             setLoading(false);
         }

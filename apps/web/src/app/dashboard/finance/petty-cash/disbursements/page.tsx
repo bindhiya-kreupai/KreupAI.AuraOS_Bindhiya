@@ -455,7 +455,7 @@ export default function DisbursementsPage() {
                                                 <td className="p-4">
                                                     <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold uppercase ${getCategoryColor(disbursement.category)} w-fit`}>
                                                         {getCategoryIcon(disbursement.category)}
-                                                        <span>{disbursement.category.replace('-', ' ')}</span>
+                                                        <span>{disbursement.category.replace(&apos;-', ' ')}</span>
                                                     </div>
                                                 </td>
                                                 <td className="p-4">

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
@@ -43,7 +44,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: mockYearEndData,
       });
-    } catch (error) {
+    } catch {
       logger.error('Error fetching year-end data:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch year-end data' },
@@ -88,7 +89,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: result });
-    } catch (error) {
+    } catch {
       logger.error('Error processing year-end task:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to process year-end task' },

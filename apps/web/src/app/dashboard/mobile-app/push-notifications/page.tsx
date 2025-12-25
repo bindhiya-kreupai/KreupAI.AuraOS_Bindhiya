@@ -34,9 +34,8 @@ export default function PushNotificationsPage() {
             if (result.length > 0) {
                 setNotifications(result);
             }
-        } catch (error) {
-            console.error('Error fetching notifications:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -247,7 +246,7 @@ export default function PushNotificationsPage() {
                                             <Bell className="w-5 h-5 text-white" />
                                         </div>
                                         <div>
-                                            <div className="font-bold text-slate-900 text-sm">{title || 'Notification Title'}</div>
+                                            <div className="font-bold text-slate-900 text-sm">{title || &apos;Notification Title'}</div>
                                             <div className="text-xs text-slate-600 leading-relaxed mt-0.5">
                                                 {message || 'Your notification message will appear here exactly as users see it.'}
                                             </div>

@@ -3,7 +3,8 @@
  * Phase 2: Core Enhancement - Advanced Leave System
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { LeaveAccrualService } from '@/lib/services/leave';
 
 /**
@@ -69,9 +70,8 @@ export async function POST(request: NextRequest) {
       success: true,
       data: request_data,
     });
-  } catch (error) {
-    console.error('Leave encashment error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process encashment',
         errorAr: 'فشل في معالجة صرف الإجازات',
@@ -110,9 +110,8 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
-    console.error('Encashment fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch encashment requests', errorAr: 'فشل في جلب طلبات صرف الإجازات' },
       { status: 500 }
     );

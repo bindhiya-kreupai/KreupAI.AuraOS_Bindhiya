@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 import crypto from 'crypto';
@@ -145,7 +146,7 @@ export async function POST(request: NextRequest) {
         devWarning: 'Token is provided for development testing only. Remove in production!',
       }),
     });
-  } catch (error) {
+  } catch {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Invalid email address', details: error.errors },

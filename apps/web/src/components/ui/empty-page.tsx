@@ -62,7 +62,7 @@ const variantConfig: Record<EmptyPageVariant, { icon: React.ReactNode; title: st
     title: 'Access Restricted',
     description: 'You don\'t have permission to access this page. Contact your administrator.',
   },
-  'empty': {
+  empty: {
     icon: <Sparkles className="w-16 h-16" />,
     title: 'Nothing Here Yet',
     description: 'This section is empty. Start by adding some content.',

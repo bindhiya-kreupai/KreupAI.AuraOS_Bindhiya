@@ -29,9 +29,8 @@ export default function StockOptionsPage() {
             setLoading(true);
             const data = await StockGrantService.getGrants();
             setGrants(data);
-        } catch (error) {
-            console.error('Error fetching stock grants:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

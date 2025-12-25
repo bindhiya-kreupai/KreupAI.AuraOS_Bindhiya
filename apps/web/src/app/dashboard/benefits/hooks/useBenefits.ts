@@ -183,7 +183,7 @@ export const useBenefits = () => {
                 // Load analytics
                 const statsData = await BenefitAnalyticsService.getStats();
                 setStats(statsData);
-            } catch (error) {
+            } catch {
                 logger.error('Failed to initialize benefits data:', error);
                 toast.error('Failed to load benefits data');
             } finally {
@@ -205,7 +205,7 @@ export const useBenefits = () => {
             setBenefitPlans(prev => [...prev, created]);
             toast.success('Benefit plan created successfully!');
             return created;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to create benefit plan');
             throw error;
         } finally {
@@ -220,7 +220,7 @@ export const useBenefits = () => {
             setBenefitPlans(prev => prev.map(p => p.id === id ? updated : p));
             toast.success('Benefit plan updated successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update benefit plan');
             throw error;
         } finally {
@@ -234,7 +234,7 @@ export const useBenefits = () => {
             await BenefitPlanService.deletePlan(id);
             setBenefitPlans(prev => prev.filter(p => p.id !== id));
             toast.success('Benefit plan deleted successfully!');
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to delete benefit plan');
             throw error;
         } finally {
@@ -253,7 +253,7 @@ export const useBenefits = () => {
             setEnrollments(prev => [...prev, created]);
             toast.success('Enrollment created successfully!');
             return created;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to create enrollment');
             throw error;
         } finally {
@@ -268,7 +268,7 @@ export const useBenefits = () => {
             setEnrollments(prev => prev.map(e => e.id === id ? updated : e));
             toast.success('Enrollment updated successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update enrollment');
             throw error;
         } finally {
@@ -283,7 +283,7 @@ export const useBenefits = () => {
             setEnrollments(prev => prev.map(e => e.id === id ? updated : e));
             toast.success('Enrollment submitted successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to submit enrollment');
             throw error;
         } finally {
@@ -298,7 +298,7 @@ export const useBenefits = () => {
             setEnrollments(prev => prev.map(e => e.id === id ? updated : e));
             toast.success('Enrollment confirmed successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to confirm enrollment');
             throw error;
         } finally {
@@ -313,7 +313,7 @@ export const useBenefits = () => {
             setEnrollments(prev => prev.map(e => e.id === id ? updated : e));
             toast.success('Enrollment cancelled successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to cancel enrollment');
             throw error;
         } finally {
@@ -324,7 +324,7 @@ export const useBenefits = () => {
     const getEmployeeEnrollments = useCallback(async (employeeId: string) => {
         try {
             return await EnrollmentService.getEnrollments({ employeeId });
-        } catch (error) {
+        } catch {
             toast.error('Failed to fetch employee enrollments');
             throw error;
         }
@@ -341,7 +341,7 @@ export const useBenefits = () => {
             setEnrollmentWindows(prev => [...prev, created]);
             toast.success('Enrollment window created successfully!');
             return created;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to create enrollment window');
             throw error;
         } finally {
@@ -356,7 +356,7 @@ export const useBenefits = () => {
             setEnrollmentWindows(prev => prev.map(w => w.id === id ? updated : w));
             toast.success('Enrollment window updated successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update enrollment window');
             throw error;
         } finally {
@@ -367,7 +367,7 @@ export const useBenefits = () => {
     const getCurrentEnrollmentWindow = useCallback(async () => {
         try {
             return await EnrollmentWindowService.getCurrentWindow();
-        } catch (error) {
+        } catch {
             toast.error('Failed to fetch current enrollment window');
             return null;
         }
@@ -384,7 +384,7 @@ export const useBenefits = () => {
             setDependents(prev => [...prev, created]);
             toast.success('Dependent added successfully!');
             return created;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to add dependent');
             throw error;
         } finally {
@@ -399,7 +399,7 @@ export const useBenefits = () => {
             setDependents(prev => prev.map(d => d.id === id ? updated : d));
             toast.success('Dependent updated successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update dependent');
             throw error;
         } finally {
@@ -414,7 +414,7 @@ export const useBenefits = () => {
             setDependents(prev => prev.map(d => d.id === id ? updated : d));
             toast.success('Dependent verified successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to verify dependent');
             throw error;
         } finally {
@@ -428,7 +428,7 @@ export const useBenefits = () => {
             await DependentService.deleteDependent(id);
             setDependents(prev => prev.filter(d => d.id !== id));
             toast.success('Dependent removed successfully!');
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to remove dependent');
             throw error;
         } finally {
@@ -439,7 +439,7 @@ export const useBenefits = () => {
     const getEmployeeDependents = useCallback(async (employeeId: string) => {
         try {
             return await DependentService.getDependents({ employeeId });
-        } catch (error) {
+        } catch {
             toast.error('Failed to fetch employee dependents');
             throw error;
         }
@@ -456,7 +456,7 @@ export const useBenefits = () => {
             setClaims(prev => [...prev, created]);
             toast.success('Claim submitted successfully!');
             return created;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to submit claim');
             throw error;
         } finally {
@@ -471,7 +471,7 @@ export const useBenefits = () => {
             setClaims(prev => prev.map(c => c.id === id ? updated : c));
             toast.success('Claim updated successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update claim');
             throw error;
         } finally {
@@ -486,7 +486,7 @@ export const useBenefits = () => {
             setClaims(prev => prev.map(c => c.id === id ? updated : c));
             toast.success('Claim approved successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to approve claim');
             throw error;
         } finally {
@@ -501,7 +501,7 @@ export const useBenefits = () => {
             setClaims(prev => prev.map(c => c.id === id ? updated : c));
             toast.success('Claim denied');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to deny claim');
             throw error;
         } finally {
@@ -512,7 +512,7 @@ export const useBenefits = () => {
     const getEmployeeClaims = useCallback(async (employeeId: string) => {
         try {
             return await ClaimService.getClaims({ employeeId });
-        } catch (error) {
+        } catch {
             toast.error('Failed to fetch employee claims');
             throw error;
         }
@@ -525,7 +525,7 @@ export const useBenefits = () => {
     const searchProviders = useCallback(async (query: string) => {
         try {
             return await ProviderService.searchProviders(query);
-        } catch (error) {
+        } catch {
             toast.error('Failed to search providers');
             throw error;
         }
@@ -542,7 +542,7 @@ export const useBenefits = () => {
             setQualifyingEvents(prev => [...prev, created]);
             toast.success('Qualifying event created successfully!');
             return created;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to create qualifying event');
             throw error;
         } finally {
@@ -557,7 +557,7 @@ export const useBenefits = () => {
             setQualifyingEvents(prev => prev.map(e => e.id === id ? updated : e));
             toast.success('Qualifying event verified successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to verify qualifying event');
             throw error;
         } finally {
@@ -572,7 +572,7 @@ export const useBenefits = () => {
     const calculatePremium = useCallback(async (enrollmentId: string) => {
         try {
             return await PremiumService.calculatePremium(enrollmentId);
-        } catch (error) {
+        } catch {
             toast.error('Failed to calculate premium');
             throw error;
         }
@@ -585,7 +585,7 @@ export const useBenefits = () => {
     const checkEligibility = useCallback(async (employeeId: string, benefitPlanId: string) => {
         try {
             return await EligibilityService.checkEligibility(employeeId, benefitPlanId);
-        } catch (error) {
+        } catch {
             toast.error('Failed to check eligibility');
             throw error;
         }
@@ -602,7 +602,7 @@ export const useBenefits = () => {
             setSettings(updated);
             toast.success('Settings updated successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update settings');
             throw error;
         } finally {
@@ -619,7 +619,7 @@ export const useBenefits = () => {
             const statsData = await BenefitAnalyticsService.getStats();
             setStats(statsData);
             return statsData;
-        } catch (error) {
+        } catch {
             toast.error('Failed to refresh statistics');
             throw error;
         }

@@ -17,9 +17,8 @@ export class ShiftService {
     try {
       const response = await APIClient.get<{ shifts?: Shift[] }>(this.endpoint);
       return response.shifts || [];
-    } catch (error) {
-      console.error('Error fetching shifts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -27,9 +26,8 @@ export class ShiftService {
     try {
       const response = await APIClient.get<{ shift?: Shift }>(`${this.endpoint}/${id}`);
       return response.shift || null;
-    } catch (error) {
-      console.error('Error fetching shift:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -69,9 +67,8 @@ export class AttendanceRecordService {
         filters
       );
       return response.records || response.attendance || [];
-    } catch (error) {
-      console.error('Error fetching attendance records:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -79,9 +76,8 @@ export class AttendanceRecordService {
     try {
       const response = await APIClient.get<{ record?: AttendanceRecord }>(`${this.endpoint}/${id}`);
       return response.record || null;
-    } catch (error) {
-      console.error('Error fetching attendance record:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -106,9 +102,8 @@ export class AttendanceRecordService {
         { employeeId, month, type: 'summary' }
       );
       return response.report || null;
-    } catch (error) {
-      console.error('Error fetching monthly report:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 }
@@ -136,9 +131,8 @@ export class AttendanceCheckService {
         filters
       );
       return response.checks || response.punches || [];
-    } catch (error) {
-      console.error('Error fetching checks:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -168,9 +162,8 @@ export class RegularizationService {
         filters
       );
       return response.regularizations || [];
-    } catch (error) {
-      console.error('Error fetching regularizations:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -220,9 +213,8 @@ export class RegularizationService {
         filters
       );
       return response.requests || [];
-    } catch (error) {
-      console.error('Error fetching pending regularization requests:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -246,9 +238,8 @@ export class OvertimeService {
         filters
       );
       return response.requests || response.overtime || [];
-    } catch (error) {
-      console.error('Error fetching overtime requests:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -288,9 +279,8 @@ export class OvertimeService {
     try {
       const response = await APIClient.get<{ data?: any[] }>(this.managementEndpoint, filters);
       return response.data || [];
-    } catch (error) {
-      console.error('Error fetching overtime management data:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -326,9 +316,8 @@ export class AttendanceAnalyticsService {
           overtimeByDepartment: [],
         }
       );
-    } catch (error) {
-      console.error('Error fetching attendance metrics:', error);
-      return {
+    } catch {
+            return {
         totalEmployees: 0,
         presentToday: 0,
         absentToday: 0,
@@ -352,9 +341,8 @@ export class AttendanceAnalyticsService {
     try {
       const response = await APIClient.get<{ exceptions?: any[] }>('/attendance/exceptions', filters);
       return response.exceptions || [];
-    } catch (error) {
-      console.error('Error fetching attendance exceptions:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -399,9 +387,8 @@ export class AttendanceSettingsService {
           sendMonthlySummary: true,
         }
       );
-    } catch (error) {
-      console.error('Error fetching attendance settings:', error);
-      return {
+    } catch {
+            return {
         workingDaysPerWeek: 5,
         weekendDays: [0, 6],
         standardWorkingHours: 8,
@@ -454,9 +441,8 @@ export class CompOffService {
     try {
       const response = await APIClient.get<{ compOffs?: any[] }>(this.endpoint, filters);
       return response.compOffs || [];
-    } catch (error) {
-      console.error('Error fetching comp-offs:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -474,9 +460,8 @@ export class CompOffService {
     try {
       const response = await APIClient.get<{ summary?: any }>(`${this.endpoint}/summary`, { employeeId });
       return response.summary || { totalEarned: 0, totalUsed: 0, balance: 0 };
-    } catch (error) {
-      console.error('Error fetching comp-off summary:', error);
-      return { totalEarned: 0, totalUsed: 0, balance: 0 };
+    } catch {
+            return { totalEarned: 0, totalUsed: 0, balance: 0 };
     }
   }
 }
@@ -500,9 +485,8 @@ export class WFHService {
         filters
       );
       return response.requests || response.wfhRequests || [];
-    } catch (error) {
-      console.error('Error fetching WFH requests:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -534,9 +518,8 @@ export class WFHService {
         month,
       });
       return response.summary || { totalDays: 0, usedDays: 0, remainingDays: 0 };
-    } catch (error) {
-      console.error('Error fetching WFH summary:', error);
-      return { totalDays: 0, usedDays: 0, remainingDays: 0 };
+    } catch {
+            return { totalDays: 0, usedDays: 0, remainingDays: 0 };
     }
   }
 }
@@ -556,9 +539,8 @@ export class ShiftSwapService {
         endDate,
       });
       return response.shifts || [];
-    } catch (error) {
-      console.error('Error fetching my shifts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -570,9 +552,8 @@ export class ShiftSwapService {
     try {
       const response = await APIClient.get<{ swaps?: any[] }>(`${this.endpoint}/marketplace`, filters);
       return response.swaps || [];
-    } catch (error) {
-      console.error('Error fetching shift marketplace:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -613,9 +594,8 @@ export class RosterService {
     try {
       const response = await APIClient.get<{ rosters?: any[] }>(this.endpoint, filters);
       return response.rosters || [];
-    } catch (error) {
-      console.error('Error fetching rosters:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -664,9 +644,8 @@ export class GeoFencingService {
         this.endpoint
       );
       return response.locations || response.geoFences || [];
-    } catch (error) {
-      console.error('Error fetching geo-fences:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -694,9 +673,8 @@ export class GeoFencingService {
         { latitude, longitude }
       );
       return response;
-    } catch (error) {
-      console.error('Error validating location:', error);
-      return { isValid: false };
+    } catch {
+            return { isValid: false };
     }
   }
 }
@@ -712,9 +690,8 @@ export class IPRestrictionService {
     try {
       const response = await APIClient.get<{ rules?: any[] }>(this.endpoint);
       return response.rules || [];
-    } catch (error) {
-      console.error('Error fetching IP rules:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -739,9 +716,8 @@ export class IPRestrictionService {
     try {
       const response = await APIClient.get<{ attempts?: any[] }>(`${this.endpoint}/blocked`, filters);
       return response.attempts || [];
-    } catch (error) {
-      console.error('Error fetching blocked attempts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -749,9 +725,8 @@ export class IPRestrictionService {
     try {
       const response = await APIClient.post<{ isValid: boolean }>(`${this.endpoint}/validate`, { ipAddress });
       return response;
-    } catch (error) {
-      console.error('Error validating IP:', error);
-      return { isValid: false };
+    } catch {
+            return { isValid: false };
     }
   }
 }
@@ -780,9 +755,8 @@ export class PunchRulesService {
           gracePeriodMinutes: 15,
         }
       );
-    } catch (error) {
-      console.error('Error fetching punch rules:', error);
-      return {
+    } catch {
+            return {
         allowEarlyCheckIn: true,
         earlyCheckInMinutes: 30,
         allowLateCheckOut: true,
@@ -822,9 +796,8 @@ export class TimeRoundingService {
           roundingType: 'nearest',
         }
       );
-    } catch (error) {
-      console.error('Error fetching rounding rules:', error);
-      return {
+    } catch {
+            return {
         enabled: false,
         checkInRounding: 'none',
         checkOutRounding: 'none',
@@ -851,9 +824,8 @@ export class ApprovalWorkflowService {
     try {
       const response = await APIClient.get<{ workflows?: any[] }>(this.endpoint);
       return response.workflows || [];
-    } catch (error) {
-      console.error('Error fetching workflows:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -888,9 +860,8 @@ export class FieldForceService {
     try {
       const response = await APIClient.get<{ agents?: any[] }>(this.endpoint, filters);
       return response.agents || [];
-    } catch (error) {
-      console.error('Error fetching field agents:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -902,9 +873,8 @@ export class FieldForceService {
     try {
       const response = await APIClient.get<{ visits?: any[] }>(`${this.endpoint}/visits`, filters);
       return response.visits || [];
-    } catch (error) {
-      console.error('Error fetching visit logs:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -912,9 +882,8 @@ export class FieldForceService {
     try {
       const response = await APIClient.get<{ tracking?: any }>(`${this.endpoint}/track/${employeeId}`);
       return response.tracking || null;
-    } catch (error) {
-      console.error('Error tracking agent:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -946,9 +915,8 @@ export class CompOffManagementService {
     try {
       const response = await APIClient.get<{ data?: any[] }>(this.endpoint, filters);
       return response.data || [];
-    } catch (error) {
-      console.error('Error fetching comp-off management data:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 

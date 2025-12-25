@@ -3,10 +3,12 @@
  * Phase 4 Sprint 31-32: Conversation Sessions
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+import type {
+  AgentType} from '@/lib/services/agentic-ai';
 import {
-  AgentFrameworkService,
-  AgentType,
+  AgentFrameworkService
 } from '@/lib/services/agentic-ai';
 
 /**
@@ -49,9 +51,8 @@ export async function POST(request: NextRequest) {
         messages: session.messages,
       },
     });
-  } catch (error) {
-    console.error('Error starting session:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { success: false, error: 'Failed to start session' },
       { status: 500 }
     );
@@ -81,9 +82,8 @@ export async function GET(request: NextRequest) {
       success: true,
       data: [],
     });
-  } catch (error) {
-    console.error('Error fetching sessions:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { success: false, error: 'Failed to fetch sessions' },
       { status: 500 }
     );

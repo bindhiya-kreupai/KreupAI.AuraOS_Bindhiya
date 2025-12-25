@@ -5,7 +5,8 @@
 
 'use client';
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
+import React, { Component } from 'react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
 interface Props {
@@ -28,8 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        console.error('ErrorBoundary caught an error:', error, errorInfo);
-    }
+            }
 
     handleReset = () => {
         this.setState({ hasError: false, error: undefined });

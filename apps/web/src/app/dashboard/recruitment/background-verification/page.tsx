@@ -29,9 +29,8 @@ export default function BackgroundVerificationPage() {
             const completed = data.filter((c: any) => c.status === 'completed').length;
             const flagged = data.filter((c: any) => c.status === 'flagged').length;
             setStats({ inProgress, completed, flagged });
-        } catch (error) {
-            console.error('Error fetching background checks:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -40,9 +39,8 @@ export default function BackgroundVerificationPage() {
         try {
             await BackgroundCheckService.initiateBackgroundCheck(data);
             await fetchChecks();
-        } catch (error) {
-            console.error('Error initiating check:', error);
-        }
+        } catch {
+                    }
     };
 
     return (

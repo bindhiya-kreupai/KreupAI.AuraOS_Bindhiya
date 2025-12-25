@@ -3,7 +3,7 @@
  * Comprehensive sample data for all construction features
  */
 
-import { ConstructionProject, SafetyInspection, EquipmentLease, SubcontractorProfile, ConstructionSettings } from './types';
+import type { ConstructionProject, SafetyInspection, EquipmentLease, SubcontractorProfile, ConstructionSettings } from './types';
 
 export const sampleProjects: ConstructionProject[] = [{
   projectId: 'proj-001',
@@ -84,7 +84,7 @@ export const sampleConstructionSettings: ConstructionSettings = {
   settingsId: 'settings-001',
   organizationId: 'org-001',
   projectSettings: { defaultContingency: 5, defaultRetainage: 10, budgetThresholds: { warning: 85, critical: 95 }, scheduleThresholds: { warning: 7, critical: 14 } },
-  safetySettings: { inspectionFrequency: { 'daily': 1, 'weekly': 7, 'monthly': 30 }, incidentReportingDeadline: 24, trainingRequirements: ['OSHA 10', 'Fall Protection', 'Confined Space'], ppeRequirements: ['Hard Hat', 'Safety Glasses', 'Steel-Toe Boots', 'Hi-Vis Vest'] },
+  safetySettings: { inspectionFrequency: { daily: 1, weekly: 7, monthly: 30 }, incidentReportingDeadline: 24, trainingRequirements: ['OSHA 10', 'Fall Protection', 'Confined Space'], ppeRequirements: ['Hard Hat', 'Safety Glasses', 'Steel-Toe Boots', 'Hi-Vis Vest'] },
   equipmentSettings: { inspectionFrequency: 7, maintenanceAlertDays: 14, utilizationTarget: 75 },
   subcontractorSettings: { insuranceRequirements: { generalLiability: 2000000, workersCompensation: true, additionalInsured: true, certificateRequired: true }, minimumRating: 3.5, backgroundCheckRequired: true, bondingRequired: true, retainagePercentage: 10 },
   notifications: { budgetAlerts: true, scheduleAlerts: true, safetyAlerts: true, equipmentAlerts: true, paymentReminders: true, permitExpiry: true, advanceNoticeDays: 30 },

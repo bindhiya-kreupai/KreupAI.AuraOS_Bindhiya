@@ -54,7 +54,7 @@ export default function SkillsPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch skills:', error);
         } finally {
             setIsLoading(false);
@@ -89,7 +89,7 @@ export default function SkillsPage() {
             } else {
                 alert('Failed to save skill');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving skill:', error);
             alert('Error saving skill');
         }
@@ -107,7 +107,7 @@ export default function SkillsPage() {
                 } else {
                     alert('Failed to delete skill');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting skill:', error);
                 alert('Error deleting skill');
             }

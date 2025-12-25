@@ -5,7 +5,8 @@
  * Generates professional payslips with Arabic/English support
  */
 
-import { Payslip, PayslipLine, StatutoryLine, TaxDetails } from './types';
+import type { Payslip, TaxDetails } from './types';
+import { PayslipLine, StatutoryLine } from './types';
 import { SupportedCountryCode, COUNTRY_NAMES, COUNTRY_CURRENCIES } from '../compliance/types';
 
 // ============================================================================
@@ -523,7 +524,7 @@ export class PayslipPDFGenerator {
             <div class="statutory-grid">
               ${payslip.statutoryDeductions.map(s => `
                 <div class="statutory-item">
-                  <div class="statutory-label">${options.language === 'ar' ? s.nameAr : s.name}</div>
+                  <div class="statutory-label">${options.language === &apos;ar' ? s.nameAr : s.name}</div>
                   <div class="statutory-value">
                     ${t.employee}: ${currencySymbol} ${this.formatCurrency(s.employeeAmount)}<br>
                     ${t.employer}: ${currencySymbol} ${this.formatCurrency(s.employerAmount)}
@@ -566,7 +567,7 @@ export class PayslipPDFGenerator {
             <div class="bank-grid">
               <div>
                 <div class="info-label">${t.bankName}</div>
-                <div class="info-value">${payslip.bankName || '-'}</div>
+                <div class="info-value">${payslip.bankName || &apos;-'}</div>
               </div>
               <div>
                 <div class="info-label">${t.accountNumber}</div>
@@ -589,7 +590,7 @@ export class PayslipPDFGenerator {
           <p class="footer-note">${options.language === 'ar'
             ? (options.footerTextAr || 'هذا كشف راتب تم إنشاؤه تلقائياً ولا يتطلب توقيعاً')
             : (options.footerText || 'This is a computer-generated payslip and does not require a signature')}</p>
-          <p>Generated on ${new Date().toLocaleDateString('en-GB')} | AuraOS HR</p>
+          <p>Generated on ${new Date().toLocaleDateString(&apos;en-GB')} | AuraOS HR</p>
         </div>
       </div>
     `;
@@ -605,7 +606,7 @@ export class PayslipPDFGenerator {
   ): string {
     return `
       <div class="tax-section" style="margin-bottom: 20px;">
-        <div class="section-title">${t.taxDetails} (${taxDetails.regime === 'NEW' ? 'New Regime' : 'Old Regime'})</div>
+        <div class="section-title">${t.taxDetails} (${taxDetails.regime === &apos;NEW' ? 'New Regime' : 'Old Regime'})</div>
         <table>
           <tbody>
             <tr>

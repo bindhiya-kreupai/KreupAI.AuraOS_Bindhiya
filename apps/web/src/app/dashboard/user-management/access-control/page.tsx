@@ -21,7 +21,7 @@ export default function AccessControlPage() {
         try {
             const res = await fetch('/api/access-control');
             if (res.ok) setData(await res.json());
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch access controls:', error);
         } finally {
             setIsLoading(false);
@@ -64,7 +64,7 @@ export default function AccessControlPage() {
                 const error = await response.json();
                 alert(`Failed to save rule: ${error.error}`);
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving rule:', error);
             alert('Error saving rule');
         }
@@ -76,7 +76,7 @@ export default function AccessControlPage() {
                 const response = await fetch(`/api/access-control?id=${record.id}`, { method: 'DELETE' });
                 if (response.ok) fetchData();
                 else alert('Failed to delete rule');
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting rule:', error);
                 alert('Error deleting rule');
             }

@@ -3,7 +3,7 @@
  * Phase 4: Enterprise Expansion - Integration Management
  */
 
-import {
+import type {
   TenantIntegration,
   SyncJob,
   IntegrationLog,
@@ -159,7 +159,7 @@ export class IntegrationConnectionService {
         success: true,
         latency: Date.now() - startTime,
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Connection test failed',

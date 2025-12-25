@@ -511,7 +511,7 @@ export default function OneOnOnePage() {
                                     )}
                                 </div>
                             </div>
-                            <p className="text-xs text-slate-500 truncate">{meeting.notes || 'No notes recorded'}</p>
+                            <p className="text-xs text-slate-500 truncate">{meeting.notes || &apos;No notes recorded'}</p>
                             <div className="text-[10px] text-slate-400 mt-1">
                                 {new Date(meeting.completedAt || meeting.scheduledDate).toLocaleDateString()}
                             </div>

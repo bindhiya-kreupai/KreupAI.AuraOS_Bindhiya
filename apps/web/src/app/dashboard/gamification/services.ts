@@ -6,17 +6,15 @@
 'use client';
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   PointsAccount,
   PointsTransaction,
   PointsRule,
-  PointsRedemption,
   Badge,
   UserBadge,
   Challenge,
   ChallengeParticipation,
   Leaderboard,
-  LeaderboardEntry,
   LevelDefinition,
   UserLevel,
   Mission,
@@ -25,9 +23,12 @@ import {
   CurrencyAccount,
   CurrencyTransaction,
   Achievement,
-  AchievementWall,
   GamificationAnalytics,
-  GamificationSettings,
+  GamificationSettings} from './types';
+import {
+  PointsRedemption,
+  LeaderboardEntry,
+  AchievementWall
 } from './types';
 
 // ============================================================================

@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
     //     subject: `New Chat Message: ${type || 'General Inquiry'}`,
     //     html: `
     //         <h2>New Chat Message</h2>
-    //         <p><strong>From:</strong> ${name || 'Anonymous'} (${email})</p>
-    //         <p><strong>Type:</strong> ${type || 'General'}</p>
+    //         <p><strong>From:</strong> ${name || &apos;Anonymous'} (${email})</p>
+    //         <p><strong>Type:</strong> ${type || &apos;General'}</p>
     //         <p><strong>Message:</strong></p>
     //         <p>${message}</p>
     //     `

@@ -1,4 +1,4 @@
-import { CivilServiceGrade, SecurityClearance, PensionScheme, GovernmentSettings } from './types';
+import type { CivilServiceGrade, SecurityClearance, PensionScheme, GovernmentSettings } from './types';
 
 export const sampleCivilServiceGrades: CivilServiceGrade[] = [
   {

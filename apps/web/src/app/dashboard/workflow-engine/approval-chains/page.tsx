@@ -26,9 +26,8 @@ export default function ApprovalChainsPage() {
             if (data.length > 0) {
                 setChains(data);
             }
-        } catch (error) {
-            console.error('Error fetching approval chains:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

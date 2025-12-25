@@ -3,7 +3,7 @@
  * Phase 3: Intelligence Layer - Analytics Dashboards
  */
 
-import {
+import type {
   DashboardConfig,
   DashboardWidget,
   AnalyticsMetric,

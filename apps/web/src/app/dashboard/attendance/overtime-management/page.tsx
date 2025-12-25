@@ -43,11 +43,9 @@ export default function OvertimeManagementPage() {
             // Using OvertimeService.getOvertimeManagement() for overtime policy data
             const result = await OvertimeService.getOvertimeManagement();
             if (result && result.length > 0) {
-                console.log('Loaded overtime management data');
-            }
-        } catch (error) {
-            console.error('Error fetching OT policy:', error);
-        } finally {
+                            }
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -56,11 +54,9 @@ export default function OvertimeManagementPage() {
         setLoading(true);
         try {
             // TODO: Add updateOvertimePolicy method to OvertimeService when API supports it
-            console.log('Saving OT policy:', policy);
-            await fetchPolicy();
-        } catch (error) {
-            console.error('Error saving policy:', error);
-        } finally {
+                        await fetchPolicy();
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

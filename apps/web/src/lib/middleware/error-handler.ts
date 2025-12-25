@@ -104,7 +104,7 @@ export function withErrorHandling<T extends (...args: any[]) => Promise<NextResp
   return async (...args: Parameters<T>): Promise<NextResponse> => {
     try {
       return await handler(...args);
-    } catch (error) {
+    } catch {
       return handleError(error);
     }
   };
@@ -136,7 +136,7 @@ export function withErrorHandlingAndLogging<
       );
 
       return response;
-    } catch (error) {
+    } catch {
       const duration = Date.now() - startTime;
 
       // Log failed requests

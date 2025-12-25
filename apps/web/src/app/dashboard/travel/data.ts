@@ -669,13 +669,13 @@ export const sampleTravelPolicies: TravelPolicy[] = [
     domesticFlightClass: 'business',
     internationalFlightClass: 'business',
     hotelBudgetPerNight: {
-      'tier1': 400,
-      'tier2': 300,
-      'tier3': 250
+      tier1: 400,
+      tier2: 300,
+      tier3: 250
     },
     perDiemRates: {
-      'domestic': 100,
-      'international': 150
+      domestic: 100,
+      international: 150
     },
     advancePercentage: 80,
     requiresApproval: true,
@@ -692,13 +692,13 @@ export const sampleTravelPolicies: TravelPolicy[] = [
     domesticFlightClass: 'premium_economy',
     internationalFlightClass: 'premium_economy',
     hotelBudgetPerNight: {
-      'tier1': 250,
-      'tier2': 200,
-      'tier3': 150
+      tier1: 250,
+      tier2: 200,
+      tier3: 150
     },
     perDiemRates: {
-      'domestic': 75,
-      'international': 100
+      domestic: 75,
+      international: 100
     },
     advancePercentage: 75,
     requiresApproval: true,
@@ -715,13 +715,13 @@ export const sampleTravelPolicies: TravelPolicy[] = [
     domesticFlightClass: 'economy',
     internationalFlightClass: 'economy',
     hotelBudgetPerNight: {
-      'tier1': 180,
-      'tier2': 150,
-      'tier3': 120
+      tier1: 180,
+      tier2: 150,
+      tier3: 120
     },
     perDiemRates: {
-      'domestic': 50,
-      'international': 75
+      domestic: 50,
+      international: 75
     },
     advancePercentage: 70,
     requiresApproval: true,

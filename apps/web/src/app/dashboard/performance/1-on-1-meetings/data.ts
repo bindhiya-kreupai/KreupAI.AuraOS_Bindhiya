@@ -2,7 +2,7 @@
  * Sample/Seed Data for One-on-One Meetings
  */
 
-import { Employee, FeedbackQuestion, Meeting } from './types';
+import type { Employee, FeedbackQuestion, Meeting } from './types';
 
 export const FEEDBACK_QUESTIONS: FeedbackQuestion[] = [
     { id: 'fq1', question: 'How satisfied are you with your current role?', category: 'satisfaction' },

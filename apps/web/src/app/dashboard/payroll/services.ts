@@ -4,7 +4,7 @@
  */
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
     PayrollRun,
     Payslip,
     EmployeeSalary,
@@ -32,9 +32,8 @@ export class PayrollRunService {
         try {
             const response = await APIClient.get<{ runs?: PayrollRun[] }>(this.endpoint);
             return response.runs || [];
-        } catch (error) {
-            console.error('Error fetching payroll runs:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -45,9 +44,8 @@ export class PayrollRunService {
         try {
             const response = await APIClient.get<{ run?: PayrollRun }>(`${this.endpoint}/${id}`);
             return response.run || null;
-        } catch (error) {
-            console.error('Error fetching payroll run:', error);
-            return null;
+        } catch {
+                        return null;
         }
     }
 
@@ -106,9 +104,8 @@ export class PayslipService {
             const url = employeeId ? `${this.endpoint}?employeeId=${employeeId}` : this.endpoint;
             const response = await APIClient.get<{ payslips?: Payslip[] }>(url);
             return response.payslips || [];
-        } catch (error) {
-            console.error('Error fetching payslips:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -119,9 +116,8 @@ export class PayslipService {
         try {
             const response = await APIClient.get<{ payslip?: Payslip }>(`${this.endpoint}/${id}`);
             return response.payslip || null;
-        } catch (error) {
-            console.error('Error fetching payslip:', error);
-            return null;
+        } catch {
+                        return null;
         }
     }
 
@@ -156,9 +152,8 @@ export class EmployeeSalaryService {
         try {
             const response = await APIClient.get<{ salaries?: EmployeeSalary[] }>(this.endpoint);
             return response.salaries || [];
-        } catch (error) {
-            console.error('Error fetching employee salaries:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -169,9 +164,8 @@ export class EmployeeSalaryService {
         try {
             const response = await APIClient.get<{ salary?: EmployeeSalary }>(`${this.endpoint}/${employeeId}`);
             return response.salary || null;
-        } catch (error) {
-            console.error('Error fetching employee salary:', error);
-            return null;
+        } catch {
+                        return null;
         }
     }
 
@@ -199,9 +193,8 @@ export class TaxDeclarationService {
             const url = employeeId ? `${this.endpoint}?employeeId=${employeeId}` : this.endpoint;
             const response = await APIClient.get<{ declarations?: TaxDeclaration[] }>(url);
             return response.declarations || [];
-        } catch (error) {
-            console.error('Error fetching tax declarations:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -212,9 +205,8 @@ export class TaxDeclarationService {
         try {
             const response = await APIClient.get<{ declaration?: TaxDeclaration }>(`${this.endpoint}/${id}`);
             return response.declaration || null;
-        } catch (error) {
-            console.error('Error fetching tax declaration:', error);
-            return null;
+        } catch {
+                        return null;
         }
     }
 
@@ -253,9 +245,8 @@ export class ReimbursementService {
             const url = employeeId ? `${this.endpoint}?employeeId=${employeeId}` : this.endpoint;
             const response = await APIClient.get<{ claims?: ReimbursementClaim[] }>(url);
             return response.claims || [];
-        } catch (error) {
-            console.error('Error fetching reimbursement claims:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -295,9 +286,8 @@ export class LoanService {
             const url = employeeId ? `${this.endpoint}?employeeId=${employeeId}` : this.endpoint;
             const response = await APIClient.get<{ loans?: EmployeeLoan[] }>(url);
             return response.loans || [];
-        } catch (error) {
-            console.error('Error fetching loans:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -333,9 +323,8 @@ export class BonusService {
             const url = employeeId ? `${this.endpoint}?employeeId=${employeeId}` : this.endpoint;
             const response = await APIClient.get<{ bonuses?: Bonus[] }>(url);
             return response.bonuses || [];
-        } catch (error) {
-            console.error('Error fetching bonuses:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -400,9 +389,8 @@ export class StatutoryReportService {
         try {
             const response = await APIClient.get<{ reports?: StatutoryReport[] }>(this.endpoint);
             return response.reports || [];
-        } catch (error) {
-            console.error('Error fetching statutory reports:', error);
-            return [];
+        } catch {
+                        return [];
         }
     }
 
@@ -433,9 +421,8 @@ export class PayrollSettingsService {
         try {
             const response = await APIClient.get<{ settings?: PayrollSettings }>(this.endpoint);
             return response.settings || null;
-        } catch (error) {
-            console.error('Error fetching payroll settings:', error);
-            return null;
+        } catch {
+                        return null;
         }
     }
 
@@ -480,9 +467,8 @@ export class PayrollAnalyticsService {
                 pendingStatutoryReturns: 0,
                 overdueReturns: 0,
             };
-        } catch (error) {
-            console.error('Error fetching payroll stats:', error);
-            return {
+        } catch {
+                        return {
                 totalEmployees: 0,
                 activePayrolls: 0,
                 monthlyPayrollCost: 0,

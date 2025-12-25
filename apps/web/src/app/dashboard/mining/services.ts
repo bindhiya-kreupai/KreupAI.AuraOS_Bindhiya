@@ -1,5 +1,5 @@
 import { APIClient } from '@/lib/api-client';
-import { FIFOWorker, CampFacility, HazardPayRule, HazardPayment, MiningSettings, MiningAlert } from './types';
+import type { FIFOWorker, CampFacility, HazardPayRule, HazardPayment, MiningSettings, MiningAlert } from './types';
 
 export class FIFOLogisticsService {
   private static endpoint = '/mining/fifo-workers';

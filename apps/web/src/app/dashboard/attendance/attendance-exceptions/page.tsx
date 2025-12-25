@@ -59,9 +59,8 @@ export default function AttendanceExceptionsPage() {
                     absent,
                 });
             }
-        } catch (error) {
-            console.error('Error fetching exceptions:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -70,11 +69,9 @@ export default function AttendanceExceptionsPage() {
         setLoading(true);
         try {
             // TODO: Implement exception resolution via API
-            console.log('Resolving exception:', id, action);
-            await fetchExceptions();
-        } catch (error) {
-            console.error('Error resolving exception:', error);
-        } finally {
+                        await fetchExceptions();
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

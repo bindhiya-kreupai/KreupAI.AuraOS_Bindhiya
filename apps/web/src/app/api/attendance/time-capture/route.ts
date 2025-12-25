@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
@@ -148,7 +149,7 @@ export const GET = withEnhancedAuth(
         data: { captures: filteredData, summary },
         meta: { total: filteredData.length },
       });
-    } catch (error) {
+    } catch {
       logger.error('Error fetching time captures:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch time captures' },
@@ -192,7 +193,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newCapture }, { status: 201 });
-    } catch (error) {
+    } catch {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -243,7 +244,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch (error) {
+    } catch {
       logger.error('Error updating time capture:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update time capture' },
@@ -281,7 +282,7 @@ export const DELETE = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, message: 'Time capture deleted successfully' });
-    } catch (error) {
+    } catch {
       logger.error('Error deleting time capture:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to delete time capture' },

@@ -172,7 +172,7 @@ export const useRecruitment = () => {
             }
 
             setStats(statsData);
-        } catch (error) {
+        } catch {
             toast.error('Failed to load recruitment data');
             logger.error('Load error:', error);
         } finally {
@@ -188,7 +188,7 @@ export const useRecruitment = () => {
             setJobRequisitions(prev => [...prev, created]);
             toast.success('Job requisition created successfully!');
             return created;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to create requisition');
             throw error;
         } finally {
@@ -203,7 +203,7 @@ export const useRecruitment = () => {
             setJobRequisitions(prev => prev.map(r => r.id === id ? updated : r));
             toast.success('Requisition updated successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update requisition');
             throw error;
         } finally {
@@ -218,7 +218,7 @@ export const useRecruitment = () => {
             setJobRequisitions(prev => prev.map(r => r.id === id ? approved : r));
             toast.success('Requisition approved!');
             return approved;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to approve requisition');
             throw error;
         } finally {
@@ -233,7 +233,7 @@ export const useRecruitment = () => {
             setJobRequisitions(prev => prev.map(r => r.id === id ? rejected : r));
             toast.success('Requisition rejected');
             return rejected;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to reject requisition');
             throw error;
         } finally {
@@ -249,7 +249,7 @@ export const useRecruitment = () => {
             setJobPostings(prev => [...prev, created]);
             toast.success('Job posting created!');
             return created;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to create posting');
             throw error;
         } finally {
@@ -264,7 +264,7 @@ export const useRecruitment = () => {
             setJobPostings(prev => prev.map(p => p.id === id ? published : p));
             toast.success('Job posting published!');
             return published;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to publish posting');
             throw error;
         } finally {
@@ -279,7 +279,7 @@ export const useRecruitment = () => {
             setJobPostings(prev => prev.map(p => p.id === id ? unpublished : p));
             toast.success('Job posting unpublished');
             return unpublished;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to unpublish posting');
             throw error;
         } finally {
@@ -295,7 +295,7 @@ export const useRecruitment = () => {
             setApplications(prev => [...prev, created]);
             toast.success('Application submitted!');
             return created;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to submit application');
             throw error;
         } finally {
@@ -310,7 +310,7 @@ export const useRecruitment = () => {
             setApplications(prev => prev.map(a => a.id === id ? updated : a));
             toast.success('Application updated!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update application');
             throw error;
         } finally {
@@ -325,7 +325,7 @@ export const useRecruitment = () => {
             setApplications(prev => prev.map(a => a.id === id ? updated : a));
             toast.success(`Application moved to ${stage}`);
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to move application');
             throw error;
         } finally {
@@ -340,7 +340,7 @@ export const useRecruitment = () => {
             setApplications(prev => prev.map(a => a.id === id ? rejected : a));
             toast.success('Application rejected');
             return rejected;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to reject application');
             throw error;
         } finally {
@@ -356,7 +356,7 @@ export const useRecruitment = () => {
             setInterviews(prev => [...prev, scheduled]);
             toast.success('Interview scheduled!');
             return scheduled;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to schedule interview');
             throw error;
         } finally {
@@ -371,7 +371,7 @@ export const useRecruitment = () => {
             setInterviews(prev => prev.map(i => i.id === id ? updated : i));
             toast.success('Interview updated!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update interview');
             throw error;
         } finally {
@@ -386,7 +386,7 @@ export const useRecruitment = () => {
             setInterviews(prev => prev.map(i => i.id === id ? cancelled : i));
             toast.success('Interview cancelled');
             return cancelled;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to cancel interview');
             throw error;
         } finally {
@@ -401,7 +401,7 @@ export const useRecruitment = () => {
             setInterviews(prev => prev.map(i => i.id === id ? completed : i));
             toast.success('Interview marked as completed');
             return completed;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to complete interview');
             throw error;
         } finally {
@@ -417,7 +417,7 @@ export const useRecruitment = () => {
             setInterviewFeedback(prev => [...prev, submitted]);
             toast.success('Interview feedback submitted!');
             return submitted;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to submit feedback');
             throw error;
         } finally {
@@ -433,7 +433,7 @@ export const useRecruitment = () => {
             setJobOffers(prev => [...prev, created]);
             toast.success('Job offer created!');
             return created;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to create offer');
             throw error;
         } finally {
@@ -448,7 +448,7 @@ export const useRecruitment = () => {
             setJobOffers(prev => prev.map(o => o.id === id ? approved : o));
             toast.success('Offer approved!');
             return approved;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to approve offer');
             throw error;
         } finally {
@@ -463,7 +463,7 @@ export const useRecruitment = () => {
             setJobOffers(prev => prev.map(o => o.id === id ? sent : o));
             toast.success('Offer sent to candidate!');
             return sent;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to send offer');
             throw error;
         } finally {
@@ -478,7 +478,7 @@ export const useRecruitment = () => {
             setJobOffers(prev => prev.map(o => o.id === id ? accepted : o));
             toast.success('Offer accepted!');
             return accepted;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to accept offer');
             throw error;
         } finally {
@@ -493,7 +493,7 @@ export const useRecruitment = () => {
             setJobOffers(prev => prev.map(o => o.id === id ? declined : o));
             toast.success('Offer declined');
             return declined;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to decline offer');
             throw error;
         } finally {
@@ -509,7 +509,7 @@ export const useRecruitment = () => {
             setBackgroundChecks(prev => [...prev, initiated]);
             toast.success('Background check initiated!');
             return initiated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to initiate background check');
             throw error;
         } finally {
@@ -524,7 +524,7 @@ export const useRecruitment = () => {
             setBackgroundChecks(prev => prev.map(c => c.id === id ? updated : c));
             toast.success('Background check updated!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update background check');
             throw error;
         } finally {
@@ -537,7 +537,7 @@ export const useRecruitment = () => {
         try {
             const statsData = await RecruitmentAnalyticsService.getStats();
             setStats(statsData);
-        } catch (error) {
+        } catch {
             toast.error('Failed to refresh statistics');
             logger.error('Stats error:', error);
         }

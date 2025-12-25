@@ -49,7 +49,7 @@ export default function MFAPage() {
             } else {
                 alert('Failed to save configuration');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving MFA config:', error);
             alert('Error saving configuration');
         } finally {

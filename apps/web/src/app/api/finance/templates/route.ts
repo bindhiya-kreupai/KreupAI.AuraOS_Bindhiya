@@ -3,7 +3,8 @@
  * Finance Module - Budget Templates
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/finance/templates
@@ -18,9 +19,8 @@ export async function GET(request: NextRequest) {
       success: true,
       templates: [],
     });
-  } catch (error) {
-    console.error('Templates fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch templates' },
       { status: 500 }
     );
@@ -44,9 +44,8 @@ export async function POST(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Template creation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to create template' },
       { status: 500 }
     );
@@ -78,9 +77,8 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Template update error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to update template' },
       { status: 500 }
     );
@@ -107,9 +105,8 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Template deleted successfully',
     });
-  } catch (error) {
-    console.error('Template deletion error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to delete template' },
       { status: 500 }
     );

@@ -26,9 +26,8 @@ export default function PayslipGenerationPage() {
             if (result.length > 0) {
                 setPayslips(result);
             }
-        } catch (error) {
-            console.error('Error fetching payslips:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

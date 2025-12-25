@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth/enhanced-middleware';
 import { logger } from '@/lib/logger';
@@ -81,7 +82,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
         total: allPermissions.length,
       },
     });
-  } catch (error) {
+  } catch {
     logger.error({ error, userId: user.userId }, 'Error fetching permissions');
     return NextResponse.json(
       { success: false, error: 'Failed to fetch permissions' },

@@ -60,9 +60,8 @@ export default function CompOffPage() {
                     expiring: 0
                 });
             }
-        } catch (error) {
-            console.error('Error fetching comp-offs:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

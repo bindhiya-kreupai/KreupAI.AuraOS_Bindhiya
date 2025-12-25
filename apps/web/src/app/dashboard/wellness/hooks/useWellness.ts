@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
+import type {
   HealthProgram,
   ProgramEnrollment,
   MentalHealthService,
@@ -216,7 +216,7 @@ export function useWellness(currentEmployeeId?: string): UseWellnessReturn {
         const transactionsData = await WellnessPointsService.getTransactions(currentEmployeeId);
         setTransactions(transactionsData);
       }
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to load wellness data');
     } finally {
       setLoading(false);

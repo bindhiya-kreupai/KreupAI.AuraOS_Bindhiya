@@ -32,8 +32,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     ];
 
     return NextResponse.json({ anomalies }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching anomalies:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

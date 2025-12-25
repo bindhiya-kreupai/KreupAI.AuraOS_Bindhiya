@@ -3,7 +3,8 @@
  * Finance Module - Settings Management
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/finance/settings
@@ -51,9 +52,8 @@ export async function GET(request: NextRequest) {
       success: true,
       settings: defaultSettings,
     });
-  } catch (error) {
-    console.error('Settings fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch settings' },
       { status: 500 }
     );
@@ -75,9 +75,8 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Settings update error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to update settings' },
       { status: 500 }
     );

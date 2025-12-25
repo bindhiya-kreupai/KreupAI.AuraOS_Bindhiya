@@ -3,7 +3,8 @@
  * Finance Module - Asset Management
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/finance/assets
@@ -25,9 +26,8 @@ export async function GET(request: NextRequest) {
         assetsUnderMaintenance: 0,
       },
     });
-  } catch (error) {
-    console.error('Assets fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch assets' },
       { status: 500 }
     );
@@ -63,9 +63,8 @@ export async function POST(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Asset processing error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to process asset' },
       { status: 500 }
     );
@@ -97,9 +96,8 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Asset update error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to update asset' },
       { status: 500 }
     );
@@ -126,9 +124,8 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Asset deleted successfully',
     });
-  } catch (error) {
-    console.error('Asset deletion error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to delete asset' },
       { status: 500 }
     );

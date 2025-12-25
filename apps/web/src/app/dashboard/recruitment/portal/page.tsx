@@ -32,9 +32,8 @@ export default function CandidatePortalPage() {
             if (data && data.length > 0) {
                 setApplications(data);
             }
-        } catch (error) {
-            console.error('Error fetching applications:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

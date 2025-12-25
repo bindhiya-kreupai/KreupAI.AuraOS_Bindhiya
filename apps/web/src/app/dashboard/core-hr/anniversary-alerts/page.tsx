@@ -21,9 +21,8 @@ export default function AnniversaryAlertsPage() {
         try {
             const data = await AnniversaryService.getAllAnniversaries();
             setAnniversaries(data);
-        } catch (error) {
-            console.error('Error fetching anniversaries:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

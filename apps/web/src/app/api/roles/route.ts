@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth/enhanced-middleware';
@@ -110,7 +111,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
         totalPages: Math.ceil(total / query.limit),
       },
     });
-  } catch (error) {
+  } catch {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Invalid query parameters', details: error.errors },
@@ -225,7 +226,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Validation failed', details: error.errors },

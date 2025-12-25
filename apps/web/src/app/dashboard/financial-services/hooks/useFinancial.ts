@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from 'react';
-import { BankAccount, Transaction, Loan, InsurancePolicy, InsuranceClaim, Portfolio, TradeOrder, FinancialSettings, FinancialAlert } from '../types';
+import type { BankAccount, Transaction, Loan, InsurancePolicy, InsuranceClaim, Portfolio, TradeOrder, FinancialSettings, FinancialAlert } from '../types';
 import { BankingService, InsuranceService, WealthManagementService, RegulatoryComplianceService, FinancialSettingsService, AlertsService } from '../services';
 import { sampleBankAccounts, sampleInsurancePolicies, samplePortfolios, sampleFinancialSettings } from '../data';
 
@@ -33,7 +33,7 @@ export const useFinancial = () => {
       if (policiesData.length === 0) { for (const pol of sampleInsurancePolicies) await InsuranceService.createPolicy(pol); setInsurancePolicies(sampleInsurancePolicies); } else setInsurancePolicies(policiesData);
       if (portfoliosData.length === 0) { for (const port of samplePortfolios) await WealthManagementService.createPortfolio(port); setPortfolios(samplePortfolios); } else setPortfolios(portfoliosData);
       if (!settingsData) { await FinancialSettingsService.updateSettings(sampleFinancialSettings); setSettings(sampleFinancialSettings); } else setSettings(settingsData);
-    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to load data'); addToast({ type: 'error', message: 'Failed to load financial data' }); }
+    } catch { setError(err instanceof Error ? err.message : 'Failed to load data'); addToast({ type: 'error', message: 'Failed to load financial data' }); }
     finally { setLoading(false); }
   }, [addToast]);
 
@@ -41,71 +41,61 @@ export const useFinancial = () => {
 
   const createBankAccount = async (accountData: Partial<BankAccount>) => {
     setLoading(true);
-    try { const account = await BankingService.createAccount(accountData); setBankAccounts(await BankingService.getAllAccounts()); addToast({ type: 'success', message: 'Bank account created' }); return account; }
-    catch (err) { addToast({ type: 'error', message: 'Failed to create account' }); throw err; }
+    try { const account = await BankingService.createAccount(accountData); setBankAccounts(await BankingService.getAllAccounts()); addToast({ type: 'success', message: 'Bank account created' }); return account; } catch { addToast({ type: 'error', message: 'Failed to create account' }); throw err; }
     finally { setLoading(false); }
   };
 
   const updateBankAccount = async (accountId: string, updates: Partial<BankAccount>) => {
     setLoading(true);
-    try { const account = await BankingService.updateAccount(accountId, updates); setBankAccounts(await BankingService.getAllAccounts()); addToast({ type: 'success', message: 'Account updated' }); return account; }
-    catch (err) { addToast({ type: 'error', message: 'Failed to update account' }); throw err; }
+    try { const account = await BankingService.updateAccount(accountId, updates); setBankAccounts(await BankingService.getAllAccounts()); addToast({ type: 'success', message: 'Account updated' }); return account; } catch { addToast({ type: 'error', message: 'Failed to update account' }); throw err; }
     finally { setLoading(false); }
   };
 
   const createTransaction = async (transactionData: Partial<Transaction>) => {
     setLoading(true);
-    try { const transaction = await BankingService.createTransaction(transactionData); setTransactions(await BankingService.getAllTransactions()); addToast({ type: 'success', message: 'Transaction created' }); return transaction; }
-    catch (err) { addToast({ type: 'error', message: 'Failed to create transaction' }); throw err; }
+    try { const transaction = await BankingService.createTransaction(transactionData); setTransactions(await BankingService.getAllTransactions()); addToast({ type: 'success', message: 'Transaction created' }); return transaction; } catch { addToast({ type: 'error', message: 'Failed to create transaction' }); throw err; }
     finally { setLoading(false); }
   };
 
   const createInsurancePolicy = async (policyData: Partial<InsurancePolicy>) => {
     setLoading(true);
-    try { const policy = await InsuranceService.createPolicy(policyData); setInsurancePolicies(await InsuranceService.getAllPolicies()); addToast({ type: 'success', message: 'Policy created' }); return policy; }
-    catch (err) { addToast({ type: 'error', message: 'Failed to create policy' }); throw err; }
+    try { const policy = await InsuranceService.createPolicy(policyData); setInsurancePolicies(await InsuranceService.getAllPolicies()); addToast({ type: 'success', message: 'Policy created' }); return policy; } catch { addToast({ type: 'error', message: 'Failed to create policy' }); throw err; }
     finally { setLoading(false); }
   };
 
   const createInsuranceClaim = async (claimData: Partial<InsuranceClaim>) => {
     setLoading(true);
-    try { const claim = await InsuranceService.createClaim(claimData); setInsuranceClaims(await InsuranceService.getAllClaims()); addToast({ type: 'success', message: 'Claim filed' }); return claim; }
-    catch (err) { addToast({ type: 'error', message: 'Failed to file claim' }); throw err; }
+    try { const claim = await InsuranceService.createClaim(claimData); setInsuranceClaims(await InsuranceService.getAllClaims()); addToast({ type: 'success', message: 'Claim filed' }); return claim; } catch { addToast({ type: 'error', message: 'Failed to file claim' }); throw err; }
     finally { setLoading(false); }
   };
 
   const updateInsuranceClaim = async (claimId: string, updates: Partial<InsuranceClaim>) => {
     setLoading(true);
-    try { const claim = await InsuranceService.updateClaim(claimId, updates); setInsuranceClaims(await InsuranceService.getAllClaims()); addToast({ type: 'success', message: 'Claim updated' }); return claim; }
-    catch (err) { addToast({ type: 'error', message: 'Failed to update claim' }); throw err; }
+    try { const claim = await InsuranceService.updateClaim(claimId, updates); setInsuranceClaims(await InsuranceService.getAllClaims()); addToast({ type: 'success', message: 'Claim updated' }); return claim; } catch { addToast({ type: 'error', message: 'Failed to update claim' }); throw err; }
     finally { setLoading(false); }
   };
 
   const createPortfolio = async (portfolioData: Partial<Portfolio>) => {
     setLoading(true);
-    try { const portfolio = await WealthManagementService.createPortfolio(portfolioData); setPortfolios(await WealthManagementService.getAllPortfolios()); addToast({ type: 'success', message: 'Portfolio created' }); return portfolio; }
-    catch (err) { addToast({ type: 'error', message: 'Failed to create portfolio' }); throw err; }
+    try { const portfolio = await WealthManagementService.createPortfolio(portfolioData); setPortfolios(await WealthManagementService.getAllPortfolios()); addToast({ type: 'success', message: 'Portfolio created' }); return portfolio; } catch { addToast({ type: 'error', message: 'Failed to create portfolio' }); throw err; }
     finally { setLoading(false); }
   };
 
   const updatePortfolio = async (portfolioId: string, updates: Partial<Portfolio>) => {
     setLoading(true);
-    try { const portfolio = await WealthManagementService.updatePortfolio(portfolioId, updates); setPortfolios(await WealthManagementService.getAllPortfolios()); addToast({ type: 'success', message: 'Portfolio updated' }); return portfolio; }
-    catch (err) { addToast({ type: 'error', message: 'Failed to update portfolio' }); throw err; }
+    try { const portfolio = await WealthManagementService.updatePortfolio(portfolioId, updates); setPortfolios(await WealthManagementService.getAllPortfolios()); addToast({ type: 'success', message: 'Portfolio updated' }); return portfolio; } catch { addToast({ type: 'error', message: 'Failed to update portfolio' }); throw err; }
     finally { setLoading(false); }
   };
 
   const createTradeOrder = async (orderData: Partial<TradeOrder>) => {
     setLoading(true);
-    try { const order = await WealthManagementService.createTradeOrder(orderData); setTradeOrders(await WealthManagementService.getAllTradeOrders()); addToast({ type: 'success', message: 'Trade order placed' }); return order; }
-    catch (err) { addToast({ type: 'error', message: 'Failed to place order' }); throw err; }
+    try { const order = await WealthManagementService.createTradeOrder(orderData); setTradeOrders(await WealthManagementService.getAllTradeOrders()); addToast({ type: 'success', message: 'Trade order placed' }); return order; } catch { addToast({ type: 'error', message: 'Failed to place order' }); throw err; }
     finally { setLoading(false); }
   };
 
   const updateSettings = async (updates: Partial<FinancialSettings>) => {
     setLoading(true);
-    try { const settingsData = await FinancialSettingsService.updateSettings(updates); setSettings(settingsData); addToast({ type: 'success', message: 'Settings updated' }); return settingsData; }
-    catch (err) { addToast({ type: 'error', message: 'Failed to update settings' }); throw err; }
+    try { const settingsData = await FinancialSettingsService.updateSettings(updates); setSettings(settingsData); addToast({ type: 'success', message: 'Settings updated' }); return settingsData; } catch { addToast({ type: 'error', message: 'Failed to update settings' }); throw err; }
     finally { setLoading(false); }
   };
 

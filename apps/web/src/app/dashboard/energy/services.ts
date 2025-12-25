@@ -4,10 +4,12 @@
  */
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   SmartMeter, EnergyConsumption, LoadManagement, GridEvent, WaterMeter, WaterUsage,
   LeakDetection, ConservationInitiative, RenewableAsset, EnergyProduction,
-  UtilityAccount, UtilityBill, Payment, BillComparison, EnergySettings
+  UtilityAccount, UtilityBill, Payment, EnergySettings
+} from './types';
+import { BillComparison
 } from './types';
 
 // ============================================================================

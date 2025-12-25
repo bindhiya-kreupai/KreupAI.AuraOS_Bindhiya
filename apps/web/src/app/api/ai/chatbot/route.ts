@@ -3,7 +3,8 @@
  * Phase 3: Intelligence Layer - Conversational AI
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * POST /api/ai/chatbot
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
         }
 
         const message = body.message.toLowerCase();
-        let response = {
+        const response = {
           message: '',
           suggestions: [] as string[],
           actions: [] as any[],
@@ -106,9 +107,8 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Chatbot error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process chat request',
         errorAr: 'فشل في معالجة طلب الدردشة',
@@ -156,9 +156,8 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {},
     });
-  } catch (error) {
-    console.error('Chatbot config error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to fetch chatbot configuration',
         errorAr: 'فشل في جلب تكوين الدردشة',

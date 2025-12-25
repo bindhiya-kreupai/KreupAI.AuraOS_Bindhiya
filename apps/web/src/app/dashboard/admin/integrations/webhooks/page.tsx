@@ -78,7 +78,7 @@ export default function WebhooksPage() {
                                     ))}
                                 </div>
                                 <div className="flex items-center gap-4 text-xs text-slate-400">
-                                    <span>Success Rate: <span className={hook.success > 98 ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>{hook.success}%</span></span>
+                                    <span>Success Rate: <span className={hook.success > 98 ? &apos;text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>{hook.success}%</span></span>
                                     <span>Latency: 120ms</span>
                                 </div>
                             </div>

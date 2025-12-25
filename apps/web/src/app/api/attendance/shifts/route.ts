@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
@@ -74,7 +75,7 @@ export const GET = withEnhancedAuth(
         data: mockShifts,
         meta: { total: mockShifts.length },
       });
-    } catch (error) {
+    } catch {
       logger.error('Error fetching shifts:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch shifts' },
@@ -114,7 +115,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newShift }, { status: 201 });
-    } catch (error) {
+    } catch {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

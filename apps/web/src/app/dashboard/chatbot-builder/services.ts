@@ -5,12 +5,14 @@
  */
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   DialogueFlow, FlowTest, Entity, Intent, IntentMatch, TrainingDataset, TrainingExample,
-  ModelTraining, Channel, ChannelMessage, MessageTemplate, ConversationAnalytics,
-  UserFeedback, ConversationSession, HandoffRule, HandoffQueue, HandoffRequest, Agent,
+  ModelTraining, Channel, MessageTemplate, ConversationAnalytics,
+  UserFeedback, ConversationSession, HandoffRule, HandoffRequest, Agent,
   Language, Translation, LanguageContent, LanguageDetection, LocalizationSettings,
   ChatbotSettings
+} from './types';
+import { ChannelMessage, HandoffQueue
 } from './types';
 
 // ============================================================================
@@ -23,54 +25,48 @@ export class DialogueFlowService {
   static async getAllFlows(filters?: { category?: string; status?: string }): Promise<DialogueFlow[]> {
     try {
       return await APIClient.get<DialogueFlow[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch dialogue flows:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async getFlowById(flowId: string): Promise<DialogueFlow | null> {
     try {
       return await APIClient.get<DialogueFlow>(`${this.endpoint}/${flowId}`);
-    } catch (error) {
-      console.error(`Failed to fetch dialogue flow ${flowId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async createFlow(flowData: Partial<DialogueFlow>): Promise<DialogueFlow> {
     try {
       return await APIClient.post<DialogueFlow>(this.endpoint, flowData);
-    } catch (error) {
-      console.error('Failed to create dialogue flow:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateFlow(flowId: string, updates: Partial<DialogueFlow>): Promise<DialogueFlow> {
     try {
       return await APIClient.put<DialogueFlow>(`${this.endpoint}/${flowId}`, updates);
-    } catch (error) {
-      console.error(`Failed to update dialogue flow ${flowId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async publishFlow(flowId: string): Promise<DialogueFlow> {
     try {
       return await APIClient.post<DialogueFlow>(`${this.endpoint}/${flowId}/publish`, {});
-    } catch (error) {
-      console.error(`Failed to publish dialogue flow ${flowId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async deleteFlow(flowId: string): Promise<void> {
     try {
       return await APIClient.delete(`${this.endpoint}/${flowId}`);
-    } catch (error) {
-      console.error(`Failed to delete dialogue flow ${flowId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -81,27 +77,24 @@ export class FlowTestService {
   static async getAllTests(filters?: { flowId?: string; status?: string }): Promise<FlowTest[]> {
     try {
       return await APIClient.get<FlowTest[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch flow tests:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async createTest(testData: Partial<FlowTest>): Promise<FlowTest> {
     try {
       return await APIClient.post<FlowTest>(this.endpoint, testData);
-    } catch (error) {
-      console.error('Failed to create flow test:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async runTest(testId: string): Promise<FlowTest> {
     try {
       return await APIClient.post<FlowTest>(`${this.endpoint}/${testId}/run`, {});
-    } catch (error) {
-      console.error(`Failed to run flow test ${testId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -116,45 +109,40 @@ export class EntityService {
   static async getAllEntities(filters?: { entityType?: string; status?: string }): Promise<Entity[]> {
     try {
       return await APIClient.get<Entity[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch entities:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async getEntityById(entityId: string): Promise<Entity | null> {
     try {
       return await APIClient.get<Entity>(`${this.endpoint}/${entityId}`);
-    } catch (error) {
-      console.error(`Failed to fetch entity ${entityId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async createEntity(entityData: Partial<Entity>): Promise<Entity> {
     try {
       return await APIClient.post<Entity>(this.endpoint, entityData);
-    } catch (error) {
-      console.error('Failed to create entity:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateEntity(entityId: string, updates: Partial<Entity>): Promise<Entity> {
     try {
       return await APIClient.put<Entity>(`${this.endpoint}/${entityId}`, updates);
-    } catch (error) {
-      console.error(`Failed to update entity ${entityId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async deleteEntity(entityId: string): Promise<void> {
     try {
       return await APIClient.delete(`${this.endpoint}/${entityId}`);
-    } catch (error) {
-      console.error(`Failed to delete entity ${entityId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -169,45 +157,40 @@ export class IntentService {
   static async getAllIntents(filters?: { category?: string; status?: string }): Promise<Intent[]> {
     try {
       return await APIClient.get<Intent[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch intents:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async getIntentById(intentId: string): Promise<Intent | null> {
     try {
       return await APIClient.get<Intent>(`${this.endpoint}/${intentId}`);
-    } catch (error) {
-      console.error(`Failed to fetch intent ${intentId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async createIntent(intentData: Partial<Intent>): Promise<Intent> {
     try {
       return await APIClient.post<Intent>(this.endpoint, intentData);
-    } catch (error) {
-      console.error('Failed to create intent:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateIntent(intentId: string, updates: Partial<Intent>): Promise<Intent> {
     try {
       return await APIClient.put<Intent>(`${this.endpoint}/${intentId}`, updates);
-    } catch (error) {
-      console.error(`Failed to update intent ${intentId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async deleteIntent(intentId: string): Promise<void> {
     try {
       return await APIClient.delete(`${this.endpoint}/${intentId}`);
-    } catch (error) {
-      console.error(`Failed to delete intent ${intentId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -218,18 +201,16 @@ export class IntentMatchService {
   static async getAllMatches(filters?: { sessionId?: string; intentId?: string }): Promise<IntentMatch[]> {
     try {
       return await APIClient.get<IntentMatch[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch intent matches:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async logMatch(matchData: Partial<IntentMatch>): Promise<IntentMatch> {
     try {
       return await APIClient.post<IntentMatch>(this.endpoint, matchData);
-    } catch (error) {
-      console.error('Failed to log intent match:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -244,18 +225,16 @@ export class TrainingDatasetService {
   static async getAllDatasets(filters?: { language?: string; status?: string }): Promise<TrainingDataset[]> {
     try {
       return await APIClient.get<TrainingDataset[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch training datasets:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async createDataset(datasetData: Partial<TrainingDataset>): Promise<TrainingDataset> {
     try {
       return await APIClient.post<TrainingDataset>(this.endpoint, datasetData);
-    } catch (error) {
-      console.error('Failed to create training dataset:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -266,27 +245,24 @@ export class TrainingExampleService {
   static async getAllExamples(filters?: { datasetId?: string; intent?: string }): Promise<TrainingExample[]> {
     try {
       return await APIClient.get<TrainingExample[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch training examples:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async createExample(exampleData: Partial<TrainingExample>): Promise<TrainingExample> {
     try {
       return await APIClient.post<TrainingExample>(this.endpoint, exampleData);
-    } catch (error) {
-      console.error('Failed to create training example:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateExample(exampleId: string, updates: Partial<TrainingExample>): Promise<TrainingExample> {
     try {
       return await APIClient.put<TrainingExample>(`${this.endpoint}/${exampleId}`, updates);
-    } catch (error) {
-      console.error(`Failed to update training example ${exampleId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -297,27 +273,24 @@ export class ModelTrainingService {
   static async getAllTrainings(filters?: { datasetId?: string; status?: string }): Promise<ModelTraining[]> {
     try {
       return await APIClient.get<ModelTraining[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch model trainings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async startTraining(trainingData: Partial<ModelTraining>): Promise<ModelTraining> {
     try {
       return await APIClient.post<ModelTraining>(this.endpoint, trainingData);
-    } catch (error) {
-      console.error('Failed to start model training:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async getTrainingStatus(trainingId: string): Promise<ModelTraining | null> {
     try {
       return await APIClient.get<ModelTraining>(`${this.endpoint}/${trainingId}`);
-    } catch (error) {
-      console.error(`Failed to get training status ${trainingId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -332,36 +305,32 @@ export class ChannelService {
   static async getAllChannels(filters?: { channelType?: string; status?: string }): Promise<Channel[]> {
     try {
       return await APIClient.get<Channel[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch channels:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async createChannel(channelData: Partial<Channel>): Promise<Channel> {
     try {
       return await APIClient.post<Channel>(this.endpoint, channelData);
-    } catch (error) {
-      console.error('Failed to create channel:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateChannel(channelId: string, updates: Partial<Channel>): Promise<Channel> {
     try {
       return await APIClient.put<Channel>(`${this.endpoint}/${channelId}`, updates);
-    } catch (error) {
-      console.error(`Failed to update channel ${channelId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async testChannel(channelId: string): Promise<boolean> {
     try {
       return await APIClient.post<boolean>(`${this.endpoint}/${channelId}/test`, {});
-    } catch (error) {
-      console.error(`Failed to test channel ${channelId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -372,18 +341,16 @@ export class MessageTemplateService {
   static async getAllTemplates(filters?: { channels?: string[]; status?: string }): Promise<MessageTemplate[]> {
     try {
       return await APIClient.get<MessageTemplate[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch message templates:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async createTemplate(templateData: Partial<MessageTemplate>): Promise<MessageTemplate> {
     try {
       return await APIClient.post<MessageTemplate>(this.endpoint, templateData);
-    } catch (error) {
-      console.error('Failed to create message template:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -398,9 +365,8 @@ export class AnalyticsService {
   static async getAnalytics(filters?: { startDate?: string; endDate?: string }): Promise<ConversationAnalytics> {
     try {
       return await APIClient.get<ConversationAnalytics>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch analytics:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -411,18 +377,16 @@ export class UserFeedbackService {
   static async getAllFeedback(filters?: { sessionId?: string; status?: string }): Promise<UserFeedback[]> {
     try {
       return await APIClient.get<UserFeedback[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch user feedback:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async submitFeedback(feedbackData: Partial<UserFeedback>): Promise<UserFeedback> {
     try {
       return await APIClient.post<UserFeedback>(this.endpoint, feedbackData);
-    } catch (error) {
-      console.error('Failed to submit user feedback:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -433,27 +397,24 @@ export class ConversationSessionService {
   static async getAllSessions(filters?: { userId?: string; status?: string }): Promise<ConversationSession[]> {
     try {
       return await APIClient.get<ConversationSession[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch conversation sessions:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async createSession(sessionData: Partial<ConversationSession>): Promise<ConversationSession> {
     try {
       return await APIClient.post<ConversationSession>(this.endpoint, sessionData);
-    } catch (error) {
-      console.error('Failed to create conversation session:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateSession(sessionId: string, updates: Partial<ConversationSession>): Promise<ConversationSession> {
     try {
       return await APIClient.put<ConversationSession>(`${this.endpoint}/${sessionId}`, updates);
-    } catch (error) {
-      console.error(`Failed to update conversation session ${sessionId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -468,27 +429,24 @@ export class HandoffRuleService {
   static async getAllRules(filters?: { priority?: number; isActive?: boolean }): Promise<HandoffRule[]> {
     try {
       return await APIClient.get<HandoffRule[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch handoff rules:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async createRule(ruleData: Partial<HandoffRule>): Promise<HandoffRule> {
     try {
       return await APIClient.post<HandoffRule>(this.endpoint, ruleData);
-    } catch (error) {
-      console.error('Failed to create handoff rule:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateRule(ruleId: string, updates: Partial<HandoffRule>): Promise<HandoffRule> {
     try {
       return await APIClient.put<HandoffRule>(`${this.endpoint}/${ruleId}`, updates);
-    } catch (error) {
-      console.error(`Failed to update handoff rule ${ruleId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -499,27 +457,24 @@ export class HandoffRequestService {
   static async getAllRequests(filters?: { sessionId?: string; status?: string }): Promise<HandoffRequest[]> {
     try {
       return await APIClient.get<HandoffRequest[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch handoff requests:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async createRequest(requestData: Partial<HandoffRequest>): Promise<HandoffRequest> {
     try {
       return await APIClient.post<HandoffRequest>(this.endpoint, requestData);
-    } catch (error) {
-      console.error('Failed to create handoff request:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateRequest(requestId: string, updates: Partial<HandoffRequest>): Promise<HandoffRequest> {
     try {
       return await APIClient.put<HandoffRequest>(`${this.endpoint}/${requestId}`, updates);
-    } catch (error) {
-      console.error(`Failed to update handoff request ${requestId}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -530,18 +485,16 @@ export class AgentService {
   static async getAllAgents(filters?: { status?: string }): Promise<Agent[]> {
     try {
       return await APIClient.get<Agent[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch agents:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async getAvailableAgents(): Promise<Agent[]> {
     try {
       return await APIClient.get<Agent[]>(`${this.endpoint}/available`);
-    } catch (error) {
-      console.error('Failed to fetch available agents:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -556,18 +509,16 @@ export class LanguageService {
   static async getAllLanguages(filters?: { isEnabled?: boolean }): Promise<Language[]> {
     try {
       return await APIClient.get<Language[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch languages:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async enableLanguage(languageCode: string): Promise<Language> {
     try {
       return await APIClient.post<Language>(`${this.endpoint}/${languageCode}/enable`, {});
-    } catch (error) {
-      console.error(`Failed to enable language ${languageCode}:`, error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -578,18 +529,16 @@ export class TranslationService {
   static async getAllTranslations(filters?: { sourceLanguage?: string; targetLanguage?: string }): Promise<Translation[]> {
     try {
       return await APIClient.get<Translation[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch translations:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async createTranslation(translationData: Partial<Translation>): Promise<Translation> {
     try {
       return await APIClient.post<Translation>(this.endpoint, translationData);
-    } catch (error) {
-      console.error('Failed to create translation:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -601,9 +550,8 @@ export class TranslationService {
         targetLanguage,
       });
       return result.translatedText;
-    } catch (error) {
-      console.error('Failed to auto-translate text:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -614,18 +562,16 @@ export class LanguageContentService {
   static async getAllContent(filters?: { contentType?: string; defaultLanguage?: string }): Promise<LanguageContent[]> {
     try {
       return await APIClient.get<LanguageContent[]>(this.endpoint, filters);
-    } catch (error) {
-      console.error('Failed to fetch language content:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async createContent(contentData: Partial<LanguageContent>): Promise<LanguageContent> {
     try {
       return await APIClient.post<LanguageContent>(this.endpoint, contentData);
-    } catch (error) {
-      console.error('Failed to create language content:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -636,9 +582,8 @@ export class LanguageDetectionService {
   static async detectLanguage(text: string): Promise<LanguageDetection> {
     try {
       return await APIClient.post<LanguageDetection>(this.endpoint, { text });
-    } catch (error) {
-      console.error('Failed to detect language:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -649,18 +594,16 @@ export class LocalizationSettingsService {
   static async getSettings(): Promise<LocalizationSettings> {
     try {
       return await APIClient.get<LocalizationSettings>(this.endpoint);
-    } catch (error) {
-      console.error('Failed to fetch localization settings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateSettings(updates: Partial<LocalizationSettings>): Promise<LocalizationSettings> {
     try {
       return await APIClient.put<LocalizationSettings>(this.endpoint, updates);
-    } catch (error) {
-      console.error('Failed to update localization settings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -675,18 +618,16 @@ export class ChatbotSettingsService {
   static async getSettings(): Promise<ChatbotSettings> {
     try {
       return await APIClient.get<ChatbotSettings>(this.endpoint);
-    } catch (error) {
-      console.error('Failed to fetch chatbot settings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async updateSettings(updates: Partial<ChatbotSettings>): Promise<ChatbotSettings> {
     try {
       return await APIClient.put<ChatbotSettings>(this.endpoint, updates);
-    } catch (error) {
-      console.error('Failed to update chatbot settings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }

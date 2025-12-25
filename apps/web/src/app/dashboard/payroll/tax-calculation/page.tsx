@@ -95,9 +95,8 @@ export default function TaxDeclarationsPage() {
             if (result.length > 0) {
                 setDeclarations(result);
             }
-        } catch (error) {
-            console.error('Error fetching tax declarations:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

@@ -35,9 +35,10 @@
  *         $ref: '#/components/responses/ValidationError'
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { QatarWPSService } from '@/lib/services/compliance';
-import { QatarWPSConfiguration, QatarWPSRecord } from '@/lib/services/compliance/types';
+import type { QatarWPSConfiguration, QatarWPSRecord } from '@/lib/services/compliance/types';
 
 /**
  * POST /api/compliance/qatar-wps
@@ -96,9 +97,8 @@ export async function POST(request: NextRequest) {
         validation,
       },
     });
-  } catch (error) {
-    console.error('Qatar WPS generation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to generate Qatar WPS file', errorAr: 'فشل في إنشاء ملف WPS قطر' },
       { status: 500 }
     );
@@ -133,9 +133,8 @@ export async function GET() {
         ],
       },
     });
-  } catch (error) {
-    console.error('Qatar WPS reference data error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch Qatar WPS reference data', errorAr: 'فشل في جلب بيانات WPS قطر المرجعية' },
       { status: 500 }
     );

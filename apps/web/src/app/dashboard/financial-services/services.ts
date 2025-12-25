@@ -1,5 +1,6 @@
 import { APIClient } from '@/lib/api-client';
-import { BankAccount, Transaction, Loan, WireTransfer, InsurancePolicy, InsuranceClaim, Portfolio, TradeOrder, FinancialPlan, ComplianceProgram, ComplianceAudit, RegulatoryReport, SanctionsScreening, TransactionMonitoring, FinancialSettings, FinancialAlert } from './types';
+import type { BankAccount, Transaction, Loan, InsurancePolicy, InsuranceClaim, Portfolio, TradeOrder, ComplianceProgram, ComplianceAudit, FinancialSettings, FinancialAlert } from './types';
+import { WireTransfer, FinancialPlan, RegulatoryReport, SanctionsScreening, TransactionMonitoring } from './types';
 
 export class BankingService {
   private static accountsEndpoint = '/financial-services/banking/accounts';

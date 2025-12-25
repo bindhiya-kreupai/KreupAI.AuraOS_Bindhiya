@@ -3,7 +3,8 @@
  * Phase 4: Enterprise Expansion
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { EntityService } from '@/lib/services/enterprise';
 
 /**
@@ -147,9 +148,8 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Enterprise error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process enterprise request',
         errorAr: 'فشل في معالجة طلب المؤسسة',
@@ -274,9 +274,8 @@ export async function GET(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Enterprise fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch enterprise data', errorAr: 'فشل في جلب بيانات المؤسسة' },
       { status: 500 }
     );

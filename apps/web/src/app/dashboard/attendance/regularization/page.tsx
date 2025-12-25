@@ -43,9 +43,8 @@ export default function RegularizationPage() {
             if (result.length > 0) {
                 setRequests(result as any);
             }
-        } catch (error) {
-            console.error('Error fetching regularizations:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -59,9 +58,8 @@ export default function RegularizationPage() {
                 await RegularizationService.rejectRegularization(id, 'current-user', 'Rejected from UI');
             }
             await fetchRegularizations();
-        } catch (error) {
-            console.error('Error approving regularization:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -79,9 +77,8 @@ export default function RegularizationPage() {
             } as any);
             await fetchRegularizations();
             setFormData({ type: 'MISSED_PUNCH', date: '', timeIn: '', timeOut: '', reason: '' });
-        } catch (error) {
-            console.error('Error submitting regularization:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

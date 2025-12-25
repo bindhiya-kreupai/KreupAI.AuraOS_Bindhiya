@@ -128,7 +128,7 @@ export default function InductionProgramPage() {
             {/* Header */}
             <div className="mb-8 text-center">
                 <h1 className="text-3xl font-bold text-ink-black dark:text-pearl mb-2">Welcome to Aura! 🚀</h1>
-                <p className="text-silver-mist">We're thrilled to have you. Follow this journey to get started.</p>
+                <p className="text-silver-mist">We&apos;re thrilled to have you. Follow this journey to get started.</p>
             </div>
 
             {/* Progress Bar */}

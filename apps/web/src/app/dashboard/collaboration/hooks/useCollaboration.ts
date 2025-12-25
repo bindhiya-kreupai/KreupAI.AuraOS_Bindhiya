@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
+import type {
   Whiteboard,
   WhiteboardElement,
   WhiteboardVersion,
@@ -127,7 +127,7 @@ export function useCollaboration(userId: string = 'user-001'): UseCollaborationR
       setStandupResponses(responsesData);
       setAnalytics(analyticsData);
       setSettings(settingsData);
-    } catch (err) {
+    } catch {
       setError(err instanceof Error ? err.message : 'Failed to load collaboration data');
     } finally {
       setLoading(false);

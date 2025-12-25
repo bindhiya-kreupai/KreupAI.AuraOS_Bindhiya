@@ -3,7 +3,8 @@
  * Phase 3: Intelligence Layer - Employee Insights
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { SentimentAnalysisService } from '@/lib/services/ai';
 
 /**
@@ -160,9 +161,8 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Sentiment analysis error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to analyze sentiment',
         errorAr: 'فشل في تحليل المشاعر',
@@ -209,9 +209,8 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
-    console.error('Sentiment fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch sentiment data', errorAr: 'فشل في جلب بيانات المشاعر' },
       { status: 500 }
     );

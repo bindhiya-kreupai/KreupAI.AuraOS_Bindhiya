@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
@@ -49,7 +50,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       data: result.data,
       meta: result.meta,
     });
-  } catch (error) {
+  } catch {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
@@ -106,7 +107,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }

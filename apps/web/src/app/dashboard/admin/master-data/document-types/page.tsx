@@ -54,7 +54,7 @@ export default function DocumentTypesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch document types:', error);
         } finally {
             setIsLoading(false);
@@ -89,7 +89,7 @@ export default function DocumentTypesPage() {
             } else {
                 alert('Failed to save document type');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving document type:', error);
             alert('Error saving document type');
         }
@@ -107,7 +107,7 @@ export default function DocumentTypesPage() {
                 } else {
                     alert('Failed to delete document type');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting document type:', error);
                 alert('Error deleting document type');
             }

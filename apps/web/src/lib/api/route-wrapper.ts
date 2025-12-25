@@ -28,14 +28,17 @@
  * ```
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { ZodSchema, ZodError } from 'zod';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+import type { ZodSchema} from 'zod';
+import { ZodError } from 'zod';
 import { logger } from '@/lib/logger';
 import { verifyAccessToken } from '@/lib/auth/jwt';
 import { prisma } from '@aura/database';
+import type {
+  RateLimitConfig} from '@/lib/middleware/advanced-rate-limit';
 import {
   createRateLimit,
-  RateLimitConfig,
   RateLimitPresets,
 } from '@/lib/middleware/advanced-rate-limit';
 
@@ -252,7 +255,7 @@ async function extractAuth(request: NextRequest): Promise<AuthContext | null> {
       roles,
       permissions: Array.from(permissionSet),
     };
-  } catch (error) {
+  } catch {
     logger.error({ error }, 'Failed to extract authentication');
     return null;
   }
@@ -378,7 +381,7 @@ export function createProtectedRoute<T = any>(
         try {
           const body = await request.json();
           validateData(body, config.bodySchema);
-        } catch (error) {
+        } catch {
           if (error instanceof ZodError) {
             return createErrorResponse(
               config.errorMessages?.validation || 'Validation failed',
@@ -396,7 +399,7 @@ export function createProtectedRoute<T = any>(
           const url = new URL(request.url);
           const query = Object.fromEntries(url.searchParams);
           validateData(query, config.querySchema);
-        } catch (error) {
+        } catch {
           if (error instanceof ZodError) {
             return createErrorResponse(
               config.errorMessages?.validation || 'Validation failed',
@@ -418,7 +421,7 @@ export function createProtectedRoute<T = any>(
 
       // Otherwise, wrap in success response
       return createSuccessResponse(result);
-    } catch (error) {
+    } catch {
       logger.error(
         {
           error,
@@ -487,7 +490,7 @@ export function createPublicRoute<T = any>(
         try {
           const body = await request.json();
           validateData(body, config.bodySchema);
-        } catch (error) {
+        } catch {
           if (error instanceof ZodError) {
             return createErrorResponse(
               config.errorMessages?.validation || 'Validation failed',
@@ -505,7 +508,7 @@ export function createPublicRoute<T = any>(
           const url = new URL(request.url);
           const query = Object.fromEntries(url.searchParams);
           validateData(query, config.querySchema);
-        } catch (error) {
+        } catch {
           if (error instanceof ZodError) {
             return createErrorResponse(
               config.errorMessages?.validation || 'Validation failed',
@@ -527,7 +530,7 @@ export function createPublicRoute<T = any>(
 
       // Otherwise, wrap in success response
       return createSuccessResponse(result);
-    } catch (error) {
+    } catch {
       logger.error(
         {
           error,

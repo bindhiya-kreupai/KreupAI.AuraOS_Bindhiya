@@ -1,6 +1,6 @@
 // Career Planning Module - Sample Data
 
-import {
+import type {
   CareerLadder, EmployeeCareerPath, MobilityOpportunity, MobilityApplication, MobilityPreference,
   SuccessionPlan, CareerGoal, DevelopmentDiscussion, CareerAspiration, MentorshipRequest,
   SkillAssessment, LearningPathway, CareerSettings, CareerLevel

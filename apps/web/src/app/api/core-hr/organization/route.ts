@@ -10,9 +10,8 @@ export const GET = withEnhancedAuth(async (request, context) => {
     const units_UPPER = [];
 
     return NextResponse.json({ units: units_UPPER }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching units:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
 
@@ -30,9 +29,8 @@ export const POST = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ unit }, { status: 201 });
-  } catch (error) {
-    console.error('Error creating unit:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
 
@@ -49,8 +47,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ unit }, { status: 200 });
-  } catch (error) {
-    console.error('Error updating unit:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

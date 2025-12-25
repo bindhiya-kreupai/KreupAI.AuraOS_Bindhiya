@@ -3,7 +3,8 @@
  * Phase 4 Sprint 31-32: Agent Endpoints
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import {
   AgentFrameworkService,
   HRAgentService,
@@ -35,9 +36,8 @@ export async function GET(request: NextRequest) {
         isActive: agent.isActive,
       })),
     });
-  } catch (error) {
-    console.error('Error fetching agents:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { success: false, error: 'Failed to fetch agents' },
       { status: 500 }
     );

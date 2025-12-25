@@ -25,9 +25,8 @@ export default function EntityManagementPage() {
             if (result.length > 0) {
                 setEntities(result);
             }
-        } catch (error) {
-            console.error('Error fetching entities:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

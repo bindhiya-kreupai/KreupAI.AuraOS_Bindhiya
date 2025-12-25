@@ -33,7 +33,7 @@ export default function CountriesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch countries:', error);
         } finally {
             setIsLoading(false);
@@ -68,7 +68,7 @@ export default function CountriesPage() {
             } else {
                 alert('Failed to save country');
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving country:', error);
             alert('Error saving country');
         }
@@ -86,7 +86,7 @@ export default function CountriesPage() {
                 } else {
                     alert('Failed to delete country');
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Error deleting country:', error);
                 alert('Error deleting country');
             }

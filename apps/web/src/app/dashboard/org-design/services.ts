@@ -2,20 +2,17 @@
 // Handles all business logic and data operations for organizational design
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   OrgChart,
   OrgNode,
   OrgChartView,
-  OrgChartFilter,
   Scenario,
   ScenarioChange,
   ScenarioImpact,
   SpanOfControl,
-  SpanMetrics,
   SpanRecommendation,
   PositionHierarchy,
   Position,
-  HierarchyLevel,
   MatrixStructure,
   MatrixRelationship,
   DecisionRight,
@@ -26,7 +23,11 @@ import {
   ChangeManagement,
   ImpactAssessment,
   AffectedEmployee,
-  OrgDesignSettings,
+  OrgDesignSettings} from './types';
+import {
+  OrgChartFilter,
+  SpanMetrics,
+  HierarchyLevel
 } from './types';
 
 // ============================================================================
@@ -40,9 +41,8 @@ export class OrgChartService {
     try {
       const response = await APIClient.get<{ charts?: OrgChart[] }>(this.endpoint);
       return response.charts || [];
-    } catch (error) {
-      console.error('Error fetching org charts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -50,9 +50,8 @@ export class OrgChartService {
     try {
       const response = await APIClient.get<{ chart?: OrgChart }>(`${this.endpoint}/${chartId}`);
       return response.chart || null;
-    } catch (error) {
-      console.error('Error fetching org chart:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -60,9 +59,8 @@ export class OrgChartService {
     try {
       const response = await APIClient.get<{ chart?: OrgChart }>(`${this.endpoint}/current`);
       return response.chart || null;
-    } catch (error) {
-      console.error('Error fetching current org chart:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -104,9 +102,8 @@ export class OrgChartService {
     try {
       const response = await APIClient.get<{ views?: OrgChartView[] }>(`${this.endpoint}/${chartId}/views`);
       return response.views || [];
-    } catch (error) {
-      console.error('Error fetching org chart views:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -132,9 +129,8 @@ export class ScenarioService {
     try {
       const response = await APIClient.get<{ scenarios?: Scenario[] }>(this.endpoint);
       return response.scenarios || [];
-    } catch (error) {
-      console.error('Error fetching scenarios:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -142,9 +138,8 @@ export class ScenarioService {
     try {
       const response = await APIClient.get<{ scenario?: Scenario }>(`${this.endpoint}/${scenarioId}`);
       return response.scenario || null;
-    } catch (error) {
-      console.error('Error fetching scenario:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -199,9 +194,8 @@ export class SpanOfControlService {
     try {
       const response = await APIClient.get<{ analyses?: SpanOfControl[] }>(this.endpoint);
       return response.analyses || [];
-    } catch (error) {
-      console.error('Error fetching span analyses:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -209,9 +203,8 @@ export class SpanOfControlService {
     try {
       const response = await APIClient.get<{ analysis?: SpanOfControl }>(`${this.endpoint}/${analysisId}`);
       return response.analysis || null;
-    } catch (error) {
-      console.error('Error fetching span analysis:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -375,9 +368,8 @@ export class PositionHierarchyService {
     try {
       const response = await APIClient.get<{ hierarchies?: PositionHierarchy[] }>('/org-design/hierarchies');
       return response.hierarchies || [];
-    } catch (error) {
-      console.error('Error fetching hierarchies:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -385,9 +377,8 @@ export class PositionHierarchyService {
     try {
       const response = await APIClient.get<{ hierarchy?: PositionHierarchy }>(`/org-design/hierarchies/${hierarchyId}`);
       return response.hierarchy || null;
-    } catch (error) {
-      console.error('Error fetching hierarchy:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -395,9 +386,8 @@ export class PositionHierarchyService {
     try {
       const response = await APIClient.get<{ positions?: Position[] }>(this.endpoint);
       return response.positions || [];
-    } catch (error) {
-      console.error('Error fetching positions:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -405,9 +395,8 @@ export class PositionHierarchyService {
     try {
       const response = await APIClient.get<{ position?: Position }>(`${this.endpoint}/${positionId}`);
       return response.position || null;
-    } catch (error) {
-      console.error('Error fetching position:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -429,9 +418,8 @@ export class PositionHierarchyService {
     try {
       const response = await APIClient.get<{ positions?: Position[] }>(`${this.endpoint}/search`, { query, ...filters });
       return response.positions || [];
-    } catch (error) {
-      console.error('Error searching positions:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -439,9 +427,8 @@ export class PositionHierarchyService {
     try {
       const response = await APIClient.get<{ positions?: Position[] }>(`${this.endpoint}/tree`, { rootPositionId });
       return response.positions || [];
-    } catch (error) {
-      console.error('Error fetching hierarchy tree:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -457,9 +444,8 @@ export class MatrixStructureService {
     try {
       const response = await APIClient.get<{ structures?: MatrixStructure[] }>(this.endpoint);
       return response.structures || [];
-    } catch (error) {
-      console.error('Error fetching matrix structures:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -467,9 +453,8 @@ export class MatrixStructureService {
     try {
       const response = await APIClient.get<{ structure?: MatrixStructure }>(`${this.endpoint}/${matrixId}`);
       return response.structure || null;
-    } catch (error) {
-      console.error('Error fetching matrix structure:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -509,9 +494,8 @@ export class SuccessionPoolService {
     try {
       const response = await APIClient.get<{ pools?: SuccessionPool[] }>(this.endpoint);
       return response.pools || [];
-    } catch (error) {
-      console.error('Error fetching succession pools:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -519,9 +503,8 @@ export class SuccessionPoolService {
     try {
       const response = await APIClient.get<{ pool?: SuccessionPool }>(`${this.endpoint}/${poolId}`);
       return response.pool || null;
-    } catch (error) {
-      console.error('Error fetching succession pool:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -566,9 +549,8 @@ export class OrgAnalyticsService {
     try {
       const response = await APIClient.get<{ analytics?: OrgAnalytics }>(this.endpoint, { chartId });
       return response.analytics || {} as OrgAnalytics;
-    } catch (error) {
-      console.error('Error fetching org analytics:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -589,9 +571,8 @@ export class ChangeManagementService {
     try {
       const response = await APIClient.get<{ changes?: ChangeManagement[] }>(this.endpoint);
       return response.changes || [];
-    } catch (error) {
-      console.error('Error fetching changes:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -599,9 +580,8 @@ export class ChangeManagementService {
     try {
       const response = await APIClient.get<{ change?: ChangeManagement }>(`${this.endpoint}/${changeId}`);
       return response.change || null;
-    } catch (error) {
-      console.error('Error fetching change:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -641,9 +621,8 @@ export class OrgDesignSettingsService {
     try {
       const response = await APIClient.get<{ settings?: OrgDesignSettings }>(this.endpoint);
       return response.settings || {} as OrgDesignSettings;
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 

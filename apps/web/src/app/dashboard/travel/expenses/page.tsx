@@ -25,9 +25,8 @@ export default function ExpensesPage() {
             setLoading(true);
             const requests = await TravelRequestService.getRequests();
             setData(requests);
-        } catch (error) {
-            console.error('Failed to fetch expenses:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

@@ -18,9 +18,10 @@
  *         description: Labour law configuration
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { LabourLawService } from '@/lib/services/compliance';
-import { SupportedCountryCode } from '@/lib/services/compliance/types';
+import type { SupportedCountryCode } from '@/lib/services/compliance/types';
 
 /**
  * GET /api/compliance/labour-law
@@ -56,9 +57,8 @@ export async function GET(request: NextRequest) {
       success: true,
       data: config,
     });
-  } catch (error) {
-    console.error('Labour law fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch labour law configuration', errorAr: 'فشل في جلب إعدادات قانون العمل' },
       { status: 500 }
     );
@@ -183,9 +183,8 @@ export async function POST(request: NextRequest) {
       success: true,
       data: result,
     });
-  } catch (error) {
-    console.error('Labour law calculation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to perform labour law calculation', errorAr: 'فشل في حساب قانون العمل' },
       { status: 500 }
     );

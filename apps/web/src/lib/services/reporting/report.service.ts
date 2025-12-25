@@ -3,16 +3,17 @@
  * Phase 3: Intelligence Layer - Advanced Reporting
  */
 
-import {
+import type {
   ReportDefinition,
-  ReportExecution,
   ReportResult,
   ReportData,
   ReportFormat,
   ReportTemplate,
   ChartData,
   SummaryData,
-  ReportType,
+  ReportType} from './types';
+import {
+  ReportExecution
 } from './types';
 
 /**
@@ -300,7 +301,7 @@ export class ReportService {
       };
 
       return result;
-    } catch (error) {
+    } catch {
       throw new Error(`Report generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -318,7 +319,7 @@ export class ReportService {
     const mockRows = this.generateMockData(report, parameters);
 
     // Apply aggregations if group by is defined
-    let aggregates: Record<string, any> = {};
+    const aggregates: Record<string, any> = {};
     if (report.aggregations) {
       for (const agg of report.aggregations) {
         aggregates[agg.id] = this.calculateAggregate(mockRows, agg.field, agg.function);

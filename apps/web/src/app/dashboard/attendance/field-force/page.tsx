@@ -65,9 +65,8 @@ export default function FieldForcePage() {
             if (visitsResult && visitsResult.length > 0) {
                 setVisitLogs(visitsResult as any);
             }
-        } catch (error) {
-            console.error('Error fetching field force data:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

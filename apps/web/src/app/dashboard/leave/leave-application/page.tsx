@@ -8,7 +8,7 @@ import {
     CheckCircle2
 } from 'lucide-react';
 import { LeaveRequestService } from '../services';
-import { LeaveRequest } from '../types';
+import type { LeaveRequest } from '../types';
 
 export default function LeaveApplicationPage() {
     const [requests, setRequests] = useState<LeaveRequest[]>([]);
@@ -25,9 +25,8 @@ export default function LeaveApplicationPage() {
             if (result.length > 0) {
                 setRequests(result);
             }
-        } catch (error) {
-            console.error('Error fetching leave requests:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
@@ -25,7 +26,7 @@ export const GET = withEnhancedAuth(
       ];
 
       return NextResponse.json({ success: true, data: mockSurveys });
-    } catch (error) {
+    } catch {
       logger.error('Error fetching surveys:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch surveys' }, { status: 500 });
     }
@@ -46,7 +47,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: newSurvey }, { status: 201 });
-    } catch (error) {
+    } catch {
       logger.error('Error creating survey:', error);
       return NextResponse.json({ success: false, error: 'Failed to create survey' }, { status: 500 });
     }
@@ -61,7 +62,7 @@ export const PUT = withEnhancedAuth(
 
       const body = await request.json();
       return NextResponse.json({ success: true, data: { ...body, lastModified: new Date().toISOString() } });
-    } catch (error) {
+    } catch {
       logger.error('Error updating survey:', error);
       return NextResponse.json({ success: false, error: 'Failed to update survey' }, { status: 500 });
     }

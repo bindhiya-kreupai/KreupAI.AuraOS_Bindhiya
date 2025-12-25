@@ -23,9 +23,8 @@ export default function BirthdayAnniversaryPage() {
             setLoading(true);
             const events = await EventService.getEvents();
             setData(events.filter(e => e.type === 'birthday' || e.type === 'anniversary'));
-        } catch (error) {
-            console.error('Error fetching celebrations:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -85,7 +84,7 @@ export default function BirthdayAnniversaryPage() {
                 <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-indigo-900 rounded-2xl p-8 text-white flex md:items-center justify-between shadow-xl relative overflow-hidden">
                     <div className="relative z-10">
                         <h3 className="font-bold text-2xl mb-2">Upcoming Celebrations</h3>
-                        <p className="text-indigo-200 max-w-xl">Don't miss out! There are <span className="font-bold text-white">12 more birthdays</span> and <span className="font-bold text-white">5 work anniversaries</span> coming up this month.</p>
+                        <p className="text-indigo-200 max-w-xl">Don&apos;t miss out! There are <span className="font-bold text-white">12 more birthdays</span> and <span className="font-bold text-white">5 work anniversaries</span> coming up this month.</p>
                         <button className="mt-6 px-6 py-2 bg-white text-indigo-900 rounded-xl font-bold hover:bg-indigo-50 transition-colors flex items-center gap-2">
                             <Calendar className="w-4 h-4" /> View Full Calendar
                         </button>

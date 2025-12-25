@@ -22,9 +22,8 @@ export default function EquityPage() {
         try {
             const data = await StandardReportService.getAllReports();
             setReports(data);
-        } catch (error) {
-            console.error('Error fetching equity reports:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

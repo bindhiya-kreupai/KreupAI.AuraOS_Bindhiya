@@ -1,7 +1,7 @@
 // Core HR Module - Service Layer
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   Employee, OrganizationUnit, EmploymentHistory, EmployeeDocument, DocumentTemplate,
   Position, CostCenter, LifeEvent, MassUpdate, IDCard, LetterRequest,
   ExitProcess, Anniversary, AutoNumberSequence, ProbationRecord, ConfirmationLetter,
@@ -16,9 +16,8 @@ export class EmployeeService {
     try {
       const response = await APIClient.get<{ employees?: Employee[] }>(this.endpoint);
       return response.employees || [];
-    } catch (error) {
-      console.error('Error fetching employees:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -26,9 +25,8 @@ export class EmployeeService {
     try {
       const response = await APIClient.get<{ employee: Employee }>(`${this.endpoint}/${employeeId}`);
       return response.employee;
-    } catch (error) {
-      console.error('Error fetching employee:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -46,9 +44,8 @@ export class EmployeeService {
     try {
       const response = await APIClient.get<{ employees?: Employee[] }>(`${this.endpoint}/search`, { query });
       return response.employees || [];
-    } catch (error) {
-      console.error('Error searching employees:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -61,9 +58,8 @@ export class OrganizationService {
     try {
       const response = await APIClient.get<{ units?: OrganizationUnit[] }>(this.endpoint);
       return response.units || [];
-    } catch (error) {
-      console.error('Error fetching units:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -86,9 +82,8 @@ export class EmploymentHistoryService {
     try {
       const response = await APIClient.get<{ history?: EmploymentHistory[] }>(this.endpoint);
       return response.history || [];
-    } catch (error) {
-      console.error('Error fetching history:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -96,9 +91,8 @@ export class EmploymentHistoryService {
     try {
       const response = await APIClient.get<{ history?: EmploymentHistory[] }>(this.endpoint, { employeeId });
       return response.history || [];
-    } catch (error) {
-      console.error('Error fetching employee history:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -116,9 +110,8 @@ export class DocumentService {
     try {
       const response = await APIClient.get<{ documents?: EmployeeDocument[] }>(this.endpoint);
       return response.documents || [];
-    } catch (error) {
-      console.error('Error fetching documents:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -126,9 +119,8 @@ export class DocumentService {
     try {
       const response = await APIClient.get<{ documents?: EmployeeDocument[] }>(this.endpoint, { employeeId });
       return response.documents || [];
-    } catch (error) {
-      console.error('Error fetching employee documents:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -145,9 +137,8 @@ export class DocumentTemplateService {
     try {
       const response = await APIClient.get<{ templates?: DocumentTemplate[] }>(this.endpoint);
       return response.templates || [];
-    } catch (error) {
-      console.error('Error fetching templates:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -165,9 +156,8 @@ export class PositionService {
     try {
       const response = await APIClient.get<{ positions?: Position[] }>(this.endpoint);
       return response.positions || [];
-    } catch (error) {
-      console.error('Error fetching positions:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -190,9 +180,8 @@ export class CostCenterService {
     try {
       const response = await APIClient.get<{ costCenters?: CostCenter[] }>(this.endpoint);
       return response.costCenters || [];
-    } catch (error) {
-      console.error('Error fetching cost centers:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -210,9 +199,8 @@ export class LifeEventService {
     try {
       const response = await APIClient.get<{ events?: LifeEvent[] }>(this.endpoint);
       return response.events || [];
-    } catch (error) {
-      console.error('Error fetching life events:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -230,9 +218,8 @@ export class MassUpdateService {
     try {
       const response = await APIClient.get<{ updates?: MassUpdate[] }>(this.endpoint);
       return response.updates || [];
-    } catch (error) {
-      console.error('Error fetching mass updates:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -255,9 +242,8 @@ export class IDCardService {
     try {
       const response = await APIClient.get<{ cards?: IDCard[] }>(this.endpoint);
       return response.cards || [];
-    } catch (error) {
-      console.error('Error fetching ID cards:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -275,9 +261,8 @@ export class LetterService {
     try {
       const response = await APIClient.get<{ requests?: LetterRequest[] }>(this.endpoint);
       return response.requests || [];
-    } catch (error) {
-      console.error('Error fetching letter requests:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -295,9 +280,8 @@ export class ExitService {
     try {
       const response = await APIClient.get<{ exits?: ExitProcess[] }>(this.endpoint);
       return response.exits || [];
-    } catch (error) {
-      console.error('Error fetching exits:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -320,9 +304,8 @@ export class AnniversaryService {
     try {
       const response = await APIClient.get<{ anniversaries?: Anniversary[] }>(this.endpoint);
       return response.anniversaries || [];
-    } catch (error) {
-      console.error('Error fetching anniversaries:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -330,9 +313,8 @@ export class AnniversaryService {
     try {
       const response = await APIClient.get<{ anniversaries?: Anniversary[] }>(this.endpoint, { days });
       return response.anniversaries || [];
-    } catch (error) {
-      console.error('Error fetching upcoming anniversaries:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -345,9 +327,8 @@ export class AutoNumberService {
     try {
       const response = await APIClient.get<{ sequences?: AutoNumberSequence[] }>(this.endpoint);
       return response.sequences || [];
-    } catch (error) {
-      console.error('Error fetching sequences:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -365,9 +346,8 @@ export class ProbationService {
     try {
       const response = await APIClient.get<{ records?: ProbationRecord[] }>(this.endpoint);
       return response.records || [];
-    } catch (error) {
-      console.error('Error fetching probation records:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -385,9 +365,8 @@ export class ConfirmationLetterService {
     try {
       const response = await APIClient.get<{ letters?: ConfirmationLetter[] }>(this.endpoint);
       return response.letters || [];
-    } catch (error) {
-      console.error('Error fetching confirmation letters:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -405,9 +384,8 @@ export class AssetService {
     try {
       const response = await APIClient.get<{ assets?: Asset[] }>(this.endpoint);
       return response.assets || [];
-    } catch (error) {
-      console.error('Error fetching assets:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -432,9 +410,8 @@ export class AssetAssignmentService {
     try {
       const response = await APIClient.get<{ assignments?: AssetAssignment[] }>(this.endpoint);
       return response.assignments || [];
-    } catch (error) {
-      console.error('Error fetching assignments:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -442,9 +419,8 @@ export class AssetAssignmentService {
     try {
       const response = await APIClient.get<{ assignments?: AssetAssignment[] }>(this.endpoint, { employeeId });
       return response.assignments || [];
-    } catch (error) {
-      console.error('Error fetching employee assignments:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -457,9 +433,8 @@ export class CoreHRSettingsService {
     try {
       const response = await APIClient.get<{ settings: CoreHRSettings }>(this.endpoint);
       return response.settings;
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      return {
+    } catch {
+            return {
         settingsId: 'settings-1',
         employeeNumberPrefix: 'EMP',
         enableAutoNumbering: true,

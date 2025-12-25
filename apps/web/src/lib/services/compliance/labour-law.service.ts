@@ -4,13 +4,14 @@
  * for UAE, KSA, Bahrain, Qatar, Oman, Kuwait, and India
  */
 
-import {
+import type {
   LabourLawConfig,
   SupportedCountryCode,
-  COUNTRY_NAMES,
-  COUNTRY_CURRENCIES,
   ComplianceValidation,
-  ComplianceIssue,
+  ComplianceIssue} from './types';
+import {
+  COUNTRY_NAMES,
+  COUNTRY_CURRENCIES
 } from './types';
 
 // ============================================================================

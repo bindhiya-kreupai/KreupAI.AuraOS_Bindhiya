@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
@@ -143,7 +144,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Password reset successful. Please login with your new password.',
     });
-  } catch (error) {
+  } catch {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Validation failed', details: error.errors },

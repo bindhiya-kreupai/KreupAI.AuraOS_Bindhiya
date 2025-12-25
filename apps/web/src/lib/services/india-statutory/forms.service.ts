@@ -3,18 +3,19 @@
  * Phase 4: India Payroll Compliance
  */
 
-import {
+import type {
   Form16Data,
   Form16PartA,
   Form16PartB,
-  Form12BAData,
   Form24QData,
   Form24QSalaryDetail,
   EPFMonthlyReturn,
   EPFContribution,
   ESIMonthlyReturn,
   ESIContribution,
-  Form12BBData,
+  Form12BBData} from './types';
+import {
+  Form12BAData
 } from './types';
 
 /**

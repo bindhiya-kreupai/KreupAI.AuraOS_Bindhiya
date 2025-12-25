@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
@@ -62,7 +63,7 @@ export const GET = withEnhancedAuth(
         data: filteredData,
         meta: { total: filteredData.length },
       });
-    } catch (error) {
+    } catch {
       logger.error('Error fetching off-cycle payments:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch off-cycle payments' },
@@ -101,7 +102,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newPayment }, { status: 201 });
-    } catch (error) {
+    } catch {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -152,7 +153,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch (error) {
+    } catch {
       logger.error('Error updating off-cycle payment:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update off-cycle payment' },

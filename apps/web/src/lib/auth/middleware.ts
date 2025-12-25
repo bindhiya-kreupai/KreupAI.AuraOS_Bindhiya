@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
-import { verifyToken, extractTokenFromHeader, JWTPayload } from './jwt';
+import type { JWTPayload } from './jwt';
+import { verifyToken, extractTokenFromHeader } from './jwt';
 import { logger } from '@/lib/logger';
 
 export interface AuthenticatedRequest extends NextRequest {
@@ -36,7 +38,7 @@ export async function authenticate(
     let decoded: JWTPayload;
     try {
       decoded = verifyToken(token);
-    } catch (error) {
+    } catch {
       return {
         user: null,
         error: NextResponse.json(
@@ -117,7 +119,7 @@ export async function authenticate(
     }
 
     return { user: decoded, error: null };
-  } catch (error) {
+  } catch {
     logger.error('Authentication error:', error);
     return {
       user: null,

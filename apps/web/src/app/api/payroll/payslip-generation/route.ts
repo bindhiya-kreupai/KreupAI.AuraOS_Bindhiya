@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
@@ -56,7 +57,7 @@ export const POST = withEnhancedAuth(
           generatedAt: new Date().toISOString(),
         },
       });
-    } catch (error) {
+    } catch {
       logger.error('Error generating payslips:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to generate payslips' },
@@ -90,7 +91,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: mockStatus,
       });
-    } catch (error) {
+    } catch {
       logger.error('Error fetching payslip generation status:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch payslip generation status' },

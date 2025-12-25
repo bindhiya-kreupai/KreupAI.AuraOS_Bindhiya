@@ -5,7 +5,7 @@
  */
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
     SalaryComponent,
     SalaryStructure,
     EmployeeCompensation,

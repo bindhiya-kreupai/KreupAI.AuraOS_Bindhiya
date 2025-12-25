@@ -23,9 +23,8 @@ export default function InsuranceCoveragePage() {
             // Filter by health insurance category
             const data = await BenefitPlanService.getPlans({ category: 'health' });
             setPlans(data);
-        } catch (error) {
-            console.error('Error fetching insurance coverage:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

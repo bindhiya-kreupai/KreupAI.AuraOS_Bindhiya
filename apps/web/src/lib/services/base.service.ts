@@ -47,7 +47,7 @@ export abstract class BaseService {
           ipAddress: params.ipAddress || 'unknown',
         },
       });
-    } catch (error) {
+    } catch {
       this.logger.error({ error }, 'Failed to create audit log');
       throw new DatabaseError('Failed to create audit log', { error });
     }
@@ -69,7 +69,7 @@ export abstract class BaseService {
       }
 
       return result;
-    } catch (error) {
+    } catch {
       const duration = Date.now() - startTime;
       this.logger.error({ error, duration }, `Transaction failed after ${duration}ms`);
       throw new DatabaseError('Transaction failed', { error });

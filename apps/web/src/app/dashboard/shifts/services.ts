@@ -27,9 +27,8 @@ export class ShiftService {
     try {
       const response = await APIClient.get<{ shifts?: Shift[] }>(this.endpoint, filters);
       return response.shifts || [];
-    } catch (error) {
-      console.error('Error fetching shifts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -37,9 +36,8 @@ export class ShiftService {
     try {
       const response = await APIClient.get<{ shift?: Shift }>(`${this.endpoint}/${id}`);
       return response.shift || null;
-    } catch (error) {
-      console.error('Error fetching shift:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -47,9 +45,8 @@ export class ShiftService {
     try {
       const response = await APIClient.post<{ shift: Shift }>(this.endpoint, shift);
       return response.shift;
-    } catch (error) {
-      console.error('Error creating shift:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -57,18 +54,16 @@ export class ShiftService {
     try {
       const response = await APIClient.put<{ shift: Shift }>(`${this.endpoint}/${id}`, updates);
       return response.shift;
-    } catch (error) {
-      console.error('Error updating shift:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async deleteShift(id: string): Promise<void> {
     try {
       await APIClient.delete(`${this.endpoint}/${id}`);
-    } catch (error) {
-      console.error('Error deleting shift:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -76,9 +71,8 @@ export class ShiftService {
     try {
       const response = await APIClient.post<{ shift: Shift }>(`${this.endpoint}/${id}/cancel`, { reason });
       return response.shift;
-    } catch (error) {
-      console.error('Error cancelling shift:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -86,9 +80,8 @@ export class ShiftService {
     try {
       const response = await APIClient.post<{ shift: Shift }>(`${this.endpoint}/${id}/duplicate`, { newDate });
       return response.shift;
-    } catch (error) {
-      console.error('Error duplicating shift:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -100,9 +93,8 @@ export class ShiftAssignmentService {
     try {
       const response = await APIClient.get<{ assignments?: ShiftAssignment[] }>(this.endpoint, filters);
       return response.assignments || [];
-    } catch (error) {
-      console.error('Error fetching assignments:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -116,18 +108,16 @@ export class ShiftAssignmentService {
         assignedBy
       });
       return response.assignment;
-    } catch (error) {
-      console.error('Error assigning employee:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async unassignEmployee(shiftId: string, employeeId: string): Promise<void> {
     try {
       await APIClient.delete(`${this.endpoint}/${shiftId}/${employeeId}`);
-    } catch (error) {
-      console.error('Error unassigning employee:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -135,9 +125,8 @@ export class ShiftAssignmentService {
     try {
       const response = await APIClient.post<{ assignment: ShiftAssignment }>(`${this.endpoint}/${assignmentId}/check-in`, { checkInTime });
       return response.assignment;
-    } catch (error) {
-      console.error('Error checking in:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -145,9 +134,8 @@ export class ShiftAssignmentService {
     try {
       const response = await APIClient.post<{ assignment: ShiftAssignment }>(`${this.endpoint}/${assignmentId}/check-out`, { checkOutTime });
       return response.assignment;
-    } catch (error) {
-      console.error('Error checking out:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -158,9 +146,8 @@ export class ShiftAssignmentService {
         shiftId: shift.id
       });
       return response.conflicts || [];
-    } catch (error) {
-      console.error('Error checking assignment conflicts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 }
@@ -172,9 +159,8 @@ export class ShiftPatternService {
     try {
       const response = await APIClient.get<{ patterns?: ShiftPattern[] }>(this.endpoint, filters);
       return response.patterns || [];
-    } catch (error) {
-      console.error('Error fetching patterns:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -182,9 +168,8 @@ export class ShiftPatternService {
     try {
       const response = await APIClient.post<{ pattern: ShiftPattern }>(this.endpoint, pattern);
       return response.pattern;
-    } catch (error) {
-      console.error('Error creating pattern:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -192,18 +177,16 @@ export class ShiftPatternService {
     try {
       const response = await APIClient.put<{ pattern: ShiftPattern }>(`${this.endpoint}/${id}`, updates);
       return response.pattern;
-    } catch (error) {
-      console.error('Error updating pattern:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async deletePattern(id: string): Promise<void> {
     try {
       await APIClient.delete(`${this.endpoint}/${id}`);
-    } catch (error) {
-      console.error('Error deleting pattern:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -214,7 +197,7 @@ export class ShiftPatternService {
     const shifts: Shift[] = [];
     const start = new Date(startDate);
     const end = new Date(endDate);
-    let currentDate = new Date(start);
+    const currentDate = new Date(start);
     let dayNumber = 0;
 
     while (currentDate <= end) {
@@ -272,9 +255,8 @@ export class ShiftTemplateService {
     try {
       const response = await APIClient.get<{ templates?: ShiftTemplate[] }>(this.endpoint, filters);
       return response.templates || [];
-    } catch (error) {
-      console.error('Error fetching templates:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -282,9 +264,8 @@ export class ShiftTemplateService {
     try {
       const response = await APIClient.post<{ template: ShiftTemplate }>(this.endpoint, template);
       return response.template;
-    } catch (error) {
-      console.error('Error creating template:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -292,18 +273,16 @@ export class ShiftTemplateService {
     try {
       const response = await APIClient.put<{ template: ShiftTemplate }>(`${this.endpoint}/${id}`, updates);
       return response.template;
-    } catch (error) {
-      console.error('Error updating template:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
   static async deleteTemplate(id: string): Promise<void> {
     try {
       await APIClient.delete(`${this.endpoint}/${id}`);
-    } catch (error) {
-      console.error('Error deleting template:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -315,9 +294,8 @@ export class ShiftSwapService {
     try {
       const response = await APIClient.get<{ swapRequests?: ShiftSwapRequest[] }>(this.endpoint, filters);
       return response.swapRequests || [];
-    } catch (error) {
-      console.error('Error fetching swap requests:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -325,9 +303,8 @@ export class ShiftSwapService {
     try {
       const response = await APIClient.post<{ swapRequest: ShiftSwapRequest }>(this.endpoint, swap);
       return response.swapRequest;
-    } catch (error) {
-      console.error('Error creating swap request:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -338,9 +315,8 @@ export class ShiftSwapService {
         approverName
       });
       return response.swapRequest;
-    } catch (error) {
-      console.error('Error approving swap:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -348,9 +324,8 @@ export class ShiftSwapService {
     try {
       const response = await APIClient.post<{ swapRequest: ShiftSwapRequest }>(`${this.endpoint}/${id}/reject`, { reason });
       return response.swapRequest;
-    } catch (error) {
-      console.error('Error rejecting swap:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -362,9 +337,8 @@ export class ShiftScheduleService {
     try {
       const response = await APIClient.get<{ schedules?: ShiftSchedule[] }>(this.endpoint, filters);
       return response.schedules || [];
-    } catch (error) {
-      console.error('Error fetching schedules:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -372,9 +346,8 @@ export class ShiftScheduleService {
     try {
       const response = await APIClient.post<{ schedule: ShiftSchedule }>(this.endpoint, schedule);
       return response.schedule;
-    } catch (error) {
-      console.error('Error creating schedule:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -382,9 +355,8 @@ export class ShiftScheduleService {
     try {
       const response = await APIClient.post<{ schedule: ShiftSchedule }>(`${this.endpoint}/${id}/publish`, { publishedBy });
       return response.schedule;
-    } catch (error) {
-      console.error('Error publishing schedule:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -392,9 +364,8 @@ export class ShiftScheduleService {
     try {
       const response = await APIClient.get<CoverageAnalysis>(`${this.endpoint}/${scheduleId}/coverage`);
       return response;
-    } catch (error) {
-      console.error('Error analyzing coverage:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -406,9 +377,8 @@ export class ShiftAnalyticsService {
     try {
       const response = await APIClient.get<ShiftMetrics>(`${this.endpoint}/metrics`);
       return response;
-    } catch (error) {
-      console.error('Error fetching shift metrics:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }
@@ -420,9 +390,8 @@ export class ShiftSettingsService {
     try {
       const response = await APIClient.get<ShiftSettings>(this.endpoint);
       return response;
-    } catch (error) {
-      console.error('Error fetching shift settings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 
@@ -430,9 +399,8 @@ export class ShiftSettingsService {
     try {
       const response = await APIClient.put<ShiftSettings>(this.endpoint, updates);
       return response;
-    } catch (error) {
-      console.error('Error updating shift settings:', error);
-      throw error;
+    } catch {
+            throw error;
     }
   }
 }

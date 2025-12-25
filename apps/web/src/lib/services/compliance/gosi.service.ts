@@ -3,7 +3,7 @@
  * Handles social insurance calculations, contributions, and file generation
  */
 
-import {
+import type {
   GOSIConfiguration,
   GOSIContributionRates,
   GOSIRecord,
@@ -208,7 +208,7 @@ export class GOSIService {
         '    <Employee>',
         `      <SubscriberNumber>${record.subscriberNumber}</SubscriberNumber>`,
         `      <NationalId>${record.nationalId}</NationalId>`,
-        `      <IqamaNumber>${record.iqamaNumber || ''}</IqamaNumber>`,
+        `      <IqamaNumber>${record.iqamaNumber || &apos;'}</IqamaNumber>`,
         `      <IsSaudi>${record.isSaudi}</IsSaudi>`,
         `      <BasicSalary>${record.basicSalary.toFixed(2)}</BasicSalary>`,
         `      <HousingAllowance>${record.housingAllowance.toFixed(2)}</HousingAllowance>`,

@@ -1,21 +1,22 @@
 // Org Design Module - Sample Data
 // Comprehensive mock data for testing and development
 
-import {
+import type {
   OrgChart,
   OrgNode,
   Scenario,
   ScenarioChange,
   SpanOfControl,
-  PositionHierarchy,
   Position,
   MatrixStructure,
-  MatrixRelationship,
   SuccessionPool,
   PoolMember,
   OrgAnalytics,
   ChangeManagement,
-  OrgDesignSettings,
+  OrgDesignSettings} from './types';
+import {
+  PositionHierarchy,
+  MatrixRelationship
 } from './types';
 
 // ============================================================================

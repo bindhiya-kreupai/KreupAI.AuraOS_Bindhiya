@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import {
+import type {
     LeaveType,
     LeavePolicy,
     LeaveBalance,
@@ -190,7 +190,7 @@ export const useLeave = () => {
             const statsData = await LeaveAnalyticsService.getStats();
             setStats(statsData);
 
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to load leave data');
         } finally {
             setIsLoading(false);
@@ -208,7 +208,7 @@ export const useLeave = () => {
             setLeaveTypes(prev => [leaveType, ...prev]);
             toast.success('Leave type created successfully!');
             return leaveType;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to create leave type');
             throw error;
         } finally {
@@ -223,7 +223,7 @@ export const useLeave = () => {
             setLeaveTypes(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
             toast.success('Leave type updated successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update leave type');
             throw error;
         } finally {
@@ -237,7 +237,7 @@ export const useLeave = () => {
             await LeaveTypeService.deleteLeaveType(id);
             setLeaveTypes(prev => prev.filter(t => t.id !== id));
             toast.success('Leave type deleted successfully!');
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to delete leave type');
             throw error;
         } finally {
@@ -256,7 +256,7 @@ export const useLeave = () => {
             setPolicies(prev => [policy, ...prev]);
             toast.success('Leave policy created successfully!');
             return policy;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to create policy');
             throw error;
         } finally {
@@ -271,7 +271,7 @@ export const useLeave = () => {
             setPolicies(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
             toast.success('Leave policy updated successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update policy');
             throw error;
         } finally {
@@ -286,7 +286,7 @@ export const useLeave = () => {
     const getEmployeeBalances = useCallback(async (employeeId: string): Promise<LeaveBalance[]> => {
         try {
             return await LeaveBalanceService.getBalances(employeeId);
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to load balances');
             return [];
         }
@@ -299,7 +299,7 @@ export const useLeave = () => {
             setBalances(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b));
             toast.success('Balance updated successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update balance');
             throw error;
         } finally {
@@ -316,7 +316,7 @@ export const useLeave = () => {
             ));
             toast.success(`Accrued ${accrualDays} days successfully!`);
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to process accrual');
             throw error;
         } finally {
@@ -331,7 +331,7 @@ export const useLeave = () => {
     const getEmployeeRequests = useCallback(async (employeeId: string): Promise<LeaveRequest[]> => {
         try {
             return await LeaveRequestService.getRequests({ employeeId });
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to load requests');
             return [];
         }
@@ -341,7 +341,7 @@ export const useLeave = () => {
         try {
             const allRequests = await LeaveRequestService.getRequests();
             return allRequests.filter(r => r.status.includes('pending'));
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to load pending requests');
             return [];
         }
@@ -354,7 +354,7 @@ export const useLeave = () => {
             setRequests(prev => [request, ...prev]);
             toast.success('Leave request submitted successfully!');
             return request;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to create request');
             throw error;
         } finally {
@@ -385,7 +385,7 @@ export const useLeave = () => {
 
             toast.success('Leave request approved successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to approve request');
             throw error;
         } finally {
@@ -416,7 +416,7 @@ export const useLeave = () => {
 
             toast.success('Leave request rejected');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to reject request');
             throw error;
         } finally {
@@ -431,7 +431,7 @@ export const useLeave = () => {
             setRequests(prev => prev.map(r => r.id === id ? updated : r));
             toast.success('Leave request cancelled');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to cancel request');
             throw error;
         } finally {
@@ -450,7 +450,7 @@ export const useLeave = () => {
             setHolidays(prev => [holiday, ...prev]);
             toast.success('Holiday created successfully!');
             return holiday;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to create holiday');
             throw error;
         } finally {
@@ -465,7 +465,7 @@ export const useLeave = () => {
             setHolidays(prev => prev.map(h => h.id === id ? { ...h, ...updates } : h));
             toast.success('Holiday updated successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update holiday');
             throw error;
         } finally {
@@ -479,7 +479,7 @@ export const useLeave = () => {
             await HolidayService.deleteHoliday(id);
             setHolidays(prev => prev.filter(h => h.id !== id));
             toast.success('Holiday deleted successfully!');
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to delete holiday');
             throw error;
         } finally {
@@ -498,7 +498,7 @@ export const useLeave = () => {
             setEncashments(prev => [encashment, ...prev]);
             toast.success('Encashment request submitted successfully!');
             return encashment;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to create encashment');
             throw error;
         } finally {
@@ -513,7 +513,7 @@ export const useLeave = () => {
             setEncashments(prev => prev.map(e => e.id === id ? updated : e));
             toast.success(`Encashment ${status} successfully!`);
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update encashment');
             throw error;
         } finally {
@@ -532,7 +532,7 @@ export const useLeave = () => {
             setCompOffs(prev => [compOff, ...prev]);
             toast.success('Comp-off request submitted successfully!');
             return compOff;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to create comp-off');
             throw error;
         } finally {
@@ -547,7 +547,7 @@ export const useLeave = () => {
             setCompOffs(prev => prev.map(c => c.id === id ? updated : c));
             toast.success(`Comp-off ${status} successfully!`);
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update comp-off');
             throw error;
         } finally {
@@ -566,7 +566,7 @@ export const useLeave = () => {
             setCarryForwards(prev => [carryForward, ...prev]);
             toast.success('Carry forward processed successfully!');
             return carryForward;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to process carry forward');
             throw error;
         } finally {
@@ -585,7 +585,7 @@ export const useLeave = () => {
             setSettings(updated);
             toast.success('Leave settings updated successfully!');
             return updated;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to update settings');
             throw error;
         } finally {
@@ -602,7 +602,7 @@ export const useLeave = () => {
             const statsData = await LeaveAnalyticsService.getStats();
             setStats(statsData);
             return statsData;
-        } catch (error) {
+        } catch {
             toast.error((error as Error).message || 'Failed to load statistics');
             return null;
         }

@@ -3,7 +3,8 @@
  * Finance Module - Scenario Planning
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/finance/scenarios
@@ -15,9 +16,8 @@ export async function GET(request: NextRequest) {
       success: true,
       scenarios: [],
     });
-  } catch (error) {
-    console.error('Scenarios fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch scenarios' },
       { status: 500 }
     );
@@ -61,9 +61,8 @@ export async function POST(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Scenario processing error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to process scenario' },
       { status: 500 }
     );
@@ -95,9 +94,8 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Scenario update error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to update scenario' },
       { status: 500 }
     );
@@ -124,9 +122,8 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Scenario deleted successfully',
     });
-  } catch (error) {
-    console.error('Scenario deletion error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to delete scenario' },
       { status: 500 }
     );

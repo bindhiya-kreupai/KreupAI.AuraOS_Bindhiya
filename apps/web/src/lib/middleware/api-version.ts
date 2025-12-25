@@ -3,7 +3,8 @@
  * Handles API version negotiation via header, URL path, or query parameter
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 
 // Supported API versions
@@ -213,7 +214,7 @@ export function isFeatureAvailable(
     'user-management': ['v1'],
     'license-management': ['v1'],
     'master-data': ['v1'],
-    'monitoring': ['v1'],
+    monitoring: ['v1'],
     // Add more features as needed
   };
 

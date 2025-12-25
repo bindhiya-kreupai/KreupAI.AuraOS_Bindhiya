@@ -99,11 +99,11 @@ const DEPARTMENTS: Department[] = [
 ];
 
 const CATEGORY_STYLES: Record<CompetencyCategory, { icon: React.ReactNode; color: string; bgColor: string }> = {
-    'Technical': { icon: <Code className="w-3.5 h-3.5" />, color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
-    'Leadership': { icon: <Crown className="w-3.5 h-3.5" />, color: 'text-amber-600', bgColor: 'bg-amber-100 dark:bg-amber-900/30' },
-    'Behavioral': { icon: <Heart className="w-3.5 h-3.5" />, color: 'text-rose-600', bgColor: 'bg-rose-100 dark:bg-rose-900/30' },
-    'Functional': { icon: <Briefcase className="w-3.5 h-3.5" />, color: 'text-purple-600', bgColor: 'bg-purple-100 dark:bg-purple-900/30' },
-    'Core': { icon: <Star className="w-3.5 h-3.5" />, color: 'text-emerald-600', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30' },
+    Technical: { icon: <Code className="w-3.5 h-3.5" />, color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
+    Leadership: { icon: <Crown className="w-3.5 h-3.5" />, color: 'text-amber-600', bgColor: 'bg-amber-100 dark:bg-amber-900/30' },
+    Behavioral: { icon: <Heart className="w-3.5 h-3.5" />, color: 'text-rose-600', bgColor: 'bg-rose-100 dark:bg-rose-900/30' },
+    Functional: { icon: <Briefcase className="w-3.5 h-3.5" />, color: 'text-purple-600', bgColor: 'bg-purple-100 dark:bg-purple-900/30' },
+    Core: { icon: <Star className="w-3.5 h-3.5" />, color: 'text-emerald-600', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30' },
 };
 
 const LEVEL_LABELS: Record<ProficiencyLevel, { name: string; color: string; bgColor: string }> = {
@@ -255,9 +255,9 @@ const STATS = {
 
 const RequirementBadge: React.FC<{ type: RequirementLevel }> = ({ type }) => {
     const styles: Record<RequirementLevel, string> = {
-        'Required': 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
-        'Preferred': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-        'Optional': 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+        Required: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
+        Preferred: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+        Optional: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
     };
     return (
         <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${styles[type]}`}>
@@ -268,9 +268,9 @@ const RequirementBadge: React.FC<{ type: RequirementLevel }> = ({ type }) => {
 
 const StatusBadge: React.FC<{ status: JobRole['status'] }> = ({ status }) => {
     const styles = {
-        'Active': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-        'Draft': 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-        'Archived': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+        Active: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+        Draft: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+        Archived: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
     };
     return (
         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${styles[status]}`}>
@@ -336,11 +336,11 @@ const CompetencyMappingCard: React.FC<{ mapping: MappedCompetency }> = ({ mappin
 const CompetencyDistributionChart: React.FC<{ competencies: MappedCompetency[] }> = ({ competencies }) => {
     const distribution = useMemo(() => {
         const counts: Record<CompetencyCategory, number> = {
-            'Technical': 0,
-            'Leadership': 0,
-            'Behavioral': 0,
-            'Functional': 0,
-            'Core': 0,
+            Technical: 0,
+            Leadership: 0,
+            Behavioral: 0,
+            Functional: 0,
+            Core: 0,
         };
         competencies.forEach(c => {
             counts[c.category] += c.weight;
@@ -414,7 +414,7 @@ export default function JobCompetencyMapPage() {
                     setExpandedRoles([result.data[0].id]);
                 }
             }
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch job roles:', error);
         } finally {
             setIsLoading(false);
@@ -515,7 +515,7 @@ export default function JobCompetencyMapPage() {
                 }
             }
             setIsSheetOpen(false);
-        } catch (error) {
+        } catch {
             logger.error('Failed to save mapping:', error);
         } finally {
             setIsSaving(false);
@@ -529,7 +529,7 @@ export default function JobCompetencyMapPage() {
                 if (result.success) {
                     setJobRoles(prev => prev.filter(r => r.id !== roleId));
                 }
-            } catch (error) {
+            } catch {
                 logger.error('Failed to delete role:', error);
             }
         }

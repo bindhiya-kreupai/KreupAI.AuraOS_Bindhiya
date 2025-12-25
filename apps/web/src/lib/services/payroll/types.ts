@@ -3,7 +3,8 @@
  * Phase 2: Core Enhancement - Payroll Processing
  */
 
-import { SupportedCountryCode, COUNTRY_CURRENCIES } from '../compliance/types';
+import type { SupportedCountryCode} from '../compliance/types';
+import { COUNTRY_CURRENCIES } from '../compliance/types';
 
 // ============================================================================
 // PAYROLL RUN TYPES

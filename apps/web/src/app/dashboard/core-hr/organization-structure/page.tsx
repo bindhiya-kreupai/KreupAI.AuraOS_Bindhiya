@@ -14,7 +14,7 @@ import { OrganizationService } from '../services';
 
 export default function OrgStructurePage() {
     const [zoom, setZoom] = useState(1);
-    const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({ 'ceo': true });
+    const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({ ceo: true });
     const [units, setUnits] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -26,9 +26,8 @@ export default function OrgStructurePage() {
         try {
             const data = await OrganizationService.getAllUnits();
             setUnits(data);
-        } catch (error) {
-            console.error('Error fetching organization units:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

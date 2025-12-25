@@ -339,7 +339,7 @@ export const GET = withEnhancedAuth(
         data: items,
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch {
       if (error instanceof z.ZodError) return validationErrorResponse(error);
       logger.error(`Error fetching ${params.entity}:`, error);
       return NextResponse.json({ success: false, error: 'Failed to fetch data' }, { status: 500 });
@@ -382,7 +382,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: item }, { status: 201 });
-    } catch (error) {
+    } catch {
       if (error instanceof z.ZodError) return validationErrorResponse(error);
       logger.error(`Error creating ${params.entity}:`, error);
       return NextResponse.json({ success: false, error: 'Failed to create' }, { status: 500 });

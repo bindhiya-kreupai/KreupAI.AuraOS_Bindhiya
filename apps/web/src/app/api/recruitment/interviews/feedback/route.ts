@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 
 /**
@@ -105,9 +106,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     }
 
     return NextResponse.json({ data: mockFeedback }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching interview feedback:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );
@@ -134,9 +134,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json({ data: newFeedback }, { status: 201 });
-  } catch (error) {
-    console.error('Error submitting interview feedback:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );

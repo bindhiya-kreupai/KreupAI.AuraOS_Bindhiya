@@ -22,7 +22,7 @@ export default function LicensePage() {
         try {
             const res = await fetch('/api/licenses');
             if (res.ok) setData(await res.json());
-        } catch (error) {
+        } catch {
             logger.error('Failed to fetch licenses:', error);
         } finally {
             setIsLoading(false);
@@ -82,7 +82,7 @@ export default function LicensePage() {
                 const error = await response.json();
                 alert(`Failed to save license: ${error.error}`);
             }
-        } catch (error) {
+        } catch {
             logger.error('Error saving license:', error);
             alert('Error saving license');
         }

@@ -92,9 +92,8 @@ export default function InterviewSchedulingPage() {
             if (data.length > 0) {
                 setInterviews(data);
             }
-        } catch (error) {
-            console.error('Error fetching interviews:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -103,9 +102,8 @@ export default function InterviewSchedulingPage() {
         try {
             await InterviewService.scheduleInterview(interviewData);
             await fetchInterviews();
-        } catch (error) {
-            console.error('Error scheduling interview:', error);
-        }
+        } catch {
+                    }
     };
 
     return (

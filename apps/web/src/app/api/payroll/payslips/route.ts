@@ -3,7 +3,8 @@
  * Phase 2: Core Enhancement - Payroll Engine v2
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/payroll/payslips
@@ -41,9 +42,8 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
-    console.error('Payslip fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch payslips', errorAr: 'فشل في جلب كشوف الرواتب' },
       { status: 500 }
     );
@@ -78,9 +78,8 @@ export async function POST(request: NextRequest) {
         generatedAt: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Payslip generation error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to generate payslip', errorAr: 'فشل في إنشاء كشف الراتب' },
       { status: 500 }
     );

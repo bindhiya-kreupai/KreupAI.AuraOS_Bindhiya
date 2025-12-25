@@ -33,9 +33,8 @@ export default function LDRecommendationsPage() {
             if (skillGapsResult.success) {
                 setSkillGaps(skillGapsResult.data?.gaps || []);
             }
-        } catch (error) {
-            console.error('Error fetching L&D data:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -45,9 +44,8 @@ export default function LDRecommendationsPage() {
         try {
             await ldRecommendation.enrollCourse(courseId);
             await fetchData();
-        } catch (error) {
-            console.error('Error enrolling in course:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

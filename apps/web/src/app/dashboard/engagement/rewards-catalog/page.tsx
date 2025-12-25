@@ -21,9 +21,8 @@ export default function RewardsCatalogPage() {
             setLoading(true);
             const posts = await SocialFeedService.getPosts();
             setData(posts.filter(p => p.type === 'reward'));
-        } catch (error) {
-            console.error('Error fetching rewards:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

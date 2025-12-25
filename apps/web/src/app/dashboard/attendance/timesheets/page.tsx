@@ -56,9 +56,8 @@ export default function TimesheetsPage() {
                     nonBillableHours: 5,
                 });
             }
-        } catch (error) {
-            console.error('Error fetching timesheets:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -74,9 +73,8 @@ export default function TimesheetsPage() {
                 workingHours: summary?.totalHours || 0,
             } as any);
             await fetchTimesheets();
-        } catch (error) {
-            console.error('Error submitting timesheet:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

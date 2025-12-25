@@ -91,7 +91,7 @@ export default function SalesPage() {
                                 </div>
 
                                 <div className="flex items-center text-slate-300">
-                                    {s.trend === 'up' ? <TrendingUp className="w-5 h-5 text-emerald-500" /> : s.trend === 'down' ? <TrendingUp className="w-5 h-5 text-rose-500 rotate-180" /> : <TrendingUp className="w-5 h-5 text-slate-400 rotate-90" />}
+                                    {s.trend === 'up' ? <TrendingUp className="w-5 h-5 text-emerald-500" /> : s.trend === &apos;down' ? <TrendingUp className="w-5 h-5 text-rose-500 rotate-180" /> : <TrendingUp className="w-5 h-5 text-slate-400 rotate-90" />}
                                 </div>
                             </div>
                         </div>

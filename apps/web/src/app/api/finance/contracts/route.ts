@@ -3,7 +3,8 @@
  * Finance Module - Contract Management
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/finance/contracts
@@ -24,9 +25,8 @@ export async function GET(request: NextRequest) {
         expiringContracts: 0,
       },
     });
-  } catch (error) {
-    console.error('Contracts fetch error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to fetch contracts' },
       { status: 500 }
     );
@@ -61,9 +61,8 @@ export async function POST(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Contract processing error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to process contract' },
       { status: 500 }
     );
@@ -95,9 +94,8 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Contract update error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to update contract' },
       { status: 500 }
     );
@@ -124,9 +122,8 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Contract deleted successfully',
     });
-  } catch (error) {
-    console.error('Contract deletion error:', error);
-    return NextResponse.json(
+  } catch {
+        return NextResponse.json(
       { error: 'Failed to delete contract' },
       { status: 500 }
     );

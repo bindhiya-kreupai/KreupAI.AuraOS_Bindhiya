@@ -1,4 +1,4 @@
-import { Driver, FleetVehicle, SafetyIncident, WarehouseWorker, LogisticsSettings } from './types';
+import type { Driver, FleetVehicle, SafetyIncident, WarehouseWorker, LogisticsSettings } from './types';
 
 export const sampleDrivers: Driver[] = [{
   driverId: 'driver-001', employeeId: 'emp-001', employeeName: 'John Smith', email: 'john.smith@company.com', phone: '+1-555-0123',

@@ -24,9 +24,8 @@ export default function PollsQuizzesPage() {
             setLoading(true);
             const surveys = await SurveyService.getSurveys();
             setData(surveys.filter(s => s.type === 'poll' || s.type === 'quiz'));
-        } catch (error) {
-            console.error('Error fetching polls and quizzes:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

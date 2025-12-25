@@ -4,7 +4,7 @@
  */
 
 import { APIClient } from '@/lib/api-client';
-import {
+import type {
   Budget,
   BudgetVarianceReport,
   BudgetTemplate,
@@ -30,9 +30,8 @@ export class BudgetService {
     try {
       const response = await APIClient.get<{ budgets?: Budget[] }>(this.endpoint);
       return response.budgets || [];
-    } catch (error) {
-      console.error('Error fetching budgets:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -40,9 +39,8 @@ export class BudgetService {
     try {
       const response = await APIClient.get<{ budget?: Budget }>(`${this.endpoint}/${id}`);
       return response.budget || null;
-    } catch (error) {
-      console.error('Error fetching budget:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -97,9 +95,8 @@ export class BudgetVarianceService {
     try {
       const response = await APIClient.get<{ reports?: BudgetVarianceReport[] }>(this.endpoint);
       return response.reports || [];
-    } catch (error) {
-      console.error('Error fetching variance reports:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -107,9 +104,8 @@ export class BudgetVarianceService {
     try {
       const response = await APIClient.get<{ report?: BudgetVarianceReport }>(`${this.endpoint}/${id}`);
       return response.report || null;
-    } catch (error) {
-      console.error('Error fetching variance report:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -133,9 +129,8 @@ export class BudgetTemplateService {
     try {
       const response = await APIClient.get<{ templates?: BudgetTemplate[] }>(this.endpoint);
       return response.templates || [];
-    } catch (error) {
-      console.error('Error fetching templates:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -143,9 +138,8 @@ export class BudgetTemplateService {
     try {
       const response = await APIClient.get<{ template?: BudgetTemplate }>(`${this.endpoint}/${id}`);
       return response.template || null;
-    } catch (error) {
-      console.error('Error fetching template:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -175,9 +169,8 @@ export class BudgetScenarioService {
     try {
       const response = await APIClient.get<{ scenarios?: BudgetScenario[] }>(this.endpoint);
       return response.scenarios || [];
-    } catch (error) {
-      console.error('Error fetching scenarios:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -185,9 +178,8 @@ export class BudgetScenarioService {
     try {
       const response = await APIClient.get<{ scenario?: BudgetScenario }>(`${this.endpoint}/${id}`);
       return response.scenario || null;
-    } catch (error) {
-      console.error('Error fetching scenario:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -222,9 +214,8 @@ export class VendorService {
     try {
       const response = await APIClient.get<{ vendors?: Vendor[] }>(this.endpoint);
       return response.vendors || [];
-    } catch (error) {
-      console.error('Error fetching vendors:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -232,9 +223,8 @@ export class VendorService {
     try {
       const response = await APIClient.get<{ vendor?: Vendor }>(`${this.endpoint}/${id}`);
       return response.vendor || null;
-    } catch (error) {
-      console.error('Error fetching vendor:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -280,9 +270,8 @@ export class VendorContractService {
     try {
       const response = await APIClient.get<{ contracts?: VendorContract[] }>(this.endpoint);
       return response.contracts || [];
-    } catch (error) {
-      console.error('Error fetching contracts:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -290,9 +279,8 @@ export class VendorContractService {
     try {
       const response = await APIClient.get<{ contract?: VendorContract }>(`${this.endpoint}/${id}`);
       return response.contract || null;
-    } catch (error) {
-      console.error('Error fetching contract:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -329,9 +317,8 @@ export class PettyCashService {
     try {
       const response = await APIClient.get<{ funds?: PettyCashFund[] }>(this.endpoint);
       return response.funds || [];
-    } catch (error) {
-      console.error('Error fetching petty cash funds:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -339,9 +326,8 @@ export class PettyCashService {
     try {
       const response = await APIClient.get<{ fund?: PettyCashFund }>(`${this.endpoint}/${id}`);
       return response.fund || null;
-    } catch (error) {
-      console.error('Error fetching petty cash fund:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -360,9 +346,8 @@ export class PettyCashService {
       const url = fundId ? `${this.endpoint}/transactions?fundId=${fundId}` : `${this.endpoint}/transactions`;
       const response = await APIClient.get<{ transactions?: PettyCashTransaction[] }>(url);
       return response.transactions || [];
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -385,9 +370,8 @@ export class PettyCashService {
         `${this.endpoint}/reconciliations`
       );
       return response.reconciliations || [];
-    } catch (error) {
-      console.error('Error fetching reconciliations:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -411,9 +395,8 @@ export class FinancialAssetService {
     try {
       const response = await APIClient.get<{ assets?: FinancialAsset[] }>(this.endpoint);
       return response.assets || [];
-    } catch (error) {
-      console.error('Error fetching assets:', error);
-      return [];
+    } catch {
+            return [];
     }
   }
 
@@ -421,9 +404,8 @@ export class FinancialAssetService {
     try {
       const response = await APIClient.get<{ asset?: FinancialAsset }>(`${this.endpoint}/${id}`);
       return response.asset || null;
-    } catch (error) {
-      console.error('Error fetching asset:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 
@@ -493,9 +475,8 @@ export class FinanceAnalyticsService {
         spendingTrends: [],
         lastUpdated: new Date().toISOString(),
       };
-    } catch (error) {
-      console.error('Error fetching finance metrics:', error);
-      return {
+    } catch {
+            return {
         totalBudgets: 0,
         activeBudgets: 0,
         totalBudgetAmount: 0,
@@ -542,9 +523,8 @@ export class FinanceSettingsService {
     try {
       const response = await APIClient.get<{ settings?: FinanceSettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
-      console.error('Error fetching finance settings:', error);
-      return null;
+    } catch {
+            return null;
     }
   }
 

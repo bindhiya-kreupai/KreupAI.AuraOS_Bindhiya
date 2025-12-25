@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { redis } from '@/lib/cache/redis';
 import { queryMonitor } from '@/lib/monitoring/query-monitor';
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
       const dbStart = Date.now();
       await prisma.$queryRaw`SELECT 1`;
       dbResponseTime = Date.now() - dbStart;
-    } catch (error) {
+    } catch {
       dbStatus = 'unhealthy';
       logger.error('Database health check failed:', error);
     }
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest) {
     const statusCode = dbStatus === 'healthy' ? 200 : 503;
 
     return NextResponse.json(healthData, { status: statusCode });
-  } catch (error) {
+  } catch {
     logger.error('Health check error:', error);
     return NextResponse.json(
       {

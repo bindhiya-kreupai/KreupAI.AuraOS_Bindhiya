@@ -33,9 +33,8 @@ export default function CostCenterPage() {
         try {
             const data = await CostCenterService.getAllCostCenters();
             setCostCenters(data);
-        } catch (error) {
-            console.error('Error fetching cost centers:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

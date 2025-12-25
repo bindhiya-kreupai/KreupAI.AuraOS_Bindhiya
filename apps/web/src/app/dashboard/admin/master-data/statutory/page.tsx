@@ -99,7 +99,7 @@ export default function StatutoryPage() {
                                 <div className="space-y-8 relative z-10">
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <h2 className="text-lg font-bold text-ink-black dark:text-pearl">Employees' Provident Fund (EPF)</h2>
+                                            <h2 className="text-lg font-bold text-ink-black dark:text-pearl">Employees&apos; Provident Fund (EPF)</h2>
                                             <p className="text-sm text-silver-mist">Configure EPF account details and calculation logic.</p>
                                         </div>
                                         <div className="flex items-center gap-3">
@@ -145,7 +145,7 @@ export default function StatutoryPage() {
                                                 className="w-5 h-5 mt-0.5 accent-indigo-500"
                                             />
                                             <div>
-                                                <div className="text-sm font-bold text-ink-black dark:text-pearl">Restrict Employer's Contribution</div>
+                                                <div className="text-sm font-bold text-ink-black dark:text-pearl">Restrict Employer&apos;s Contribution</div>
                                                 <div className="text-xs text-silver-mist mt-1">
                                                     Limit employer's contribution to ₹1,800 (12% of ₹15,000) even if Basic Salary is higher.
                                                 </div>
@@ -207,7 +207,7 @@ export default function StatutoryPage() {
                                                 {PT_SLABS.map((slab, i) => (
                                                     <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-900/20 transition-colors">
                                                         <td className="p-4 font-mono">₹{slab.min.toLocaleString()}</td>
-                                                        <td className="p-4 font-mono">{slab.max > 900000 ? 'No Limit' : `₹${slab.max.toLocaleString()}`}</td>
+                                                        <td className="p-4 font-mono">{slab.max > 900000 ? &apos;No Limit' : `₹${slab.max.toLocaleString()}`}</td>
                                                         <td className="p-4 font-bold text-indigo-500">₹{slab.amount}</td>
                                                         <td className="p-4 text-right">
                                                             <button className="text-slate-400 hover:text-indigo-500 transition-colors"><Edit2 className="w-4 h-4" /></button>
@@ -261,7 +261,7 @@ export default function StatutoryPage() {
                                 <div key={update.id} className="p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-cloud dark:border-slate-800 flex gap-3 items-center group">
                                     <div className={`w-12 h-12 rounded-lg ${update.type === 'Urgent' ? 'bg-rose-100 text-rose-600' : 'bg-indigo-100 text-indigo-600'} flex flex-col items-center justify-center shrink-0`}>
                                         <span className="text-[10px] font-bold uppercase tracking-wider block">Dec</span>
-                                        <span className="text-lg font-black leading-none">{update.date.split(' ')[1]}</span>
+                                        <span className="text-lg font-black leading-none">{update.date.split(&apos; ')[1]}</span>
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className="font-bold text-sm text-ink-black dark:text-pearl truncate">{update.title}</h4>

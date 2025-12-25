@@ -26,9 +26,8 @@ export default function LoansPage() {
             if (result.length > 0) {
                 setLoans(result);
             }
-        } catch (error) {
-            console.error('Error fetching loans:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };

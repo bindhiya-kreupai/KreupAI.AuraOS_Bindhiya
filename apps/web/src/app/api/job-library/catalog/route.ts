@@ -13,7 +13,7 @@ export async function GET() {
             orderBy: { createdAt: 'desc' }
         });
         return NextResponse.json(jobs);
-    } catch (error) {
+    } catch {
         logger.error('Error fetching job catalog:', error);
         return NextResponse.json({ error: 'Failed to fetch job catalog' }, { status: 500 });
     }
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
             }
         });
         return NextResponse.json(job);
-    } catch (error) {
+    } catch {
         logger.error('Error creating job profile:', error);
         return NextResponse.json({ error: 'Failed to create job profile' }, { status: 500 });
     }

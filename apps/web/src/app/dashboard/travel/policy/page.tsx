@@ -25,9 +25,8 @@ export default function TravelPolicyPage() {
             setLoading(true);
             const settings = await TravelSettingsService.getSettings();
             setData(settings);
-        } catch (error) {
-            console.error('Failed to fetch travel settings:', error);
-        } finally {
+        } catch {
+                    } finally {
             setLoading(false);
         }
     };
@@ -96,8 +95,8 @@ export default function TravelPolicyPage() {
                                 <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-2">International Travel</h4>
                                 <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                                     <ul className="list-disc ml-4 space-y-1">
-                                        <li><strong>Directors & Above:</strong> Business Class permitted for flights {'>'} 6 hours.</li>
-                                        <li><strong>Others:</strong> Economy Class. Premium Economy for flights {'>'} 8 hours.</li>
+                                        <li><strong>Directors & Above:</strong> Business Class permitted for flights {&apos;>'} 6 hours.</li>
+                                        <li><strong>Others:</strong> Economy Class. Premium Economy for flights {&apos;>'} 8 hours.</li>
                                     </ul>
                                 </div>
                             </div>
