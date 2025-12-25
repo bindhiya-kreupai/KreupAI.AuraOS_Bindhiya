@@ -26,7 +26,8 @@ export default function LaborLawCompliancePage() {
             ]);
             setLaws(lawsData);
             setRecords(recordsData);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

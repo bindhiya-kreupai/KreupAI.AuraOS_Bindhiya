@@ -24,7 +24,8 @@ export default function IDCardsPage() {
         try {
             const data = await IDCardService.getAllIDCards();
             setIdCards(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

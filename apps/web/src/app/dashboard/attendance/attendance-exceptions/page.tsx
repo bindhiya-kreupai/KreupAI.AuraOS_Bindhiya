@@ -59,7 +59,8 @@ export default function AttendanceExceptionsPage() {
                     absent,
                 });
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -70,7 +71,8 @@ export default function AttendanceExceptionsPage() {
         try {
             // TODO: Implement exception resolution via API
                         await fetchExceptions();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

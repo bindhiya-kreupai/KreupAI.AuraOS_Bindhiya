@@ -26,7 +26,8 @@ export default function ConditionalLogicPage() {
             if (data.length > 0) {
                 // Keep mock data as fallback
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

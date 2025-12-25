@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
-import { logger } from '@/lib/logger';
 
 interface Bank {
     id: string;
@@ -45,8 +44,9 @@ export default function BanksPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch {
-            logger.error('Failed to fetch banks:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch banks:', error);
         } finally {
             setIsLoading(false);
         }
@@ -78,8 +78,9 @@ export default function BanksPage() {
             } else {
                 alert('Failed to save bank');
             }
-        } catch {
-            logger.error('Error saving bank:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving bank:', error);
             alert('Error saving bank');
         }
     };
@@ -96,8 +97,9 @@ export default function BanksPage() {
                 } else {
                     alert('Failed to delete bank');
                 }
-            } catch {
-                logger.error('Error deleting bank:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Error deleting bank:', error);
                 alert('Error deleting bank');
             }
         }

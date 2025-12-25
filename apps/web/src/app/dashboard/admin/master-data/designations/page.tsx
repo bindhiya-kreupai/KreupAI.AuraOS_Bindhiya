@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
-import { logger } from '@/lib/logger';
 
 interface Designation {
     id: string;
@@ -32,7 +31,7 @@ const columns: Column<Designation>[] = [
         width: '150px',
         render: (row) => {
             const grade = grades.find(g => g.id === row.gradeId);
-            return <span className="text-sm text-silver-mist">{grade?.name || &apos;-'}</span>;
+            return <span className="text-sm text-silver-mist">{grade?.name || '-'}</span>;
         }
     },
     {
@@ -62,8 +61,9 @@ export default function DesignationsPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch {
-            logger.error('Failed to fetch designations:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch designations:', error);
         } finally {
             setIsLoading(false);
         }
@@ -97,8 +97,9 @@ export default function DesignationsPage() {
             } else {
                 alert('Failed to save designation');
             }
-        } catch {
-            logger.error('Error saving designation:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving designation:', error);
             alert('Error saving designation');
         }
     };
@@ -115,8 +116,9 @@ export default function DesignationsPage() {
                 } else {
                     alert('Failed to delete designation');
                 }
-            } catch {
-                logger.error('Error deleting designation:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Error deleting designation:', error);
                 alert('Error deleting designation');
             }
         }

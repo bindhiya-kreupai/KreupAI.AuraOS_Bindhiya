@@ -7,7 +7,6 @@
 'use client';
 
 import React, {
-import { logger } from '@/lib/logger';
   createContext,
   useContext,
   useState,

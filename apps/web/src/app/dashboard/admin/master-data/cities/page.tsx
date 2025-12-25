@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
-import { logger } from '@/lib/logger';
 
 interface City {
     id: string;
@@ -35,8 +34,9 @@ export default function CitiesPage() {
 
             if (citiesRes.ok) setData(await citiesRes.json());
             if (statesRes.ok) setStates(await statesRes.json());
-        } catch {
-            logger.error('Failed to fetch data:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
         }
@@ -54,7 +54,7 @@ export default function CitiesPage() {
             width: '180px',
             render: (row) => {
                 const state = states.find(s => s.id === row.stateId);
-                return <span className="text-sm">{state?.name || &apos;Unknown'}</span>;
+                return <span className="text-sm">{state?.name || 'Unknown'}</span>;
             }
         },
     ];
@@ -81,8 +81,9 @@ export default function CitiesPage() {
             } else {
                 alert('Failed to save city');
             }
-        } catch {
-            logger.error('Error saving city:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving city:', error);
             alert('Error saving city');
         }
     };
@@ -99,8 +100,9 @@ export default function CitiesPage() {
                 } else {
                     alert('Failed to delete city');
                 }
-            } catch {
-                logger.error('Error deleting city:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Error deleting city:', error);
                 alert('Error deleting city');
             }
         }

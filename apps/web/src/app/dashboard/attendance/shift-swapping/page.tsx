@@ -60,7 +60,8 @@ export default function ShiftSwappingPage() {
             if (marketplaceResult && marketplaceResult.length > 0) {
                 setMarketplace(marketplaceResult as any);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -76,7 +77,8 @@ export default function ShiftSwappingPage() {
                 reason: 'Shift swap request'
             });
             await fetchShiftData();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -87,7 +89,8 @@ export default function ShiftSwappingPage() {
         try {
             await ShiftSwapService.acceptSwap(marketplaceId, 'current-user-id');
             await fetchShiftData();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

@@ -114,7 +114,8 @@ export default function LibraryPage() {
                 setLoading(true);
                 const result = await CourseService.getCourses();
                 setData(result.length > 0 ? result : BOOKS);
-            } catch {
+            } catch (error) {
+            console.error('Error:', error);
                                 setData(BOOKS);
             } finally {
                 setLoading(false);
@@ -271,7 +272,7 @@ export default function LibraryPage() {
                                                 res.type === 'Video' ? 'bg-indigo-100 text-indigo-600' :
                                                     'bg-emerald-100 text-emerald-600'}
                                         `}>
-                                            {res.type === 'PDF' ? <BookOpen className="w-4 h-4" /> : res.type === &apos;Video' ? <PlayCircle className="w-4 h-4" /> : <Book className="w-4 h-4" />}
+                                            {res.type === 'PDF' ? <BookOpen className="w-4 h-4" /> : res.type === 'Video' ? <PlayCircle className="w-4 h-4" /> : <Book className="w-4 h-4" />}
                                         </div>
                                         <Download className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </div>

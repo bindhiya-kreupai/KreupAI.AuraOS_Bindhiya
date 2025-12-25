@@ -23,7 +23,8 @@ export default function NotificationPage() {
             setLoading(true);
             const data = await BenefitSettingsService.getSettings();
             setSettings(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

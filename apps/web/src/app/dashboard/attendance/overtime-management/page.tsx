@@ -44,7 +44,8 @@ export default function OvertimeManagementPage() {
             const result = await OvertimeService.getOvertimeManagement();
             if (result && result.length > 0) {
                             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -55,7 +56,8 @@ export default function OvertimeManagementPage() {
         try {
             // TODO: Add updateOvertimePolicy method to OvertimeService when API supports it
                         await fetchPolicy();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

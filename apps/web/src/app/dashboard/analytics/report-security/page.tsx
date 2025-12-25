@@ -23,7 +23,8 @@ export default function ReportSecurityPage() {
         try {
             const data = await ReportSecurityService.getReportSecurity('default');
             setSecurity(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

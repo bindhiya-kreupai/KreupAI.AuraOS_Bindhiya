@@ -67,7 +67,8 @@ export default function MyLeavesPage() {
             if (balancesData.length > 0) {
                 setLeaveBalances(balancesData);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -228,7 +229,7 @@ export default function MyLeavesPage() {
                                     <span className="text-lg font-bold">01</span>
                                 </div>
                                 <div>
-                                    <div className="font-bold text-ink-black dark:text-pearl">New Year&apos;s Day</div>
+                                    <div className="font-bold text-ink-black dark:text-pearl">New Year's Day</div>
                                     <div className="text-xs text-silver-mist">Wednesday</div>
                                 </div>
                             </div>

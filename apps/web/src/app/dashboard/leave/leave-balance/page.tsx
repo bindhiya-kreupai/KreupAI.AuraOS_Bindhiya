@@ -25,7 +25,8 @@ export default function LeaveBalancePage() {
             if (result.length > 0) {
                 setBalances(result);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

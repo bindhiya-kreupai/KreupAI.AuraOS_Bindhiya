@@ -27,7 +27,8 @@ export default function ProviderDirectoryPage() {
             } else {
                 setProviders(data);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                         setProviders(mockProviders);
         } finally {
             setLoading(false);

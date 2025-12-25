@@ -539,7 +539,7 @@ export class AnalyticsAgentService {
     const lastValue = dataPoints[dataPoints.length - 1].value;
     const changePercent = ((lastValue - firstValue) / firstValue) * 100;
 
-    const direction = changePercent > 2 ? &apos;UP' : changePercent < -2 ? 'DOWN' : 'STABLE';
+    const direction = changePercent > 2 ? 'UP' : changePercent < -2 ? 'DOWN' : 'STABLE';
     const significance = Math.abs(changePercent) > 10 ? 'HIGH' : Math.abs(changePercent) > 5 ? 'MEDIUM' : 'LOW';
 
     // Generate forecast

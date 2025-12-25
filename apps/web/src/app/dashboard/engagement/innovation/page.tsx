@@ -86,7 +86,8 @@ export default function InnovationBoxPage() {
                 setIdeas(ideasData);
                 setData(ideasData);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

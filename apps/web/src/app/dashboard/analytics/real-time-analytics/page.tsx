@@ -31,7 +31,8 @@ export default function RealTimeAnalyticsPage() {
         try {
             const data = await RealtimeMetricsService.getMetrics();
             setMetrics(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

@@ -27,7 +27,8 @@ export default function AssetManagementPage() {
         try {
             const data = await AssetService.getAllAssets();
             setAssetsData(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

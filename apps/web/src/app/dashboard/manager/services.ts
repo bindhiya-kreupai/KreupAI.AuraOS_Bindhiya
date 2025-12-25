@@ -6,7 +6,6 @@
 'use client';
 
 import { APIClient } from '@/lib/api-client';
-import { logger } from '@/lib/logger';
 import type {
   TeamMember,
   TeamMetrics,
@@ -281,7 +280,7 @@ export class ApprovalCenterService {
         const result = await this.approveRequest(requestId, approverId, remarks);
         approved.push(result);
       } catch {
-        logger.error(`Failed to approve request ${requestId}:`, error);
+        console.error(`Failed to approve request ${requestId}:`, error);
       }
     }
     return approved;

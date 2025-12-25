@@ -49,7 +49,7 @@ export default function CalibrationCyclesPage() {
                                 <div className={`w-full max-w-[80px] ${bucket.h} bg-indigo-100 dark:bg-indigo-900/30 rounded-t-xl relative overflow-hidden`}>
                                     <div className="absolute bottom-0 w-full bg-indigo-500 transition-all hover:bg-indigo-600 cursor-pointer" style={{ height: `${(bucket.current / bucket.target) * 100}%`, maxHeight: '100%' }}></div>
                                 </div>
-                                <div className={`w-full h-1 rounded-full mt-2 ${Math.abs(bucket.current - bucket.target) > 2 ? &apos;bg-rose-500' : 'bg-emerald-500'}`}></div>
+                                <div className={`w-full h-1 rounded-full mt-2 ${Math.abs(bucket.current - bucket.target) > 2 ? 'bg-rose-500' : 'bg-emerald-500'}`}></div>
                                 <div className="text-xs font-bold text-slate-600 dark:text-slate-400 mt-1">{bucket.label}</div>
                                 <div className="text-[10px] text-slate-400">Target: {bucket.target}%</div>
                             </div>

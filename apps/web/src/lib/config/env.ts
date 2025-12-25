@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { logger } from '@/lib/logger';
 
 /**
  * Environment Variable Validation Schema
@@ -88,20 +87,31 @@ export type Env = z.infer<typeof envSchema>;
  * Parse and validate environment variables
  */
 function parseEnv(): Env {
+  // Skip validation on client-side
+  if (typeof window !== 'undefined') {
+    // Return a minimal client-side env object with only public vars
+    return {
+      NODE_ENV: (process.env.NODE_ENV as any) || 'development',
+      NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    } as Env;
+  }
+
   try {
     return envSchema.parse(process.env);
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       const formatted = error.errors.map((err) => {
         const path = err.path.join('.');
         return `  - ${path}: ${err.message}`;
       });
 
-      logger.error('\n❌ Invalid environment variables:\n');
-      logger.error(formatted.join('\n'));
-      logger.error('\nPlease check your .env file and ensure all required variables are set.\n');
+      console.error('\n❌ Invalid environment variables:\n');
+      console.error(formatted.join('\n'));
+      console.error('\nPlease check your .env file and ensure all required variables are set.\n');
 
-      process.exit(1);
+      if (typeof process !== 'undefined' && process.exit) {
+        process.exit(1);
+      }
     }
     throw error;
   }
@@ -202,5 +212,5 @@ export const rateLimitConfig = {
  */
 if (typeof window === 'undefined') {
   // Only validate on server-side
-  logger.info('✅ Environment variables validated successfully');
+  console.log('✅ Environment variables validated successfully');
 }

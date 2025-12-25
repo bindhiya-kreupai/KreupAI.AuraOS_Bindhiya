@@ -489,7 +489,7 @@ export default function CostCentersPage() {
                                                 <td className="p-4">
                                                     <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold uppercase ${getStatusColor(cc.status)} w-fit`}>
                                                         {getStatusIcon(cc.status)}
-                                                        <span>{cc.status.replace(&apos;-', ' ')}</span>
+                                                        <span>{cc.status.replace('-', ' ')}</span>
                                                     </div>
                                                 </td>
                                             </tr>

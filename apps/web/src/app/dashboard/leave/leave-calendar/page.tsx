@@ -32,7 +32,8 @@ export default function LeaveCalendarPage() {
             if (leavesData.length > 0) {
                 setLeaves(leavesData);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

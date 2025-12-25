@@ -84,7 +84,7 @@ export default function ScenarioModelingPage() {
                         </div>
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
                             <div className="text-slate-500 text-sm mb-1">Est. Payroll Cost</div>
-                            <div className={`text-3xl font-bold ${budgetChange > 20 ? &apos;text-red-500' : 'text-slate-800 dark:text-white'}`}>$14.2M</div>
+                            <div className={`text-3xl font-bold ${budgetChange > 20 ? 'text-red-500' : 'text-slate-800 dark:text-white'}`}>$14.2M</div>
                             <div className="text-xs text-slate-400 mt-2">Per Quarter</div>
                         </div>
                     </div>

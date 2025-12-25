@@ -48,7 +48,8 @@ export default function IPRestrictionPage() {
             if (blockedResult && blockedResult.length > 0) {
                 setBlockedAttempts(blockedResult as any);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -62,7 +63,8 @@ export default function IPRestrictionPage() {
                 await IPRestrictionService.removeIPWhitelist(String(ruleToDelete.id));
                 await fetchIPRules();
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

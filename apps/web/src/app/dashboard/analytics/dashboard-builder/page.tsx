@@ -25,7 +25,8 @@ export default function ReportBuilderPage() {
         try {
             const data = await DashboardService.getAllDashboards();
             setDashboards(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -38,7 +39,8 @@ export default function ReportBuilderPage() {
                 widgets: [],
             });
             await fetchDashboards();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     }
     };
     return (

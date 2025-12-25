@@ -25,7 +25,8 @@ export default function LeaveEncashmentPage() {
             if (result.length > 0) {
                 setEncashments(result);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

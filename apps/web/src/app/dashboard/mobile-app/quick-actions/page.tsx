@@ -32,7 +32,8 @@ export default function QuickActionsPage() {
             if (result.length > 0) {
                 setQuickActions(result);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

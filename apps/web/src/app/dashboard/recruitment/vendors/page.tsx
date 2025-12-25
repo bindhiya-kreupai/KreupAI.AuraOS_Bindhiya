@@ -101,7 +101,8 @@ export default function VendorManagementPage() {
                 // For now keeping mock data
                 setVendors(VENDORS);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

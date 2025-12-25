@@ -38,7 +38,8 @@ export default function AuditLogPage() {
                 }));
                 setLogs([...auditLogs, ...LOGS]);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

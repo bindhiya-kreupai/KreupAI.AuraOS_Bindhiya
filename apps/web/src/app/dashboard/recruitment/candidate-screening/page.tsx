@@ -30,7 +30,8 @@ export default function CandidateScreeningPage() {
             const shortlisted = data.filter((c: any) => c.screeningStatus === 'shortlisted').length;
             const rejected = data.filter((c: any) => c.screeningStatus === 'rejected').length;
             setStats({ pending, shortlisted, rejected });
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -40,7 +41,8 @@ export default function CandidateScreeningPage() {
         try {
             await CandidateApplicationService.updateApplication(id, { screeningStatus: 'shortlisted' });
             await fetchCandidates();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     }
     };
 
@@ -48,7 +50,8 @@ export default function CandidateScreeningPage() {
         try {
             await CandidateApplicationService.updateApplication(id, { screeningStatus: 'rejected' });
             await fetchCandidates();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     }
     };
 

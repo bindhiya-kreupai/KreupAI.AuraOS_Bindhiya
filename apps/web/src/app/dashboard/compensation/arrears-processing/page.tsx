@@ -23,7 +23,8 @@ export default function ArrearsPage() {
             setLoading(true);
             const data = await ArrearsService.getRequests();
             setRequests(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

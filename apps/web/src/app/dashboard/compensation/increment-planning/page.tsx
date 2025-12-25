@@ -30,7 +30,8 @@ export default function CompPlanningPage() {
             ]);
             setCycles(cyclesData);
             setProposals(proposalsData);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

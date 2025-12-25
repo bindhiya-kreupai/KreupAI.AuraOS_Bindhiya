@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
-import { logger } from '@/lib/logger';
 
 interface Role {
     id: string;
@@ -45,8 +44,9 @@ export default function RolesPermissionsPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch {
-            logger.error('Failed to fetch roles:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch roles:', error);
         } finally {
             setIsLoading(false);
         }
@@ -80,8 +80,9 @@ export default function RolesPermissionsPage() {
             } else {
                 alert('Failed to save role');
             }
-        } catch {
-            logger.error('Error saving role:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving role:', error);
             alert('Error saving role');
         }
     };
@@ -98,8 +99,9 @@ export default function RolesPermissionsPage() {
                 } else {
                     alert('Failed to delete role');
                 }
-            } catch {
-                logger.error('Error deleting role:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Error deleting role:', error);
                 alert('Error deleting role');
             }
         }

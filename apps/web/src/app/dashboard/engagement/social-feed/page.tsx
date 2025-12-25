@@ -25,7 +25,8 @@ export default function SocialFeedPage() {
             setLoading(true);
             const posts = await SocialFeedService.getPosts();
             setData(posts);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

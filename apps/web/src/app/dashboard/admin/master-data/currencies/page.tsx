@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
-import { logger } from '@/lib/logger';
 
 interface Currency {
     id: string;
@@ -45,8 +44,9 @@ export default function CurrenciesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch {
-            logger.error('Failed to fetch currencies:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch currencies:', error);
         } finally {
             setIsLoading(false);
         }
@@ -78,8 +78,9 @@ export default function CurrenciesPage() {
             } else {
                 alert('Failed to save currency');
             }
-        } catch {
-            logger.error('Error saving currency:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving currency:', error);
             alert('Error saving currency');
         }
     };
@@ -96,8 +97,9 @@ export default function CurrenciesPage() {
                 } else {
                     alert('Failed to delete currency');
                 }
-            } catch {
-                logger.error('Error deleting currency:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Error deleting currency:', error);
                 alert('Error deleting currency');
             }
         }

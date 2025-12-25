@@ -97,7 +97,7 @@ export default function EmergencyPage() {
                     </button>
                     <div className="bg-white dark:bg-stellar-blue px-4 py-2 rounded-xl border border-cloud dark:border-nebula-purple/50 flex items-center gap-2 shadow-sm">
                         <div className={`w-2 h-2 rounded-full ${drillMode ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`}></div>
-                        <span className="text-sm font-bold text-ink-black dark:text-pearl">{drillMode ? &apos;Drill in Progress' : 'Status: Normal'}</span>
+                        <span className="text-sm font-bold text-ink-black dark:text-pearl">{drillMode ? 'Drill in Progress' : 'Status: Normal'}</span>
                     </div>
                 </div>
             </div>

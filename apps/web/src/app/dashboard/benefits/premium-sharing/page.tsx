@@ -26,7 +26,8 @@ export default function PremiumSharingPage() {
             } else {
                 setDeductions(data);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                         setDeductions(mockDeductions);
         } finally {
             setLoading(false);

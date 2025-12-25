@@ -295,9 +295,9 @@ export default function NitaqatPage() {
               <div>
                 <div className="text-sm text-indigo-600 dark:text-indigo-400">Simulated Changes</div>
                 <div className="font-medium">
-                  {simulateSaudi !== 0 && <span className={simulateSaudi > 0 ? &apos;text-green-600' : 'text-red-600'}>{simulateSaudi > 0 ? '+' : ''}{simulateSaudi} Saudi</span>}
+                  {simulateSaudi !== 0 && <span className={simulateSaudi > 0 ? 'text-green-600' : 'text-red-600'}>{simulateSaudi > 0 ? '+' : ''}{simulateSaudi} Saudi</span>}
                   {simulateSaudi !== 0 && simulateNonSaudi !== 0 && ', '}
-                  {simulateNonSaudi !== 0 && <span className={simulateNonSaudi > 0 ? &apos;text-blue-600' : 'text-amber-600'}>{simulateNonSaudi > 0 ? '+' : ''}{simulateNonSaudi} Non-Saudi</span>}
+                  {simulateNonSaudi !== 0 && <span className={simulateNonSaudi > 0 ? 'text-blue-600' : 'text-amber-600'}>{simulateNonSaudi > 0 ? '+' : ''}{simulateNonSaudi} Non-Saudi</span>}
                 </div>
               </div>
               <div className="flex items-center gap-4">

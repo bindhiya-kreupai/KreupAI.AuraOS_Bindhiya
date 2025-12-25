@@ -24,7 +24,8 @@ export default function LearningPathsPage() {
                 setLoading(true);
                 const result = await LearningPathService.getLearningPaths();
                 setData(result.length > 0 ? result : mockPaths);
-            } catch {
+            } catch (error) {
+            console.error('Error:', error);
                                 setData(mockPaths);
             } finally {
                 setLoading(false);

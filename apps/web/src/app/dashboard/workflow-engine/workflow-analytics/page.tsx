@@ -17,7 +17,8 @@ export default function WorkflowAnalyticsPage() {
             setLoading(true);
             const data = await WorkflowAnalyticsService.getMetrics();
             setMetrics(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

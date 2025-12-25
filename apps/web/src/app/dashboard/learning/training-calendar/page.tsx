@@ -20,7 +20,8 @@ export default function TrainingCalendarPage() {
                 setLoading(true);
                 const result = await TrainingSessionService.getTrainingSessions();
                 setData(result);
-            } catch {
+            } catch (error) {
+            console.error('Error:', error);
                                 setData([]);
             } finally {
                 setLoading(false);
@@ -63,7 +64,7 @@ export default function TrainingCalendarPage() {
                     ].map((event, i) => (
                         <div key={i} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-2 hover:shadow-md transition-shadow">
                             <div className="flex justify-between items-start">
-                                <div className="font-bold text-2xl text-slate-200 dark:text-slate-800 leading-none">{event.date.split(&apos; ')[1]}</div>
+                                <div className="font-bold text-2xl text-slate-200 dark:text-slate-800 leading-none">{event.date.split(' ')[1]}</div>
                                 <span className="text-xs font-bold uppercase text-slate-400">{event.type}</span>
                             </div>
                             <div className="font-bold text-lg">{event.title}</div>

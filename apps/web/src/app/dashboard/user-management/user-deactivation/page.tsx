@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
-import { logger } from '@/lib/logger';
 
 interface UserDeactivation {
     id: string;
@@ -33,8 +32,9 @@ export default function UserDeactivationPage() {
 
             if (deactivationsRes.ok) setData(await deactivationsRes.json());
             if (usersRes.ok) setUsers(await usersRes.json());
-        } catch {
-            logger.error('Failed to fetch data:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
         }
@@ -73,8 +73,9 @@ export default function UserDeactivationPage() {
                 const error = await response.json();
                 alert(`Failed to deactivate user: ${error.error}`);
             }
-        } catch {
-            logger.error('Error deactivating user:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error deactivating user:', error);
             alert('Error deactivating user');
         }
     };

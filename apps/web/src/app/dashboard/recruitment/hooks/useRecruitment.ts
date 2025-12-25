@@ -45,7 +45,6 @@ import {
     generateSampleRecruitmentSettings,
 } from '../data';
 import { useToast } from './useToast';
-import { logger } from '@/lib/logger';
 
 export const useRecruitment = () => {
     const [jobRequisitions, setJobRequisitions] = useState<JobRequisition[]>([]);
@@ -174,7 +173,7 @@ export const useRecruitment = () => {
             setStats(statsData);
         } catch {
             toast.error('Failed to load recruitment data');
-            logger.error('Load error:', error);
+            console.error('Load error:', error);
         } finally {
             setIsLoading(false);
         }
@@ -539,7 +538,7 @@ export const useRecruitment = () => {
             setStats(statsData);
         } catch {
             toast.error('Failed to refresh statistics');
-            logger.error('Stats error:', error);
+            console.error('Stats error:', error);
         }
     }, [toast]);
 

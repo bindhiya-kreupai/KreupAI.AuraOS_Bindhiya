@@ -61,7 +61,8 @@ export default function TimeRoundingPage() {
                     direction: directionMap[result.roundingType] || 'Normal Rounding'
                 });
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -72,7 +73,8 @@ export default function TimeRoundingPage() {
         try {
             await TimeRoundingService.updateRoundingRules(config);
             await fetchRounding();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

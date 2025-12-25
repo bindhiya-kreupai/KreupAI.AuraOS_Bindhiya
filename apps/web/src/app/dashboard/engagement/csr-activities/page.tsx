@@ -24,7 +24,8 @@ export default function CSRActivitiesPage() {
             setLoading(true);
             const activities = await CSRService.getActivities();
             setData(activities);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -47,7 +48,7 @@ export default function CSRActivitiesPage() {
                 <div className="lg:col-span-3 bg-gradient-to-r from-rose-500 to-pink-600 rounded-2xl p-8 text-white shadow-lg shadow-rose-500/20 flex flex-col md:flex-row items-center justify-between">
                     <div>
                         <h2 className="text-2xl font-bold mb-2">Our 2023 Impact</h2>
-                        <p className="text-rose-100 max-w-xl">Together, we&apos;ve contributed over 5,000 hours to local communities and raised $50k for charity.</p>
+                        <p className="text-rose-100 max-w-xl">Together, we've contributed over 5,000 hours to local communities and raised $50k for charity.</p>
                     </div>
                     <div className="flex gap-8 mt-6 md:mt-0">
                         <div className="text-center">

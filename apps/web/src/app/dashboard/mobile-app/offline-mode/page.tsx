@@ -33,7 +33,8 @@ export default function OfflineModePage() {
             ]);
             if (configData) setConfig(configData);
             if (syncData) setSyncStatus(syncData);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

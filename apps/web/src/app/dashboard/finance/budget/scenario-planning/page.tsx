@@ -24,7 +24,8 @@ export default function ScenarioPlanningPage() {
             if (result.length > 0) {
                 setScenarios(result);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -44,7 +45,7 @@ export default function ScenarioPlanningPage() {
                         <GitBranch className="w-6 h-6 text-indigo-500" />
                         Scenario Planning
                     </h1>
-                    <p className="text-slate-500 text-sm">Create &apos;What-if' scenarios to test budget resilience.</p>
+                    <p className="text-slate-500 text-sm">Create 'What-if' scenarios to test budget resilience.</p>
                 </div>
                 <button className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center gap-2">
                     <Play className="w-4 h-4" /> Run New Simulation

@@ -208,7 +208,7 @@ export class GOSIService {
         '    <Employee>',
         `      <SubscriberNumber>${record.subscriberNumber}</SubscriberNumber>`,
         `      <NationalId>${record.nationalId}</NationalId>`,
-        `      <IqamaNumber>${record.iqamaNumber || &apos;'}</IqamaNumber>`,
+        `      <IqamaNumber>${record.iqamaNumber || ''}</IqamaNumber>`,
         `      <IsSaudi>${record.isSaudi}</IsSaudi>`,
         `      <BasicSalary>${record.basicSalary.toFixed(2)}</BasicSalary>`,
         `      <HousingAllowance>${record.housingAllowance.toFixed(2)}</HousingAllowance>`,

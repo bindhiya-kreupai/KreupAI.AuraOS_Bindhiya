@@ -29,7 +29,8 @@ export default function MobileAnalyticsPage() {
             if (result) {
                 setAnalytics(result);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

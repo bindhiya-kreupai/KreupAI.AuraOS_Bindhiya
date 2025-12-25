@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
-import { logger } from '@/lib/logger';
 
 interface Language {
     id: string;
@@ -45,8 +44,9 @@ export default function LanguagesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch {
-            logger.error('Failed to fetch languages:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch languages:', error);
         } finally {
             setIsLoading(false);
         }
@@ -80,8 +80,9 @@ export default function LanguagesPage() {
             } else {
                 alert('Failed to save language');
             }
-        } catch {
-            logger.error('Error saving language:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving language:', error);
             alert('Error saving language');
         }
     };
@@ -98,8 +99,9 @@ export default function LanguagesPage() {
                 } else {
                     alert('Failed to delete language');
                 }
-            } catch {
-                logger.error('Error deleting language:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Error deleting language:', error);
                 alert('Error deleting language');
             }
         }

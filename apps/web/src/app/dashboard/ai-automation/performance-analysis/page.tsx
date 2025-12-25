@@ -45,7 +45,8 @@ export default function PerformanceAnalysisPage() {
             if (result.success) {
                 setInsights(result.data);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

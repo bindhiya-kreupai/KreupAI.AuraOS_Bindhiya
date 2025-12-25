@@ -29,7 +29,8 @@ export default function BackgroundVerificationPage() {
             const completed = data.filter((c: any) => c.status === 'completed').length;
             const flagged = data.filter((c: any) => c.status === 'flagged').length;
             setStats({ inProgress, completed, flagged });
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -39,7 +40,8 @@ export default function BackgroundVerificationPage() {
         try {
             await BackgroundCheckService.initiateBackgroundCheck(data);
             await fetchChecks();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     }
     };
 

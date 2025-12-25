@@ -195,7 +195,7 @@ export default function ThreeSixtyFeedbackPage() {
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
                             <UserPlus className="w-5 h-5 text-indigo-500" /> Nominate Peers
                         </h3>
-                        <p className="text-sm text-silver-mist mb-6">Select up to 5 colleagues who you&apos;ve worked closely with in the last 6 months.</p>
+                        <p className="text-sm text-silver-mist mb-6">Select up to 5 colleagues who you've worked closely with in the last 6 months.</p>
 
                         <div className="relative mb-6">
                             <input

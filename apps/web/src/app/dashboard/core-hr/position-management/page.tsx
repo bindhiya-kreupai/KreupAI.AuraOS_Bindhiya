@@ -25,7 +25,8 @@ export default function PositionManagementPage() {
         try {
             const data = await PositionService.getAllPositions();
             setPositionsData(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

@@ -21,7 +21,8 @@ export default function StrikeManagementPage() {
         try {
             const data = await StrikeService.getStrikes();
             setStrikes(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

@@ -59,7 +59,6 @@ import {
 } from 'lucide-react';
 import { Sheet } from '@aura/ui/components/ui';
 import { AssessmentService } from '@/services/competency-library.service';
-import { logger } from '@/lib/logger';
 
 // --- TYPES ---
 
@@ -451,7 +450,7 @@ const CompetencyRatingRow: React.FC<{ rating: CompetencyRating }> = ({ rating })
                     {/* Gap */}
                     <div className="text-center border-l border-slate-200 dark:border-slate-700 pl-4">
                         <div className={`text-lg font-bold ${
-                            gap > 0 ? &apos;text-emerald-600' : gap < 0 ? 'text-rose-600' : 'text-slate-500'
+                            gap > 0 ? 'text-emerald-600' : gap < 0 ? 'text-rose-600' : 'text-slate-500'
                         }`}>
                             {gap > 0 ? `+${gap}` : gap}
                         </div>
@@ -503,8 +502,9 @@ export default function SkillAssessmentPage() {
                     setExpandedAssessments([result.data[0].id]);
                 }
             }
-        } catch {
-            logger.error('Failed to fetch assessments:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch assessments:', error);
         } finally {
             setIsLoading(false);
         }
@@ -638,8 +638,9 @@ export default function SkillAssessmentPage() {
                 }
             }
             setIsSheetOpen(false);
-        } catch {
-            logger.error('Failed to save assessment:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to save assessment:', error);
         } finally {
             setIsSaving(false);
         }
@@ -652,8 +653,9 @@ export default function SkillAssessmentPage() {
                 if (result.success) {
                     setAssessments(prev => prev.filter(a => a.id !== assessmentId));
                 }
-            } catch {
-                logger.error('Failed to delete assessment:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Failed to delete assessment:', error);
             }
         }
     };
@@ -803,7 +805,7 @@ export default function SkillAssessmentPage() {
                         </div>
                         <div>
                             <h3 className="font-bold text-ink-black dark:text-pearl">Active Assessment Cycles</h3>
-                            <p className="text-xs text-slate-500">{ASSESSMENT_CYCLES.filter(c => c.status === &apos;Active').length} active cycles in progress</p>
+                            <p className="text-xs text-slate-500">{ASSESSMENT_CYCLES.filter(c => c.status === 'Active').length} active cycles in progress</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-4">

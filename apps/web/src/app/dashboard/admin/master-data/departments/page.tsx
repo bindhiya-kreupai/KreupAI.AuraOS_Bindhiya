@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
-import { logger } from '@/lib/logger';
 
 interface Department {
     id: string;
@@ -47,8 +46,9 @@ export default function DepartmentsPage() {
             if (depsRes.ok) setData(await depsRes.json());
             if (compsRes.ok) setCompanies(await compsRes.json());
             if (costsRes.ok) setCostCenters(await costsRes.json());
-        } catch {
-            logger.error('Failed to fetch data:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
         }
@@ -76,7 +76,7 @@ export default function DepartmentsPage() {
             width: '180px',
             render: (row) => {
                 const company = companies.find(c => c.id === row.companyId);
-                return <span className="text-sm">{company?.name || &apos;Unknown'}</span>;
+                return <span className="text-sm">{company?.name || 'Unknown'}</span>;
             }
         },
         {
@@ -116,8 +116,9 @@ export default function DepartmentsPage() {
             } else {
                 alert('Failed to save department');
             }
-        } catch {
-            logger.error('Error saving department:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving department:', error);
             alert('Error saving department');
         }
     };
@@ -134,8 +135,9 @@ export default function DepartmentsPage() {
                 } else {
                     alert('Failed to delete department');
                 }
-            } catch {
-                logger.error('Error deleting department:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Error deleting department:', error);
                 alert('Error deleting department');
             }
         }

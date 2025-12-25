@@ -26,7 +26,8 @@ export default function OrgStructurePage() {
         try {
             const data = await OrganizationService.getAllUnits();
             setUnits(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

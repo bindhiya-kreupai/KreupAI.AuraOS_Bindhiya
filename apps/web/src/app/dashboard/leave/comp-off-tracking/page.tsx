@@ -25,7 +25,8 @@ export default function CompOffTrackingPage() {
             if (result.length > 0) {
                 setCompOffs(result);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

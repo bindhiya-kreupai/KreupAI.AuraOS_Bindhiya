@@ -27,7 +27,8 @@ export default function ExceptionHandlingPage() {
             } else {
                 setEvents(data);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                         setEvents(mockEvents);
         } finally {
             setLoading(false);

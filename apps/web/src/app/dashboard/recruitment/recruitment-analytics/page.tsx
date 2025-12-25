@@ -29,7 +29,8 @@ export default function HiringAnalyticsPage() {
             if (data) {
                 setAnalytics(data);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

@@ -28,7 +28,8 @@ export default function ChatMessagingPage() {
             if (result.length > 0) {
                 setConversations(result);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

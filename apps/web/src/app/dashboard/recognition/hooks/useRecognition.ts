@@ -41,7 +41,6 @@ import {
   RecognitionSettingsService
 } from '../services';
 import {
-import { logger } from '@/lib/logger';
   sampleRecognitions,
   sampleBadges,
   sampleEmployeeBadges,
@@ -242,7 +241,7 @@ export function useRecognition(): UseRecognitionReturn {
 
     } catch {
       setError(err instanceof Error ? err.message : 'Failed to load recognition data');
-      logger.error('Error initializing recognition data:', err);
+      console.error('Error initializing recognition data:', err);
     } finally {
       setLoading(false);
     }

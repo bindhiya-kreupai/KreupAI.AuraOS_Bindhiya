@@ -35,7 +35,8 @@ export default function GeoFencingPage() {
             if (result && result.length > 0) {
                 setLocations(result as any);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -46,7 +47,8 @@ export default function GeoFencingPage() {
         try {
             await GeoFencingService.deleteGeoFence(String(id));
             await fetchGeoFences();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

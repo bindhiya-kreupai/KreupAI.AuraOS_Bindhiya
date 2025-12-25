@@ -21,7 +21,8 @@ export default function TrainingCalendarPage() {
                 setLoading(true);
                 const result = await TrainingSessionService.getTrainingSessions();
                 setData(result);
-            } catch {
+            } catch (error) {
+            console.error('Error:', error);
                                 setData([]);
             } finally {
                 setLoading(false);
@@ -53,8 +54,8 @@ export default function TrainingCalendarPage() {
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="font-bold text-lg">December 2025</h3>
                         <div className="flex gap-2">
-                            <button className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 font-bold">{&apos;<'}</button>
-                            <button className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 font-bold">{&apos;>'}</button>
+                            <button className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 font-bold">{'<'}</button>
+                            <button className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 font-bold">{'>'}</button>
                         </div>
                     </div>
 
@@ -69,7 +70,7 @@ export default function TrainingCalendarPage() {
                             const hasEvent = day === 5 || day === 12 || day === 18 || day === 24;
                             return (
                                 <div key={i} className={`bg-white dark:bg-slate-900 p-2 min-h-[80px] hover:bg-slate-50 dark:hover:bg-slate-800 ${day < 1 || day > 31 ? 'opacity-30' : ''}`}>
-                                    <div className="text-xs font-bold text-slate-500 mb-1">{day > 0 && day <= 31 ? day : &apos;'}</div>
+                                    <div className="text-xs font-bold text-slate-500 mb-1">{day > 0 && day <= 31 ? day : ''}</div>
                                     {hasEvent && day > 0 && day <= 31 && (
                                         <div className="bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 p-1.5 rounded text-[10px] font-bold truncate cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/60">
                                             {day === 5 ? 'React Workshop' : day === 12 ? 'Leadership Summit' : day === 18 ? 'Security Brief' : 'Town Hall'}
@@ -93,8 +94,8 @@ export default function TrainingCalendarPage() {
                             <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:shadow-md transition-all">
                                 <div className="flex justify-between items-start mb-2">
                                     <div className="bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2 text-center min-w-[60px]">
-                                        <div className="text-xs font-bold text-slate-500 uppercase">{e.date.split(&apos; ')[0]}</div>
-                                        <div className="text-xl font-bold text-indigo-600">{e.date.split(&apos; ')[1]}</div>
+                                        <div className="text-xs font-bold text-slate-500 uppercase">{e.date.split(' ')[0]}</div>
+                                        <div className="text-xl font-bold text-indigo-600">{e.date.split(' ')[1]}</div>
                                     </div>
                                     <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 px-2 py-1 rounded">{e.type}</span>
                                 </div>

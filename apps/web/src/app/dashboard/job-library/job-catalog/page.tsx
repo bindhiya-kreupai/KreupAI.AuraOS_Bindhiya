@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-import { logger } from '@/lib/logger';
     Briefcase,
     Search,
     Filter,
@@ -34,8 +33,9 @@ export default function JobCatalogPage() {
                 if (!res.ok) throw new Error('Failed to fetch job catalog');
                 const data = await res.json();
                 setJobs(data);
-            } catch {
-                logger.error(err);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error(err);
                 setError('Failed to load job catalog');
             } finally {
                 setLoading(false);
@@ -112,7 +112,7 @@ export default function JobCatalogPage() {
                                     </div>
                                     {job.title}
                                 </td>
-                                <td className="px-6 py-4">{job.family?.name || &apos;-'}</td>
+                                <td className="px-6 py-4">{job.family?.name || '-'}</td>
                                 <td className="px-6 py-4">
                                     {job.grade ? (
                                         <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-xs font-bold">{job.grade.code}</span>

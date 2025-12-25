@@ -29,7 +29,8 @@ export default function OfferManagementPage() {
             const accepted = data.filter((o: any) => o.status === 'accepted').length;
             const pending = data.filter((o: any) => o.status === 'pending').length;
             setStats({ pending, accepted, awaitingSignature });
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -39,7 +40,8 @@ export default function OfferManagementPage() {
         try {
             await JobOfferService.createOffer(offerData);
             await fetchOffers();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     }
     };
 
@@ -47,7 +49,8 @@ export default function OfferManagementPage() {
         try {
             await JobOfferService.sendOffer(offerId);
             await fetchOffers();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     }
     };
 

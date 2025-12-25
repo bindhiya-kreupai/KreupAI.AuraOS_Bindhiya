@@ -44,7 +44,7 @@ export default function LocumManagementPage() {
                                     </div>
                                 </div>
                                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${shift.status === 'filled' ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-100 text-indigo-600'
-                                    }`}>{shift.status === &apos;filled' ? 'Filled' : 'Posting'}</span>
+                                    }`}>{shift.status === 'filled' ? 'Filled' : 'Posting'}</span>
                             </div>
                         ))}
                     </div>

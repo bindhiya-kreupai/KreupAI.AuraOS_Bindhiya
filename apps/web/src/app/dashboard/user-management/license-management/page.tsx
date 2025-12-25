@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
-import { logger } from '@/lib/logger';
 
 interface License {
     id: string;
@@ -22,8 +21,9 @@ export default function LicensePage() {
         try {
             const res = await fetch('/api/licenses');
             if (res.ok) setData(await res.json());
-        } catch {
-            logger.error('Failed to fetch licenses:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch licenses:', error);
         } finally {
             setIsLoading(false);
         }
@@ -82,8 +82,9 @@ export default function LicensePage() {
                 const error = await response.json();
                 alert(`Failed to save license: ${error.error}`);
             }
-        } catch {
-            logger.error('Error saving license:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving license:', error);
             alert('Error saving license');
         }
     };

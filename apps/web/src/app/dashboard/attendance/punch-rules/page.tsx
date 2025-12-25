@@ -59,7 +59,8 @@ export default function PunchRulesPage() {
                     nightShiftAllowance: false
                 });
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -70,7 +71,8 @@ export default function PunchRulesPage() {
         try {
             await PunchRulesService.updatePunchRules(config);
             await fetchRules();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

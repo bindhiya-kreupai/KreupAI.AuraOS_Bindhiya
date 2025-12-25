@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import {
     Users,
     Briefcase,
@@ -107,14 +108,14 @@ export default function OverviewPage() {
                     <h2 className="text-sm font-bold text-ink-black dark:text-pearl mb-4">Quick Actions</h2>
                     <div className="space-y-2">
                         {[
-                            { label: 'Add Employee', color: 'text-celestial-indigo', bg: 'bg-celestial-indigo/10 hover:bg-celestial-indigo/20' },
-                            { label: 'Process Payroll', color: 'text-quantum-rose', bg: 'bg-quantum-rose/10 hover:bg-quantum-rose/20' },
-                            { label: 'Approve Leaves', color: 'text-neural-mint', bg: 'bg-neural-mint/10 hover:bg-neural-mint/20' },
-                            { label: 'Create Job Post', color: 'text-sunset-amber', bg: 'bg-sunset-amber/10 hover:bg-sunset-amber/20' }
+                            { label: 'Add Employee', href: '/dashboard/core-hr/employee-database', color: 'text-celestial-indigo', bg: 'bg-celestial-indigo/10 hover:bg-celestial-indigo/20' },
+                            { label: 'Process Payroll', href: '/dashboard/payroll/payroll-processing', color: 'text-quantum-rose', bg: 'bg-quantum-rose/10 hover:bg-quantum-rose/20' },
+                            { label: 'Approve Leaves', href: '/dashboard/leave/my-leaves', color: 'text-neural-mint', bg: 'bg-neural-mint/10 hover:bg-neural-mint/20' },
+                            { label: 'Create Job Post', href: '/dashboard/recruitment/job-posting', color: 'text-sunset-amber', bg: 'bg-sunset-amber/10 hover:bg-sunset-amber/20' }
                         ].map((action, i) => (
-                            <button key={i} className={`w-full py-2.5 px-3 rounded-lg text-sm font-medium text-left transition-all ${action.bg} ${action.color}`}>
+                            <Link key={i} href={action.href} className={`block w-full py-2.5 px-3 rounded-lg text-sm font-medium text-left transition-all ${action.bg} ${action.color}`}>
                                 {action.label}
-                            </button>
+                            </Link>
                         ))}
                     </div>
                 </div>

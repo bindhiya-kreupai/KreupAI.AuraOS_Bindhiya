@@ -19,7 +19,8 @@ export default function SkillGapAnalysisPage() {
                 setLoading(true);
                 const result = await SkillGapService.getSkillGapAnalysis();
                 setData(result);
-            } catch {
+            } catch (error) {
+            console.error('Error:', error);
                                 setData([]);
             } finally {
                 setLoading(false);
@@ -76,7 +77,7 @@ export default function SkillGapAnalysisPage() {
                             { team: 'Customer Support', gap: 'Technical Troubleshooting', plan: 'Create internal KB articles and quiz', urgency: 'Low' },
                         ].map((gap, i) => (
                             <div key={i} className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                                <div className="mt-1"><AlertCircle className={`w-5 h-5 ${gap.urgency === &apos;High' ? 'text-rose-500' : 'text-amber-500'}`} /></div>
+                                <div className="mt-1"><AlertCircle className={`w-5 h-5 ${gap.urgency === 'High' ? 'text-rose-500' : 'text-amber-500'}`} /></div>
                                 <div>
                                     <h4 className="font-bold text-sm">{gap.team}</h4>
                                     <div className="text-xs text-slate-500 mb-2">Gap: <span className="font-bold text-slate-700 dark:text-slate-300">{gap.gap}</span></div>

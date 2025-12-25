@@ -53,7 +53,8 @@ export default function RegularizationRequestPage() {
             if (result && result.length > 0) {
                 setRequests(result as any);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -72,7 +73,8 @@ export default function RegularizationRequestPage() {
             } as any);
             await fetchRequests();
             setForm({ date: '', type: 'Missed Punch', checkIn: '', checkOut: '', reason: '' });
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

@@ -52,7 +52,7 @@ export default function ChatSupportPage() {
                     <div className="flex gap-3 flex-row-reverse">
                         <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">U</div>
                         <div className="bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[80%]">
-                            <p className="text-sm">Hi Mike, I&apos;m trying to add my spouse to the plan but the button seems disabled.</p>
+                            <p className="text-sm">Hi Mike, I'm trying to add my spouse to the plan but the button seems disabled.</p>
                         </div>
                     </div>
 

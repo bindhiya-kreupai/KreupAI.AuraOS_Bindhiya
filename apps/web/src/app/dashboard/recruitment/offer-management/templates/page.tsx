@@ -79,8 +79,8 @@ export default function OfferTemplatesPage() {
                         <Variable className="w-5 h-5" /> Dynamic Variables
                     </h3>
                     <p className="text-sm text-indigo-700 dark:text-indigo-400 mb-4">
-                        Use placeholders like <code className="bg-white dark:bg-slate-900 px-1 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 mx-1">{&apos;{salary}'}</code>
-                        and <code className="bg-white dark:bg-slate-900 px-1 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 mx-1">{&apos;{joining_date}'}</code> to auto-fill candidate details.
+                        Use placeholders like <code className="bg-white dark:bg-slate-900 px-1 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 mx-1">{'{salary}'}</code>
+                        and <code className="bg-white dark:bg-slate-900 px-1 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 mx-1">{'{joining_date}'}</code> to auto-fill candidate details.
                     </p>
                     <button className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:underline text-left">View Variable Guide &rarr;</button>
                 </div>

@@ -27,7 +27,8 @@ export default function BenefitTypesPage() {
             setLoading(true);
             const data = await BenefitPlanService.getPlans();
             setBenefits(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                         // Fallback to mock data
             setBenefits(mockBenefits);
         } finally {

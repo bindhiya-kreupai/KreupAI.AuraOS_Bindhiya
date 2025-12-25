@@ -70,7 +70,6 @@ import {
     Cell
 } from 'recharts';
 import { GapAnalysisService, DevelopmentPlanService } from '@/services/competency-library.service';
-import { logger } from '@/lib/logger';
 
 // --- TYPES ---
 
@@ -639,8 +638,9 @@ export default function GapAnalysisPage() {
                 }]);
             }
             setIsSheetOpen(false);
-        } catch {
-            logger.error('Failed to save development plan:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to save development plan:', error);
         } finally {
             setIsSaving(false);
         }

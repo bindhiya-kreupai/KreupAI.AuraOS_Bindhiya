@@ -88,7 +88,8 @@ export default function LoansPage() {
             setLoading(true);
             const data = await LoanService.getSchemes();
             setSchemes(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

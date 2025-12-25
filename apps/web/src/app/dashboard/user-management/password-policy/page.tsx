@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { logger } from '@/lib/logger';
 
 interface PasswordPolicy {
     id?: string;
@@ -51,8 +50,9 @@ export default function PasswordPolicyPage() {
             } else {
                 alert('Failed to save policy');
             }
-        } catch {
-            logger.error('Error saving policy:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving policy:', error);
             alert('Error saving policy');
         } finally {
             setIsSaving(false);

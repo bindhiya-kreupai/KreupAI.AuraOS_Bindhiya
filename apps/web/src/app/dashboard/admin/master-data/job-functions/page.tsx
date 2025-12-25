@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
-import { logger } from '@/lib/logger';
 
 interface JobFunction {
     id: string;
@@ -33,8 +32,9 @@ export default function JobFunctionsPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch {
-            logger.error('Failed to fetch job functions:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch job functions:', error);
         } finally {
             setIsLoading(false);
         }
@@ -68,8 +68,9 @@ export default function JobFunctionsPage() {
             } else {
                 alert('Failed to save job function');
             }
-        } catch {
-            logger.error('Error saving job function:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving job function:', error);
             alert('Error saving job function');
         }
     };
@@ -86,8 +87,9 @@ export default function JobFunctionsPage() {
                 } else {
                     alert('Failed to delete job function');
                 }
-            } catch {
-                logger.error('Error deleting job function:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Error deleting job function:', error);
                 alert('Error deleting job function');
             }
         }

@@ -21,7 +21,8 @@ export default function CommunicationLogPage() {
             // Communication log could use Union or general service
             // For now, keep it as empty array with loading state
             setCommunications([]);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

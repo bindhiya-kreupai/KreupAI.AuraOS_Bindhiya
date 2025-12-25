@@ -38,7 +38,8 @@ export default function BonusProcessingPage() {
                 // In a real implementation, you'd filter by status
                 setPastCycles(result.slice(0, 3));
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

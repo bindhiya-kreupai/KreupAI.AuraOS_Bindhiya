@@ -22,7 +22,8 @@ export default function EnrollmentWindowPage() {
             setLoading(true);
             const data = await EnrollmentWindowService.getWindows();
             setWindows(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

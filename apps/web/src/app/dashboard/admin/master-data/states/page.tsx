@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
-import { logger } from '@/lib/logger';
 
 interface State {
     id: string;
@@ -33,8 +32,9 @@ export default function StatesPage() {
             if (response.ok) {
                 setData(await response.json());
             }
-        } catch {
-            logger.error('Failed to fetch states:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch states:', error);
         } finally {
             setIsLoading(false);
         }
@@ -45,8 +45,9 @@ export default function StatesPage() {
         try {
             const countriesRes = await fetch('/api/master-data/countries');
             if (countriesRes.ok) setCountries(await countriesRes.json());
-        } catch {
-            logger.error('Failed to fetch countries:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch countries:', error);
         }
     };
 
@@ -63,7 +64,7 @@ export default function StatesPage() {
             width: '180px',
             render: (row) => {
                 const country = countries.find(c => c.id === row.countryId);
-                return <span className="text-sm">{country?.name || &apos;Unknown'}</span>;
+                return <span className="text-sm">{country?.name || 'Unknown'}</span>;
             }
         },
     ];
@@ -90,8 +91,9 @@ export default function StatesPage() {
             } else {
                 alert('Failed to save state');
             }
-        } catch {
-            logger.error('Error saving state:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving state:', error);
             alert('Error saving state');
         }
     };
@@ -108,8 +110,9 @@ export default function StatesPage() {
                 } else {
                     alert('Failed to delete state');
                 }
-            } catch {
-                logger.error('Error deleting state:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Error deleting state:', error);
                 alert('Error deleting state');
             }
         }

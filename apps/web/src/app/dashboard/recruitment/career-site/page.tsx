@@ -29,7 +29,8 @@ export default function CareerSitePage() {
             ]);
             setSettings(settingsData);
             setJobs(jobsData);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -39,7 +40,8 @@ export default function CareerSitePage() {
         try {
             await RecruitmentSettingsService.updateSettings(newSettings);
             await fetchCareerSiteData();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     }
     };
 
@@ -125,7 +127,7 @@ export default function CareerSitePage() {
                         {/* Mock Site Content */}
                         <div className="bg-indigo-600 text-white py-16 px-8 text-center">
                             <h2 className="text-3xl font-black mb-4">Join Our Mission</h2>
-                            <p className="max-w-md mx-auto text-indigo-100 mb-8">We&apos;re building the future of work. Find your place in our growing team.</p>
+                            <p className="max-w-md mx-auto text-indigo-100 mb-8">We're building the future of work. Find your place in our growing team.</p>
                             <button className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-full">View Openings</button>
                         </div>
 

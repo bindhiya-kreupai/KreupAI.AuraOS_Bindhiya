@@ -9,7 +9,6 @@ import {
   MobilitySettingsService,
 } from '../services';
 import type {
-import { logger } from '@/lib/logger';
   VisaApplication,
   VisaApplicationStatus,
   VisaType,
@@ -682,7 +681,7 @@ export function useMobility(): UseMobilityReturn {
       const analyticsData = await MobilityAnalyticsService.getAnalytics();
       setAnalytics(analyticsData);
     } catch {
-      logger.error('Failed to fetch analytics:', error);
+      console.error('Failed to fetch analytics:', error);
     } finally {
       setAnalyticsLoading(false);
     }
@@ -695,7 +694,7 @@ export function useMobility(): UseMobilityReturn {
       const settingsData = await MobilitySettingsService.getSettings();
       setSettings(settingsData);
     } catch {
-      logger.error('Failed to fetch settings:', error);
+      console.error('Failed to fetch settings:', error);
     } finally {
       setSettingsLoading(false);
     }
@@ -708,7 +707,7 @@ export function useMobility(): UseMobilityReturn {
       setSettings(updatedSettings);
       return updatedSettings;
     } catch {
-      logger.error('Failed to update settings:', error);
+      console.error('Failed to update settings:', error);
       throw error;
     } finally {
       setSettingsLoading(false);

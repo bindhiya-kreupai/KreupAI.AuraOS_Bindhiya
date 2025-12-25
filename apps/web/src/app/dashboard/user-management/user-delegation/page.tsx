@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
-import { logger } from '@/lib/logger';
 
 interface UserDelegation {
     id: string;
@@ -37,8 +36,9 @@ export default function UserDelegationPage() {
 
             if (delegationsRes.ok) setData(await delegationsRes.json());
             if (usersRes.ok) setUsers(await usersRes.json());
-        } catch {
-            logger.error('Failed to fetch data:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
         }
@@ -91,8 +91,9 @@ export default function UserDelegationPage() {
                 const error = await response.json();
                 alert(`Failed to create delegation: ${error.error}`);
             }
-        } catch {
-            logger.error('Error creating delegation:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error creating delegation:', error);
             alert('Error creating delegation');
         }
     };
@@ -103,8 +104,9 @@ export default function UserDelegationPage() {
                 const response = await fetch(`/api/user-delegation?id=${record.id}`, { method: 'DELETE' });
                 if (response.ok) fetchData();
                 else alert('Failed to delete delegation');
-            } catch {
-                logger.error('Error deleting delegation:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Error deleting delegation:', error);
                 alert('Error deleting delegation');
             }
         }

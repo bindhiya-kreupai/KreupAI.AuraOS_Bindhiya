@@ -29,7 +29,7 @@ export default function LevelsTiersPage() {
                         <span className="text-4xl font-black">12</span>
                     </div>
                     <h2 className="text-3xl font-bold mb-2">Level 12: Expert Contributor</h2>
-                    <p className="text-indigo-200 mb-8 max-w-lg mx-auto">You&apos;re in the top 10% of users! Only 450 XP more to reach 'Master'.</p>
+                    <p className="text-indigo-200 mb-8 max-w-lg mx-auto">You're in the top 10% of users! Only 450 XP more to reach 'Master'.</p>
 
                     <div className="w-full max-w-xl mx-auto mb-2">
                         <div className="flex justify-between text-xs font-bold mb-2">

@@ -171,7 +171,7 @@ export const POST = authRateLimit(async function (request: NextRequest) {
       },
       message: 'Login successful',
     });
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
@@ -182,4 +182,4 @@ export const POST = authRateLimit(async function (request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

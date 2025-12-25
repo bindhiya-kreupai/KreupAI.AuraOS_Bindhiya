@@ -114,7 +114,8 @@ export default function ClassifiedsPage() {
             setLoading(true);
             const posts = await SocialFeedService.getPosts();
             setData(posts.filter(p => p.type === 'classified'));
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -310,7 +311,7 @@ export default function ClassifiedsPage() {
                                 <div>
                                     <label className="text-xs font-bold text-slate-500 mb-1 block">Category</label>
                                     <select className="w-full p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none">
-                                        {CATEGORIES.filter(c => c !== &apos;All').map(c => <option key={c}>{c}</option>)}
+                                        {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c}>{c}</option>)}
                                     </select>
                                 </div>
 

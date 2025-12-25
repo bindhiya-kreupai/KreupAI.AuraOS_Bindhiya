@@ -120,13 +120,13 @@ export default function ScenarioPlanningPage() {
                                     <div className="grid grid-cols-2 gap-2 text-xs">
                                         <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                                             <Users className="w-3 h-3" />
-                                            <span className={scenario.metrics.headcountChange > 0 ? &apos;text-emerald-500' : scenario.metrics.headcountChange < 0 ? 'text-rose-500' : ''}>
+                                            <span className={scenario.metrics.headcountChange > 0 ? 'text-emerald-500' : scenario.metrics.headcountChange < 0 ? 'text-rose-500' : ''}>
                                                 {scenario.metrics.headcountChange > 0 ? '+' : ''}{scenario.metrics.headcountChange}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                                             <DollarSign className="w-3 h-3" />
-                                            <span className={scenario.metrics.budgetChange > 0 ? &apos;text-rose-500' : scenario.metrics.budgetChange < 0 ? 'text-emerald-500' : ''}>
+                                            <span className={scenario.metrics.budgetChange > 0 ? 'text-rose-500' : scenario.metrics.budgetChange < 0 ? 'text-emerald-500' : ''}>
                                                 {scenario.metrics.budgetChange > 0 ? '+' : ''}{scenario.metrics.budgetChange}M
                                             </span>
                                         </div>

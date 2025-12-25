@@ -25,7 +25,8 @@ export default function KudosWallPage() {
             setLoading(true);
             const posts = await SocialFeedService.getPosts();
             setData(posts.filter(p => p.type === 'kudos' || p.type === 'recognition'));
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

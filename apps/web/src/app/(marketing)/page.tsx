@@ -401,7 +401,7 @@ function LiveChatWidget() {
                   </div>
                   <div className="bg-pearl dark:bg-stellar-blue/10 rounded-2xl rounded-tl-none p-3 max-w-[80%]">
                     <p className="text-sm text-ink-black dark:text-pearl">
-                      Hi there! 👋 I&apos;m here to help you learn more about AuraOS. What would you
+                      Hi there! 👋 I'm here to help you learn more about AuraOS. What would you
                       like to know?
                     </p>
                   </div>
@@ -752,7 +752,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-xl text-twilight dark:text-silver-mist max-w-3xl mx-auto mb-8 leading-relaxed">
-            The world&apos;s first truly agentic HCM platform. Automate 80% of HR workflows, predict
+            The world's first truly agentic HCM platform. Automate 80% of HR workflows, predict
             attrition before it happens, and unlock actionable insights that drive business growth.
           </p>
 

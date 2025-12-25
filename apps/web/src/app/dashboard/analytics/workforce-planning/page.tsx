@@ -22,7 +22,8 @@ export default function WorkforcePlanningPage() {
         try {
             const data = await PredictiveAnalyticsService.getAnalytics();
             setAnalytics(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

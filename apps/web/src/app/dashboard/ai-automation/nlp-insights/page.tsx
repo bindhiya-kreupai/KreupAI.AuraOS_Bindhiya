@@ -87,7 +87,8 @@ export default function NLPInsightsPage() {
             if (trendsResult.success) {
                 setTrends(trendsResult.data?.trends || SENTIMENT_TREND);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

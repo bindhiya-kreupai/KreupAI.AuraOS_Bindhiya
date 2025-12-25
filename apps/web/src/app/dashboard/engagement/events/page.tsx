@@ -86,7 +86,8 @@ export default function EventsPage() {
                 setEvents(eventsData);
                 setData(eventsData);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

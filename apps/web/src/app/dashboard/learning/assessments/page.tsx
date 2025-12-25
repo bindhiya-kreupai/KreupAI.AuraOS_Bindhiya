@@ -21,7 +21,8 @@ export default function AssessmentPage() {
                 setLoading(true);
                 const result = await AssessmentService.getAssessments();
                 setData(result);
-            } catch {
+            } catch (error) {
+            console.error('Error:', error);
                                 setData([]);
             } finally {
                 setLoading(false);

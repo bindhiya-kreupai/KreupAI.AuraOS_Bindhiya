@@ -55,7 +55,8 @@ export default function AnomalyDetectionPage() {
             if (result.success) {
                 setAnomalies(result.data?.anomalies || []);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -66,7 +67,8 @@ export default function AnomalyDetectionPage() {
         try {
             await anomalyDetection.resolveAnomaly(anomalyId, resolution);
             await fetchAnomalies();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

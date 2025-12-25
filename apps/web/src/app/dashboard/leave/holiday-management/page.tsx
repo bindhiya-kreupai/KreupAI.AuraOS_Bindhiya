@@ -25,7 +25,8 @@ export default function HolidayManagementPage() {
             if (result.length > 0) {
                 setHolidays(result);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

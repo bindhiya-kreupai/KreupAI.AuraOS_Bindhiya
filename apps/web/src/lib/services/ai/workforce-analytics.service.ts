@@ -46,7 +46,7 @@ const INDUSTRY_GROWTH_RATES: Record<string, Record<string, number>> = {
   RETAIL: {
     'Store Operations': 0.03,
     'E-commerce': 0.15,
-    Supply Chain: 0.08,
+    'Supply Chain': 0.08,
     Marketing: 0.10,
     Technology: 0.12,
   },

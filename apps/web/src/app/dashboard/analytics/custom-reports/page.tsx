@@ -26,7 +26,8 @@ export default function CustomReportsPage() {
         try {
             const data = await CustomReportService.getAllReports();
             setSavedReports(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -42,7 +43,8 @@ export default function CustomReportsPage() {
                 sortOrder: [],
             });
             await fetchReports();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     }
     };
 

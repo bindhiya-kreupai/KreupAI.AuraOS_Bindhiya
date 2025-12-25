@@ -24,7 +24,8 @@ export default function ResumeParsingPage() {
         try {
             const data = await CandidateApplicationService.getApplications();
             setParsedResumes(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -35,7 +36,8 @@ export default function ResumeParsingPage() {
         try {
             // Parse resume logic here
             await fetchParsedResumes();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setIsParsing(false);
         }

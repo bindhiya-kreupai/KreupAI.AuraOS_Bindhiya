@@ -27,7 +27,8 @@ export default function ClaimsPage() {
             } else {
                 setClaims(data);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                         setClaims(mockClaims);
         } finally {
             setLoading(false);

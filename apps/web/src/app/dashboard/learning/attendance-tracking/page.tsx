@@ -18,7 +18,8 @@ export default function AttendanceTrackingPage() {
                 setLoading(true);
                 const result = await TrainingSessionService.getTrainingSessions();
                 setData(result);
-            } catch {
+            } catch (error) {
+            console.error('Error:', error);
                                 setData([]);
             } finally {
                 setLoading(false);

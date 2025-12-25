@@ -26,7 +26,8 @@ export default function IntegrationPointsPage() {
             if (data.length > 0) {
                 setApps(data);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

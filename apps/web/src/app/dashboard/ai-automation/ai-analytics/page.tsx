@@ -194,7 +194,8 @@ export default function AIAnalyticsPage() {
         setPerformanceData(performanceResult.data || PERFORMANCE_DATA);
       }
     } catch {
-          } finally {
+      // Error handled silently
+    } finally {
       setLoading(false);
     }
   };
@@ -392,7 +393,7 @@ export default function AIAnalyticsPage() {
                     className="w-full bg-gradient-to-t from-emerald-500 to-emerald-300 rounded-t-lg"
                     style={{ height: `${(pred.predicted - 75) * 4}px` }}
                   />
-                  <span className="text-xs text-silver-mist">{pred.quarter.split(&apos; ')[0]}</span>
+                  <span className="text-xs text-silver-mist">{pred.quarter.split(' ')[0]}</span>
                 </div>
               ))}
             </div>

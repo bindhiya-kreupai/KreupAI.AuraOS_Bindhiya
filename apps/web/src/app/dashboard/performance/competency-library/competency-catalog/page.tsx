@@ -43,7 +43,6 @@ import {
     Loader2
 } from 'lucide-react';
 import { CompetencyService, CategoryService } from '@/services/competency-library.service';
-import { logger } from '@/lib/logger';
 
 // --- TYPES ---
 
@@ -838,8 +837,9 @@ export default function CompetencyCatalogPage() {
                 // Cast data to local type since service uses shared types
                 setCompetencies(result.data as any);
             }
-        } catch {
-            logger.error('Failed to fetch competencies:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch competencies:', error);
         } finally {
             setIsLoading(false);
         }
@@ -912,8 +912,9 @@ export default function CompetencyCatalogPage() {
             
             setIsSheetOpen(false);
             setEditingCompetency(null);
-        } catch {
-            logger.error('Failed to save competency:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to save competency:', error);
         } finally {
             setIsSaving(false);
         }
@@ -926,8 +927,9 @@ export default function CompetencyCatalogPage() {
                 if (result.success) {
                     setCompetencies(prev => prev.filter(c => c.id !== id));
                 }
-            } catch {
-                logger.error('Failed to delete competency:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Failed to delete competency:', error);
             }
         }
     };
@@ -1059,7 +1061,7 @@ export default function CompetencyCatalogPage() {
                             <Check className="w-5 h-5" />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{competencies.filter(c => c.status === &apos;Active').length}</div>
+                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{competencies.filter(c => c.status === 'Active').length}</div>
                             <div className="text-xs text-silver-mist uppercase font-bold">Active</div>
                         </div>
                     </div>

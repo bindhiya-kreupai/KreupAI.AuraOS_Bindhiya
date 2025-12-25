@@ -29,7 +29,8 @@ export default function ResumeScreeningPage() {
             if (result.success) {
                 setCandidates(result.data?.resumes || []);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -40,7 +41,8 @@ export default function ResumeScreeningPage() {
         try {
             await resumeParsing.parseResume(file);
             await fetchResumes();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

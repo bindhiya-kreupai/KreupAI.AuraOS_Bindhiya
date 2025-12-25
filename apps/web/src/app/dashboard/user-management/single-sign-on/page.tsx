@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { logger } from '@/lib/logger';
 
 interface SSOConfig {
     id?: string;
@@ -45,8 +44,9 @@ export default function SSOPage() {
             } else {
                 alert('Failed to save configuration');
             }
-        } catch {
-            logger.error('Error saving SSO config:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving SSO config:', error);
             alert('Error saving configuration');
         } finally {
             setIsSaving(false);

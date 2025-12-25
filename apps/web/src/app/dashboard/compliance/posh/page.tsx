@@ -28,7 +28,8 @@ export default function POSHPage() {
             ]);
             setComplaints(complaintsData);
             setCommittees(committeesData);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

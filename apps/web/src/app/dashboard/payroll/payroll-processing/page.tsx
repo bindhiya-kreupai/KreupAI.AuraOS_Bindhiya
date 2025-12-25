@@ -50,8 +50,9 @@ export default function PayrollRunPage() {
             if (result.length > 0) {
                 setPayrollRuns(result);
             }
-        } catch {
-                    } finally {
+        } catch (error) {
+            console.error('Failed to fetch payroll runs:', error);
+        } finally {
             setLoading(false);
         }
     };
@@ -160,7 +161,7 @@ export default function PayrollRunPage() {
                                                 <td className="px-4 py-3 font-bold">{emp.name}</td>
                                                 <td className="px-4 py-3">22</td>
                                                 <td className="px-4 py-3 font-medium text-emerald-500">{emp.daysWorked}</td>
-                                                <td className="px-4 py-3 font-bold text-rose-500">{emp.lop > 0 ? emp.lop : &apos;-'}</td>
+                                                <td className="px-4 py-3 font-bold text-rose-500">{emp.lop > 0 ? emp.lop : '-'}</td>
                                                 <td className="px-4 py-3">
                                                     {emp.lop > 0 ? (
                                                         <span className="px-2 py-1 bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 rounded-md text-[10px] font-bold uppercase">
@@ -287,7 +288,7 @@ export default function PayrollRunPage() {
                                     <div className="text-3xl font-bold text-ink-black dark:text-pearl">{payrollData.length}</div>
                                 </div>
                                 <div className={`p-4 rounded-xl border ${variance > 5 ? 'bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-500/20' : 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-500/20'}`}>
-                                    <div className={`text-sm font-bold uppercase mb-1 ${variance > 5 ? &apos;text-amber-600' : 'text-emerald-600'}`}>Variance (MoM)</div>
+                                    <div className={`text-sm font-bold uppercase mb-1 ${variance > 5 ? 'text-amber-600' : 'text-emerald-600'}`}>Variance (MoM)</div>
                                     <div className={`text-3xl font-bold ${variance > 5 ? 'text-amber-600' : 'text-emerald-600'}`}>
                                         {variance > 0 ? '+' : ''}{variance.toFixed(1)}%
                                     </div>

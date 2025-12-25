@@ -168,7 +168,7 @@ export default function KnowledgeBasePage() {
                                 <HelpCircle className="w-6 h-6" />
                             </div>
                             <h3 className="font-bold text-lg text-ink-black dark:text-pearl mb-2">Still need help?</h3>
-                            <p className="text-sm text-silver-mist mb-6">Can&apos;t find what you're looking for? Raise a ticket and our HR team will get back to you.</p>
+                            <p className="text-sm text-silver-mist mb-6">Can't find what you're looking for? Raise a ticket and our HR team will get back to you.</p>
                             <button className="w-full py-2.5 bg-celestial-indigo text-white rounded-xl font-bold text-sm hover:bg-celestial-indigo/90 transition-colors shadow-lg shadow-celestial-indigo/20">
                                 Create Support Ticket
                             </button>

@@ -30,7 +30,8 @@ export default function EmployeeDatabasePage() {
         try {
             const data = await EmployeeService.getAllEmployees();
             setEmployees(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

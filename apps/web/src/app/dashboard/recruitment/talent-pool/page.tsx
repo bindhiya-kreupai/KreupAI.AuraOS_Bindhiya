@@ -23,7 +23,8 @@ export default function TalentPoolPage() {
         try {
             const data = await CandidateApplicationService.getApplications();
             setCandidates(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

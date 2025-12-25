@@ -39,7 +39,8 @@ export default function ReimbursementsPage() {
             if (result.length > 0) {
                 setClaims(result);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -49,7 +50,8 @@ export default function ReimbursementsPage() {
         try {
             await ReimbursementService.updateClaimStatus(id, 'APPROVED');
             fetchClaims();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     }
     };
 
@@ -57,7 +59,8 @@ export default function ReimbursementsPage() {
         try {
             await ReimbursementService.updateClaimStatus(id, 'REJECTED');
             fetchClaims();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     }
     };
 

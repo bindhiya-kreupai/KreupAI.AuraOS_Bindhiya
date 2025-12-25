@@ -62,7 +62,8 @@ export default function LeadershipPage() {
                 setLoading(true);
                 const result = await CourseService.getCourses();
                 setData(result);
-            } catch {
+            } catch (error) {
+            console.error('Error:', error);
                                 setData([]);
             } finally {
                 setLoading(false);
@@ -113,7 +114,7 @@ export default function LeadershipPage() {
                                         </div>
                                         <div className="text-right">
                                             <div className="text-[10px] font-bold uppercase text-silver-mist">Plan Readiness</div>
-                                            <div className={`font-bold ${pos.readiness >= 80 ? &apos;text-emerald-500' : 'text-amber-500'}`}>{pos.readiness}%</div>
+                                            <div className={`font-bold ${pos.readiness >= 80 ? 'text-emerald-500' : 'text-amber-500'}`}>{pos.readiness}%</div>
                                         </div>
                                     </div>
                                     <div className="p-4 space-y-3">

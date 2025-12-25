@@ -23,7 +23,8 @@ export default function WhistleblowerPage() {
         try {
             const data = await WhistleblowerService.getReports();
             setReports(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

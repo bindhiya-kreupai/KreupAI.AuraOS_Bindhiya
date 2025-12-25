@@ -721,7 +721,7 @@ export class PerformancePredictionService {
 
     // Needs attention (declining or score < 50)
     const needsAttention = predictions
-      .filter(p => p.trend === &apos;DECLINING' || p.predictedScore < 50)
+      .filter(p => p.trend === 'DECLINING' || p.predictedScore < 50)
       .map(p => p.employeeId);
 
     // Team trend

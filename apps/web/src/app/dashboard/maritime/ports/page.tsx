@@ -53,8 +53,8 @@ export default function PortOpsPage() {
 
                             <div className="flex items-center gap-6">
                                 <div className="text-right">
-                                    <div className="text-lg font-bold text-slate-700 dark:text-slate-300">{b.staff === &apos;-' ? 'No Gang' : b.staff.split('(')[0]}</div>
-                                    <div className="text-xs text-slate-400">{b.staff.includes(&apos;Pax') ? b.staff.split('(')[1].replace(')', '') : 'Unassigned'}</div>
+                                    <div className="text-lg font-bold text-slate-700 dark:text-slate-300">{b.staff === '-' ? 'No Gang' : b.staff.split('(')[0]}</div>
+                                    <div className="text-xs text-slate-400">{b.staff.includes('Pax') ? b.staff.split('(')[1].replace(')', '') : 'Unassigned'}</div>
                                 </div>
 
                                 <div className="flex flex-col items-end gap-2">

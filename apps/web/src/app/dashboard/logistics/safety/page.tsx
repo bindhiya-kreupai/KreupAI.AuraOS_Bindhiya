@@ -51,7 +51,7 @@ export default function SafetyPage() {
                     <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full mt-4 overflow-hidden">
                         <div className="h-full bg-emerald-500 w-[20%] rounded-full"></div>
                     </div>
-                    <div className="text-[10px] text-right mt-1 text-slate-400">Target: {&apos;<'} 1.0</div>
+                    <div className="text-[10px] text-right mt-1 text-slate-400">Target: {'<'} 1.0</div>
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">

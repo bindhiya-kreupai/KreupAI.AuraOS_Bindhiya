@@ -38,7 +38,6 @@ import {
     Loader2
 } from 'lucide-react';
 import { FrameworkService } from '@/services/competency-library.service';
-import { logger } from '@/lib/logger';
 
 // --- TYPES ---
 
@@ -711,8 +710,9 @@ export default function ProficiencyLevelsPage() {
                     setExpandedFrameworks([result.data[0].id]);
                 }
             }
-        } catch {
-            logger.error('Failed to fetch frameworks:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch frameworks:', error);
         } finally {
             setIsLoading(false);
         }
@@ -869,8 +869,9 @@ export default function ProficiencyLevelsPage() {
             
             setIsSheetOpen(false);
             setEditingFramework(null);
-        } catch {
-            logger.error('Failed to save framework:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to save framework:', error);
         } finally {
             setIsSaving(false);
         }
@@ -888,8 +889,9 @@ export default function ProficiencyLevelsPage() {
                 if (result.success) {
                     setFrameworks(prev => prev.filter(f => f.id !== id));
                 }
-            } catch {
-                logger.error('Failed to delete framework:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Failed to delete framework:', error);
             }
         }
     };
@@ -967,7 +969,7 @@ export default function ProficiencyLevelsPage() {
                             <Check className="w-5 h-5" />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{frameworks.filter(fw => fw.levels.every(l => l.status === &apos;Active')).length}</div>
+                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{frameworks.filter(fw => fw.levels.every(l => l.status === 'Active')).length}</div>
                             <div className="text-xs text-silver-mist uppercase font-bold">Active</div>
                         </div>
                     </div>

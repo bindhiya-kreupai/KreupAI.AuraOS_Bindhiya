@@ -41,7 +41,7 @@ export default function CastCrewPage() {
                         </div>
                     </div>
 
-                    <h3 className="font-bold text-lg mt-4 mb-2">Today&apos;s Roster</h3>
+                    <h3 className="font-bold text-lg mt-4 mb-2">Today's Roster</h3>
                     {[
                         { name: 'Leonardo D.', role: 'Lead Actor', call: '06:00 AM', status: 'On Set', makeup: 'Done' },
                         { name: 'Scarlett J.', role: 'Lead Actress', call: '07:30 AM', status: 'In Makeup', makeup: 'In Progress' },

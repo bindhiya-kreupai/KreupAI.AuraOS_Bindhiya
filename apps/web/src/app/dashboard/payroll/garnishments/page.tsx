@@ -25,7 +25,8 @@ export default function GarnishmentsPage() {
             if (result.length > 0) {
                 setLoans(result);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

@@ -146,7 +146,8 @@ export default function OrgHealthPredictorPage() {
             if (recommendationsResult.success) {
                 setRecommendations(recommendationsResult.data?.recommendations || []);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -296,7 +297,7 @@ export default function OrgHealthPredictorPage() {
                                                 <div className="bg-white dark:bg-stellar-blue p-3 rounded-lg shadow-xl border border-cloud dark:border-nebula-purple z-50 text-xs">
                                                     <p className="font-bold text-ink-black dark:text-pearl mb-1">{data.name}</p>
                                                     <p className="text-silver-mist">Employees: <span className="text-indigo-500 font-bold">{data.size}</span></p>
-                                                    <p className="text-silver-mist">Burnout Risk: <span className={`font-bold ${data.risk > 50 ? &apos;text-rose-500' : 'text-emerald-500'}`}>{data.risk}%</span></p>
+                                                    <p className="text-silver-mist">Burnout Risk: <span className={`font-bold ${data.risk > 50 ? 'text-rose-500' : 'text-emerald-500'}`}>{data.risk}%</span></p>
                                                 </div>
                                             );
                                         }

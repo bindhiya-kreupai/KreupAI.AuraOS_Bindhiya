@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
-import { logger } from '@/lib/logger';
 
 interface Country {
     id: string;
@@ -33,8 +32,9 @@ export default function CountriesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch {
-            logger.error('Failed to fetch countries:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch countries:', error);
         } finally {
             setIsLoading(false);
         }
@@ -68,8 +68,9 @@ export default function CountriesPage() {
             } else {
                 alert('Failed to save country');
             }
-        } catch {
-            logger.error('Error saving country:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving country:', error);
             alert('Error saving country');
         }
     };
@@ -86,8 +87,9 @@ export default function CountriesPage() {
                 } else {
                     alert('Failed to delete country');
                 }
-            } catch {
-                logger.error('Error deleting country:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Error deleting country:', error);
                 alert('Error deleting country');
             }
         }

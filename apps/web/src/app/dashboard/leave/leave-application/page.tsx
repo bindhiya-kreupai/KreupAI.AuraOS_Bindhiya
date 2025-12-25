@@ -25,7 +25,8 @@ export default function LeaveApplicationPage() {
             if (result.length > 0) {
                 setRequests(result);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

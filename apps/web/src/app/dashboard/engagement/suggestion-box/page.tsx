@@ -23,7 +23,8 @@ export default function SuggestionBoxPage() {
             setLoading(true);
             const ideas = await InnovationService.getIdeas();
             setData(ideas);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

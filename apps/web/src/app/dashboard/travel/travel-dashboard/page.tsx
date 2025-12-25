@@ -36,7 +36,8 @@ export default function TravelDashboardPage() {
             setLoading(true);
             const metrics = await TravelAnalyticsService.getMetrics();
             setData(metrics);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

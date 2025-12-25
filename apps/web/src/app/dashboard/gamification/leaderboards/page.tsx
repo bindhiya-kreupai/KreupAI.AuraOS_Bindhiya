@@ -26,7 +26,7 @@ export default function LeaderboardsPage() {
                         <Trophy className="w-6 h-6 text-yellow-500" />
                         Leaderboards
                     </h1>
-                    <p className="text-slate-500 text-sm">See who&apos;s leading the pack this month.</p>
+                    <p className="text-slate-500 text-sm">See who's leading the pack this month.</p>
                 </div>
                 <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                     {['Global', 'Team', 'Regional'].map((tab, i) => (

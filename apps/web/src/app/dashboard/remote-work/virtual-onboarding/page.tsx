@@ -28,7 +28,7 @@ export default function VirtualOnboardingPage() {
             <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl p-8 text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl">
                 <div className="space-y-4 max-w-lg">
                     <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-bold backdrop-blur-md border border-white/20">Active Session</span>
-                    <h2 className="text-3xl font-black">Welcome, Batch of Dec &apos;25!</h2>
+                    <h2 className="text-3xl font-black">Welcome, Batch of Dec '25!</h2>
                     <p className="text-indigo-100 opacity-90">
                         3 new remote joiners starting today. Their equipment has been delivered and accounts are provisioned.
                     </p>

@@ -26,7 +26,8 @@ export default function PayslipGenerationPage() {
             if (result.length > 0) {
                 setPayslips(result);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

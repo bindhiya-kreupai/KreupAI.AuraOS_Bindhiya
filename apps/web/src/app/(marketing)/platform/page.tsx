@@ -106,7 +106,7 @@ export default function PlatformPage() {
                             <p><span className="text-slate-500">// Fetch high-risk attrition candidates</span></p>
                             <p><span className="text-purple-400">const</span> risks = <span className="text-purple-400">await</span> aura.analytics.<span className="text-yellow-400">getFlightRisks</span>(&#123;</p>
                             <p className="pl-4">threshold: <span className="text-orange-400">0.85</span>,</p>
-                            <p className="pl-4">department: <span className="text-green-400">&apos;Engineering'</span></p>
+                            <p className="pl-4">department: <span className="text-green-400">'Engineering'</span></p>
                             <p>&#125;);</p>
                         </div>
                     </div>

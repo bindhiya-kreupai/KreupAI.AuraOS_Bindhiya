@@ -14,7 +14,6 @@ import {
   AutomotiveSettingsService
 } from '../services';
 import {
-import { logger } from '@/lib/logger';
   sampleTechnicians, sampleShifts, sampleRosterTemplates, sampleShiftSwapRequests, sampleTimeOffRequests, sampleWorkloadAnalysis,
   sampleSalesPeople, sampleVehicleSales, sampleServiceSales, sampleCommissionStructures, sampleCommissions, sampleCommissionReports,
   sampleParts, sampleInventoryMovements, samplePurchaseOrders, sampleStockAdjustments, sampleInventoryAnalysis,
@@ -106,7 +105,7 @@ export const useAutomotive = () => {
         loadSettings(),
       ]);
     } catch {
-      logger.error('Error loading data:', error);
+      console.error('Error loading data:', error);
       addToast({ type: 'error', message: 'Failed to load automotive data' });
     } finally {
       setLoading(false);
@@ -121,7 +120,7 @@ export const useAutomotive = () => {
       const data = await TechnicianService.getAllTechnicians();
       setTechnicians(data);
     } catch {
-      logger.error('Error loading technicians:', error);
+      console.error('Error loading technicians:', error);
     }
   };
 
@@ -133,7 +132,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Technician created successfully' });
       return technician;
     } catch {
-      logger.error('Error creating technician:', error);
+      console.error('Error creating technician:', error);
       addToast({ type: 'error', message: 'Failed to create technician' });
       throw error;
     } finally {
@@ -149,7 +148,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Technician updated successfully' });
       return technician;
     } catch {
-      logger.error('Error updating technician:', error);
+      console.error('Error updating technician:', error);
       addToast({ type: 'error', message: 'Failed to update technician' });
       throw error;
     } finally {
@@ -164,7 +163,7 @@ export const useAutomotive = () => {
       await loadTechnicians();
       addToast({ type: 'success', message: 'Technician deleted successfully' });
     } catch {
-      logger.error('Error deleting technician:', error);
+      console.error('Error deleting technician:', error);
       addToast({ type: 'error', message: 'Failed to delete technician' });
       throw error;
     } finally {
@@ -177,7 +176,7 @@ export const useAutomotive = () => {
       const data = await ShiftService.getAllShifts();
       setShifts(data);
     } catch {
-      logger.error('Error loading shifts:', error);
+      console.error('Error loading shifts:', error);
     }
   };
 
@@ -189,7 +188,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Shift created successfully' });
       return shift;
     } catch {
-      logger.error('Error creating shift:', error);
+      console.error('Error creating shift:', error);
       addToast({ type: 'error', message: 'Failed to create shift' });
       throw error;
     } finally {
@@ -205,7 +204,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Shift updated successfully' });
       return shift;
     } catch {
-      logger.error('Error updating shift:', error);
+      console.error('Error updating shift:', error);
       addToast({ type: 'error', message: 'Failed to update shift' });
       throw error;
     } finally {
@@ -220,7 +219,7 @@ export const useAutomotive = () => {
       await loadShifts();
       addToast({ type: 'success', message: `${shiftsData.length} shifts created successfully` });
     } catch {
-      logger.error('Error creating shifts:', error);
+      console.error('Error creating shifts:', error);
       addToast({ type: 'error', message: 'Failed to create shifts' });
       throw error;
     } finally {
@@ -233,7 +232,7 @@ export const useAutomotive = () => {
       const data = await RosterTemplateService.getAllTemplates();
       setRosterTemplates(data);
     } catch {
-      logger.error('Error loading roster templates:', error);
+      console.error('Error loading roster templates:', error);
     }
   };
 
@@ -245,7 +244,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Roster template created successfully' });
       return template;
     } catch {
-      logger.error('Error creating roster template:', error);
+      console.error('Error creating roster template:', error);
       addToast({ type: 'error', message: 'Failed to create roster template' });
       throw error;
     } finally {
@@ -261,7 +260,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Roster template applied successfully' });
       return shifts;
     } catch {
-      logger.error('Error applying roster template:', error);
+      console.error('Error applying roster template:', error);
       addToast({ type: 'error', message: 'Failed to apply roster template' });
       throw error;
     } finally {
@@ -274,7 +273,7 @@ export const useAutomotive = () => {
       const data = await ShiftSwapService.getAllSwapRequests();
       setShiftSwapRequests(data);
     } catch {
-      logger.error('Error loading shift swap requests:', error);
+      console.error('Error loading shift swap requests:', error);
     }
   };
 
@@ -286,7 +285,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Shift swap request created successfully' });
       return request;
     } catch {
-      logger.error('Error creating shift swap request:', error);
+      console.error('Error creating shift swap request:', error);
       addToast({ type: 'error', message: 'Failed to create shift swap request' });
       throw error;
     } finally {
@@ -302,7 +301,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Shift swap request updated successfully' });
       return request;
     } catch {
-      logger.error('Error updating shift swap request:', error);
+      console.error('Error updating shift swap request:', error);
       addToast({ type: 'error', message: 'Failed to update shift swap request' });
       throw error;
     } finally {
@@ -315,7 +314,7 @@ export const useAutomotive = () => {
       const data = await TimeOffService.getAllTimeOffRequests();
       setTimeOffRequests(data);
     } catch {
-      logger.error('Error loading time off requests:', error);
+      console.error('Error loading time off requests:', error);
     }
   };
 
@@ -327,7 +326,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Time off request created successfully' });
       return request;
     } catch {
-      logger.error('Error creating time off request:', error);
+      console.error('Error creating time off request:', error);
       addToast({ type: 'error', message: 'Failed to create time off request' });
       throw error;
     } finally {
@@ -343,7 +342,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Time off request updated successfully' });
       return request;
     } catch {
-      logger.error('Error updating time off request:', error);
+      console.error('Error updating time off request:', error);
       addToast({ type: 'error', message: 'Failed to update time off request' });
       throw error;
     } finally {
@@ -359,7 +358,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Workload analysis generated successfully' });
       return analysis;
     } catch {
-      logger.error('Error generating workload analysis:', error);
+      console.error('Error generating workload analysis:', error);
       addToast({ type: 'error', message: 'Failed to generate workload analysis' });
       throw error;
     } finally {
@@ -375,7 +374,7 @@ export const useAutomotive = () => {
       const data = await SalesPersonService.getAllSalesPeople();
       setSalesPeople(data);
     } catch {
-      logger.error('Error loading sales people:', error);
+      console.error('Error loading sales people:', error);
     }
   };
 
@@ -387,7 +386,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Sales person created successfully' });
       return salesPerson;
     } catch {
-      logger.error('Error creating sales person:', error);
+      console.error('Error creating sales person:', error);
       addToast({ type: 'error', message: 'Failed to create sales person' });
       throw error;
     } finally {
@@ -400,7 +399,7 @@ export const useAutomotive = () => {
       const data = await CommissionService.getAllCommissions();
       setCommissions(data);
     } catch {
-      logger.error('Error loading commissions:', error);
+      console.error('Error loading commissions:', error);
     }
   };
 
@@ -412,7 +411,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Commission calculated successfully' });
       return commission;
     } catch {
-      logger.error('Error calculating commission:', error);
+      console.error('Error calculating commission:', error);
       addToast({ type: 'error', message: 'Failed to calculate commission' });
       throw error;
     } finally {
@@ -428,7 +427,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Commission updated successfully' });
       return commission;
     } catch {
-      logger.error('Error updating commission:', error);
+      console.error('Error updating commission:', error);
       addToast({ type: 'error', message: 'Failed to update commission' });
       throw error;
     } finally {
@@ -441,7 +440,7 @@ export const useAutomotive = () => {
       const data = await VehicleSaleService.getAllVehicleSales();
       setVehicleSales(data);
     } catch {
-      logger.error('Error loading vehicle sales:', error);
+      console.error('Error loading vehicle sales:', error);
     }
   };
 
@@ -453,7 +452,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Vehicle sale recorded successfully' });
       return sale;
     } catch {
-      logger.error('Error creating vehicle sale:', error);
+      console.error('Error creating vehicle sale:', error);
       addToast({ type: 'error', message: 'Failed to record vehicle sale' });
       throw error;
     } finally {
@@ -466,7 +465,7 @@ export const useAutomotive = () => {
       const data = await ServiceSaleService.getAllServiceSales();
       setServiceSales(data);
     } catch {
-      logger.error('Error loading service sales:', error);
+      console.error('Error loading service sales:', error);
     }
   };
 
@@ -478,7 +477,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Service sale recorded successfully' });
       return sale;
     } catch {
-      logger.error('Error creating service sale:', error);
+      console.error('Error creating service sale:', error);
       addToast({ type: 'error', message: 'Failed to record service sale' });
       throw error;
     } finally {
@@ -491,7 +490,7 @@ export const useAutomotive = () => {
       const data = await CommissionStructureService.getAllStructures();
       setCommissionStructures(data);
     } catch {
-      logger.error('Error loading commission structures:', error);
+      console.error('Error loading commission structures:', error);
     }
   };
 
@@ -503,7 +502,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Commission structure created successfully' });
       return structure;
     } catch {
-      logger.error('Error creating commission structure:', error);
+      console.error('Error creating commission structure:', error);
       addToast({ type: 'error', message: 'Failed to create commission structure' });
       throw error;
     } finally {
@@ -518,7 +517,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Commission report generated successfully' });
       return report;
     } catch {
-      logger.error('Error generating commission report:', error);
+      console.error('Error generating commission report:', error);
       addToast({ type: 'error', message: 'Failed to generate commission report' });
       throw error;
     } finally {
@@ -536,7 +535,7 @@ export const useAutomotive = () => {
       const lowStock = await PartService.getLowStockParts();
       setLowStockParts(lowStock);
     } catch {
-      logger.error('Error loading parts:', error);
+      console.error('Error loading parts:', error);
     }
   };
 
@@ -548,7 +547,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Part created successfully' });
       return part;
     } catch {
-      logger.error('Error creating part:', error);
+      console.error('Error creating part:', error);
       addToast({ type: 'error', message: 'Failed to create part' });
       throw error;
     } finally {
@@ -564,7 +563,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Part updated successfully' });
       return part;
     } catch {
-      logger.error('Error updating part:', error);
+      console.error('Error updating part:', error);
       addToast({ type: 'error', message: 'Failed to update part' });
       throw error;
     } finally {
@@ -578,7 +577,7 @@ export const useAutomotive = () => {
       const results = await PartService.searchParts(query);
       return results;
     } catch {
-      logger.error('Error searching parts:', error);
+      console.error('Error searching parts:', error);
       addToast({ type: 'error', message: 'Failed to search parts' });
       throw error;
     } finally {
@@ -591,7 +590,7 @@ export const useAutomotive = () => {
       const data = await InventoryMovementService.getAllMovements();
       setInventoryMovements(data);
     } catch {
-      logger.error('Error loading inventory movements:', error);
+      console.error('Error loading inventory movements:', error);
     }
   };
 
@@ -604,7 +603,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Inventory movement recorded successfully' });
       return movement;
     } catch {
-      logger.error('Error creating inventory movement:', error);
+      console.error('Error creating inventory movement:', error);
       addToast({ type: 'error', message: 'Failed to record inventory movement' });
       throw error;
     } finally {
@@ -617,7 +616,7 @@ export const useAutomotive = () => {
       const data = await PurchaseOrderService.getAllPurchaseOrders();
       setPurchaseOrders(data);
     } catch {
-      logger.error('Error loading purchase orders:', error);
+      console.error('Error loading purchase orders:', error);
     }
   };
 
@@ -629,7 +628,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Purchase order created successfully' });
       return po;
     } catch {
-      logger.error('Error creating purchase order:', error);
+      console.error('Error creating purchase order:', error);
       addToast({ type: 'error', message: 'Failed to create purchase order' });
       throw error;
     } finally {
@@ -645,7 +644,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Purchase order updated successfully' });
       return po;
     } catch {
-      logger.error('Error updating purchase order:', error);
+      console.error('Error updating purchase order:', error);
       addToast({ type: 'error', message: 'Failed to update purchase order' });
       throw error;
     } finally {
@@ -662,7 +661,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Purchase order received successfully' });
       return po;
     } catch {
-      logger.error('Error receiving purchase order:', error);
+      console.error('Error receiving purchase order:', error);
       addToast({ type: 'error', message: 'Failed to receive purchase order' });
       throw error;
     } finally {
@@ -675,7 +674,7 @@ export const useAutomotive = () => {
       const data = await StockAdjustmentService.getAllAdjustments();
       setStockAdjustments(data);
     } catch {
-      logger.error('Error loading stock adjustments:', error);
+      console.error('Error loading stock adjustments:', error);
     }
   };
 
@@ -687,7 +686,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Stock adjustment created successfully' });
       return adjustment;
     } catch {
-      logger.error('Error creating stock adjustment:', error);
+      console.error('Error creating stock adjustment:', error);
       addToast({ type: 'error', message: 'Failed to create stock adjustment' });
       throw error;
     } finally {
@@ -706,7 +705,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Stock adjustment updated successfully' });
       return adjustment;
     } catch {
-      logger.error('Error updating stock adjustment:', error);
+      console.error('Error updating stock adjustment:', error);
       addToast({ type: 'error', message: 'Failed to update stock adjustment' });
       throw error;
     } finally {
@@ -722,7 +721,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Inventory analysis generated successfully' });
       return analysis;
     } catch {
-      logger.error('Error generating inventory analysis:', error);
+      console.error('Error generating inventory analysis:', error);
       addToast({ type: 'error', message: 'Failed to generate inventory analysis' });
       throw error;
     } finally {
@@ -738,7 +737,7 @@ export const useAutomotive = () => {
       const data = await AutomotiveSettingsService.getSettings();
       setSettings(data);
     } catch {
-      logger.error('Error loading settings:', error);
+      console.error('Error loading settings:', error);
     }
   };
 
@@ -750,7 +749,7 @@ export const useAutomotive = () => {
       addToast({ type: 'success', message: 'Settings updated successfully' });
       return updated;
     } catch {
-      logger.error('Error updating settings:', error);
+      console.error('Error updating settings:', error);
       addToast({ type: 'error', message: 'Failed to update settings' });
       throw error;
     } finally {

@@ -24,7 +24,8 @@ export default function SalaryStructurePage() {
             setLoading(true);
             const data = await SalaryStructureService.getStructures();
             setStructures(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

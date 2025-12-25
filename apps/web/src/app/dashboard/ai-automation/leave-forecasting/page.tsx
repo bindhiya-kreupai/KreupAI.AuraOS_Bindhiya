@@ -88,7 +88,8 @@ export default function LeaveForecastingPage() {
             if (recommendationsResult.success) {
                 setRecommendations(recommendationsResult.data?.recommendations || []);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

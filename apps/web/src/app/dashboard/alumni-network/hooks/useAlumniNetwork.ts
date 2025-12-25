@@ -9,7 +9,6 @@ import {
   AlumniSettingsService,
 } from '../services';
 import type {
-import { logger } from '@/lib/logger';
   AlumniProfile,
   AlumniDirectory,
   AlumniSearch,
@@ -771,7 +770,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
       const analyticsData = await AlumniAnalyticsService.getAnalytics();
       setAnalytics(analyticsData);
     } catch {
-      logger.error('Failed to fetch analytics:', error);
+      console.error('Failed to fetch analytics:', error);
     } finally {
       setAnalyticsLoading(false);
     }
@@ -783,7 +782,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
       const engagementData = await AlumniAnalyticsService.getAlumniEngagement(alumniId);
       setEngagement(engagementData);
     } catch {
-      logger.error('Failed to fetch engagement:', error);
+      console.error('Failed to fetch engagement:', error);
     } finally {
       setAnalyticsLoading(false);
     }
@@ -796,7 +795,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
       const settingsData = await AlumniSettingsService.getSettings();
       setSettings(settingsData);
     } catch {
-      logger.error('Failed to fetch settings:', error);
+      console.error('Failed to fetch settings:', error);
     } finally {
       setSettingsLoading(false);
     }
@@ -809,7 +808,7 @@ export function useAlumniNetwork(currentAlumniId?: string): UseAlumniNetworkRetu
       setSettings(updatedSettings);
       return updatedSettings;
     } catch {
-      logger.error('Failed to update settings:', error);
+      console.error('Failed to update settings:', error);
       throw error;
     } finally {
       setSettingsLoading(false);

@@ -41,7 +41,8 @@ export default function AgentMetricsPage() {
           recruitment: recruitmentData.success ? recruitmentData.data : undefined,
           analytics: analyticsData.success ? analyticsData.data : undefined,
         });
-      } catch {
+      } catch (error) {
+            console.error('Error:', error);
               } finally {
         setLoading(false);
       }

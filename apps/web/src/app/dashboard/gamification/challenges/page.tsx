@@ -31,7 +31,7 @@ export default function ChallengesPage() {
                             <div>
                                 <span className="text-amber-400 font-bold tracking-widest text-xs uppercase mb-2 block animate-pulse">Ending Soon</span>
                                 <h2 className="text-4xl font-bold text-white mb-2">The Code Quality Sprint</h2>
-                                <p className="text-slate-300 max-w-xl mb-6">Reduce technical debt by refactoring legacy modules. Top contributors get the exclusive &apos;Cleaner' badge.</p>
+                                <p className="text-slate-300 max-w-xl mb-6">Reduce technical debt by refactoring legacy modules. Top contributors get the exclusive 'Cleaner' badge.</p>
                                 <div className="flex gap-6 text-white text-sm font-bold">
                                     <span className="flex items-center gap-2"><Clock className="w-4 h-4 text-amber-400" /> 2 Days Left</span>
                                     <span className="flex items-center gap-2"><Users className="w-4 h-4 text-emerald-400" /> 42 Participants</span>

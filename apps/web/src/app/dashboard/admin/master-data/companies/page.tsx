@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
-import { logger } from '@/lib/logger';
 
 interface Company {
     id: string;
@@ -33,8 +32,9 @@ export default function CompaniesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch {
-            logger.error('Failed to fetch companies:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch companies:', error);
         } finally {
             setIsLoading(false);
         }
@@ -105,11 +105,12 @@ export default function CompaniesPage() {
                 fetchCompanies();
             } else {
                 const errorData = await response.json();
-                logger.error('Failed to save company:', errorData);
+                console.error('Failed to save company:', errorData);
                 alert('Failed to save company');
             }
-        } catch {
-            logger.error('Error saving company:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving company:', error);
             alert('Error saving company');
         }
     };
@@ -126,8 +127,9 @@ export default function CompaniesPage() {
                 } else {
                     alert('Failed to delete company');
                 }
-            } catch {
-                logger.error('Error deleting company:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Error deleting company:', error);
                 alert('Error deleting company');
             }
         }

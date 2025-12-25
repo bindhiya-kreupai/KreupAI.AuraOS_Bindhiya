@@ -105,7 +105,8 @@ export default function ChatbotBuilderPage() {
                 if (result.data.flow.nodes) setNodes(result.data.flow.nodes);
                 if (result.data.flow.edges) setEdges(result.data.flow.edges);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     }
     };
 
@@ -114,7 +115,8 @@ export default function ChatbotBuilderPage() {
         try {
             await aiCoachingBot.sendMessage(JSON.stringify({ nodes, edges }));
             await fetchSessions();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

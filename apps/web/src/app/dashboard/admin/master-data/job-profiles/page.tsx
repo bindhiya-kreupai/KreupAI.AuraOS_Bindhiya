@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
-import { logger } from '@/lib/logger';
 
 interface JobProfile {
     id: string;
@@ -48,8 +47,9 @@ export default function JobProfilesPage() {
             if (profilesRes.ok) setData(await profilesRes.json());
             if (familiesRes.ok) setJobFamilies(await familiesRes.json());
             if (gradesRes.ok) setGrades(await gradesRes.json());
-        } catch {
-            logger.error('Failed to fetch data:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch data:', error);
         } finally {
             setIsLoading(false);
         }
@@ -68,7 +68,7 @@ export default function JobProfilesPage() {
             width: '180px',
             render: (row) => {
                 const family = jobFamilies.find(f => f.id === row.jobFamilyId);
-                return <span className="text-sm">{family?.name || &apos;Unknown'}</span>;
+                return <span className="text-sm">{family?.name || 'Unknown'}</span>;
             }
         },
         {
@@ -78,7 +78,7 @@ export default function JobProfilesPage() {
             render: (row) => {
                 const min = grades.find(g => g.id === row.minGradeId)?.code;
                 const max = grades.find(g => g.id === row.maxGradeId)?.code;
-                return <span className="text-xs font-mono text-silver-mist">{min || &apos;?'} - {max || '?'}</span>;
+                return <span className="text-xs font-mono text-silver-mist">{min || '?'} - {max || '?'}</span>;
             }
         },
     ];
@@ -105,8 +105,9 @@ export default function JobProfilesPage() {
             } else {
                 alert('Failed to save job profile');
             }
-        } catch {
-            logger.error('Error saving job profile:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving job profile:', error);
             alert('Error saving job profile');
         }
     };
@@ -123,8 +124,9 @@ export default function JobProfilesPage() {
                 } else {
                     alert('Failed to delete job profile');
                 }
-            } catch {
-                logger.error('Error deleting job profile:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Error deleting job profile:', error);
                 alert('Error deleting job profile');
             }
         }

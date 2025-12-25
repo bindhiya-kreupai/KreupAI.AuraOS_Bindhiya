@@ -30,7 +30,8 @@ export default function VersionControlPage() {
                     setHistory(versions);
                 }
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

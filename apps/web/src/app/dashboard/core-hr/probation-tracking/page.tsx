@@ -22,7 +22,8 @@ export default function ProbationTrackingPage() {
         try {
             const data = await ProbationService.getAllProbationRecords();
             setProbationRecords(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

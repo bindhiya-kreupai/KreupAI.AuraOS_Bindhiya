@@ -24,7 +24,8 @@ export default function AdditionalTasksPage() {
             if (result.length > 0) {
                 setPayrollRuns(result);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

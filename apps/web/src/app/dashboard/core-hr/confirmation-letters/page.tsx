@@ -21,7 +21,8 @@ export default function ConfirmationLettersPage() {
         try {
             const data = await ConfirmationLetterService.getAllConfirmationLetters();
             setConfirmationLetters(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

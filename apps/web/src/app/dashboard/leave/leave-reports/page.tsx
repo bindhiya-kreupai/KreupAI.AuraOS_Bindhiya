@@ -25,7 +25,8 @@ export default function LeaveReportsPage() {
             if (result) {
                 setStats(result);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

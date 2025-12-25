@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { logger } from '@/lib/logger';
 
 interface UserProfile {
     id: string;
@@ -47,8 +46,9 @@ export default function ProfilePage() {
             } else {
                 alert('Failed to update profile');
             }
-        } catch {
-            logger.error('Error updating profile:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error updating profile:', error);
             alert('Error updating profile');
         } finally {
             setIsSaving(false);

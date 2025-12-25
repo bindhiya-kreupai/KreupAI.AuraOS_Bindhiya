@@ -5,7 +5,6 @@
 
 import type { Employee, EmployeeStats, Document, EmploymentHistoryEvent } from './types';
 import { APIClient, APIError } from '@/lib/api-client';
-import { logger } from '@/lib/logger';
 
 const API_ENDPOINT = '/employees';
 
@@ -20,7 +19,7 @@ export class EmployeesService {
         try {
             return await APIClient.get<Employee[]>(API_ENDPOINT);
         } catch {
-            logger.error('Error fetching employees:', error);
+            console.error('Error fetching employees:', error);
             const message = error instanceof APIError
                 ? `Failed to load employees: ${error.message}`
                 : 'Failed to load employees. Please try again.';
@@ -38,7 +37,7 @@ export class EmployeesService {
             if (error instanceof APIError && error.statusCode === 404) {
                 return null;
             }
-            logger.error('Error fetching employee:', error);
+            console.error('Error fetching employee:', error);
             const message = error instanceof APIError
                 ? `Failed to load employee details: ${error.message}`
                 : 'Failed to load employee details. Please try again.';
@@ -53,7 +52,7 @@ export class EmployeesService {
         try {
             return await APIClient.post<Employee>(API_ENDPOINT, employee);
         } catch {
-            logger.error('Error creating employee:', error);
+            console.error('Error creating employee:', error);
             const message = error instanceof APIError
                 ? `Failed to create employee: ${error.message}`
                 : 'Failed to create employee. Please try again.';
@@ -68,7 +67,7 @@ export class EmployeesService {
         try {
             return await APIClient.patch<Employee>(`${API_ENDPOINT}/${id}`, updates);
         } catch {
-            logger.error('Error updating employee:', error);
+            console.error('Error updating employee:', error);
             const message = error instanceof APIError
                 ? `Failed to update employee: ${error.message}`
                 : 'Failed to update employee. Please try again.';
@@ -83,7 +82,7 @@ export class EmployeesService {
         try {
             await APIClient.delete<void>(`${API_ENDPOINT}/${id}`);
         } catch {
-            logger.error('Error deleting employee:', error);
+            console.error('Error deleting employee:', error);
             const message = error instanceof APIError
                 ? `Failed to delete employee: ${error.message}`
                 : 'Failed to delete employee. Please try again.';
@@ -101,7 +100,7 @@ export class EmployeesService {
                 document
             );
         } catch {
-            logger.error('Error uploading document:', error);
+            console.error('Error uploading document:', error);
             const message = error instanceof APIError
                 ? `Failed to upload document: ${error.message}`
                 : 'Failed to upload document. Please try again.';
@@ -118,7 +117,7 @@ export class EmployeesService {
                 `${API_ENDPOINT}/${employeeId}/documents/${documentId}`
             );
         } catch {
-            logger.error('Error deleting document:', error);
+            console.error('Error deleting document:', error);
             const message = error instanceof APIError
                 ? `Failed to delete document: ${error.message}`
                 : 'Failed to delete document. Please try again.';
@@ -139,7 +138,7 @@ export class EmployeesService {
                 event
             );
         } catch {
-            logger.error('Error adding history event:', error);
+            console.error('Error adding history event:', error);
             const message = error instanceof APIError
                 ? `Failed to add history event: ${error.message}`
                 : 'Failed to add history event. Please try again.';
@@ -154,7 +153,7 @@ export class EmployeesService {
         try {
             return await APIClient.get<EmployeeStats>(`${API_ENDPOINT}/stats`);
         } catch {
-            logger.error('Error fetching stats:', error);
+            console.error('Error fetching stats:', error);
             const message = error instanceof APIError
                 ? `Failed to load statistics: ${error.message}`
                 : 'Failed to load statistics. Please try again.';

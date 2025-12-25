@@ -5,7 +5,6 @@
 
 import type { Meeting, FeedbackResponse, MeetingStats } from './types';
 import { APIClient, APIError } from '@/lib/api-client';
-import { logger } from '@/lib/logger';
 
 const API_ENDPOINT = '/meetings';
 
@@ -20,7 +19,7 @@ export class MeetingsService {
         try {
             return await APIClient.get<Meeting[]>(API_ENDPOINT);
         } catch {
-            logger.error('Error fetching meetings:', error);
+            console.error('Error fetching meetings:', error);
             const message = error instanceof APIError
                 ? `Failed to load meetings: ${error.message}`
                 : 'Failed to load meetings. Please try again.';
@@ -35,7 +34,7 @@ export class MeetingsService {
         try {
             return await APIClient.post<Meeting>(API_ENDPOINT, meeting);
         } catch {
-            logger.error('Error creating meeting:', error);
+            console.error('Error creating meeting:', error);
             const message = error instanceof APIError
                 ? `Failed to schedule meeting: ${error.message}`
                 : 'Failed to schedule meeting. Please try again.';
@@ -50,7 +49,7 @@ export class MeetingsService {
         try {
             return await APIClient.patch<Meeting>(`${API_ENDPOINT}/${id}`, updates);
         } catch {
-            logger.error('Error updating meeting:', error);
+            console.error('Error updating meeting:', error);
             const message = error instanceof APIError
                 ? `Failed to update meeting: ${error.message}`
                 : 'Failed to update meeting. Please try again.';
@@ -65,7 +64,7 @@ export class MeetingsService {
         try {
             await APIClient.delete<void>(`${API_ENDPOINT}/${id}`);
         } catch {
-            logger.error('Error deleting meeting:', error);
+            console.error('Error deleting meeting:', error);
             const message = error instanceof APIError
                 ? `Failed to delete meeting: ${error.message}`
                 : 'Failed to delete meeting. Please try again.';
@@ -80,7 +79,7 @@ export class MeetingsService {
         try {
             return await APIClient.post<Meeting>(`${API_ENDPOINT}/${id}/complete`, {});
         } catch {
-            logger.error('Error completing meeting:', error);
+            console.error('Error completing meeting:', error);
             const message = error instanceof APIError
                 ? `Failed to complete meeting: ${error.message}`
                 : 'Failed to complete meeting. Please try again.';
@@ -101,7 +100,7 @@ export class MeetingsService {
                 { responses }
             );
         } catch {
-            logger.error('Error submitting feedback:', error);
+            console.error('Error submitting feedback:', error);
             const message = error instanceof APIError
                 ? `Failed to submit feedback: ${error.message}`
                 : 'Failed to submit feedback. Please try again.';
@@ -116,7 +115,7 @@ export class MeetingsService {
         try {
             return await APIClient.get<MeetingStats>(`${API_ENDPOINT}/analytics`);
         } catch {
-            logger.error('Error fetching analytics:', error);
+            console.error('Error fetching analytics:', error);
             const message = error instanceof APIError
                 ? `Failed to load analytics: ${error.message}`
                 : 'Failed to load analytics. Please try again.';

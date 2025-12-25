@@ -23,7 +23,8 @@ export default function TravelPolicyPage() {
             setLoading(true);
             const settings = await TravelSettingsService.getSettings();
             setData(settings);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

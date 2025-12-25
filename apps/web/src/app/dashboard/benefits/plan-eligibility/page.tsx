@@ -25,7 +25,8 @@ export default function PlanEligibilityPage() {
             // In production, this would fetch all eligibility rules
             const data = await EligibilityService.getEmployeeEligibility('EMP-001');
             setEligibilityRules(data.length > 0 ? data : mockRules);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                         // Fallback to mock data
             setEligibilityRules(mockRules);
         } finally {

@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
-import { logger } from '@/lib/logger';
 
 interface Skill {
     id: string;
@@ -54,8 +53,9 @@ export default function SkillsPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch {
-            logger.error('Failed to fetch skills:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch skills:', error);
         } finally {
             setIsLoading(false);
         }
@@ -89,8 +89,9 @@ export default function SkillsPage() {
             } else {
                 alert('Failed to save skill');
             }
-        } catch {
-            logger.error('Error saving skill:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving skill:', error);
             alert('Error saving skill');
         }
     };
@@ -107,8 +108,9 @@ export default function SkillsPage() {
                 } else {
                     alert('Failed to delete skill');
                 }
-            } catch {
-                logger.error('Error deleting skill:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Error deleting skill:', error);
                 alert('Error deleting skill');
             }
         }

@@ -47,7 +47,8 @@ export default function CompOffManagementPage() {
                     transactions: result
                 });
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

@@ -18,7 +18,8 @@ export default function TrainingBudgetPage() {
                 setLoading(true);
                 const result = await TrainingBudgetService.getTrainingBudgets();
                 setData(result);
-            } catch {
+            } catch (error) {
+            console.error('Error:', error);
                                 setData([]);
             } finally {
                 setLoading(false);

@@ -60,7 +60,8 @@ export default function TimeCapturePage() {
                     setStatus('OUT');
                 }
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     }
     };
 
@@ -79,7 +80,8 @@ export default function TimeCapturePage() {
             } as any);
 
             await fetchCaptures();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -158,7 +160,7 @@ export default function TimeCapturePage() {
                 {/* Stats */}
                 <div className="grid grid-cols-2 gap-4">
                     <div className="bg-white dark:bg-stellar-blue p-5 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
-                        <p className="text-xs text-silver-mist uppercase font-bold">Today&apos;s Hours</p>
+                        <p className="text-xs text-silver-mist uppercase font-bold">Today's Hours</p>
                         <h3 className="text-2xl font-bold text-indigo-600">04:32</h3>
                         <p className="text-xs text-slate-400">Target: 09:00</p>
                     </div>

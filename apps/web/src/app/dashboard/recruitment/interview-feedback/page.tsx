@@ -30,7 +30,8 @@ export default function InterviewFeedbackPage() {
             if (data && data.length > 0) {
                 setFeedbacks(data);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -40,7 +41,8 @@ export default function InterviewFeedbackPage() {
         try {
             await InterviewFeedbackService.submitFeedback(feedbackData);
             await fetchFeedback();
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     }
     };
 
@@ -110,7 +112,7 @@ export default function InterviewFeedbackPage() {
                                 <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${feedback.recommendation === 'Hire' ? 'bg-emerald-100 text-emerald-600' :
                                         feedback.recommendation === 'Hold' ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600'
                                     }`}>
-                                    {feedback.recommendation === 'Hire' ? <ThumbsUp className="w-3 h-3" /> : feedback.recommendation === &apos;Reject' ? <ThumbsDown className="w-3 h-3" /> : null}
+                                    {feedback.recommendation === 'Hire' ? <ThumbsUp className="w-3 h-3" /> : feedback.recommendation === 'Reject' ? <ThumbsDown className="w-3 h-3" /> : null}
                                     {feedback.recommendation}
                                 </div>
                             </div>

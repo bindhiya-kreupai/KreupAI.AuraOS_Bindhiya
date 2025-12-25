@@ -24,7 +24,8 @@ export default function ExitManagementPage() {
         try {
             const data = await ExitService.getAllExitProcesses();
             setExitProcesses(data);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

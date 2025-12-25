@@ -107,7 +107,8 @@ export default function JobRequisitionsPage() {
             if (data.length > 0) {
                 setRequisitions(data);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

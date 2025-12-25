@@ -74,7 +74,8 @@ export default function PulseChecksPage() {
             setLoading(true);
             const surveys = await SurveyService.getSurveys();
             setData(surveys);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
@@ -123,7 +124,7 @@ export default function PulseChecksPage() {
                 </div>
 
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm relative group overflow-hidden">
-                    <div className="text-sm font-bold text-silver-mist uppercase mb-4">You feelin&apos; it?</div>
+                    <div className="text-sm font-bold text-silver-mist uppercase mb-4">You feelin' it?</div>
                     <div className="relative h-12 flex items-center px-2">
                         <div className="absolute w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full"></div>
                         <input

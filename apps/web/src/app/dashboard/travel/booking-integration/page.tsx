@@ -23,7 +23,8 @@ export default function BookingIntegrationPage() {
             setLoading(true);
             // TravelBookingService is available for form submission
             setData([]);
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

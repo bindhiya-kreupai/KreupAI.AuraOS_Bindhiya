@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
-import { logger } from '@/lib/logger';
 
 interface UserSession {
     id: string;
@@ -24,8 +23,9 @@ export default function SessionsPage() {
         try {
             const res = await fetch('/api/sessions');
             if (res.ok) setData(await res.json());
-        } catch {
-            logger.error('Failed to fetch sessions:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Failed to fetch sessions:', error);
         } finally {
             setIsLoading(false);
         }
@@ -65,8 +65,9 @@ export default function SessionsPage() {
                 const response = await fetch(`/api/sessions?id=${record.id}`, { method: 'DELETE' });
                 if (response.ok) fetchData();
                 else alert('Failed to revoke session');
-            } catch {
-                logger.error('Error revoking session:', error);
+            } catch (error) {
+            console.error('Error:', error);
+                console.error('Error revoking session:', error);
                 alert('Error revoking session');
             }
         }

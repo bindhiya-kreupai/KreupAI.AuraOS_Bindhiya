@@ -52,7 +52,8 @@ export default function WorkFromHomePage() {
                     yearlyLimit: summaryData.totalDays || 0
                 });
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

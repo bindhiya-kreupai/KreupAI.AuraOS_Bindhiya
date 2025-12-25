@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { logger } from '@/lib/logger';
 
 interface MFAConfig {
     id?: string;
@@ -49,8 +48,9 @@ export default function MFAPage() {
             } else {
                 alert('Failed to save configuration');
             }
-        } catch {
-            logger.error('Error saving MFA config:', error);
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error saving MFA config:', error);
             alert('Error saving configuration');
         } finally {
             setIsSaving(false);

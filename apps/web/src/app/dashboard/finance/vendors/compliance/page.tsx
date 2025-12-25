@@ -681,7 +681,7 @@ export default function VendorCompliancePage() {
                                                 <td className="p-4">
                                                     <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold uppercase ${getStatusColor(vendor.overallStatus)} w-fit`}>
                                                         {getStatusIcon(vendor.overallStatus)}
-                                                        <span>{vendor.overallStatus.replace(&apos;-', ' ')}</span>
+                                                        <span>{vendor.overallStatus.replace('-', ' ')}</span>
                                                     </div>
                                                 </td>
                                                 <td className="p-4">

@@ -25,7 +25,8 @@ export default function HandoffRulesPage() {
             if (result.length > 0) {
                 setRules(result);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

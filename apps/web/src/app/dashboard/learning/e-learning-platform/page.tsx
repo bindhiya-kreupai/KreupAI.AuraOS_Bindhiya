@@ -19,7 +19,8 @@ export default function ELearningPlatformPage() {
                 setLoading(true);
                 const result = await CourseService.getCourses();
                 setData(result);
-            } catch {
+            } catch (error) {
+            console.error('Error:', error);
                                 setData([]);
             } finally {
                 setLoading(false);

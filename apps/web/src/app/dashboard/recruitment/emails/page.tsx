@@ -38,7 +38,8 @@ export default function RecruitmentEmailsPage() {
                 // For now keeping mock data
                 setTemplates(EMAIL_TEMPLATES);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }

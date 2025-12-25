@@ -19,7 +19,8 @@ export default function TrainingFeedbackPage() {
                 setLoading(true);
                 const result = await TrainingFeedbackService.getTrainingFeedback();
                 setData(result);
-            } catch {
+            } catch (error) {
+            console.error('Error:', error);
                                 setData([]);
             } finally {
                 setLoading(false);

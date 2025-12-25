@@ -98,7 +98,8 @@ export default function ReferralsPage() {
             if (data && data.length > 0) {
                 setJobs(data);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error:', error);
                     } finally {
             setLoading(false);
         }
