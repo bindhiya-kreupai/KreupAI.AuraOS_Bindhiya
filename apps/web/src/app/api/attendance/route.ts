@@ -6,6 +6,7 @@
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 import { AttendanceService } from '@/lib/services/attendance';
+import { getSessionOrError, type Session } from '@/lib/auth/session';
 
 /**
  * GET /api/attendance
@@ -13,19 +14,18 @@ import { AttendanceService } from '@/lib/services/attendance';
  */
 export async function GET(request: NextRequest) {
   try {
+    // Get authenticated session - tenantId comes from JWT, not query params
+    const sessionResult = getSessionOrError(request);
+    if (sessionResult instanceof NextResponse) {
+      return sessionResult;
+    }
+    const session: Session = sessionResult;
+    const tenantId = session.tenantId;
+
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId');
     const employeeId = searchParams.get('employeeId');
-    const date = searchParams.get('date');
     const month = searchParams.get('month');
     const type = searchParams.get('type') || 'records'; // 'records' | 'summary' | 'calendar'
-
-    if (!tenantId) {
-      return NextResponse.json(
-        { error: 'tenantId is required', errorAr: 'معرف المستأجر مطلوب' },
-        { status: 400 }
-      );
-    }
 
     switch (type) {
       case 'summary':
@@ -70,8 +70,8 @@ export async function GET(request: NextRequest) {
           },
         });
     }
-  } catch {
-        return NextResponse.json(
+  } catch (error) {
+    return NextResponse.json(
       { error: 'Failed to fetch attendance data', errorAr: 'فشل في جلب بيانات الحضور' },
       { status: 500 }
     );
@@ -84,15 +84,16 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    // Get authenticated session - tenantId comes from JWT, not request body
+    const sessionResult = getSessionOrError(request);
+    if (sessionResult instanceof NextResponse) {
+      return sessionResult;
+    }
+    const session: Session = sessionResult;
+    const tenantId = session.tenantId;
+
     const body = await request.json();
     const action = body.action || 'process';
-
-    if (!body.tenantId) {
-      return NextResponse.json(
-        { error: 'tenantId is required', errorAr: 'معرف المستأجر مطلوب' },
-        { status: 400 }
-      );
-    }
 
     switch (action) {
       case 'process':
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
         }
 
         const result = await AttendanceService.processDailyAttendance({
-          tenantId: body.tenantId,
+          tenantId,
           date: body.date,
           employeeIds: body.employeeIds,
           reprocess: body.reprocess || false,
@@ -148,8 +149,8 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch {
-        return NextResponse.json(
+  } catch (error) {
+    return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process attendance',
         errorAr: 'فشل في معالجة الحضور',

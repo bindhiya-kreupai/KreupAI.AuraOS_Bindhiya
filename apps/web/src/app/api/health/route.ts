@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       const dbStart = Date.now();
       await prisma.$queryRaw`SELECT 1`;
       dbResponseTime = Date.now() - dbStart;
-    } catch {
+    } catch (error) {
       dbStatus = 'unhealthy';
       logger.error('Database health check failed:', error);
     }
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     const statusCode = dbStatus === 'healthy' ? 200 : 503;
 
     return NextResponse.json(healthData, { status: statusCode });
-  } catch {
+  } catch (error) {
     logger.error('Health check error:', error);
     return NextResponse.json(
       {
