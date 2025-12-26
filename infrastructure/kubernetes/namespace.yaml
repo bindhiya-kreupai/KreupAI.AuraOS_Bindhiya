@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: auraos
+  labels:
+    name: auraos
+    environment: production
+    managed-by: kubectl
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: auraos-staging
+  labels:
+    name: auraos-staging
+    environment: staging
+    managed-by: kubectl
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: auraos-dev
+  labels:
+    name: auraos-dev
+    environment: development
+    managed-by: kubectl

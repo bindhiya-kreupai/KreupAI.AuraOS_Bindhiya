@@ -1,0 +1,115 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-config
+  namespace: auraos
+data:
+  kong.yml: |
+    _format_version: "3.0"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong-gateway
+  namespace: auraos
+  labels:
+    app: kong
+    component: api-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kong
+  template:
+    metadata:
+      labels:
+        app: kong
+        component: api-gateway
+    spec:
+      containers:
+        - name: kong
+          image: kong:3.4-alpine
+          env:
+            - name: KONG_DATABASE
+              value: "off"
+            - name: KONG_DECLARATIVE_CONFIG
+              value: "/kong/declarative/kong.yml"
+            - name: KONG_PROXY_ACCESS_LOG
+              value: "/dev/stdout"
+            - name: KONG_ADMIN_ACCESS_LOG
+              value: "/dev/stdout"
+            - name: KONG_PROXY_ERROR_LOG
+              value: "/dev/stderr"
+            - name: KONG_ADMIN_ERROR_LOG
+              value: "/dev/stderr"
+            - name: KONG_ADMIN_LISTEN
+              value: "0.0.0.0:8001"
+            - name: KONG_PROXY_LISTEN
+              value: "0.0.0.0:8000, 0.0.0.0:8443 ssl"
+          ports:
+            - name: proxy
+              containerPort: 8000
+              protocol: TCP
+            - name: proxy-ssl
+              containerPort: 8443
+              protocol: TCP
+            - name: admin
+              containerPort: 8001
+              protocol: TCP
+          volumeMounts:
+            - name: kong-config
+              mountPath: /kong/declarative
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 8001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 8001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+      volumes:
+        - name: kong-config
+          configMap:
+            name: kong-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-proxy
+  namespace: auraos
+  labels:
+    app: kong
+spec:
+  type: LoadBalancer
+  selector:
+    app: kong
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 8443
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-admin
+  namespace: auraos
+  labels:
+    app: kong
+spec:
+  type: ClusterIP
+  selector:
+    app: kong
+  ports:
+    - name: admin
+      port: 8001
+      targetPort: 8001
+      protocol: TCP

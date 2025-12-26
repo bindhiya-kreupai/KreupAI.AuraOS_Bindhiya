@@ -73,7 +73,8 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
   }, [searchQuery]);
 
   // Toggle parent module expansion (accordion - only one open at a time)
-  const toggleModule = (code: string) => {
+  const toggleModule = useCallback((code: string) => {
+    console.log('toggleModule called with:', code, 'current expanded:', expandedModule);
     if (expandedModule === code) {
       setExpandedModule(null);
       setExpandedSubModule(null); // Also close sub-modules
@@ -81,12 +82,13 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
       setExpandedModule(code);
       setExpandedSubModule(null); // Reset sub-module when switching parent
     }
-  };
+  }, [expandedModule]);
 
   // Toggle sub-module expansion (accordion - only one open at a time)
-  const toggleSubModule = (code: string) => {
+  const toggleSubModule = useCallback((code: string) => {
+    console.log('toggleSubModule called with:', code, 'current expanded:', expandedSubModule);
     setExpandedSubModule(prev => prev === code ? null : code);
-  };
+  }, [expandedSubModule]);
 
 
 
