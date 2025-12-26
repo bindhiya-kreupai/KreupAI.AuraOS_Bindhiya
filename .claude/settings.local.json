@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(dir:*)",
+      "Bash(git -C \"d:/KreupAI/KreupAI.AuraOS\" status --porcelain apps/web/src/app/)",
+      "Bash(npm run dev:*)",
+      "Bash(npx kill-port 54112)",
+      "Bash(taskkill:*)",
+      "Bash(git -C \"d:/KreupAI/KreupAI.AuraOS\" status --porcelain)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
