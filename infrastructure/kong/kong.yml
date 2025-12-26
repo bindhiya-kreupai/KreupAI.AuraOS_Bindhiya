@@ -1,0 +1,368 @@
+_format_version: "3.0"
+_transform: true
+
+# API Gateway Configuration for AuraOS
+# Kong Gateway for routing, rate limiting, authentication
+
+###############################################
+# Upstream Services
+###############################################
+
+services:
+  # Authentication Service
+  - name: auth-service
+    url: http://auth-service:3001
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    retries: 3
+    tags:
+      - auth
+      - microservice
+
+    routes:
+      - name: auth-login
+        paths:
+          - /api/v1/auth/login
+        methods:
+          - POST
+        strip_path: false
+        preserve_host: false
+        protocols:
+          - http
+          - https
+
+      - name: auth-logout
+        paths:
+          - /api/v1/auth/logout
+        methods:
+          - POST
+        strip_path: false
+
+      - name: auth-refresh
+        paths:
+          - /api/v1/auth/refresh
+        methods:
+          - POST
+        strip_path: false
+
+      - name: auth-user
+        paths:
+          - /api/v1/auth/user
+        methods:
+          - GET
+        strip_path: false
+
+      - name: auth-mfa
+        paths:
+          - /api/v1/auth/mfa
+        methods:
+          - POST
+          - GET
+        strip_path: false
+
+      - name: auth-oauth
+        paths:
+          - /api/v1/auth/oauth
+        methods:
+          - POST
+          - GET
+        strip_path: false
+        regex_priority: 1
+
+      - name: auth-saml
+        paths:
+          - /api/v1/auth/saml
+        methods:
+          - POST
+          - GET
+        strip_path: false
+
+  # Monolith (Fallback)
+  - name: monolith
+    url: http://auraos-web:3006
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    retries: 3
+    tags:
+      - monolith
+      - legacy
+
+    routes:
+      - name: monolith-fallback
+        paths:
+          - /
+        strip_path: false
+        preserve_host: true
+        protocols:
+          - http
+          - https
+        regex_priority: 0
+
+  # Employee Service (Future)
+  - name: employee-service
+    url: http://employee-service:3002
+    protocol: http
+    enabled: false
+    tags:
+      - employee
+      - microservice
+      - future
+
+  # Notification Service (Future)
+  - name: notification-service
+    url: http://notification-service:3003
+    protocol: http
+    enabled: false
+    tags:
+      - notification
+      - microservice
+      - future
+
+  # Document Service (Future)
+  - name: document-service
+    url: http://document-service:3004
+    protocol: http
+    enabled: false
+    tags:
+      - document
+      - microservice
+      - future
+
+  # Payroll Service (Future)
+  - name: payroll-service
+    url: http://payroll-service:3005
+    protocol: http
+    enabled: false
+    tags:
+      - payroll
+      - microservice
+      - future
+
+###############################################
+# Global Plugins
+###############################################
+
+plugins:
+  # Rate Limiting (Global)
+  - name: rate-limiting
+    config:
+      second: 100
+      minute: 1000
+      hour: 10000
+      policy: redis
+      redis_host: redis
+      redis_port: 6379
+      redis_password: auraos_redis_2024
+      redis_database: 1
+      hide_client_headers: false
+      fault_tolerant: true
+    enabled: true
+    protocols:
+      - http
+      - https
+
+  # CORS (Global)
+  - name: cors
+    config:
+      origins:
+        - http://localhost:3006
+        - https://*.auraos.com
+      methods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+      headers:
+        - Accept
+        - Authorization
+        - Content-Type
+        - X-Tenant-ID
+        - X-Request-ID
+      exposed_headers:
+        - X-RateLimit-Limit
+        - X-RateLimit-Remaining
+        - X-Request-ID
+      credentials: true
+      max_age: 3600
+    enabled: true
+
+  # Request ID (Global)
+  - name: correlation-id
+    config:
+      header_name: X-Request-ID
+      generator: uuid
+      echo_downstream: true
+    enabled: true
+
+  # Prometheus Metrics (Global)
+  - name: prometheus
+    config:
+      status_code_metrics: true
+      latency_metrics: true
+      bandwidth_metrics: true
+      upstream_health_metrics: true
+    enabled: true
+
+  # Request Logging (Global)
+  - name: file-log
+    config:
+      path: /var/log/kong/requests.log
+      reopen: true
+    enabled: true
+
+  # Response Transformer (Security Headers)
+  - name: response-transformer
+    config:
+      add:
+        headers:
+          - X-Content-Type-Options:nosniff
+          - X-Frame-Options:DENY
+          - X-XSS-Protection:1; mode=block
+          - Strict-Transport-Security:max-age=31536000; includeSubDomains
+    enabled: true
+
+###############################################
+# Service-Specific Plugins
+###############################################
+
+# Auth Service Plugins
+- name: rate-limiting
+  service: auth-service
+  config:
+    second: 5
+    minute: 60
+    hour: 1000
+    policy: redis
+    redis_host: redis
+    redis_port: 6379
+    redis_password: auraos_redis_2024
+    fault_tolerant: true
+  enabled: true
+
+# Request Validation for Auth
+- name: request-validator
+  service: auth-service
+  route: auth-login
+  config:
+    body_schema: |
+      {
+        "type": "object",
+        "properties": {
+          "email": {"type": "string", "format": "email"},
+          "password": {"type": "string", "minLength": 8}
+        },
+        "required": ["email", "password"]
+      }
+  enabled: true
+
+# Circuit Breaker for Auth Service
+- name: proxy-cache
+  service: auth-service
+  config:
+    strategy: memory
+    memory:
+      dictionary_name: kong_cache
+    content_type:
+      - application/json
+    cache_ttl: 300
+    cache_control: true
+  enabled: false
+
+###############################################
+# Consumers (API Keys)
+###############################################
+
+consumers:
+  - username: mobile-app
+    custom_id: mobile-client-v1
+    tags:
+      - mobile
+      - client
+
+  - username: web-app
+    custom_id: web-client-v1
+    tags:
+      - web
+      - client
+
+  - username: admin-api
+    custom_id: admin-api-v1
+    tags:
+      - admin
+      - internal
+
+###############################################
+# Upstreams (Load Balancing)
+###############################################
+
+upstreams:
+  - name: auth-service-upstream
+    algorithm: round-robin
+    hash_on: none
+    hash_fallback: none
+    slots: 10000
+    healthchecks:
+      active:
+        type: http
+        http_path: /health
+        timeout: 10
+        concurrency: 10
+        healthy:
+          interval: 5
+          http_statuses:
+            - 200
+            - 302
+          successes: 2
+        unhealthy:
+          interval: 5
+          http_statuses:
+            - 429
+            - 500
+            - 503
+          tcp_failures: 3
+          timeouts: 3
+          http_failures: 5
+      passive:
+        healthy:
+          http_statuses:
+            - 200
+            - 201
+            - 202
+            - 301
+            - 302
+          successes: 5
+        unhealthy:
+          http_statuses:
+            - 429
+            - 500
+            - 503
+          tcp_failures: 3
+          timeouts: 3
+          http_failures: 5
+    targets:
+      - target: auth-service:3001
+        weight: 100
+
+  - name: monolith-upstream
+    algorithm: round-robin
+    slots: 10000
+    healthchecks:
+      active:
+        type: http
+        http_path: /api/health
+        timeout: 10
+        healthy:
+          interval: 10
+          successes: 2
+        unhealthy:
+          interval: 10
+          http_failures: 5
+    targets:
+      - target: auraos-web:3006
+        weight: 100
