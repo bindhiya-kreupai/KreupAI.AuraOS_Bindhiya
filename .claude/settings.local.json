@@ -18,7 +18,9 @@
       "Bash(git fetch:*)",
       "Bash(pnpm prisma db seed:*)",
       "Bash(pnpm prisma generate:*)",
-      "Bash(pnpm prisma db push:*)"
+      "Bash(pnpm prisma db push:*)",
+      "Bash(npm run lint:fix:*)",
+      "Bash(pnpm lint:*)"
     ],
     "deny": [],
     "ask": []

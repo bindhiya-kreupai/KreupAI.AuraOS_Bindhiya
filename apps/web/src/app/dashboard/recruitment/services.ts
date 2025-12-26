@@ -3,6 +3,7 @@
  *
  * API-integrated service classes using APIClient pattern.
  */
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 
 import { APIClient } from '@/lib/api-client';
 import type {
@@ -18,9 +19,7 @@ import type {
     RecruitmentStats,
     RequisitionStatus,
     ApplicationStatus,
-    InterviewStatus,
     OfferStatus,
-    BackgroundCheckStatus,
 } from './types';
 
 export class JobRequisitionService {

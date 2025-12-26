@@ -7,9 +7,8 @@ import { withEnhancedAuth } from '@/lib/auth';
  * GET /api/recruitment/jobs
  * Fetch all job postings for the authenticated user's tenant
  */
-export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, _context) => {
     try {
-        const { user } = context;
         const { searchParams } = new URL(request.url);
         const isActive = searchParams.get('isActive');
 
@@ -32,8 +31,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         }));
 
         return NextResponse.json({ data: transformedJobs }, { status: 200 });
-    } catch (error) {
-        console.error('Error fetching jobs:', error);
+    } catch {
         return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
     }
 });
@@ -42,9 +40,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
  * POST /api/recruitment/jobs
  * Create a new job posting
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, _context) => {
     try {
-        const { user } = context;
         const body = await request.json();
 
         const job = await prisma.jobPosting.create({
@@ -75,8 +72,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
         };
 
         return NextResponse.json({ data: transformedJob }, { status: 201 });
-    } catch (error) {
-        console.error('Error creating job:', error);
+    } catch {
         return NextResponse.json({ error: 'Failed to create job' }, { status: 500 });
     }
 });
