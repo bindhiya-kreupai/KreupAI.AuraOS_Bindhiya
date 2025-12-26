@@ -745,6 +745,9 @@ model JobPosting {
   // Channels (Stored as JSON)
   channels    Json?
 
+  // Relations
+  applications CandidateApplication[]
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -752,6 +755,282 @@ model JobPosting {
   @@index([department])
   @@index([location])
   @@index([postedDate])
+}
+
+model Candidate {
+  id              String   @id @default(uuid())
+  firstName       String
+  lastName        String
+  email           String   @unique
+  phone           String?
+  location        String?
+  linkedinUrl     String?
+  resumeUrl       String?
+  source          String?  // LinkedIn, Indeed, Website, Referral
+
+  // Relations
+  applications    CandidateApplication[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([email])
+  @@index([source])
+}
+
+model CandidateApplication {
+  id                String   @id @default(uuid())
+  candidateId       String
+  candidate         Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  jobPostingId      String
+  jobPosting        JobPosting @relation(fields: [jobPostingId], references: [id], onDelete: Cascade)
+
+  // Application Details
+  status            String   @default("applied") // applied, screening, interview, offer, hired, rejected
+  currentStage      String   @default("applied")
+  source            String?
+  coverLetter       String?  @db.Text
+  resumeUrl         String?
+  appliedDate       DateTime @default(now())
+
+  // Assessment
+  overallRating     Int?     // 1-5
+  notes             String?  @db.Text
+
+  // Rejection
+  rejectionReason   String?
+  rejectionNotes    String?  @db.Text
+
+  // Relations
+  interviews        Interview[]
+  offers            JobOffer[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([candidateId])
+  @@index([jobPostingId])
+  @@index([status])
+  @@index([currentStage])
+  @@index([appliedDate])
+}
+
+model Interview {
+  id                String   @id @default(uuid())
+  applicationId     String
+  application       CandidateApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  // Interview Details
+  title             String
+  type              String   // Phone, Video, In-Person, Technical, HR
+  scheduledDate     DateTime
+  duration          Int?     // minutes
+  location          String?
+  meetingLink       String?
+
+  // Participants
+  interviewerIds    Json?    // Array of interviewer IDs
+  interviewerNames  String?
+
+  // Status
+  status            String   @default("scheduled") // scheduled, completed, cancelled, rescheduled
+
+  // Feedback
+  feedbackSubmitted Boolean  @default(false)
+  overallRating     Int?     // 1-5
+  notes             String?  @db.Text
+
+  // Relations
+  feedback          InterviewFeedback[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([applicationId])
+  @@index([scheduledDate])
+  @@index([status])
+}
+
+model InterviewFeedback {
+  id                String   @id @default(uuid())
+  interviewId       String
+  interview         Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  // Feedback Details
+  interviewerId     String
+  interviewerName   String
+  rating            Int      // 1-5
+  strengths         String?  @db.Text
+  weaknesses        String?  @db.Text
+  recommendation    String   // Hire, Maybe, No
+  comments          String?  @db.Text
+
+  submittedAt       DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([interviewId])
+  @@index([interviewerId])
+}
+
+model JobOffer {
+  id                String   @id @default(uuid())
+  applicationId     String
+  application       CandidateApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  // Offer Details
+  jobTitle          String
+  department        String
+  location          String
+  employmentType    String
+  startDate         DateTime?
+
+  // Compensation
+  salary            Decimal
+  currency          String   @default("USD")
+  bonus             Decimal?
+  equity            String?
+  benefits          Json?    // Array of benefits
+
+  // Status & Workflow
+  status            String   @default("draft") // draft, pending_approval, approved, sent, accepted, declined, withdrawn
+
+  // Approval
+  approvedBy        String?
+  approvedDate      DateTime?
+
+  // Sending
+  sentDate          DateTime?
+  sentBy            String?
+
+  // Response
+  acceptedDate      DateTime?
+  declinedDate      DateTime?
+  declineReason     String?
+
+  // Expiry
+  expiryDate        DateTime?
+
+  // Documents
+  offerLetterUrl    String?
+
+  notes             String?  @db.Text
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([applicationId])
+  @@index([status])
+}
+
+model JobRequisition {
+  id                String   @id @default(uuid())
+
+  // Requisition Details
+  jobTitle          String
+  department        String
+  location          String
+  numberOfPositions Int      @default(1)
+  employmentType    String
+
+  // Requirements
+  description       String?  @db.Text
+  requirements      String?  @db.Text
+  salaryRange       String?
+  urgency           String   @default("normal") // urgent, normal, low
+
+  // Approval Workflow
+  status            String   @default("draft") // draft, pending_approval, approved, rejected, cancelled
+  requestedBy       String
+  approvedBy        String?
+  approvedDate      DateTime?
+  rejectionReason   String?
+
+  // Dates
+  requestedDate     DateTime @default(now())
+  requiredByDate    DateTime?
+
+  notes             String?  @db.Text
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([status])
+  @@index([department])
+  @@index([requestedDate])
+}
+
+model HiringPipeline {
+  id                String   @id @default(uuid())
+  name              String
+  description       String?
+  isDefault         Boolean  @default(false)
+
+  // Stages (stored as JSON)
+  stages            Json     // Array of { id, name, order, type }
+
+  status            String   @default("Active")
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([isDefault])
+}
+
+model BackgroundCheck {
+  id                String   @id @default(uuid())
+  applicationId     String
+
+  // Check Details
+  type              String   // Criminal, Employment, Education, Reference
+  provider          String?
+  status            String   @default("pending") // pending, in_progress, completed, failed
+
+  // Results
+  result            String?  // Clear, Concerns, Failed
+  reportUrl         String?
+  completedDate     DateTime?
+
+  // Dates
+  initiatedDate     DateTime @default(now())
+  expectedDate      DateTime?
+
+  notes             String?  @db.Text
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([applicationId])
+  @@index([status])
+}
+
+model RecruitmentSettings {
+  id                String   @id @default(uuid())
+  tenantId          String   @unique
+
+  // Email Notifications
+  notifyOnApplication Boolean @default(true)
+  notifyOnInterview   Boolean @default(true)
+  notifyOnOffer       Boolean @default(true)
+
+  // Application Settings
+  requireCoverLetter  Boolean @default(false)
+  autoRejectAfterDays Int?
+
+  // Interview Settings
+  defaultInterviewDuration Int @default(60)
+
+  // Offer Settings
+  defaultOfferExpiryDays Int @default(7)
+
+  // Integration Settings
+  atsIntegrationEnabled Boolean @default(false)
+  atsProvider          String?
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([tenantId])
 }
 
 // ============================================================================

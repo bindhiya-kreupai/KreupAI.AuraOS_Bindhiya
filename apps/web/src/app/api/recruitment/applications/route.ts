@@ -1,107 +1,63 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
 
 /**
  * GET /api/recruitment/applications
- * Fetch all candidate applications for the authenticated user's tenant
+ * Fetch all candidate applications
  */
-export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, _context) => {
   try {
-    const { user } = context;
     const { searchParams } = new URL(request.url);
-    const jobId = searchParams.get('jobId');
+    const jobPostingId = searchParams.get('jobPostingId');
     const status = searchParams.get('status');
 
-    // Mock data for applications
-    let mockApplications = [
-      {
-        id: '1',
-        tenantId: user.tenantId,
-        jobId: 'job_1',
-        jobTitle: 'Senior Software Engineer',
-        candidateId: 'cand_101',
-        candidateName: 'Michael Chen',
-        candidateEmail: 'michael.chen@email.com',
-        candidatePhone: '+1-555-0123',
-        appliedDate: '2025-12-20T10:30:00Z',
-        status: 'Under Review',
-        stage: 'Phone Screen',
-        source: 'LinkedIn',
-        resumeUrl: 'https://example.com/resumes/michael-chen.pdf',
-        coverLetterUrl: 'https://example.com/letters/michael-chen.pdf',
-        experience: 8,
-        currentCompany: 'Tech Corp',
-        currentTitle: 'Software Engineer',
-        expectedSalary: 160000,
-        noticePeriod: '2 weeks',
-        rating: 4.5,
-        skills: ['React', 'Node.js', 'TypeScript', 'AWS', 'Docker'],
+    const applications = await prisma.candidateApplication.findMany({
+      where: {
+        ...(jobPostingId && { jobPostingId }),
+        ...(status && { status }),
       },
-      {
-        id: '2',
-        tenantId: user.tenantId,
-        jobId: 'job_1',
-        jobTitle: 'Senior Software Engineer',
-        candidateId: 'cand_102',
-        candidateName: 'Sarah Williams',
-        candidateEmail: 'sarah.williams@email.com',
-        candidatePhone: '+1-555-0124',
-        appliedDate: '2025-12-21T14:15:00Z',
-        status: 'New',
-        stage: 'Application Received',
-        source: 'Company Website',
-        resumeUrl: 'https://example.com/resumes/sarah-williams.pdf',
-        coverLetterUrl: null,
-        experience: 6,
-        currentCompany: 'Startup Inc',
-        currentTitle: 'Full Stack Developer',
-        expectedSalary: 140000,
-        noticePeriod: '1 month',
-        rating: null,
-        skills: ['Vue.js', 'Python', 'Django', 'PostgreSQL'],
+      include: {
+        candidate: true,
+        jobPosting: {
+          select: {
+            title: true,
+            department: true,
+            location: true,
+          },
+        },
       },
-      {
-        id: '3',
-        tenantId: user.tenantId,
-        jobId: 'job_2',
-        jobTitle: 'Product Manager',
-        candidateId: 'cand_103',
-        candidateName: 'David Kumar',
-        candidateEmail: 'david.kumar@email.com',
-        candidatePhone: '+1-555-0125',
-        appliedDate: '2025-12-22T09:00:00Z',
-        status: 'Interview',
-        stage: 'Technical Interview',
-        source: 'Referral',
-        resumeUrl: 'https://example.com/resumes/david-kumar.pdf',
-        coverLetterUrl: 'https://example.com/letters/david-kumar.pdf',
-        experience: 5,
-        currentCompany: 'Product Co',
-        currentTitle: 'Associate Product Manager',
-        expectedSalary: 120000,
-        noticePeriod: '3 weeks',
-        rating: 4.8,
-        skills: ['Product Strategy', 'Agile', 'Jira', 'Analytics', 'User Research'],
-      },
-    ];
+      orderBy: { appliedDate: 'desc' },
+    });
 
-    // Filter by jobId if provided
-    if (jobId) {
-      mockApplications = mockApplications.filter(app => app.jobId === jobId);
-    }
+    // Transform to match UI expectations
+    const transformedApplications = applications.map((app) => ({
+      id: app.id,
+      candidateId: app.candidateId,
+      candidateName: `${app.candidate.firstName} ${app.candidate.lastName}`,
+      candidateEmail: app.candidate.email,
+      candidatePhone: app.candidate.phone,
+      jobPostingId: app.jobPostingId,
+      jobTitle: app.jobPosting.title,
+      department: app.jobPosting.department,
+      location: app.jobPosting.location,
+      status: app.status,
+      currentStage: app.currentStage,
+      source: app.source,
+      appliedDate: app.appliedDate.toISOString(),
+      overallRating: app.overallRating,
+      notes: app.notes,
+      resumeUrl: app.resumeUrl,
+      coverLetter: app.coverLetter,
+      rejectionReason: app.rejectionReason,
+      createdAt: app.createdAt.toISOString(),
+      updatedAt: app.updatedAt.toISOString(),
+    }));
 
-    // Filter by status if provided
-    if (status) {
-      mockApplications = mockApplications.filter(app => app.status === status);
-    }
-
-    return NextResponse.json({ data: mockApplications }, { status: 200 });
+    return NextResponse.json({ data: transformedApplications }, { status: 200 });
   } catch {
-        return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch applications' }, { status: 500 });
   }
 });
 
@@ -109,64 +65,90 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
  * POST /api/recruitment/applications
  * Create a new candidate application
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, _context) => {
   try {
-    const { user } = context;
     const body = await request.json();
 
-    // Mock creating an application
-    const newApplication = {
-      id: `app_${Date.now()}`,
-      tenantId: user.tenantId,
-      createdBy: user.userId,
-      createdDate: new Date().toISOString(),
-      appliedDate: new Date().toISOString(),
-      status: 'New',
-      stage: 'Application Received',
-      rating: null,
-      ...body,
-    };
+    // Create or find candidate
+    let candidate = await prisma.candidate.findUnique({
+      where: { email: body.candidateEmail },
+    });
 
-    return NextResponse.json({ data: newApplication }, { status: 201 });
+    if (!candidate) {
+      candidate = await prisma.candidate.create({
+        data: {
+          firstName: body.candidateFirstName || 'Unknown',
+          lastName: body.candidateLastName || 'Candidate',
+          email: body.candidateEmail,
+          phone: body.candidatePhone,
+          location: body.candidateLocation,
+          linkedinUrl: body.linkedinUrl,
+          resumeUrl: body.resumeUrl,
+          source: body.source,
+        },
+      });
+    }
+
+    // Create application
+    const application = await prisma.candidateApplication.create({
+      data: {
+        candidateId: candidate.id,
+        jobPostingId: body.jobPostingId,
+        status: body.status || 'applied',
+        currentStage: body.currentStage || 'applied',
+        source: body.source,
+        coverLetter: body.coverLetter,
+        resumeUrl: body.resumeUrl || candidate.resumeUrl,
+      },
+      include: {
+        candidate: true,
+        jobPosting: true,
+      },
+    });
+
+    // Update job posting applies count
+    await prisma.jobPosting.update({
+      where: { id: body.jobPostingId },
+      data: { applies: { increment: 1 } },
+    });
+
+    return NextResponse.json({ data: application }, { status: 201 });
   } catch {
-        return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to create application' }, { status: 500 });
   }
 });
 
 /**
- * PUT /api/recruitment/applications
- * Update application status or details
+ * PUT /api/recruitment/applications/:id
+ * Update application
  */
-export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
+export const PUT = withEnhancedAuth(async (request: NextRequest, _context) => {
   try {
-    const { user } = context;
     const body = await request.json();
     const { id, ...updates } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Application ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Application ID required' }, { status: 400 });
     }
 
-    // Mock updating an application
-    const updatedApplication = {
-      id,
-      tenantId: user.tenantId,
-      ...updates,
-      updatedBy: user.userId,
-      updatedDate: new Date().toISOString(),
-    };
+    const application = await prisma.candidateApplication.update({
+      where: { id },
+      data: {
+        ...(updates.status && { status: updates.status }),
+        ...(updates.currentStage && { currentStage: updates.currentStage }),
+        ...(updates.overallRating !== undefined && { overallRating: updates.overallRating }),
+        ...(updates.notes && { notes: updates.notes }),
+        ...(updates.rejectionReason && { rejectionReason: updates.rejectionReason }),
+        ...(updates.rejectionNotes && { rejectionNotes: updates.rejectionNotes }),
+      },
+      include: {
+        candidate: true,
+        jobPosting: true,
+      },
+    });
 
-    return NextResponse.json({ data: updatedApplication }, { status: 200 });
+    return NextResponse.json({ data: application }, { status: 200 });
   } catch {
-        return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update application' }, { status: 500 });
   }
 });
