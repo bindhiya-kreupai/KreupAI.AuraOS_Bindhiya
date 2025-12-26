@@ -40,6 +40,7 @@ model Company {
   employees   Employee[]
 
   @@unique([tenantId, code])
+  @@index([tenantId])
 }
 
 model Department {
@@ -58,6 +59,8 @@ model Department {
   employees Employee[]
 
   @@unique([companyId, code])
+  @@index([companyId])
+  @@index([parentId])
 }
 
 model CostCenter {
@@ -90,6 +93,8 @@ model State {
 
   cities    City[]
   addresses Address[]
+
+  @@index([countryId])
 }
 
 model City {
@@ -99,6 +104,8 @@ model City {
   name    String
 
   addresses Address[]
+
+  @@index([stateId])
 }
 
 model Address {
@@ -128,6 +135,9 @@ model Location {
   address   Address      @relation(fields: [addressId], references: [id])
 
   employees Employee[]
+
+  @@index([companyId])
+  @@index([type])
 }
 
 enum LocationType {
@@ -175,6 +185,10 @@ model JobProfile {
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([familyId])
+  @@index([gradeId])
+  @@index([status])
 }
 
 model Grade {
@@ -235,6 +249,16 @@ model Employee {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([departmentId])
+  @@index([locationId])
+  @@index([statusId])
+  @@index([managerId])
+  @@index([jobProfileId])
+  @@index([gradeId])
+  @@index([companyId, statusId])
+  @@index([joiningDate])
 }
 
 model EmployeeStatus {
@@ -289,6 +313,11 @@ model User {
 
   // Role assignments
   roles UserRole[]
+
+  @@index([tenantId])
+  @@index([email, tenantId])
+  @@index([status])
+  @@index([tenantId, status])
 }
 
 // ============================================================================
@@ -616,6 +645,11 @@ model UserSession {
   lastActive DateTime @default(now())
   status     String   @default("Active") // Active, Idle, Revoked
   createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@index([userId, status])
+  @@index([lastActive])
 }
 
 model AuditLog {
@@ -627,6 +661,13 @@ model AuditLog {
   details   String?
   ipAddress String?
   timestamp DateTime @default(now())
+
+  @@index([userId])
+  @@index([timestamp])
+  @@index([action])
+  @@index([module])
+  @@index([userId, timestamp])
+  @@index([action, module])
 }
 
 model UserDelegation {
@@ -642,6 +683,11 @@ model UserDelegation {
   status      String   @default("Scheduled") // Active, Scheduled, Expired
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([delegatorId])
+  @@index([delegateeId])
+  @@index([status])
+  @@index([startDate, endDate])
 }
 
 model License {
@@ -688,19 +734,24 @@ model JobPosting {
   location    String
   type        String
   status      String   @default("Draft")
-  description String?  
+  description String?
   postedDate  DateTime?
-  
+
   // Metrics
   views       Int      @default(0)
   clicks      Int      @default(0)
   applies     Int      @default(0)
-  
+
   // Channels (Stored as JSON)
   channels    Json?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([department])
+  @@index([location])
+  @@index([postedDate])
 }
 
 // ============================================================================

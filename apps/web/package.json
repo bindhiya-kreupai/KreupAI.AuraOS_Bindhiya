@@ -7,13 +7,20 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "test:run": "vitest run",
+    "test:watch": "vitest --watch",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:e2e": "playwright test",
     "test:db:setup": "ts-node scripts/setup-test-db.ts",
     "test:db:reset": "ts-node scripts/setup-test-db.ts",
-    "audit:tenant-isolation": "ts-node scripts/audit-tenant-isolation.ts"
+    "audit:tenant-isolation": "ts-node scripts/audit-tenant-isolation.ts",
+    "audit:security": "npm audit --audit-level=moderate",
+    "check": "npm run type-check && npm run lint && npm run test:run"
   },
   "dependencies": {
     "@aura/config": "workspace:*",
