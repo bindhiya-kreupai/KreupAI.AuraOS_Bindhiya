@@ -1,0 +1,157 @@
+# AuraOS Infrastructure Services
+# Docker Compose configuration for local development
+# Includes: PostgreSQL, Redis, RabbitMQ, Elasticsearch, Kibana
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: auraos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: auraos
+      POSTGRES_PASSWORD: auraos_dev_2024
+      POSTGRES_DB: auraos_dev
+      POSTGRES_MULTIPLE_DATABASES: auraos_dev,auraos_test
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    networks:
+      - auraos-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U auraos']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: auraos-redis
+    restart: unless-stopped
+    command: redis-server --requirepass auraos_redis_2024 --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - auraos-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # RabbitMQ Message Queue
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: auraos-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: auraos
+      RABBITMQ_DEFAULT_PASS: auraos_rabbit_2024
+      RABBITMQ_DEFAULT_VHOST: /auraos
+      RABBITMQ_VM_MEMORY_HIGH_WATERMARK: 512MB
+    ports:
+      - '5672:5672'   # AMQP
+      - '15672:15672' # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./config/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./config/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+    networks:
+      - auraos-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: auraos-elasticsearch
+    restart: unless-stopped
+    environment:
+      - node.name=auraos-es-node
+      - cluster.name=auraos-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - auraos-network
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:9200/_cluster/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Kibana (Elasticsearch UI)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: auraos-kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=kibana_dev_2024
+    ports:
+      - '5601:5601'
+    networks:
+      - auraos-network
+    depends_on:
+      - elasticsearch
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:5601/api/status || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Adminer (Database UI)
+  adminer:
+    image: adminer:latest
+    container_name: auraos-adminer
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    networks:
+      - auraos-network
+    depends_on:
+      - postgres
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+
+networks:
+  auraos-network:
+    driver: bridge
+    name: auraos-network
