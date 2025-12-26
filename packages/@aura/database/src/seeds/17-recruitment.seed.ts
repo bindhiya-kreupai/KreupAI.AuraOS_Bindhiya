@@ -1,4 +1,3 @@
-
 export const jobPostingsSeed = [
     {
         title: 'Senior Product Designer',
@@ -7,9 +6,11 @@ export const jobPostingsSeed = [
         type: 'Remote',
         status: 'Active',
         postedDate: new Date('2024-11-20'),
-        metrics: { views: 1250, clicks: 450, applies: 42 },
+        views: 1250,
+        clicks: 450,
+        applies: 42,
         channels: { linkedin: true, indeed: true, website: true, glassdoor: false },
-        description: 'We are looking for a Senior Product Designer to lead our design system initiatives...'
+        description: 'We are looking for a Senior Product Designer to lead our design system initiatives and create beautiful, user-centered experiences.'
     },
     {
         title: 'Backend Engineer (Go)',
@@ -18,9 +19,11 @@ export const jobPostingsSeed = [
         type: 'Full-time',
         status: 'Active',
         postedDate: new Date('2024-11-25'),
-        metrics: { views: 890, clicks: 120, applies: 15 },
+        views: 890,
+        clicks: 120,
+        applies: 15,
         channels: { linkedin: true, indeed: false, website: true, glassdoor: true },
-        description: 'Join our backend team to build scalable microservices in Go...'
+        description: 'Join our backend team to build scalable microservices in Go and help architect our next-generation platform.'
     },
     {
         title: 'Marketing Manager',
@@ -29,19 +32,49 @@ export const jobPostingsSeed = [
         type: 'Full-time',
         status: 'Draft',
         postedDate: new Date('2024-12-01'),
-        metrics: { views: 0, clicks: 0, applies: 0 },
+        views: 0,
+        clicks: 0,
+        applies: 0,
         channels: { linkedin: false, indeed: false, website: false, glassdoor: false },
-        description: 'We need a strategic Marketing Manager to oversee our European expansion...'
+        description: 'We need a strategic Marketing Manager to oversee our European expansion and drive growth initiatives.'
     },
     {
         title: 'Frontend Developer (React)',
         department: 'Engineering',
         location: 'Bangalore, IN',
         type: 'Full-time',
-        status: 'Paused',
+        status: 'Active',
         postedDate: new Date('2024-11-15'),
-        metrics: { views: 2300, clicks: 600, applies: 150 },
+        views: 2300,
+        clicks: 600,
+        applies: 150,
         channels: { linkedin: true, indeed: true, website: true, glassdoor: true },
-        description: 'Looking for a React expert to help build our next-gen dashboard...'
+        description: 'Looking for a React expert to help build our next-gen dashboard with modern frontend technologies.'
+    },
+    {
+        title: 'DevOps Engineer',
+        department: 'Engineering',
+        location: 'Remote',
+        type: 'Full-time',
+        status: 'Active',
+        postedDate: new Date('2024-12-10'),
+        views: 520,
+        clicks: 85,
+        applies: 12,
+        channels: { linkedin: true, indeed: true, website: true, glassdoor: false },
+        description: 'Join our DevOps team to manage Kubernetes infrastructure and implement CI/CD pipelines at scale.'
+    },
+    {
+        title: 'Sales Executive',
+        department: 'Sales',
+        location: 'Dubai, UAE',
+        type: 'Full-time',
+        status: 'Active',
+        postedDate: new Date('2024-12-18'),
+        views: 340,
+        clicks: 78,
+        applies: 18,
+        channels: { linkedin: true, indeed: false, website: true, glassdoor: false },
+        description: 'Seeking an experienced Sales Executive to expand our presence in the Middle East market and drive revenue growth.'
     }
 ];

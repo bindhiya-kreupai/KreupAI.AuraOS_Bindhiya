@@ -79,16 +79,18 @@ export class JobPostingService {
             const queryString = params.toString();
             const url = queryString ? `${this.endpoint}?${queryString}` : this.endpoint;
 
-            const response = await APIClient.get<{ items?: JobPosting[] }>(url);
-            return response.items || [];
-        } catch {
-                        return [];
+            const response = await APIClient.get<{ data?: JobPosting[] }>(url);
+            return response.data || [];
+        } catch (error) {
+            console.error('Failed to fetch job postings:', error);
+            return [];
         }
     }
 
     static async createPosting(data: JobPosting): Promise<JobPosting> {
-        const response = await APIClient.post<JobPosting>(this.endpoint, data);
-        return response;
+        const response = await APIClient.post<{ data?: JobPosting } | JobPosting>(this.endpoint, data);
+        // Handle both {data: {...}} and direct object responses
+        return (response as any).data || response;
     }
 
     static async updatePosting(id: string, updates: Partial<JobPosting>): Promise<JobPosting> {
@@ -120,10 +122,11 @@ export class CandidateApplicationService {
             const queryString = params.toString();
             const url = queryString ? `${this.endpoint}?${queryString}` : this.endpoint;
 
-            const response = await APIClient.get<{ items?: CandidateApplication[] }>(url);
-            return response.items || [];
-        } catch {
-                        return [];
+            const response = await APIClient.get<{ data?: CandidateApplication[] }>(url);
+            return response.data || [];
+        } catch (error) {
+            console.error('Failed to fetch applications:', error);
+            return [];
         }
     }
 
@@ -161,10 +164,11 @@ export class InterviewService {
             const queryString = params.toString();
             const url = queryString ? `${this.endpoint}?${queryString}` : this.endpoint;
 
-            const response = await APIClient.get<{ items?: Interview[] }>(url);
-            return response.items || [];
-        } catch {
-                        return [];
+            const response = await APIClient.get<{ data?: Interview[] }>(url);
+            return response.data || [];
+        } catch (error) {
+            console.error('Failed to fetch interviews:', error);
+            return [];
         }
     }
 
@@ -220,10 +224,11 @@ export class JobOfferService {
             const queryString = params.toString();
             const url = queryString ? `${this.endpoint}?${queryString}` : this.endpoint;
 
-            const response = await APIClient.get<{ items?: JobOffer[] }>(url);
-            return response.items || [];
-        } catch {
-                        return [];
+            const response = await APIClient.get<{ data?: JobOffer[] }>(url);
+            return response.data || [];
+        } catch (error) {
+            console.error('Failed to fetch offers:', error);
+            return [];
         }
     }
 
