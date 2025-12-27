@@ -23,24 +23,29 @@ import type {
 } from './types';
 
 export class BenefitPlanService {
-    static async getPlans(filters?: { category?: string; planYear?: string; status?: string }): Promise<BenefitPlan[]> {
-        return APIClient.get<BenefitPlan[]>('/benefits/plans', filters);
+    static async getPlans(filters?: { category?: string; planYear?: string; status?: string }): Promise<{ success: boolean; data: BenefitPlan[]; pagination?: any }> {
+        try {
+            const response = await APIClient.get<{ success: boolean; data: BenefitPlan[]; pagination?: any }>('/benefits/plans', filters);
+            return response || { success: false, data: [] };
+        } catch {
+            return { success: false, data: [] };
+        }
     }
 
-    static async getPlan(id: string): Promise<BenefitPlan | null> {
-        return APIClient.get<BenefitPlan>(`/benefits/plans/${id}`);
+    static async getPlan(id: string): Promise<{ success: boolean; data?: BenefitPlan }> {
+        return APIClient.get<{ success: boolean; data?: BenefitPlan }>(`/benefits/plans?id=${id}`);
     }
 
-    static async createPlan(plan: BenefitPlan): Promise<BenefitPlan> {
-        return APIClient.post<BenefitPlan>('/benefits/plans', plan);
+    static async createPlan(plan: Omit<BenefitPlan, 'id' | 'createdAt' | 'updatedAt'>): Promise<{ success: boolean; data?: BenefitPlan }> {
+        return APIClient.post<{ success: boolean; data?: BenefitPlan }>('/benefits/plans', plan);
     }
 
-    static async updatePlan(id: string, updates: Partial<BenefitPlan>): Promise<BenefitPlan> {
-        return APIClient.put<BenefitPlan>(`/benefits/plans/${id}`, updates);
+    static async updatePlan(id: string, updates: Partial<BenefitPlan>): Promise<{ success: boolean; data?: BenefitPlan }> {
+        return APIClient.put<{ success: boolean; data?: BenefitPlan }>('/benefits/plans', { id, ...updates });
     }
 
-    static async deletePlan(id: string): Promise<void> {
-        return APIClient.delete(`/benefits/plans/${id}`);
+    static async deletePlan(id: string): Promise<{ success: boolean; message?: string }> {
+        return APIClient.delete<{ success: boolean; message?: string }>(`/benefits/plans?id=${id}`);
     }
 }
 
@@ -49,32 +54,37 @@ export class EnrollmentService {
         employeeId?: string;
         enrollmentWindowId?: string;
         status?: EnrollmentStatus;
-    }): Promise<BenefitEnrollment[]> {
-        return APIClient.get<BenefitEnrollment[]>('/benefits/enrollments', filters);
+    }): Promise<{ success: boolean; data: BenefitEnrollment[]; pagination?: any }> {
+        try {
+            const response = await APIClient.get<{ success: boolean; data: BenefitEnrollment[]; pagination?: any }>('/benefits/enrollments', filters);
+            return response || { success: false, data: [] };
+        } catch {
+            return { success: false, data: [] };
+        }
     }
 
-    static async getEnrollment(id: string): Promise<BenefitEnrollment | null> {
-        return APIClient.get<BenefitEnrollment>(`/benefits/enrollments/${id}`);
+    static async getEnrollment(id: string): Promise<{ success: boolean; data?: BenefitEnrollment }> {
+        return APIClient.get<{ success: boolean; data?: BenefitEnrollment }>(`/benefits/enrollments?id=${id}`);
     }
 
-    static async createEnrollment(enrollment: BenefitEnrollment): Promise<BenefitEnrollment> {
-        return APIClient.post<BenefitEnrollment>('/benefits/enrollments', enrollment);
+    static async createEnrollment(enrollment: Omit<BenefitEnrollment, 'id' | 'createdAt' | 'updatedAt'>): Promise<{ success: boolean; data?: BenefitEnrollment }> {
+        return APIClient.post<{ success: boolean; data?: BenefitEnrollment }>('/benefits/enrollments', enrollment);
     }
 
-    static async updateEnrollment(id: string, updates: Partial<BenefitEnrollment>): Promise<BenefitEnrollment> {
-        return APIClient.put<BenefitEnrollment>(`/benefits/enrollments/${id}`, updates);
+    static async updateEnrollment(id: string, updates: Partial<BenefitEnrollment>): Promise<{ success: boolean; data?: BenefitEnrollment }> {
+        return APIClient.put<{ success: boolean; data?: BenefitEnrollment }>('/benefits/enrollments', { id, ...updates });
     }
 
-    static async submitEnrollment(id: string): Promise<BenefitEnrollment> {
-        return APIClient.post<BenefitEnrollment>(`/benefits/enrollments/${id}/submit`, {});
+    static async submitEnrollment(id: string): Promise<{ success: boolean; data?: BenefitEnrollment }> {
+        return this.updateEnrollment(id, { status: 'PENDING_APPROVAL' });
     }
 
-    static async confirmEnrollment(id: string, approvedBy: string): Promise<BenefitEnrollment> {
-        return APIClient.post<BenefitEnrollment>(`/benefits/enrollments/${id}/confirm`, { approvedBy });
+    static async confirmEnrollment(id: string, approvedBy: string): Promise<{ success: boolean; data?: BenefitEnrollment }> {
+        return this.updateEnrollment(id, { status: 'APPROVED', approvedBy });
     }
 
-    static async cancelEnrollment(id: string, reason?: string): Promise<BenefitEnrollment> {
-        return APIClient.post<BenefitEnrollment>(`/benefits/enrollments/${id}/cancel`, { reason });
+    static async cancelEnrollment(id: string, reason?: string): Promise<{ success: boolean; data?: BenefitEnrollment }> {
+        return this.updateEnrollment(id, { status: 'CANCELLED', cancellationReason: reason });
     }
 }
 
@@ -97,46 +107,56 @@ export class EnrollmentWindowService {
 }
 
 export class DependentService {
-    static async getDependents(filters?: { employeeId?: string; status?: DependentStatus }): Promise<Dependent[]> {
-        return APIClient.get<Dependent[]>('/benefits/dependents', filters);
+    static async getDependents(filters?: { employeeId?: string; status?: DependentStatus }): Promise<{ success: boolean; data: Dependent[]; pagination?: any }> {
+        try {
+            const response = await APIClient.get<{ success: boolean; data: Dependent[]; pagination?: any }>('/benefits/dependents', filters);
+            return response || { success: false, data: [] };
+        } catch {
+            return { success: false, data: [] };
+        }
     }
 
-    static async createDependent(dependent: Dependent): Promise<Dependent> {
-        return APIClient.post<Dependent>('/benefits/dependents', dependent);
+    static async createDependent(dependent: Omit<Dependent, 'id' | 'createdAt' | 'updatedAt'>): Promise<{ success: boolean; data?: Dependent }> {
+        return APIClient.post<{ success: boolean; data?: Dependent }>('/benefits/dependents', dependent);
     }
 
-    static async updateDependent(id: string, updates: Partial<Dependent>): Promise<Dependent> {
-        return APIClient.put<Dependent>(`/benefits/dependents/${id}`, updates);
+    static async updateDependent(id: string, updates: Partial<Dependent>): Promise<{ success: boolean; data?: Dependent }> {
+        return APIClient.put<{ success: boolean; data?: Dependent }>('/benefits/dependents', { id, ...updates });
     }
 
-    static async verifyDependent(id: string, verifiedBy: string): Promise<Dependent> {
-        return APIClient.post<Dependent>(`/benefits/dependents/${id}/verify`, { verifiedBy });
+    static async verifyDependent(id: string, verifiedBy: string): Promise<{ success: boolean; data?: Dependent }> {
+        return this.updateDependent(id, { status: 'VERIFIED', verifiedBy });
     }
 
-    static async deleteDependent(id: string): Promise<void> {
-        return APIClient.delete(`/benefits/dependents/${id}`);
+    static async deleteDependent(id: string): Promise<{ success: boolean; message?: string }> {
+        return APIClient.delete<{ success: boolean; message?: string }>(`/benefits/dependents?id=${id}`);
     }
 }
 
 export class ClaimService {
-    static async getClaims(filters?: { employeeId?: string; status?: ClaimStatus }): Promise<BenefitClaim[]> {
-        return APIClient.get<BenefitClaim[]>('/benefits/claims', filters);
+    static async getClaims(filters?: { employeeId?: string; status?: ClaimStatus }): Promise<{ success: boolean; data: BenefitClaim[]; pagination?: any }> {
+        try {
+            const response = await APIClient.get<{ success: boolean; data: BenefitClaim[]; pagination?: any }>('/benefits/claims', filters);
+            return response || { success: false, data: [] };
+        } catch {
+            return { success: false, data: [] };
+        }
     }
 
-    static async createClaim(claim: BenefitClaim): Promise<BenefitClaim> {
-        return APIClient.post<BenefitClaim>('/benefits/claims', claim);
+    static async createClaim(claim: Omit<BenefitClaim, 'id' | 'claimNumber' | 'createdAt' | 'updatedAt'>): Promise<{ success: boolean; data?: BenefitClaim }> {
+        return APIClient.post<{ success: boolean; data?: BenefitClaim }>('/benefits/claims', claim);
     }
 
-    static async updateClaim(id: string, updates: Partial<BenefitClaim>): Promise<BenefitClaim> {
-        return APIClient.put<BenefitClaim>(`/benefits/claims/${id}`, updates);
+    static async updateClaim(id: string, updates: Partial<BenefitClaim>): Promise<{ success: boolean; data?: BenefitClaim }> {
+        return APIClient.put<{ success: boolean; data?: BenefitClaim }>('/benefits/claims', { id, ...updates });
     }
 
-    static async approveClaim(id: string, processedBy: string, approvedAmount: number): Promise<BenefitClaim> {
-        return APIClient.post<BenefitClaim>(`/benefits/claims/${id}/approve`, { processedBy, approvedAmount });
+    static async approveClaim(id: string, approvedBy: string, approvedAmount: number): Promise<{ success: boolean; data?: BenefitClaim }> {
+        return this.updateClaim(id, { status: 'APPROVED', approvedBy, approvedAmount });
     }
 
-    static async denyClaim(id: string, processedBy: string, reason: string): Promise<BenefitClaim> {
-        return APIClient.post<BenefitClaim>(`/benefits/claims/${id}/deny`, { processedBy, reason });
+    static async denyClaim(id: string, processedBy: string, reason: string): Promise<{ success: boolean; data?: BenefitClaim }> {
+        return this.updateClaim(id, { status: 'REJECTED', rejectionReason: reason });
     }
 }
 
