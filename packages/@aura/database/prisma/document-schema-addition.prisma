@@ -1,0 +1,69 @@
+// ADD THIS TO schema.prisma after DocumentType model (line 457)
+
+model DocumentType {
+  id          String            @id @default(uuid())
+  code        String            @unique
+  name        String
+  description String?
+  isRequired  Boolean           @default(false)
+  status      String            @default("Active")
+  documents   EmployeeDocument[]  // ADD THIS LINE
+}
+
+model EmployeeDocument {
+  id            String       @id @default(uuid())
+  tenantId      String
+  employeeId    String?
+  documentTypeId String
+  documentType  DocumentType @relation(fields: [documentTypeId], references: [id])
+
+  // Document Details
+  documentName  String
+  documentNumber String?
+  category      String       // CONTRACT, ID_PROOF, EDUCATION, MEDICAL, TAX, OTHER
+
+  // File Storage
+  fileName      String
+  fileSize      Int
+  fileType      String       // PDF, DOCX, JPG, PNG
+  fileUrl       String       // S3/Azure/Local path
+
+  // Versioning
+  version       Int          @default(1)
+  parentId      String?      // For version history
+  parent        EmployeeDocument? @relation("DocumentVersions", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  versions      EmployeeDocument[] @relation("DocumentVersions")
+
+  // Expiry & Compliance
+  issueDate     DateTime?
+  expiryDate    DateTime?
+  isExpired     Boolean      @default(false)
+  expiryAlertDays Int        @default(30)
+
+  // Verification
+  isVerified    Boolean      @default(false)
+  verifiedBy    String?
+  verifiedAt    DateTime?
+
+  // Access Control
+  isConfidential Boolean     @default(false)
+  accessLevel   String       @default("EMPLOYEE") // EMPLOYEE, MANAGER, HR_ONLY, ADMIN
+
+  // Metadata
+  description   String?
+  tags          String?      // JSON array of tags
+  uploadedBy    String
+
+  // Status
+  status        String       @default("ACTIVE") // ACTIVE, ARCHIVED, DELETED
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([documentTypeId])
+  @@index([category])
+  @@index([expiryDate])
+  @@index([status])
+}

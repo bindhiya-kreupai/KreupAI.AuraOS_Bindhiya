@@ -56,7 +56,10 @@ model Department {
   costCenterId String?
   costCenter   CostCenter? @relation(fields: [costCenterId], references: [id])
 
-  employees Employee[]
+  employees                 Employee[]
+  previousEmploymentHistory EmploymentHistory[] @relation("PreviousDepartment")
+  newEmploymentHistory      EmploymentHistory[] @relation("NewDepartment")
+  Position                  Position[]
 
   @@unique([companyId, code])
   @@index([companyId])
@@ -122,6 +125,7 @@ model Address {
 
   locations Location[]
   employees Employee[] // Home address
+  positions Position[]
 }
 
 model Location {
@@ -134,7 +138,11 @@ model Location {
   addressId String
   address   Address      @relation(fields: [addressId], references: [id])
 
-  employees Employee[]
+  employees                 Employee[]
+  assets                    Asset[]
+  previousEmploymentHistory EmploymentHistory[] @relation("PreviousLocation")
+  newEmploymentHistory      EmploymentHistory[] @relation("NewLocation")
+  Position                  Position[]
 
   @@index([companyId])
   @@index([type])
@@ -181,10 +189,13 @@ model JobProfile {
   description String?
   status      String    @default("Active")
 
-  employees Employee[]
+  employees                 Employee[]
+  previousEmploymentHistory EmploymentHistory[] @relation("PreviousJobProfile")
+  newEmploymentHistory      EmploymentHistory[] @relation("NewJobProfile")
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Position  Position[]
 
   @@index([familyId])
   @@index([gradeId])
@@ -197,8 +208,11 @@ model Grade {
   name  String // e.g., "Level 4"
   level Int // Numeric level for hierarchy comparison
 
-  employees Employee[]
-  profiles  JobProfile[]
+  employees                 Employee[]
+  profiles                  JobProfile[]
+  previousEmploymentHistory EmploymentHistory[] @relation("PreviousGrade")
+  newEmploymentHistory      EmploymentHistory[] @relation("NewGrade")
+  Position                  Position[]
 }
 
 // ============================================================================
@@ -235,6 +249,10 @@ model Employee {
   manager   Employee?  @relation("ManagerReports", fields: [managerId], references: [id])
   reports   Employee[] @relation("ManagerReports")
 
+  // Position
+  positionId String?
+  position   Position? @relation("CurrentPosition", fields: [positionId], references: [id])
+
   // Status
   // Status
   statusId    String
@@ -249,7 +267,6 @@ model Employee {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   @@index([companyId])
   @@index([departmentId])
   @@index([locationId])
@@ -269,6 +286,7 @@ model EmployeeStatus {
   status      String  @default("Active")
 
   employees Employee[]
+  positions Position[]
 }
 
 model EmploymentType {
@@ -279,6 +297,7 @@ model EmploymentType {
   status      String  @default("Active")
 
   employees Employee[]
+  positions Position[]
 }
 
 // ============================================================================
@@ -302,8 +321,8 @@ model User {
   // Relations
   sessions            UserSession[]
   auditLogs           AuditLog[]
-  delegatedTo         UserDelegation[]      @relation("Delegator")
-  delegatedFrom       UserDelegation[]      @relation("Delegatee")
+  delegatedTo         UserDelegation[]     @relation("Delegator")
+  delegatedFrom       UserDelegation[]     @relation("Delegatee")
   deactivations       UserDeactivation[]
   passwordResetTokens PasswordResetToken[]
   mfaSettings         UserMFA?
@@ -326,9 +345,9 @@ model User {
 
 model Role {
   id          String   @id @default(uuid())
-  tenantId    String?  // null for system-wide roles
+  tenantId    String? // null for system-wide roles
   tenant      Tenant?  @relation(fields: [tenantId], references: [id])
-  code        String   // SUPER_ADMIN, ADMIN, HR_MANAGER, etc.
+  code        String // SUPER_ADMIN, ADMIN, HR_MANAGER, etc.
   name        String
   description String?
   isSystem    Boolean  @default(false) // System roles cannot be deleted
@@ -347,12 +366,12 @@ model Role {
 }
 
 model UserRole {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   userId     String
   roleId     String
   tenantId   String
-  assignedBy String?  // User ID who assigned this role
-  assignedAt DateTime @default(now())
+  assignedBy String? // User ID who assigned this role
+  assignedAt DateTime  @default(now())
   expiresAt  DateTime? // Optional: For temporary role assignments
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -368,8 +387,8 @@ model UserRole {
 
 model Permission {
   id          String   @id @default(uuid())
-  resource    String   // users, employees, departments, etc.
-  action      String   // create, read, update, delete, manage
+  resource    String // users, employees, departments, etc.
+  action      String // create, read, update, delete, manage
   description String?
   createdAt   DateTime @default(now())
 
@@ -401,7 +420,7 @@ model PasswordResetToken {
   expiresAt DateTime
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
-  ipAddress String?  // Track where reset was requested from
+  ipAddress String? // Track where reset was requested from
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -412,15 +431,15 @@ model PasswordResetToken {
 
 // 5D. Multi-Factor Authentication (MFA)
 model UserMFA {
-  id            String   @id @default(uuid())
-  userId        String   @unique
-  totpSecret    String?  // Encrypted TOTP secret for authenticator apps
-  backupCodes   Json?    // Array of hashed backup codes
-  phoneNumber   String?  // For SMS-based MFA (future)
-  method        String   @default("totp") // totp, sms, email
-  verifiedAt    DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String    @id @default(uuid())
+  userId      String    @unique
+  totpSecret  String? // Encrypted TOTP secret for authenticator apps
+  backupCodes Json? // Array of hashed backup codes
+  phoneNumber String? // For SMS-based MFA (future)
+  method      String    @default("totp") // totp, sms, email
+  verifiedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -448,14 +467,14 @@ model Language {
 }
 
 model DocumentType {
-  id          String  @id @default(uuid())
-  code        String  @unique
+  id          String             @id @default(uuid())
+  code        String             @unique
   name        String
   description String?
-  isRequired  Boolean @default(false)
-  status      String  @default("Active")
+  isRequired  Boolean            @default(false)
+  status      String             @default("Active")
+  documents   EmployeeDocument[]
 }
-
 // ============================================================================
 // 7. ORGANIZATION MASTERS
 // ============================================================================
@@ -528,6 +547,333 @@ model Holiday {
 }
 
 // ============================================================================
+// 9.5 ATTENDANCE & WORKFORCE MANAGEMENT
+// ============================================================================
+
+// Time Tracking - Clock In/Out Records
+model AttendancePunch {
+  id          String    @id @default(uuid())
+  tenantId    String
+  employeeId  String
+  punchDate   DateTime
+  punchTime   DateTime
+  punchType   String    // CLOCK_IN, CLOCK_OUT, BREAK_START, BREAK_END
+  location    String?   // GPS coordinates or location name
+  device      String?   // Mobile, Web, Biometric
+  ipAddress   String?
+  photo       String?   // Photo capture URL
+  notes       String?
+
+  // Verification
+  isVerified  Boolean   @default(false)
+  verifiedBy  String?
+  verifiedAt  DateTime?
+
+  // Regularization
+  isRegularized Boolean @default(false)
+  regularizedBy String?
+  regularizationReason String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([punchDate])
+  @@index([punchType])
+}
+
+// Daily Attendance Summary
+model AttendanceRecord {
+  id                String    @id @default(uuid())
+  tenantId          String
+  employeeId        String
+  date              DateTime
+
+  // Shift Info
+  shiftId           String?
+  shiftStartTime    DateTime?
+  shiftEndTime      DateTime?
+
+  // Actual Times
+  clockIn           DateTime?
+  clockOut          DateTime?
+
+  // Calculated Hours
+  workHours         Float     @default(0)
+  breakHours        Float     @default(0)
+  overtimeHours     Float     @default(0)
+
+  // Status
+  status            String    // PRESENT, ABSENT, HALF_DAY, LATE, EARLY_OUT, ON_LEAVE, HOLIDAY, WEEK_OFF
+  isLate            Boolean   @default(false)
+  isEarlyOut        Boolean   @default(false)
+
+  // Regularization
+  isRegularized     Boolean   @default(false)
+  regularizationId  String?
+
+  // Approval
+  approvalStatus    String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedBy        String?
+  approvedAt        DateTime?
+
+  remarks           String?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([tenantId, employeeId, date])
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([date])
+  @@index([status])
+}
+
+// Shift Definitions
+model Shift {
+  id              String    @id @default(uuid())
+  tenantId        String
+  code            String
+  name            String
+  description     String?
+
+  // Timing
+  startTime       String    // HH:MM format
+  endTime         String    // HH:MM format
+  graceInMinutes  Int       @default(0)
+  graceOutMinutes Int       @default(0)
+
+  // Break Configuration
+  breakDuration   Int       @default(0) // Minutes
+  isPaidBreak     Boolean   @default(true)
+
+  // Work Hours
+  workHours       Float     // Standard work hours
+  weekendDays     String[]  // e.g., ["Saturday", "Sunday"]
+
+  // Overtime
+  overtimeAllowed Boolean   @default(false)
+  maxOvertimeHours Float    @default(0)
+
+  // Flexibility
+  isFlexible      Boolean   @default(false)
+  flexWindow      Int       @default(0) // Minutes of flex allowed
+
+  // Status
+  isActive        Boolean   @default(true)
+  isDefault       Boolean   @default(false)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  assignments     ShiftAssignment[]
+  rosters         ShiftRoster[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([isActive])
+}
+
+// Employee Shift Assignments
+model ShiftAssignment {
+  id          String    @id @default(uuid())
+  tenantId    String
+  employeeId  String
+  shiftId     String
+  shift       Shift     @relation(fields: [shiftId], references: [id])
+
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+
+  isActive    Boolean   @default(true)
+  assignedBy  String?
+  reason      String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([shiftId])
+  @@index([effectiveFrom])
+}
+
+// Shift Roster (Weekly/Monthly Planning)
+model ShiftRoster {
+  id          String    @id @default(uuid())
+  tenantId    String
+  employeeId  String
+  shiftId     String
+  shift       Shift     @relation(fields: [shiftId], references: [id])
+
+  rosterDate  DateTime
+
+  // Override shift times if needed
+  customStartTime String?
+  customEndTime   String?
+
+  isWeekOff   Boolean   @default(false)
+  isHoliday   Boolean   @default(false)
+
+  status      String    @default("SCHEDULED") // SCHEDULED, COMPLETED, SWAPPED, CANCELLED
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([tenantId, employeeId, rosterDate])
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([shiftId])
+  @@index([rosterDate])
+}
+
+// Shift Swap Requests
+model ShiftSwapRequest {
+  id                String    @id @default(uuid())
+  tenantId          String
+  requestorId       String    // Employee requesting swap
+  swapWithId        String    // Employee to swap with
+
+  requestorDate     DateTime
+  requestorShiftId  String
+
+  swapWithDate      DateTime
+  swapWithShiftId   String
+
+  reason            String
+
+  // Approval Workflow
+  status            String    @default("PENDING") // PENDING, APPROVED_BY_PEER, APPROVED_BY_MANAGER, REJECTED, COMPLETED
+  swapWithApproval  String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  managerApproval   String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedBy        String?
+  approvedAt        DateTime?
+  rejectionReason   String?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([requestorId])
+  @@index([swapWithId])
+  @@index([status])
+}
+
+// Overtime Management
+model OvertimeRequest {
+  id              String    @id @default(uuid())
+  tenantId        String
+  employeeId      String
+
+  overtimeDate    DateTime
+  startTime       DateTime
+  endTime         DateTime
+
+  totalHours      Float
+
+  // Type
+  overtimeType    String    // REGULAR, HOLIDAY, WEEKEND
+
+  // Justification
+  reason          String
+  workDescription String?
+  project         String?
+
+  // Approval
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED, COMPLETED
+  approvedBy      String?
+  approvedAt      DateTime?
+  rejectionReason String?
+
+  // Compensation
+  compensationType String?  // PAID, COMP_OFF
+  isCompensated   Boolean   @default(false)
+  compensatedAt   DateTime?
+
+  // Actual
+  actualHours     Float?
+  verifiedBy      String?
+  verifiedAt      DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([overtimeDate])
+  @@index([status])
+}
+
+// Attendance Regularization Requests
+model AttendanceRegularization {
+  id              String    @id @default(uuid())
+  tenantId        String
+  employeeId      String
+
+  date            DateTime
+
+  // What needs regularization
+  regularizationType String  // MISSED_PUNCH, EARLY_OUT, LATE_IN, WRONG_PUNCH
+
+  // Requested Times
+  requestedClockIn  DateTime?
+  requestedClockOut DateTime?
+
+  // Justification
+  reason          String
+  attachments     String[]  @default([])
+
+  // Approval
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedBy      String?
+  approvedAt      DateTime?
+  rejectionReason String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([date])
+  @@index([status])
+}
+
+// Comp-Off (Compensatory Off) Management
+model CompOffRequest {
+  id              String    @id @default(uuid())
+  tenantId        String
+  employeeId      String
+
+  // Earned from overtime/holiday work
+  earnedDate      DateTime
+  earnedHours     Float
+
+  // Usage
+  status          String    @default("EARNED") // EARNED, APPLIED, APPROVED, AVAILED, EXPIRED, CANCELLED
+
+  // When applying comp-off as leave
+  appliedDate     DateTime?
+  expiryDate      DateTime
+
+  // Approval
+  approvedBy      String?
+  approvedAt      DateTime?
+  rejectionReason String?
+
+  remarks         String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([expiryDate])
+}
+
+// ============================================================================
 // 10. PAYROLL & FINANCE MASTERS
 // ============================================================================
 
@@ -548,12 +894,12 @@ model PayComponent {
 }
 
 model Bank {
-  id         String  @id @default(uuid())
-  name       String
-  swiftCode  String
-  branchName String?
+  id          String  @id @default(uuid())
+  name        String
+  swiftCode   String
+  branchName  String?
   countryCode String? // ISO codde e.g. AE, IN (Optional for migration safety, backfill later)
-  status     String  @default("Active")
+  status      String  @default("Active")
 }
 
 // ============================================================================
@@ -721,32 +1067,30 @@ model MFAConfig {
   updatedAt        DateTime @updatedAt
 }
 
-
-
 // ============================================================================
 // 14. RECRUITMENT MODULE
 // ============================================================================
 
 model JobPosting {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   title       String
   department  String
   location    String
   type        String
-  status      String   @default("Draft")
+  status      String    @default("Draft")
   description String?
   postedDate  DateTime?
 
   // Metrics
-  views       Int      @default(0)
-  clicks      Int      @default(0)
-  applies     Int      @default(0)
+  views   Int @default(0)
+  clicks  Int @default(0)
+  applies Int @default(0)
 
   // Channels (Stored as JSON)
-  channels    Json?
+  channels Json?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status])
   @@index([department])
@@ -770,19 +1114,19 @@ model CompetencyCategory {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  competencies     CompetencyCatalog[]
-  subcategories    CompetencySubcategory[]
+  competencies  CompetencyCatalog[]
+  subcategories CompetencySubcategory[]
 }
 
 model CompetencySubcategory {
-  id         String   @id @default(uuid())
+  id         String             @id @default(uuid())
   categoryId String
   category   CompetencyCategory @relation(fields: [categoryId], references: [id])
   code       String
   name       String
-  status     String   @default("Active")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  status     String             @default("Active")
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
 
   competencies CompetencyCatalog[]
 
@@ -790,26 +1134,26 @@ model CompetencySubcategory {
 }
 
 model CompetencyCatalog {
-  id             String   @id @default(uuid())
-  code           String   @unique
-  name           String
-  categoryId     String
-  category       CompetencyCategory @relation(fields: [categoryId], references: [id])
-  subcategoryId  String?
-  subcategory    CompetencySubcategory? @relation(fields: [subcategoryId], references: [id])
-  description    String?  @db.Text
-  status         String   @default("Active") // Active, Draft, Archived, Under Review
-  version        String   @default("1.0")
-  owner          String?
-  usageCount     Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id            String                 @id @default(uuid())
+  code          String                 @unique
+  name          String
+  categoryId    String
+  category      CompetencyCategory     @relation(fields: [categoryId], references: [id])
+  subcategoryId String?
+  subcategory   CompetencySubcategory? @relation(fields: [subcategoryId], references: [id])
+  description   String?                @db.Text
+  status        String                 @default("Active") // Active, Draft, Archived, Under Review
+  version       String                 @default("1.0")
+  owner         String?
+  usageCount    Int                    @default(0)
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
 
   // Relations
   proficiencyDescriptors CompetencyProficiencyDescriptor[]
   applicableRoles        CompetencyRoleMapping[]
-  relatedCompetencies    CompetencyRelation[]     @relation("SourceCompetency")
-  relatedTo              CompetencyRelation[]     @relation("RelatedCompetency")
+  relatedCompetencies    CompetencyRelation[]              @relation("SourceCompetency")
+  relatedTo              CompetencyRelation[]              @relation("RelatedCompetency")
   assessmentCriteria     CompetencyAssessmentCriteria[]
   developmentResources   CompetencyDevelopmentResource[]
   jobCompetencyMappings  JobCompetencyMapping[]
@@ -818,61 +1162,61 @@ model CompetencyCatalog {
 }
 
 model CompetencyProficiencyDescriptor {
-  id            String   @id @default(uuid())
-  competencyId  String
-  competency    CompetencyCatalog @relation(fields: [competencyId], references: [id], onDelete: Cascade)
-  levelId       String
-  level         ProficiencyLevel @relation(fields: [levelId], references: [id])
-  description   String?  @db.Text
-  behaviors     Json?    // Array of behavior strings
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String            @id @default(uuid())
+  competencyId String
+  competency   CompetencyCatalog @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  levelId      String
+  level        ProficiencyLevel  @relation(fields: [levelId], references: [id])
+  description  String?           @db.Text
+  behaviors    Json? // Array of behavior strings
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   @@unique([competencyId, levelId])
 }
 
 model CompetencyRelation {
-  id                   String   @id @default(uuid())
-  sourceCompetencyId   String
-  sourceCompetency     CompetencyCatalog @relation("SourceCompetency", fields: [sourceCompetencyId], references: [id], onDelete: Cascade)
-  relatedCompetencyId  String
-  relatedCompetency    CompetencyCatalog @relation("RelatedCompetency", fields: [relatedCompetencyId], references: [id], onDelete: Cascade)
-  relationType         String   @default("Related") // Related, Prerequisite, Complementary
-  createdAt            DateTime @default(now())
+  id                  String            @id @default(uuid())
+  sourceCompetencyId  String
+  sourceCompetency    CompetencyCatalog @relation("SourceCompetency", fields: [sourceCompetencyId], references: [id], onDelete: Cascade)
+  relatedCompetencyId String
+  relatedCompetency   CompetencyCatalog @relation("RelatedCompetency", fields: [relatedCompetencyId], references: [id], onDelete: Cascade)
+  relationType        String            @default("Related") // Related, Prerequisite, Complementary
+  createdAt           DateTime          @default(now())
 
   @@unique([sourceCompetencyId, relatedCompetencyId])
 }
 
 model CompetencyRoleMapping {
-  id           String   @id @default(uuid())
+  id           String            @id @default(uuid())
   competencyId String
   competency   CompetencyCatalog @relation(fields: [competencyId], references: [id], onDelete: Cascade)
-  roleName     String   // Job role name
-  createdAt    DateTime @default(now())
+  roleName     String // Job role name
+  createdAt    DateTime          @default(now())
 
   @@unique([competencyId, roleName])
 }
 
 model CompetencyAssessmentCriteria {
-  id           String   @id @default(uuid())
+  id           String            @id @default(uuid())
   competencyId String
   competency   CompetencyCatalog @relation(fields: [competencyId], references: [id], onDelete: Cascade)
   criteria     String
-  sortOrder    Int      @default(0)
-  createdAt    DateTime @default(now())
+  sortOrder    Int               @default(0)
+  createdAt    DateTime          @default(now())
 }
 
 model CompetencyDevelopmentResource {
-  id           String   @id @default(uuid())
+  id           String            @id @default(uuid())
   competencyId String
   competency   CompetencyCatalog @relation(fields: [competencyId], references: [id], onDelete: Cascade)
   title        String
-  type         String   // Course, Book, Workshop, Certification, On-the-job
+  type         String // Course, Book, Workshop, Certification, On-the-job
   url          String?
   provider     String?
   duration     String?
   cost         Float?
-  createdAt    DateTime @default(now())
+  createdAt    DateTime          @default(now())
 }
 
 // ============================================================================
@@ -894,23 +1238,23 @@ model ProficiencyFramework {
 }
 
 model ProficiencyLevel {
-  id            String   @id @default(uuid())
-  frameworkId   String
-  framework     ProficiencyFramework @relation(fields: [frameworkId], references: [id], onDelete: Cascade)
-  code          String
-  name          String   // Foundational, Developing, Proficient, Advanced, Expert
-  levelNumber   Int      // 1, 2, 3, 4, 5
-  description   String?  @db.Text
-  color         String?  // For UI display
-  icon          String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String               @id @default(uuid())
+  frameworkId String
+  framework   ProficiencyFramework @relation(fields: [frameworkId], references: [id], onDelete: Cascade)
+  code        String
+  name        String // Foundational, Developing, Proficient, Advanced, Expert
+  levelNumber Int // 1, 2, 3, 4, 5
+  description String?              @db.Text
+  color       String? // For UI display
+  icon        String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
 
   competencyDescriptors CompetencyProficiencyDescriptor[]
   jobCompetencyMappings JobCompetencyMapping[]
   assessmentResults     SkillAssessmentResult[]
   gapAnalysisItems      GapAnalysisItem[]
-  gapAnalysisTargets    GapAnalysisItem[]       @relation("TargetLevel")
+  gapAnalysisTargets    GapAnalysisItem[]                 @relation("TargetLevel")
 
   @@unique([frameworkId, levelNumber])
   @@unique([frameworkId, code])
@@ -926,7 +1270,7 @@ model JobRole {
   name         String
   departmentId String?
   description  String?  @db.Text
-  level        String?  // Entry, Mid, Senior, Lead, Executive
+  level        String? // Entry, Mid, Senior, Lead, Executive
   status       String   @default("Active")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -936,19 +1280,19 @@ model JobRole {
 }
 
 model JobCompetencyMapping {
-  id               String   @id @default(uuid())
-  jobRoleId        String
-  jobRole          JobRole  @relation(fields: [jobRoleId], references: [id], onDelete: Cascade)
-  competencyId     String
-  competency       CompetencyCatalog @relation(fields: [competencyId], references: [id])
-  requiredLevelId  String
-  requiredLevel    ProficiencyLevel @relation(fields: [requiredLevelId], references: [id])
-  weight           Float    @default(1.0) // Importance weight 0-1
-  isRequired       Boolean  @default(true) // Required vs Preferred
-  effectiveFrom    DateTime @default(now())
-  effectiveTo      DateTime?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              String            @id @default(uuid())
+  jobRoleId       String
+  jobRole         JobRole           @relation(fields: [jobRoleId], references: [id], onDelete: Cascade)
+  competencyId    String
+  competency      CompetencyCatalog @relation(fields: [competencyId], references: [id])
+  requiredLevelId String
+  requiredLevel   ProficiencyLevel  @relation(fields: [requiredLevelId], references: [id])
+  weight          Float             @default(1.0) // Importance weight 0-1
+  isRequired      Boolean           @default(true) // Required vs Preferred
+  effectiveFrom   DateTime          @default(now())
+  effectiveTo     DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
   @@unique([jobRoleId, competencyId])
 }
@@ -958,53 +1302,53 @@ model JobCompetencyMapping {
 // ============================================================================
 
 model SkillAssessment {
-  id             String   @id @default(uuid())
-  code           String   @unique
-  name           String
-  description    String?  @db.Text
-  type           String   // Self, Manager, 360, Peer
-  status         String   @default("Draft") // Draft, In Progress, Completed, Cancelled
-  employeeId     String?  // Target employee
-  jobRoleId      String?
-  jobRole        JobRole? @relation(fields: [jobRoleId], references: [id])
-  cycleId        String?
-  assessorIds    Json?    // Array of assessor IDs for 360/peer
-  startDate      DateTime?
-  endDate        DateTime?
-  completedAt    DateTime?
-  createdBy      String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id          String    @id @default(uuid())
+  code        String    @unique
+  name        String
+  description String?   @db.Text
+  type        String // Self, Manager, 360, Peer
+  status      String    @default("Draft") // Draft, In Progress, Completed, Cancelled
+  employeeId  String? // Target employee
+  jobRoleId   String?
+  jobRole     JobRole?  @relation(fields: [jobRoleId], references: [id])
+  cycleId     String?
+  assessorIds Json? // Array of assessor IDs for 360/peer
+  startDate   DateTime?
+  endDate     DateTime?
+  completedAt DateTime?
+  createdBy   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   competencies SkillAssessmentCompetency[]
   results      SkillAssessmentResult[]
 }
 
 model SkillAssessmentCompetency {
-  id             String   @id @default(uuid())
-  assessmentId   String
-  assessment     SkillAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  competencyId   String
-  competency     CompetencyCatalog @relation(fields: [competencyId], references: [id])
-  weight         Float    @default(1.0)
-  createdAt      DateTime @default(now())
+  id           String            @id @default(uuid())
+  assessmentId String
+  assessment   SkillAssessment   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  competencyId String
+  competency   CompetencyCatalog @relation(fields: [competencyId], references: [id])
+  weight       Float             @default(1.0)
+  createdAt    DateTime          @default(now())
 
   @@unique([assessmentId, competencyId])
 }
 
 model SkillAssessmentResult {
-  id              String   @id @default(uuid())
-  assessmentId    String
-  assessment      SkillAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  competencyId    String
-  assessorId      String?  // Who provided this rating
-  assessorType    String?  // Self, Manager, Peer
-  ratingLevelId   String
-  ratingLevel     ProficiencyLevel @relation(fields: [ratingLevelId], references: [id])
-  comments        String?  @db.Text
-  evidence        String?  @db.Text
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            String           @id @default(uuid())
+  assessmentId  String
+  assessment    SkillAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  competencyId  String
+  assessorId    String? // Who provided this rating
+  assessorType  String? // Self, Manager, Peer
+  ratingLevelId String
+  ratingLevel   ProficiencyLevel @relation(fields: [ratingLevelId], references: [id])
+  comments      String?          @db.Text
+  evidence      String?          @db.Text
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
   @@unique([assessmentId, competencyId, assessorId])
 }
@@ -1017,9 +1361,9 @@ model GapAnalysis {
   id           String   @id @default(uuid())
   code         String   @unique
   name         String
-  type         String   // Individual, Team, Department, Organization
-  targetType   String?  // Employee, Department, Team
-  targetId     String?  // ID of employee/department/team
+  type         String // Individual, Team, Department, Organization
+  targetType   String? // Employee, Department, Team
+  targetId     String? // ID of employee/department/team
   status       String   @default("Active")
   analysisDate DateTime @default(now())
   createdBy    String
@@ -1031,79 +1375,79 @@ model GapAnalysis {
 }
 
 model GapAnalysisItem {
-  id              String   @id @default(uuid())
-  gapAnalysisId   String
-  gapAnalysis     GapAnalysis @relation(fields: [gapAnalysisId], references: [id], onDelete: Cascade)
-  competencyId    String
-  competency      CompetencyCatalog @relation(fields: [competencyId], references: [id])
-  currentLevelId  String
-  currentLevel    ProficiencyLevel @relation(fields: [currentLevelId], references: [id])
-  targetLevelId   String
-  targetLevel     ProficiencyLevel @relation("TargetLevel", fields: [targetLevelId], references: [id])
-  gapScore        Float    // Calculated gap
-  priority        String   @default("Medium") // Critical, High, Medium, Low
-  notes           String?  @db.Text
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String            @id @default(uuid())
+  gapAnalysisId  String
+  gapAnalysis    GapAnalysis       @relation(fields: [gapAnalysisId], references: [id], onDelete: Cascade)
+  competencyId   String
+  competency     CompetencyCatalog @relation(fields: [competencyId], references: [id])
+  currentLevelId String
+  currentLevel   ProficiencyLevel  @relation(fields: [currentLevelId], references: [id])
+  targetLevelId  String
+  targetLevel    ProficiencyLevel  @relation("TargetLevel", fields: [targetLevelId], references: [id])
+  gapScore       Float // Calculated gap
+  priority       String            @default("Medium") // Critical, High, Medium, Low
+  notes          String?           @db.Text
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 
   @@unique([gapAnalysisId, competencyId])
 }
 
 model DevelopmentPlan {
-  id             String   @id @default(uuid())
-  code           String   @unique
-  name           String
-  description    String?  @db.Text
-  type           String   // Individual, Team, Department, Organization
-  targetType     String?  // Employee, Department, Team
-  targetId       String?
-  gapAnalysisId  String?  @unique
-  gapAnalysis    GapAnalysis? @relation(fields: [gapAnalysisId], references: [id])
-  status         String   @default("Draft") // Draft, Active, In Progress, Completed, Cancelled
-  startDate      DateTime?
-  endDate        DateTime?
-  budget         Float?
-  createdBy      String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id            String       @id @default(uuid())
+  code          String       @unique
+  name          String
+  description   String?      @db.Text
+  type          String // Individual, Team, Department, Organization
+  targetType    String? // Employee, Department, Team
+  targetId      String?
+  gapAnalysisId String?      @unique
+  gapAnalysis   GapAnalysis? @relation(fields: [gapAnalysisId], references: [id])
+  status        String       @default("Draft") // Draft, Active, In Progress, Completed, Cancelled
+  startDate     DateTime?
+  endDate       DateTime?
+  budget        Float?
+  createdBy     String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   activities DevelopmentActivity[]
   milestones DevelopmentMilestone[]
 }
 
 model DevelopmentActivity {
-  id                String   @id @default(uuid())
+  id                String          @id @default(uuid())
   developmentPlanId String
   developmentPlan   DevelopmentPlan @relation(fields: [developmentPlanId], references: [id], onDelete: Cascade)
   name              String
-  type              String   // Training, Course, Mentoring, Workshop, Certification, On-the-job
+  type              String // Training, Course, Mentoring, Workshop, Certification, On-the-job
   provider          String?
-  description       String?  @db.Text
+  description       String?         @db.Text
   duration          String?
   estimatedCost     Float?
   actualCost        Float?
   startDate         DateTime?
   endDate           DateTime?
   completedAt       DateTime?
-  status            String   @default("Planned") // Planned, In Progress, Completed, Cancelled
-  competencyIds     Json?    // Array of competency IDs this activity addresses
-  sortOrder         Int      @default(0)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  status            String          @default("Planned") // Planned, In Progress, Completed, Cancelled
+  competencyIds     Json? // Array of competency IDs this activity addresses
+  sortOrder         Int             @default(0)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 }
 
 model DevelopmentMilestone {
-  id                String   @id @default(uuid())
+  id                String          @id @default(uuid())
   developmentPlanId String
   developmentPlan   DevelopmentPlan @relation(fields: [developmentPlanId], references: [id], onDelete: Cascade)
   name              String
   description       String?
   targetDate        DateTime
   completedAt       DateTime?
-  status            String   @default("Pending") // Pending, Achieved, Missed
-  sortOrder         Int      @default(0)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  status            String          @default("Pending") // Pending, Achieved, Missed
+  sortOrder         Int             @default(0)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 }
 
 // ============================================================================
@@ -1111,80 +1455,80 @@ model DevelopmentMilestone {
 // ============================================================================
 
 model LabourLawConfig {
-  id                        String    @id @default(uuid())
-  countryCode               String    // ISO country code: AE, SA, BH, QA, OM, KW, IN
-  countryName               String
-  countryNameAr             String?   // Arabic name
-  effectiveFrom             DateTime
-  effectiveTo               DateTime?
+  id            String    @id @default(uuid())
+  countryCode   String // ISO country code: AE, SA, BH, QA, OM, KW, IN
+  countryName   String
+  countryNameAr String? // Arabic name
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
 
   // Working Hours Configuration
-  standardHoursPerDay       Int       @default(8)
-  standardHoursPerWeek      Int       @default(48)
-  ramadanHoursPerDay        Int?      // Reduced hours during Ramadan
-  ramadanHoursPerWeek       Int?
-  maxOvertimeHoursPerDay    Int?
-  maxOvertimeHoursPerYear   Int?
+  standardHoursPerDay     Int  @default(8)
+  standardHoursPerWeek    Int  @default(48)
+  ramadanHoursPerDay      Int? // Reduced hours during Ramadan
+  ramadanHoursPerWeek     Int?
+  maxOvertimeHoursPerDay  Int?
+  maxOvertimeHoursPerYear Int?
 
   // Overtime Rates (as percentage, e.g., 125 = 125%)
-  overtimeRateNormal        Decimal   @default(125)
-  overtimeRateNight         Decimal   @default(150)
-  overtimeRateHoliday       Decimal   @default(150)
-  overtimeRateFriday        Decimal?  // Friday work rate
-  nightShiftStart           String?   // e.g., "21:00"
-  nightShiftEnd             String?   // e.g., "04:00"
+  overtimeRateNormal  Decimal  @default(125)
+  overtimeRateNight   Decimal  @default(150)
+  overtimeRateHoliday Decimal  @default(150)
+  overtimeRateFriday  Decimal? // Friday work rate
+  nightShiftStart     String? // e.g., "21:00"
+  nightShiftEnd       String? // e.g., "04:00"
 
   // Probation
-  maxProbationDays          Int       @default(90)
-  probationExtensionDays    Int?
-  probationNoticeDays       Int       @default(14)
+  maxProbationDays       Int  @default(90)
+  probationExtensionDays Int?
+  probationNoticeDays    Int  @default(14)
 
   // Leave Entitlements (in days)
-  annualLeaveFirstYear      Int       @default(21)
-  annualLeaveAfterYears     Int       @default(30)
-  annualLeaveThresholdYears Int       @default(5)  // Years after which higher entitlement
-  sickLeaveFullPay          Int       @default(15)
-  sickLeaveHalfPay          Int       @default(30)
-  sickLeaveUnpaid           Int       @default(45)
-  maternityLeaveDays        Int       @default(60)
-  maternityLeaveFullPay     Int       @default(45)
-  maternityLeaveHalfPay     Int       @default(15)
-  paternityLeaveDays        Int       @default(5)
-  bereavementLeaveSpouse    Int       @default(5)
-  bereavementLeaveFamily    Int       @default(3)
-  hajjLeaveDays             Int?      // Muslim pilgrimage leave
+  annualLeaveFirstYear      Int  @default(21)
+  annualLeaveAfterYears     Int  @default(30)
+  annualLeaveThresholdYears Int  @default(5) // Years after which higher entitlement
+  sickLeaveFullPay          Int  @default(15)
+  sickLeaveHalfPay          Int  @default(30)
+  sickLeaveUnpaid           Int  @default(45)
+  maternityLeaveDays        Int  @default(60)
+  maternityLeaveFullPay     Int  @default(45)
+  maternityLeaveHalfPay     Int  @default(15)
+  paternityLeaveDays        Int  @default(5)
+  bereavementLeaveSpouse    Int  @default(5)
+  bereavementLeaveFamily    Int  @default(3)
+  hajjLeaveDays             Int? // Muslim pilgrimage leave
   hajjLeaveMinServiceYears  Int?
   studyLeaveDays            Int?
   marriageLeaveDays         Int?
-  iddahLeaveDays            Int?      // Widow waiting period (4 months 10 days = 130)
+  iddahLeaveDays            Int? // Widow waiting period (4 months 10 days = 130)
 
   // EOSB / Gratuity Configuration
-  eosbFirstPeriodYears      Int       @default(5)
-  eosbFirstPeriodDays       Int       @default(21)  // Days per year for first period
-  eosbAfterPeriodDays       Int       @default(30)  // Days per year after first period
-  eosbMaxMonths             Int?      // Maximum cap in months (e.g., 24 = 2 years)
-  eosbResignationFactor1    Decimal?  // Factor for resignation (1-3 years)
-  eosbResignationFactor2    Decimal?  // Factor for resignation (3-5 years)
-  eosbMinServiceMonths      Int       @default(12)  // Minimum service for eligibility
+  eosbFirstPeriodYears   Int      @default(5)
+  eosbFirstPeriodDays    Int      @default(21) // Days per year for first period
+  eosbAfterPeriodDays    Int      @default(30) // Days per year after first period
+  eosbMaxMonths          Int? // Maximum cap in months (e.g., 24 = 2 years)
+  eosbResignationFactor1 Decimal? // Factor for resignation (1-3 years)
+  eosbResignationFactor2 Decimal? // Factor for resignation (3-5 years)
+  eosbMinServiceMonths   Int      @default(12) // Minimum service for eligibility
 
   // Social Insurance Rates (as percentage)
-  socialInsuranceEmployeeRate   Decimal?
-  socialInsuranceEmployerRate   Decimal?
-  socialInsuranceMaxWage        Decimal?  // Contribution cap
-  pensionEmployeeRate           Decimal?
-  pensionEmployerRate           Decimal?
-  unemploymentEmployeeRate      Decimal?
-  unemploymentEmployerRate      Decimal?
-  occupationalHazardsRate       Decimal?
+  socialInsuranceEmployeeRate Decimal?
+  socialInsuranceEmployerRate Decimal?
+  socialInsuranceMaxWage      Decimal? // Contribution cap
+  pensionEmployeeRate         Decimal?
+  pensionEmployerRate         Decimal?
+  unemploymentEmployeeRate    Decimal?
+  unemploymentEmployerRate    Decimal?
+  occupationalHazardsRate     Decimal?
 
   // Additional Settings
-  weekendDays               Json?     // e.g., ["Friday", "Saturday"]
-  workWeekStartDay          String    @default("Sunday")
-  currencyCode              String
+  weekendDays      Json? // e.g., ["Friday", "Saturday"]
+  workWeekStartDay String @default("Sunday")
+  currencyCode     String
 
-  status                    String    @default("Active")
-  createdAt                 DateTime  @default(now())
-  updatedAt                 DateTime  @updatedAt
+  status    String   @default("Active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([countryCode, effectiveFrom])
   @@index([countryCode])
@@ -1196,54 +1540,54 @@ model LabourLawConfig {
 // ============================================================================
 
 model WPSConfiguration {
-  id              String   @id @default(uuid())
-  tenantId        String
-  companyId       String
-  wpsAgentCode    String   // WPS Agent/Bank code
-  employerCode    String   // Ministry of Labour employer code
-  bankCode        String   // Routing bank code
-  bankBranchCode  String?
+  id                 String   @id @default(uuid())
+  tenantId           String
+  companyId          String
+  wpsAgentCode       String // WPS Agent/Bank code
+  employerCode       String // Ministry of Labour employer code
+  bankCode           String // Routing bank code
+  bankBranchCode     String?
   molEstablishmentId String? // Ministry of Labour establishment ID
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  submissions     WPSSubmission[]
+  submissions WPSSubmission[]
 
   @@unique([tenantId, companyId])
   @@index([tenantId])
 }
 
 model WPSSubmission {
-  id              String      @id @default(uuid())
-  tenantId        String
-  wpsConfigId     String
-  wpsConfig       WPSConfiguration @relation(fields: [wpsConfigId], references: [id])
-  payrollMonth    String      // YYYY-MM format
-  submissionDate  DateTime?
-  status          WPSStatus   @default(PENDING)
+  id             String           @id @default(uuid())
+  tenantId       String
+  wpsConfigId    String
+  wpsConfig      WPSConfiguration @relation(fields: [wpsConfigId], references: [id])
+  payrollMonth   String // YYYY-MM format
+  submissionDate DateTime?
+  status         WPSStatus        @default(PENDING)
 
   // File Information
-  sifFileName     String?
-  sifFileUrl      String?
+  sifFileName      String?
+  sifFileUrl       String?
   responseFileName String?
-  responseFileUrl String?
+  responseFileUrl  String?
 
   // Summary
-  totalRecords    Int         @default(0)
-  totalAmount     Decimal     @default(0)
-  successCount    Int         @default(0)
-  failureCount    Int         @default(0)
+  totalRecords Int     @default(0)
+  totalAmount  Decimal @default(0)
+  successCount Int     @default(0)
+  failureCount Int     @default(0)
 
   // Validation & Errors
-  validationErrors Json?      // Array of validation issues
-  rejectionReasons Json?      // Reasons if rejected by WPS
+  validationErrors Json? // Array of validation issues
+  rejectionReasons Json? // Reasons if rejected by WPS
 
-  processedAt     DateTime?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  records         WPSRecord[]
+  records WPSRecord[]
 
   @@index([tenantId])
   @@index([payrollMonth])
@@ -1251,31 +1595,31 @@ model WPSSubmission {
 }
 
 model WPSRecord {
-  id              String        @id @default(uuid())
-  submissionId    String
-  submission      WPSSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  employeeId      String
+  id           String        @id @default(uuid())
+  submissionId String
+  submission   WPSSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  employeeId   String
 
   // Employee WPS Details
   labourCardNumber String
-  personalNumber   String?      // MOL personal number
+  personalNumber   String? // MOL personal number
   bankRoutingCode  String
   accountNumber    String
 
   // Salary Details
-  basicSalary      Decimal
-  allowances       Decimal      @default(0)
-  deductions       Decimal      @default(0)
-  netSalary        Decimal
-  leaveSalary      Decimal      @default(0)
+  basicSalary Decimal
+  allowances  Decimal @default(0)
+  deductions  Decimal @default(0)
+  netSalary   Decimal
+  leaveSalary Decimal @default(0)
 
   // Status
-  status           WPSRecordStatus @default(PENDING)
-  errorCode        String?
-  errorMessage     String?
+  status       WPSRecordStatus @default(PENDING)
+  errorCode    String?
+  errorMessage String?
 
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([submissionId])
   @@index([employeeId])
@@ -1308,59 +1652,59 @@ enum WPSRecordStatus {
 // ============================================================================
 
 model GOSIConfiguration {
-  id                    String   @id @default(uuid())
-  tenantId              String
-  companyId             String
-  gosiSubscriptionNumber String  // GOSI subscription/registration number
-  establishmentNumber   String?  // Ministry of Labour establishment number
-  bankAccountIBAN       String?
-  isActive              Boolean  @default(true)
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id                     String   @id @default(uuid())
+  tenantId               String
+  companyId              String
+  gosiSubscriptionNumber String // GOSI subscription/registration number
+  establishmentNumber    String? // Ministry of Labour establishment number
+  bankAccountIBAN        String?
+  isActive               Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
-  submissions           GOSISubmission[]
+  submissions GOSISubmission[]
 
   @@unique([tenantId, companyId])
   @@index([tenantId])
 }
 
 model GOSISubmission {
-  id              String      @id @default(uuid())
-  tenantId        String
-  gosiConfigId    String
-  gosiConfig      GOSIConfiguration @relation(fields: [gosiConfigId], references: [id])
-  contributionMonth String    // YYYY-MM format
-  submissionDate  DateTime?
-  status          GOSIStatus  @default(PENDING)
+  id                String            @id @default(uuid())
+  tenantId          String
+  gosiConfigId      String
+  gosiConfig        GOSIConfiguration @relation(fields: [gosiConfigId], references: [id])
+  contributionMonth String // YYYY-MM format
+  submissionDate    DateTime?
+  status            GOSIStatus        @default(PENDING)
 
   // File Information
-  fileName        String?
-  fileUrl         String?
+  fileName         String?
+  fileUrl          String?
   responseFileName String?
-  responseFileUrl String?
+  responseFileUrl  String?
 
   // Summary
-  totalEmployees  Int         @default(0)
-  totalSaudis     Int         @default(0)
-  totalNonSaudis  Int         @default(0)
+  totalEmployees Int @default(0)
+  totalSaudis    Int @default(0)
+  totalNonSaudis Int @default(0)
 
   // Contribution Totals
-  totalEmployeeContribution   Decimal @default(0)
-  totalEmployerContribution   Decimal @default(0)
-  totalPensionContribution    Decimal @default(0)
-  totalSanedContribution      Decimal @default(0)
-  totalOccupationalHazards    Decimal @default(0)
-  grandTotal                  Decimal @default(0)
+  totalEmployeeContribution Decimal @default(0)
+  totalEmployerContribution Decimal @default(0)
+  totalPensionContribution  Decimal @default(0)
+  totalSanedContribution    Decimal @default(0)
+  totalOccupationalHazards  Decimal @default(0)
+  grandTotal                Decimal @default(0)
 
   // Status
   validationErrors Json?
   rejectionReasons Json?
 
-  processedAt     DateTime?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  records         GOSIRecord[]
+  records GOSIRecord[]
 
   @@index([tenantId])
   @@index([contributionMonth])
@@ -1368,38 +1712,38 @@ model GOSISubmission {
 }
 
 model GOSIRecord {
-  id                String        @id @default(uuid())
-  submissionId      String
-  submission        GOSISubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  employeeId        String
+  id           String         @id @default(uuid())
+  submissionId String
+  submission   GOSISubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  employeeId   String
 
   // Employee Details
-  iqamaNumber       String?       // For non-Saudis
-  nationalId        String?       // For Saudis
-  nationality       String
-  isSaudi           Boolean       @default(false)
+  iqamaNumber String? // For non-Saudis
+  nationalId  String? // For Saudis
+  nationality String
+  isSaudi     Boolean @default(false)
 
   // Salary Details
-  contributableSalary Decimal     // Capped at 45,000 SAR
-  basicSalary        Decimal
-  housingAllowance   Decimal      @default(0)
+  contributableSalary Decimal // Capped at 45,000 SAR
+  basicSalary         Decimal
+  housingAllowance    Decimal @default(0)
 
   // Contribution Breakdown
-  employeePension    Decimal      @default(0)  // 9.75% for Saudis
-  employerPension    Decimal      @default(0)  // 9.75% for Saudis
-  sanedEmployee      Decimal      @default(0)  // 0.75% for Saudis
-  sanedEmployer      Decimal      @default(0)  // 0.75% for Saudis
-  occupationalHazards Decimal     @default(0)  // 2% employer only
-  totalEmployee      Decimal      @default(0)
-  totalEmployer      Decimal      @default(0)
+  employeePension     Decimal @default(0) // 9.75% for Saudis
+  employerPension     Decimal @default(0) // 9.75% for Saudis
+  sanedEmployee       Decimal @default(0) // 0.75% for Saudis
+  sanedEmployer       Decimal @default(0) // 0.75% for Saudis
+  occupationalHazards Decimal @default(0) // 2% employer only
+  totalEmployee       Decimal @default(0)
+  totalEmployer       Decimal @default(0)
 
   // Status
-  status             GOSIRecordStatus @default(PENDING)
-  errorCode          String?
-  errorMessage       String?
+  status       GOSIRecordStatus @default(PENDING)
+  errorCode    String?
+  errorMessage String?
 
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([submissionId])
   @@index([employeeId])
@@ -1432,49 +1776,49 @@ enum GOSIRecordStatus {
 // ============================================================================
 
 model NitaqatConfiguration {
-  id              String   @id @default(uuid())
+  id              String @id @default(uuid())
   tenantId        String
   companyId       String
-  industryCode    String   // ISIC industry classification
+  industryCode    String // ISIC industry classification
   industryName    String
-  companySizeBand String   // Small, Medium, Large, Giant
+  companySizeBand String // Small, Medium, Large, Giant
 
   // Nitaqat Requirements
-  requiredSaudiRatio Decimal  // Required Saudization percentage
+  requiredSaudiRatio Decimal // Required Saudization percentage
   targetRatio        Decimal? // Target ratio for incentives
 
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  snapshots       NitaqatSnapshot[]
+  snapshots NitaqatSnapshot[]
 
   @@unique([tenantId, companyId])
   @@index([tenantId])
 }
 
 model NitaqatSnapshot {
-  id              String   @id @default(uuid())
-  configId        String
-  config          NitaqatConfiguration @relation(fields: [configId], references: [id])
-  snapshotDate    DateTime @default(now())
+  id           String               @id @default(uuid())
+  configId     String
+  config       NitaqatConfiguration @relation(fields: [configId], references: [id])
+  snapshotDate DateTime             @default(now())
 
   // Headcount
-  totalEmployees  Int
-  saudiEmployees  Int
+  totalEmployees    Int
+  saudiEmployees    Int
   nonSaudiEmployees Int
 
   // Ratio & Band
-  currentRatio    Decimal
-  nitaqatBand     NitaqatBand
-  previousBand    NitaqatBand?
+  currentRatio Decimal
+  nitaqatBand  NitaqatBand
+  previousBand NitaqatBand?
 
   // Details
-  deficit         Int      @default(0)  // How many Saudis needed to reach target
-  surplus         Int      @default(0)  // Excess Saudis above requirement
+  deficit Int @default(0) // How many Saudis needed to reach target
+  surplus Int @default(0) // Excess Saudis above requirement
 
-  notes           String?
-  createdAt       DateTime @default(now())
+  notes     String?
+  createdAt DateTime @default(now())
 
   @@index([configId])
   @@index([snapshotDate])
@@ -1494,10 +1838,10 @@ enum NitaqatBand {
 // ============================================================================
 
 model EOSBCalculation {
-  id              String   @id @default(uuid())
+  id              String              @id @default(uuid())
   tenantId        String
   employeeId      String
-  calculationDate DateTime @default(now())
+  calculationDate DateTime            @default(now())
   calculationType EOSBCalculationType
 
   // Employee Details at Calculation
@@ -1509,9 +1853,9 @@ model EOSBCalculation {
   daysOfService   Int
 
   // Salary Details
-  basicSalary     Decimal
-  totalSalary     Decimal
-  dailyRate       Decimal
+  basicSalary Decimal
+  totalSalary Decimal
+  dailyRate   Decimal
 
   // Calculation Breakdown
   firstPeriodYears   Decimal @default(0)
@@ -1521,26 +1865,26 @@ model EOSBCalculation {
   grossAmount        Decimal
 
   // Adjustments
-  terminationType    TerminationType
-  resignationFactor  Decimal @default(1)  // 1/3, 2/3, or 1
-  deductions         Decimal @default(0)  // Any deductions
+  terminationType   TerminationType
+  resignationFactor Decimal         @default(1) // 1/3, 2/3, or 1
+  deductions        Decimal         @default(0) // Any deductions
 
   // Final Amount
-  netAmount          Decimal
-  currency           String  @default("AED")
+  netAmount Decimal
+  currency  String  @default("AED")
 
   // Status
-  status             EOSBStatus @default(CALCULATED)
-  approvedBy         String?
-  approvedAt         DateTime?
-  paidAt             DateTime?
+  status     EOSBStatus @default(CALCULATED)
+  approvedBy String?
+  approvedAt DateTime?
+  paidAt     DateTime?
 
   notes              String?
-  calculationDetails Json?    // Detailed breakdown
+  calculationDetails Json? // Detailed breakdown
 
-  createdBy          String
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -1548,20 +1892,20 @@ model EOSBCalculation {
 }
 
 enum EOSBCalculationType {
-  ESTIMATE       // For planning/preview
-  FINAL          // Final calculation for settlement
-  ADJUSTMENT     // Correction to previous calculation
+  ESTIMATE // For planning/preview
+  FINAL // Final calculation for settlement
+  ADJUSTMENT // Correction to previous calculation
 }
 
 enum TerminationType {
-  RESIGNATION           // Employee-initiated
-  TERMINATION           // Employer-initiated (with cause)
-  TERMINATION_WITHOUT_CAUSE  // Employer-initiated (without cause)
-  END_OF_CONTRACT       // Fixed-term contract expiry
-  RETIREMENT            // Retirement
-  DEATH                 // Death of employee
-  DISABILITY            // Permanent disability
-  MUTUAL_AGREEMENT      // Mutual termination
+  RESIGNATION // Employee-initiated
+  TERMINATION // Employer-initiated (with cause)
+  TERMINATION_WITHOUT_CAUSE // Employer-initiated (without cause)
+  END_OF_CONTRACT // Fixed-term contract expiry
+  RETIREMENT // Retirement
+  DEATH // Death of employee
+  DISABILITY // Permanent disability
+  MUTUAL_AGREEMENT // Mutual termination
 }
 
 enum EOSBStatus {
@@ -1577,56 +1921,56 @@ enum EOSBStatus {
 // ============================================================================
 
 model EmployeeComplianceDetails {
-  id              String   @id @default(uuid())
-  tenantId        String
-  employeeId      String   @unique
-  countryCode     String
+  id          String @id @default(uuid())
+  tenantId    String
+  employeeId  String @unique
+  countryCode String
 
   // UAE Specific
-  labourCardNumber    String?
-  labourCardExpiry    DateTime?
-  emiratesId          String?
-  emiratesIdExpiry    DateTime?
-  visaNumber          String?
-  visaType            String?
-  visaExpiry          DateTime?
-  wpsPersonalNumber   String?
+  labourCardNumber  String?
+  labourCardExpiry  DateTime?
+  emiratesId        String?
+  emiratesIdExpiry  DateTime?
+  visaNumber        String?
+  visaType          String?
+  visaExpiry        DateTime?
+  wpsPersonalNumber String?
 
   // KSA Specific
-  iqamaNumber         String?
-  iqamaExpiry         DateTime?
-  nationalId          String?  // For Saudis
-  borderNumber        String?
+  iqamaNumber            String?
+  iqamaExpiry            DateTime?
+  nationalId             String? // For Saudis
+  borderNumber           String?
   gosiSubscriptionNumber String?
 
   // India Specific
-  panNumber           String?
-  aadhaarNumber       String?
-  uanNumber           String?  // Universal Account Number for PF
-  esiNumber           String?
-  pfAccountNumber     String?
+  panNumber       String?
+  aadhaarNumber   String?
+  uanNumber       String? // Universal Account Number for PF
+  esiNumber       String?
+  pfAccountNumber String?
 
   // Banking for Payroll
-  bankName            String?
-  bankAccountNumber   String?
-  bankIBAN            String?
-  bankSwiftCode       String?
-  bankBranchCode      String?
-  bankRoutingCode     String?  // For WPS
+  bankName          String?
+  bankAccountNumber String?
+  bankIBAN          String?
+  bankSwiftCode     String?
+  bankBranchCode    String?
+  bankRoutingCode   String? // For WPS
 
   // Contract Details
-  contractType        String?  // Fixed, Indefinite
-  contractStartDate   DateTime?
-  contractEndDate     DateTime?
-  probationEndDate    DateTime?
+  contractType      String? // Fixed, Indefinite
+  contractStartDate DateTime?
+  contractEndDate   DateTime?
+  probationEndDate  DateTime?
 
   // Nationality & Religion (for Hajj leave etc.)
-  nationality         String?
-  religion            String?  // For Hajj leave eligibility
-  isLocalNational     Boolean  @default(false)  // Saudi/Emirati/etc.
+  nationality     String?
+  religion        String? // For Hajj leave eligibility
+  isLocalNational Boolean @default(false) // Saudi/Emirati/etc.
 
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -1638,72 +1982,72 @@ model EmployeeComplianceDetails {
 // ============================================================================
 
 model PayrollConfiguration {
-  id                  String   @id @default(uuid())
-  tenantId            String
-  companyId           String
-  countryCode         String
+  id          String @id @default(uuid())
+  tenantId    String
+  companyId   String
+  countryCode String
 
   // Pay Cycle
-  payCycleType        String   @default("Monthly") // Monthly, Bi-weekly, Weekly
-  payDay              Int      @default(28)        // Day of month for payment
-  cutoffDay           Int      @default(25)        // Attendance cutoff day
+  payCycleType String @default("Monthly") // Monthly, Bi-weekly, Weekly
+  payDay       Int    @default(28) // Day of month for payment
+  cutoffDay    Int    @default(25) // Attendance cutoff day
 
   // Components
-  componentsConfig    Json?    // Configurable pay components
+  componentsConfig Json? // Configurable pay components
 
   // Statutory
-  enableWPS           Boolean  @default(false)
-  enableGOSI          Boolean  @default(false)
-  enablePF            Boolean  @default(false)
-  enableESI           Boolean  @default(false)
-  enableTDS           Boolean  @default(false)
+  enableWPS  Boolean @default(false)
+  enableGOSI Boolean @default(false)
+  enablePF   Boolean @default(false)
+  enableESI  Boolean @default(false)
+  enableTDS  Boolean @default(false)
 
   // Calculations
-  overtimeCalculationBase String @default("Basic")  // Basic, Gross
+  overtimeCalculationBase String @default("Basic") // Basic, Gross
   leaveEncashmentBase     String @default("Basic")
   gratuityCalculationBase String @default("Basic")
 
-  isActive            Boolean  @default(true)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  payrollRuns         PayrollRun[]
+  payrollRuns PayrollRun[]
 
   @@unique([tenantId, companyId])
   @@index([tenantId])
 }
 
 model PayrollRun {
-  id                  String   @id @default(uuid())
-  tenantId            String
-  configId            String
-  config              PayrollConfiguration @relation(fields: [configId], references: [id])
-  payrollMonth        String   // YYYY-MM format
-  status              PayrollRunStatus @default(DRAFT)
+  id           String               @id @default(uuid())
+  tenantId     String
+  configId     String
+  config       PayrollConfiguration @relation(fields: [configId], references: [id])
+  payrollMonth String // YYYY-MM format
+  status       PayrollRunStatus     @default(DRAFT)
 
   // Processing Dates
-  processedAt         DateTime?
-  approvedAt          DateTime?
-  paidAt              DateTime?
+  processedAt DateTime?
+  approvedAt  DateTime?
+  paidAt      DateTime?
 
   // Approvals
-  approvedBy          String?
-  approvalLevel       Int      @default(0)
+  approvedBy    String?
+  approvalLevel Int     @default(0)
 
   // Summary
-  totalEmployees      Int      @default(0)
-  totalGrossSalary    Decimal  @default(0)
-  totalDeductions     Decimal  @default(0)
-  totalNetSalary      Decimal  @default(0)
-  totalEmployerCost   Decimal  @default(0)  // Including employer contributions
-  currency            String   @default("AED")
+  totalEmployees    Int     @default(0)
+  totalGrossSalary  Decimal @default(0)
+  totalDeductions   Decimal @default(0)
+  totalNetSalary    Decimal @default(0)
+  totalEmployerCost Decimal @default(0) // Including employer contributions
+  currency          String  @default("AED")
 
-  notes               String?
-  createdBy           String
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  notes     String?
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  payslips            Payslip[]
+  payslips Payslip[]
 
   @@unique([tenantId, configId, payrollMonth])
   @@index([tenantId])
@@ -1712,55 +2056,55 @@ model PayrollRun {
 }
 
 model Payslip {
-  id                  String   @id @default(uuid())
-  payrollRunId        String
-  payrollRun          PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
-  employeeId          String
-  employeeCode        String
-  employeeName        String
+  id           String     @id @default(uuid())
+  payrollRunId String
+  payrollRun   PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employeeId   String
+  employeeCode String
+  employeeName String
 
   // Salary Structure
-  basicSalary         Decimal
+  basicSalary Decimal
 
   // Earnings (stored as JSON for flexibility)
-  earnings            Json     // Array of { code, name, amount }
-  totalEarnings       Decimal
+  earnings      Json // Array of { code, name, amount }
+  totalEarnings Decimal
 
   // Deductions
-  deductions          Json     // Array of { code, name, amount }
-  totalDeductions     Decimal
+  deductions      Json // Array of { code, name, amount }
+  totalDeductions Decimal
 
   // Statutory (separate for clarity)
-  employeePF          Decimal  @default(0)
-  employeeESI         Decimal  @default(0)
-  employeePension     Decimal  @default(0)
-  employeeTDS         Decimal  @default(0)
-  employeeSaned       Decimal  @default(0)
+  employeePF             Decimal @default(0)
+  employeeESI            Decimal @default(0)
+  employeePension        Decimal @default(0)
+  employeeTDS            Decimal @default(0)
+  employeeSaned          Decimal @default(0)
   totalStatutoryEmployee Decimal @default(0)
 
-  employerPF          Decimal  @default(0)
-  employerESI         Decimal  @default(0)
-  employerPension     Decimal  @default(0)
-  employerGOSI        Decimal  @default(0)
+  employerPF             Decimal @default(0)
+  employerESI            Decimal @default(0)
+  employerPension        Decimal @default(0)
+  employerGOSI           Decimal @default(0)
   totalStatutoryEmployer Decimal @default(0)
 
   // Net
-  grossSalary         Decimal
-  netSalary           Decimal
+  grossSalary Decimal
+  netSalary   Decimal
 
   // Metadata
-  workingDays         Int      @default(0)
-  paidDays            Decimal  @default(0)
-  lopDays             Decimal  @default(0)  // Loss of Pay
-  overtimeHours       Decimal  @default(0)
-  overtimeAmount      Decimal  @default(0)
+  workingDays    Int     @default(0)
+  paidDays       Decimal @default(0)
+  lopDays        Decimal @default(0) // Loss of Pay
+  overtimeHours  Decimal @default(0)
+  overtimeAmount Decimal @default(0)
 
   // Status
-  status              PayslipStatus @default(DRAFT)
-  pdfUrl              String?
+  status PayslipStatus @default(DRAFT)
+  pdfUrl String?
 
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([payrollRunId])
   @@index([employeeId])
@@ -1785,64 +2129,292 @@ enum PayslipStatus {
   CANCELLED
 }
 
+// Employee Salary Structure - Individual employee salary breakdown
+model EmployeeSalaryStructure {
+  id         String  @id @default(uuid())
+  tenantId   String
+  employeeId String
+
+  // Effective Dates
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  isActive      Boolean  @default(true)
+
+  // Salary Components
+  basicSalary       Decimal
+  houseRentAllowance Decimal @default(0)
+  transportAllowance Decimal @default(0)
+  otherAllowances    Json?    // Array of {code, name, amount}
+
+  // Calculations
+  grossSalary       Decimal
+  ctc               Decimal   // Cost to Company
+
+  // Pay Frequency
+  payFrequency      String    @default("MONTHLY") // MONTHLY, BIWEEKLY, WEEKLY
+
+  // Benefits
+  medicalInsurance  Decimal   @default(0)
+  lifeInsurance     Decimal   @default(0)
+
+  remarks           String?
+  createdBy         String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([effectiveFrom])
+  @@index([isActive])
+}
+
+// Employee Benefits - Insurance, medical, etc.
+model EmployeeBenefit {
+  id               String    @id @default(uuid())
+  tenantId         String
+  employeeId       String
+
+  // Benefit Details
+  benefitType      String    // MEDICAL, LIFE_INSURANCE, DENTAL, VISION, etc.
+  benefitName      String
+  provider         String?
+  policyNumber     String?
+
+  // Coverage
+  coverageAmount   Decimal?
+  employeeContribution Decimal @default(0)
+  employerContribution Decimal @default(0)
+  totalPremium     Decimal
+
+  // Dates
+  startDate        DateTime
+  endDate          DateTime?
+  renewalDate      DateTime?
+
+  // Dependents
+  coversDependents Boolean   @default(false)
+  dependentsCount  Int       @default(0)
+  dependentsDetails Json?    // Array of dependent info
+
+  // Status
+  status           String    @default("ACTIVE") // ACTIVE, INACTIVE, EXPIRED, CANCELLED
+  isActive         Boolean   @default(true)
+
+  remarks          String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([benefitType])
+  @@index([status])
+}
+
+// Tax Declarations - Employee tax-saving declarations
+model TaxDeclaration {
+  id              String    @id @default(uuid())
+  tenantId        String
+  employeeId      String
+
+  // Financial Year
+  financialYear   String    // YYYY-YYYY format (e.g., 2024-2025)
+
+  // Regime Selection
+  taxRegime       String    @default("OLD") // OLD, NEW
+
+  // Section 80C (Up to 1.5L)
+  ppf             Decimal   @default(0)
+  elss            Decimal   @default(0)
+  lifeInsurance   Decimal   @default(0)
+  nsc             Decimal   @default(0)
+  homeLoanPrincipal Decimal @default(0)
+  tuitionFees     Decimal   @default(0)
+  section80C      Decimal   @default(0) // Total
+
+  // Section 80D (Medical Insurance)
+  medicalSelf     Decimal   @default(0)
+  medicalParents  Decimal   @default(0)
+  preventiveCheckup Decimal @default(0)
+  section80D      Decimal   @default(0)
+
+  // Section 80E (Education Loan Interest)
+  section80E      Decimal   @default(0)
+
+  // Section 24 (Home Loan Interest)
+  homeLoanInterest Decimal  @default(0)
+
+  // HRA Exemption
+  rentPaid        Decimal   @default(0)
+  landlordPAN     String?
+
+  // Other Sections
+  section80G      Decimal   @default(0) // Donations
+  section80TTA    Decimal   @default(0) // Savings Interest
+  otherDeductions Json?
+
+  // Total
+  totalDeductions Decimal   @default(0)
+
+  // Proofs
+  proofsUploaded  Boolean   @default(false)
+  proofDocuments  Json?     // Array of document URLs
+
+  // Status
+  status          String    @default("DRAFT") // DRAFT, SUBMITTED, VERIFIED, APPROVED, REJECTED
+  submittedAt     DateTime?
+  verifiedBy      String?
+  verifiedAt      DateTime?
+  rejectionReason String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([tenantId, employeeId, financialYear])
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([financialYear])
+  @@index([status])
+}
+
+// Payroll Adjustments - One-time additions/deductions
+model PayrollAdjustment {
+  id              String    @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  payrollMonth    String    // YYYY-MM format
+
+  // Adjustment Details
+  adjustmentType  String    // EARNING, DEDUCTION
+  code            String
+  name            String
+  amount          Decimal
+
+  // Reason
+  reason          String    @db.Text
+  category        String?   // BONUS, PENALTY, ARREAR, RECOVERY, etc.
+
+  // Processing
+  isProcessed     Boolean   @default(false)
+  processedInRun  String?   // PayrollRun ID
+  processedAt     DateTime?
+
+  // Approval
+  requiresApproval Boolean  @default(true)
+  approvalStatus  String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedBy      String?
+  approvedAt      DateTime?
+
+  createdBy       String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([payrollMonth])
+  @@index([isProcessed])
+  @@index([approvalStatus])
+}
+
+// Statutory Payments - PF, ESI, PT records
+model StatutoryPayment {
+  id              String    @id @default(uuid())
+  tenantId        String
+  payrollRunId    String
+
+  // Period
+  paymentMonth    String    // YYYY-MM format
+
+  // Component
+  statutoryType   String    // PF, ESI, PT, TDS, GOSI, etc.
+
+  // Amounts
+  employeeContribution Decimal @default(0)
+  employerContribution Decimal @default(0)
+  totalAmount     Decimal
+
+  // Payment Details
+  challanNumber   String?
+  paymentDate     DateTime?
+  paymentReference String?
+
+  // Status
+  status          String    @default("PENDING") // PENDING, PAID, FAILED
+  isPaid          Boolean   @default(false)
+
+  // Bank Details
+  bankName        String?
+  accountNumber   String?
+  ifscCode        String?
+
+  remarks         String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([payrollRunId])
+  @@index([paymentMonth])
+  @@index([statutoryType])
+  @@index([status])
+}
+
 // ============================================================================
 // 27. LEAVE POLICY & ACCRUAL ENGINE
 // ============================================================================
 
 model LeavePolicy {
-  id                  String   @id @default(uuid())
-  tenantId            String
-  companyId           String?  // null for tenant-wide policy
-  countryCode         String?
+  id          String  @id @default(uuid())
+  tenantId    String
+  companyId   String? // null for tenant-wide policy
+  countryCode String?
 
   // Policy Details
-  code                String
-  name                String
-  nameAr              String?
-  leaveTypeId         String
+  code        String
+  name        String
+  nameAr      String?
+  leaveTypeId String
 
   // Eligibility
-  employmentTypes     Json?    // Array of employment type codes
-  minServiceMonths    Int      @default(0)
+  employmentTypes  Json? // Array of employment type codes
+  minServiceMonths Int   @default(0)
 
   // Entitlement
-  annualEntitlement   Decimal
-  accrualType         LeaveAccrualType @default(MONTHLY)
-  accrualRate         Decimal?  // For monthly accrual
+  annualEntitlement Decimal
+  accrualType       LeaveAccrualType @default(MONTHLY)
+  accrualRate       Decimal? // For monthly accrual
 
   // Carry Forward
-  allowCarryForward   Boolean  @default(true)
-  maxCarryForwardDays Decimal?
+  allowCarryForward        Boolean  @default(true)
+  maxCarryForwardDays      Decimal?
   carryForwardExpiryMonths Int?
 
   // Encashment
-  allowEncashment     Boolean  @default(false)
-  maxEncashmentDays   Decimal?
-  encashmentRate      Decimal  @default(100)  // Percentage of salary
+  allowEncashment   Boolean  @default(false)
+  maxEncashmentDays Decimal?
+  encashmentRate    Decimal  @default(100) // Percentage of salary
 
   // Negative Balance
-  allowNegativeBalance Boolean @default(false)
-  maxNegativeDays     Decimal?
+  allowNegativeBalance Boolean  @default(false)
+  maxNegativeDays      Decimal?
 
   // Rules
-  minConsecutiveDays  Int?
-  maxConsecutiveDays  Int?
-  advanceNoticeDays   Int      @default(0)
-  requiresApproval    Boolean  @default(true)
-  requiresDocument    Boolean  @default(false)  // e.g., medical certificate
+  minConsecutiveDays Int?
+  maxConsecutiveDays Int?
+  advanceNoticeDays  Int     @default(0)
+  requiresApproval   Boolean @default(true)
+  requiresDocument   Boolean @default(false) // e.g., medical certificate
 
   // Pro-rata
-  proRataOnJoining    Boolean  @default(true)
-  proRataOnExit       Boolean  @default(true)
+  proRataOnJoining Boolean @default(true)
+  proRataOnExit    Boolean @default(true)
 
-  isActive            Boolean  @default(true)
-  effectiveFrom       DateTime @default(now())
-  effectiveTo         DateTime?
+  isActive      Boolean   @default(true)
+  effectiveFrom DateTime  @default(now())
+  effectiveTo   DateTime?
 
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  balances            LeaveBalance[]
+  balances LeaveBalance[]
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -1850,28 +2422,28 @@ model LeavePolicy {
 }
 
 model LeaveBalance {
-  id                  String   @id @default(uuid())
-  tenantId            String
-  employeeId          String
-  policyId            String
-  policy              LeavePolicy @relation(fields: [policyId], references: [id])
-  leaveYear           Int      // e.g., 2025
+  id         String      @id @default(uuid())
+  tenantId   String
+  employeeId String
+  policyId   String
+  policy     LeavePolicy @relation(fields: [policyId], references: [id])
+  leaveYear  Int // e.g., 2025
 
   // Balance Tracking
-  openingBalance      Decimal  @default(0)
-  accrued             Decimal  @default(0)
-  taken               Decimal  @default(0)
-  adjusted            Decimal  @default(0)
-  encashed            Decimal  @default(0)
-  carriedForward      Decimal  @default(0)
-  lapsed              Decimal  @default(0)
-  currentBalance      Decimal  @default(0)
+  openingBalance Decimal @default(0)
+  accrued        Decimal @default(0)
+  taken          Decimal @default(0)
+  adjusted       Decimal @default(0)
+  encashed       Decimal @default(0)
+  carriedForward Decimal @default(0)
+  lapsed         Decimal @default(0)
+  currentBalance Decimal @default(0)
 
-  lastAccrualDate     DateTime?
-  lastUpdated         DateTime @default(now())
+  lastAccrualDate DateTime?
+  lastUpdated     DateTime  @default(now())
 
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([employeeId, policyId, leaveYear])
   @@index([tenantId])
@@ -1880,10 +2452,213 @@ model LeaveBalance {
 }
 
 enum LeaveAccrualType {
-  ANNUAL      // All at once at year start
-  MONTHLY     // Pro-rata monthly
-  QUARTERLY   // Pro-rata quarterly
-  TENURE      // Based on years of service
+  ANNUAL // All at once at year start
+  MONTHLY // Pro-rata monthly
+  QUARTERLY // Pro-rata quarterly
+  TENURE // Based on years of service
+}
+
+// Leave Request - Employee leave applications
+model LeaveRequest {
+  id         String   @id @default(uuid())
+  tenantId   String
+  employeeId String
+
+  // Leave Details
+  leaveTypeId   String
+  policyId      String?
+  startDate     DateTime
+  endDate       DateTime
+  totalDays     Decimal
+  halfDayStart  Boolean  @default(false)
+  halfDayEnd    Boolean  @default(false)
+
+  // Application Details
+  reason                String    @db.Text
+  contactNumber         String?
+  addressDuringLeave    String?
+  delegateToEmployeeId  String?
+
+  // Documents
+  documents             Json?     // Array of {fileName, fileUrl, fileType}
+
+  // Status & Approval
+  status                String    @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED, WITHDRAWN
+  appliedAt             DateTime  @default(now())
+  approvers             Json?     // Array of approval levels
+  currentApproverLevel  Int       @default(1)
+
+  // Final Approval
+  approvedBy            String?
+  approvedAt            DateTime?
+  rejectedBy            String?
+  rejectedAt            DateTime?
+  rejectionReason       String?
+
+  // Cancellation
+  cancelledAt           DateTime?
+  cancelledBy           String?
+  cancellationReason    String?
+
+  // Balance Impact
+  balanceDeducted       Boolean   @default(false)
+  balanceId             String?
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([appliedAt])
+}
+
+// Leave Encashment Request
+model LeaveEncashment {
+  id                String    @id @default(uuid())
+  tenantId          String
+  employeeId        String
+  leaveTypeId       String
+  policyId          String
+
+  // Encashment Details
+  requestedDays     Decimal
+  eligibleDays      Decimal
+  approvedDays      Decimal?
+
+  // Financial Calculation
+  calculationBasis  String    // BASIC, GROSS
+  dailyRate         Decimal
+  totalAmount       Decimal
+  encashmentRate    Decimal   @default(100) // Percentage
+
+  // Trigger & Reason
+  trigger           String    // YEAR_END, ON_RESIGNATION, ON_TERMINATION, ON_REQUEST
+  reason            String?   @db.Text
+
+  // Status & Approval
+  status            String    @default("PENDING") // PENDING, APPROVED, REJECTED, PROCESSED, PAID
+  approvedBy        String?
+  approvedAt        DateTime?
+  processedAt       DateTime?
+  payrollMonth      String?   // YYYY-MM
+
+  // Payment Reference
+  paymentReference  String?
+  paidAt            DateTime?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([payrollMonth])
+}
+
+// Leave Accrual History - Track monthly/annual accruals
+model LeaveAccrual {
+  id              String   @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  policyId        String
+  leaveYear       Int
+  accrualMonth    Int?     // 1-12, null for annual
+
+  // Accrual Details
+  accrualDate     DateTime
+  accruedDays     Decimal
+  runId           String?  // Reference to batch accrual run
+
+  // Pro-rata Factors
+  daysWorked      Int?
+  proRataFactor   Decimal? @default(1.0)
+
+  // Calculation Notes
+  calculationNote String?  @db.Text
+
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([policyId])
+  @@index([leaveYear])
+  @@index([accrualDate])
+}
+
+// Leave Carry Forward - Track year-end carry forwards
+model LeaveCarryForward {
+  id                  String   @id @default(uuid())
+  tenantId            String
+  employeeId          String
+  policyId            String
+
+  // Year Transition
+  fromYear            Int
+  toYear              Int
+
+  // Carry Forward Details
+  previousYearBalance Decimal
+  carryForwardEligible Decimal
+  carryForwardApplied Decimal
+  lapsed              Decimal
+
+  // Expiry
+  expiryDate          DateTime?
+  isExpired           Boolean  @default(false)
+  expiredDays         Decimal  @default(0)
+
+  processedAt         DateTime @default(now())
+  runId               String?  // Reference to batch carry forward run
+
+  createdAt           DateTime @default(now())
+
+  @@unique([employeeId, policyId, fromYear, toYear])
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([toYear])
+}
+
+// Comp-Off (Compensatory Off) - Earned time off for working on holidays/weekends
+model CompOffEarned {
+  id                    String    @id @default(uuid())
+  tenantId              String
+  employeeId            String
+
+  // Worked Day Details
+  workedDate            DateTime
+  workedHours           Decimal
+  reason                String    @db.Text
+  projectCode           String?
+  overtimeRequestId     String?   // Link to OvertimeRequest if applicable
+
+  // Comp Off Credit
+  creditedDays          Decimal   // 0.5 or 1.0
+  expiryDate            DateTime
+
+  // Usage
+  isUsed                Boolean   @default(false)
+  usedDate              DateTime?
+  usedLeaveRequestId    String?
+  remainingDays         Decimal
+
+  // Approval
+  status                String    @default("PENDING") // PENDING, APPROVED, REJECTED, EXPIRED, USED
+  approvedBy            String?
+  approvedAt            DateTime?
+  rejectedBy            String?
+  rejectionReason       String?
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([workedDate])
+  @@index([expiryDate])
 }
 
 // ============================================================================
@@ -1891,15 +2666,15 @@ enum LeaveAccrualType {
 // ============================================================================
 
 model Translation {
-  id          String   @id @default(uuid())
-  tenantId    String?  // null for system-wide
-  locale      String   // en-US, ar-SA, ar-AE, etc.
-  namespace   String   // common, employee, payroll, leave, etc.
-  key         String
-  value       String   @db.Text
+  id        String  @id @default(uuid())
+  tenantId  String? // null for system-wide
+  locale    String // en-US, ar-SA, ar-AE, etc.
+  namespace String // common, employee, payroll, leave, etc.
+  key       String
+  value     String  @db.Text
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([tenantId, locale, namespace, key])
   @@index([locale])
@@ -1907,32 +2682,32 @@ model Translation {
 }
 
 model LocalizationConfig {
-  id                  String   @id @default(uuid())
-  tenantId            String   @unique
+  id       String @id @default(uuid())
+  tenantId String @unique
 
   // Language Settings
-  defaultLocale       String   @default("en-US")
-  supportedLocales    Json     @default("[\"en-US\", \"ar-SA\"]")
-  fallbackLocale      String   @default("en-US")
+  defaultLocale    String @default("en-US")
+  supportedLocales Json   @default("[\"en-US\", \"ar-SA\"]")
+  fallbackLocale   String @default("en-US")
 
   // Regional Settings
-  defaultTimezone     String   @default("Asia/Dubai")
-  defaultCurrency     String   @default("AED")
-  defaultCalendar     String   @default("gregorian")  // gregorian, hijri
-  showHijriDates      Boolean  @default(false)
+  defaultTimezone String  @default("Asia/Dubai")
+  defaultCurrency String  @default("AED")
+  defaultCalendar String  @default("gregorian") // gregorian, hijri
+  showHijriDates  Boolean @default(false)
 
   // Date/Time Format
-  dateFormat          String   @default("DD/MM/YYYY")
-  timeFormat          String   @default("12h")  // 12h, 24h
-  firstDayOfWeek      String   @default("Sunday")
+  dateFormat     String @default("DD/MM/YYYY")
+  timeFormat     String @default("12h") // 12h, 24h
+  firstDayOfWeek String @default("Sunday")
 
   // Number Format
-  decimalSeparator    String   @default(".")
-  thousandsSeparator  String   @default(",")
-  currencyPosition    String   @default("before")  // before, after
+  decimalSeparator   String @default(".")
+  thousandsSeparator String @default(",")
+  currencyPosition   String @default("before") // before, after
 
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
 }
@@ -1942,70 +2717,70 @@ model LocalizationConfig {
 // ============================================================================
 
 model IndiaPFConfiguration {
-  id                      String   @id @default(uuid())
-  tenantId                String
-  companyId               String
+  id        String @id @default(uuid())
+  tenantId  String
+  companyId String
 
   // EPFO Registration
-  epfoEstablishmentId     String   // Establishment ID
-  epfoRegistrationNumber  String   // PF Code
+  epfoEstablishmentId    String // Establishment ID
+  epfoRegistrationNumber String // PF Code
 
   // Rates (can be customized per company)
-  employeeContributionRate Decimal @default(12)    // 12%
-  employerContributionRate Decimal @default(12)    // 12%
-  adminChargesRate         Decimal @default(0.5)   // 0.50%
-  edliChargesRate          Decimal @default(0.5)   // 0.50%
+  employeeContributionRate Decimal @default(12) // 12%
+  employerContributionRate Decimal @default(12) // 12%
+  adminChargesRate         Decimal @default(0.5) // 0.50%
+  edliChargesRate          Decimal @default(0.5) // 0.50%
   wageCeiling              Decimal @default(15000) // PF wage ceiling
   pensionWageCeiling       Decimal @default(15000) // EPS ceiling
 
   // Settings
-  isVoluntaryHigherAllowed Boolean  @default(true)
-  isActive                 Boolean  @default(true)
+  isVoluntaryHigherAllowed Boolean @default(true)
+  isActive                 Boolean @default(true)
 
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  submissions             IndiaPFSubmission[]
+  submissions IndiaPFSubmission[]
 
   @@unique([tenantId, companyId])
   @@index([tenantId])
 }
 
 model IndiaPFSubmission {
-  id                String   @id @default(uuid())
+  id                String               @id @default(uuid())
   tenantId          String
   configId          String
   config            IndiaPFConfiguration @relation(fields: [configId], references: [id])
-  contributionMonth String   // YYYY-MM format
+  contributionMonth String // YYYY-MM format
 
   // Status
-  status            IndiaPFStatus @default(DRAFT)
-  submissionDate    DateTime?
+  status         IndiaPFStatus @default(DRAFT)
+  submissionDate DateTime?
 
   // Totals
-  totalEmployees           Int      @default(0)
-  totalWages               Decimal  @default(0)
+  totalEmployees            Int     @default(0)
+  totalWages                Decimal @default(0)
   totalEmployeeContribution Decimal @default(0)
-  totalEmployerPF          Decimal  @default(0)
-  totalEmployerEPS         Decimal  @default(0)
-  totalAdminCharges        Decimal  @default(0)
-  totalEDLI                Decimal  @default(0)
-  grandTotal               Decimal  @default(0)
+  totalEmployerPF           Decimal @default(0)
+  totalEmployerEPS          Decimal @default(0)
+  totalAdminCharges         Decimal @default(0)
+  totalEDLI                 Decimal @default(0)
+  grandTotal                Decimal @default(0)
 
   // File Info
-  ecrFileName       String?
-  ecrFileUrl        String?
-  challanNumber     String?
-  trrn              String?  // Transaction Reference Number
+  ecrFileName   String?
+  ecrFileUrl    String?
+  challanNumber String?
+  trrn          String? // Transaction Reference Number
 
   // Validation
-  validationErrors  Json?
+  validationErrors Json?
 
-  processedAt       DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  records           IndiaPFRecord[]
+  records IndiaPFRecord[]
 
   @@index([tenantId])
   @@index([contributionMonth])
@@ -2013,10 +2788,10 @@ model IndiaPFSubmission {
 }
 
 model IndiaPFRecord {
-  id                String   @id @default(uuid())
-  submissionId      String
-  submission        IndiaPFSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  employeeId        String
+  id           String            @id @default(uuid())
+  submissionId String
+  submission   IndiaPFSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  employeeId   String
 
   // Employee Details
   uanNumber         String
@@ -2028,8 +2803,8 @@ model IndiaPFRecord {
   gender            String?
 
   // Salary Details
-  basicWages        Decimal
-  dearnessAllowance Decimal  @default(0)
+  basicWages         Decimal
+  dearnessAllowance  Decimal @default(0)
   contributableWages Decimal
 
   // Contributions
@@ -2039,15 +2814,15 @@ model IndiaPFRecord {
   isVoluntaryHigher       Boolean @default(false)
 
   // NCP Days (Non-Contributing Period)
-  ncpDays           Int      @default(0)
+  ncpDays Int @default(0)
 
   // Status
-  status            IndiaPFRecordStatus @default(PENDING)
-  errorCode         String?
-  errorMessage      String?
+  status       IndiaPFRecordStatus @default(PENDING)
+  errorCode    String?
+  errorMessage String?
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([submissionId])
   @@index([employeeId])
@@ -2079,63 +2854,63 @@ enum IndiaPFRecordStatus {
 // ============================================================================
 
 model IndiaESIConfiguration {
-  id                      String   @id @default(uuid())
-  tenantId                String
-  companyId               String
+  id        String @id @default(uuid())
+  tenantId  String
+  companyId String
 
   // ESIC Registration
-  esicCode                String   // ESI Code
-  esicSubCode             String?  // Sub-unit code
-  regionCode              String?
+  esicCode    String // ESI Code
+  esicSubCode String? // Sub-unit code
+  regionCode  String?
 
   // Rates
-  employeeContributionRate Decimal @default(0.75)  // 0.75%
-  employerContributionRate Decimal @default(3.25)  // 3.25%
+  employeeContributionRate Decimal @default(0.75) // 0.75%
+  employerContributionRate Decimal @default(3.25) // 3.25%
   wageCeiling              Decimal @default(21000) // ESI applicability ceiling
 
   // Settings
-  isActive                Boolean  @default(true)
+  isActive Boolean @default(true)
 
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  submissions             IndiaESISubmission[]
+  submissions IndiaESISubmission[]
 
   @@unique([tenantId, companyId])
   @@index([tenantId])
 }
 
 model IndiaESISubmission {
-  id                String   @id @default(uuid())
+  id                String                @id @default(uuid())
   tenantId          String
   configId          String
   config            IndiaESIConfiguration @relation(fields: [configId], references: [id])
-  contributionMonth String   // YYYY-MM format
+  contributionMonth String // YYYY-MM format
 
   // Status
-  status            IndiaESIStatus @default(DRAFT)
-  submissionDate    DateTime?
+  status         IndiaESIStatus @default(DRAFT)
+  submissionDate DateTime?
 
   // Totals
-  totalEmployees           Int     @default(0)
-  totalWages               Decimal @default(0)
+  totalEmployees            Int     @default(0)
+  totalWages                Decimal @default(0)
   totalEmployeeContribution Decimal @default(0)
   totalEmployerContribution Decimal @default(0)
-  grandTotal               Decimal @default(0)
+  grandTotal                Decimal @default(0)
 
   // File Info
-  fileName          String?
-  fileUrl           String?
-  challanNumber     String?
+  fileName      String?
+  fileUrl       String?
+  challanNumber String?
 
   // Validation
-  validationErrors  Json?
+  validationErrors Json?
 
-  processedAt       DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  records           IndiaESIRecord[]
+  records IndiaESIRecord[]
 
   @@index([tenantId])
   @@index([contributionMonth])
@@ -2143,19 +2918,19 @@ model IndiaESISubmission {
 }
 
 model IndiaESIRecord {
-  id                String   @id @default(uuid())
-  submissionId      String
-  submission        IndiaESISubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  employeeId        String
+  id           String             @id @default(uuid())
+  submissionId String
+  submission   IndiaESISubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  employeeId   String
 
   // Employee Details
-  esiNumber         String   // IP Number
-  employeeName      String
-  dateOfJoining     DateTime?
+  esiNumber     String // IP Number
+  employeeName  String
+  dateOfJoining DateTime?
 
   // Salary Details
-  grossWages        Decimal
-  workingDays       Int      @default(0)
+  grossWages  Decimal
+  workingDays Int     @default(0)
 
   // Contributions
   employeeContribution Decimal
@@ -2163,12 +2938,12 @@ model IndiaESIRecord {
   totalContribution    Decimal
 
   // Status
-  status            IndiaESIRecordStatus @default(PENDING)
-  errorCode         String?
-  errorMessage      String?
+  status       IndiaESIRecordStatus @default(PENDING)
+  errorCode    String?
+  errorMessage String?
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([submissionId])
   @@index([employeeId])
@@ -2200,62 +2975,62 @@ enum IndiaESIRecordStatus {
 // ============================================================================
 
 model IndiaTDSConfiguration {
-  id                String   @id @default(uuid())
-  tenantId          String
-  companyId         String
+  id        String @id @default(uuid())
+  tenantId  String
+  companyId String
 
   // TAN Details
-  tanNumber         String   // Tax Deduction Account Number
-  panNumber         String?  // Company PAN
+  tanNumber String // Tax Deduction Account Number
+  panNumber String? // Company PAN
 
   // Assessment Year
-  assessmentYear    String   // e.g., "2025-26"
+  assessmentYear String // e.g., "2025-26"
 
   // Settings
-  defaultRegime     String   @default("NEW")  // OLD or NEW
-  isActive          Boolean  @default(true)
+  defaultRegime String  @default("NEW") // OLD or NEW
+  isActive      Boolean @default(true)
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  declarations      IndiaTDSDeclaration[]
+  declarations IndiaTDSDeclaration[]
 
   @@unique([tenantId, companyId, assessmentYear])
   @@index([tenantId])
 }
 
 model IndiaTDSDeclaration {
-  id                String   @id @default(uuid())
-  tenantId          String
-  configId          String
-  config            IndiaTDSConfiguration @relation(fields: [configId], references: [id])
-  employeeId        String
+  id         String                @id @default(uuid())
+  tenantId   String
+  configId   String
+  config     IndiaTDSConfiguration @relation(fields: [configId], references: [id])
+  employeeId String
 
   // Employee Details
-  panNumber         String
-  employeeName      String
-  financialYear     String   // e.g., "2024-25"
+  panNumber     String
+  employeeName  String
+  financialYear String // e.g., "2024-25"
 
   // Regime Selection
-  taxRegime         String   @default("NEW")  // OLD or NEW
+  taxRegime String @default("NEW") // OLD or NEW
 
   // Annual Income
-  annualGrossSalary    Decimal
-  annualTaxableIncome  Decimal
+  annualGrossSalary   Decimal
+  annualTaxableIncome Decimal
 
   // Exemptions (Old Regime)
-  hraExemption         Decimal @default(0)
-  ltaExemption         Decimal @default(0)
-  otherExemptions      Decimal @default(0)
+  hraExemption    Decimal @default(0)
+  ltaExemption    Decimal @default(0)
+  otherExemptions Decimal @default(0)
 
   // Deductions (Old Regime)
-  section80C           Decimal @default(0)  // Max 1.5L
-  section80CCD1B       Decimal @default(0)  // NPS Max 50K
-  section80D           Decimal @default(0)  // Health Insurance
-  section80E           Decimal @default(0)  // Education Loan
-  section24B           Decimal @default(0)  // Home Loan Interest
-  standardDeduction    Decimal @default(75000)
-  otherDeductions      Decimal @default(0)
+  section80C        Decimal @default(0) // Max 1.5L
+  section80CCD1B    Decimal @default(0) // NPS Max 50K
+  section80D        Decimal @default(0) // Health Insurance
+  section80E        Decimal @default(0) // Education Loan
+  section24B        Decimal @default(0) // Home Loan Interest
+  standardDeduction Decimal @default(75000)
+  otherDeductions   Decimal @default(0)
 
   // Tax Calculation
   taxableIncomeAfterDeductions Decimal
@@ -2266,16 +3041,16 @@ model IndiaTDSDeclaration {
   totalTaxLiability            Decimal
 
   // Monthly TDS
-  monthlyTDS           Decimal
+  monthlyTDS Decimal
 
   // Status
-  status               TDSDeclarationStatus @default(SUBMITTED)
-  submittedAt          DateTime?
-  approvedAt           DateTime?
-  approvedBy           String?
+  status      TDSDeclarationStatus @default(SUBMITTED)
+  submittedAt DateTime?
+  approvedAt  DateTime?
+  approvedBy  String?
 
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([employeeId, financialYear])
   @@index([tenantId])
@@ -2296,27 +3071,27 @@ enum TDSDeclarationStatus {
 // ============================================================================
 
 model IndiaProfessionalTaxConfig {
-  id                String   @id @default(uuid())
-  tenantId          String
-  companyId         String
-  stateCode         String   // State code (MH, KA, TN, etc.)
-  stateName         String
+  id        String @id @default(uuid())
+  tenantId  String
+  companyId String
+  stateCode String // State code (MH, KA, TN, etc.)
+  stateName String
 
   // Registration
   ptRegistrationNumber String
   ptCircle             String?
 
   // Rates (stored as JSON for flexibility)
-  slabs                Json     // Array of { minSalary, maxSalary, monthlyTax }
-  maxAnnualTax         Decimal  @default(2500)
+  slabs        Json // Array of { minSalary, maxSalary, monthlyTax }
+  maxAnnualTax Decimal @default(2500)
 
   // Settings
-  isActive             Boolean  @default(true)
+  isActive Boolean @default(true)
 
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  deductions           IndiaProfessionalTaxDeduction[]
+  deductions IndiaProfessionalTaxDeduction[]
 
   @@unique([tenantId, companyId, stateCode])
   @@index([tenantId])
@@ -2324,26 +3099,26 @@ model IndiaProfessionalTaxConfig {
 }
 
 model IndiaProfessionalTaxDeduction {
-  id                String   @id @default(uuid())
-  tenantId          String
-  configId          String
-  config            IndiaProfessionalTaxConfig @relation(fields: [configId], references: [id])
-  employeeId        String
-  deductionMonth    String   // YYYY-MM format
+  id             String                     @id @default(uuid())
+  tenantId       String
+  configId       String
+  config         IndiaProfessionalTaxConfig @relation(fields: [configId], references: [id])
+  employeeId     String
+  deductionMonth String // YYYY-MM format
 
   // Employee Details
-  employeeName      String
-  grossSalary       Decimal
+  employeeName String
+  grossSalary  Decimal
 
   // Deduction
-  taxAmount         Decimal
-  isFebruaryAdjustment Boolean @default(false)  // For Maharashtra Feb adjustment
+  taxAmount            Decimal
+  isFebruaryAdjustment Boolean @default(false) // For Maharashtra Feb adjustment
 
   // Status
-  status            PTDeductionStatus @default(DEDUCTED)
+  status PTDeductionStatus @default(DEDUCTED)
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([employeeId, deductionMonth])
   @@index([tenantId])
@@ -2361,38 +3136,945 @@ enum PTDeductionStatus {
 // ============================================================================
 
 model ComplianceAuditLog {
-  id              String   @id @default(uuid())
-  tenantId        String
-  companyId       String?
+  id        String  @id @default(uuid())
+  tenantId  String
+  companyId String?
 
   // Action Details
-  action          String   // SUBMISSION, VALIDATION, APPROVAL, REJECTION, etc.
-  module          String   // WPS, GOSI, PF, ESI, TDS, PT, EOSB, NITAQAT
-  entityType      String   // Submission, Record, Configuration
-  entityId        String
+  action     String // SUBMISSION, VALIDATION, APPROVAL, REJECTION, etc.
+  module     String // WPS, GOSI, PF, ESI, TDS, PT, EOSB, NITAQAT
+  entityType String // Submission, Record, Configuration
+  entityId   String
 
   // User Details
   performedBy     String
   performedByName String?
 
   // Change Details
-  previousState   Json?
-  newState        Json?
-  changes         Json?    // Array of field changes
+  previousState Json?
+  newState      Json?
+  changes       Json? // Array of field changes
 
   // Context
-  ipAddress       String?
-  userAgent       String?
-  notes           String?
+  ipAddress String?
+  userAgent String?
+  notes     String?
 
   // Bilingual Messages
-  message         String
-  messageAr       String?
+  message   String
+  messageAr String?
 
-  createdAt       DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([tenantId])
   @@index([module])
   @@index([entityType, entityId])
   @@index([createdAt])
+}
+
+model EmployeeDocument {
+  id             String       @id @default(uuid())
+  tenantId       String
+  employeeId     String?
+  documentTypeId String
+  documentType   DocumentType @relation(fields: [documentTypeId], references: [id])
+
+  // Document Details
+  documentName   String
+  documentNumber String?
+  category       String
+
+  // File Storage
+  fileName String
+  fileSize Int
+  fileType String
+  fileUrl  String
+
+  // Versioning
+  version  Int                @default(1)
+  parentId String?
+  parent   EmployeeDocument?  @relation("DocumentVersions", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  versions EmployeeDocument[] @relation("DocumentVersions")
+
+  // Expiry & Compliance
+  issueDate       DateTime?
+  expiryDate      DateTime?
+  isExpired       Boolean   @default(false)
+  expiryAlertDays Int       @default(30)
+
+  // Verification
+  isVerified Boolean   @default(false)
+  verifiedBy String?
+  verifiedAt DateTime?
+
+  // Access Control
+  isConfidential Boolean @default(false)
+  accessLevel    String  @default("EMPLOYEE")
+
+  // Metadata
+  description String?
+  tags        String?
+  uploadedBy  String
+
+  // Status
+  status String @default("ACTIVE")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([documentTypeId])
+  @@index([category])
+  @@index([expiryDate])
+  @@index([status])
+}
+
+// ========================================
+// ASSET MANAGEMENT MODULE
+// ========================================
+
+model Asset {
+  id       String @id @default(uuid())
+  tenantId String
+
+  // Asset Details
+  assetCode   String // AST-001
+  assetName   String
+  description String?
+  category    String // COMPUTER, FURNITURE, VEHICLE, MOBILE, EQUIPMENT, OTHER
+  assetType   String // Laptop, Desktop, Chair, Car, etc.
+
+  // Identification
+  serialNumber String?
+  modelNumber  String?
+  manufacturer String?
+  brand        String?
+
+  // Financial
+  purchaseDate     DateTime?
+  purchasePrice    Decimal?  @db.Decimal(15, 2)
+  currentValue     Decimal?  @db.Decimal(15, 2)
+  depreciationRate Float? // Annual percentage
+  salvageValue     Decimal?  @db.Decimal(15, 2)
+
+  // Location & Status
+  locationId String?
+  location   Location? @relation(fields: [locationId], references: [id])
+  status     String    @default("AVAILABLE") // AVAILABLE, ASSIGNED, IN_REPAIR, RETIRED, DISPOSED
+  condition  String? // EXCELLENT, GOOD, FAIR, POOR
+
+  // Warranty
+  warrantyStartDate DateTime?
+  warrantyEndDate   DateTime?
+  warrantyProvider  String?
+
+  // Assignment
+  currentEmployeeId String?
+  currentAssignedAt DateTime?
+
+  // Maintenance
+  lastMaintenanceDate DateTime?
+  nextMaintenanceDate DateTime?
+  maintenanceInterval Int? // Days
+
+  // Metadata
+  tags     String? // JSON array
+  notes    String?
+  imageUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  assignments  AssetAssignment[]
+  maintenances AssetMaintenance[]
+
+  @@unique([tenantId, assetCode])
+  @@index([tenantId])
+  @@index([category])
+  @@index([status])
+  @@index([currentEmployeeId])
+  @@index([locationId])
+}
+
+model AssetAssignment {
+  id         String @id @default(uuid())
+  tenantId   String
+  assetId    String
+  asset      Asset  @relation(fields: [assetId], references: [id])
+  employeeId String
+
+  // Assignment Details
+  assignedDate       DateTime  @default(now())
+  returnedDate       DateTime?
+  expectedReturnDate DateTime?
+
+  // Condition
+  conditionAtAssignment String? // EXCELLENT, GOOD, FAIR, POOR
+  conditionAtReturn     String?
+
+  // Acknowledgment
+  assignedBy     String
+  acknowledgedBy String?
+  acknowledgedAt DateTime?
+  returnedBy     String?
+
+  // Notes
+  assignmentNotes String?
+  returnNotes     String?
+
+  status String @default("ACTIVE") // ACTIVE, RETURNED, LOST, DAMAGED
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([assetId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+model AssetMaintenance {
+  id       String @id @default(uuid())
+  tenantId String
+  assetId  String
+  asset    Asset  @relation(fields: [assetId], references: [id])
+
+  // Maintenance Details
+  maintenanceType String // PREVENTIVE, CORRECTIVE, INSPECTION, UPGRADE
+  description     String
+  scheduledDate   DateTime
+  completedDate   DateTime?
+
+  // Service Details
+  serviceProvider String?
+  cost            Decimal? @db.Decimal(15, 2)
+  invoiceNumber   String?
+
+  // Status
+  status String @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
+
+  // Notes
+  notes       String?
+  performedBy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([assetId])
+  @@index([scheduledDate])
+  @@index([status])
+}
+
+model AssetCategory {
+  id               String   @id @default(uuid())
+  code             String   @unique
+  name             String
+  description      String?
+  depreciationRate Float? // Default annual percentage
+  status           String   @default("Active")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+// ========================================
+// EMPLOYMENT HISTORY MODULE
+// ========================================
+
+model EmploymentHistory {
+  id         String @id @default(uuid())
+  tenantId   String
+  employeeId String
+
+  // Change Details
+  changeType    String // PROMOTION, DEMOTION, TRANSFER, LATERAL_MOVE, NEW_HIRE, TERMINATION, REHIRE
+  effectiveDate DateTime
+  reason        String?
+  notes         String?
+
+  // Previous State (Before Change)
+  previousDepartmentId   String?
+  previousDepartment     Department? @relation("PreviousDepartment", fields: [previousDepartmentId], references: [id])
+  previousPositionId     String?
+  previousJobProfileId   String?
+  previousJobProfile     JobProfile? @relation("PreviousJobProfile", fields: [previousJobProfileId], references: [id])
+  previousGradeId        String?
+  previousGrade          Grade?      @relation("PreviousGrade", fields: [previousGradeId], references: [id])
+  previousLocationId     String?
+  previousLocation       Location?   @relation("PreviousLocation", fields: [previousLocationId], references: [id])
+  previousManagerId      String?
+  previousSalary         Decimal?    @db.Decimal(15, 2)
+  previousEmploymentType String?
+
+  // New State (After Change)
+  newDepartmentId   String?
+  newDepartment     Department? @relation("NewDepartment", fields: [newDepartmentId], references: [id])
+  newPositionId     String?
+  newJobProfileId   String?
+  newJobProfile     JobProfile? @relation("NewJobProfile", fields: [newJobProfileId], references: [id])
+  newGradeId        String?
+  newGrade          Grade?      @relation("NewGrade", fields: [newGradeId], references: [id])
+  newLocationId     String?
+  newLocation       Location?   @relation("NewLocation", fields: [newLocationId], references: [id])
+  newManagerId      String?
+  newSalary         Decimal?    @db.Decimal(15, 2)
+  newEmploymentType String?
+
+  // Approval Workflow
+  requestedBy String?
+  approvedBy  String?
+  approvedAt  DateTime?
+  status      String    @default("COMPLETED") // PENDING, APPROVED, REJECTED, COMPLETED
+
+  // Metadata
+  isAutoGenerated Boolean  @default(false) // True if created by system trigger
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([changeType])
+  @@index([effectiveDate])
+  @@index([status])
+}
+
+// ========================================
+// POSITION MANAGEMENT MODULE
+// ========================================
+
+model Position {
+  id       String @id @default(uuid())
+  tenantId String
+
+  // Position Identity
+  positionCode String // POS-ENG-001
+  title        String
+  description  String?
+
+  // Organization Links
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  locationId   String?
+  location     Location?  @relation(fields: [locationId], references: [id])
+
+  // Hierarchy
+  reportsToPositionId  String?
+  reportsToPosition    Position?  @relation("PositionHierarchy", fields: [reportsToPositionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subordinatePositions Position[] @relation("PositionHierarchy")
+
+  // Job Profile Link
+  jobProfileId String?
+  jobProfile   JobProfile? @relation(fields: [jobProfileId], references: [id])
+  gradeId      String?
+  grade        Grade?      @relation(fields: [gradeId], references: [id])
+
+  // Headcount & FTE
+  headcount   Int     @default(1) // Number of positions
+  fte         Decimal @default(1.0) @db.Decimal(5, 2) // Full-time equivalent
+  filledCount Int     @default(0) // Currently filled
+  vacantCount Int     @default(0) // Currently vacant
+
+  // Compensation
+  salaryMin      Decimal? @db.Decimal(15, 2)
+  salaryMax      Decimal? @db.Decimal(15, 2)
+  salaryCurrency String?  @default("USD")
+  annualBudget   Decimal? @db.Decimal(15, 2)
+
+  // Status & Dates
+  status        String    @default("DRAFT") // DRAFT, OPEN, FILLED, FROZEN, CLOSED
+  effectiveDate DateTime?
+  closedDate    DateTime?
+
+  // Approval
+  requestedBy String?
+  approvedBy  String?
+  approvedAt  DateTime?
+
+  // Metadata
+  isActive Boolean @default(true)
+  notes    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  employees        Employee[]      @relation("CurrentPosition")
+  Address          Address?        @relation(fields: [addressId], references: [id])
+  addressId        String?
+  EmployeeStatus   EmployeeStatus? @relation(fields: [employeeStatusId], references: [id])
+  employeeStatusId String?
+  EmploymentType   EmploymentType? @relation(fields: [employmentTypeId], references: [id])
+  employmentTypeId String?
+
+  @@unique([tenantId, positionCode])
+  @@index([tenantId])
+  @@index([departmentId])
+  @@index([status])
+  @@index([reportsToPositionId])
+}
+// Life Events Schema Addition
+// Add this to the main schema.prisma file
+
+model EmployeeLifeEvent {
+  id            String    @id @default(uuid())
+  tenantId      String
+
+  // Employee Reference
+  employeeId    String
+  employee      Employee  @relation("EmployeeLifeEvents", fields: [employeeId], references: [id], onDelete: Cascade)
+
+  // Event Details
+  eventType     String    // MARRIAGE, BIRTH, ADOPTION, DEATH, DIVORCE, RELOCATION, EMERGENCY_CONTACT_CHANGE, etc.
+  eventDate     DateTime
+  title         String
+  description   String?
+
+  // Related Person (if applicable)
+  relatedPersonName     String?
+  relatedPersonRelation String?  // Spouse, Child, Parent, Sibling, etc.
+
+  // Documentation
+  documentUrl   String?
+  documentType  String?
+  verified      Boolean   @default(false)
+  verifiedBy    String?
+  verifiedAt    DateTime?
+
+  // Impact Tracking
+  impactsPayroll        Boolean   @default(false)
+  impactsBenefits       Boolean   @default(false)
+  impactsTax            Boolean   @default(false)
+  impactsEmergencyContact Boolean @default(false)
+
+  // Workflow
+  status        String    @default("PENDING")  // PENDING, VERIFIED, PROCESSED, REJECTED
+  processedBy   String?
+  processedAt   DateTime?
+
+  // Notifications
+  notifyHR      Boolean   @default(true)
+  notifyManager Boolean   @default(false)
+  notificationSent Boolean @default(false)
+
+  // Metadata
+  notes         String?
+  attachments   Json?     // Array of attachment URLs
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([eventType])
+  @@index([eventDate])
+  @@index([status])
+}
+
+model LifeEventType {
+  id            String    @id @default(uuid())
+  tenantId      String
+
+  code          String
+  name          String
+  description   String?
+  category      String    // FAMILY, PERSONAL, EMERGENCY, OTHER
+
+  // Default Settings
+  requiresDocument      Boolean   @default(false)
+  requiresVerification  Boolean   @default(true)
+  impactsPayroll        Boolean   @default(false)
+  impactsBenefits       Boolean   @default(false)
+  impactsTax            Boolean   @default(false)
+
+  // Notifications
+  notifyHR              Boolean   @default(true)
+  notifyManager         Boolean   @default(false)
+
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([category])
+}
+
+// ID Card Management
+model IDCardTemplate {
+  id          String   @id @default(uuid())
+  tenantId    String
+  
+  name        String
+  description String?
+  cardType    String   // EMPLOYEE, TEMPORARY, CONTRACTOR, VISITOR
+  
+  // Design
+  designData  Json     // Template design configuration
+  logoUrl     String?
+  backgroundUrl String?
+  
+  // Fields
+  includePhoto      Boolean @default(true)
+  includeQRCode     Boolean @default(true)
+  includeBarcode    Boolean @default(false)
+  customFields      Json?   // Additional fields to display
+  
+  // Settings
+  validityDays      Int?    // Card validity in days
+  isDefault         Boolean @default(false)
+  isActive          Boolean @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  
+  cards       IDCard[]
+  
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([cardType])
+}
+
+model IDCard {
+  id              String   @id @default(uuid())
+  tenantId        String
+  
+  employeeId      String
+  employee        Employee @relation("EmployeeIDCards", fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  templateId      String
+  template        IDCardTemplate @relation(fields: [templateId], references: [id])
+  
+  // Card Details
+  cardNumber      String
+  cardType        String   // EMPLOYEE, TEMPORARY, CONTRACTOR, VISITOR
+  
+  // Validity
+  issueDate       DateTime
+  expiryDate      DateTime?
+  
+  // Status
+  status          String   @default("PENDING") // PENDING, APPROVED, ISSUED, EXPIRED, REVOKED, LOST
+  
+  // Photo
+  photoUrl        String?
+  
+  // Codes
+  qrCodeData      String?
+  barcodeData     String?
+  
+  // Issuance
+  issuedBy        String?
+  issuedAt        DateTime?
+  
+  // Revocation
+  revokedBy       String?
+  revokedAt       DateTime?
+  revokedReason   String?
+  
+  // Print Tracking
+  printedCount    Int      @default(0)
+  lastPrintedAt   DateTime?
+  
+  notes           String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  
+  @@unique([tenantId, cardNumber])
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([expiryDate])
+}
+
+// Letter Generation
+model LetterTemplate {
+  id String @id @default(uuid())
+  tenantId String
+  name String
+  description String?
+  letterType String // OFFER, APPOINTMENT, CONFIRMATION, TRANSFER, PROMOTION, EXIT, EXPERIENCE
+  content String // Template with placeholders
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  letters Letter[]
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model Letter {
+  id String @id @default(uuid())
+  tenantId String
+  employeeId String
+  employee Employee @relation("EmployeeLetters", fields: [employeeId], references: [id])
+  templateId String
+  template LetterTemplate @relation(fields: [templateId], references: [id])
+  letterType String
+  subject String
+  content String
+  generatedPdfUrl String?
+  status String @default("DRAFT") // DRAFT, PENDING, APPROVED, ISSUED
+  issuedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  @@index([tenantId])
+  @@index([employeeId])
+}
+
+// Exit Management
+model ExitRequest {
+  id String @id @default(uuid())
+  tenantId String
+  employeeId String
+  employee Employee @relation("EmployeeExits", fields: [employeeId], references: [id])
+  exitType String // RESIGNATION, TERMINATION, RETIREMENT, CONTRACT_END
+  resignationDate DateTime
+  lastWorkingDate DateTime
+  noticePeriodDays Int
+  reason String?
+  status String @default("PENDING") // PENDING, APPROVED, PROCESSING, COMPLETED
+  clearanceStatus String @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  settlementAmount Decimal? @db.Decimal(15, 2)
+  rehireEligible Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  clearances ExitClearance[]
+  @@index([tenantId])
+  @@index([employeeId])
+}
+
+model ExitClearance {
+  id String @id @default(uuid())
+  exitRequestId String
+  exitRequest ExitRequest @relation(fields: [exitRequestId], references: [id])
+  department String
+  description String
+  status String @default("PENDING") // PENDING, APPROVED, REJECTED
+  clearedBy String?
+  clearedAt DateTime?
+  notes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([exitRequestId])
+}
+
+// Probation Management
+model ProbationTracking {
+  id String @id @default(uuid())
+  tenantId String
+  employeeId String
+  employee Employee @relation("EmployeeProbation", fields: [employeeId], references: [id])
+  startDate DateTime
+  endDate DateTime
+  extendedEndDate DateTime?
+  status String @default("ACTIVE") // ACTIVE, EXTENDED, CONFIRMED, TERMINATED
+  performanceRating String?
+  managerRecommendation String?
+  hrRecommendation String?
+  finalDecision String? // CONFIRM, EXTEND, TERMINATE
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  reviews ProbationReview[]
+  @@index([tenantId])
+  @@index([employeeId])
+}
+
+model ProbationReview {
+  id String @id @default(uuid())
+  probationId String
+  probation ProbationTracking @relation(fields: [probationId], references: [id])
+  reviewDate DateTime
+  reviewerName String
+  performanceRating Int // 1-5
+  comments String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([probationId])
+}
+
+// Confirmation Process
+model ConfirmationRequest {
+  id String @id @default(uuid())
+  tenantId String
+  employeeId String
+  employee Employee @relation("EmployeeConfirmation", fields: [employeeId], references: [id])
+  eligibleDate DateTime
+  requestedDate DateTime
+  status String @default("PENDING") // PENDING, APPROVED, REJECTED, CONFIRMED
+  managerApproval String? // PENDING, APPROVED, REJECTED
+  hrApproval String? // PENDING, APPROVED, REJECTED
+  confirmationDate DateTime?
+  confirmationLetterUrl String?
+  newSalary Decimal? @db.Decimal(15, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([tenantId])
+  @@index([employeeId])
+}
+
+// ============================================================================
+// ANALYTICS & INTELLIGENCE
+// ============================================================================
+
+// Custom Report Definitions
+model ReportDefinition {
+  id          String   @id @default(uuid())
+  tenantId    String
+  
+  // Report Details
+  code        String
+  name        String
+  description String?
+  category    String   // HR, PAYROLL, LEAVE, ATTENDANCE, COMPLIANCE, etc.
+  
+  // Query Configuration
+  dataSource  String   // TABLE_NAME or CUSTOM_QUERY
+  columns     Json     // Array of {field, label, type, aggregation}
+  filters     Json?    // Array of filter definitions
+  groupBy     Json?    // Array of grouping fields
+  sortBy      Json?    // Array of {field, direction}
+  
+  // Visualization
+  chartType   String?  // BAR, LINE, PIE, TABLE, etc.
+  chartConfig Json?    // Chart-specific configuration
+  
+  // Access Control
+  isPublic    Boolean  @default(false)
+  createdBy   String
+  sharedWith  Json?    // Array of user/role IDs
+  
+  // Schedule
+  isScheduled Boolean  @default(false)
+  scheduleConfig Json? // Cron expression, recipients
+  
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  executions  ReportExecution[]
+  
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([category])
+  @@index([createdBy])
+}
+
+// Report Execution History
+model ReportExecution {
+  id               String           @id @default(uuid())
+  reportId         String
+  report           ReportDefinition @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  tenantId         String
+  
+  // Execution Details
+  executedBy       String
+  executedAt       DateTime         @default(now())
+  parameters       Json?            // Filter values used
+  
+  // Results
+  status           String           // RUNNING, COMPLETED, FAILED
+  recordCount      Int?
+  executionTime    Int?             // Milliseconds
+  errorMessage     String?
+  
+  // Output
+  resultData       Json?            // Cached results (if small)
+  exportUrl        String?          // S3/file path for large results
+  exportFormat     String?          // CSV, EXCEL, PDF
+  
+  createdAt        DateTime         @default(now())
+  
+  @@index([reportId])
+  @@index([tenantId])
+  @@index([executedBy])
+  @@index([executedAt])
+}
+
+// Analytics Dashboard Widgets
+model DashboardWidget {
+  id          String   @id @default(uuid())
+  tenantId    String
+  dashboardId String?  // null for global widgets
+  
+  // Widget Details
+  code        String
+  title       String
+  description String?
+  type        String   // KPI, CHART, TABLE, LIST, etc.
+  
+  // Data Source
+  dataSource  String   // API_ENDPOINT or REPORT_ID or CUSTOM_QUERY
+  refreshInterval Int? // Minutes
+  
+  // Configuration
+  config      Json     // Widget-specific configuration
+  position    Json     // {row, col, width, height}
+  
+  // Access
+  roles       Json?    // Array of role codes
+  
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([dashboardId])
+}
+
+// Predictive Analytics Models
+model PredictiveModel {
+  id              String   @id @default(uuid())
+  tenantId        String
+  
+  // Model Details
+  code            String
+  name            String
+  description     String?
+  modelType       String   // ATTRITION, PERFORMANCE, HIRING_DEMAND, SALARY_PROJECTION, etc.
+  algorithm       String   // LINEAR_REGRESSION, RANDOM_FOREST, NEURAL_NETWORK, etc.
+  
+  // Training
+  trainingDataset Json     // Configuration for data extraction
+  features        Json     // Array of feature definitions
+  targetVariable  String
+  
+  // Model Metadata
+  version         String
+  accuracy        Float?   // Model accuracy/R2 score
+  trainedAt       DateTime?
+  trainingRecords Int?
+  
+  // Model Artifacts
+  modelArtifactUrl String? // S3/file path to saved model
+  parameters      Json?    // Model hyperparameters
+  
+  // Deployment
+  status          String   @default("DRAFT") // DRAFT, TRAINING, DEPLOYED, DEPRECATED
+  deployedAt      DateTime?
+  
+  isActive        Boolean  @default(true)
+  createdBy       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  predictions     Prediction[]
+  
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([modelType])
+  @@index([status])
+}
+
+// Prediction Results
+model Prediction {
+  id              String          @id @default(uuid())
+  modelId         String
+  model           PredictiveModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  tenantId        String
+  
+  // Prediction Target
+  entityType      String          // EMPLOYEE, DEPARTMENT, COMPANY
+  entityId        String?
+  
+  // Prediction
+  predictedValue  Float
+  confidence      Float?          // 0-1 confidence score
+  predictedDate   DateTime
+  
+  // Input Features
+  inputFeatures   Json            // Feature values used
+  
+  // Outcome Tracking
+  actualValue     Float?
+  actualDate      DateTime?
+  accuracy        Float?          // Difference from actual
+  
+  createdAt       DateTime        @default(now())
+  
+  @@index([modelId])
+  @@index([tenantId])
+  @@index([entityType, entityId])
+  @@index([predictedDate])
+}
+
+// AI Agent Conversations
+model AIAgentConversation {
+  id              String   @id @default(uuid())
+  tenantId        String
+  userId          String
+  
+  // Conversation Details
+  title           String?
+  agentType       String   // HR_ASSISTANT, POLICY_ADVISOR, ANALYTICS_BOT, etc.
+  
+  // Context
+  sessionId       String
+  metadata        Json?    // User context, preferences
+  
+  // Status
+  status          String   @default("ACTIVE") // ACTIVE, ARCHIVED
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  messages        AIAgentMessage[]
+  
+  @@index([tenantId])
+  @@index([userId])
+  @@index([sessionId])
+}
+
+// AI Agent Messages
+model AIAgentMessage {
+  id              String               @id @default(uuid())
+  conversationId  String
+  conversation    AIAgentConversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  // Message Details
+  role            String               // USER, ASSISTANT, SYSTEM
+  content         String               @db.Text
+  
+  // Metadata
+  tokens          Int?
+  model           String?              // GPT-4, Claude, etc.
+  
+  // Actions
+  actionTaken     String?              // QUERY_DATABASE, GENERATE_REPORT, etc.
+  actionResult    Json?
+  
+  createdAt       DateTime             @default(now())
+  
+  @@index([conversationId])
+  @@index([role])
+  @@index([createdAt])
+}
+
+// Analytics Cache for performance
+model AnalyticsCache {
+  id              String   @id @default(uuid())
+  tenantId        String
+  
+  // Cache Key
+  cacheKey        String   // Unique identifier for cached data
+  category        String   // DASHBOARD, REPORT, ANALYTICS
+  
+  // Data
+  data            Json     // Cached analytics data
+  
+  // Metadata
+  generatedAt     DateTime @default(now())
+  expiresAt       DateTime
+  recordCount     Int?
+  
+  @@unique([tenantId, cacheKey])
+  @@index([tenantId])
+  @@index([expiresAt])
 }

@@ -1,273 +1,131 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { positionService } from '@/lib/services/organization';
+import { PositionService } from '@/lib/services/position.service';
 import { z } from 'zod';
 
-// API Response Standard
 interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: Record<string, unknown>;
-  };
-  meta?: {
-    timestamp: string;
-    requestId: string;
-    apiVersion: string;
-  };
+  error?: { code: string; message: string; details?: Record<string, unknown> };
+  meta?: any;
 }
 
-const updatePositionSchema = z.object({
-  familyId: z.string().uuid().optional(),
-  gradeId: z.string().uuid().optional().nullable(),
-  code: z.string().min(1).optional(),
-  title: z.string().min(1).optional(),
-  description: z.string().optional().nullable(),
-  status: z.string().optional(),
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { id } = context.params;
+    const { user } = context;
+
+    const position = await PositionService.findById(id, user.tenantId);
+
+    if (!position) {
+      const response: ApiResponse = {
+        success: false,
+        error: { code: 'E4001', message: 'Position not found' },
+        meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      };
+      return NextResponse.json(response, { status: 404 });
+    }
+
+    const response: ApiResponse = {
+      success: true,
+      data: position,
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+    };
+
+    return NextResponse.json(response, { status: 200 });
+  } catch (error) {
+    const response: ApiResponse = {
+      success: false,
+      error: { code: 'E5001', message: 'Failed to fetch position', details: { error: error instanceof Error ? error.message : 'Unknown error' } },
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+    };
+    return NextResponse.json(response, { status: 500 });
+  }
 });
 
-/**
- * GET /api/v1/positions/:id
- * Get position by ID
- */
-export const GET = withEnhancedAuth(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
-    try {
-      const { id } = params;
+export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { id } = context.params;
+    const { user } = context;
+    const body = await request.json();
 
-      const position = await positionService.findById(id);
+    const position = await PositionService.update(id, user.tenantId, body);
 
-      if (!position) {
-        const response: ApiResponse = {
-          success: false,
-          error: {
-            code: 'E3001',
-            message: 'Position not found',
-          },
-          meta: {
-            timestamp: new Date().toISOString(),
-            requestId: crypto.randomUUID(),
-            apiVersion: 'v1',
-          },
-        };
-
-        return NextResponse.json(response, { status: 404 });
-      }
-
-      const response: ApiResponse = {
-        success: true,
-        data: position,
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 200 });
-    } catch (error) {
-      console.error('[Position API] GET Error:', error);
-
+    if (!position) {
       const response: ApiResponse = {
         success: false,
-        error: {
-          code: 'E5001',
-          message: 'Failed to fetch position',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
+        error: { code: 'E4001', message: 'Position not found' },
+        meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
       };
-
-      return NextResponse.json(response, { status: 500 });
+      return NextResponse.json(response, { status: 404 });
     }
+
+    const response: ApiResponse = {
+      success: true,
+      data: position,
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+    };
+
+    return NextResponse.json(response, { status: 200 });
+  } catch (error) {
+    let statusCode = 500;
+    let errorCode = 'E5001';
+
+    if (error instanceof z.ZodError) {
+      statusCode = 400;
+      errorCode = 'E2001';
+    }
+
+    const response: ApiResponse = {
+      success: false,
+      error: { code: errorCode, message: error instanceof Error ? error.message : 'Failed to update position', details: error instanceof z.ZodError ? { errors: error.errors } : undefined },
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+    };
+
+    return NextResponse.json(response, { status: statusCode });
   }
-);
+});
 
-/**
- * PUT /api/v1/positions/:id
- * Update position by ID
- */
-export const PUT = withEnhancedAuth(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
-    try {
-      const { id } = params;
-      const body = await request.json();
+export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { id } = context.params;
+    const { user } = context;
 
-      // Validate request body
-      const validationResult = updatePositionSchema.safeParse(body);
-      if (!validationResult.success) {
-        const response: ApiResponse = {
-          success: false,
-          error: {
-            code: 'E2001',
-            message: 'Validation failed',
-            details: { errors: validationResult.error.errors },
-          },
-          meta: {
-            timestamp: new Date().toISOString(),
-            requestId: crypto.randomUUID(),
-            apiVersion: 'v1',
-          },
-        };
+    const position = await PositionService.delete(id, user.tenantId);
 
-        return NextResponse.json(response, { status: 400 });
-      }
-
-      // Update position
-      const position = await positionService.update(id, validationResult.data);
-
-      const response: ApiResponse = {
-        success: true,
-        data: position,
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 200 });
-    } catch (error) {
-      console.error('[Position API] PUT Error:', error);
-
-      // Check for specific error types
-      if (error instanceof Error) {
-        if (error.message.includes('not found')) {
-          const response: ApiResponse = {
-            success: false,
-            error: {
-              code: 'E3001',
-              message: error.message,
-            },
-            meta: {
-              timestamp: new Date().toISOString(),
-              requestId: crypto.randomUUID(),
-              apiVersion: 'v1',
-            },
-          };
-
-          return NextResponse.json(response, { status: 404 });
-        }
-
-        if (error.message.includes('already exists')) {
-          const response: ApiResponse = {
-            success: false,
-            error: {
-              code: 'E3002',
-              message: error.message,
-            },
-            meta: {
-              timestamp: new Date().toISOString(),
-              requestId: crypto.randomUUID(),
-              apiVersion: 'v1',
-            },
-          };
-
-          return NextResponse.json(response, { status: 409 });
-        }
-      }
-
+    if (!position) {
       const response: ApiResponse = {
         success: false,
-        error: {
-          code: 'E5001',
-          message: 'Failed to update position',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
+        error: { code: 'E4001', message: 'Position not found' },
+        meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
       };
-
-      return NextResponse.json(response, { status: 500 });
+      return NextResponse.json(response, { status: 404 });
     }
-  }
-);
 
-/**
- * DELETE /api/v1/positions/:id
- * Delete position (soft delete by setting status to Inactive)
- */
-export const DELETE = withEnhancedAuth(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
-    try {
-      const { id } = params;
+    const response: ApiResponse = {
+      success: true,
+      data: { message: 'Position deleted successfully', id: position.id },
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+    };
 
-      await positionService.delete(id);
+    return NextResponse.json(response, { status: 200 });
+  } catch (error) {
+    let statusCode = 500;
+    let errorCode = 'E5001';
+    let message = 'Failed to delete position';
 
-      const response: ApiResponse = {
-        success: true,
-        data: null,
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 204 });
-    } catch (error) {
-      console.error('[Position API] DELETE Error:', error);
-
-      if (error instanceof Error) {
-        if (error.message.includes('not found')) {
-          const response: ApiResponse = {
-            success: false,
-            error: {
-              code: 'E3001',
-              message: 'Position not found',
-            },
-            meta: {
-              timestamp: new Date().toISOString(),
-              requestId: crypto.randomUUID(),
-              apiVersion: 'v1',
-            },
-          };
-
-          return NextResponse.json(response, { status: 404 });
-        }
-
-        if (error.message.includes('Cannot delete')) {
-          const response: ApiResponse = {
-            success: false,
-            error: {
-              code: 'E4001',
-              message: error.message,
-            },
-            meta: {
-              timestamp: new Date().toISOString(),
-              requestId: crypto.randomUUID(),
-              apiVersion: 'v1',
-            },
-          };
-
-          return NextResponse.json(response, { status: 409 });
-        }
-      }
-
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E5001',
-          message: 'Failed to delete position',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 500 });
+    if (error instanceof Error && error.message.includes('has employees')) {
+      statusCode = 400;
+      errorCode = 'E3001';
+      message = error.message;
     }
+
+    const response: ApiResponse = {
+      success: false,
+      error: { code: errorCode, message, details: { error: error instanceof Error ? error.message : 'Unknown error' } },
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+    };
+
+    return NextResponse.json(response, { status: statusCode });
   }
-);
+});

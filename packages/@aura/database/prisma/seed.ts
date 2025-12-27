@@ -32,6 +32,7 @@ import {
     competencyResourcesSeed,
     assessmentCriteriaSeed
 } from '../src/seeds/18-competency-library.seed';
+import { seedPositions } from '../src/seeds/21-positions.seed';
 
 const prisma = new PrismaClient();
 
@@ -886,6 +887,12 @@ async function main() {
     }
 
     console.log('✅ Competency Library Module seeded successfully!');
+    
+    // ============================================
+    // POSITIONS
+    // ============================================
+    await seedPositions();
+    console.log('✅ Positions seeded successfully!');
 
     console.log('🏁 Comprehensive Seeding Completed!');
 }

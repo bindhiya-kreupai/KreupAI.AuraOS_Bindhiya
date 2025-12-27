@@ -226,7 +226,7 @@ export const superAdminMenu: MenuDefinition = {
             code: 'CORE_HR',
             label: 'Core HR',
             icon: 'coreHr',
-            path: '/dashboard/core-hr',
+            path: '/core-hr',
             features: [
                 'Employee Database',
                 'Organization Structure',
