@@ -1,128 +1,75 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
 
 /**
  * GET /api/recruitment/offers
- * Fetch all job offers for the authenticated user's tenant
+ * Fetch all job offers
  */
-export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, _context) => {
   try {
-    const { user } = context;
     const { searchParams } = new URL(request.url);
-    const candidateId = searchParams.get('candidateId');
+    const applicationId = searchParams.get('applicationId');
     const status = searchParams.get('status');
 
-    // Mock data for job offers
-    let mockOffers = [
-      {
-        id: '1',
-        tenantId: user.tenantId,
-        candidateId: 'cand_101',
-        candidateName: 'Michael Chen',
-        candidateEmail: 'michael.chen@email.com',
-        applicationId: 'app_1',
-        jobTitle: 'Senior Software Engineer',
-        department: 'Engineering',
-        offerDate: '2025-12-23T10:00:00Z',
-        expiryDate: '2026-01-06T23:59:59Z',
-        status: 'Pending',
-        employmentType: 'Full-time',
-        startDate: '2026-01-20',
-        compensation: {
-          baseSalary: 165000,
-          currency: 'USD',
-          payFrequency: 'Annual',
-          bonus: {
-            type: 'Performance',
-            amount: 25000,
-            description: 'Annual performance bonus',
-          },
-          equity: {
-            type: 'Stock Options',
-            amount: 10000,
-            vestingSchedule: '4 years with 1 year cliff',
+    const offers = await prisma.jobOffer.findMany({
+      where: {
+        ...(applicationId && { applicationId }),
+        ...(status && { status }),
+      },
+      include: {
+        application: {
+          include: {
+            candidate: true,
+            jobPosting: {
+              select: {
+                title: true,
+                department: true,
+                location: true,
+              },
+            },
           },
         },
-        benefits: [
-          'Health Insurance (Medical, Dental, Vision)',
-          '401(k) with 4% company match',
-          'Unlimited PTO',
-          'Remote work options',
-          'Professional development budget ($5,000/year)',
-          'Home office stipend',
-        ],
-        workLocation: 'San Francisco, CA (Hybrid)',
-        reportingTo: 'John Smith - Engineering Manager',
-        offerLetterUrl: 'https://example.com/offers/michael-chen-offer.pdf',
-        createdBy: 'recruiter_1',
-        createdDate: '2025-12-23T09:00:00Z',
-        approvedBy: 'hiring_manager_1',
-        approvedDate: '2025-12-23T09:30:00Z',
       },
-      {
-        id: '2',
-        tenantId: user.tenantId,
-        candidateId: 'cand_103',
-        candidateName: 'David Kumar',
-        candidateEmail: 'david.kumar@email.com',
-        applicationId: 'app_3',
-        jobTitle: 'Product Manager',
-        department: 'Product',
-        offerDate: '2025-12-24T14:00:00Z',
-        expiryDate: '2026-01-07T23:59:59Z',
-        status: 'Accepted',
-        employmentType: 'Full-time',
-        startDate: '2026-02-01',
-        compensation: {
-          baseSalary: 125000,
-          currency: 'USD',
-          payFrequency: 'Annual',
-          bonus: {
-            type: 'Performance',
-            amount: 15000,
-            description: 'Annual performance bonus',
-          },
-          equity: {
-            type: 'RSUs',
-            amount: 5000,
-            vestingSchedule: '4 years with quarterly vesting',
-          },
-        },
-        benefits: [
-          'Health Insurance (Medical, Dental, Vision)',
-          '401(k) with 4% company match',
-          '20 days PTO',
-          'Remote work options',
-          'Professional development budget ($3,000/year)',
-        ],
-        workLocation: 'Remote',
-        reportingTo: 'Alice Johnson - VP of Product',
-        offerLetterUrl: 'https://example.com/offers/david-kumar-offer.pdf',
-        createdBy: 'recruiter_2',
-        createdDate: '2025-12-24T13:00:00Z',
-        approvedBy: 'hiring_manager_2',
-        approvedDate: '2025-12-24T13:30:00Z',
-        acceptedDate: '2025-12-24T18:00:00Z',
-      },
-    ];
+      orderBy: { createdAt: 'desc' },
+    });
 
-    // Filter by candidateId if provided
-    if (candidateId) {
-      mockOffers = mockOffers.filter(offer => offer.candidateId === candidateId);
-    }
+    // Transform to match UI expectations
+    const transformedOffers = offers.map((offer) => ({
+      id: offer.id,
+      applicationId: offer.applicationId,
+      candidateId: offer.application.candidateId,
+      candidateName: `${offer.application.candidate.firstName} ${offer.application.candidate.lastName}`,
+      candidateEmail: offer.application.candidate.email,
+      jobTitle: offer.jobTitle,
+      department: offer.department,
+      location: offer.location,
+      employmentType: offer.employmentType,
+      startDate: offer.startDate?.toISOString(),
+      salary: offer.salary.toString(),
+      currency: offer.currency,
+      bonus: offer.bonus?.toString(),
+      equity: offer.equity,
+      benefits: offer.benefits,
+      status: offer.status,
+      approvedBy: offer.approvedBy,
+      approvedDate: offer.approvedDate?.toISOString(),
+      sentDate: offer.sentDate?.toISOString(),
+      sentBy: offer.sentBy,
+      acceptedDate: offer.acceptedDate?.toISOString(),
+      declinedDate: offer.declinedDate?.toISOString(),
+      declineReason: offer.declineReason,
+      expiryDate: offer.expiryDate?.toISOString(),
+      offerLetterUrl: offer.offerLetterUrl,
+      notes: offer.notes,
+      createdAt: offer.createdAt.toISOString(),
+      updatedAt: offer.updatedAt.toISOString(),
+    }));
 
-    // Filter by status if provided
-    if (status) {
-      mockOffers = mockOffers.filter(offer => offer.status === status);
-    }
-
-    return NextResponse.json({ data: mockOffers }, { status: 200 });
+    return NextResponse.json({ data: transformedOffers }, { status: 200 });
   } catch {
-        return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch offers' }, { status: 500 });
   }
 });
 
@@ -130,66 +77,105 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
  * POST /api/recruitment/offers
  * Create a new job offer
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, _context) => {
   try {
-    const { user } = context;
     const body = await request.json();
 
-    // Mock creating a job offer
-    const newOffer = {
-      id: `offer_${Date.now()}`,
-      tenantId: user.tenantId,
-      createdBy: user.userId,
-      createdDate: new Date().toISOString(),
-      offerDate: new Date().toISOString(),
-      status: 'Pending',
-      ...body,
-    };
+    const offer = await prisma.jobOffer.create({
+      data: {
+        applicationId: body.applicationId,
+        jobTitle: body.jobTitle,
+        department: body.department,
+        location: body.location,
+        employmentType: body.employmentType,
+        startDate: body.startDate ? new Date(body.startDate) : null,
+        salary: body.salary,
+        currency: body.currency || 'USD',
+        bonus: body.bonus,
+        equity: body.equity,
+        benefits: body.benefits,
+        status: body.status || 'draft',
+        expiryDate: body.expiryDate ? new Date(body.expiryDate) : null,
+        notes: body.notes,
+      },
+      include: {
+        application: {
+          include: {
+            candidate: true,
+            jobPosting: true,
+          },
+        },
+      },
+    });
 
-    return NextResponse.json({ data: newOffer }, { status: 201 });
+    return NextResponse.json({ data: offer }, { status: 201 });
   } catch {
-        return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to create offer' }, { status: 500 });
   }
 });
 
 /**
- * PUT /api/recruitment/offers
+ * PUT /api/recruitment/offers/:id
  * Update job offer status (accept, reject, withdraw)
  */
-export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
+export const PUT = withEnhancedAuth(async (request: NextRequest, _context) => {
   try {
-    const { user } = context;
     const body = await request.json();
-    const { id, status, ...updates } = body;
+    const { id, ...updates } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Offer ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Offer ID required' }, { status: 400 });
     }
 
-    // Mock updating a job offer
-    const updatedOffer = {
-      id,
-      tenantId: user.tenantId,
-      status,
-      ...updates,
-      updatedBy: user.userId,
-      updatedDate: new Date().toISOString(),
-      ...(status === 'Accepted' && { acceptedDate: new Date().toISOString() }),
-      ...(status === 'Rejected' && { rejectedDate: new Date().toISOString() }),
-      ...(status === 'Withdrawn' && { withdrawnDate: new Date().toISOString() }),
-    };
+    const updateData: Record<string, unknown> = {};
 
-    return NextResponse.json({ data: updatedOffer }, { status: 200 });
+    if (updates.jobTitle) updateData.jobTitle = updates.jobTitle;
+    if (updates.department) updateData.department = updates.department;
+    if (updates.location) updateData.location = updates.location;
+    if (updates.employmentType) updateData.employmentType = updates.employmentType;
+    if (updates.startDate) updateData.startDate = new Date(updates.startDate);
+    if (updates.salary !== undefined) updateData.salary = updates.salary;
+    if (updates.currency) updateData.currency = updates.currency;
+    if (updates.bonus !== undefined) updateData.bonus = updates.bonus;
+    if (updates.equity !== undefined) updateData.equity = updates.equity;
+    if (updates.benefits) updateData.benefits = updates.benefits;
+    if (updates.notes !== undefined) updateData.notes = updates.notes;
+    if (updates.expiryDate) updateData.expiryDate = new Date(updates.expiryDate);
+    if (updates.offerLetterUrl) updateData.offerLetterUrl = updates.offerLetterUrl;
+
+    // Status workflow updates
+    if (updates.status) {
+      updateData.status = updates.status;
+
+      if (updates.status === 'approved') {
+        updateData.approvedBy = updates.approvedBy;
+        updateData.approvedDate = new Date();
+      } else if (updates.status === 'sent') {
+        updateData.sentBy = updates.sentBy;
+        updateData.sentDate = new Date();
+      } else if (updates.status === 'accepted') {
+        updateData.acceptedDate = new Date();
+      } else if (updates.status === 'declined') {
+        updateData.declinedDate = new Date();
+        if (updates.declineReason) updateData.declineReason = updates.declineReason;
+      }
+    }
+
+    const offer = await prisma.jobOffer.update({
+      where: { id },
+      data: updateData,
+      include: {
+        application: {
+          include: {
+            candidate: true,
+            jobPosting: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({ data: offer }, { status: 200 });
   } catch {
-        return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update offer' }, { status: 500 });
   }
 });

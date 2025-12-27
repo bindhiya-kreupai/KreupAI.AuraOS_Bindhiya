@@ -265,8 +265,17 @@ model Employee {
   addressId String?
   address   Address? @relation(fields: [addressId], references: [id])
 
+  // Relations to other modules
+  employeeLifeEvents   EmployeeLifeEvent[]   @relation("EmployeeLifeEvents")
+  idcards              IDCard[]              @relation("EmployeeIDCards")
+  letters              Letter[]              @relation("EmployeeLetters")
+  exitRequests         ExitRequest[]         @relation("EmployeeExits")
+  probationTrackings   ProbationTracking[]   @relation("EmployeeProbation")
+  confirmationRequests ConfirmationRequest[] @relation("EmployeeConfirmation")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@index([companyId])
   @@index([departmentId])
   @@index([locationId])
@@ -475,6 +484,7 @@ model DocumentType {
   status      String             @default("Active")
   documents   EmployeeDocument[]
 }
+
 // ============================================================================
 // 7. ORGANIZATION MASTERS
 // ============================================================================
@@ -552,30 +562,30 @@ model Holiday {
 
 // Time Tracking - Clock In/Out Records
 model AttendancePunch {
-  id          String    @id @default(uuid())
-  tenantId    String
-  employeeId  String
-  punchDate   DateTime
-  punchTime   DateTime
-  punchType   String    // CLOCK_IN, CLOCK_OUT, BREAK_START, BREAK_END
-  location    String?   // GPS coordinates or location name
-  device      String?   // Mobile, Web, Biometric
-  ipAddress   String?
-  photo       String?   // Photo capture URL
-  notes       String?
+  id         String   @id @default(uuid())
+  tenantId   String
+  employeeId String
+  punchDate  DateTime
+  punchTime  DateTime
+  punchType  String // CLOCK_IN, CLOCK_OUT, BREAK_START, BREAK_END
+  location   String? // GPS coordinates or location name
+  device     String? // Mobile, Web, Biometric
+  ipAddress  String?
+  photo      String? // Photo capture URL
+  notes      String?
 
   // Verification
-  isVerified  Boolean   @default(false)
-  verifiedBy  String?
-  verifiedAt  DateTime?
+  isVerified Boolean   @default(false)
+  verifiedBy String?
+  verifiedAt DateTime?
 
   // Regularization
-  isRegularized Boolean @default(false)
-  regularizedBy String?
+  isRegularized        Boolean @default(false)
+  regularizedBy        String?
   regularizationReason String?
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -585,43 +595,43 @@ model AttendancePunch {
 
 // Daily Attendance Summary
 model AttendanceRecord {
-  id                String    @id @default(uuid())
-  tenantId          String
-  employeeId        String
-  date              DateTime
+  id         String   @id @default(uuid())
+  tenantId   String
+  employeeId String
+  date       DateTime
 
   // Shift Info
-  shiftId           String?
-  shiftStartTime    DateTime?
-  shiftEndTime      DateTime?
+  shiftId        String?
+  shiftStartTime DateTime?
+  shiftEndTime   DateTime?
 
   // Actual Times
-  clockIn           DateTime?
-  clockOut          DateTime?
+  clockIn  DateTime?
+  clockOut DateTime?
 
   // Calculated Hours
-  workHours         Float     @default(0)
-  breakHours        Float     @default(0)
-  overtimeHours     Float     @default(0)
+  workHours     Float @default(0)
+  breakHours    Float @default(0)
+  overtimeHours Float @default(0)
 
   // Status
-  status            String    // PRESENT, ABSENT, HALF_DAY, LATE, EARLY_OUT, ON_LEAVE, HOLIDAY, WEEK_OFF
-  isLate            Boolean   @default(false)
-  isEarlyOut        Boolean   @default(false)
+  status     String // PRESENT, ABSENT, HALF_DAY, LATE, EARLY_OUT, ON_LEAVE, HOLIDAY, WEEK_OFF
+  isLate     Boolean @default(false)
+  isEarlyOut Boolean @default(false)
 
   // Regularization
-  isRegularized     Boolean   @default(false)
-  regularizationId  String?
+  isRegularized    Boolean @default(false)
+  regularizationId String?
 
   // Approval
-  approvalStatus    String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  approvedBy        String?
-  approvedAt        DateTime?
+  approvalStatus String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedBy     String?
+  approvedAt     DateTime?
 
-  remarks           String?
+  remarks String?
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([tenantId, employeeId, date])
   @@index([tenantId])
@@ -632,44 +642,44 @@ model AttendanceRecord {
 
 // Shift Definitions
 model Shift {
-  id              String    @id @default(uuid())
-  tenantId        String
-  code            String
-  name            String
-  description     String?
+  id          String  @id @default(uuid())
+  tenantId    String
+  code        String
+  name        String
+  description String?
 
   // Timing
-  startTime       String    // HH:MM format
-  endTime         String    // HH:MM format
-  graceInMinutes  Int       @default(0)
-  graceOutMinutes Int       @default(0)
+  startTime       String // HH:MM format
+  endTime         String // HH:MM format
+  graceInMinutes  Int    @default(0)
+  graceOutMinutes Int    @default(0)
 
   // Break Configuration
-  breakDuration   Int       @default(0) // Minutes
-  isPaidBreak     Boolean   @default(true)
+  breakDuration Int     @default(0) // Minutes
+  isPaidBreak   Boolean @default(true)
 
   // Work Hours
-  workHours       Float     // Standard work hours
-  weekendDays     String[]  // e.g., ["Saturday", "Sunday"]
+  workHours   Float // Standard work hours
+  weekendDays String[] // e.g., ["Saturday", "Sunday"]
 
   // Overtime
-  overtimeAllowed Boolean   @default(false)
-  maxOvertimeHours Float    @default(0)
+  overtimeAllowed  Boolean @default(false)
+  maxOvertimeHours Float   @default(0)
 
   // Flexibility
-  isFlexible      Boolean   @default(false)
-  flexWindow      Int       @default(0) // Minutes of flex allowed
+  isFlexible Boolean @default(false)
+  flexWindow Int     @default(0) // Minutes of flex allowed
 
   // Status
-  isActive        Boolean   @default(true)
-  isDefault       Boolean   @default(false)
+  isActive  Boolean @default(true)
+  isDefault Boolean @default(false)
 
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  assignments     ShiftAssignment[]
-  rosters         ShiftRoster[]
+  assignments ShiftAssignment[]
+  rosters     ShiftRoster[]
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -678,21 +688,21 @@ model Shift {
 
 // Employee Shift Assignments
 model ShiftAssignment {
-  id          String    @id @default(uuid())
-  tenantId    String
-  employeeId  String
-  shiftId     String
-  shift       Shift     @relation(fields: [shiftId], references: [id])
+  id         String @id @default(uuid())
+  tenantId   String
+  employeeId String
+  shiftId    String
+  shift      Shift  @relation(fields: [shiftId], references: [id])
 
   effectiveFrom DateTime
   effectiveTo   DateTime?
 
-  isActive    Boolean   @default(true)
-  assignedBy  String?
-  reason      String?
+  isActive   Boolean @default(true)
+  assignedBy String?
+  reason     String?
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -702,25 +712,25 @@ model ShiftAssignment {
 
 // Shift Roster (Weekly/Monthly Planning)
 model ShiftRoster {
-  id          String    @id @default(uuid())
-  tenantId    String
-  employeeId  String
-  shiftId     String
-  shift       Shift     @relation(fields: [shiftId], references: [id])
+  id         String @id @default(uuid())
+  tenantId   String
+  employeeId String
+  shiftId    String
+  shift      Shift  @relation(fields: [shiftId], references: [id])
 
-  rosterDate  DateTime
+  rosterDate DateTime
 
   // Override shift times if needed
   customStartTime String?
   customEndTime   String?
 
-  isWeekOff   Boolean   @default(false)
-  isHoliday   Boolean   @default(false)
+  isWeekOff Boolean @default(false)
+  isHoliday Boolean @default(false)
 
-  status      String    @default("SCHEDULED") // SCHEDULED, COMPLETED, SWAPPED, CANCELLED
+  status String @default("SCHEDULED") // SCHEDULED, COMPLETED, SWAPPED, CANCELLED
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([tenantId, employeeId, rosterDate])
   @@index([tenantId])
@@ -731,29 +741,29 @@ model ShiftRoster {
 
 // Shift Swap Requests
 model ShiftSwapRequest {
-  id                String    @id @default(uuid())
-  tenantId          String
-  requestorId       String    // Employee requesting swap
-  swapWithId        String    // Employee to swap with
+  id          String @id @default(uuid())
+  tenantId    String
+  requestorId String // Employee requesting swap
+  swapWithId  String // Employee to swap with
 
-  requestorDate     DateTime
-  requestorShiftId  String
+  requestorDate    DateTime
+  requestorShiftId String
 
-  swapWithDate      DateTime
-  swapWithShiftId   String
+  swapWithDate    DateTime
+  swapWithShiftId String
 
-  reason            String
+  reason String
 
   // Approval Workflow
-  status            String    @default("PENDING") // PENDING, APPROVED_BY_PEER, APPROVED_BY_MANAGER, REJECTED, COMPLETED
-  swapWithApproval  String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  managerApproval   String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  approvedBy        String?
-  approvedAt        DateTime?
-  rejectionReason   String?
+  status           String    @default("PENDING") // PENDING, APPROVED_BY_PEER, APPROVED_BY_MANAGER, REJECTED, COMPLETED
+  swapWithApproval String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  managerApproval  String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedBy       String?
+  approvedAt       DateTime?
+  rejectionReason  String?
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([requestorId])
@@ -763,18 +773,18 @@ model ShiftSwapRequest {
 
 // Overtime Management
 model OvertimeRequest {
-  id              String    @id @default(uuid())
-  tenantId        String
-  employeeId      String
+  id         String @id @default(uuid())
+  tenantId   String
+  employeeId String
 
-  overtimeDate    DateTime
-  startTime       DateTime
-  endTime         DateTime
+  overtimeDate DateTime
+  startTime    DateTime
+  endTime      DateTime
 
-  totalHours      Float
+  totalHours Float
 
   // Type
-  overtimeType    String    // REGULAR, HOLIDAY, WEEKEND
+  overtimeType String // REGULAR, HOLIDAY, WEEKEND
 
   // Justification
   reason          String
@@ -788,17 +798,17 @@ model OvertimeRequest {
   rejectionReason String?
 
   // Compensation
-  compensationType String?  // PAID, COMP_OFF
-  isCompensated   Boolean   @default(false)
-  compensatedAt   DateTime?
+  compensationType String? // PAID, COMP_OFF
+  isCompensated    Boolean   @default(false)
+  compensatedAt    DateTime?
 
   // Actual
-  actualHours     Float?
-  verifiedBy      String?
-  verifiedAt      DateTime?
+  actualHours Float?
+  verifiedBy  String?
+  verifiedAt  DateTime?
 
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -808,22 +818,22 @@ model OvertimeRequest {
 
 // Attendance Regularization Requests
 model AttendanceRegularization {
-  id              String    @id @default(uuid())
-  tenantId        String
-  employeeId      String
+  id         String @id @default(uuid())
+  tenantId   String
+  employeeId String
 
-  date            DateTime
+  date DateTime
 
   // What needs regularization
-  regularizationType String  // MISSED_PUNCH, EARLY_OUT, LATE_IN, WRONG_PUNCH
+  regularizationType String // MISSED_PUNCH, EARLY_OUT, LATE_IN, WRONG_PUNCH
 
   // Requested Times
   requestedClockIn  DateTime?
   requestedClockOut DateTime?
 
   // Justification
-  reason          String
-  attachments     String[]  @default([])
+  reason      String
+  attachments String[] @default([])
 
   // Approval
   status          String    @default("PENDING") // PENDING, APPROVED, REJECTED
@@ -831,8 +841,8 @@ model AttendanceRegularization {
   approvedAt      DateTime?
   rejectionReason String?
 
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -842,30 +852,30 @@ model AttendanceRegularization {
 
 // Comp-Off (Compensatory Off) Management
 model CompOffRequest {
-  id              String    @id @default(uuid())
-  tenantId        String
-  employeeId      String
+  id         String @id @default(uuid())
+  tenantId   String
+  employeeId String
 
   // Earned from overtime/holiday work
-  earnedDate      DateTime
-  earnedHours     Float
+  earnedDate  DateTime
+  earnedHours Float
 
   // Usage
-  status          String    @default("EARNED") // EARNED, APPLIED, APPROVED, AVAILED, EXPIRED, CANCELLED
+  status String @default("EARNED") // EARNED, APPLIED, APPROVED, AVAILED, EXPIRED, CANCELLED
 
   // When applying comp-off as leave
-  appliedDate     DateTime?
-  expiryDate      DateTime
+  appliedDate DateTime?
+  expiryDate  DateTime
 
   // Approval
   approvedBy      String?
   approvedAt      DateTime?
   rejectionReason String?
 
-  remarks         String?
+  remarks String?
 
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -2131,36 +2141,36 @@ enum PayslipStatus {
 
 // Employee Salary Structure - Individual employee salary breakdown
 model EmployeeSalaryStructure {
-  id         String  @id @default(uuid())
+  id         String @id @default(uuid())
   tenantId   String
   employeeId String
 
   // Effective Dates
   effectiveFrom DateTime
   effectiveTo   DateTime?
-  isActive      Boolean  @default(true)
+  isActive      Boolean   @default(true)
 
   // Salary Components
-  basicSalary       Decimal
+  basicSalary        Decimal
   houseRentAllowance Decimal @default(0)
   transportAllowance Decimal @default(0)
-  otherAllowances    Json?    // Array of {code, name, amount}
+  otherAllowances    Json? // Array of {code, name, amount}
 
   // Calculations
-  grossSalary       Decimal
-  ctc               Decimal   // Cost to Company
+  grossSalary Decimal
+  ctc         Decimal // Cost to Company
 
   // Pay Frequency
-  payFrequency      String    @default("MONTHLY") // MONTHLY, BIWEEKLY, WEEKLY
+  payFrequency String @default("MONTHLY") // MONTHLY, BIWEEKLY, WEEKLY
 
   // Benefits
-  medicalInsurance  Decimal   @default(0)
-  lifeInsurance     Decimal   @default(0)
+  medicalInsurance Decimal @default(0)
+  lifeInsurance    Decimal @default(0)
 
-  remarks           String?
-  createdBy         String
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  remarks   String?
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -2170,39 +2180,39 @@ model EmployeeSalaryStructure {
 
 // Employee Benefits - Insurance, medical, etc.
 model EmployeeBenefit {
-  id               String    @id @default(uuid())
-  tenantId         String
-  employeeId       String
+  id         String @id @default(uuid())
+  tenantId   String
+  employeeId String
 
   // Benefit Details
-  benefitType      String    // MEDICAL, LIFE_INSURANCE, DENTAL, VISION, etc.
-  benefitName      String
-  provider         String?
-  policyNumber     String?
+  benefitType  String // MEDICAL, LIFE_INSURANCE, DENTAL, VISION, etc.
+  benefitName  String
+  provider     String?
+  policyNumber String?
 
   // Coverage
-  coverageAmount   Decimal?
-  employeeContribution Decimal @default(0)
-  employerContribution Decimal @default(0)
-  totalPremium     Decimal
+  coverageAmount       Decimal?
+  employeeContribution Decimal  @default(0)
+  employerContribution Decimal  @default(0)
+  totalPremium         Decimal
 
   // Dates
-  startDate        DateTime
-  endDate          DateTime?
-  renewalDate      DateTime?
+  startDate   DateTime
+  endDate     DateTime?
+  renewalDate DateTime?
 
   // Dependents
-  coversDependents Boolean   @default(false)
-  dependentsCount  Int       @default(0)
-  dependentsDetails Json?    // Array of dependent info
+  coversDependents  Boolean @default(false)
+  dependentsCount   Int     @default(0)
+  dependentsDetails Json? // Array of dependent info
 
   // Status
-  status           String    @default("ACTIVE") // ACTIVE, INACTIVE, EXPIRED, CANCELLED
-  isActive         Boolean   @default(true)
+  status   String  @default("ACTIVE") // ACTIVE, INACTIVE, EXPIRED, CANCELLED
+  isActive Boolean @default(true)
 
-  remarks          String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  remarks   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -2212,52 +2222,52 @@ model EmployeeBenefit {
 
 // Tax Declarations - Employee tax-saving declarations
 model TaxDeclaration {
-  id              String    @id @default(uuid())
-  tenantId        String
-  employeeId      String
+  id         String @id @default(uuid())
+  tenantId   String
+  employeeId String
 
   // Financial Year
-  financialYear   String    // YYYY-YYYY format (e.g., 2024-2025)
+  financialYear String // YYYY-YYYY format (e.g., 2024-2025)
 
   // Regime Selection
-  taxRegime       String    @default("OLD") // OLD, NEW
+  taxRegime String @default("OLD") // OLD, NEW
 
   // Section 80C (Up to 1.5L)
-  ppf             Decimal   @default(0)
-  elss            Decimal   @default(0)
-  lifeInsurance   Decimal   @default(0)
-  nsc             Decimal   @default(0)
+  ppf               Decimal @default(0)
+  elss              Decimal @default(0)
+  lifeInsurance     Decimal @default(0)
+  nsc               Decimal @default(0)
   homeLoanPrincipal Decimal @default(0)
-  tuitionFees     Decimal   @default(0)
-  section80C      Decimal   @default(0) // Total
+  tuitionFees       Decimal @default(0)
+  section80C        Decimal @default(0) // Total
 
   // Section 80D (Medical Insurance)
-  medicalSelf     Decimal   @default(0)
-  medicalParents  Decimal   @default(0)
+  medicalSelf       Decimal @default(0)
+  medicalParents    Decimal @default(0)
   preventiveCheckup Decimal @default(0)
-  section80D      Decimal   @default(0)
+  section80D        Decimal @default(0)
 
   // Section 80E (Education Loan Interest)
-  section80E      Decimal   @default(0)
+  section80E Decimal @default(0)
 
   // Section 24 (Home Loan Interest)
-  homeLoanInterest Decimal  @default(0)
+  homeLoanInterest Decimal @default(0)
 
   // HRA Exemption
-  rentPaid        Decimal   @default(0)
-  landlordPAN     String?
+  rentPaid    Decimal @default(0)
+  landlordPAN String?
 
   // Other Sections
-  section80G      Decimal   @default(0) // Donations
-  section80TTA    Decimal   @default(0) // Savings Interest
+  section80G      Decimal @default(0) // Donations
+  section80TTA    Decimal @default(0) // Savings Interest
   otherDeductions Json?
 
   // Total
-  totalDeductions Decimal   @default(0)
+  totalDeductions Decimal @default(0)
 
   // Proofs
-  proofsUploaded  Boolean   @default(false)
-  proofDocuments  Json?     // Array of document URLs
+  proofsUploaded Boolean @default(false)
+  proofDocuments Json? // Array of document URLs
 
   // Status
   status          String    @default("DRAFT") // DRAFT, SUBMITTED, VERIFIED, APPROVED, REJECTED
@@ -2266,8 +2276,8 @@ model TaxDeclaration {
   verifiedAt      DateTime?
   rejectionReason String?
 
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([tenantId, employeeId, financialYear])
   @@index([tenantId])
@@ -2278,35 +2288,35 @@ model TaxDeclaration {
 
 // Payroll Adjustments - One-time additions/deductions
 model PayrollAdjustment {
-  id              String    @id @default(uuid())
-  tenantId        String
-  employeeId      String
-  payrollMonth    String    // YYYY-MM format
+  id           String @id @default(uuid())
+  tenantId     String
+  employeeId   String
+  payrollMonth String // YYYY-MM format
 
   // Adjustment Details
-  adjustmentType  String    // EARNING, DEDUCTION
-  code            String
-  name            String
-  amount          Decimal
+  adjustmentType String // EARNING, DEDUCTION
+  code           String
+  name           String
+  amount         Decimal
 
   // Reason
-  reason          String    @db.Text
-  category        String?   // BONUS, PENALTY, ARREAR, RECOVERY, etc.
+  reason   String  @db.Text
+  category String? // BONUS, PENALTY, ARREAR, RECOVERY, etc.
 
   // Processing
-  isProcessed     Boolean   @default(false)
-  processedInRun  String?   // PayrollRun ID
-  processedAt     DateTime?
+  isProcessed    Boolean   @default(false)
+  processedInRun String? // PayrollRun ID
+  processedAt    DateTime?
 
   // Approval
-  requiresApproval Boolean  @default(true)
-  approvalStatus  String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  approvedBy      String?
-  approvedAt      DateTime?
+  requiresApproval Boolean   @default(true)
+  approvalStatus   String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedBy       String?
+  approvedAt       DateTime?
 
-  createdBy       String
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -2317,38 +2327,38 @@ model PayrollAdjustment {
 
 // Statutory Payments - PF, ESI, PT records
 model StatutoryPayment {
-  id              String    @id @default(uuid())
-  tenantId        String
-  payrollRunId    String
+  id           String @id @default(uuid())
+  tenantId     String
+  payrollRunId String
 
   // Period
-  paymentMonth    String    // YYYY-MM format
+  paymentMonth String // YYYY-MM format
 
   // Component
-  statutoryType   String    // PF, ESI, PT, TDS, GOSI, etc.
+  statutoryType String // PF, ESI, PT, TDS, GOSI, etc.
 
   // Amounts
   employeeContribution Decimal @default(0)
   employerContribution Decimal @default(0)
-  totalAmount     Decimal
+  totalAmount          Decimal
 
   // Payment Details
-  challanNumber   String?
-  paymentDate     DateTime?
+  challanNumber    String?
+  paymentDate      DateTime?
   paymentReference String?
 
   // Status
-  status          String    @default("PENDING") // PENDING, PAID, FAILED
-  isPaid          Boolean   @default(false)
+  status String  @default("PENDING") // PENDING, PAID, FAILED
+  isPaid Boolean @default(false)
 
   // Bank Details
-  bankName        String?
-  accountNumber   String?
-  ifscCode        String?
+  bankName      String?
+  accountNumber String?
+  ifscCode      String?
 
-  remarks         String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  remarks   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([payrollRunId])
@@ -2460,52 +2470,52 @@ enum LeaveAccrualType {
 
 // Leave Request - Employee leave applications
 model LeaveRequest {
-  id         String   @id @default(uuid())
+  id         String @id @default(uuid())
   tenantId   String
   employeeId String
 
   // Leave Details
-  leaveTypeId   String
-  policyId      String?
-  startDate     DateTime
-  endDate       DateTime
-  totalDays     Decimal
-  halfDayStart  Boolean  @default(false)
-  halfDayEnd    Boolean  @default(false)
+  leaveTypeId  String
+  policyId     String?
+  startDate    DateTime
+  endDate      DateTime
+  totalDays    Decimal
+  halfDayStart Boolean  @default(false)
+  halfDayEnd   Boolean  @default(false)
 
   // Application Details
-  reason                String    @db.Text
-  contactNumber         String?
-  addressDuringLeave    String?
-  delegateToEmployeeId  String?
+  reason               String  @db.Text
+  contactNumber        String?
+  addressDuringLeave   String?
+  delegateToEmployeeId String?
 
   // Documents
-  documents             Json?     // Array of {fileName, fileUrl, fileType}
+  documents Json? // Array of {fileName, fileUrl, fileType}
 
   // Status & Approval
-  status                String    @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED, WITHDRAWN
-  appliedAt             DateTime  @default(now())
-  approvers             Json?     // Array of approval levels
-  currentApproverLevel  Int       @default(1)
+  status               String   @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED, WITHDRAWN
+  appliedAt            DateTime @default(now())
+  approvers            Json? // Array of approval levels
+  currentApproverLevel Int      @default(1)
 
   // Final Approval
-  approvedBy            String?
-  approvedAt            DateTime?
-  rejectedBy            String?
-  rejectedAt            DateTime?
-  rejectionReason       String?
+  approvedBy      String?
+  approvedAt      DateTime?
+  rejectedBy      String?
+  rejectedAt      DateTime?
+  rejectionReason String?
 
   // Cancellation
-  cancelledAt           DateTime?
-  cancelledBy           String?
-  cancellationReason    String?
+  cancelledAt        DateTime?
+  cancelledBy        String?
+  cancellationReason String?
 
   // Balance Impact
-  balanceDeducted       Boolean   @default(false)
-  balanceId             String?
+  balanceDeducted Boolean @default(false)
+  balanceId       String?
 
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -2517,40 +2527,40 @@ model LeaveRequest {
 
 // Leave Encashment Request
 model LeaveEncashment {
-  id                String    @id @default(uuid())
-  tenantId          String
-  employeeId        String
-  leaveTypeId       String
-  policyId          String
+  id          String @id @default(uuid())
+  tenantId    String
+  employeeId  String
+  leaveTypeId String
+  policyId    String
 
   // Encashment Details
-  requestedDays     Decimal
-  eligibleDays      Decimal
-  approvedDays      Decimal?
+  requestedDays Decimal
+  eligibleDays  Decimal
+  approvedDays  Decimal?
 
   // Financial Calculation
-  calculationBasis  String    // BASIC, GROSS
-  dailyRate         Decimal
-  totalAmount       Decimal
-  encashmentRate    Decimal   @default(100) // Percentage
+  calculationBasis String // BASIC, GROSS
+  dailyRate        Decimal
+  totalAmount      Decimal
+  encashmentRate   Decimal @default(100) // Percentage
 
   // Trigger & Reason
-  trigger           String    // YEAR_END, ON_RESIGNATION, ON_TERMINATION, ON_REQUEST
-  reason            String?   @db.Text
+  trigger String // YEAR_END, ON_RESIGNATION, ON_TERMINATION, ON_REQUEST
+  reason  String? @db.Text
 
   // Status & Approval
-  status            String    @default("PENDING") // PENDING, APPROVED, REJECTED, PROCESSED, PAID
-  approvedBy        String?
-  approvedAt        DateTime?
-  processedAt       DateTime?
-  payrollMonth      String?   // YYYY-MM
+  status       String    @default("PENDING") // PENDING, APPROVED, REJECTED, PROCESSED, PAID
+  approvedBy   String?
+  approvedAt   DateTime?
+  processedAt  DateTime?
+  payrollMonth String? // YYYY-MM
 
   // Payment Reference
-  paymentReference  String?
-  paidAt            DateTime?
+  paymentReference String?
+  paidAt           DateTime?
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -2560,26 +2570,26 @@ model LeaveEncashment {
 
 // Leave Accrual History - Track monthly/annual accruals
 model LeaveAccrual {
-  id              String   @id @default(uuid())
-  tenantId        String
-  employeeId      String
-  policyId        String
-  leaveYear       Int
-  accrualMonth    Int?     // 1-12, null for annual
+  id           String @id @default(uuid())
+  tenantId     String
+  employeeId   String
+  policyId     String
+  leaveYear    Int
+  accrualMonth Int? // 1-12, null for annual
 
   // Accrual Details
-  accrualDate     DateTime
-  accruedDays     Decimal
-  runId           String?  // Reference to batch accrual run
+  accrualDate DateTime
+  accruedDays Decimal
+  runId       String? // Reference to batch accrual run
 
   // Pro-rata Factors
-  daysWorked      Int?
-  proRataFactor   Decimal? @default(1.0)
+  daysWorked    Int?
+  proRataFactor Decimal? @default(1.0)
 
   // Calculation Notes
-  calculationNote String?  @db.Text
+  calculationNote String? @db.Text
 
-  createdAt       DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([tenantId])
   @@index([employeeId])
@@ -2590,30 +2600,30 @@ model LeaveAccrual {
 
 // Leave Carry Forward - Track year-end carry forwards
 model LeaveCarryForward {
-  id                  String   @id @default(uuid())
-  tenantId            String
-  employeeId          String
-  policyId            String
+  id         String @id @default(uuid())
+  tenantId   String
+  employeeId String
+  policyId   String
 
   // Year Transition
-  fromYear            Int
-  toYear              Int
+  fromYear Int
+  toYear   Int
 
   // Carry Forward Details
-  previousYearBalance Decimal
+  previousYearBalance  Decimal
   carryForwardEligible Decimal
-  carryForwardApplied Decimal
-  lapsed              Decimal
+  carryForwardApplied  Decimal
+  lapsed               Decimal
 
   // Expiry
-  expiryDate          DateTime?
-  isExpired           Boolean  @default(false)
-  expiredDays         Decimal  @default(0)
+  expiryDate  DateTime?
+  isExpired   Boolean   @default(false)
+  expiredDays Decimal   @default(0)
 
-  processedAt         DateTime @default(now())
-  runId               String?  // Reference to batch carry forward run
+  processedAt DateTime @default(now())
+  runId       String? // Reference to batch carry forward run
 
-  createdAt           DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@unique([employeeId, policyId, fromYear, toYear])
   @@index([tenantId])
@@ -2623,36 +2633,36 @@ model LeaveCarryForward {
 
 // Comp-Off (Compensatory Off) - Earned time off for working on holidays/weekends
 model CompOffEarned {
-  id                    String    @id @default(uuid())
-  tenantId              String
-  employeeId            String
+  id         String @id @default(uuid())
+  tenantId   String
+  employeeId String
 
   // Worked Day Details
-  workedDate            DateTime
-  workedHours           Decimal
-  reason                String    @db.Text
-  projectCode           String?
-  overtimeRequestId     String?   // Link to OvertimeRequest if applicable
+  workedDate        DateTime
+  workedHours       Decimal
+  reason            String   @db.Text
+  projectCode       String?
+  overtimeRequestId String? // Link to OvertimeRequest if applicable
 
   // Comp Off Credit
-  creditedDays          Decimal   // 0.5 or 1.0
-  expiryDate            DateTime
+  creditedDays Decimal // 0.5 or 1.0
+  expiryDate   DateTime
 
   // Usage
-  isUsed                Boolean   @default(false)
-  usedDate              DateTime?
-  usedLeaveRequestId    String?
-  remainingDays         Decimal
+  isUsed             Boolean   @default(false)
+  usedDate           DateTime?
+  usedLeaveRequestId String?
+  remainingDays      Decimal
 
   // Approval
-  status                String    @default("PENDING") // PENDING, APPROVED, REJECTED, EXPIRED, USED
-  approvedBy            String?
-  approvedAt            DateTime?
-  rejectedBy            String?
-  rejectionReason       String?
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED, EXPIRED, USED
+  approvedBy      String?
+  approvedAt      DateTime?
+  rejectedBy      String?
+  rejectionReason String?
 
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -3514,57 +3524,58 @@ model Position {
   @@index([status])
   @@index([reportsToPositionId])
 }
+
 // Life Events Schema Addition
 // Add this to the main schema.prisma file
 
 model EmployeeLifeEvent {
-  id            String    @id @default(uuid())
-  tenantId      String
+  id       String @id @default(uuid())
+  tenantId String
 
   // Employee Reference
-  employeeId    String
-  employee      Employee  @relation("EmployeeLifeEvents", fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee @relation("EmployeeLifeEvents", fields: [employeeId], references: [id], onDelete: Cascade)
 
   // Event Details
-  eventType     String    // MARRIAGE, BIRTH, ADOPTION, DEATH, DIVORCE, RELOCATION, EMERGENCY_CONTACT_CHANGE, etc.
-  eventDate     DateTime
-  title         String
-  description   String?
+  eventType   String // MARRIAGE, BIRTH, ADOPTION, DEATH, DIVORCE, RELOCATION, EMERGENCY_CONTACT_CHANGE, etc.
+  eventDate   DateTime
+  title       String
+  description String?
 
   // Related Person (if applicable)
   relatedPersonName     String?
-  relatedPersonRelation String?  // Spouse, Child, Parent, Sibling, etc.
+  relatedPersonRelation String? // Spouse, Child, Parent, Sibling, etc.
 
   // Documentation
-  documentUrl   String?
-  documentType  String?
-  verified      Boolean   @default(false)
-  verifiedBy    String?
-  verifiedAt    DateTime?
+  documentUrl  String?
+  documentType String?
+  verified     Boolean   @default(false)
+  verifiedBy   String?
+  verifiedAt   DateTime?
 
   // Impact Tracking
-  impactsPayroll        Boolean   @default(false)
-  impactsBenefits       Boolean   @default(false)
-  impactsTax            Boolean   @default(false)
+  impactsPayroll          Boolean @default(false)
+  impactsBenefits         Boolean @default(false)
+  impactsTax              Boolean @default(false)
   impactsEmergencyContact Boolean @default(false)
 
   // Workflow
-  status        String    @default("PENDING")  // PENDING, VERIFIED, PROCESSED, REJECTED
-  processedBy   String?
-  processedAt   DateTime?
+  status      String    @default("PENDING") // PENDING, VERIFIED, PROCESSED, REJECTED
+  processedBy String?
+  processedAt DateTime?
 
   // Notifications
-  notifyHR      Boolean   @default(true)
-  notifyManager Boolean   @default(false)
+  notifyHR         Boolean @default(true)
+  notifyManager    Boolean @default(false)
   notificationSent Boolean @default(false)
 
   // Metadata
-  notes         String?
-  attachments   Json?     // Array of attachment URLs
+  notes       String?
+  attachments Json? // Array of attachment URLs
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  createdBy     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
 
   @@index([tenantId])
   @@index([employeeId])
@@ -3574,28 +3585,28 @@ model EmployeeLifeEvent {
 }
 
 model LifeEventType {
-  id            String    @id @default(uuid())
-  tenantId      String
+  id       String @id @default(uuid())
+  tenantId String
 
-  code          String
-  name          String
-  description   String?
-  category      String    // FAMILY, PERSONAL, EMERGENCY, OTHER
+  code        String
+  name        String
+  description String?
+  category    String // FAMILY, PERSONAL, EMERGENCY, OTHER
 
   // Default Settings
-  requiresDocument      Boolean   @default(false)
-  requiresVerification  Boolean   @default(true)
-  impactsPayroll        Boolean   @default(false)
-  impactsBenefits       Boolean   @default(false)
-  impactsTax            Boolean   @default(false)
+  requiresDocument     Boolean @default(false)
+  requiresVerification Boolean @default(true)
+  impactsPayroll       Boolean @default(false)
+  impactsBenefits      Boolean @default(false)
+  impactsTax           Boolean @default(false)
 
   // Notifications
-  notifyHR              Boolean   @default(true)
-  notifyManager         Boolean   @default(false)
+  notifyHR      Boolean @default(true)
+  notifyManager Boolean @default(false)
 
-  isActive      Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -3604,87 +3615,87 @@ model LifeEventType {
 
 // ID Card Management
 model IDCardTemplate {
-  id          String   @id @default(uuid())
-  tenantId    String
-  
+  id       String @id @default(uuid())
+  tenantId String
+
   name        String
   description String?
-  cardType    String   // EMPLOYEE, TEMPORARY, CONTRACTOR, VISITOR
-  
+  cardType    String // EMPLOYEE, TEMPORARY, CONTRACTOR, VISITOR
+
   // Design
-  designData  Json     // Template design configuration
-  logoUrl     String?
+  designData    Json // Template design configuration
+  logoUrl       String?
   backgroundUrl String?
-  
+
   // Fields
-  includePhoto      Boolean @default(true)
-  includeQRCode     Boolean @default(true)
-  includeBarcode    Boolean @default(false)
-  customFields      Json?   // Additional fields to display
-  
+  includePhoto   Boolean @default(true)
+  includeQRCode  Boolean @default(true)
+  includeBarcode Boolean @default(false)
+  customFields   Json? // Additional fields to display
+
   // Settings
-  validityDays      Int?    // Card validity in days
-  isDefault         Boolean @default(false)
-  isActive          Boolean @default(true)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String?
-  
-  cards       IDCard[]
-  
+  validityDays Int? // Card validity in days
+  isDefault    Boolean @default(false)
+  isActive     Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+
+  cards IDCard[]
+
   @@unique([tenantId, name])
   @@index([tenantId])
   @@index([cardType])
 }
 
 model IDCard {
-  id              String   @id @default(uuid())
-  tenantId        String
-  
-  employeeId      String
-  employee        Employee @relation("EmployeeIDCards", fields: [employeeId], references: [id], onDelete: Cascade)
-  
-  templateId      String
-  template        IDCardTemplate @relation(fields: [templateId], references: [id])
-  
+  id       String @id @default(uuid())
+  tenantId String
+
+  employeeId String
+  employee   Employee @relation("EmployeeIDCards", fields: [employeeId], references: [id], onDelete: Cascade)
+
+  templateId String
+  template   IDCardTemplate @relation(fields: [templateId], references: [id])
+
   // Card Details
-  cardNumber      String
-  cardType        String   // EMPLOYEE, TEMPORARY, CONTRACTOR, VISITOR
-  
+  cardNumber String
+  cardType   String // EMPLOYEE, TEMPORARY, CONTRACTOR, VISITOR
+
   // Validity
-  issueDate       DateTime
-  expiryDate      DateTime?
-  
+  issueDate  DateTime
+  expiryDate DateTime?
+
   // Status
-  status          String   @default("PENDING") // PENDING, APPROVED, ISSUED, EXPIRED, REVOKED, LOST
-  
+  status String @default("PENDING") // PENDING, APPROVED, ISSUED, EXPIRED, REVOKED, LOST
+
   // Photo
-  photoUrl        String?
-  
+  photoUrl String?
+
   // Codes
-  qrCodeData      String?
-  barcodeData     String?
-  
+  qrCodeData  String?
+  barcodeData String?
+
   // Issuance
-  issuedBy        String?
-  issuedAt        DateTime?
-  
+  issuedBy String?
+  issuedAt DateTime?
+
   // Revocation
-  revokedBy       String?
-  revokedAt       DateTime?
-  revokedReason   String?
-  
+  revokedBy     String?
+  revokedAt     DateTime?
+  revokedReason String?
+
   // Print Tracking
-  printedCount    Int      @default(0)
-  lastPrintedAt   DateTime?
-  
-  notes           String?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  createdBy       String?
-  
+  printedCount  Int       @default(0)
+  lastPrintedAt DateTime?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+
   @@unique([tenantId, cardNumber])
   @@index([tenantId])
   @@index([employeeId])
@@ -3694,127 +3705,134 @@ model IDCard {
 
 // Letter Generation
 model LetterTemplate {
-  id String @id @default(uuid())
-  tenantId String
-  name String
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
   description String?
-  letterType String // OFFER, APPOINTMENT, CONFIRMATION, TRANSFER, PROMOTION, EXIT, EXPERIENCE
-  content String // Template with placeholders
-  isActive Boolean @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  letters Letter[]
+  letterType  String // OFFER, APPOINTMENT, CONFIRMATION, TRANSFER, PROMOTION, EXIT, EXPERIENCE
+  content     String // Template with placeholders
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  letters     Letter[]
+
   @@unique([tenantId, name])
   @@index([tenantId])
 }
 
 model Letter {
-  id String @id @default(uuid())
-  tenantId String
-  employeeId String
-  employee Employee @relation("EmployeeLetters", fields: [employeeId], references: [id])
-  templateId String
-  template LetterTemplate @relation(fields: [templateId], references: [id])
-  letterType String
-  subject String
-  content String
+  id              String         @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  employee        Employee       @relation("EmployeeLetters", fields: [employeeId], references: [id])
+  templateId      String
+  template        LetterTemplate @relation(fields: [templateId], references: [id])
+  letterType      String
+  subject         String
+  content         String
   generatedPdfUrl String?
-  status String @default("DRAFT") // DRAFT, PENDING, APPROVED, ISSUED
-  issuedAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy String?
+  status          String         @default("DRAFT") // DRAFT, PENDING, APPROVED, ISSUED
+  issuedAt        DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdBy       String?
+
   @@index([tenantId])
   @@index([employeeId])
 }
 
 // Exit Management
 model ExitRequest {
-  id String @id @default(uuid())
-  tenantId String
-  employeeId String
-  employee Employee @relation("EmployeeExits", fields: [employeeId], references: [id])
-  exitType String // RESIGNATION, TERMINATION, RETIREMENT, CONTRACT_END
-  resignationDate DateTime
-  lastWorkingDate DateTime
+  id               String          @id @default(uuid())
+  tenantId         String
+  employeeId       String
+  employee         Employee        @relation("EmployeeExits", fields: [employeeId], references: [id])
+  exitType         String // RESIGNATION, TERMINATION, RETIREMENT, CONTRACT_END
+  resignationDate  DateTime
+  lastWorkingDate  DateTime
   noticePeriodDays Int
-  reason String?
-  status String @default("PENDING") // PENDING, APPROVED, PROCESSING, COMPLETED
-  clearanceStatus String @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
-  settlementAmount Decimal? @db.Decimal(15, 2)
-  rehireEligible Boolean @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  clearances ExitClearance[]
+  reason           String?
+  status           String          @default("PENDING") // PENDING, APPROVED, PROCESSING, COMPLETED
+  clearanceStatus  String          @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  settlementAmount Decimal?        @db.Decimal(15, 2)
+  rehireEligible   Boolean         @default(true)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  clearances       ExitClearance[]
+
   @@index([tenantId])
   @@index([employeeId])
 }
 
 model ExitClearance {
-  id String @id @default(uuid())
+  id            String      @id @default(uuid())
   exitRequestId String
-  exitRequest ExitRequest @relation(fields: [exitRequestId], references: [id])
-  department String
-  description String
-  status String @default("PENDING") // PENDING, APPROVED, REJECTED
-  clearedBy String?
-  clearedAt DateTime?
-  notes String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  exitRequest   ExitRequest @relation(fields: [exitRequestId], references: [id])
+  department    String
+  description   String
+  status        String      @default("PENDING") // PENDING, APPROVED, REJECTED
+  clearedBy     String?
+  clearedAt     DateTime?
+  notes         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
   @@index([exitRequestId])
 }
 
 // Probation Management
 model ProbationTracking {
-  id String @id @default(uuid())
-  tenantId String
-  employeeId String
-  employee Employee @relation("EmployeeProbation", fields: [employeeId], references: [id])
-  startDate DateTime
-  endDate DateTime
-  extendedEndDate DateTime?
-  status String @default("ACTIVE") // ACTIVE, EXTENDED, CONFIRMED, TERMINATED
-  performanceRating String?
+  id                    String            @id @default(uuid())
+  tenantId              String
+  employeeId            String
+  employee              Employee          @relation("EmployeeProbation", fields: [employeeId], references: [id])
+  startDate             DateTime
+  endDate               DateTime
+  extendedEndDate       DateTime?
+  status                String            @default("ACTIVE") // ACTIVE, EXTENDED, CONFIRMED, TERMINATED
+  performanceRating     String?
   managerRecommendation String?
-  hrRecommendation String?
-  finalDecision String? // CONFIRM, EXTEND, TERMINATE
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  reviews ProbationReview[]
+  hrRecommendation      String?
+  finalDecision         String? // CONFIRM, EXTEND, TERMINATE
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  reviews               ProbationReview[]
+
   @@index([tenantId])
   @@index([employeeId])
 }
 
 model ProbationReview {
-  id String @id @default(uuid())
-  probationId String
-  probation ProbationTracking @relation(fields: [probationId], references: [id])
-  reviewDate DateTime
-  reviewerName String
+  id                String            @id @default(uuid())
+  probationId       String
+  probation         ProbationTracking @relation(fields: [probationId], references: [id])
+  reviewDate        DateTime
+  reviewerName      String
   performanceRating Int // 1-5
-  comments String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  comments          String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
   @@index([probationId])
 }
 
 // Confirmation Process
 model ConfirmationRequest {
-  id String @id @default(uuid())
-  tenantId String
-  employeeId String
-  employee Employee @relation("EmployeeConfirmation", fields: [employeeId], references: [id])
-  eligibleDate DateTime
-  requestedDate DateTime
-  status String @default("PENDING") // PENDING, APPROVED, REJECTED, CONFIRMED
-  managerApproval String? // PENDING, APPROVED, REJECTED
-  hrApproval String? // PENDING, APPROVED, REJECTED
-  confirmationDate DateTime?
+  id                    String    @id @default(uuid())
+  tenantId              String
+  employeeId            String
+  employee              Employee  @relation("EmployeeConfirmation", fields: [employeeId], references: [id])
+  eligibleDate          DateTime
+  requestedDate         DateTime
+  status                String    @default("PENDING") // PENDING, APPROVED, REJECTED, CONFIRMED
+  managerApproval       String? // PENDING, APPROVED, REJECTED
+  hrApproval            String? // PENDING, APPROVED, REJECTED
+  confirmationDate      DateTime?
   confirmationLetterUrl String?
-  newSalary Decimal? @db.Decimal(15, 2)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  newSalary             Decimal?  @db.Decimal(15, 2)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
   @@index([tenantId])
   @@index([employeeId])
 }
@@ -3825,41 +3843,41 @@ model ConfirmationRequest {
 
 // Custom Report Definitions
 model ReportDefinition {
-  id          String   @id @default(uuid())
-  tenantId    String
-  
+  id       String @id @default(uuid())
+  tenantId String
+
   // Report Details
   code        String
   name        String
   description String?
-  category    String   // HR, PAYROLL, LEAVE, ATTENDANCE, COMPLIANCE, etc.
-  
+  category    String // HR, PAYROLL, LEAVE, ATTENDANCE, COMPLIANCE, etc.
+
   // Query Configuration
-  dataSource  String   // TABLE_NAME or CUSTOM_QUERY
-  columns     Json     // Array of {field, label, type, aggregation}
-  filters     Json?    // Array of filter definitions
-  groupBy     Json?    // Array of grouping fields
-  sortBy      Json?    // Array of {field, direction}
-  
+  dataSource String // TABLE_NAME or CUSTOM_QUERY
+  columns    Json // Array of {field, label, type, aggregation}
+  filters    Json? // Array of filter definitions
+  groupBy    Json? // Array of grouping fields
+  sortBy     Json? // Array of {field, direction}
+
   // Visualization
-  chartType   String?  // BAR, LINE, PIE, TABLE, etc.
-  chartConfig Json?    // Chart-specific configuration
-  
+  chartType   String? // BAR, LINE, PIE, TABLE, etc.
+  chartConfig Json? // Chart-specific configuration
+
   // Access Control
-  isPublic    Boolean  @default(false)
-  createdBy   String
-  sharedWith  Json?    // Array of user/role IDs
-  
+  isPublic   Boolean @default(false)
+  createdBy  String
+  sharedWith Json? // Array of user/role IDs
+
   // Schedule
-  isScheduled Boolean  @default(false)
+  isScheduled    Boolean @default(false)
   scheduleConfig Json? // Cron expression, recipients
-  
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  executions  ReportExecution[]
-  
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  executions ReportExecution[]
+
   @@unique([tenantId, code])
   @@index([tenantId])
   @@index([category])
@@ -3868,29 +3886,29 @@ model ReportDefinition {
 
 // Report Execution History
 model ReportExecution {
-  id               String           @id @default(uuid())
-  reportId         String
-  report           ReportDefinition @relation(fields: [reportId], references: [id], onDelete: Cascade)
-  tenantId         String
-  
+  id       String           @id @default(uuid())
+  reportId String
+  report   ReportDefinition @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  tenantId String
+
   // Execution Details
-  executedBy       String
-  executedAt       DateTime         @default(now())
-  parameters       Json?            // Filter values used
-  
+  executedBy String
+  executedAt DateTime @default(now())
+  parameters Json? // Filter values used
+
   // Results
-  status           String           // RUNNING, COMPLETED, FAILED
-  recordCount      Int?
-  executionTime    Int?             // Milliseconds
-  errorMessage     String?
-  
+  status        String // RUNNING, COMPLETED, FAILED
+  recordCount   Int?
+  executionTime Int? // Milliseconds
+  errorMessage  String?
+
   // Output
-  resultData       Json?            // Cached results (if small)
-  exportUrl        String?          // S3/file path for large results
-  exportFormat     String?          // CSV, EXCEL, PDF
-  
-  createdAt        DateTime         @default(now())
-  
+  resultData   Json? // Cached results (if small)
+  exportUrl    String? // S3/file path for large results
+  exportFormat String? // CSV, EXCEL, PDF
+
+  createdAt DateTime @default(now())
+
   @@index([reportId])
   @@index([tenantId])
   @@index([executedBy])
@@ -3899,31 +3917,31 @@ model ReportExecution {
 
 // Analytics Dashboard Widgets
 model DashboardWidget {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   tenantId    String
-  dashboardId String?  // null for global widgets
-  
+  dashboardId String? // null for global widgets
+
   // Widget Details
   code        String
   title       String
   description String?
-  type        String   // KPI, CHART, TABLE, LIST, etc.
-  
+  type        String // KPI, CHART, TABLE, LIST, etc.
+
   // Data Source
-  dataSource  String   // API_ENDPOINT or REPORT_ID or CUSTOM_QUERY
+  dataSource      String // API_ENDPOINT or REPORT_ID or CUSTOM_QUERY
   refreshInterval Int? // Minutes
-  
+
   // Configuration
-  config      Json     // Widget-specific configuration
-  position    Json     // {row, col, width, height}
-  
+  config   Json // Widget-specific configuration
+  position Json // {row, col, width, height}
+
   // Access
-  roles       Json?    // Array of role codes
-  
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  roles Json? // Array of role codes
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([tenantId, code])
   @@index([tenantId])
   @@index([dashboardId])
@@ -3931,42 +3949,42 @@ model DashboardWidget {
 
 // Predictive Analytics Models
 model PredictiveModel {
-  id              String   @id @default(uuid())
-  tenantId        String
-  
+  id       String @id @default(uuid())
+  tenantId String
+
   // Model Details
-  code            String
-  name            String
-  description     String?
-  modelType       String   // ATTRITION, PERFORMANCE, HIRING_DEMAND, SALARY_PROJECTION, etc.
-  algorithm       String   // LINEAR_REGRESSION, RANDOM_FOREST, NEURAL_NETWORK, etc.
-  
+  code        String
+  name        String
+  description String?
+  modelType   String // ATTRITION, PERFORMANCE, HIRING_DEMAND, SALARY_PROJECTION, etc.
+  algorithm   String // LINEAR_REGRESSION, RANDOM_FOREST, NEURAL_NETWORK, etc.
+
   // Training
-  trainingDataset Json     // Configuration for data extraction
-  features        Json     // Array of feature definitions
+  trainingDataset Json // Configuration for data extraction
+  features        Json // Array of feature definitions
   targetVariable  String
-  
+
   // Model Metadata
   version         String
-  accuracy        Float?   // Model accuracy/R2 score
+  accuracy        Float? // Model accuracy/R2 score
   trainedAt       DateTime?
   trainingRecords Int?
-  
+
   // Model Artifacts
   modelArtifactUrl String? // S3/file path to saved model
-  parameters      Json?    // Model hyperparameters
-  
+  parameters       Json? // Model hyperparameters
+
   // Deployment
-  status          String   @default("DRAFT") // DRAFT, TRAINING, DEPLOYED, DEPRECATED
-  deployedAt      DateTime?
-  
-  isActive        Boolean  @default(true)
-  createdBy       String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  predictions     Prediction[]
-  
+  status     String    @default("DRAFT") // DRAFT, TRAINING, DEPLOYED, DEPRECATED
+  deployedAt DateTime?
+
+  isActive  Boolean  @default(true)
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  predictions Prediction[]
+
   @@unique([tenantId, code])
   @@index([tenantId])
   @@index([modelType])
@@ -3975,30 +3993,30 @@ model PredictiveModel {
 
 // Prediction Results
 model Prediction {
-  id              String          @id @default(uuid())
-  modelId         String
-  model           PredictiveModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
-  tenantId        String
-  
+  id       String          @id @default(uuid())
+  modelId  String
+  model    PredictiveModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  tenantId String
+
   // Prediction Target
-  entityType      String          // EMPLOYEE, DEPARTMENT, COMPANY
-  entityId        String?
-  
+  entityType String // EMPLOYEE, DEPARTMENT, COMPANY
+  entityId   String?
+
   // Prediction
-  predictedValue  Float
-  confidence      Float?          // 0-1 confidence score
-  predictedDate   DateTime
-  
+  predictedValue Float
+  confidence     Float? // 0-1 confidence score
+  predictedDate  DateTime
+
   // Input Features
-  inputFeatures   Json            // Feature values used
-  
+  inputFeatures Json // Feature values used
+
   // Outcome Tracking
-  actualValue     Float?
-  actualDate      DateTime?
-  accuracy        Float?          // Difference from actual
-  
-  createdAt       DateTime        @default(now())
-  
+  actualValue Float?
+  actualDate  DateTime?
+  accuracy    Float? // Difference from actual
+
+  createdAt DateTime @default(now())
+
   @@index([modelId])
   @@index([tenantId])
   @@index([entityType, entityId])
@@ -4007,26 +4025,26 @@ model Prediction {
 
 // AI Agent Conversations
 model AIAgentConversation {
-  id              String   @id @default(uuid())
-  tenantId        String
-  userId          String
-  
+  id       String @id @default(uuid())
+  tenantId String
+  userId   String
+
   // Conversation Details
-  title           String?
-  agentType       String   // HR_ASSISTANT, POLICY_ADVISOR, ANALYTICS_BOT, etc.
-  
+  title     String?
+  agentType String // HR_ASSISTANT, POLICY_ADVISOR, ANALYTICS_BOT, etc.
+
   // Context
-  sessionId       String
-  metadata        Json?    // User context, preferences
-  
+  sessionId String
+  metadata  Json? // User context, preferences
+
   // Status
-  status          String   @default("ACTIVE") // ACTIVE, ARCHIVED
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  messages        AIAgentMessage[]
-  
+  status String @default("ACTIVE") // ACTIVE, ARCHIVED
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages AIAgentMessage[]
+
   @@index([tenantId])
   @@index([userId])
   @@index([sessionId])
@@ -4034,24 +4052,24 @@ model AIAgentConversation {
 
 // AI Agent Messages
 model AIAgentMessage {
-  id              String               @id @default(uuid())
-  conversationId  String
-  conversation    AIAgentConversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  
+  id             String              @id @default(uuid())
+  conversationId String
+  conversation   AIAgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
   // Message Details
-  role            String               // USER, ASSISTANT, SYSTEM
-  content         String               @db.Text
-  
+  role    String // USER, ASSISTANT, SYSTEM
+  content String @db.Text
+
   // Metadata
-  tokens          Int?
-  model           String?              // GPT-4, Claude, etc.
-  
+  tokens Int?
+  model  String? // GPT-4, Claude, etc.
+
   // Actions
-  actionTaken     String?              // QUERY_DATABASE, GENERATE_REPORT, etc.
-  actionResult    Json?
-  
-  createdAt       DateTime             @default(now())
-  
+  actionTaken  String? // QUERY_DATABASE, GENERATE_REPORT, etc.
+  actionResult Json?
+
+  createdAt DateTime @default(now())
+
   @@index([conversationId])
   @@index([role])
   @@index([createdAt])
@@ -4059,22 +4077,442 @@ model AIAgentMessage {
 
 // Analytics Cache for performance
 model AnalyticsCache {
-  id              String   @id @default(uuid())
-  tenantId        String
-  
+  id       String @id @default(uuid())
+  tenantId String
+
   // Cache Key
-  cacheKey        String   // Unique identifier for cached data
-  category        String   // DASHBOARD, REPORT, ANALYTICS
-  
+  cacheKey String // Unique identifier for cached data
+  category String // DASHBOARD, REPORT, ANALYTICS
+
   // Data
-  data            Json     // Cached analytics data
-  
+  data Json // Cached analytics data
+
   // Metadata
-  generatedAt     DateTime @default(now())
-  expiresAt       DateTime
-  recordCount     Int?
-  
+  generatedAt DateTime @default(now())
+  expiresAt   DateTime
+  recordCount Int?
+
   @@unique([tenantId, cacheKey])
   @@index([tenantId])
   @@index([expiresAt])
+}
+
+// ============================================================================
+// BENEFITS MANAGEMENT MODULE
+// ============================================================================
+
+// Enums for Benefits Management
+enum BenefitCategory {
+  HEALTH_INSURANCE
+  DENTAL
+  VISION
+  LIFE_INSURANCE
+  DISABILITY
+  RETIREMENT
+  FSA_HSA
+  WELLNESS
+  EDUCATION
+  TRANSPORTATION
+  OTHER
+}
+
+enum PlanTier {
+  BASIC
+  STANDARD
+  PREMIUM
+  EXECUTIVE
+}
+
+enum CoverageLevel {
+  EMPLOYEE_ONLY
+  EMPLOYEE_SPOUSE
+  EMPLOYEE_CHILDREN
+  FAMILY
+}
+
+enum BenefitEnrollmentStatus {
+  DRAFT
+  ACTIVE
+  PENDING_APPROVAL
+  APPROVED
+  CANCELLED
+  TERMINATED
+  WAIVED
+}
+
+enum BenefitEnrollmentType {
+  NEW_HIRE
+  OPEN_ENROLLMENT
+  QUALIFYING_EVENT
+  ANNUAL_RENEWAL
+  SPECIAL_ENROLLMENT
+}
+
+enum ClaimStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  PARTIALLY_APPROVED
+  REJECTED
+  PAID
+  PENDING_INFO
+}
+
+enum DependentRelationship {
+  SPOUSE
+  DOMESTIC_PARTNER
+  CHILD
+  STEPCHILD
+  ADOPTED_CHILD
+  FOSTER_CHILD
+  PARENT
+  OTHER
+}
+
+enum DependentStatus {
+  ACTIVE
+  PENDING_VERIFICATION
+  VERIFIED
+  REJECTED
+  INACTIVE
+  AGED_OUT
+}
+
+enum ProviderType {
+  HOSPITAL
+  CLINIC
+  PHYSICIAN
+  SPECIALIST
+  PHARMACY
+  LABORATORY
+  MENTAL_HEALTH
+  DENTAL
+  VISION
+  OTHER
+}
+
+enum QualifyingEventType {
+  MARRIAGE
+  DIVORCE
+  BIRTH
+  ADOPTION
+  DEATH
+  EMPLOYMENT_CHANGE
+  LOSS_OF_COVERAGE
+  RELOCATION
+  OTHER
+}
+
+enum PremiumPaymentFrequency {
+  MONTHLY
+  BI_WEEKLY
+  WEEKLY
+  SEMI_MONTHLY
+  ANNUALLY
+}
+
+enum BenefitPlanStatus {
+  DRAFT
+  ACTIVE
+  SUSPENDED
+  TERMINATED
+  ARCHIVED
+}
+
+enum EligibilityStatus {
+  ELIGIBLE
+  NOT_ELIGIBLE
+  PENDING
+  WAIVED
+}
+
+// Benefit Plans - Core benefit plan configuration
+model BenefitPlan {
+  id                     String            @id @default(uuid())
+  tenantId               String
+  planCode               String
+  planName               String
+  category               BenefitCategory
+  planTier               PlanTier?
+  carrierName            String
+  carrierPolicyNumber    String?
+  description            String?           @db.Text
+  coverage               Json? // Coverage details
+  exclusions             Json? // List of exclusions
+  eligibilityCriteria    Json? // Eligibility rules
+  employeePremium        Float             @default(0)
+  employerPremium        Float             @default(0)
+  spousePremium          Float?
+  childPremium           Float?
+  familyPremium          Float?
+  deductible             Float?
+  outOfPocketMax         Float?
+  copay                  Float?
+  coinsurance            Float?
+  networkInfo            Json? // Network details
+  documentUrls           Json? // Plan documents
+  status                 BenefitPlanStatus @default(DRAFT)
+  effectiveFrom          DateTime
+  effectiveTo            DateTime?
+  waitingPeriodDays      Int               @default(0)
+  isEmployeeContribution Boolean           @default(true)
+  maxAge                 Int?
+  displayOrder           Int               @default(0)
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  enrollments  BenefitEnrollment[]
+  premiumRates PremiumRate[]
+
+  @@unique([tenantId, planCode])
+  @@index([tenantId])
+  @@index([category])
+  @@index([status])
+  @@index([effectiveFrom])
+}
+
+// Benefit Enrollments - Employee enrollment in benefit plans
+model BenefitEnrollment {
+  id                  String                  @id @default(uuid())
+  tenantId            String
+  employeeId          String
+  employeeName        String
+  employeeCode        String
+  departmentId        String?
+  departmentName      String?
+  planId              String
+  coverageLevel       CoverageLevel
+  enrollmentType      BenefitEnrollmentType
+  status              BenefitEnrollmentStatus @default(DRAFT)
+  effectiveFrom       DateTime
+  effectiveTo         DateTime?
+  employeePremium     Float
+  employerPremium     Float
+  totalPremium        Float
+  paymentFrequency    PremiumPaymentFrequency @default(MONTHLY)
+  enrolledDependents  Json? // Array of dependent IDs
+  enrollmentDate      DateTime                @default(now())
+  approvedBy          String?
+  approvedDate        DateTime?
+  qualifyingEventId   String?
+  qualifyingEventType QualifyingEventType?
+  previousPlanId      String?
+  cancellationReason  String?
+  cancellationDate    DateTime?
+  notes               String?                 @db.Text
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+
+  plan              BenefitPlan        @relation(fields: [planId], references: [id])
+  claims            BenefitClaim[]
+  premiumDeductions PremiumDeduction[]
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([planId])
+  @@index([status])
+  @@index([effectiveFrom])
+}
+
+// Dependents - Employee dependents for benefit coverage
+model Dependent {
+  id                    String                @id @default(uuid())
+  tenantId              String
+  employeeId            String
+  firstName             String
+  lastName              String
+  dateOfBirth           DateTime
+  relationship          DependentRelationship
+  gender                String?
+  ssn                   String?
+  email                 String?
+  phone                 String?
+  address               Json?
+  isStudent             Boolean               @default(false)
+  isDisabled            Boolean               @default(false)
+  status                DependentStatus       @default(PENDING_VERIFICATION)
+  verificationDocuments Json?
+  verifiedBy            String?
+  verifiedDate          DateTime?
+  notes                 String?               @db.Text
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+// Benefit Claims - Claims submitted for benefits
+model BenefitClaim {
+  id                     String          @id @default(uuid())
+  tenantId               String
+  claimNumber            String
+  enrollmentId           String
+  employeeId             String
+  employeeName           String
+  planId                 String?
+  planName               String?
+  claimType              BenefitCategory
+  claimDate              DateTime
+  serviceDate            DateTime
+  providerId             String?
+  providerName           String?
+  claimAmount            Float
+  approvedAmount         Float?
+  paidAmount             Float?
+  employeeResponsibility Float?
+  deductibleApplied      Float?
+  coinsuranceApplied     Float?
+  copayApplied           Float?
+  status                 ClaimStatus     @default(SUBMITTED)
+  submittedDate          DateTime        @default(now())
+  reviewedBy             String?
+  reviewedDate           DateTime?
+  approvedBy             String?
+  approvedDate           DateTime?
+  paidDate               DateTime?
+  paymentMethod          String?
+  checkNumber            String?
+  rejectionReason        String?
+  documents              Json? // Supporting documents
+  diagnosisCodes         Json? // ICD codes
+  procedureCodes         Json? // CPT codes
+  notes                  String?         @db.Text
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+
+  enrollment BenefitEnrollment @relation(fields: [enrollmentId], references: [id])
+
+  @@unique([tenantId, claimNumber])
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([enrollmentId])
+  @@index([status])
+  @@index([claimDate])
+}
+
+// Healthcare Providers - Provider directory
+model HealthcareProvider {
+  id                   String       @id @default(uuid())
+  tenantId             String
+  providerCode         String
+  providerName         String
+  providerType         ProviderType
+  specialty            String?
+  npiNumber            String?
+  taxId                String?
+  address              Json
+  phone                String
+  email                String?
+  website              String?
+  networkStatus        String? // In-network, Out-of-network
+  acceptingNewPatients Boolean      @default(true)
+  languages            Json?
+  officeHours          Json?
+  rating               Float?
+  isActive             Boolean      @default(true)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@unique([tenantId, providerCode])
+  @@index([tenantId])
+  @@index([providerType])
+  @@index([specialty])
+  @@index([isActive])
+}
+
+// Qualifying Events - Life events triggering benefit changes
+model QualifyingEvent {
+  id                  String              @id @default(uuid())
+  tenantId            String
+  employeeId          String
+  employeeName        String
+  eventType           QualifyingEventType
+  eventDate           DateTime
+  reportedDate        DateTime            @default(now())
+  description         String              @db.Text
+  supportingDocuments Json?
+  allowsEnrollment    Boolean             @default(true)
+  enrollmentDeadline  DateTime?
+  verifiedBy          String?
+  verifiedDate        DateTime?
+  isActive            Boolean             @default(true)
+  notes               String?             @db.Text
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([eventType])
+  @@index([eventDate])
+}
+
+// Enrollment Windows - Open enrollment periods
+model EnrollmentWindow {
+  id                 String   @id @default(uuid())
+  tenantId           String
+  windowName         String
+  windowType         String // Open Enrollment, New Hire, Qualifying Event
+  planYear           Int
+  startDate          DateTime
+  endDate            DateTime
+  description        String?  @db.Text
+  eligibleCategories Json? // Which benefit categories are available
+  instructions       String?  @db.Text
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([planYear])
+  @@index([startDate])
+  @@index([isActive])
+}
+
+// Premium Rates - Age-based or tier-based premium rates
+model PremiumRate {
+  id              String        @id @default(uuid())
+  tenantId        String
+  planId          String
+  coverageLevel   CoverageLevel
+  ageMin          Int?
+  ageMax          Int?
+  employeePremium Float
+  employerPremium Float
+  totalPremium    Float
+  effectiveFrom   DateTime
+  effectiveTo     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  plan BenefitPlan @relation(fields: [planId], references: [id])
+
+  @@index([tenantId])
+  @@index([planId])
+  @@index([effectiveFrom])
+}
+
+// Premium Deductions - Payroll deduction tracking
+model PremiumDeduction {
+  id              String    @id @default(uuid())
+  tenantId        String
+  enrollmentId    String
+  employeeId      String
+  payrollPeriodId String?
+  payrollDate     DateTime
+  deductionAmount Float
+  paymentMethod   String?
+  status          String    @default("PENDING")
+  processedDate   DateTime?
+  notes           String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  enrollment BenefitEnrollment @relation(fields: [enrollmentId], references: [id])
+
+  @@index([tenantId])
+  @@index([enrollmentId])
+  @@index([employeeId])
+  @@index([payrollDate])
 }

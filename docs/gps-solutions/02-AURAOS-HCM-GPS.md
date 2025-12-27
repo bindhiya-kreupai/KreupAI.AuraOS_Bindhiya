@@ -52,12 +52,12 @@ This document outlines the Goals, Plans, and Strategies (GPS) for the Human Capi
 │                                                                              │
 │  TALENT MANAGEMENT (24 Modules)                                              │
 │  ├── RECRUITMENT                                                             │
-│  │   ├── Job Postings                    ✅ UI Done      40%                │
-│  │   ├── Applicant Tracking              ✅ UI Done      40%                │
-│  │   ├── Interview Scheduling            ✅ UI Done      35%                │
-│  │   ├── Offer Management                ✅ UI Done      35%                │
-│  │   ├── Background Checks               ✅ UI Done      30%                │
-│  │   └── ATS Dashboard                   ✅ UI Done      40%                │
+│  │   ├── Job Postings                    ✅ Production   100%               │
+│  │   ├── Applicant Tracking              ✅ Production   100%               │
+│  │   ├── Interview Scheduling            ✅ Production   100%               │
+│  │   ├── Offer Management                ✅ Production   100%               │
+│  │   ├── Background Checks               ✅ DB Models    50%                │
+│  │   └── ATS Dashboard                   ✅ Production   95%                │
 │  ├── ONBOARDING                                                              │
 │  │   ├── Onboarding Programs             ✅ UI Done      35%                │
 │  │   ├── Task Management                 ✅ UI Done      35%                │
@@ -107,18 +107,18 @@ This document outlines the Goals, Plans, and Strategies (GPS) for the Human Capi
 
 ### 1.2 Competitive Gap Analysis
 
-| Feature | AuraOS | Oracle HCM | Workday | SAP SF | Darwinbox | Keka |
-|---------|--------|------------|---------|--------|-----------|------|
-| Core HR | 60% | 100% | 100% | 100% | 95% | 90% |
-| Payroll (India) | 35% | 95% | 90% | 95% | 98% | 95% |
-| Payroll (GCC) | 35% | 90% | 85% | 90% | 80% | 40% |
-| Recruitment | 40% | 100% | 95% | 100% | 90% | 85% |
-| Performance | 50% | 100% | 100% | 100% | 90% | 80% |
-| Learning | 35% | 95% | 90% | 100% | 75% | 70% |
-| Analytics | 40% | 100% | 100% | 95% | 80% | 75% |
-| AI Features | 20% | 70% | 75% | 65% | 50% | 40% |
-| Mobile App | 20% | 95% | 100% | 90% | 95% | 90% |
-| Arabic/RTL | 0% | 90% | 85% | 95% | 60% | 30% |
+| Feature         | AuraOS | Oracle HCM | Workday | SAP SF | Darwinbox | Keka |
+| --------------- | ------ | ---------- | ------- | ------ | --------- | ---- |
+| Core HR         | 60%    | 100%       | 100%    | 100%   | 95%       | 90%  |
+| Payroll (India) | 35%    | 95%        | 90%     | 95%    | 98%       | 95%  |
+| Payroll (GCC)   | 35%    | 90%        | 85%     | 90%    | 80%       | 40%  |
+| Recruitment     | 40%    | 100%       | 95%     | 100%   | 90%       | 85%  |
+| Performance     | 50%    | 100%       | 100%    | 100%   | 90%       | 80%  |
+| Learning        | 35%    | 95%        | 90%     | 100%   | 75%       | 70%  |
+| Analytics       | 40%    | 100%       | 100%    | 95%    | 80%       | 75%  |
+| AI Features     | 20%    | 70%        | 75%     | 65%    | 50%       | 40%  |
+| Mobile App      | 20%    | 95%        | 100%    | 90%    | 95%       | 90%  |
+| Arabic/RTL      | 0%     | 90%        | 85%     | 95%    | 60%       | 30%  |
 
 ### 1.3 Current Strengths
 
@@ -130,14 +130,14 @@ This document outlines the Goals, Plans, and Strategies (GPS) for the Human Capi
 
 ### 1.4 Current Gaps
 
-| Gap | Business Impact | Priority |
-|-----|-----------------|----------|
-| Business Logic Incomplete | Cannot process real payroll | Critical |
-| No Arabic/RTL Support | Cannot enter GCC market | Critical |
-| Limited Integrations | Cannot connect to ecosystems | High |
-| Mobile App Basic | Poor field employee experience | High |
-| AI Features Minimal | No competitive differentiation | High |
-| Compliance Incomplete | Legal risks for customers | Critical |
+| Gap                       | Business Impact                | Priority |
+| ------------------------- | ------------------------------ | -------- |
+| Business Logic Incomplete | Cannot process real payroll    | Critical |
+| No Arabic/RTL Support     | Cannot enter GCC market        | Critical |
+| Limited Integrations      | Cannot connect to ecosystems   | High     |
+| Mobile App Basic          | Poor field employee experience | High     |
+| AI Features Minimal       | No competitive differentiation | High     |
+| Compliance Incomplete     | Legal risks for customers      | Critical |
 
 ---
 
@@ -145,33 +145,33 @@ This document outlines the Goals, Plans, and Strategies (GPS) for the Human Capi
 
 ### 2.1 Short-term Goals (0-3 Months)
 
-| Goal ID | Goal | Success Criteria | Priority |
-|---------|------|------------------|----------|
-| H1.1 | Complete Core HR Business Logic | All CRUD operations functional | Critical |
-| H1.2 | Launch Indian Payroll MVP | 100 employee payroll processing | Critical |
-| H1.3 | Complete Leave Management | Full leave lifecycle working | High |
-| H1.4 | Complete Attendance Module | Clock-in/out with reports | High |
-| H1.5 | Employee Self-Service Portal | 10 self-service features live | High |
+| Goal ID | Goal                            | Success Criteria                | Priority |
+| ------- | ------------------------------- | ------------------------------- | -------- |
+| H1.1    | Complete Core HR Business Logic | All CRUD operations functional  | Critical |
+| H1.2    | Launch Indian Payroll MVP       | 100 employee payroll processing | Critical |
+| H1.3    | Complete Leave Management       | Full leave lifecycle working    | High     |
+| H1.4    | Complete Attendance Module      | Clock-in/out with reports       | High     |
+| H1.5    | Employee Self-Service Portal    | 10 self-service features live   | High     |
 
 ### 2.2 Medium-term Goals (3-6 Months)
 
-| Goal ID | Goal | Success Criteria | Priority |
-|---------|------|------------------|----------|
-| H2.1 | Launch GCC Payroll | UAE, KSA, Bahrain support | Critical |
-| H2.2 | Complete Recruitment ATS | End-to-end hiring workflow | High |
-| H2.3 | Arabic/RTL Support | Full bilingual interface | Critical |
-| H2.4 | Mobile App Launch | iOS & Android apps live | High |
-| H2.5 | Performance Management Complete | Review cycles functional | High |
+| Goal ID | Goal                            | Success Criteria           | Priority |
+| ------- | ------------------------------- | -------------------------- | -------- |
+| H2.1    | Launch GCC Payroll              | UAE, KSA, Bahrain support  | Critical |
+| H2.2    | Complete Recruitment ATS        | End-to-end hiring workflow | High     |
+| H2.3    | Arabic/RTL Support              | Full bilingual interface   | Critical |
+| H2.4    | Mobile App Launch               | iOS & Android apps live    | High     |
+| H2.5    | Performance Management Complete | Review cycles functional   | High     |
 
 ### 2.3 Long-term Goals (6-12 Months)
 
-| Goal ID | Goal | Success Criteria | Priority |
-|---------|------|------------------|----------|
-| H3.1 | AI-Powered Features | 5 AI modules in production | High |
-| H3.2 | Industry Solutions | 5 vertical-specific solutions | Medium |
-| H3.3 | Enterprise Integrations | 20+ pre-built integrations | High |
-| H3.4 | Multi-country Payroll | 10 countries supported | High |
-| H3.5 | Advanced Analytics | Predictive HR analytics | Medium |
+| Goal ID | Goal                    | Success Criteria              | Priority |
+| ------- | ----------------------- | ----------------------------- | -------- |
+| H3.1    | AI-Powered Features     | 5 AI modules in production    | High     |
+| H3.2    | Industry Solutions      | 5 vertical-specific solutions | Medium   |
+| H3.3    | Enterprise Integrations | 20+ pre-built integrations    | High     |
+| H3.4    | Multi-country Payroll   | 10 countries supported        | High     |
+| H3.5    | Advanced Analytics      | Predictive HR analytics       | Medium   |
 
 ---
 
@@ -405,18 +405,18 @@ const leaveWorkflow: WorkflowConfig = {
       approverType: 'manager',
       approverRef: 'reportingManager',
       condition: 'leave.days <= 3',
-      actions: { onApprove: ['notify.employee', 'update.balance'] }
+      actions: { onApprove: ['notify.employee', 'update.balance'] },
     },
     {
       order: 2,
       approverType: 'role',
       approverRef: 'HR_MANAGER',
       condition: 'leave.days > 3',
-      actions: { onApprove: ['notify.all', 'update.balance'] }
-    }
+      actions: { onApprove: ['notify.all', 'update.balance'] },
+    },
   ],
   escalation: { timeout: '48h', escalateTo: 'skip-level-manager' },
-  sla: { target: '24h', breach: 'notify.hr' }
+  sla: { target: '24h', breach: 'notify.hr' },
 };
 ```
 
@@ -491,7 +491,7 @@ const indiaSalaryTemplate = {
     { name: 'PF - Employer', formula: 'min(basic, 15000) * 0.12', employer: true },
     { name: 'ESI - Employee', formula: 'gross <= 21000 ? gross * 0.0075 : 0' },
     { name: 'ESI - Employer', formula: 'gross <= 21000 ? gross * 0.0325 : 0' },
-  ]
+  ],
 };
 
 // GCC Salary Structure Template
@@ -507,9 +507,9 @@ const uaeSalaryTemplate = {
     calculation: 'uae_labor_law',
     rules: {
       '1-5years': '21_days_per_year',
-      '5+years': '30_days_per_year'
-    }
-  }
+      '5+years': '30_days_per_year',
+    },
+  },
 };
 ```
 
@@ -594,16 +594,16 @@ const attendanceSources = {
   biometric: {
     vendors: ['ZKTeco', 'Suprema', 'HID'],
     protocol: 'push_api',
-    fields: ['employee_id', 'timestamp', 'device_id', 'type']
+    fields: ['employee_id', 'timestamp', 'device_id', 'type'],
   },
   mobile: {
     features: ['gps', 'geofence', 'face_recognition', 'photo'],
-    validation: ['location_within_office', 'face_match > 90%']
+    validation: ['location_within_office', 'face_match > 90%'],
   },
   web: {
     features: ['browser_clock', 'ip_restriction', 'manager_approval'],
-    validation: ['ip_in_whitelist', 'during_shift_time']
-  }
+    validation: ['ip_in_whitelist', 'during_shift_time'],
+  },
 };
 
 // Attendance Processing Rules
@@ -613,7 +613,7 @@ const attendanceRules = {
   overtimeThreshold: 8.5, // hours
   compOffThreshold: 4, // hours on holiday
   autoRegularization: true,
-  regularizationApproval: 'manager'
+  regularizationApproval: 'manager',
 };
 ```
 
@@ -648,10 +648,10 @@ interface Goal {
 // 360 Feedback Configuration
 interface FeedbackConfig {
   sources: {
-    manager: { weight: 40, mandatory: true };
-    peers: { weight: 25, count: 3, mandatory: true };
-    directReports: { weight: 20, count: 'all', mandatory: false };
-    self: { weight: 15, mandatory: true };
+    manager: { weight: 40; mandatory: true };
+    peers: { weight: 25; count: 3; mandatory: true };
+    directReports: { weight: 20; count: 'all'; mandatory: false };
+    self: { weight: 15; mandatory: true };
   };
   anonymity: {
     peers: true;
@@ -707,32 +707,32 @@ const integrations = [
 
 ### 6.1 India Compliance
 
-| Compliance Area | Requirement | Status | Priority |
-|-----------------|-------------|--------|----------|
-| **Provident Fund (PF)** | Monthly returns, annual returns | 30% | Critical |
-| **ESI** | Half-yearly returns | 25% | Critical |
-| **Professional Tax** | State-wise calculations (28 states) | 20% | High |
-| **Labour Welfare Fund** | State-wise contributions | 15% | Medium |
-| **Income Tax (TDS)** | Monthly TDS deposit, Form 16 | 30% | Critical |
-| **Shops & Establishments** | State-wise registrations | 10% | Medium |
-| **Maternity Benefit** | 26 weeks, payment calculations | 20% | High |
-| **Gratuity** | 15 days per year of service | 35% | High |
+| Compliance Area            | Requirement                         | Status | Priority |
+| -------------------------- | ----------------------------------- | ------ | -------- |
+| **Provident Fund (PF)**    | Monthly returns, annual returns     | 30%    | Critical |
+| **ESI**                    | Half-yearly returns                 | 25%    | Critical |
+| **Professional Tax**       | State-wise calculations (28 states) | 20%    | High     |
+| **Labour Welfare Fund**    | State-wise contributions            | 15%    | Medium   |
+| **Income Tax (TDS)**       | Monthly TDS deposit, Form 16        | 30%    | Critical |
+| **Shops & Establishments** | State-wise registrations            | 10%    | Medium   |
+| **Maternity Benefit**      | 26 weeks, payment calculations      | 20%    | High     |
+| **Gratuity**               | 15 days per year of service         | 35%    | High     |
 
 ### 6.2 GCC Compliance
 
-| Country | Requirement | Status | Priority |
-|---------|-------------|--------|----------|
-| **UAE** | | | |
-| - WPS (Wage Protection) | SIF file generation, bank integration | 20% | Critical |
-| - Gratuity | Limited/Unlimited contract calculations | 25% | Critical |
-| - MOHRE Reports | Quarterly labor reports | 10% | High |
-| **Saudi Arabia** | | | |
-| - GOSI | Social insurance calculations | 10% | High |
-| - Nitaqat | Saudization compliance | 5% | Medium |
-| - WPS | Mudad integration | 10% | Critical |
-| **Bahrain** | | | |
-| - GOSI | Social insurance (SIO) | 10% | High |
-| - LMRA Reports | Labor market reports | 5% | Medium |
+| Country                 | Requirement                             | Status | Priority |
+| ----------------------- | --------------------------------------- | ------ | -------- |
+| **UAE**                 |                                         |        |          |
+| - WPS (Wage Protection) | SIF file generation, bank integration   | 20%    | Critical |
+| - Gratuity              | Limited/Unlimited contract calculations | 25%    | Critical |
+| - MOHRE Reports         | Quarterly labor reports                 | 10%    | High     |
+| **Saudi Arabia**        |                                         |        |          |
+| - GOSI                  | Social insurance calculations           | 10%    | High     |
+| - Nitaqat               | Saudization compliance                  | 5%     | Medium   |
+| - WPS                   | Mudad integration                       | 10%    | Critical |
+| **Bahrain**             |                                         |        |          |
+| - GOSI                  | Social insurance (SIO)                  | 10%    | High     |
+| - LMRA Reports          | Labor market reports                    | 5%     | Medium   |
 
 ### 6.3 Compliance Implementation Timeline
 
@@ -806,14 +806,14 @@ Q4 2025: Advanced Compliance
 
 ### 7.2 AI Use Cases Details
 
-| Use Case | Model Type | Data Required | Expected Impact |
-|----------|------------|---------------|-----------------|
-| Resume Screening | NLP Classification | 10K+ resumes | 70% time reduction |
-| Attrition Risk | Time-series ML | 3+ years history | 22% attrition reduction |
-| Interview Scheduling | Optimization | Calendar, preferences | 80% scheduling time saved |
-| Performance Prediction | Regression | Goals, feedback, attendance | Better calibration |
-| Skill Gap Analysis | Clustering | Skills, job requirements | Targeted L&D |
-| Compensation Benchmarking | Regression | Market data, internal data | Fair pay decisions |
+| Use Case                  | Model Type         | Data Required               | Expected Impact           |
+| ------------------------- | ------------------ | --------------------------- | ------------------------- |
+| Resume Screening          | NLP Classification | 10K+ resumes                | 70% time reduction        |
+| Attrition Risk            | Time-series ML     | 3+ years history            | 22% attrition reduction   |
+| Interview Scheduling      | Optimization       | Calendar, preferences       | 80% scheduling time saved |
+| Performance Prediction    | Regression         | Goals, feedback, attendance | Better calibration        |
+| Skill Gap Analysis        | Clustering         | Skills, job requirements    | Targeted L&D              |
+| Compensation Benchmarking | Regression         | Market data, internal data  | Fair pay decisions        |
 
 ### 7.3 AI Implementation Architecture
 
@@ -834,8 +834,15 @@ interface AIService {
 
   attritionPrediction: {
     model: 'gradient-boosting';
-    features: ['tenure', 'salary_growth', 'promotions', 'engagement_score',
-               'manager_rating', 'leave_pattern', 'training_hours'];
+    features: [
+      'tenure',
+      'salary_growth',
+      'promotions',
+      'engagement_score',
+      'manager_rating',
+      'leave_pattern',
+      'training_hours',
+    ];
     output: { riskScore: number; riskFactors: string[]; recommendations: string[] };
   };
 }
@@ -847,39 +854,39 @@ interface AIService {
 
 ### 8.1 Module Completion KPIs
 
-| Module Category | Current | Q1 Target | Q2 Target | EOY Target |
-|-----------------|---------|-----------|-----------|------------|
-| Core HR | 35% | 70% | 90% | 100% |
-| Payroll (India) | 30% | 80% | 95% | 100% |
-| Payroll (GCC) | 20% | 40% | 80% | 95% |
-| Leave Management | 40% | 90% | 100% | 100% |
-| Attendance | 35% | 80% | 95% | 100% |
-| Recruitment | 40% | 60% | 85% | 100% |
-| Performance | 45% | 70% | 90% | 100% |
-| Learning | 30% | 50% | 75% | 95% |
-| Analytics | 35% | 55% | 75% | 90% |
-| AI Features | 15% | 30% | 50% | 70% |
+| Module Category  | Current | Q1 Target | Q2 Target | EOY Target |
+| ---------------- | ------- | --------- | --------- | ---------- |
+| Core HR          | 35%     | 70%       | 90%       | 100%       |
+| Payroll (India)  | 30%     | 80%       | 95%       | 100%       |
+| Payroll (GCC)    | 20%     | 40%       | 80%       | 95%        |
+| Leave Management | 40%     | 90%       | 100%      | 100%       |
+| Attendance       | 35%     | 80%       | 95%       | 100%       |
+| Recruitment      | 40%     | 60%       | 85%       | 100%       |
+| Performance      | 45%     | 70%       | 90%       | 100%       |
+| Learning         | 30%     | 50%       | 75%       | 95%        |
+| Analytics        | 35%     | 55%       | 75%       | 90%        |
+| AI Features      | 15%     | 30%       | 50%       | 70%        |
 
 ### 8.2 Business KPIs
 
-| Metric | Current | Q1 Target | Q2 Target | EOY Target |
-|--------|---------|-----------|-----------|------------|
-| Active Tenants | 5 | 25 | 100 | 500 |
-| Employees Managed | 1,000 | 10,000 | 50,000 | 250,000 |
-| Payrolls Processed/mo | 0 | 5,000 | 25,000 | 100,000 |
-| Leave Requests/mo | 100 | 1,000 | 10,000 | 50,000 |
-| Uptime | 99% | 99.5% | 99.9% | 99.95% |
+| Metric                | Current | Q1 Target | Q2 Target | EOY Target |
+| --------------------- | ------- | --------- | --------- | ---------- |
+| Active Tenants        | 5       | 25        | 100       | 500        |
+| Employees Managed     | 1,000   | 10,000    | 50,000    | 250,000    |
+| Payrolls Processed/mo | 0       | 5,000     | 25,000    | 100,000    |
+| Leave Requests/mo     | 100     | 1,000     | 10,000    | 50,000     |
+| Uptime                | 99%     | 99.5%     | 99.9%     | 99.95%     |
 
 ### 8.3 User Satisfaction KPIs
 
-| Metric | Target |
-|--------|--------|
-| Employee Self-Service Adoption | >80% |
-| Mobile App Daily Active Users | >40% |
-| Manager Portal Satisfaction | >4.0/5.0 |
-| HR Admin Satisfaction | >4.2/5.0 |
-| Average Task Completion Time | <2 minutes |
-| Support Tickets per 100 Employees | <5 |
+| Metric                            | Target     |
+| --------------------------------- | ---------- |
+| Employee Self-Service Adoption    | >80%       |
+| Mobile App Daily Active Users     | >40%       |
+| Manager Portal Satisfaction       | >4.0/5.0   |
+| HR Admin Satisfaction             | >4.2/5.0   |
+| Average Task Completion Time      | <2 minutes |
+| Support Tickets per 100 Employees | <5         |
 
 ---
 

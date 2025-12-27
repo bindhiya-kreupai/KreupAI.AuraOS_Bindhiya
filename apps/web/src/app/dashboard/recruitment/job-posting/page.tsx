@@ -62,9 +62,8 @@ export default function JobPostingsPage() {
 
                 setJobs(transformed);
             } catch (error) {
-            console.error('Error:', error);
+                console.error('Error:', error);
                 setError('Could not load job postings. Please try again later.');
-                console.error(err);
             } finally {
                 setLoading(false);
             }

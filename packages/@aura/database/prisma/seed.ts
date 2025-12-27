@@ -32,6 +32,10 @@ import {
     competencyResourcesSeed,
     assessmentCriteriaSeed
 } from '../src/seeds/18-competency-library.seed';
+import { performanceSeed } from '../src/seeds/19-performance.seed';
+import { learningSeed } from '../src/seeds/20-learning.seed';
+import { compensationSeed } from '../src/seeds/21-compensation.seed';
+import { benefitsSeed } from '../src/seeds/22-benefits.seed';
 import { seedPositions } from '../src/seeds/21-positions.seed';
 
 const prisma = new PrismaClient();
@@ -382,8 +386,19 @@ async function main() {
 
     // Roles
     for (const role of rolesSeed) {
-        const existing = await prisma.role.findUnique({ where: { name: role.name } });
-        if (!existing) await prisma.role.create({ data: role });
+        await prisma.role.upsert({
+            where: {
+                tenantId_code: {
+                    tenantId: tenant.id,
+                    code: role.code
+                }
+            },
+            update: {},
+            create: {
+                ...role,
+                tenantId: tenant.id
+            }
+        });
     }
 
     // Holidays
@@ -542,7 +557,7 @@ async function main() {
     for (const job of jobPostingsSeed) {
         // @ts-ignore
         const metrics = job.metrics; // Extract to avoid type issues if needed, but simple create is fine
-        // @ts-ignore 
+        // @ts-ignore
         const channels = job.channels;
 
         // Check duplicacy by title + department (simple check)
@@ -550,7 +565,7 @@ async function main() {
             where: { title: job.title, department: job.department }
         });
 
-        if (!existing) {
+        if (!existing && metrics) {
             await prisma.jobPosting.create({
                 data: {
                     title: job.title,
@@ -559,10 +574,10 @@ async function main() {
                     type: job.type,
                     status: job.status,
                     postedDate: job.postedDate,
-                    views: metrics.views,
-                    clicks: metrics.clicks,
-                    applies: metrics.applies,
-                    channels: channels,
+                    views: metrics.views || 0,
+                    clicks: metrics.clicks || 0,
+                    applies: metrics.applies || 0,
+                    channels: channels || [],
                     description: job.description
                 }
             });
@@ -893,6 +908,27 @@ async function main() {
     // ============================================
     await seedPositions();
     console.log('✅ Positions seeded successfully!');
+
+    // ============================================
+    // PERFORMANCE MANAGEMENT MODULE
+    // ============================================
+    console.log('\n🎯 Seeding Performance Management Module...');
+    await performanceSeed(tenant.id);
+
+    // ============================================
+    // LEARNING & DEVELOPMENT MODULE
+    // ============================================
+    console.log('\n📚 Seeding Learning & Development Module...');
+    await learningSeed(tenant.id);
+
+    // ============================================
+    // COMPENSATION MANAGEMENT MODULE
+    // ============================================
+    console.log('\n💰 Seeding Compensation Management Module...');
+    await compensationSeed(tenant.id);
+
+    console.log('\n💊 Seeding Benefits Management Module...');
+    await benefitsSeed(tenant.id);
 
     console.log('🏁 Comprehensive Seeding Completed!');
 }

@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
+import { JobPostingService } from '@/app/dashboard/recruitment/services';
 
 interface CreateJobModalProps {
     isOpen: boolean;
@@ -27,17 +27,11 @@ export default function CreateJobModal({ isOpen, onClose, onSuccess }: CreateJob
         setError(null);
 
         try {
-            const res = await fetch('/api/recruitment/jobs', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...formData,
-                    status: 'Active', // Default to active for now
-                    channels: { linkedin: false, indeed: false, website: true, glassdoor: false }
-                })
-            });
-
-            if (!res.ok) throw new Error('Failed to create job');
+            await JobPostingService.createPosting({
+                ...formData,
+                status: 'Active',
+                channels: { linkedin: false, indeed: false, website: true, glassdoor: false }
+            } as any);
 
             // Reset and close
             setFormData({ title: '', department: '', location: '', type: 'Full-time' });
