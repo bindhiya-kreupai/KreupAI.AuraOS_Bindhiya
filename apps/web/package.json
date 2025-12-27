@@ -54,8 +54,12 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@axe-core/react": "^4.10.2",
+    "@playwright/test": "^1.48.0",
     "@testing-library/jest-dom": "^6.9.1",
+    "@vitejs/plugin-react": "^4.3.4",
     "@testing-library/react": "^16.3.1",
+    "@testing-library/user-event": "^14.5.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/ioredis": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.5",
@@ -65,12 +69,16 @@
     "@typescript-eslint/eslint-plugin": "^8.50.0",
     "@typescript-eslint/parser": "^8.50.0",
     "@vitest/ui": "^4.0.16",
+    "axe-core": "^4.10.2",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.1.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
+    "jest-axe": "^9.0.0",
+    "jsdom": "^24.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.16",
+    "vitest-axe": "^1.0.0"
   }
 }

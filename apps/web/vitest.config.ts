@@ -5,14 +5,22 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'node',
+    environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/__tests__/setup.ts'],
     include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     exclude: ['node_modules', '.next', 'dist'],
+    // Week 4: Enhanced test reporting
+    reporters: process.env.CI
+      ? ['default', 'junit', 'html']
+      : ['default'],
+    outputFile: {
+      junit: './test-results/junit.xml',
+      html: './test-results/index.html',
+    },
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
         'node_modules/',
         'src/__tests__/',
@@ -21,6 +29,13 @@ export default defineConfig({
         '**/mockData',
         '.next/',
       ],
+      // Week 4: Coverage thresholds
+      thresholds: {
+        lines: 70,
+        functions: 70,
+        branches: 70,
+        statements: 70,
+      },
     },
   },
   resolve: {

@@ -4,6 +4,8 @@
  */
 
 import { beforeAll, afterAll, afterEach, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
+import { toHaveNoViolations } from './setupAxe';
 
 // Mock environment variables for testing
 process.env.NODE_ENV = 'test';

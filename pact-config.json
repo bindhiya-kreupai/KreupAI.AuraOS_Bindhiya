@@ -1,0 +1,54 @@
+{
+  "pactBrokerUrl": "http://localhost:9292",
+  "pactBrokerToken": "PACT_BROKER_TOKEN_PLACEHOLDER",
+  "pactBrokerUsername": "pactbroker",
+  "pactBrokerPassword": "pactbroker",
+  "publishVerificationResult": true,
+  "consumerVersionSelectors": [
+    {
+      "mainBranch": true
+    },
+    {
+      "deployedOrReleased": true
+    },
+    {
+      "matchingBranch": true
+    }
+  ],
+  "enablePending": true,
+  "includeWipPactsSince": "2024-01-01",
+  "providerVersionTags": ["main", "develop"],
+  "consumerVersionTags": ["main", "develop"],
+  "pactFileWriteMode": "overwrite",
+  "logLevel": "info",
+  "timeout": 30000,
+  "providerStatesSetupUrl": "http://localhost:3006/pact/provider-states",
+  "pactDir": "./pacts",
+  "pactSpecification": 3,
+  "cors": true,
+  "ssl": {
+    "rejectUnauthorized": false
+  },
+  "contracts": {
+    "employee-api": {
+      "consumer": "web-client",
+      "provider": "employee-service",
+      "version": "1.0.0"
+    },
+    "payroll-api": {
+      "consumer": "web-client",
+      "provider": "payroll-service",
+      "version": "1.0.0"
+    },
+    "leave-api": {
+      "consumer": "web-client",
+      "provider": "leave-service",
+      "version": "1.0.0"
+    },
+    "attendance-api": {
+      "consumer": "web-client",
+      "provider": "attendance-service",
+      "version": "1.0.0"
+    }
+  }
+}
