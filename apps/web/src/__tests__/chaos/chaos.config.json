@@ -1,0 +1,224 @@
+{
+  "version": "1.0.0",
+  "title": "AuraOS HCM Chaos Engineering Configuration",
+  "description": "Chaos engineering experiments for testing system resilience",
+
+  "steady_state_hypothesis": {
+    "title": "Application is healthy and responsive",
+    "probes": [
+      {
+        "name": "health-check",
+        "type": "http",
+        "url": "${BASE_URL}/api/health",
+        "expected_status": 200,
+        "timeout": 5
+      },
+      {
+        "name": "response-time-check",
+        "type": "http",
+        "url": "${BASE_URL}/api/employees",
+        "expected_max_response_time": 2000
+      },
+      {
+        "name": "error-rate-check",
+        "type": "metric",
+        "metric": "error_rate",
+        "expected_max": 0.01
+      }
+    ]
+  },
+
+  "experiments": {
+    "network_latency": {
+      "title": "Network Latency Injection",
+      "description": "Introduce network latency to test timeout handling",
+      "steady_state_hypothesis": "health-check",
+      "method": [
+        {
+          "type": "action",
+          "name": "introduce-latency",
+          "provider": {
+            "type": "network",
+            "latency_ms": 500,
+            "duration_seconds": 60
+          }
+        }
+      ],
+      "rollbacks": [
+        {
+          "type": "action",
+          "name": "remove-latency"
+        }
+      ]
+    },
+
+    "database_failure": {
+      "title": "Database Connection Failure",
+      "description": "Simulate database connection pool exhaustion",
+      "steady_state_hypothesis": "health-check",
+      "method": [
+        {
+          "type": "action",
+          "name": "exhaust-db-pool",
+          "provider": {
+            "type": "database",
+            "action": "exhaust_connections"
+          }
+        }
+      ]
+    },
+
+    "api_timeout": {
+      "title": "API Timeout Simulation",
+      "description": "Force API endpoints to timeout",
+      "method": [
+        {
+          "type": "action",
+          "name": "delay-api-response",
+          "provider": {
+            "type": "api",
+            "delay_ms": 30000
+          }
+        }
+      ]
+    },
+
+    "cache_failure": {
+      "title": "Cache Service Failure",
+      "description": "Simulate Redis/cache unavailability",
+      "method": [
+        {
+          "type": "action",
+          "name": "stop-cache",
+          "provider": {
+            "type": "service",
+            "service_name": "redis",
+            "action": "stop"
+          }
+        }
+      ]
+    },
+
+    "queue_failure": {
+      "title": "Message Queue Failure",
+      "description": "Simulate RabbitMQ/queue service failure",
+      "method": [
+        {
+          "type": "action",
+          "name": "stop-queue",
+          "provider": {
+            "type": "service",
+            "service_name": "rabbitmq",
+            "action": "stop"
+          }
+        }
+      ]
+    },
+
+    "cpu_spike": {
+      "title": "CPU Spike Simulation",
+      "description": "Introduce high CPU usage",
+      "method": [
+        {
+          "type": "action",
+          "name": "cpu-stress",
+          "provider": {
+            "type": "resource",
+            "resource": "cpu",
+            "usage_percent": 90,
+            "duration_seconds": 60
+          }
+        }
+      ]
+    },
+
+    "memory_pressure": {
+      "title": "Memory Pressure Test",
+      "description": "Simulate memory exhaustion",
+      "method": [
+        {
+          "type": "action",
+          "name": "memory-fill",
+          "provider": {
+            "type": "resource",
+            "resource": "memory",
+            "fill_percent": 85,
+            "duration_seconds": 60
+          }
+        }
+      ]
+    },
+
+    "disk_full": {
+      "title": "Disk Space Exhaustion",
+      "description": "Simulate disk full scenario",
+      "method": [
+        {
+          "type": "action",
+          "name": "fill-disk",
+          "provider": {
+            "type": "resource",
+            "resource": "disk",
+            "fill_percent": 95
+          }
+        }
+      ]
+    },
+
+    "random_pod_kill": {
+      "title": "Random Pod Termination",
+      "description": "Kill random application pods to test auto-recovery",
+      "method": [
+        {
+          "type": "action",
+          "name": "kill-pod",
+          "provider": {
+            "type": "kubernetes",
+            "action": "kill_pod",
+            "namespace": "default",
+            "label_selector": "app=auraos"
+          }
+        }
+      ]
+    },
+
+    "packet_loss": {
+      "title": "Network Packet Loss",
+      "description": "Introduce packet loss to test retry mechanisms",
+      "method": [
+        {
+          "type": "action",
+          "name": "packet-loss",
+          "provider": {
+            "type": "network",
+            "packet_loss_percent": 10,
+            "duration_seconds": 60
+          }
+        }
+      ]
+    }
+  },
+
+  "monitoring": {
+    "metrics": [
+      "response_time",
+      "error_rate",
+      "throughput",
+      "cpu_usage",
+      "memory_usage",
+      "db_connections",
+      "cache_hit_rate"
+    ],
+    "alerts": {
+      "error_rate_threshold": 0.05,
+      "response_time_threshold": 5000,
+      "availability_threshold": 0.99
+    }
+  },
+
+  "recovery": {
+    "auto_rollback": true,
+    "rollback_timeout_seconds": 300,
+    "health_check_interval_seconds": 10
+  }
+}

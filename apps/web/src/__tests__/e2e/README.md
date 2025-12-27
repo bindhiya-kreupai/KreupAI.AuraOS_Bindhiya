@@ -151,8 +151,41 @@ src/__tests__/e2e/
 ├── auth/
 │   └── login.spec.ts              # Authentication E2E tests (15 tests)
 │
-└── employees/
-    └── employee-management.spec.ts # Employee CRUD E2E tests (15+ tests)
+├── employees/
+│   └── employee-management.spec.ts # Employee CRUD E2E tests (15 tests)
+│
+├── payroll/                        # Plan D - Week 7, Day 31
+│   ├── payroll-run.e2e.test.ts    # Payroll run creation & management (25 tests)
+│   ├── salary-calculation.e2e.test.ts # Salary calculations & components (20 tests)
+│   ├── payslip-generation.e2e.test.ts # Payslip generation & distribution (18 tests)
+│   └── payroll-reports.e2e.test.ts # Payroll reporting & exports (20 tests)
+│
+├── leave/                          # Plan D - Week 7, Day 32
+│   ├── leave-application.e2e.test.ts # Leave application & approval (35 tests)
+│   ├── leave-balance.e2e.test.ts  # Leave balance & accrual (25 tests)
+│   └── leave-calendar.e2e.test.ts # Leave calendar & team view (20 tests)
+│
+├── attendance/                     # Plan D - Week 7, Day 33
+│   ├── attendance-marking.e2e.test.ts # Clock in/out & tracking (35 tests)
+│   ├── regularization.e2e.test.ts # Attendance regularization (30 tests)
+│   ├── shift-management.e2e.test.ts # Shift schedules & roster (60 tests)
+│   └── overtime.e2e.test.ts       # Overtime management (50 tests)
+│
+├── recruitment/                    # Plan D - Week 7, Day 34-35
+│   ├── job-posting.e2e.test.ts    # Job requisitions & posting (60 tests)
+│   ├── candidate-management.e2e.test.ts # Candidate pipeline (50 tests)
+│   ├── interview-management.e2e.test.ts # Interview scheduling & feedback (45 tests)
+│   └── onboarding.e2e.test.ts     # Offer management & onboarding (40 tests)
+│
+├── performance/                    # Plan D - Week 7, Day 36-37
+│   ├── goal-management.e2e.test.ts # Goal setting & tracking (60 tests)
+│   └── performance-review.e2e.test.ts # Reviews, PIP, promotions (60 tests)
+│
+├── benefits/                       # Plan D - Week 7, Day 38
+│   └── benefits-enrollment.e2e.test.ts # Insurance, loans, reimbursements (60 tests)
+│
+└── offboarding/                    # Plan D - Week 7, Day 39
+    └── exit-management.e2e.test.ts # Resignations, clearance, F&F (60 tests)
 ```
 
 ## Page Object Model
@@ -505,21 +538,32 @@ Set these in your CI/CD pipeline:
 
 ## Test Coverage
 
-### Current Coverage (Week 5)
+### Current Coverage (Week 5 + Plan D Week 7-8)
 
-| Module | Test File | Test Count | Coverage |
+| Module | Test Files | Test Count | Coverage |
 |--------|-----------|------------|----------|
 | **Authentication** | `auth/login.spec.ts` | 15 | Login, logout, validation, session |
-| **Employee Management** | `employees/employee-management.spec.ts` | 15+ | CRUD, search, validation, access control |
+| **Employee Management** | `employees/employee-management.spec.ts` | 15 | CRUD, search, validation, access control |
+| **Payroll** | 4 files | 83 | Payroll runs, calculations, payslips, reports |
+| **Leave Management** | 3 files | 70+ | Applications, approvals, balances, calendar |
+| **Attendance** | 4 files | 85+ | Clock in/out, regularization, shifts, overtime |
+| **Recruitment** | 4 files | 170+ | Jobs, candidates, interviews, onboarding |
+| **Performance** | 2 files | 120+ | Goals, reviews, PIP, promotions, 9-box |
+| **Benefits** | 1 file | 60+ | Insurance, loans, reimbursements |
+| **Offboarding** | 1 file | 60+ | Resignations, clearance, F&F settlement |
 
-**Total**: 30+ E2E tests
+**Total**: 678+ E2E tests covering all major HCM workflows
 
-### Planned Coverage (Week 5-6)
+### Plan D Implementation (Week 7-8) - COMPLETE ✅
 
-**Dev B responsibilities (60%)**:
-- Leave Management flows (apply, approve, reject, cancel)
-- User journey scenarios
-- Exploratory testing
+All secondary E2E flows have been implemented:
+- ✅ Day 31: Payroll Processing E2E (83 tests)
+- ✅ Day 32: Leave Management E2E (70+ tests)
+- ✅ Day 33: Attendance & Shift Management E2E (85+ tests)
+- ✅ Day 34-35: Recruitment & Onboarding E2E (170+ tests)
+- ✅ Day 36-37: Performance Management E2E (120+ tests)
+- ✅ Day 38-39: Benefits & Offboarding E2E (120+ tests)
+- ✅ Day 40: E2E Test Suite Optimization (this documentation)
 
 ## Resources
 

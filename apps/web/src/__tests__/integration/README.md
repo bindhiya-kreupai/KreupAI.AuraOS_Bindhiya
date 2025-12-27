@@ -1,4 +1,494 @@
-# Integration Tests Documentation
+# Integration Testing Suite - AuraOS HCM
+
+Comprehensive integration testing for validating interactions between different components, services, and external dependencies of the AuraOS HCM platform.
+
+## 📋 Table of Contents
+
+- [Overview](#overview)
+- [Test Categories](#test-categories)
+- [Test Structure](#test-structure)
+- [Running Tests](#running-tests)
+- [Test Coverage](#test-coverage)
+- [Best Practices](#best-practices)
+- [Environment Setup](#environment-setup)
+- [Original Integration Tests](#original-integration-tests)
+
+## 🎯 Overview
+
+Integration tests verify that different components of AuraOS work together correctly. This suite includes:
+
+- **API Integration Tests** (Days 59-60): REST API endpoint interactions
+- **Database Integration Tests** (Days 61-62): ORM/database layer operations
+- **Third-Party Service Tests** (Days 63-64): External service integrations
+- **End-to-End Scenarios** (Days 65-66): Complete business workflows
+- **Original Integration Tests**: Auth, Users, Licenses, Master Data APIs
+
+### Integration Testing Philosophy
+
+1. **Test Real Integrations**: Use actual database, cache, and message queue (not mocks where possible)
+2. **Isolated Environment**: Each test gets clean state
+3. **Fast Feedback**: Tests complete in <10 minutes
+4. **Deterministic**: Tests produce same results every run
+5. **Comprehensive**: Cover all critical integration points
+
+## 📊 Test Categories
+
+### 1. API Integration Tests ([api-integration.test.ts](api-integration.test.ts:1))
+
+Tests comprehensive API endpoint interactions:
+
+**Authentication Flow** (3 tests)
+- ✅ Complete auth workflow: Login → Token → Refresh → Logout
+- ✅ Token expiration and refresh cycle
+- ✅ Token invalidation on logout
+
+**Employee CRUD Operations** (3 tests)
+- ✅ Full CRUD lifecycle: Create → Read → Update → Delete
+- ✅ Data consistency across operations
+- ✅ Cross-endpoint data verification
+
+**Pagination & Filtering** (4 tests)
+- ✅ Multi-page pagination without overlap
+- ✅ Filter application (status, department)
+- ✅ Combined filters with pagination
+- ✅ Sorting (ascending/descending)
+
+**Error Handling** (5 tests)
+- ✅ 400 for invalid input
+- ✅ 401 for unauthorized access
+- ✅ 401 for invalid tokens
+- ✅ 404 for non-existent resources
+- ✅ 409 for duplicate constraints
+
+**Organization Structure** (2 tests)
+- ✅ Department lifecycle management
+- ✅ Hierarchical organization structure
+
+**Response Format** (3 tests)
+- ✅ Consistent success response format
+- ✅ Consistent error response format
+- ✅ Proper metadata in list responses
+
+**Total Tests**: 20 API integration tests
+
+### 2. Database Integration Tests ([database-integration.test.ts](database-integration.test.ts:1))
+
+Tests database operations via Prisma ORM:
+
+**Transactions** (3 tests)
+- ✅ Transaction commit on success
+- ✅ Transaction rollback on error
+- ✅ Nested transactions
+
+**Relationships** (3 tests)
+- ✅ Loading nested relationships
+- ✅ Cascade updates
+- ✅ Cascade deletes
+
+**Constraints** (4 tests)
+- ✅ Unique constraint enforcement
+- ✅ Foreign key constraint enforcement
+- ✅ Check constraint validation
+- ✅ Not null constraint enforcement
+
+**Query Performance** (4 tests)
+- ✅ N+1 query prevention
+- ✅ Index usage validation
+- ✅ Large dataset pagination efficiency
+- ✅ Complex join optimization
+
+**Data Integrity** (2 tests)
+- ✅ Referential integrity maintenance
+- ✅ Concurrent update handling
+
+**Soft Deletes** (1 test)
+- ✅ Soft delete record preservation
+
+**Total Tests**: 17 database integration tests
+
+### 3. Third-Party Service Integration Tests ([third-party-integration.test.ts](third-party-integration.test.ts:1))
+
+Tests external service integrations:
+
+**Email Service** (4 tests)
+- ✅ Send email successfully
+- ✅ Send email with attachments
+- ✅ Handle delivery failures
+- ✅ Get email delivery status
+
+**SMS Service** (3 tests)
+- ✅ Send SMS successfully
+- ✅ Validate phone number format
+- ✅ Handle international phone numbers
+
+**Payment Gateway** (5 tests)
+- ✅ Create payment intent
+- ✅ Process payment successfully
+- ✅ Handle failed payments
+- ✅ Process refunds
+- ✅ Handle webhook events
+
+**File Storage (S3/MinIO)** (4 tests)
+- ✅ Upload file successfully
+- ✅ Generate signed URLs
+- ✅ Handle large file uploads (multipart)
+- ✅ Delete file from storage
+
+**Cache Service (Redis)** (3 tests)
+- ✅ Cache API responses
+- ✅ Invalidate cache on data update
+- ✅ Handle cache expiration (TTL)
+
+**Message Queue (RabbitMQ)** (3 tests)
+- ✅ Publish message to queue
+- ✅ Process background jobs
+- ✅ Handle message retry on failure
+
+**Total Tests**: 22 third-party integration tests
+
+### 4. End-to-End Integration Scenarios ([e2e-integration-scenarios.test.ts](e2e-integration-scenarios.test.ts:1))
+
+Tests complete business workflows:
+
+**Employee Lifecycle** (1 comprehensive test)
+- ✅ Recruitment → Hiring → Onboarding → Active Employment → Performance Review → Benefits → Operations → Termination → Exit
+
+**Payroll Processing Cycle** (1 test)
+- ✅ Employee creation → Attendance → Leave → Payroll calculation → Payment → Payslip → Notification
+
+**Leave Management Workflow** (2 tests)
+- ✅ Leave application → Manager approval → HR approval → Calendar update → Balance deduction → Notification
+- ✅ Leave rejection workflow
+
+**Cross-Module Integration** (2 tests)
+- ✅ Leave ↔ Attendance ↔ Payroll synchronization
+- ✅ Performance review ↔ Compensation adjustment
+
+**Total Tests**: 6 end-to-end scenario tests
+
+### 5. Original Integration Tests
+
+**Authentication Tests** ([auth/login.test.ts](auth/login.test.ts:1))
+- 12 tests covering login, validation, rate limiting, audit logs
+
+**Users API Tests** ([users/users.test.ts](users/users.test.ts:1))
+- 16 tests covering CRUD operations, filters, pagination
+
+**Licenses API Tests** ([licenses/licenses.test.ts](licenses/licenses.test.ts:1))
+- 16 tests covering license management, capacity checks
+
+**Master Data API Tests** ([master-data/master-data.test.ts](master-data/master-data.test.ts:1))
+- 16 tests covering countries, states, cities, currencies
+
+**Total Original Tests**: 60 integration tests
+
+## 📁 Test Structure
+
+```
+integration/
+├── README.md                          # This file
+├── api-integration.test.ts            # API integration tests (20 tests)
+├── database-integration.test.ts       # Database integration tests (17 tests)
+├── third-party-integration.test.ts    # Third-party service tests (22 tests)
+├── e2e-integration-scenarios.test.ts  # End-to-end scenarios (6 tests)
+├── auth/
+│   └── login.test.ts                  # Authentication tests (12 tests)
+├── users/
+│   └── users.test.ts                  # User management tests (16 tests)
+├── licenses/
+│   └── licenses.test.ts               # License management tests (16 tests)
+└── master-data/
+    └── master-data.test.ts            # Master data tests (16 tests)
+```
+
+## 🚀 Running Tests
+
+### Run All Integration Tests
+
+```bash
+# Run complete integration test suite (125 tests)
+npx playwright test apps/web/src/__tests__/integration
+
+# Or using npm script
+npm run test:integration
+```
+
+### Run Specific Test Categories
+
+```bash
+# API integration tests only
+npx playwright test apps/web/src/__tests__/integration/api-integration.test.ts
+
+# Database integration tests only
+npx playwright test apps/web/src/__tests__/integration/database-integration.test.ts
+
+# Third-party service tests only
+npx playwright test apps/web/src/__tests__/integration/third-party-integration.test.ts
+
+# End-to-end scenarios only
+npx playwright test apps/web/src/__tests__/integration/e2e-integration-scenarios.test.ts
+
+# Original integration tests (auth, users, licenses, master-data)
+npx playwright test apps/web/src/__tests__/integration/auth
+npx playwright test apps/web/src/__tests__/integration/users
+npx playwright test apps/web/src/__tests__/integration/licenses
+npx playwright test apps/web/src/__tests__/integration/master-data
+```
+
+### Run with Different Options
+
+```bash
+# Run with headed browser
+npx playwright test apps/web/src/__tests__/integration --headed
+
+# Run in debug mode
+npx playwright test apps/web/src/__tests__/integration --debug
+
+# Run specific test
+npx playwright test apps/web/src/__tests__/integration -g "should complete full employee lifecycle"
+
+# Run with HTML reporter
+npx playwright test apps/web/src/__tests__/integration --reporter=html
+
+# Run in parallel (faster)
+npx playwright test apps/web/src/__tests__/integration --workers=4
+
+# Run sequentially (for debugging)
+npx playwright test apps/web/src/__tests__/integration --workers=1
+```
+
+## 📊 Test Coverage Summary
+
+| Category | Tests | Coverage |
+|----------|-------|----------|
+| **New Integration Tests** | | |
+| API Integration | 20 | Auth flow, CRUD, pagination, filters, errors |
+| Database Integration | 17 | Transactions, relations, constraints, performance |
+| Third-Party Services | 22 | Email, SMS, payments, storage, cache, queue |
+| End-to-End Scenarios | 6 | Employee lifecycle, payroll, leave, cross-module |
+| **Original Integration Tests** | | |
+| Authentication | 12 | Login, sessions, rate limiting |
+| Users API | 16 | User management, CRUD operations |
+| Licenses API | 16 | License management, capacity |
+| Master Data API | 16 | Countries, states, cities, currencies |
+| **TOTAL** | **125** | **Comprehensive** |
+
+## ✅ Best Practices
+
+### 1. Test Isolation
+
+Each test should be independent:
+
+```typescript
+test.beforeEach(async () => {
+  // Clean database
+  await prisma.$executeRaw`TRUNCATE TABLE employees CASCADE`;
+
+  // Clear cache
+  await redis.flushdb();
+
+  // Purge queues
+  await channel.purgeQueue('payroll-processing');
+});
+```
+
+### 2. Use Realistic Test Data
+
+```typescript
+// ✅ Good - Realistic data
+const employee = {
+  name: 'John Doe',
+  email: 'john.doe@example.com',
+  salary: 75000,
+  joinDate: new Date('2024-01-15'),
+  department: 'Engineering'
+};
+
+// ❌ Bad - Magic values
+const employee = { name: 'Test User', salary: 1000 };
+```
+
+### 3. Test Both Success and Error Cases
+
+```typescript
+test('should succeed with valid data', async () => {
+  // Test happy path
+});
+
+test('should return 400 for invalid data', async () => {
+  // Test validation
+});
+
+test('should return 404 for non-existent resource', async () => {
+  // Test not found
+});
+```
+
+### 4. Verify Integration Points
+
+Test both sides of integration:
+
+```typescript
+test('should sync leave with attendance', async () => {
+  // Create leave
+  const leave = await createLeave({ employeeId: emp.id });
+
+  // Approve leave
+  await approveLeave(leave.id);
+
+  // Verify attendance marked as leave
+  const attendance = await getAttendance(emp.id, leave.startDate);
+  expect(attendance.status).toBe('on_leave');
+});
+```
+
+### 5. Handle Async Operations
+
+```typescript
+test('should process async job', async ({ request }) => {
+  // Trigger async operation
+  const jobResponse = await request.post('/api/jobs/create', { data: jobData });
+  const jobId = (await jobResponse.json()).data.jobId;
+
+  // Wait for processing
+  await new Promise(resolve => setTimeout(resolve, 2000));
+
+  // Check status
+  const statusResponse = await request.get(`/api/jobs/${jobId}/status`);
+  expect((await statusResponse.json()).data.status).toMatch(/completed|failed/);
+});
+```
+
+## ⚙️ Environment Setup
+
+### Prerequisites
+
+```bash
+# Install dependencies
+pnpm install
+
+# Install Playwright
+npx playwright install
+
+# Setup PostgreSQL test database
+createdb auraos_test
+
+# Setup Redis (for cache tests)
+docker run -d -p 6379:6379 redis:7-alpine
+
+# Setup RabbitMQ (for queue tests)
+docker run -d -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+```
+
+### Environment Variables
+
+Create `.env.test` file:
+
+```bash
+# Application
+NODE_ENV=test
+API_URL=http://localhost:3006
+BASE_URL=http://localhost:3006
+
+# Database
+DATABASE_URL=postgresql://user:pass@localhost:5432/auraos_test
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# RabbitMQ
+RABBITMQ_URL=amqp://guest:guest@localhost:5672
+
+# Email (test mode)
+SENDGRID_API_KEY=test_key
+EMAIL_FROM=noreply@test.auraos.com
+
+# SMS (test mode)
+TWILIO_ACCOUNT_SID=test_sid
+TWILIO_AUTH_TOKEN=test_token
+
+# Payments (test mode)
+STRIPE_SECRET_KEY=sk_test_...
+
+# Storage (test bucket)
+S3_BUCKET=auraos-test
+AWS_ACCESS_KEY_ID=test_key
+AWS_SECRET_ACCESS_KEY=test_secret
+```
+
+### Docker Compose for Test Dependencies
+
+Create `docker-compose.test.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  postgres-test:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: auraos_test
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_pass
+    ports:
+      - "5433:5432"
+
+  redis-test:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+
+  rabbitmq-test:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+```
+
+Start test dependencies:
+
+```bash
+docker-compose -f docker-compose.test.yml up -d
+```
+
+## 🐛 Troubleshooting
+
+### Tests Failing with "Connection Refused"
+
+**Solution**: Ensure all dependencies are running
+
+```bash
+# Check PostgreSQL
+psql -h localhost -p 5432 -U test_user -d auraos_test
+
+# Check Redis
+redis-cli -h localhost -p 6379 ping
+
+# Check RabbitMQ
+curl http://localhost:15672/api/overview
+```
+
+### Slow Test Execution
+
+**Solution**: Run tests in parallel
+
+```bash
+npx playwright test --workers=8
+```
+
+### Data Conflicts Between Tests
+
+**Solution**: Ensure proper cleanup
+
+```typescript
+test.afterEach(async () => {
+  await prisma.$executeRaw`TRUNCATE TABLE employees CASCADE`;
+});
+```
+
+---
+
+# Original Integration Tests Documentation
 
 ## Overview
 

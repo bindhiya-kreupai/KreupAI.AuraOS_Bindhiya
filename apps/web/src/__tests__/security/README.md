@@ -1,10 +1,11 @@
-# Security Testing Suite
+# Security Testing & Hardening Suite
 
-Comprehensive security testing suite for AuraOS HCM Platform covering OWASP Top 10 vulnerabilities, dependency scanning, and automated security testing.
+Comprehensive security testing, penetration testing, and production hardening for AuraOS HCM Platform covering OWASP Top 10 vulnerabilities, automated security testing, manual penetration testing procedures, and production security configurations.
 
 ## 📋 Table of Contents
 
 - [Overview](#overview)
+- [Security Documentation](#security-documentation)
 - [Test Coverage](#test-coverage)
 - [Tools Used](#tools-used)
 - [Running Tests](#running-tests)
