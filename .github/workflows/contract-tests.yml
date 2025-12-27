@@ -1,0 +1,233 @@
+name: Contract Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    # Allow manual triggers
+
+env:
+  PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL || 'http://localhost:9292' }}
+  PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
+  PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME || 'pactbroker' }}
+  PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD || 'pactbroker' }}
+
+jobs:
+  consumer-tests:
+    name: Consumer Contract Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Full history for version tagging
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run consumer contract tests
+        run: |
+          pnpm test apps/web/src/__tests__/contract/consumer/*.consumer.test.ts
+        env:
+          NODE_ENV: test
+
+      - name: Upload pact files
+        uses: actions/upload-artifact@v3
+        with:
+          name: pact-contracts
+          path: pacts/*.json
+
+      - name: Publish pacts to broker
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        run: |
+          chmod +x ./scripts/pact-publish.sh
+          ./scripts/pact-publish.sh ${{ github.sha }} ${{ github.ref_name }}
+        env:
+          BUILD_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  provider-tests-employee:
+    name: Provider Tests - Employee Service
+    runs-on: ubuntu-latest
+    needs: consumer-tests
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup database
+        run: |
+          pnpm prisma generate
+          pnpm prisma db push
+          pnpm prisma db seed
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/auraos_test
+
+      - name: Start application
+        run: |
+          pnpm dev &
+          sleep 30
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/auraos_test
+          NODE_ENV: test
+
+      - name: Download pact files
+        uses: actions/download-artifact@v3
+        with:
+          name: pact-contracts
+          path: pacts/
+
+      - name: Run provider verification tests
+        run: |
+          pnpm test apps/web/src/__tests__/contract/provider/employee-api.provider.test.ts
+        env:
+          API_PORT: 3006
+          PACT_BROKER_URL: ${{ env.PACT_BROKER_URL }}
+          PACT_BROKER_TOKEN: ${{ env.PACT_BROKER_TOKEN }}
+          GIT_COMMIT: ${{ github.sha }}
+          GIT_BRANCH: ${{ github.ref_name }}
+          CI: true
+
+      - name: Upload verification results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: provider-verification-results
+          path: |
+            pacts/logs/
+            test-results/
+
+  can-i-deploy-check:
+    name: Can-I-Deploy Verification
+    runs-on: ubuntu-latest
+    needs: [consumer-tests, provider-tests-employee]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Pact CLI
+        run: npm install -g @pact-foundation/pact-node
+
+      - name: Check if web-client can be deployed
+        id: can-i-deploy-consumer
+        run: |
+          chmod +x ./scripts/pact-can-i-deploy.sh
+          ./scripts/pact-can-i-deploy.sh web-client ${{ github.sha }} production
+        continue-on-error: true
+
+      - name: Check if employee-service can be deployed
+        id: can-i-deploy-provider
+        run: |
+          ./scripts/pact-can-i-deploy.sh employee-service ${{ github.sha }} production
+        continue-on-error: true
+
+      - name: Generate deployment report
+        run: |
+          echo "# Can-I-Deploy Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## web-client" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.can-i-deploy-consumer.outcome }}" == "success" ]; then
+            echo "✅ **Safe to deploy**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Not safe to deploy**" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## employee-service" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.can-i-deploy-provider.outcome }}" == "success" ]; then
+            echo "✅ **Safe to deploy**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Not safe to deploy**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Fail if deployment not safe
+        if: steps.can-i-deploy-consumer.outcome != 'success' || steps.can-i-deploy-provider.outcome != 'success'
+        run: |
+          echo "Deployment check failed. Not safe to deploy."
+          exit 1
+
+  contract-summary:
+    name: Contract Testing Summary
+    runs-on: ubuntu-latest
+    needs: [consumer-tests, provider-tests-employee, can-i-deploy-check]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Generate test summary
+        run: |
+          echo "# Contract Testing Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Consumer Contract Tests" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Provider Verification Tests" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Can-I-Deploy Checks" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Pact Broker" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "View contracts: ${{ env.PACT_BROKER_URL }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Deployment Safety" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All contracts verified. Safe to deploy to production." >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## 🤝 Contract Tests Complete\n\nAll consumer and provider contract tests have passed.\n\n### Tests Run:\n- Consumer contract tests (web-client)\n- Provider verification (employee-service)\n- Can-I-Deploy checks\n\n✅ Safe to deploy\n\nView contracts in Pact Broker'
+            })

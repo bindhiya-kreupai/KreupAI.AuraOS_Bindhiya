@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database for Pact Broker
+  postgres:
+    image: postgres:15-alpine
+    container_name: pact-broker-postgres
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pact_broker
+    volumes:
+      - pact-postgres-data:/var/lib/postgresql/data
+    ports:
+      - '5433:5432'
+    networks:
+      - pact-network
+
+  # Pact Broker
+  pact-broker:
+    image: pactfoundation/pact-broker:latest
+    container_name: pact-broker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database configuration
+      PACT_BROKER_DATABASE_USERNAME: postgres
+      PACT_BROKER_DATABASE_PASSWORD: postgres
+      PACT_BROKER_DATABASE_HOST: postgres
+      PACT_BROKER_DATABASE_PORT: 5432
+      PACT_BROKER_DATABASE_NAME: pact_broker
+
+      # Pact Broker configuration
+      PACT_BROKER_PORT: 9292
+      PACT_BROKER_BASE_URL: http://localhost:9292
+      PACT_BROKER_LOG_LEVEL: INFO
+      PACT_BROKER_SQL_LOG_LEVEL: DEBUG
+
+      # Authentication (basic auth)
+      PACT_BROKER_BASIC_AUTH_USERNAME: pactbroker
+      PACT_BROKER_BASIC_AUTH_PASSWORD: pactbroker
+      PACT_BROKER_BASIC_AUTH_READ_ONLY_USERNAME: readonly
+      PACT_BROKER_BASIC_AUTH_READ_ONLY_PASSWORD: readonly
+
+      # Allow public read access (optional, for development)
+      PACT_BROKER_ALLOW_PUBLIC_READ: 'true'
+
+      # Webhook configuration
+      PACT_BROKER_WEBHOOK_HOST_WHITELIST: '/.+/'
+      PACT_BROKER_WEBHOOK_SCHEME_WHITELIST: 'http,https'
+
+      # Badge configuration
+      PACT_BROKER_BADGE_PROVIDER_MODE: redirect
+
+      # Other settings
+      PACT_BROKER_CHECK_FOR_POTENTIAL_DUPLICATE_PACTICIPANT_NAMES: 'false'
+      PACT_BROKER_DATABASE_CONNECT_MAX_RETRIES: 5
+      PACT_BROKER_DATABASE_CONNECT_RETRY_INTERVAL: 3
+    ports:
+      - '9292:9292'
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:9292/diagnostic/status/heartbeat']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - pact-network
+    restart: unless-stopped
+
+  # Pact Broker CLI (for running commands)
+  pact-cli:
+    image: pactfoundation/pact-cli:latest
+    container_name: pact-cli
+    depends_on:
+      - pact-broker
+    environment:
+      PACT_BROKER_BASE_URL: http://pact-broker:9292
+      PACT_BROKER_USERNAME: pactbroker
+      PACT_BROKER_PASSWORD: pactbroker
+    networks:
+      - pact-network
+    entrypoint: /bin/sh
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./pacts:/pacts
+
+volumes:
+  pact-postgres-data:
+    driver: local
+
+networks:
+  pact-network:
+    driver: bridge

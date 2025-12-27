@@ -1,0 +1,178 @@
+# Snyk (https://snyk.io) policy file
+# Week 11-12: Security Testing
+#
+# Configuration for Snyk security scanning
+# Learn more: https://docs.snyk.io/scan-applications/snyk-cli/cli-reference
+
+# Language settings
+language-settings:
+  javascript:
+    # Scan all JavaScript files
+    file-extensions:
+      - .js
+      - .jsx
+      - .ts
+      - .tsx
+      - .mjs
+      - .cjs
+
+# Patch settings
+patch:
+  # Automatically patch vulnerabilities where possible
+  auto: true
+
+# Ignore settings
+# Use this to temporarily ignore specific vulnerabilities
+# Format:
+# ignore:
+#   SNYK-{LANG}-{PACKAGE}-{ID}:
+#     - "*":
+#         reason: "Explanation why this is ignored"
+#         expires: "YYYY-MM-DD"
+
+ignore: {}
+
+# Exclude paths from scanning
+exclude:
+  global:
+    # Exclude test files
+    - "**/__tests__/**"
+    - "**/*.test.ts"
+    - "**/*.test.js"
+    - "**/*.spec.ts"
+    - "**/*.spec.js"
+
+    # Exclude build artifacts
+    - "**/dist/**"
+    - "**/build/**"
+    - "**/.next/**"
+    - "**/out/**"
+
+    # Exclude dependencies
+    - "**/node_modules/**"
+
+    # Exclude coverage reports
+    - "**/coverage/**"
+    - "**/.nyc_output/**"
+
+    # Exclude config files
+    - "**/*.config.js"
+    - "**/*.config.ts"
+
+# Fail conditions
+failOn:
+  # Fail on these severity levels
+  severity: high  # Options: low, medium, high, critical
+
+  # Fail on exploitable issues
+  exploitable: true
+
+  # Fail on issues with available fixes
+  upgradable: true
+
+  # Fail on issues with patches available
+  patchable: true
+
+# Severity thresholds
+severity-threshold: high
+
+# Organization settings (if using Snyk organization)
+# org: your-org-name
+
+# Project monitoring
+monitor:
+  # Monitor project for new vulnerabilities
+  enabled: true
+
+  # Set project name
+  project-name: auraos-hcm-web
+
+  # Set project tags
+  project-tags:
+    - hcm
+    - web
+    - production
+
+# Container scanning (if using containers)
+# container:
+#   # Base image to use
+#   base-image: node:18-alpine
+
+# License policy
+license:
+  # Allowed licenses
+  allowed:
+    - MIT
+    - ISC
+    - Apache-2.0
+    - BSD-2-Clause
+    - BSD-3-Clause
+    - 0BSD
+    - CC0-1.0
+    - Unlicense
+    - CC-BY-3.0
+    - CC-BY-4.0
+
+  # Disallowed licenses
+  disallowed:
+    - GPL
+    - GPL-2.0
+    - GPL-3.0
+    - AGPL
+    - AGPL-3.0
+    - LGPL
+    - LGPL-2.1
+    - LGPL-3.0
+    - SSPL
+    - SSPL-1.0
+
+  # Severity for license violations
+  severity: high
+
+# PR check settings (for GitHub/GitLab integration)
+pr:
+  # Automatically fail PR on high/critical vulnerabilities
+  autoFixPRs: true
+
+  # Test PRs for new vulnerabilities
+  test: true
+
+  # Fail PR if new vulnerabilities introduced
+  failOnAnyVulnerability: false
+
+  # Fail PR if new high/critical vulnerabilities
+  failOnNewVulnerability: true
+
+# SAST (Static Application Security Testing) settings
+code:
+  # Enable code analysis
+  enabled: true
+
+  # Security quality threshold
+  quality-gate: medium  # Options: low, medium, high
+
+  # Code quality issues to report
+  report:
+    - security
+    - quality
+
+# Reporting
+reporting:
+  # Report format
+  format: json  # Options: text, json, sarif
+
+  # Include remediation advice
+  remediation: true
+
+  # Include dependencies tree
+  dependencies: true
+
+# Update check
+update-check:
+  # Check for CLI updates
+  enabled: true
+
+# Telemetry
+telemetry:
+  # Disable telemetry if needed
+  enabled: false

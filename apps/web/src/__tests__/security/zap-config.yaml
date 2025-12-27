@@ -1,0 +1,384 @@
+# OWASP ZAP Automation Framework Configuration
+# Week 11-12: Security Testing
+#
+# This configuration file defines automated security scanning for AuraOS HCM Platform
+# using OWASP ZAP (Zed Attack Proxy)
+#
+# Usage:
+#   docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-automation.py -autorun /zap/wrk/zap-config.yaml
+
+env:
+  contexts:
+    - name: "AuraOS-Context"
+      urls:
+        - "http://localhost:3006"
+      includePaths:
+        - "http://localhost:3006/api/v1/.*"
+        - "http://localhost:3006/dashboard.*"
+        - "http://localhost:3006/.*"
+      excludePaths:
+        # Exclude logout to maintain session
+        - "http://localhost:3006/api/v1/auth/logout"
+        # Exclude static assets
+        - ".*\\.js$"
+        - ".*\\.css$"
+        - ".*\\.png$"
+        - ".*\\.jpg$"
+        - ".*\\.svg$"
+        - ".*\\.ico$"
+        # Exclude health check endpoints
+        - "http://localhost:3006/api/health"
+        - "http://localhost:3006/api/v1/health"
+      authentication:
+        method: "json"
+        parameters:
+          loginUrl: "http://localhost:3006/api/v1/auth/login"
+          loginRequestData: '{"email":"admin@e2etest.com","password":"Test@1234"}'
+          loginPageUrl: "http://localhost:3006/login"
+        verification:
+          method: "response"
+          loggedInRegex: "\\Qtoken\\E"
+          loggedOutRegex: "\\Q401\\E|\\Qunauthorized\\E"
+      sessionManagement:
+        method: "cookie"
+        parameters:
+          sessionCookieName: "session"
+      technology:
+        exclude:
+          - "SCM"
+          - "Language"
+
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+  vars:
+    baseUrl: "http://localhost:3006"
+    apiUrl: "http://localhost:3006/api/v1"
+    adminEmail: "admin@e2etest.com"
+    adminPassword: "Test@1234"
+
+jobs:
+  # Job 1: Spider the application to discover all endpoints
+  - type: spider
+    name: spider-auraos
+    parameters:
+      context: "AuraOS-Context"
+      url: "${baseUrl}"
+      maxDuration: 10
+      maxDepth: 5
+      maxChildren: 10
+      acceptCookies: true
+      handleODataParametersVisited: false
+      parseComments: true
+      parseGit: true
+      parseRobotsTxt: false
+      parseSVNEntries: false
+      parseSitemapXml: false
+      postForm: true
+      processForm: true
+      requestWaitTime: 200
+      sendRefererHeader: true
+      threadCount: 5
+    tests:
+      - operator: "=="
+        name: spider-added-nodes
+        type: stats
+        statistic: automation.spider.urls.added
+        value: 0
+        onFail: info
+
+  # Job 2: AJAX Spider for single-page application
+  - type: spiderAjax
+    name: ajax-spider-auraos
+    parameters:
+      context: "AuraOS-Context"
+      url: "${baseUrl}"
+      maxDuration: 10
+      maxCrawlDepth: 5
+      numberOfBrowsers: 2
+      inScopeOnly: true
+      clickDefaultElems: true
+      clickElemsOnce: true
+      eventWait: 1000
+      maxCrawlStates: 0
+      reloadWait: 1000
+      randomInputs: true
+    tests:
+      - operator: ">"
+        name: ajax-spider-urls-found
+        type: stats
+        statistic: automation.ajaxspider.urls.added
+        value: 0
+        onFail: warn
+
+  # Job 3: Passive Scan - analyzes traffic without active attacks
+  - type: passiveScan-config
+    name: passive-scan-config
+    parameters:
+      maxAlertsPerRule: 10
+      scanOnlyInScope: true
+      maxBodySizeInBytesToScan: 10000
+      enableTags: false
+    rules:
+      # Enable all passive scan rules
+      - id: 10003  # Vulnerable JS Library
+        threshold: "low"
+      - id: 10015  # Re-examine Cache-control Directives
+        threshold: "low"
+      - id: 10017  # Cross-Domain JavaScript Source File Inclusion
+        threshold: "low"
+      - id: 10019  # Content-Type Header Missing
+        threshold: "low"
+      - id: 10020  # X-Frame-Options Header Not Set
+        threshold: "medium"
+      - id: 10021  # X-Content-Type-Options Header Missing
+        threshold: "low"
+      - id: 10023  # Information Disclosure - Debug Error Messages
+        threshold: "low"
+      - id: 10024  # Information Disclosure - Sensitive Information in URL
+        threshold: "medium"
+      - id: 10025  # Information Disclosure - Sensitive Information in HTTP Referrer Header
+        threshold: "medium"
+      - id: 10026  # HTTP Parameter Override
+        threshold: "medium"
+      - id: 10027  # Information Disclosure - Suspicious Comments
+        threshold: "low"
+      - id: 10028  # Open Redirect
+        threshold: "medium"
+      - id: 10029  # Cookie Poisoning
+        threshold: "low"
+      - id: 10030  # User Controllable Charset
+        threshold: "low"
+      - id: 10031  # User Controllable HTML Element Attribute (Potential XSS)
+        threshold: "low"
+      - id: 10032  # Viewstate
+        threshold: "low"
+      - id: 10033  # Directory Browsing
+        threshold: "medium"
+      - id: 10034  # Heartbleed OpenSSL Vulnerability
+        threshold: "high"
+      - id: 10035  # Strict-Transport-Security Header Not Set
+        threshold: "low"
+      - id: 10036  # HTTP Server Response Header
+        threshold: "low"
+      - id: 10037  # Server Leaks Information via "X-Powered-By" HTTP Response Header Field(s)
+        threshold: "low"
+      - id: 10038  # Content Security Policy (CSP) Header Not Set
+        threshold: "medium"
+      - id: 10039  # X-Backend-Server Header Information Leak
+        threshold: "low"
+      - id: 10040  # Secure Pages Include Mixed Content
+        threshold: "medium"
+      - id: 10041  # HTTP to HTTPS Insecure Transition in Form Post
+        threshold: "medium"
+      - id: 10042  # HTTPS to HTTP Insecure Transition in Form Post
+        threshold: "medium"
+      - id: 10043  # User Controllable JavaScript Event (XSS)
+        threshold: "low"
+      - id: 10044  # Big Redirect Detected (Potential Sensitive Information Leak)
+        threshold: "low"
+      - id: 10045  # Source Code Disclosure - /WEB-INF folder
+        threshold: "high"
+      - id: 10049  # Content Cacheability
+        threshold: "off"
+      - id: 10050  # Retrieved from Cache
+        threshold: "off"
+      - id: 10051  # Relative Path Confusion
+        threshold: "medium"
+      - id: 10052  # X-ChromeLogger-Data (XCOLD) Header Information Leak
+        threshold: "medium"
+      - id: 10054  # Cookie Without SameSite Attribute
+        threshold: "low"
+      - id: 10055  # CSP
+        threshold: "medium"
+      - id: 10056  # X-Debug-Token Information Leak
+        threshold: "low"
+      - id: 10057  # Username Hash Found
+        threshold: "off"
+      - id: 10061  # X-AspNet-Version Response Header
+        threshold: "low"
+      - id: 10062  # PII Disclosure
+        threshold: "high"
+      - id: 10063  # Permissions Policy Header Not Set
+        threshold: "low"
+      - id: 10094  # Base64 Disclosure
+        threshold: "off"
+      - id: 10095  # Backup File Disclosure
+        threshold: "medium"
+      - id: 10096  # Timestamp Disclosure
+        threshold: "off"
+      - id: 10097  # Hash Disclosure
+        threshold: "off"
+      - id: 10098  # Cross-Domain Misconfiguration
+        threshold: "medium"
+      - id: 10099  # Source Code Disclosure
+        threshold: "medium"
+      - id: 10105  # Weak Authentication Method
+        threshold: "medium"
+      - id: 10109  # Modern Web Application
+        threshold: "off"
+      - id: 10110  # Dangerous JS Functions
+        threshold: "low"
+      - id: 10202  # Absence of Anti-CSRF Tokens
+        threshold: "low"
+      - id: 90001  # Insecure JSF ViewState
+        threshold: "medium"
+      - id: 90003  # Sub Resource Integrity Attribute Missing
+        threshold: "medium"
+      - id: 90004  # Insufficient Site Isolation Against Spectre Vulnerability
+        threshold: "medium"
+      - id: 90022  # Application Error Disclosure
+        threshold: "low"
+      - id: 90033  # Loosely Scoped Cookie
+        threshold: "off"
+
+  # Job 4: Passive Scan Wait - wait for passive scanning to complete
+  - type: passiveScan-wait
+    name: passive-scan-wait
+    parameters:
+      maxDuration: 10
+
+  # Job 5: Active Scan - performs actual security attacks
+  - type: activeScan
+    name: active-scan-auraos
+    parameters:
+      context: "AuraOS-Context"
+      policy: "API-scan-policy"
+      maxRuleDurationInMins: 5
+      maxScanDurationInMins: 30
+      addQueryParam: false
+      defaultPolicy: "Default Policy"
+      delayInMs: 0
+      handleAntiCSRFTokens: true
+      injectPluginIdInHeader: false
+      scanHeadersAllRequests: true
+      threadPerHost: 5
+    policyDefinition:
+      defaultStrength: "medium"
+      defaultThreshold: "medium"
+      rules:
+        # SQL Injection
+        - id: 40018
+          name: "SQL Injection"
+          threshold: "low"
+          strength: "high"
+        # XSS (Cross-Site Scripting)
+        - id: 40012
+          name: "Cross Site Scripting (Reflected)"
+          threshold: "low"
+          strength: "high"
+        - id: 40014
+          name: "Cross Site Scripting (Persistent)"
+          threshold: "low"
+          strength: "high"
+        - id: 40016
+          name: "Cross Site Scripting (Persistent) - Prime"
+          threshold: "low"
+          strength: "high"
+        - id: 40017
+          name: "Cross Site Scripting (Persistent) - Spider"
+          threshold: "low"
+          strength: "high"
+        # Path Traversal
+        - id: 6
+          name: "Path Traversal"
+          threshold: "low"
+          strength: "high"
+        # Remote File Inclusion
+        - id: 7
+          name: "Remote File Inclusion"
+          threshold: "medium"
+          strength: "medium"
+        # Server Side Include
+        - id: 40009
+          name: "Server Side Include"
+          threshold: "medium"
+          strength: "medium"
+        # Command Injection
+        - id: 90020
+          name: "Remote OS Command Injection"
+          threshold: "low"
+          strength: "high"
+        # CRLF Injection
+        - id: 40003
+          name: "CRLF Injection"
+          threshold: "medium"
+          strength: "medium"
+        # Parameter Tampering
+        - id: 40008
+          name: "Parameter Tampering"
+          threshold: "medium"
+          strength: "medium"
+        # Format String Error
+        - id: 30002
+          name: "Format String Error"
+          threshold: "medium"
+          strength: "medium"
+        # Buffer Overflow
+        - id: 30001
+          name: "Buffer Overflow"
+          threshold: "medium"
+          strength: "low"
+        # XXE (XML External Entity)
+        - id: 90019
+          name: "Server Side Code Injection"
+          threshold: "medium"
+          strength: "medium"
+        # LDAP Injection
+        - id: 40015
+          name: "LDAP Injection"
+          threshold: "medium"
+          strength: "medium"
+        # XPath Injection
+        - id: 90021
+          name: "XPath Injection"
+          threshold: "medium"
+          strength: "medium"
+        # XML Injection
+        - id: 90022
+          name: "Application Error Disclosure"
+          threshold: "low"
+          strength: "medium"
+
+  # Job 6: Report generation
+  - type: report
+    name: report-html
+    parameters:
+      template: "traditional-html"
+      reportDir: "/zap/wrk/reports"
+      reportFile: "zap-report-${timestamp}.html"
+      reportTitle: "AuraOS HCM - Security Scan Report"
+      reportDescription: "OWASP ZAP automated security scan for AuraOS HCM Platform"
+      displayReport: false
+
+  - type: report
+    name: report-json
+    parameters:
+      template: "traditional-json"
+      reportDir: "/zap/wrk/reports"
+      reportFile: "zap-report-${timestamp}.json"
+      reportTitle: "AuraOS HCM - Security Scan Report"
+      reportDescription: "OWASP ZAP automated security scan for AuraOS HCM Platform"
+      displayReport: false
+
+  - type: report
+    name: report-xml
+    parameters:
+      template: "traditional-xml"
+      reportDir: "/zap/wrk/reports"
+      reportFile: "zap-report-${timestamp}.xml"
+      reportTitle: "AuraOS HCM - Security Scan Report"
+      reportDescription: "OWASP ZAP automated security scan for AuraOS HCM Platform"
+      displayReport: false
+
+  - type: report
+    name: report-markdown
+    parameters:
+      template: "traditional-md"
+      reportDir: "/zap/wrk/reports"
+      reportFile: "zap-report-${timestamp}.md"
+      reportTitle: "AuraOS HCM - Security Scan Report"
+      reportDescription: "OWASP ZAP automated security scan for AuraOS HCM Platform"
+      displayReport: false

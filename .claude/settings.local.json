@@ -37,7 +37,18 @@
       "Bash(\"d:/KreupAI/KreupAI.AuraOS/apps/web/src/app/(modules)/core-hr/probation-tracking\" )",
       "Bash(\"d:/KreupAI/KreupAI.AuraOS/apps/web/src/app/(modules)/core-hr/confirmation-letters\")",
       "Bash(git -C \"d:/KreupAI/KreupAI.AuraOS\" add .)",
-      "Bash(packages/@aura/database/prisma/schema.prisma)"
+      "Bash(packages/@aura/database/prisma/schema.prisma)",
+      "Bash(pnpm test:coverage:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pkill:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm vitest run:*)",
+      "Bash(NODE_OPTIONS='--loader ts-node/esm' pnpm test:run:*)",
+      "Bash(pnpm test:run:*)",
+      "Bash(npx playwright install)",
+      "Bash(npx playwright test:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []

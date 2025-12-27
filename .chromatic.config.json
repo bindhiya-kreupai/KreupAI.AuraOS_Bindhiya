@@ -1,0 +1,40 @@
+{
+  "projectId": "PROJECT_ID_PLACEHOLDER",
+  "projectToken": "PROJECT_TOKEN_PLACEHOLDER",
+  "buildScriptName": "build-storybook",
+  "onlyChanged": true,
+  "externals": ["public/**"],
+  "autoAcceptChanges": "main",
+  "exitZeroOnChanges": false,
+  "exitOnceUploaded": false,
+  "ignoreLastBuildOnBranch": "main",
+  "skip": "dependabot/**",
+  "allowConsoleErrors": false,
+  "untraced": [
+    "node_modules/**",
+    "dist/**",
+    ".next/**",
+    "coverage/**"
+  ],
+  "storybookBuildDir": "storybook-static",
+  "zip": true,
+  "junitReport": true,
+  "diagnostics": false,
+  "debug": false,
+  "interactive": false,
+  "forceRebuild": false,
+  "fileHashing": true,
+  "inProgressBehavior": "wait",
+  "branches": ["main", "develop"],
+  "branchPattern": "feature/*",
+  "ignorePatterns": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "uploadMetadata": true,
+  "thumbnails": true,
+  "outputDir": ".chromatic",
+  "logFile": ".chromatic/chromatic.log"
+}

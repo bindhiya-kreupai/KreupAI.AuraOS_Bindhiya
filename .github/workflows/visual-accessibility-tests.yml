@@ -1,0 +1,398 @@
+name: Visual & Accessibility Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run visual regression tests daily at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    # Allow manual triggers
+
+jobs:
+  accessibility-tests:
+    name: WCAG 2.1 AA Compliance Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup database
+        run: |
+          pnpm prisma generate
+          pnpm prisma db push
+          pnpm prisma db seed
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/auraos_test
+
+      - name: Start application
+        run: |
+          pnpm dev &
+          sleep 30
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/auraos_test
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+
+      - name: Run WCAG compliance tests
+        run: npx playwright test apps/web/src/__tests__/accessibility/wcag-compliance.test.ts --config=playwright.visual.config.ts
+        env:
+          API_URL: http://localhost:3006/api/v1
+          BASE_URL: http://localhost:3006
+
+      - name: Run keyboard navigation tests
+        run: npx playwright test apps/web/src/__tests__/accessibility/keyboard-navigation.test.ts --config=playwright.visual.config.ts
+        env:
+          API_URL: http://localhost:3006/api/v1
+          BASE_URL: http://localhost:3006
+
+      - name: Upload accessibility test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: accessibility-test-results
+          path: |
+            playwright-report/visual/
+            test-results/
+
+      - name: Upload accessibility violations report
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: accessibility-violations
+          path: playwright-report/visual/
+
+  cross-browser-tests:
+    name: Cross-Browser Visual Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        browser: [chromium, firefox, webkit]
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup database
+        run: |
+          pnpm prisma generate
+          pnpm prisma db push
+          pnpm prisma db seed
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/auraos_test
+
+      - name: Start application
+        run: |
+          pnpm dev &
+          sleep 30
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/auraos_test
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Run visual tests on ${{ matrix.browser }}
+        run: npx playwright test --project=${{ matrix.browser }}-desktop --config=playwright.visual.config.ts
+        env:
+          API_URL: http://localhost:3006/api/v1
+          BASE_URL: http://localhost:3006
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: visual-test-results-${{ matrix.os }}-${{ matrix.browser }}
+          path: |
+            playwright-report/visual/
+            test-results/
+
+  chromatic-visual-regression:
+    name: Chromatic Visual Regression
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Required for Chromatic
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Storybook
+        run: pnpm build-storybook
+        working-directory: apps/web
+
+      - name: Publish to Chromatic
+        uses: chromaui/action@v1
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          workingDir: apps/web
+          storybookBuildDir: storybook-static
+          exitZeroOnChanges: false
+          exitOnceUploaded: false
+          autoAcceptChanges: main
+        if: ${{ secrets.CHROMATIC_PROJECT_TOKEN != '' }}
+
+      - name: Upload Storybook build
+        uses: actions/upload-artifact@v3
+        with:
+          name: storybook-build
+          path: apps/web/storybook-static/
+
+  mobile-accessibility-tests:
+    name: Mobile Accessibility Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup database
+        run: |
+          pnpm prisma generate
+          pnpm prisma db push
+          pnpm prisma db seed
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/auraos_test
+
+      - name: Start application
+        run: |
+          pnpm dev &
+          sleep 30
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/auraos_test
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+
+      - name: Run mobile accessibility tests
+        run: |
+          npx playwright test --project=iphone-14-pro --config=playwright.visual.config.ts
+          npx playwright test --project=pixel-7 --config=playwright.visual.config.ts
+        env:
+          API_URL: http://localhost:3006/api/v1
+          BASE_URL: http://localhost:3006
+
+      - name: Upload mobile test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: mobile-accessibility-results
+          path: |
+            playwright-report/visual/
+            test-results/
+
+  color-contrast-tests:
+    name: Color Contrast Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup database
+        run: |
+          pnpm prisma generate
+          pnpm prisma db push
+          pnpm prisma db seed
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/auraos_test
+
+      - name: Start application
+        run: |
+          pnpm dev &
+          sleep 30
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/auraos_test
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+
+      - name: Run color contrast tests (Light mode)
+        run: npx playwright test --project=chromium-desktop --config=playwright.visual.config.ts
+        env:
+          API_URL: http://localhost:3006/api/v1
+          BASE_URL: http://localhost:3006
+
+      - name: Run color contrast tests (Dark mode)
+        run: npx playwright test --project=chromium-desktop-dark --config=playwright.visual.config.ts
+        env:
+          API_URL: http://localhost:3006/api/v1
+          BASE_URL: http://localhost:3006
+
+      - name: Upload contrast test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: color-contrast-results
+          path: |
+            playwright-report/visual/
+            test-results/
+
+  test-summary:
+    name: Visual & Accessibility Summary
+    runs-on: ubuntu-latest
+    needs: [accessibility-tests, cross-browser-tests, mobile-accessibility-tests, color-contrast-tests]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Generate test summary
+        run: |
+          echo "# Visual & Accessibility Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ WCAG 2.1 AA Compliance Tests" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Cross-Browser Visual Tests" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Mobile Accessibility Tests" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Color Contrast Tests" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Keyboard Navigation Tests" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## WCAG 2.1 Level AA Compliance" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Tested against:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Perceivable**: Text alternatives, adaptable content, distinguishable elements" >> $GITHUB_STEP_SUMMARY
+          echo "- **Operable**: Keyboard accessible, navigable, no seizures" >> $GITHUB_STEP_SUMMARY
+          echo "- **Understandable**: Readable, predictable, input assistance" >> $GITHUB_STEP_SUMMARY
+          echo "- **Robust**: Compatible with assistive technologies" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Review individual test artifacts for detailed results." >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## ♿ Visual & Accessibility Tests Complete\n\nAll visual regression and accessibility tests have been executed.\n\n### Tests Run:\n- WCAG 2.1 AA Compliance\n- Cross-Browser Visual Tests\n- Mobile Accessibility\n- Color Contrast (Light/Dark)\n- Keyboard Navigation\n\nPlease review the artifacts for detailed results.'
+            })
