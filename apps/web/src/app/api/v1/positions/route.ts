@@ -1,178 +1,85 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { positionService } from '@/lib/services/organization';
+import { PositionService } from '@/lib/services/position.service';
 import { z } from 'zod';
 
-// API Response Standard
 interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: Record<string, unknown>;
-  };
-  meta?: {
-    pagination?: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    };
-    timestamp: string;
-    requestId: string;
-    apiVersion: string;
-  };
+  error?: { code: string; message: string; details?: Record<string, unknown> };
+  meta?: any;
 }
 
-// Validation schemas
-const createPositionSchema = z.object({
-  familyId: z.string().uuid('Valid job family ID is required'),
-  gradeId: z.string().uuid().optional().nullable(),
-  code: z.string().min(1, 'Position code is required'),
-  title: z.string().min(1, 'Position title is required'),
-  description: z.string().optional().nullable(),
-  status: z.string().optional(),
-});
-
-/**
- * GET /api/v1/positions
- * List positions with filtering and pagination
- */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
+    const { user } = context;
     const { searchParams } = new URL(request.url);
 
-    // Parse query parameters
     const filter = {
-      familyId: searchParams.get('familyId') || undefined,
-      gradeId: searchParams.get('gradeId') || undefined,
+      tenantId: user.tenantId,
       status: searchParams.get('status') || undefined,
+      departmentId: searchParams.get('departmentId') || undefined,
+      locationId: searchParams.get('locationId') || undefined,
       search: searchParams.get('search') || undefined,
       page: parseInt(searchParams.get('page') || '1'),
       limit: Math.min(parseInt(searchParams.get('limit') || '20'), 100),
-      sortBy: searchParams.get('sortBy') || 'title',
-      sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc') || 'asc',
+      sortBy: searchParams.get('sortBy') || 'createdAt',
+      sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc',
     };
 
-    // Fetch positions
-    const result = await positionService.findAll(filter);
+    const result = await PositionService.findAll(filter);
 
     const response: ApiResponse = {
       success: true,
       data: result.data,
-      meta: {
-        pagination: result.pagination,
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
+      meta: { pagination: result.pagination, timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
     };
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
-    console.error('[Positions API] GET Error:', error);
-
     const response: ApiResponse = {
       success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to fetch positions',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
+      error: { code: 'E5001', message: 'Failed to fetch positions', details: { error: error instanceof Error ? error.message : 'Unknown error' } },
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
     };
-
     return NextResponse.json(response, { status: 500 });
   }
 });
 
-/**
- * POST /api/v1/positions
- * Create a new position
- */
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
+    const { user } = context;
     const body = await request.json();
+    body.tenantId = user.tenantId;
+    if (!body.requestedBy) body.requestedBy = user.userId;
 
-    // Validate request body
-    const validationResult = createPositionSchema.safeParse(body);
-    if (!validationResult.success) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'Validation failed',
-          details: { errors: validationResult.error.errors },
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 400 });
-    }
-
-    // Create position
-    const position = await positionService.create(validationResult.data);
+    const position = await PositionService.create(body);
 
     const response: ApiResponse = {
       success: true,
       data: position,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
     };
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
-    console.error('[Positions API] POST Error:', error);
+    let statusCode = 500;
+    let errorCode = 'E5001';
 
-    // Check for duplicate or business logic errors
-    if (error instanceof Error && (
-      error.message.includes('already exists') ||
-      error.message.includes('not found')
-    )) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: error.message.includes('already exists') ? 'E3002' : 'E3001',
-          message: error.message,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, {
-        status: error.message.includes('already exists') ? 409 : 404
-      });
+    if (error instanceof z.ZodError) {
+      statusCode = 400;
+      errorCode = 'E2001';
+    } else if (error instanceof Error && error.message.includes('already exists')) {
+      statusCode = 409;
+      errorCode = 'E3002';
     }
 
     const response: ApiResponse = {
       success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to create position',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
+      error: { code: errorCode, message: error instanceof Error ? error.message : 'Failed to create position', details: error instanceof z.ZodError ? { errors: error.errors } : undefined },
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
     };
 
-    return NextResponse.json(response, { status: 500 });
+    return NextResponse.json(response, { status: statusCode });
   }
 });

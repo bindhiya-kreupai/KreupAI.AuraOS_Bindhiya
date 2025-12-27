@@ -36,6 +36,7 @@ import { performanceSeed } from '../src/seeds/19-performance.seed';
 import { learningSeed } from '../src/seeds/20-learning.seed';
 import { compensationSeed } from '../src/seeds/21-compensation.seed';
 import { benefitsSeed } from '../src/seeds/22-benefits.seed';
+import { seedPositions } from '../src/seeds/21-positions.seed';
 
 const prisma = new PrismaClient();
 
@@ -901,6 +902,12 @@ async function main() {
     }
 
     console.log('✅ Competency Library Module seeded successfully!');
+    
+    // ============================================
+    // POSITIONS
+    // ============================================
+    await seedPositions();
+    console.log('✅ Positions seeded successfully!');
 
     // ============================================
     // PERFORMANCE MANAGEMENT MODULE

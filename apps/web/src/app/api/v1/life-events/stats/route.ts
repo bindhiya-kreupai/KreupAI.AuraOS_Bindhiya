@@ -1,0 +1,13 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { LifeEventService } from '@/lib/services/life-event.service';
+
+export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+  try {
+    const { user } = context;
+    const stats = await LifeEventService.getStatistics(user.tenantId);
+    return NextResponse.json({ success: true, data: stats, meta: { timestamp: new Date().toISOString() } });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: { code: 'E5001', message: 'Failed to fetch statistics' } }, { status: 500 });
+  }
+});
