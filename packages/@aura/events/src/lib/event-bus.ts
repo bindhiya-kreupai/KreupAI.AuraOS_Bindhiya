@@ -7,7 +7,7 @@
 
 import { randomUUID } from 'crypto';
 
-export interface DomainEvent {
+export interface DomainEvent<T = unknown> {
   eventId: string;
   eventType: string;
   aggregateId: string;
@@ -16,7 +16,7 @@ export interface DomainEvent {
   userId?: string;
   timestamp: Date;
   version: number;
-  payload: unknown;
+  payload: T;
   metadata: {
     correlationId?: string;
     causationId?: string;
@@ -27,10 +27,6 @@ export interface DomainEvent {
 }
 
 export type EventHandler<T = unknown> = (event: DomainEvent<T>) => Promise<void> | void;
-
-export interface DomainEvent<T = unknown> extends Omit<DomainEvent, 'payload'> {
-  payload: T;
-}
 
 /**
  * Event Bus - Pub/Sub for domain events

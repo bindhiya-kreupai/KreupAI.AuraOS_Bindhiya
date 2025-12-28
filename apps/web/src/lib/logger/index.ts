@@ -1,5 +1,5 @@
 import pino from 'pino';
-import { env, isDevelopment, isProduction } from '@/lib/config/env';
+import { env, isDevelopment } from '@/lib/config/env';
 
 /**
  * Logger Configuration
@@ -236,4 +236,5 @@ export function logBusinessEvent(
 }
 
 // Export the base logger for direct use
+export { logger };
 export default logger;

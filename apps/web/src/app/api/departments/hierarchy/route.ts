@@ -36,9 +36,11 @@ import { createProtectedRoute } from '@/lib/api/route-wrapper';
 import departmentService from '@/services/department.service';
 import { BusinessRuleError } from '@/lib/errors';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/departments/hierarchy
- * Get department hierarchy tree
+ * Get department hierarchy
  */
 export const GET = createProtectedRoute(
   async (request: NextRequest, { auth }) => {

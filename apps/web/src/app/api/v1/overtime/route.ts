@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { OvertimeService } from '@/lib/services/overtime.service';
-import { withEnhancedAuth } from '@/lib/auth/enhanced-auth';
+import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {

@@ -43,7 +43,18 @@
       "Bash(pnpm test:*)",
       "Bash(pnpm install:*)",
       "Bash(pnpm test:run:*)",
-      "Bash(nul)"
+      "Bash(nul)",
+      "Bash(pnpm run dev)",
+      "Bash(yes:*)",
+      "Bash(npx husky install)",
+      "Bash(unset NODE_ENV:*)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm exec turbo run dev:*)",
+      "Bash(NODE_ENV= pnpm install:*)",
+      "Bash(env)",
+      "Bash(export NODE_ENV=development)",
+      "Bash(pnpm dev:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

@@ -21,14 +21,14 @@ export const POST = withEnhancedAuth(async (request, context) => {
     const body = await request.json();
 
     // Mock create - replace with actual database insert
-    const package = {
+    const preBoardingPackage = {
       id: `package-${Date.now()}`,
       ...body,
       createdAt: new Date().toISOString(),
       createdBy: user.userId,
     };
 
-    return NextResponse.json({ package }, { status: 201 });
+    return NextResponse.json({ package: preBoardingPackage }, { status: 201 });
   } catch {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -40,13 +40,13 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     const body = await request.json();
 
     // Mock update - replace with actual database update
-    const package = {
+    const preBoardingPackage = {
       ...body,
       updatedAt: new Date().toISOString(),
       updatedBy: user.userId,
     };
 
-    return NextResponse.json({ package }, { status: 200 });
+    return NextResponse.json({ package: preBoardingPackage }, { status: 200 });
   } catch {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

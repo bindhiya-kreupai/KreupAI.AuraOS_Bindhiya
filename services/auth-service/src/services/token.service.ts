@@ -40,7 +40,7 @@ export class TokenService {
     const accessToken = jwt.sign(
       { ...payload, type: 'access' },
       config.jwt.secret,
-      { expiresIn: config.jwt.expiresIn }
+      { expiresIn: config.jwt.expiresIn as any }
     );
 
     // Generate refresh token
@@ -48,7 +48,7 @@ export class TokenService {
     const refreshToken = jwt.sign(
       { ...payload, type: 'refresh', jti: refreshTokenValue },
       config.jwt.secret,
-      { expiresIn: config.jwt.refreshExpiresIn }
+      { expiresIn: config.jwt.refreshExpiresIn as any }
     );
 
     // Store refresh token in database
@@ -130,11 +130,15 @@ export class TokenService {
       const user = await prisma.user.findUnique({
         where: { id: decoded.userId },
         include: {
-          role: true,
+          roles: {
+            include: {
+              role: true,
+            },
+          },
         },
       });
 
-      if (!user || !user.isActive) {
+      if (!user || user.status !== 'Active') {
         throw new Error('User not found or inactive');
       }
 
@@ -143,7 +147,7 @@ export class TokenService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        role: user.role.name,
+        role: user.roles[0]?.role.name || 'user',
         tenantId: user.tenantId,
       };
     } catch (error) {
@@ -167,10 +171,6 @@ export class TokenService {
       // Verify refresh token
       const decoded = jwt.verify(refreshToken, config.jwt.secret) as TokenPayload & { jti: string };
 
-      if (decoded.type !== 'refresh') {
-        throw new Error('Invalid token type');
-      }
-
       // Check if refresh token exists in database
       const storedToken = await prisma.refreshToken.findFirst({
         where: {
@@ -183,13 +183,17 @@ export class TokenService {
         include: {
           user: {
             include: {
-              role: true,
+              roles: {
+                include: {
+                  role: true,
+                },
+              },
             },
           },
         },
       });
 
-      if (!storedToken) {
+      if (!storedToken || !storedToken.user) {
         throw new Error('Invalid refresh token');
       }
 
@@ -203,7 +207,7 @@ export class TokenService {
           type: 'access',
         },
         config.jwt.secret,
-        { expiresIn: config.jwt.expiresIn }
+        { expiresIn: config.jwt.expiresIn as any }
       );
 
       const expiresIn = this.parseExpiry(config.jwt.expiresIn);

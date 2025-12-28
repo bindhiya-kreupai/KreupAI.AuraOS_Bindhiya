@@ -8,7 +8,7 @@ import { redis } from '../lib/redis';
 
 export async function healthRoutes(server: FastifyInstance) {
   // Health check endpoint
-  server.get('/health', async (request, reply) => {
+  server.get('/health', async (_request, reply) => {
     try {
       // Check database connection
       await prisma.$queryRaw`SELECT 1`;
@@ -32,7 +32,7 @@ export async function healthRoutes(server: FastifyInstance) {
   });
 
   // Readiness check endpoint
-  server.get('/ready', async (request, reply) => {
+  server.get('/ready', async (_request, reply) => {
     try {
       // Check if service is ready to handle requests
       await prisma.$queryRaw`SELECT 1`;
@@ -52,7 +52,7 @@ export async function healthRoutes(server: FastifyInstance) {
   });
 
   // Liveness check endpoint
-  server.get('/live', async (request, reply) => {
+  server.get('/live', async (_request, reply) => {
     return reply.status(200).send({
       status: 'alive',
       timestamp: new Date().toISOString(),
@@ -60,7 +60,7 @@ export async function healthRoutes(server: FastifyInstance) {
   });
 
   // Metrics endpoint (for Prometheus)
-  server.get('/metrics', async (request, reply) => {
+  server.get('/metrics', async (_request, reply) => {
     const metrics = {
       process: {
         uptime: process.uptime(),

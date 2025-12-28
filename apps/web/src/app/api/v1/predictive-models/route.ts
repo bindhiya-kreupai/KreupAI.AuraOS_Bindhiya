@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withEnhancedAuth } from '@/lib/middleware/enhanced-auth';
+import { withEnhancedAuth } from '@/lib/auth';
 import { AnalyticsService } from '@/lib/services/analytics.service';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {

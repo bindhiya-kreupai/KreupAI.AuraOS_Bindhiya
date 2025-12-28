@@ -229,7 +229,7 @@ export async function authRoutes(server: FastifyInstance) {
   });
 
   // SAML login endpoint (placeholder)
-  server.post('/saml/login', async (request, reply) => {
+  server.post('/saml/login', async (_request, reply) => {
     return reply.status(501).send({
       message: 'SAML integration coming soon',
     });

@@ -832,7 +832,7 @@ export class CompanyService {
         success: true,
         data: stats,
       };
-    } catch {
+    } catch (error) {
       logger.error(
         {
           error,

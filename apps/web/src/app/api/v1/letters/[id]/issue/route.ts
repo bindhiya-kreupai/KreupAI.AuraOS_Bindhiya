@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LetterService } from '@/lib/services/letter.service';
-import { withEnhancedAuth } from '@/lib/auth/enhanced-auth';
+import { withEnhancedAuth } from '@/lib/auth';
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {

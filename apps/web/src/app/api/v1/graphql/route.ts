@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { graphql, parse, validate } from 'graphql';
 import { schema } from '@/lib/graphql/schema';
 import { logger } from '@/lib/logger';
-import { withAuth } from '@/lib/middleware/auth.middleware';
+import { withAuth } from '@/lib/auth';
 
 /**
  * GraphQL context - provides services to resolvers

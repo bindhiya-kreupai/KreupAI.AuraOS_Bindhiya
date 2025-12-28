@@ -10,6 +10,8 @@ import { isValidVersion } from '@/lib/middleware/api-version';
 import { MigrationGuide } from '@/lib/versioning/version-manager';
 import { logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/versions/migration?from=v1&to=v2
  * Get migration guide between two API versions

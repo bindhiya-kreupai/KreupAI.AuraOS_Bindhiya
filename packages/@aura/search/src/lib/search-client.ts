@@ -66,8 +66,8 @@ export class SearchClient {
           await this.client.indices.create({
             index: indexMapping.index,
             body: {
-              mappings: indexMapping.mappings,
-              settings: indexMapping.settings,
+              mappings: indexMapping.mappings as any,
+              settings: indexMapping.settings as any,
             },
           });
           console.log(`Index created: ${indexMapping.index}`);
@@ -154,12 +154,12 @@ export class SearchClient {
         body: {
           query: {
             bool: {
-              must: mustClauses,
+              must: mustClauses as any,
             },
           },
           from: searchQuery.from || 0,
           size: searchQuery.size || 10,
-          sort: searchQuery.sort || [{ _score: 'desc' }],
+          sort: (searchQuery.sort || [{ _score: 'desc' }]) as any,
         },
       });
 
@@ -264,7 +264,7 @@ export class SearchClient {
           query: {
             term: { tenantId },
           },
-          aggregations,
+          aggregations: aggregations as any,
           size: 0,
         },
       });

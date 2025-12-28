@@ -25,6 +25,12 @@ model Tenant {
   users     User[]
   roles     Role[]
   userRoles UserRole[]
+
+  // WPS Relations
+  wpsConfigurations WPSConfiguration[]
+  wpsSubmissions    WPSSubmission[]
+  wpsRecords        WPSRecord[]
+  wpsAuditLogs      WPSAuditLog[]
 }
 
 model Company {
@@ -273,6 +279,9 @@ model Employee {
   probationTrackings   ProbationTracking[]   @relation("EmployeeProbation")
   confirmationRequests ConfirmationRequest[] @relation("EmployeeConfirmation")
 
+  // WPS Relations
+  wpsRecords           WPSRecord[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -317,6 +326,8 @@ model User {
   id       String @id @default(uuid())
   email    String @unique
   password String // Hashed
+  firstName String?
+  lastName  String?
   tenantId String
   tenant   Tenant @relation(fields: [tenantId], references: [id])
 
@@ -329,12 +340,13 @@ model User {
 
   // Relations
   sessions            UserSession[]
+  refreshTokens       RefreshToken[]
   auditLogs           AuditLog[]
   delegatedTo         UserDelegation[]     @relation("Delegator")
   delegatedFrom       UserDelegation[]     @relation("Delegatee")
   deactivations       UserDeactivation[]
   passwordResetTokens PasswordResetToken[]
-  mfaSettings         UserMFA?
+  mfaSecret           MFASecret?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -439,13 +451,14 @@ model PasswordResetToken {
 }
 
 // 5D. Multi-Factor Authentication (MFA)
-model UserMFA {
+model MFASecret {
   id          String    @id @default(uuid())
   userId      String    @unique
-  totpSecret  String? // Encrypted TOTP secret for authenticator apps
-  backupCodes Json? // Array of hashed backup codes
-  phoneNumber String? // For SMS-based MFA (future)
+  secret      String?   // Encrypted TOTP secret for authenticator apps
+  backupCodes Json?     // Array of hashed backup codes
+  phoneNumber String?   // For SMS-based MFA (future)
   method      String    @default("totp") // totp, sms, email
+  isEnabled   Boolean   @default(false)
   verifiedAt  DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -453,6 +466,20 @@ model UserMFA {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([token])
 }
 
 // ============================================================================
@@ -1007,23 +1034,25 @@ model UserSession {
   @@index([userId, status])
   @@index([lastActive])
 }
-
 model AuditLog {
-  id        String   @id @default(uuid())
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  action    String // LOGIN, CREATE, UPDATE, DELETE
-  module    String
-  details   String?
-  ipAddress String?
-  timestamp DateTime @default(now())
+  id         String   @id @default(uuid())
+  tenantId   String
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String   // LOGIN, CREATE, UPDATE, DELETE
+  entityType String
+  entityId   String?
+  metadata   Json?
+  details    String?
+  ipAddress  String?
+  timestamp  DateTime @default(now())
 
+  @@index([tenantId])
   @@index([userId])
   @@index([timestamp])
   @@index([action])
-  @@index([module])
+  @@index([entityType])
   @@index([userId, timestamp])
-  @@index([action, module])
 }
 
 model UserDelegation {

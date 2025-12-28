@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "build": "turbo run build",
-        "dev": "turbo run dev",
+        "dev": "turbo run dev --concurrency=15",
         "lint": "turbo run lint",
         "test": "turbo run test",
         "nav:check": "node scripts/nav-smoke.js",
@@ -23,10 +23,10 @@
     "devDependencies": {
         "@types/node": "^20.11.16",
         "eslint": "^8.56.0",
-        "husky": "^9.0.0",
+        "husky": "^9.1.7",
         "lint-staged": "^15.2.0",
         "prettier": "^3.1.0",
-        "turbo": "latest",
+        "turbo": "^2.6.1",
         "typescript": "^5.3.0"
     },
     "packageManager": "pnpm@8.15.0",

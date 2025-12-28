@@ -97,7 +97,7 @@ export class MFAService {
         where: { userId },
       });
 
-      if (!mfaSecret) {
+      if (!mfaSecret || !mfaSecret.secret) {
         throw new Error('MFA not set up for this user');
       }
 
@@ -111,14 +111,15 @@ export class MFAService {
 
       if (!verified) {
         // Check if it's a backup code
-        const backupCodeIndex = mfaSecret.backupCodes.indexOf(token);
+        const backupCodes = (mfaSecret.backupCodes as unknown as string[]) || [];
+        const backupCodeIndex = backupCodes.indexOf(token);
         if (backupCodeIndex === -1) {
           logger.warn({ userId }, 'Invalid MFA token');
           return { valid: false };
         }
 
         // Remove used backup code
-        const updatedBackupCodes = [...mfaSecret.backupCodes];
+        const updatedBackupCodes = [...backupCodes];
         updatedBackupCodes.splice(backupCodeIndex, 1);
 
         await prisma.mFASecret.update({
@@ -145,7 +146,11 @@ export class MFAService {
       const user = await prisma.user.findUnique({
         where: { id: userId },
         include: {
-          role: true,
+          roles: {
+            include: {
+              role: true,
+            },
+          },
         },
       });
 
@@ -155,15 +160,11 @@ export class MFAService {
 
       // Generate tokens
       const { accessToken, refreshToken, expiresIn } = await tokenService.generateTokens(user);
-
-      // Delete temp token
-      await redis.del(`temp:${userId}`);
-
       // Update last login
       await prisma.user.update({
         where: { id: userId },
         data: {
-          lastLoginAt: new Date(),
+          lastLogin: new Date(),
         },
       });
 
@@ -193,7 +194,7 @@ export class MFAService {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          role: user.role.name,
+          role: user.roles[0]?.role.name || 'user',
           tenantId: user.tenantId,
         },
       };

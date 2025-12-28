@@ -44,6 +44,8 @@ import { createProtectedRoute } from '@/lib/api/route-wrapper';
 import companyService from '@/services/company.service';
 import { BusinessRuleError } from '@/lib/errors';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/companies/stats
  * Get company statistics

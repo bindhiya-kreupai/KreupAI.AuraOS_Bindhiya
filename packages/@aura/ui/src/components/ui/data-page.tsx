@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../layout/page-header';
 import { DataTable, type Column } from './data-table';
 import { Sheet } from './sheet';
@@ -7,14 +7,18 @@ import { Trash2, Save } from 'lucide-react';
 interface DataPageProps<T> {
     title: string;
     breadcrumbs?: { label: string; href?: string }[];
-    data: T[];
+    data?: T[];
+    apiEndpoint?: string;
     columns: Column<T>[];
     onSave?: (data: Partial<T>) => void;
     onDelete?: (row: T) => void;
     onExport?: () => void;
     onImport?: () => void;
     onFilter?: () => void;
-    renderForm: (data: Partial<T>, onChange: (field: keyof T, value: any) => void) => React.ReactNode;
+    renderForm?: (data: Partial<T>, onChange: (field: keyof T, value: any) => void) => React.ReactNode;
+    formFields?: any[];
+    rowActions?: (row: T) => any[];
+    onDataChange?: () => void;
     defaultValues?: Partial<T>;
 }
 
@@ -22,6 +26,7 @@ export function DataPage<T extends { id: string | number }>({
     title,
     breadcrumbs,
     data,
+    apiEndpoint,
     columns,
     onSave,
     onDelete,
@@ -29,11 +34,42 @@ export function DataPage<T extends { id: string | number }>({
     onImport,
     onFilter,
     renderForm,
+    formFields,
+    rowActions,
+    onDataChange,
     defaultValues = {} as Partial<T>
 }: DataPageProps<T>) {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [currentRecord, setCurrentRecord] = useState<Partial<T>>(defaultValues);
     const [searchQuery, setSearchQuery] = useState('');
+    const [fetchedData, setFetchedData] = useState<T[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (apiEndpoint) {
+            fetchData();
+        }
+    }, [apiEndpoint]);
+
+    const fetchData = async () => {
+        if (!apiEndpoint) return;
+        setLoading(true);
+        try {
+            const res = await fetch(apiEndpoint);
+            const json = await res.json();
+            if (json.success) {
+                setFetchedData(json.data);
+            } else if (Array.isArray(json)) {
+                setFetchedData(json);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const effectiveData = apiEndpoint ? fetchedData : (data || []);
 
     const handleAdd = () => {
         setCurrentRecord(defaultValues);
@@ -48,15 +84,51 @@ export function DataPage<T extends { id: string | number }>({
     const handleSave = () => {
         onSave?.(currentRecord);
         setIsSheetOpen(false);
+        onDataChange?.();
     };
 
     const handleFieldChange = (field: keyof T, value: any) => {
         setCurrentRecord(prev => ({ ...prev, [field]: value }));
     };
 
+    const renderDefaultForm = (data: Partial<T>, onChange: (field: keyof T, value: any) => void) => {
+        if (!formFields) return null;
+        return (
+            <div className="space-y-4">
+                {formFields.map((field: any) => (
+                    <div key={field.name} className="space-y-1">
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                            {field.label} {field.required && <span className="text-red-500">*</span>}
+                        </label>
+                        {field.type === 'select' ? (
+                            <select
+                                value={String(data[field.name as keyof T] || '')}
+                                onChange={(e) => onChange(field.name as keyof T, e.target.value)}
+                                className="w-full p-2 border rounded-md dark:bg-slate-800 dark:border-slate-700"
+                            >
+                                <option value="">Select...</option>
+                                {field.options?.map((opt: any) => (
+                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
+                            </select>
+                        ) : (
+                            <input
+                                type={field.type}
+                                value={String(data[field.name as keyof T] || '')}
+                                onChange={(e) => onChange(field.name as keyof T, e.target.value)}
+                                className="w-full p-2 border rounded-md dark:bg-slate-800 dark:border-slate-700"
+                            />
+                        )}
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
+    const formRenderer = renderForm || renderDefaultForm;
+
     // Filter data
-    // Filter data
-    const filteredData = (Array.isArray(data) ? data : []).filter(row =>
+    const filteredData = effectiveData.filter(row =>
         Object.values(row).some(val =>
             String(val).toLowerCase().includes(searchQuery.toLowerCase())
         )
@@ -130,7 +202,7 @@ export function DataPage<T extends { id: string | number }>({
                 }
             >
                 <div className="space-y-4">
-                    {renderForm(currentRecord, handleFieldChange)}
+                    {formRenderer(currentRecord, handleFieldChange)}
                 </div>
             </Sheet>
         </div>

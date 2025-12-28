@@ -59,7 +59,7 @@ export class SAMLProvider {
       this.serviceProvider.create_login_request_url(
         this.identityProvider,
         { relay_state: relayState },
-        (err, loginUrl) => {
+        (err: any, loginUrl: string) => {
           if (err) {
             reject(err);
           } else {
@@ -78,7 +78,7 @@ export class SAMLProvider {
       this.serviceProvider.create_logout_request_url(
         this.identityProvider,
         { name_id: nameId, session_index: sessionIndex },
-        (err, logoutUrl) => {
+        (err: any, logoutUrl: string) => {
           if (err) {
             reject(err);
           } else {
@@ -97,7 +97,7 @@ export class SAMLProvider {
       this.serviceProvider.post_assert(
         this.identityProvider,
         { request_body: { SAMLResponse: samlResponse } },
-        (err, samlResponse) => {
+        (err: any, samlResponse: any) => {
           if (err) {
             reject(new Error(`SAML validation failed: ${err.message}`));
             return;

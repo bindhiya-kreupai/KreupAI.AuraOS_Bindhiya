@@ -5,12 +5,9 @@ import {
     Users,
     Shield,
     Plus,
-    Check,
-    X,
-    MoreHorizontal,
     Edit3
 } from 'lucide-react';
-import { RoleService } from '../services';
+import { RoleService } from '@/app/dashboard/security/services';
 
 const PERMISSIONS = [
     { module: 'Employee Directory', read: true, write: true, delete: true },
@@ -47,12 +44,16 @@ export default function RoleBasedAccessPage() {
                 setRoles(mockRoles);
                 setSelectedRole(mockRoles[0]);
             }
-        } catch (error) {
-            console.error('Error:', error);
-                    } finally {
+        } catch {
+            // Silent error handling
+        } finally {
             setLoading(false);
         }
     };
+
+    if (loading || !selectedRole) {
+        return <div className="p-6">Loading...</div>;
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
@@ -108,7 +109,7 @@ export default function RoleBasedAccessPage() {
                     <div className="flex justify-between items-center mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
                         <div>
                             <h2 className="text-xl font-bold flex items-center gap-2">
-                                {selectedRole.name}
+                                {selectedRole.roleName}
                                 <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 font-normal">
                                     {selectedRole.isSystem ? 'System Managed' : 'Custom'}
                                 </span>

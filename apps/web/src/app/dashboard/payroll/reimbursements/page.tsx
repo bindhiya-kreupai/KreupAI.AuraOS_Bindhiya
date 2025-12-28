@@ -6,10 +6,9 @@ import {
     Check,
     X,
     Clock,
-    Paperclip,
-    Filter
+    Paperclip
 } from 'lucide-react';
-import { ReimbursementService } from '../services';
+import { ReimbursementService } from '@/app/dashboard/payroll/services';
 
 interface Reimbursement {
     id: string;
@@ -39,9 +38,9 @@ export default function ReimbursementsPage() {
             if (result.length > 0) {
                 setClaims(result);
             }
-        } catch (error) {
-            console.error('Error:', error);
-                    } finally {
+        } catch {
+            // Silent error handling
+        } finally {
             setLoading(false);
         }
     };
@@ -50,18 +49,18 @@ export default function ReimbursementsPage() {
         try {
             await ReimbursementService.updateClaimStatus(id, 'APPROVED');
             fetchClaims();
-        } catch (error) {
-            console.error('Error:', error);
-                    }
+        } catch {
+            // Silent error handling
+        }
     };
 
     const handleReject = async (id: string) => {
         try {
             await ReimbursementService.updateClaimStatus(id, 'REJECTED');
             fetchClaims();
-        } catch (error) {
-            console.error('Error:', error);
-                    }
+        } catch {
+            // Silent error handling
+        }
     };
 
     const getTimeAgo = (dateString: string) => {
@@ -159,7 +158,8 @@ export default function ReimbursementsPage() {
                             )}
                         </div>
                     ))}
-            </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { exportService, ExportFormat, ExportEntity } from '@/lib/export/export.service';
 import { logger } from '@/lib/logger';
-import { withAuth } from '@/lib/middleware/auth.middleware';
+import { withAuth } from '@/lib/auth';
 import { auditMiddleware } from '@/lib/middleware/audit.middleware';
 
 /**

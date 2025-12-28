@@ -5,7 +5,7 @@
  * @module @aura/messaging
  */
 
-import amqp, { Channel, Connection, ConsumeMessage } from 'amqplib';
+import * as amqp from 'amqplib';
 import { EXCHANGES, QUEUES, getRabbitMQConfig, QueueDefinition } from '../config/queue.config';
 
 export interface MessagePayload {
@@ -22,8 +22,8 @@ export interface MessagePayload {
 export type MessageHandler = (message: MessagePayload) => Promise<void>;
 
 export class QueueManager {
-  private connection: Connection | null = null;
-  private channel: Channel | null = null;
+  private connection: any = null;
+  private channel: any = null;
   private consumers: Map<string, MessageHandler> = new Map();
   private isConnected = false;
 
@@ -40,13 +40,17 @@ export class QueueManager {
         timeout: config.connectionTimeout,
       });
 
+      if (!this.connection) {
+        throw new Error('Failed to establish RabbitMQ connection');
+      }
+
       this.channel = await this.connection.createChannel();
 
       // Set prefetch count for fair dispatch
       await this.channel.prefetch(10);
 
       // Setup connection event handlers
-      this.connection.on('error', (err) => {
+      this.connection.on('error', (err: any) => {
         console.error('RabbitMQ connection error:', err);
         this.isConnected = false;
       });
@@ -193,7 +197,7 @@ export class QueueManager {
 
     await this.channel.consume(
       queueName,
-      async (msg: ConsumeMessage | null) => {
+      async (msg: amqp.ConsumeMessage | null) => {
         if (!msg || !this.channel) {
           return;
         }

@@ -43,6 +43,8 @@ import { createProtectedRoute } from '@/lib/api/route-wrapper';
 import departmentService from '@/services/department.service';
 import { BusinessRuleError } from '@/lib/errors';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/departments/stats
  * Get department statistics
@@ -52,16 +54,16 @@ export const GET = createProtectedRoute(
     const url = new URL(request.url);
     const companyId = url.searchParams.get('companyId') || undefined;
 
-    const result = await departmentService.getDepartmentStats(
-      auth!.tenantId,
-      companyId
-    );
+    try {
+      const result = await departmentService.getDepartmentStats(
+        auth!.tenantId,
+        companyId
+      );
 
-    if (!result.success) {
-      throw new BusinessRuleError(result.error!, result.details);
+      return result;
+    } catch (error) {
+      throw new BusinessRuleError('Failed to fetch department stats', error);
     }
-
-    return result.data;
   },
   {
     requiredPermissions: ['departments:read'],

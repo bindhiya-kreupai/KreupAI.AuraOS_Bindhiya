@@ -32,10 +32,14 @@ export class AuthService {
         where: {
           email: email.toLowerCase(),
           tenantId,
-          isActive: true,
+          status: 'Active',
         },
         include: {
-          role: true,
+          roles: {
+            include: {
+              role: true,
+            },
+          },
           tenant: true,
         },
       });
@@ -79,7 +83,7 @@ export class AuthService {
       await prisma.user.update({
         where: { id: user.id },
         data: {
-          lastLoginAt: new Date(),
+          lastLogin: new Date(),
         },
       });
 
@@ -111,7 +115,7 @@ export class AuthService {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          role: user.role.name,
+          role: user.roles[0]?.role.name || 'user',
           tenantId: user.tenantId,
         },
       };
@@ -130,7 +134,7 @@ export class AuthService {
         where: {
           email: email.toLowerCase(),
           tenantId,
-          isActive: true,
+          status: 'Active',
         },
       });
 

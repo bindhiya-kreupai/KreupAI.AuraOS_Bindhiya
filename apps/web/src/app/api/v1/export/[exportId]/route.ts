@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queueService } from '@/lib/queue/queue.service';
 import { logger } from '@/lib/logger';
-import { withAuth } from '@/lib/middleware/auth.middleware';
+import { withAuth } from '@/lib/auth';
 
 /**
  * GET /api/v1/export/{exportId}

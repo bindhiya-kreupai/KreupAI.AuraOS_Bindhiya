@@ -3,11 +3,9 @@
  * Provides real-time query performance metrics
  */
 
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { queryMonitor } from '@/lib/monitoring/query-monitor';
-import { authenticateRequest } from '@/lib/middleware/auth';
-import { checkPermission } from '@/lib/middleware/rbac';
+import { withEnhancedAuth, Resource, Action } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
 /**
@@ -70,103 +68,22 @@ import { logger } from '@/lib/logger';
  *       403:
  *         description: Forbidden - Admin access required
  */
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest) => {
   try {
-    // Authenticate user
-    const authResult = await authenticateRequest(request);
-    if (!authResult.success) {
-      logger.warn('Unauthorized monitoring access attempt');
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const user = authResult.user!;
-
-    // Check admin permission
-    if (!checkPermission(user, 'monitoring', 'read')) {
-      logger.warn({ userId: user.id }, 'User attempted to access monitoring without permission');
-      return NextResponse.json(
-        { success: false, error: 'Admin access required' },
-        { status: 403 }
-      );
-    }
-
-    // Get query statistics
     const summary = queryMonitor.getSummary();
-
-    logger.info({ userId: user.id }, 'Query monitoring stats accessed');
-
+    
     return NextResponse.json({
       success: true,
       data: summary,
     });
-  } catch {
-    logger.error({ error }, 'Error fetching query monitoring stats');
+  } catch (error) {
+    logger.error('Error fetching query stats:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch monitoring stats' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }
-}
-
-/**
- * DELETE /api/monitoring/queries
- * Reset query statistics
- *
- * @swagger
- * /api/monitoring/queries:
- *   delete:
- *     tags: [Monitoring]
- *     summary: Reset query performance statistics
- *     description: Clears all collected query performance metrics. Requires ADMIN role.
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Statistics reset successfully
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden - Admin access required
- */
-export async function DELETE(request: NextRequest) {
-  try {
-    // Authenticate user
-    const authResult = await authenticateRequest(request);
-    if (!authResult.success) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const user = authResult.user!;
-
-    // Check admin permission
-    if (!checkPermission(user, 'monitoring', 'write')) {
-      logger.warn({ userId: user.id }, 'User attempted to reset monitoring stats without permission');
-      return NextResponse.json(
-        { success: false, error: 'Admin access required' },
-        { status: 403 }
-      );
-    }
-
-    // Reset statistics
-    queryMonitor.reset();
-
-    logger.info({ userId: user.id }, 'Query monitoring stats reset');
-
-    return NextResponse.json({
-      success: true,
-      message: 'Query statistics reset successfully',
-    });
-  } catch {
-    logger.error({ error }, 'Error resetting query monitoring stats');
-    return NextResponse.json(
-      { success: false, error: 'Failed to reset monitoring stats' },
-      { status: 500 }
-    );
-  }
-}
+}, {
+    resource: Resource.SYSTEM_SETTINGS,
+    action: Action.READ
+});

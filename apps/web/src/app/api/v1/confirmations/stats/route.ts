@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ConfirmationService } from '@/lib/services/confirmation.service';
-import { withEnhancedAuth } from '@/lib/auth/enhanced-auth';
+import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {

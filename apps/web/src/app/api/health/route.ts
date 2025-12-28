@@ -5,6 +5,8 @@ import { redis } from '@/lib/cache/redis';
 import { queryMonitor } from '@/lib/monitoring/query-monitor';
 import { logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Basic health check (public endpoint - no auth required)
 export async function GET(request: NextRequest) {
   try {
