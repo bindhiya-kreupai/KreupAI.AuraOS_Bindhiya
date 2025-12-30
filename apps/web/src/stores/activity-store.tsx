@@ -68,8 +68,8 @@ export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }
       if (storedFavorites) {
         setFavorites(JSON.parse(storedFavorites));
       }
-    } catch {
-      logger.error('Failed to load activity from localStorage:', error);
+    } catch (error) {
+      console.error('Failed to load activity from localStorage:', error);
     }
     setIsHydrated(true);
   }, []);
@@ -79,8 +79,8 @@ export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (isHydrated) {
       try {
         localStorage.setItem(STORAGE_KEYS.RECENT_ACTIVITY, JSON.stringify(recentActivity));
-      } catch {
-        logger.error('Failed to save recent activity:', error);
+      } catch (error) {
+        console.error('Failed to save recent activity:', error);
       }
     }
   }, [recentActivity, isHydrated]);
@@ -90,8 +90,8 @@ export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (isHydrated) {
       try {
         localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(favorites));
-      } catch {
-        logger.error('Failed to save favorites:', error);
+      } catch (error) {
+        console.error('Failed to save favorites:', error);
       }
     }
   }, [favorites, isHydrated]);

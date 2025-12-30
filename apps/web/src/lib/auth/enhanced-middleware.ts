@@ -125,7 +125,7 @@ export async function authenticateWithPermissions(
     };
 
     return { context, error: null };
-  } catch {
+  } catch (error) {
     logger.error({ error, userId: user!.userId }, 'Enhanced authentication error');
     return {
       context: null,
