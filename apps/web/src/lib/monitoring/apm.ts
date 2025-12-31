@@ -11,9 +11,9 @@
  * - Custom implementation
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { logger } from '../logger';
+import { logger } from '@/lib/logger';
 
 /**
  * APM Configuration
@@ -39,7 +39,7 @@ const config: APMConfig = {
   captureBody: process.env.APM_CAPTURE_BODY !== 'false',
   captureHeaders: process.env.APM_CAPTURE_HEADERS !== 'false',
   slowTransactionThreshold: parseInt(process.env.APM_SLOW_THRESHOLD || '500', 10),
-  verySlowTransactionThreshold: parseInt(process.env.APM_VERY_SLOW_THRESHOLD || '2000', 10)
+  verySlowTransactionThreshold: parseInt(process.env.APM_VERY_SLOW_THRESHOLD || '2000', 10),
 };
 
 /**
@@ -84,6 +84,12 @@ export class APMManager {
   private static instance: APMManager;
   private transactions: Map<string, Transaction> = new Map();
   private currentTransaction: Transaction | null = null;
+
+  // Metrics state
+  private requestCount = 0;
+  private totalResponseTime = 0;
+  private slowRequestCount = 0;
+  private errorCount = 0;
 
   private constructor() {
     this.initialize();
@@ -190,7 +196,7 @@ export class APMManager {
       type,
       startTime: Date.now(),
       spans: [],
-      errors: []
+      errors: [],
     };
 
     this.transactions.set(transaction.id, transaction);
@@ -217,17 +223,32 @@ export class APMManager {
     if (transaction.duration > config.slowTransactionThreshold) {
       const level = transaction.duration > config.verySlowTransactionThreshold ? 'warn' : 'info';
 
-      logger[level]({
-        transactionId: transaction.id,
-        name: transaction.name,
-        duration: transaction.duration,
-        statusCode: transaction.statusCode,
-        result: transaction.result
-      }, 'Slow transaction detected');
+      logger[level](
+        {
+          transactionId: transaction.id,
+          name: transaction.name,
+          duration: transaction.duration,
+          statusCode: transaction.statusCode,
+          result: transaction.result,
+        },
+        'Slow transaction detected'
+      );
+
+      this.slowRequestCount++;
     }
 
     // Send to APM provider
     this.sendTransaction(transaction);
+
+    // Update metrics
+    this.requestCount++;
+    if (transaction.duration) {
+      this.totalResponseTime += transaction.duration;
+    }
+    if (result === 'error' || (statusCode && statusCode >= 500)) {
+      // Errors are counted via recordError usually, but transaction result also indicates failure
+      // We'll let recordError handle the explicit error count to avoid double counting if both are used
+    }
 
     // Cleanup
     this.currentTransaction = null;
@@ -243,7 +264,7 @@ export class APMManager {
       name,
       type,
       startTime: Date.now(),
-      parentId: this.currentTransaction?.id
+      parentId: this.currentTransaction?.id,
     };
 
     if (this.currentTransaction) {
@@ -274,6 +295,7 @@ export class APMManager {
     }
 
     logger.error({ error, transactionId: this.currentTransaction?.id }, 'Error in transaction');
+    this.errorCount++;
   }
 
   /**
@@ -283,7 +305,7 @@ export class APMManager {
     if (this.currentTransaction) {
       this.currentTransaction.metadata = {
         ...this.currentTransaction.metadata,
-        ...metadata
+        ...metadata,
       };
     }
   }
@@ -297,8 +319,8 @@ export class APMManager {
         ...this.currentTransaction.metadata,
         customAttributes: {
           ...(this.currentTransaction.metadata?.customAttributes || {}),
-          ...attributes
-        }
+          ...attributes,
+        },
       };
     }
   }
@@ -331,14 +353,17 @@ export class APMManager {
   private async sendToCustomAPM(transaction: Transaction) {
     try {
       // Store in database or send to external service
-      logger.info({
-        transactionId: transaction.id,
-        name: transaction.name,
-        duration: transaction.duration,
-        result: transaction.result,
-        spanCount: transaction.spans.length,
-        errorCount: transaction.errors.length
-      }, 'APM transaction recorded');
+      logger.info(
+        {
+          transactionId: transaction.id,
+          name: transaction.name,
+          duration: transaction.duration,
+          result: transaction.result,
+          spanCount: transaction.spans.length,
+          errorCount: transaction.errors.length,
+        },
+        'APM transaction recorded'
+      );
 
       // TODO: Implement actual storage/transmission
       // Example: await fetch('/api/monitoring/apm', { method: 'POST', body: JSON.stringify(transaction) });
@@ -373,6 +398,18 @@ export class APMManager {
    */
   getConfig(): APMConfig {
     return { ...config };
+  }
+  /**
+   * Get APM metrics
+   */
+  getMetrics() {
+    return {
+      requestCount: this.requestCount,
+      averageResponseTime:
+        this.requestCount > 0 ? Math.round(this.totalResponseTime / this.requestCount) : 0,
+      slowRequestCount: this.slowRequestCount,
+      errorCount: this.errorCount,
+    };
   }
 }
 
@@ -446,10 +483,7 @@ export function withAPM<T = any>(
 /**
  * Decorator for database operations
  */
-export async function traceDatabase<T>(
-  operation: string,
-  fn: () => Promise<T>
-): Promise<T> {
+export async function traceDatabase<T>(operation: string, fn: () => Promise<T>): Promise<T> {
   const apm = APMManager.getInstance();
 
   if (!apm.isEnabled()) {
@@ -472,10 +506,7 @@ export async function traceDatabase<T>(
 /**
  * Decorator for external HTTP calls
  */
-export async function traceHTTP<T>(
-  url: string,
-  fn: () => Promise<T>
-): Promise<T> {
+export async function traceHTTP<T>(url: string, fn: () => Promise<T>): Promise<T> {
   const apm = APMManager.getInstance();
 
   if (!apm.isEnabled()) {
@@ -499,11 +530,7 @@ export async function traceHTTP<T>(
 /**
  * Decorator for custom operations
  */
-export async function trace<T>(
-  name: string,
-  type: string,
-  fn: () => Promise<T>
-): Promise<T> {
+export async function trace<T>(name: string, type: string, fn: () => Promise<T>): Promise<T> {
   const apm = APMManager.getInstance();
 
   if (!apm.isEnabled()) {
@@ -527,6 +554,7 @@ export async function trace<T>(
  * Get APM singleton instance
  */
 export const apm = APMManager.getInstance();
+export const apmManager = apm;
 
 /**
  * Export configuration

@@ -17,22 +17,16 @@ export interface JWTPayload {
  * Generates a JWT access token
  */
 export function generateAccessToken(payload: Omit<JWTPayload, 'type'>): string {
-  return jwt.sign(
-    { ...payload, type: 'access' },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
-  );
+  return jwt.sign({ ...payload, type: 'access' }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 
 /**
  * Generates a JWT refresh token
  */
 export function generateRefreshToken(payload: Omit<JWTPayload, 'type'>): string {
-  return jwt.sign(
-    { ...payload, type: 'refresh' },
-    JWT_SECRET,
-    { expiresIn: JWT_REFRESH_EXPIRES_IN }
-  );
+  return jwt.sign({ ...payload, type: 'refresh' }, JWT_SECRET, {
+    expiresIn: JWT_REFRESH_EXPIRES_IN,
+  });
 }
 
 /**
@@ -76,4 +70,28 @@ export function extractTokenFromHeader(authHeader: string | null): string | null
   }
 
   return parts[1];
+}
+
+/**
+ * Generates both access and refresh tokens
+ */
+export function generateTokens(payload: Omit<JWTPayload, 'type'>): {
+  accessToken: string;
+  refreshToken: string;
+} {
+  return {
+    accessToken: generateAccessToken(payload),
+    refreshToken: generateRefreshToken(payload),
+  };
+}
+
+/**
+ * Verifies an access token (alias for verifyToken for clarity)
+ */
+export function verifyAccessToken(token: string): JWTPayload {
+  const payload = verifyToken(token);
+  if (payload.type !== 'access') {
+    throw new Error('Invalid token type');
+  }
+  return payload;
 }

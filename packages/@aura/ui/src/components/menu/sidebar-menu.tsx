@@ -11,8 +11,9 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 import { ChevronDown, ChevronRight, Search, X, PanelLeftClose, PanelLeft, Star } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '../../utils';
 import { getMenuIcon } from './menu-icons';
 import { superAdminMenu } from '@aura/config';
 import type { MenuIconName } from '@aura/types';
@@ -114,9 +115,13 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
       <div className="flex items-center justify-between p-4 border-b border-cloud dark:border-nebula-purple">
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">A</span>
-            </div>
+            <Image
+              src="/images/auraos-logo.png"
+              alt="AuraOS"
+              width={48}
+              height={48}
+              className="w-12 h-12 object-contain"
+            />
             <span className="font-display font-semibold text-ink-black dark:text-pearl">
               AuraOS
             </span>

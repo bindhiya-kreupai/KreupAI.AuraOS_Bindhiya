@@ -13,9 +13,9 @@ const MarketingNavbar = () => (
           <Image
             src="/images/auraos-logo.png"
             alt="AuraOS"
-            width={40}
-            height={40}
-            className="w-10 h-10"
+            width={60}
+            height={60}
+            className="w-[60px] h-[60px] object-contain"
             priority
           />
           <span className="font-display font-bold text-xl text-ink-black dark:text-pearl">

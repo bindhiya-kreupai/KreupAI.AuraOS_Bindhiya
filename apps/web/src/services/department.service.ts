@@ -75,11 +75,7 @@ export class DepartmentService {
    * );
    * ```
    */
-  async createDepartment(
-    input: CreateDepartmentInput,
-    createdBy: string,
-    ipAddress: string
-  ) {
+  async createDepartment(input: CreateDepartmentInput, createdBy: string, ipAddress: string) {
     try {
       // Check if department code already exists in company
       const existingDepartment = await prisma.department.findFirst({
@@ -280,10 +276,7 @@ export class DepartmentService {
     });
 
     if (!department) {
-      logger.warn(
-        { departmentId, requestorTenantId },
-        'Department not found or access denied'
-      );
+      logger.warn({ departmentId, requestorTenantId }, 'Department not found or access denied');
       return null;
     }
 
@@ -883,3 +876,4 @@ export class DepartmentService {
  * Export singleton instance
  */
 export const departmentService = new DepartmentService();
+export default departmentService;

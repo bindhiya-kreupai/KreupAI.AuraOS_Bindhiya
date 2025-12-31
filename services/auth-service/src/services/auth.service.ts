@@ -3,7 +3,7 @@
  * Core business logic for authentication
  */
 
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { prisma } from '../lib/prisma';
 import { TokenService } from './token.service';
 import { config } from '../config';

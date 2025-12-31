@@ -10,6 +10,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Menu,
   Search,
@@ -23,7 +24,7 @@ import {
   LogOut,
   MessageSquare,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '../../utils';
 
 interface TopNavProps {
   onMenuClick?: () => void;
@@ -54,9 +55,13 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, className }) => {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">A</span>
-          </div>
+          <Image
+            src="/images/auraos-logo.png"
+            alt="AuraOS"
+            width={48}
+            height={48}
+            className="w-12 h-12 object-contain"
+          />
           <span className="hidden sm:block font-display font-semibold text-ink-black dark:text-pearl">
             AuraOS
           </span>
