@@ -116,7 +116,7 @@ export class UserService {
         user,
         message: 'User created successfully',
       };
-    } catch {
+    } catch (error) {
       logger.error({ error, input }, 'Error creating user');
       return {
         success: false,
@@ -405,7 +405,7 @@ export class UserService {
         user,
         message: 'User updated successfully',
       };
-    } catch {
+    } catch (error) {
       logger.error({ error, userId }, 'Error updating user');
       return {
         success: false,
@@ -486,7 +486,7 @@ export class UserService {
         success: true,
         message: 'Password changed successfully. Please login again.',
       };
-    } catch {
+    } catch (error) {
       logger.error({ error, userId: input.userId }, 'Error changing password');
       return {
         success: false,
@@ -553,7 +553,7 @@ export class UserService {
         success: true,
         message: 'User deleted successfully',
       };
-    } catch {
+    } catch (error) {
       logger.error({ error, userId }, 'Error deleting user');
       return {
         success: false,
@@ -636,7 +636,7 @@ export class UserService {
         user: updatedUser,
         message: `User status changed to ${status}`,
       };
-    } catch {
+    } catch (error) {
       logger.error({ error, userId }, 'Error changing user status');
       return {
         success: false,

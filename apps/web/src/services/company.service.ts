@@ -263,7 +263,7 @@ export class CompanyService {
         success: true,
         data: company,
       };
-    } catch {
+    } catch (error) {
       logger.error(
         {
           error,
@@ -335,7 +335,7 @@ export class CompanyService {
       }
 
       return company;
-    } catch {
+    } catch (error) {
       logger.error(
         {
           error,
@@ -390,7 +390,7 @@ export class CompanyService {
       });
 
       return company;
-    } catch {
+    } catch (error) {
       logger.error(
         {
           error,
@@ -510,7 +510,7 @@ export class CompanyService {
           },
         },
       };
-    } catch {
+    } catch (error) {
       logger.error(
         {
           error,
@@ -637,7 +637,7 @@ export class CompanyService {
         success: true,
         data: updatedCompany,
       };
-    } catch {
+    } catch (error) {
       logger.error(
         {
           error,
@@ -746,7 +746,7 @@ export class CompanyService {
           message: 'Company successfully deactivated',
         },
       };
-    } catch {
+    } catch (error) {
       logger.error(
         {
           error,
@@ -920,7 +920,7 @@ export class CompanyService {
         success: true,
         data: updatedCompany,
       };
-    } catch {
+    } catch (error) {
       logger.error(
         {
           error,
@@ -1014,7 +1014,7 @@ export class CompanyService {
         success: true,
         data: updatedCompany,
       };
-    } catch {
+    } catch (error) {
       logger.error(
         {
           error,
