@@ -3,7 +3,7 @@
  * Centralized state management and business logic for all aviation features
  */
 
-"use client";
+'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import type {
@@ -21,15 +21,15 @@ import type {
   RampHandlingProcedure,
   SafetyCompliance,
   AviationSettings,
-  Alert
-} from '../types';
+  Alert,
+} from '@/app/dashboard/aviation/types';
 import {
   CabinCrewService,
   PilotTrainingService,
   GroundOperationsService,
   AviationSettingsService,
-  AlertsService
-} from '../services';
+  AlertsService,
+} from '@/app/dashboard/aviation/services';
 import {
   sampleCrewMembers,
   sampleDutyTimes,
@@ -43,8 +43,8 @@ import {
   sampleGroundEquipment,
   sampleRampProcedures,
   sampleSafetyCompliance,
-  sampleAviationSettings
-} from '../data';
+  sampleAviationSettings,
+} from '@/app/dashboard/aviation/data';
 
 interface Toast {
   type: 'success' | 'error' | 'info';
@@ -83,9 +83,9 @@ export const useAviation = () => {
   // ==================== Toast Management ====================
 
   const addToast = useCallback((toast: Toast) => {
-    setToasts(prev => [...prev, toast]);
+    setToasts((prev) => [...prev, toast]);
     setTimeout(() => {
-      setToasts(prev => prev.slice(1));
+      setToasts((prev) => prev.slice(1));
     }, 5000);
   }, []);
 
@@ -110,7 +110,7 @@ export const useAviation = () => {
         proceduresData,
         complianceData,
         settingsData,
-        alertsData
+        alertsData,
       ] = await Promise.all([
         CabinCrewService.getAllCrewMembers(),
         CabinCrewService.getAllFlightAssignments(),
@@ -126,7 +126,7 @@ export const useAviation = () => {
         GroundOperationsService.getAllProcedures(),
         GroundOperationsService.getAllSafetyCompliance(),
         AviationSettingsService.getSettings(),
-        AlertsService.getAllAlerts()
+        AlertsService.getAll(),
       ]);
 
       // Initialize with sample data if empty
@@ -247,9 +247,8 @@ export const useAviation = () => {
 
       setFlightAssignments(assignmentsData);
       setAlerts(alertsData);
-
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to load data');
+    } catch (_error) {
+      setError(_error instanceof Error ? _error.message : 'Failed to load data');
       addToast({ type: 'error', message: 'Failed to load aviation data' });
     } finally {
       setLoading(false);
@@ -274,7 +273,7 @@ export const useAviation = () => {
       await loadCrewMembers();
       addToast({ type: 'success', message: 'Crew member created successfully' });
       return member;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to create crew member' });
       throw error;
     } finally {
@@ -289,7 +288,7 @@ export const useAviation = () => {
       await loadCrewMembers();
       addToast({ type: 'success', message: 'Crew member updated successfully' });
       return member;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to update crew member' });
       throw error;
     } finally {
@@ -303,7 +302,7 @@ export const useAviation = () => {
       await CabinCrewService.deleteCrewMember(crewId);
       await loadCrewMembers();
       addToast({ type: 'success', message: 'Crew member deleted successfully' });
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to delete crew member' });
       throw error;
     } finally {
@@ -323,7 +322,7 @@ export const useAviation = () => {
       await loadFlightAssignments();
       addToast({ type: 'success', message: 'Flight assignment created successfully' });
       return assignment;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to create flight assignment' });
       throw error;
     } finally {
@@ -331,14 +330,17 @@ export const useAviation = () => {
     }
   };
 
-  const updateFlightAssignment = async (assignmentId: string, updates: Partial<FlightAssignment>) => {
+  const updateFlightAssignment = async (
+    assignmentId: string,
+    updates: Partial<FlightAssignment>
+  ) => {
     setLoading(true);
     try {
       const assignment = await CabinCrewService.updateFlightAssignment(assignmentId, updates);
       await loadFlightAssignments();
       addToast({ type: 'success', message: 'Flight assignment updated successfully' });
       return assignment;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to update flight assignment' });
       throw error;
     } finally {
@@ -354,7 +356,7 @@ export const useAviation = () => {
       setDutyTimes(data);
       addToast({ type: 'success', message: 'Duty time recorded successfully' });
       return duty;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to record duty time' });
       throw error;
     } finally {
@@ -370,7 +372,7 @@ export const useAviation = () => {
       setRestPeriods(data);
       addToast({ type: 'success', message: 'Rest period recorded successfully' });
       return rest;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to record rest period' });
       throw error;
     } finally {
@@ -378,14 +380,14 @@ export const useAviation = () => {
     }
   };
 
-  const updateDutyStatus = async (crewId: string, status: any) => {
+  const updateDutyStatus = async (crewId: string, status: CrewMemberProfile['dutyStatus']) => {
     setLoading(true);
     try {
       const member = await CabinCrewService.updateDutyStatus(crewId, status);
       await loadCrewMembers();
       addToast({ type: 'success', message: 'Duty status updated successfully' });
       return member;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to update duty status' });
       throw error;
     } finally {
@@ -423,7 +425,7 @@ export const useAviation = () => {
       await loadPilots();
       addToast({ type: 'success', message: 'Pilot created successfully' });
       return pilot;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to create pilot' });
       throw error;
     } finally {
@@ -438,7 +440,7 @@ export const useAviation = () => {
       await loadPilots();
       addToast({ type: 'success', message: 'Pilot updated successfully' });
       return pilot;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to update pilot' });
       throw error;
     } finally {
@@ -452,7 +454,7 @@ export const useAviation = () => {
       await PilotTrainingService.deletePilot(pilotId);
       await loadPilots();
       addToast({ type: 'success', message: 'Pilot deleted successfully' });
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to delete pilot' });
       throw error;
     } finally {
@@ -473,7 +475,7 @@ export const useAviation = () => {
       await loadPilots();
       addToast({ type: 'success', message: 'Training record created successfully' });
       return record;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to create training record' });
       throw error;
     } finally {
@@ -488,7 +490,7 @@ export const useAviation = () => {
       await loadTrainingRecords();
       addToast({ type: 'success', message: 'Training record updated successfully' });
       return record;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to update training record' });
       throw error;
     } finally {
@@ -508,7 +510,7 @@ export const useAviation = () => {
       await loadSimulatorSessions();
       addToast({ type: 'success', message: 'Simulator session created successfully' });
       return session;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to create simulator session' });
       throw error;
     } finally {
@@ -523,7 +525,7 @@ export const useAviation = () => {
       await loadSimulatorSessions();
       addToast({ type: 'success', message: 'Simulator session updated successfully' });
       return session;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to update simulator session' });
       throw error;
     } finally {
@@ -544,7 +546,7 @@ export const useAviation = () => {
       await loadPilots();
       addToast({ type: 'success', message: 'Proficiency check created successfully' });
       return check;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to create proficiency check' });
       throw error;
     } finally {
@@ -552,14 +554,14 @@ export const useAviation = () => {
     }
   };
 
-  const updateFlightHours = async (pilotId: string, hours: Partial<any>) => {
+  const updateFlightHours = async (pilotId: string, hours: { current: number; target: number }) => {
     setLoading(true);
     try {
       const pilot = await PilotTrainingService.updateFlightHours(pilotId, hours);
       await loadPilots();
       addToast({ type: 'success', message: 'Flight hours updated successfully' });
       return pilot;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to update flight hours' });
       throw error;
     } finally {
@@ -597,7 +599,7 @@ export const useAviation = () => {
       await loadGroundStaff();
       addToast({ type: 'success', message: 'Ground staff created successfully' });
       return staff;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to create ground staff' });
       throw error;
     } finally {
@@ -612,7 +614,7 @@ export const useAviation = () => {
       await loadGroundStaff();
       addToast({ type: 'success', message: 'Ground staff updated successfully' });
       return staff;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to update ground staff' });
       throw error;
     } finally {
@@ -626,7 +628,7 @@ export const useAviation = () => {
       await GroundOperationsService.deleteGroundStaff(staffId);
       await loadGroundStaff();
       addToast({ type: 'success', message: 'Ground staff deleted successfully' });
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to delete ground staff' });
       throw error;
     } finally {
@@ -646,7 +648,7 @@ export const useAviation = () => {
       await loadTurnarounds();
       addToast({ type: 'success', message: 'Turnaround created successfully' });
       return turnaround;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to create turnaround' });
       throw error;
     } finally {
@@ -661,7 +663,7 @@ export const useAviation = () => {
       await loadTurnarounds();
       addToast({ type: 'success', message: 'Turnaround updated successfully' });
       return turnaround;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to update turnaround' });
       throw error;
     } finally {
@@ -681,7 +683,7 @@ export const useAviation = () => {
       await loadGroundEquipment();
       addToast({ type: 'success', message: 'Equipment created successfully' });
       return equipment;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to create equipment' });
       throw error;
     } finally {
@@ -696,7 +698,7 @@ export const useAviation = () => {
       await loadGroundEquipment();
       addToast({ type: 'success', message: 'Equipment updated successfully' });
       return equipment;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to update equipment' });
       throw error;
     } finally {
@@ -710,7 +712,7 @@ export const useAviation = () => {
       await GroundOperationsService.deleteEquipment(equipmentId);
       await loadGroundEquipment();
       addToast({ type: 'success', message: 'Equipment deleted successfully' });
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to delete equipment' });
       throw error;
     } finally {
@@ -718,14 +720,14 @@ export const useAviation = () => {
     }
   };
 
-  const recordEquipmentUsage = async (equipmentId: string, usageData: any) => {
+  const recordEquipmentUsage = async (equipmentId: string, usageData: Record<string, unknown>) => {
     setLoading(true);
     try {
       const equipment = await GroundOperationsService.recordUsage(equipmentId, usageData);
       await loadGroundEquipment();
       addToast({ type: 'success', message: 'Equipment usage recorded successfully' });
       return equipment;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to record equipment usage' });
       throw error;
     } finally {
@@ -745,7 +747,7 @@ export const useAviation = () => {
       await loadRampProcedures();
       addToast({ type: 'success', message: 'Ramp procedure created successfully' });
       return procedure;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to create ramp procedure' });
       throw error;
     } finally {
@@ -753,14 +755,17 @@ export const useAviation = () => {
     }
   };
 
-  const updateRampProcedure = async (procedureId: string, updates: Partial<RampHandlingProcedure>) => {
+  const updateRampProcedure = async (
+    procedureId: string,
+    updates: Partial<RampHandlingProcedure>
+  ) => {
     setLoading(true);
     try {
       const procedure = await GroundOperationsService.updateProcedure(procedureId, updates);
       await loadRampProcedures();
       addToast({ type: 'success', message: 'Ramp procedure updated successfully' });
       return procedure;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to update ramp procedure' });
       throw error;
     } finally {
@@ -780,7 +785,7 @@ export const useAviation = () => {
       await loadSafetyCompliance();
       addToast({ type: 'success', message: 'Safety compliance record created successfully' });
       return compliance;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to create safety compliance record' });
       throw error;
     } finally {
@@ -788,14 +793,20 @@ export const useAviation = () => {
     }
   };
 
-  const updateSafetyCompliance = async (complianceId: string, updates: Partial<SafetyCompliance>) => {
+  const updateSafetyCompliance = async (
+    complianceId: string,
+    updates: Partial<SafetyCompliance>
+  ) => {
     setLoading(true);
     try {
-      const compliance = await GroundOperationsService.updateSafetyCompliance(complianceId, updates);
+      const compliance = await GroundOperationsService.updateSafetyCompliance(
+        complianceId,
+        updates
+      );
       await loadSafetyCompliance();
       addToast({ type: 'success', message: 'Safety compliance record updated successfully' });
       return compliance;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to update safety compliance record' });
       throw error;
     } finally {
@@ -837,7 +848,7 @@ export const useAviation = () => {
       setSettings(settingsData);
       addToast({ type: 'success', message: 'Settings updated successfully' });
       return settingsData;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to update settings' });
       throw error;
     } finally {
@@ -848,7 +859,7 @@ export const useAviation = () => {
   // ==================== Alerts Methods ====================
 
   const loadAlerts = async () => {
-    const data = await AlertsService.getAllAlerts();
+    const data = await AlertsService.getAll();
     setAlerts(data);
   };
 
@@ -859,7 +870,7 @@ export const useAviation = () => {
       await loadAlerts();
       addToast({ type: 'info', message: 'Alert created' });
       return alert;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to create alert' });
       throw error;
     } finally {
@@ -874,7 +885,7 @@ export const useAviation = () => {
       await loadAlerts();
       addToast({ type: 'success', message: 'Alert acknowledged' });
       return alert;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to acknowledge alert' });
       throw error;
     } finally {
@@ -889,7 +900,7 @@ export const useAviation = () => {
       await loadAlerts();
       addToast({ type: 'success', message: 'Alert resolved' });
       return alert;
-    } catch (error) {
+    } catch (_error) {
       addToast({ type: 'error', message: 'Failed to resolve alert' });
       throw error;
     } finally {

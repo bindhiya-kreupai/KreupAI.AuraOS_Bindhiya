@@ -5,7 +5,11 @@
 
 // ==================== Cabin Crew Types ====================
 
-export type CrewMemberType = 'flight_attendant' | 'senior_flight_attendant' | 'purser' | 'cabin_director';
+export type CrewMemberType =
+  | 'flight_attendant'
+  | 'senior_flight_attendant'
+  | 'purser'
+  | 'cabin_director';
 export type CrewStatus = 'active' | 'on_leave' | 'medical_hold' | 'training' | 'inactive';
 export type DutyStatus = 'available' | 'on_duty' | 'in_flight' | 'rest' | 'standby' | 'off_duty';
 export type MedicalClass = 'class_1' | 'class_2' | 'class_3';
@@ -263,9 +267,21 @@ export interface AccommodationInfo {
 // ==================== Pilot Training Types ====================
 
 export type TrainingType = 'initial' | 'recurrent' | 'upgrade' | 'transition' | 'proficiency_check';
-export type TrainingStatus = 'scheduled' | 'in_progress' | 'completed' | 'failed' | 'deferred' | 'cancelled';
+export type TrainingStatus =
+  | 'scheduled'
+  | 'in_progress'
+  | 'completed'
+  | 'failed'
+  | 'deferred'
+  | 'cancelled';
 export type SimulatorLevel = 'level_a' | 'level_b' | 'level_c' | 'level_d' | 'ftd';
-export type PilotRank = 'student_pilot' | 'first_officer' | 'senior_first_officer' | 'captain' | 'training_captain' | 'check_airman';
+export type PilotRank =
+  | 'student_pilot'
+  | 'first_officer'
+  | 'senior_first_officer'
+  | 'captain'
+  | 'training_captain'
+  | 'check_airman';
 
 export interface PilotProfile {
   pilotId: string;
@@ -564,8 +580,23 @@ export interface Qualification {
 
 // ==================== Ground Operations Types ====================
 
-export type GroundStaffRole = 'ramp_agent' | 'baggage_handler' | 'pushback_driver' | 'refueler' | 'aircraft_cleaner' | 'cargo_loader' | 'supervisor';
-export type EquipmentType = 'gpu' | 'tug' | 'belt_loader' | 'fuel_truck' | 'catering_truck' | 'stairs' | 'lavatory_service' | 'water_service';
+export type GroundStaffRole =
+  | 'ramp_agent'
+  | 'baggage_handler'
+  | 'pushback_driver'
+  | 'refueler'
+  | 'aircraft_cleaner'
+  | 'cargo_loader'
+  | 'supervisor';
+export type EquipmentType =
+  | 'gpu'
+  | 'tug'
+  | 'belt_loader'
+  | 'fuel_truck'
+  | 'catering_truck'
+  | 'stairs'
+  | 'lavatory_service'
+  | 'water_service';
 export type OperationStatus = 'scheduled' | 'in_progress' | 'completed' | 'delayed' | 'cancelled';
 
 export interface GroundStaffMember {
@@ -956,7 +987,13 @@ export interface Report {
 
 export interface Alert {
   alertId: string;
-  alertType: 'certification_expiring' | 'medical_expiring' | 'training_overdue' | 'compliance_issue' | 'safety_incident' | 'equipment_maintenance';
+  alertType:
+    | 'certification_expiring'
+    | 'medical_expiring'
+    | 'training_overdue'
+    | 'compliance_issue'
+    | 'safety_incident'
+    | 'equipment_maintenance';
   severity: 'low' | 'medium' | 'high' | 'critical';
   title: string;
   message: string;
@@ -972,4 +1009,11 @@ export interface Alert {
   acknowledgedAt?: string;
   acknowledgedBy?: string;
   resolvedAt?: string;
+}
+
+export interface Toast {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+  duration?: number;
 }

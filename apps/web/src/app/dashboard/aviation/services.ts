@@ -19,7 +19,7 @@ import type {
   RampHandlingProcedure,
   SafetyCompliance,
   AviationSettings,
-  Alert
+  Alert,
 } from './types';
 
 /**
@@ -31,29 +31,44 @@ export class CabinCrewService {
 
   static async getAllCrewMembers(): Promise<CrewMemberProfile[]> {
     try {
-      const response = await APIClient.get<{ crewMembers?: CrewMemberProfile[] }>(`${this.endpoint}/members`);
+      const response = await APIClient.get<{ crewMembers?: CrewMemberProfile[] }>(
+        `${this.endpoint}/members`
+      );
       return response.crewMembers || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async getCrewMemberById(crewId: string): Promise<CrewMemberProfile | null> {
     try {
-      const response = await APIClient.get<{ crewMember?: CrewMemberProfile }>(`${this.endpoint}/members/${crewId}`);
+      const response = await APIClient.get<{ crewMember?: CrewMemberProfile }>(
+        `${this.endpoint}/members/${crewId}`
+      );
       return response.crewMember || null;
-    } catch (error) {
-            return null;
+    } catch (_error) {
+      return null;
     }
   }
 
-  static async createCrewMember(memberData: Partial<CrewMemberProfile>): Promise<CrewMemberProfile> {
-    const response = await APIClient.post<{ crewMember: CrewMemberProfile }>(`${this.endpoint}/members`, memberData);
+  static async createCrewMember(
+    memberData: Partial<CrewMemberProfile>
+  ): Promise<CrewMemberProfile> {
+    const response = await APIClient.post<{ crewMember: CrewMemberProfile }>(
+      `${this.endpoint}/members`,
+      memberData
+    );
     return response.crewMember;
   }
 
-  static async updateCrewMember(crewId: string, updates: Partial<CrewMemberProfile>): Promise<CrewMemberProfile> {
-    const response = await APIClient.put<{ crewMember: CrewMemberProfile }>(`${this.endpoint}/members/${crewId}`, updates);
+  static async updateCrewMember(
+    crewId: string,
+    updates: Partial<CrewMemberProfile>
+  ): Promise<CrewMemberProfile> {
+    const response = await APIClient.put<{ crewMember: CrewMemberProfile }>(
+      `${this.endpoint}/members/${crewId}`,
+      updates
+    );
     return response.crewMember;
   }
 
@@ -65,86 +80,117 @@ export class CabinCrewService {
   // Flight Assignments
   static async getAllFlightAssignments(): Promise<FlightAssignment[]> {
     try {
-      const response = await APIClient.get<{ assignments?: FlightAssignment[] }>(`${this.endpoint}/assignments`);
+      const response = await APIClient.get<{ assignments?: FlightAssignment[] }>(
+        `${this.endpoint}/assignments`
+      );
       return response.assignments || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async getFlightAssignmentById(assignmentId: string): Promise<FlightAssignment | null> {
     try {
-      const response = await APIClient.get<{ assignment?: FlightAssignment }>(`${this.endpoint}/assignments/${assignmentId}`);
+      const response = await APIClient.get<{ assignment?: FlightAssignment }>(
+        `${this.endpoint}/assignments/${assignmentId}`
+      );
       return response.assignment || null;
-    } catch (error) {
-            return null;
+    } catch (_error) {
+      return null;
     }
   }
 
   static async getCrewAssignments(crewId: string): Promise<FlightAssignment[]> {
     try {
-      const response = await APIClient.get<{ assignments?: FlightAssignment[] }>(`${this.endpoint}/members/${crewId}/assignments`);
+      const response = await APIClient.get<{ assignments?: FlightAssignment[] }>(
+        `${this.endpoint}/members/${crewId}/assignments`
+      );
       return response.assignments || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
-  static async createFlightAssignment(assignmentData: Partial<FlightAssignment>): Promise<FlightAssignment> {
-    const response = await APIClient.post<{ assignment: FlightAssignment }>(`${this.endpoint}/assignments`, assignmentData);
+  static async createFlightAssignment(
+    assignmentData: Partial<FlightAssignment>
+  ): Promise<FlightAssignment> {
+    const response = await APIClient.post<{ assignment: FlightAssignment }>(
+      `${this.endpoint}/assignments`,
+      assignmentData
+    );
     return response.assignment;
   }
 
-  static async updateFlightAssignment(assignmentId: string, updates: Partial<FlightAssignment>): Promise<FlightAssignment> {
-    const response = await APIClient.put<{ assignment: FlightAssignment }>(`${this.endpoint}/assignments/${assignmentId}`, updates);
+  static async updateFlightAssignment(
+    assignmentId: string,
+    updates: Partial<FlightAssignment>
+  ): Promise<FlightAssignment> {
+    const response = await APIClient.put<{ assignment: FlightAssignment }>(
+      `${this.endpoint}/assignments/${assignmentId}`,
+      updates
+    );
     return response.assignment;
   }
 
   // Duty Time Management
   static async getAllDutyTimes(): Promise<DutyTime[]> {
     try {
-      const response = await APIClient.get<{ dutyTimes?: DutyTime[] }>(`${this.endpoint}/duty-times`);
+      const response = await APIClient.get<{ dutyTimes?: DutyTime[] }>(
+        `${this.endpoint}/duty-times`
+      );
       return response.dutyTimes || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async getCrewDutyTimes(crewId: string): Promise<DutyTime[]> {
     try {
-      const response = await APIClient.get<{ dutyTimes?: DutyTime[] }>(`${this.endpoint}/members/${crewId}/duty-times`);
+      const response = await APIClient.get<{ dutyTimes?: DutyTime[] }>(
+        `${this.endpoint}/members/${crewId}/duty-times`
+      );
       return response.dutyTimes || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async recordDutyTime(dutyData: Partial<DutyTime>): Promise<DutyTime> {
-    const response = await APIClient.post<{ dutyTime: DutyTime }>(`${this.endpoint}/duty-times`, dutyData);
+    const response = await APIClient.post<{ dutyTime: DutyTime }>(
+      `${this.endpoint}/duty-times`,
+      dutyData
+    );
     return response.dutyTime;
   }
 
   // Rest Period Management
   static async getAllRestPeriods(): Promise<RestPeriod[]> {
     try {
-      const response = await APIClient.get<{ restPeriods?: RestPeriod[] }>(`${this.endpoint}/rest-periods`);
+      const response = await APIClient.get<{ restPeriods?: RestPeriod[] }>(
+        `${this.endpoint}/rest-periods`
+      );
       return response.restPeriods || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async getCrewRestPeriods(crewId: string): Promise<RestPeriod[]> {
     try {
-      const response = await APIClient.get<{ restPeriods?: RestPeriod[] }>(`${this.endpoint}/members/${crewId}/rest-periods`);
+      const response = await APIClient.get<{ restPeriods?: RestPeriod[] }>(
+        `${this.endpoint}/members/${crewId}/rest-periods`
+      );
       return response.restPeriods || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async recordRestPeriod(restData: Partial<RestPeriod>): Promise<RestPeriod> {
-    const response = await APIClient.post<{ restPeriod: RestPeriod }>(`${this.endpoint}/rest-periods`, restData);
+    const response = await APIClient.post<{ restPeriod: RestPeriod }>(
+      `${this.endpoint}/rest-periods`,
+      restData
+    );
     return response.restPeriod;
   }
 
@@ -164,27 +210,35 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ pilots?: PilotProfile[] }>(`${this.endpoint}/pilots`);
       return response.pilots || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async getPilotById(pilotId: string): Promise<PilotProfile | null> {
     try {
-      const response = await APIClient.get<{ pilot?: PilotProfile }>(`${this.endpoint}/pilots/${pilotId}`);
+      const response = await APIClient.get<{ pilot?: PilotProfile }>(
+        `${this.endpoint}/pilots/${pilotId}`
+      );
       return response.pilot || null;
-    } catch (error) {
-            return null;
+    } catch (_error) {
+      return null;
     }
   }
 
   static async createPilot(pilotData: Partial<PilotProfile>): Promise<PilotProfile> {
-    const response = await APIClient.post<{ pilot: PilotProfile }>(`${this.endpoint}/pilots`, pilotData);
+    const response = await APIClient.post<{ pilot: PilotProfile }>(
+      `${this.endpoint}/pilots`,
+      pilotData
+    );
     return response.pilot;
   }
 
   static async updatePilot(pilotId: string, updates: Partial<PilotProfile>): Promise<PilotProfile> {
-    const response = await APIClient.put<{ pilot: PilotProfile }>(`${this.endpoint}/pilots/${pilotId}`, updates);
+    const response = await APIClient.put<{ pilot: PilotProfile }>(
+      `${this.endpoint}/pilots/${pilotId}`,
+      updates
+    );
     return response.pilot;
   }
 
@@ -196,87 +250,130 @@ export class PilotTrainingService {
   // Training Records
   static async getAllTrainingRecords(): Promise<TrainingRecord[]> {
     try {
-      const response = await APIClient.get<{ trainingRecords?: TrainingRecord[] }>(`${this.endpoint}/training-records`);
+      const response = await APIClient.get<{ trainingRecords?: TrainingRecord[] }>(
+        `${this.endpoint}/training-records`
+      );
       return response.trainingRecords || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async getPilotTrainingRecords(pilotId: string): Promise<TrainingRecord[]> {
     try {
-      const response = await APIClient.get<{ trainingRecords?: TrainingRecord[] }>(`${this.endpoint}/pilots/${pilotId}/training-records`);
+      const response = await APIClient.get<{ trainingRecords?: TrainingRecord[] }>(
+        `${this.endpoint}/pilots/${pilotId}/training-records`
+      );
       return response.trainingRecords || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
-  static async createTrainingRecord(pilotId: string, recordData: Partial<TrainingRecord>): Promise<TrainingRecord> {
-    const response = await APIClient.post<{ trainingRecord: TrainingRecord }>(`${this.endpoint}/pilots/${pilotId}/training-records`, recordData);
+  static async createTrainingRecord(
+    pilotId: string,
+    recordData: Partial<TrainingRecord>
+  ): Promise<TrainingRecord> {
+    const response = await APIClient.post<{ trainingRecord: TrainingRecord }>(
+      `${this.endpoint}/pilots/${pilotId}/training-records`,
+      recordData
+    );
     return response.trainingRecord;
   }
 
-  static async updateTrainingRecord(recordId: string, updates: Partial<TrainingRecord>): Promise<TrainingRecord> {
-    const response = await APIClient.put<{ trainingRecord: TrainingRecord }>(`${this.endpoint}/training-records/${recordId}`, updates);
+  static async updateTrainingRecord(
+    recordId: string,
+    updates: Partial<TrainingRecord>
+  ): Promise<TrainingRecord> {
+    const response = await APIClient.put<{ trainingRecord: TrainingRecord }>(
+      `${this.endpoint}/training-records/${recordId}`,
+      updates
+    );
     return response.trainingRecord;
   }
 
   // Simulator Sessions
   static async getAllSimulatorSessions(): Promise<SimulatorSession[]> {
     try {
-      const response = await APIClient.get<{ simulatorSessions?: SimulatorSession[] }>(`${this.endpoint}/simulator-sessions`);
+      const response = await APIClient.get<{ simulatorSessions?: SimulatorSession[] }>(
+        `${this.endpoint}/simulator-sessions`
+      );
       return response.simulatorSessions || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async getPilotSimulatorSessions(pilotId: string): Promise<SimulatorSession[]> {
     try {
-      const response = await APIClient.get<{ simulatorSessions?: SimulatorSession[] }>(`${this.endpoint}/pilots/${pilotId}/simulator-sessions`);
+      const response = await APIClient.get<{ simulatorSessions?: SimulatorSession[] }>(
+        `${this.endpoint}/pilots/${pilotId}/simulator-sessions`
+      );
       return response.simulatorSessions || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
-  static async createSimulatorSession(sessionData: Partial<SimulatorSession>): Promise<SimulatorSession> {
-    const response = await APIClient.post<{ simulatorSession: SimulatorSession }>(`${this.endpoint}/simulator-sessions`, sessionData);
+  static async createSimulatorSession(
+    sessionData: Partial<SimulatorSession>
+  ): Promise<SimulatorSession> {
+    const response = await APIClient.post<{ simulatorSession: SimulatorSession }>(
+      `${this.endpoint}/simulator-sessions`,
+      sessionData
+    );
     return response.simulatorSession;
   }
 
-  static async updateSimulatorSession(sessionId: string, updates: Partial<SimulatorSession>): Promise<SimulatorSession> {
-    const response = await APIClient.put<{ simulatorSession: SimulatorSession }>(`${this.endpoint}/simulator-sessions/${sessionId}`, updates);
+  static async updateSimulatorSession(
+    sessionId: string,
+    updates: Partial<SimulatorSession>
+  ): Promise<SimulatorSession> {
+    const response = await APIClient.put<{ simulatorSession: SimulatorSession }>(
+      `${this.endpoint}/simulator-sessions/${sessionId}`,
+      updates
+    );
     return response.simulatorSession;
   }
 
   // Proficiency Checks
   static async getAllProficiencyChecks(): Promise<ProficiencyCheck[]> {
     try {
-      const response = await APIClient.get<{ proficiencyChecks?: ProficiencyCheck[] }>(`${this.endpoint}/proficiency-checks`);
+      const response = await APIClient.get<{ proficiencyChecks?: ProficiencyCheck[] }>(
+        `${this.endpoint}/proficiency-checks`
+      );
       return response.proficiencyChecks || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async getPilotProficiencyChecks(pilotId: string): Promise<ProficiencyCheck[]> {
     try {
-      const response = await APIClient.get<{ proficiencyChecks?: ProficiencyCheck[] }>(`${this.endpoint}/pilots/${pilotId}/proficiency-checks`);
+      const response = await APIClient.get<{ proficiencyChecks?: ProficiencyCheck[] }>(
+        `${this.endpoint}/pilots/${pilotId}/proficiency-checks`
+      );
       return response.proficiencyChecks || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
-  static async createProficiencyCheck(checkData: Partial<ProficiencyCheck>): Promise<ProficiencyCheck> {
-    const response = await APIClient.post<{ proficiencyCheck: ProficiencyCheck }>(`${this.endpoint}/proficiency-checks`, checkData);
+  static async createProficiencyCheck(
+    checkData: Partial<ProficiencyCheck>
+  ): Promise<ProficiencyCheck> {
+    const response = await APIClient.post<{ proficiencyCheck: ProficiencyCheck }>(
+      `${this.endpoint}/proficiency-checks`,
+      checkData
+    );
     return response.proficiencyCheck;
   }
 
   static async updateFlightHours(pilotId: string, hours: Partial<any>): Promise<PilotProfile> {
-    const response = await APIClient.put<{ pilot: PilotProfile }>(`${this.endpoint}/pilots/${pilotId}/flight-hours`, hours);
+    const response = await APIClient.put<{ pilot: PilotProfile }>(
+      `${this.endpoint}/pilots/${pilotId}/flight-hours`,
+      hours
+    );
     return response.pilot;
   }
 }
@@ -290,29 +387,44 @@ export class GroundOperationsService {
 
   static async getAllGroundStaff(): Promise<GroundStaffMember[]> {
     try {
-      const response = await APIClient.get<{ groundStaff?: GroundStaffMember[] }>(`${this.endpoint}/staff`);
+      const response = await APIClient.get<{ groundStaff?: GroundStaffMember[] }>(
+        `${this.endpoint}/staff`
+      );
       return response.groundStaff || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async getGroundStaffById(staffId: string): Promise<GroundStaffMember | null> {
     try {
-      const response = await APIClient.get<{ groundStaff?: GroundStaffMember }>(`${this.endpoint}/staff/${staffId}`);
+      const response = await APIClient.get<{ groundStaff?: GroundStaffMember }>(
+        `${this.endpoint}/staff/${staffId}`
+      );
       return response.groundStaff || null;
-    } catch (error) {
-            return null;
+    } catch (_error) {
+      return null;
     }
   }
 
-  static async createGroundStaff(staffData: Partial<GroundStaffMember>): Promise<GroundStaffMember> {
-    const response = await APIClient.post<{ groundStaff: GroundStaffMember }>(`${this.endpoint}/staff`, staffData);
+  static async createGroundStaff(
+    staffData: Partial<GroundStaffMember>
+  ): Promise<GroundStaffMember> {
+    const response = await APIClient.post<{ groundStaff: GroundStaffMember }>(
+      `${this.endpoint}/staff`,
+      staffData
+    );
     return response.groundStaff;
   }
 
-  static async updateGroundStaff(staffId: string, updates: Partial<GroundStaffMember>): Promise<GroundStaffMember> {
-    const response = await APIClient.put<{ groundStaff: GroundStaffMember }>(`${this.endpoint}/staff/${staffId}`, updates);
+  static async updateGroundStaff(
+    staffId: string,
+    updates: Partial<GroundStaffMember>
+  ): Promise<GroundStaffMember> {
+    const response = await APIClient.put<{ groundStaff: GroundStaffMember }>(
+      `${this.endpoint}/staff/${staffId}`,
+      updates
+    );
     return response.groundStaff;
   }
 
@@ -324,58 +436,86 @@ export class GroundOperationsService {
   // Turnaround Operations
   static async getAllTurnarounds(): Promise<TurnaroundAssignment[]> {
     try {
-      const response = await APIClient.get<{ turnarounds?: TurnaroundAssignment[] }>(`${this.endpoint}/turnarounds`);
+      const response = await APIClient.get<{ turnarounds?: TurnaroundAssignment[] }>(
+        `${this.endpoint}/turnarounds`
+      );
       return response.turnarounds || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async getTurnaroundById(assignmentId: string): Promise<TurnaroundAssignment | null> {
     try {
-      const response = await APIClient.get<{ turnaround?: TurnaroundAssignment }>(`${this.endpoint}/turnarounds/${assignmentId}`);
+      const response = await APIClient.get<{ turnaround?: TurnaroundAssignment }>(
+        `${this.endpoint}/turnarounds/${assignmentId}`
+      );
       return response.turnaround || null;
-    } catch (error) {
-            return null;
+    } catch (_error) {
+      return null;
     }
   }
 
-  static async createTurnaround(turnaroundData: Partial<TurnaroundAssignment>): Promise<TurnaroundAssignment> {
-    const response = await APIClient.post<{ turnaround: TurnaroundAssignment }>(`${this.endpoint}/turnarounds`, turnaroundData);
+  static async createTurnaround(
+    turnaroundData: Partial<TurnaroundAssignment>
+  ): Promise<TurnaroundAssignment> {
+    const response = await APIClient.post<{ turnaround: TurnaroundAssignment }>(
+      `${this.endpoint}/turnarounds`,
+      turnaroundData
+    );
     return response.turnaround;
   }
 
-  static async updateTurnaround(assignmentId: string, updates: Partial<TurnaroundAssignment>): Promise<TurnaroundAssignment> {
-    const response = await APIClient.put<{ turnaround: TurnaroundAssignment }>(`${this.endpoint}/turnarounds/${assignmentId}`, updates);
+  static async updateTurnaround(
+    assignmentId: string,
+    updates: Partial<TurnaroundAssignment>
+  ): Promise<TurnaroundAssignment> {
+    const response = await APIClient.put<{ turnaround: TurnaroundAssignment }>(
+      `${this.endpoint}/turnarounds/${assignmentId}`,
+      updates
+    );
     return response.turnaround;
   }
 
   // Ground Equipment
   static async getAllEquipment(): Promise<GroundEquipment[]> {
     try {
-      const response = await APIClient.get<{ equipment?: GroundEquipment[] }>(`${this.endpoint}/equipment`);
+      const response = await APIClient.get<{ equipment?: GroundEquipment[] }>(
+        `${this.endpoint}/equipment`
+      );
       return response.equipment || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async getEquipmentById(equipmentId: string): Promise<GroundEquipment | null> {
     try {
-      const response = await APIClient.get<{ equipment?: GroundEquipment }>(`${this.endpoint}/equipment/${equipmentId}`);
+      const response = await APIClient.get<{ equipment?: GroundEquipment }>(
+        `${this.endpoint}/equipment/${equipmentId}`
+      );
       return response.equipment || null;
-    } catch (error) {
-            return null;
+    } catch (_error) {
+      return null;
     }
   }
 
   static async createEquipment(equipmentData: Partial<GroundEquipment>): Promise<GroundEquipment> {
-    const response = await APIClient.post<{ equipment: GroundEquipment }>(`${this.endpoint}/equipment`, equipmentData);
+    const response = await APIClient.post<{ equipment: GroundEquipment }>(
+      `${this.endpoint}/equipment`,
+      equipmentData
+    );
     return response.equipment;
   }
 
-  static async updateEquipment(equipmentId: string, updates: Partial<GroundEquipment>): Promise<GroundEquipment> {
-    const response = await APIClient.put<{ equipment: GroundEquipment }>(`${this.endpoint}/equipment/${equipmentId}`, updates);
+  static async updateEquipment(
+    equipmentId: string,
+    updates: Partial<GroundEquipment>
+  ): Promise<GroundEquipment> {
+    const response = await APIClient.put<{ equipment: GroundEquipment }>(
+      `${this.endpoint}/equipment/${equipmentId}`,
+      updates
+    );
     return response.equipment;
   }
 
@@ -385,65 +525,98 @@ export class GroundOperationsService {
   }
 
   static async recordUsage(equipmentId: string, usageData: any): Promise<GroundEquipment> {
-    const response = await APIClient.post<{ equipment: GroundEquipment }>(`${this.endpoint}/equipment/${equipmentId}/usage`, usageData);
+    const response = await APIClient.post<{ equipment: GroundEquipment }>(
+      `${this.endpoint}/equipment/${equipmentId}/usage`,
+      usageData
+    );
     return response.equipment;
   }
 
   // Ramp Handling Procedures
   static async getAllProcedures(): Promise<RampHandlingProcedure[]> {
     try {
-      const response = await APIClient.get<{ procedures?: RampHandlingProcedure[] }>(`${this.endpoint}/procedures`);
+      const response = await APIClient.get<{ procedures?: RampHandlingProcedure[] }>(
+        `${this.endpoint}/procedures`
+      );
       return response.procedures || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async getProcedureById(procedureId: string): Promise<RampHandlingProcedure | null> {
     try {
-      const response = await APIClient.get<{ procedure?: RampHandlingProcedure }>(`${this.endpoint}/procedures/${procedureId}`);
+      const response = await APIClient.get<{ procedure?: RampHandlingProcedure }>(
+        `${this.endpoint}/procedures/${procedureId}`
+      );
       return response.procedure || null;
-    } catch (error) {
-            return null;
+    } catch (_error) {
+      return null;
     }
   }
 
-  static async createProcedure(procedureData: Partial<RampHandlingProcedure>): Promise<RampHandlingProcedure> {
-    const response = await APIClient.post<{ procedure: RampHandlingProcedure }>(`${this.endpoint}/procedures`, procedureData);
+  static async createProcedure(
+    procedureData: Partial<RampHandlingProcedure>
+  ): Promise<RampHandlingProcedure> {
+    const response = await APIClient.post<{ procedure: RampHandlingProcedure }>(
+      `${this.endpoint}/procedures`,
+      procedureData
+    );
     return response.procedure;
   }
 
-  static async updateProcedure(procedureId: string, updates: Partial<RampHandlingProcedure>): Promise<RampHandlingProcedure> {
-    const response = await APIClient.put<{ procedure: RampHandlingProcedure }>(`${this.endpoint}/procedures/${procedureId}`, updates);
+  static async updateProcedure(
+    procedureId: string,
+    updates: Partial<RampHandlingProcedure>
+  ): Promise<RampHandlingProcedure> {
+    const response = await APIClient.put<{ procedure: RampHandlingProcedure }>(
+      `${this.endpoint}/procedures/${procedureId}`,
+      updates
+    );
     return response.procedure;
   }
 
   // Safety Compliance
   static async getAllSafetyCompliance(): Promise<SafetyCompliance[]> {
     try {
-      const response = await APIClient.get<{ safetyCompliance?: SafetyCompliance[] }>(`${this.endpoint}/safety-compliance`);
+      const response = await APIClient.get<{ safetyCompliance?: SafetyCompliance[] }>(
+        `${this.endpoint}/safety-compliance`
+      );
       return response.safetyCompliance || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async getSafetyComplianceById(complianceId: string): Promise<SafetyCompliance | null> {
     try {
-      const response = await APIClient.get<{ safetyCompliance?: SafetyCompliance }>(`${this.endpoint}/safety-compliance/${complianceId}`);
+      const response = await APIClient.get<{ safetyCompliance?: SafetyCompliance }>(
+        `${this.endpoint}/safety-compliance/${complianceId}`
+      );
       return response.safetyCompliance || null;
-    } catch (error) {
-            return null;
+    } catch (_error) {
+      return null;
     }
   }
 
-  static async createSafetyCompliance(complianceData: Partial<SafetyCompliance>): Promise<SafetyCompliance> {
-    const response = await APIClient.post<{ safetyCompliance: SafetyCompliance }>(`${this.endpoint}/safety-compliance`, complianceData);
+  static async createSafetyCompliance(
+    complianceData: Partial<SafetyCompliance>
+  ): Promise<SafetyCompliance> {
+    const response = await APIClient.post<{ safetyCompliance: SafetyCompliance }>(
+      `${this.endpoint}/safety-compliance`,
+      complianceData
+    );
     return response.safetyCompliance;
   }
 
-  static async updateSafetyCompliance(complianceId: string, updates: Partial<SafetyCompliance>): Promise<SafetyCompliance> {
-    const response = await APIClient.put<{ safetyCompliance: SafetyCompliance }>(`${this.endpoint}/safety-compliance/${complianceId}`, updates);
+  static async updateSafetyCompliance(
+    complianceId: string,
+    updates: Partial<SafetyCompliance>
+  ): Promise<SafetyCompliance> {
+    const response = await APIClient.put<{ safetyCompliance: SafetyCompliance }>(
+      `${this.endpoint}/safety-compliance/${complianceId}`,
+      updates
+    );
     return response.safetyCompliance;
   }
 }
@@ -459,8 +632,8 @@ export class AviationSettingsService {
     try {
       const response = await APIClient.get<{ settings?: AviationSettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
-            return null;
+    } catch (_error) {
+      return null;
     }
   }
 
@@ -477,12 +650,12 @@ export class AviationSettingsService {
 export class AlertsService {
   private static endpoint = '/aviation/alerts';
 
-  static async getAllAlerts(): Promise<Alert[]> {
+  static async getAll(): Promise<Alert[]> {
     try {
       const response = await APIClient.get<{ alerts?: Alert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
@@ -497,12 +670,18 @@ export class AlertsService {
   }
 
   static async acknowledgeAlert(alertId: string, userId: string): Promise<Alert> {
-    const response = await APIClient.post<{ alert: Alert }>(`${this.endpoint}/${alertId}/acknowledge`, { userId });
+    const response = await APIClient.post<{ alert: Alert }>(
+      `${this.endpoint}/${alertId}/acknowledge`,
+      { userId }
+    );
     return response.alert;
   }
 
   static async resolveAlert(alertId: string): Promise<Alert> {
-    const response = await APIClient.post<{ alert: Alert }>(`${this.endpoint}/${alertId}/resolve`, {});
+    const response = await APIClient.post<{ alert: Alert }>(
+      `${this.endpoint}/${alertId}/resolve`,
+      {}
+    );
     return response.alert;
   }
 }

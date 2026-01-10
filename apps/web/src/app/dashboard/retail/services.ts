@@ -1,5 +1,12 @@
 import { APIClient } from '@/lib/api-client';
-import type { Store, CommissionPlan, SalesCommission, SeasonalHire, RetailSettings, RetailAlert } from './types';
+import type {
+  Store,
+  CommissionPlan,
+  SalesCommission,
+  SeasonalHire,
+  RetailSettings,
+  RetailAlert,
+} from './types';
 
 export class StoreOperationsService {
   private static endpoint = '/industry-retail/stores';
@@ -8,8 +15,8 @@ export class StoreOperationsService {
     try {
       const response = await APIClient.get<{ stores?: Store[] }>(this.endpoint);
       return response.stores || [];
-    } catch (error) {
-            return [];
+    } catch (_) {
+      return [];
     }
   }
 
@@ -31,8 +38,8 @@ export class CommissionService {
     try {
       const response = await APIClient.get<{ plans?: CommissionPlan[] }>(`${this.endpoint}/plans`);
       return response.plans || [];
-    } catch (error) {
-            return [];
+    } catch (_) {
+      return [];
     }
   }
 
@@ -45,8 +52,8 @@ export class CommissionService {
     try {
       const response = await APIClient.get<{ commissions?: SalesCommission[] }>(this.endpoint);
       return response.commissions || [];
-    } catch (error) {
-            return [];
+    } catch (_) {
+      return [];
     }
   }
 
@@ -55,8 +62,14 @@ export class CommissionService {
     return response.commission;
   }
 
-  static async updateCommission(commissionId: string, updates: Partial<SalesCommission>): Promise<SalesCommission> {
-    const response = await APIClient.put<{ commission: SalesCommission }>(`${this.endpoint}/${commissionId}`, updates);
+  static async updateCommission(
+    commissionId: string,
+    updates: Partial<SalesCommission>
+  ): Promise<SalesCommission> {
+    const response = await APIClient.put<{ commission: SalesCommission }>(
+      `${this.endpoint}/${commissionId}`,
+      updates
+    );
     return response.commission;
   }
 }
@@ -68,8 +81,8 @@ export class SeasonalHiringService {
     try {
       const response = await APIClient.get<{ hires?: SeasonalHire[] }>(this.endpoint);
       return response.hires || [];
-    } catch (error) {
-            return [];
+    } catch (_) {
+      return [];
     }
   }
 
@@ -79,7 +92,10 @@ export class SeasonalHiringService {
   }
 
   static async updateHire(hireId: string, updates: Partial<SeasonalHire>): Promise<SeasonalHire> {
-    const response = await APIClient.put<{ hire: SeasonalHire }>(`${this.endpoint}/${hireId}`, updates);
+    const response = await APIClient.put<{ hire: SeasonalHire }>(
+      `${this.endpoint}/${hireId}`,
+      updates
+    );
     return response.hire;
   }
 }
@@ -91,8 +107,8 @@ export class RetailSettingsService {
     try {
       const response = await APIClient.get<{ settings?: RetailSettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
-            return null;
+    } catch (_) {
+      return null;
     }
   }
 
@@ -105,12 +121,12 @@ export class RetailSettingsService {
 export class AlertsService {
   private static endpoint = '/industry-retail/alerts';
 
-  static async getAllAlerts(): Promise<RetailAlert[]> {
+  static async getAll(): Promise<RetailAlert[]> {
     try {
       const response = await APIClient.get<{ alerts?: RetailAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
-            return [];
+    } catch (_) {
+      return [];
     }
   }
 

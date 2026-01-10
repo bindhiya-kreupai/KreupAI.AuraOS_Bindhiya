@@ -1,5 +1,12 @@
 import { APIClient } from '@/lib/api-client';
-import type { HealthcareProvider, NurseSchedule, LocumProvider, LocumAssignment, HealthcareSettings, HealthcareAlert } from './types';
+import type {
+  HealthcareProvider,
+  NurseSchedule,
+  LocumProvider,
+  LocumAssignment,
+  HealthcareSettings,
+  HealthcareAlert,
+} from './types';
 
 export class CredentialingService {
   private static endpoint = '/industry-healthcare/credentialing';
@@ -8,17 +15,19 @@ export class CredentialingService {
     try {
       const response = await APIClient.get<{ providers?: HealthcareProvider[] }>(this.endpoint);
       return response.providers || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async getProviderById(id: string): Promise<HealthcareProvider | null> {
     try {
-      const response = await APIClient.get<{ provider?: HealthcareProvider }>(`${this.endpoint}/${id}`);
+      const response = await APIClient.get<{ provider?: HealthcareProvider }>(
+        `${this.endpoint}/${id}`
+      );
       return response.provider || null;
-    } catch (error) {
-            return null;
+    } catch (_error) {
+      return null;
     }
   }
 
@@ -27,8 +36,14 @@ export class CredentialingService {
     return response.provider;
   }
 
-  static async updateProvider(id: string, updates: Partial<HealthcareProvider>): Promise<HealthcareProvider> {
-    const response = await APIClient.put<{ provider: HealthcareProvider }>(`${this.endpoint}/${id}`, updates);
+  static async updateProvider(
+    id: string,
+    updates: Partial<HealthcareProvider>
+  ): Promise<HealthcareProvider> {
+    const response = await APIClient.put<{ provider: HealthcareProvider }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.provider;
   }
 }
@@ -40,8 +55,8 @@ export class NurseRosteringService {
     try {
       const response = await APIClient.get<{ schedules?: NurseSchedule[] }>(this.endpoint);
       return response.schedules || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
@@ -49,8 +64,8 @@ export class NurseRosteringService {
     try {
       const response = await APIClient.get<{ schedule?: NurseSchedule }>(`${this.endpoint}/${id}`);
       return response.schedule || null;
-    } catch (error) {
-            return null;
+    } catch (_error) {
+      return null;
     }
   }
 
@@ -60,7 +75,10 @@ export class NurseRosteringService {
   }
 
   static async updateSchedule(id: string, updates: Partial<NurseSchedule>): Promise<NurseSchedule> {
-    const response = await APIClient.put<{ schedule: NurseSchedule }>(`${this.endpoint}/${id}`, updates);
+    const response = await APIClient.put<{ schedule: NurseSchedule }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.schedule;
   }
 }
@@ -70,43 +88,61 @@ export class LocumManagementService {
 
   static async getAllLocumProviders(): Promise<LocumProvider[]> {
     try {
-      const response = await APIClient.get<{ providers?: LocumProvider[] }>(`${this.endpoint}/providers`);
+      const response = await APIClient.get<{ providers?: LocumProvider[] }>(
+        `${this.endpoint}/providers`
+      );
       return response.providers || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async getLocumProviderById(id: string): Promise<LocumProvider | null> {
     try {
-      const response = await APIClient.get<{ provider?: LocumProvider }>(`${this.endpoint}/providers/${id}`);
+      const response = await APIClient.get<{ provider?: LocumProvider }>(
+        `${this.endpoint}/providers/${id}`
+      );
       return response.provider || null;
-    } catch (error) {
-            return null;
+    } catch (_error) {
+      return null;
     }
   }
 
   static async createLocumProvider(data: Partial<LocumProvider>): Promise<LocumProvider> {
-    const response = await APIClient.post<{ provider: LocumProvider }>(`${this.endpoint}/providers`, data);
+    const response = await APIClient.post<{ provider: LocumProvider }>(
+      `${this.endpoint}/providers`,
+      data
+    );
     return response.provider;
   }
 
-  static async updateLocumProvider(id: string, updates: Partial<LocumProvider>): Promise<LocumProvider> {
-    const response = await APIClient.put<{ provider: LocumProvider }>(`${this.endpoint}/providers/${id}`, updates);
+  static async updateLocumProvider(
+    id: string,
+    updates: Partial<LocumProvider>
+  ): Promise<LocumProvider> {
+    const response = await APIClient.put<{ provider: LocumProvider }>(
+      `${this.endpoint}/providers/${id}`,
+      updates
+    );
     return response.provider;
   }
 
   static async getAllAssignments(): Promise<LocumAssignment[]> {
     try {
-      const response = await APIClient.get<{ assignments?: LocumAssignment[] }>(`${this.endpoint}/assignments`);
+      const response = await APIClient.get<{ assignments?: LocumAssignment[] }>(
+        `${this.endpoint}/assignments`
+      );
       return response.assignments || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 
   static async createAssignment(data: Partial<LocumAssignment>): Promise<LocumAssignment> {
-    const response = await APIClient.post<{ assignment: LocumAssignment }>(`${this.endpoint}/assignments`, data);
+    const response = await APIClient.post<{ assignment: LocumAssignment }>(
+      `${this.endpoint}/assignments`,
+      data
+    );
     return response.assignment;
   }
 }
@@ -118,8 +154,8 @@ export class HealthcareSettingsService {
     try {
       const response = await APIClient.get<{ settings?: HealthcareSettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
-            return null;
+    } catch (_error) {
+      return null;
     }
   }
 
@@ -132,12 +168,12 @@ export class HealthcareSettingsService {
 export class AlertsService {
   private static endpoint = '/industry-healthcare/alerts';
 
-  static async getAllAlerts(): Promise<HealthcareAlert[]> {
+  static async getAll(): Promise<HealthcareAlert[]> {
     try {
       const response = await APIClient.get<{ alerts?: HealthcareAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
-            return [];
+    } catch (_error) {
+      return [];
     }
   }
 

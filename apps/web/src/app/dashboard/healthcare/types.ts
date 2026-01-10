@@ -6,7 +6,13 @@ export type StaffingStatus = 'adequate' | 'understaffed' | 'overstaffed' | 'crit
 export interface HealthcareProvider {
   providerId: string;
   providerNumber: string;
-  personalInfo: { firstName: string; lastName: string; dateOfBirth: string; email: string; phone: string; };
+  personalInfo: {
+    firstName: string;
+    lastName: string;
+    dateOfBirth: string;
+    email: string;
+    phone: string;
+  };
   specialty: string;
   credentials: Credential[];
   licenses: ProfessionalLicense[];
@@ -270,10 +276,27 @@ export interface PerformanceReview {
 export interface HealthcareSettings {
   settingsId: string;
   organizationId: string;
-  credentialingSettings: { verificationRequired: boolean; renewalReminderDays: number; expiryAlertDays: number; };
-  rosteringSettings: { advanceSchedulingDays: number; shiftSwapAllowed: boolean; overtimeThreshold: number; };
-  locumSettings: { minimumNoticeDays: number; cancellationPenalty: number; performanceReviewRequired: boolean; };
-  notifications: { credentialExpiry: boolean; schedulePublished: boolean; shiftReminders: boolean; timesheetDue: boolean; };
+  credentialingSettings: {
+    verificationRequired: boolean;
+    renewalReminderDays: number;
+    expiryAlertDays: number;
+  };
+  rosteringSettings: {
+    advanceSchedulingDays: number;
+    shiftSwapAllowed: boolean;
+    overtimeThreshold: number;
+  };
+  locumSettings: {
+    minimumNoticeDays: number;
+    cancellationPenalty: number;
+    performanceReviewRequired: boolean;
+  };
+  notifications: {
+    credentialExpiry: boolean;
+    schedulePublished: boolean;
+    shiftReminders: boolean;
+    timesheetDue: boolean;
+  };
   updatedAt: string;
 }
 
@@ -283,7 +306,14 @@ export interface HealthcareAlert {
   severity: 'low' | 'medium' | 'high' | 'critical';
   title: string;
   message: string;
-  affectedEntity: { entityType: string; entityId: string; entityName: string; };
+  affectedEntity: { entityType: string; entityId: string; entityName: string };
   status: 'active' | 'acknowledged' | 'resolved';
   createdAt: string;
+}
+
+export interface Toast {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+  duration?: number;
 }

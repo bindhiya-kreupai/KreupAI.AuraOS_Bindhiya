@@ -3,9 +3,8 @@
  * Comprehensive sample data for Cabin Crew, Pilot Training, and Ground Operations
  */
 
-import {
+import type {
   CrewMemberProfile,
-  FlightAssignment,
   DutyTime,
   RestPeriod,
   PilotProfile,
@@ -17,7 +16,7 @@ import {
   GroundEquipment,
   RampHandlingProcedure,
   SafetyCompliance,
-  AviationSettings
+  AviationSettings,
 } from './types';
 
 // ==================== Cabin Crew Sample Data ====================
@@ -40,14 +39,14 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
         name: 'John Martinez',
         relationship: 'Spouse',
         phone: '+1-555-0102',
-        email: 'john.martinez@email.com'
-      }
+        email: 'john.martinez@email.com',
+      },
     },
     crewType: 'purser',
     seniority: {
       hireDate: '2015-03-10',
       seniorityNumber: 245,
-      yearsOfService: 9
+      yearsOfService: 9,
     },
     qualifications: [
       {
@@ -59,7 +58,7 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
         expiryDate: '2025-06-14',
         certifyingAuthority: 'FAA',
         status: 'valid',
-        documents: []
+        documents: [],
       },
       {
         qualificationId: 'qual-002',
@@ -69,8 +68,8 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
         expiryDate: '2025-01-19',
         certifyingAuthority: 'FAA',
         status: 'valid',
-        documents: []
-      }
+        documents: [],
+      },
     ],
     languages: [
       {
@@ -78,7 +77,7 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
         languageName: 'English',
         proficiencyLevel: 'native',
         certified: true,
-        certificationDate: '2015-03-10'
+        certificationDate: '2015-03-10',
       },
       {
         languageCode: 'es',
@@ -86,7 +85,7 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
         proficiencyLevel: 'advanced',
         certified: true,
         certificationDate: '2018-07-15',
-        certificationExpiry: '2026-07-14'
+        certificationExpiry: '2026-07-14',
       },
       {
         languageCode: 'fr',
@@ -94,8 +93,8 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
         proficiencyLevel: 'intermediate',
         certified: true,
         certificationDate: '2019-09-20',
-        certificationExpiry: '2027-09-19'
-      }
+        certificationExpiry: '2027-09-19',
+      },
     ],
     certifications: [
       {
@@ -109,7 +108,7 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
         renewalRequired: true,
         nextRenewalDate: '2026-01-15',
         status: 'valid',
-        documents: []
+        documents: [],
       },
       {
         certificationId: 'cert-002',
@@ -122,8 +121,8 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
         renewalRequired: true,
         nextRenewalDate: '2025-10-10',
         status: 'expiring_soon',
-        documents: []
-      }
+        documents: [],
+      },
     ],
     medicalStatus: {
       medicalId: 'med-001',
@@ -137,8 +136,8 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
       vaccinationStatus: {
         yellowFever: { date: '2022-03-15', expiryDate: '2032-03-14' },
         covid19: { doses: 3, lastDoseDate: '2023-09-10', boosterDate: '2023-09-10' },
-        hepatitisB: { date: '2015-04-01', status: 'complete' }
-      }
+        hepatitisB: { date: '2015-04-01', status: 'complete' },
+      },
     },
     dutyStatus: 'available',
     preferences: {
@@ -149,31 +148,43 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
       bidPreferences: [
         { preferenceType: 'route', value: 'JFK-LHR', priority: 1 },
         { preferenceType: 'layover', value: 'London', priority: 2 },
-        { preferenceType: 'position', value: 'purser', priority: 3 }
-      ]
+        { preferenceType: 'position', value: 'purser', priority: 3 },
+      ],
     },
     performanceRating: {
       ratingId: 'rating-001',
       reviewPeriod: { startDate: '2024-01-01', endDate: '2024-06-30' },
       overallRating: 4.7,
       competencies: [
-        { competencyName: 'Safety Procedures', rating: 5, comments: 'Excellent knowledge and execution' },
-        { competencyName: 'Customer Service', rating: 5, comments: 'Outstanding passenger feedback' },
+        {
+          competencyName: 'Safety Procedures',
+          rating: 5,
+          comments: 'Excellent knowledge and execution',
+        },
+        {
+          competencyName: 'Customer Service',
+          rating: 5,
+          comments: 'Outstanding passenger feedback',
+        },
         { competencyName: 'Team Leadership', rating: 4.5, comments: 'Strong leadership as purser' },
-        { competencyName: 'Communication', rating: 4.5 }
+        { competencyName: 'Communication', rating: 4.5 },
       ],
-      strengths: ['Exceptional customer service', 'Strong safety knowledge', 'Multilingual capabilities'],
+      strengths: [
+        'Exceptional customer service',
+        'Strong safety knowledge',
+        'Multilingual capabilities',
+      ],
       areasForImprovement: ['Continue developing leadership skills'],
       commendations: 5,
       incidents: 0,
       customerFeedbackScore: 4.8,
       reviewedBy: 'Cabin Services Manager',
       reviewDate: '2024-07-15',
-      comments: 'Outstanding crew member, recommended for training captain role'
+      comments: 'Outstanding crew member, recommended for training captain role',
     },
     status: 'active',
     createdAt: '2015-03-10T00:00:00Z',
-    updatedAt: '2024-12-13T10:00:00Z'
+    updatedAt: '2024-12-13T10:00:00Z',
   },
   {
     crewId: 'crew-002',
@@ -191,14 +202,14 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
       emergencyContact: {
         name: 'Linda Chen',
         relationship: 'Mother',
-        phone: '+1-555-0202'
-      }
+        phone: '+1-555-0202',
+      },
     },
     crewType: 'senior_flight_attendant',
     seniority: {
       hireDate: '2018-09-15',
       seniorityNumber: 892,
-      yearsOfService: 6
+      yearsOfService: 6,
     },
     qualifications: [
       {
@@ -210,23 +221,23 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
         expiryDate: '2026-03-09',
         certifyingAuthority: 'FAA',
         status: 'valid',
-        documents: []
-      }
+        documents: [],
+      },
     ],
     languages: [
       {
         languageCode: 'en',
         languageName: 'English',
         proficiencyLevel: 'native',
-        certified: true
+        certified: true,
       },
       {
         languageCode: 'zh',
         languageName: 'Mandarin',
         proficiencyLevel: 'native',
         certified: true,
-        certificationDate: '2018-09-15'
-      }
+        certificationDate: '2018-09-15',
+      },
     ],
     certifications: [
       {
@@ -239,8 +250,8 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
         expiryDate: '2026-05-19',
         renewalRequired: true,
         status: 'valid',
-        documents: []
-      }
+        documents: [],
+      },
     ],
     medicalStatus: {
       medicalId: 'med-002',
@@ -252,8 +263,8 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
       fitnessStatus: 'fit',
       nextExamDate: '2025-09-15',
       vaccinationStatus: {
-        covid19: { doses: 2, lastDoseDate: '2023-06-01' }
-      }
+        covid19: { doses: 2, lastDoseDate: '2023-06-01' },
+      },
     },
     dutyStatus: 'in_flight',
     currentAssignment: {
@@ -268,7 +279,7 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
         scheduledTime: '2024-12-13T14:00:00Z',
         actualTime: '2024-12-13T14:05:00Z',
         gate: 'A12',
-        terminal: 'T1'
+        terminal: 'T1',
       },
       arrival: {
         airportCode: 'NRT',
@@ -277,7 +288,7 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
         country: 'Japan',
         scheduledTime: '2024-12-14T18:00:00Z',
         gate: 'G5',
-        terminal: 'T1'
+        terminal: 'T1',
       },
       aircraftType: 'B777-300ER',
       aircraftRegistration: 'N12345',
@@ -290,20 +301,20 @@ export const sampleCrewMembers: CrewMemberProfile[] = [
         cabinDirector: 'crew-001',
         pursers: ['crew-003'],
         flightAttendants: ['crew-002', 'crew-004', 'crew-005', 'crew-006', 'crew-007', 'crew-008'],
-        totalCrew: 9
+        totalCrew: 9,
       },
       briefingTime: '2024-12-13T11:30:00Z',
-      briefingLocation: 'Crew Room A'
+      briefingLocation: 'Crew Room A',
     },
     preferences: {
       preferredBases: ['LAX', 'SFO'],
       preferredAircraftTypes: ['A350', 'B777'],
-      bidPreferences: []
+      bidPreferences: [],
     },
     status: 'active',
     createdAt: '2018-09-15T00:00:00Z',
-    updatedAt: '2024-12-13T12:00:00Z'
-  }
+    updatedAt: '2024-12-13T12:00:00Z',
+  },
 ];
 
 export const sampleDutyTimes: DutyTime[] = [
@@ -315,23 +326,23 @@ export const sampleDutyTimes: DutyTime[] = [
     dutyPeriod: {
       reportTime: '2024-12-10T05:00:00Z',
       releaseTime: '2024-12-10T18:30:00Z',
-      totalDutyHours: 13.5
+      totalDutyHours: 13.5,
     },
     flightTime: {
       blockOff: '2024-12-10T07:00:00Z',
       blockOn: '2024-12-10T17:00:00Z',
-      totalFlightHours: 10.0
+      totalFlightHours: 10.0,
     },
     sectors: 2,
     regulations: {
       maxDutyHours: 14,
       maxFlightHours: 9,
       minRestHours: 10,
-      regulatoryBody: 'FAA'
+      regulatoryBody: 'FAA',
     },
     compliance: {
       withinLimits: true,
-      warnings: ['Flight hours exceeded by 1 hour - requires special authorization']
+      warnings: ['Flight hours exceeded by 1 hour - requires special authorization'],
     },
     fatigueSelfAssessment: {
       assessmentId: 'fatigue-001',
@@ -339,10 +350,10 @@ export const sampleDutyTimes: DutyTime[] = [
       fatigueLevel: 2,
       sleepHoursLast24: 7,
       sleepQuality: 'good',
-      reportedBy: 'crew-001'
+      reportedBy: 'crew-001',
     },
-    createdAt: '2024-12-10T18:30:00Z'
-  }
+    createdAt: '2024-12-10T18:30:00Z',
+  },
 ];
 
 export const sampleRestPeriods: RestPeriod[] = [
@@ -364,15 +375,15 @@ export const sampleRestPeriods: RestPeriod[] = [
         checkIn: '2024-12-10T19:00:00Z',
         checkOut: '2024-12-11T11:00:00Z',
         roomType: 'Standard Queen',
-        transportProvided: true
-      }
+        transportProvided: true,
+      },
     },
     requiredHours: 12,
     actualHours: 17.5,
     compliant: true,
     nextDutyTime: '2024-12-11T13:00:00Z',
-    createdAt: '2024-12-10T18:30:00Z'
-  }
+    createdAt: '2024-12-10T18:30:00Z',
+  },
 ];
 
 // ==================== Pilot Training Sample Data ====================
@@ -387,7 +398,7 @@ export const samplePilots: PilotProfile[] = [
       dateOfBirth: '1985-03-12',
       nationality: 'USA',
       email: 'james.thompson@airline.com',
-      phone: '+1-555-0301'
+      phone: '+1-555-0301',
     },
     rank: 'captain',
     license: {
@@ -396,7 +407,7 @@ export const samplePilots: PilotProfile[] = [
       issuingAuthority: 'FAA',
       issueDate: '2012-06-15',
       ratings: ['Multi-Engine', 'Instrument', 'Type Rating B777'],
-      endorsements: ['High Altitude', 'ETOPS']
+      endorsements: ['High Altitude', 'ETOPS'],
     },
     typeRatings: [
       {
@@ -405,7 +416,7 @@ export const samplePilots: PilotProfile[] = [
         aircraftCategory: 'jet',
         issueDate: '2015-08-20',
         status: 'valid',
-        seats: 'both'
+        seats: 'both',
       },
       {
         ratingId: 'rating-002',
@@ -413,8 +424,8 @@ export const samplePilots: PilotProfile[] = [
         aircraftCategory: 'jet',
         issueDate: '2020-11-15',
         status: 'valid',
-        seats: 'both'
-      }
+        seats: 'both',
+      },
     ],
     medicalCertificate: {
       medicalId: 'med-pilot-001',
@@ -423,7 +434,7 @@ export const samplePilots: PilotProfile[] = [
       expiryDate: '2025-04-05',
       examiner: 'Dr. Aviation Medical Center',
       fitnessStatus: 'fit',
-      nextExamDate: '2025-03-05'
+      nextExamDate: '2025-03-05',
     },
     flightHours: {
       totalHours: 12500,
@@ -439,9 +450,9 @@ export const samplePilots: PilotProfile[] = [
       byAircraftType: {
         'B777-300ER': 6800,
         'B787-9': 3200,
-        'A320': 2500
+        A320: 2500,
       },
-      lastUpdated: '2024-12-13T00:00:00Z'
+      lastUpdated: '2024-12-13T00:00:00Z',
     },
     trainingRecords: [],
     checkResults: [],
@@ -452,12 +463,12 @@ export const samplePilots: PilotProfile[] = [
         description: 'Extended Twin Operations',
         issueDate: '2016-05-20',
         expiryDate: '2026-05-19',
-        status: 'valid'
-      }
+        status: 'valid',
+      },
     ],
     status: 'active',
     createdAt: '2010-04-15T00:00:00Z',
-    updatedAt: '2024-12-13T00:00:00Z'
+    updatedAt: '2024-12-13T00:00:00Z',
   },
   {
     pilotId: 'pilot-002',
@@ -468,7 +479,7 @@ export const samplePilots: PilotProfile[] = [
       dateOfBirth: '1990-11-08',
       nationality: 'USA',
       email: 'emily.rodriguez@airline.com',
-      phone: '+1-555-0401'
+      phone: '+1-555-0401',
     },
     rank: 'first_officer',
     license: {
@@ -477,7 +488,7 @@ export const samplePilots: PilotProfile[] = [
       issuingAuthority: 'FAA',
       issueDate: '2016-09-20',
       ratings: ['Multi-Engine', 'Instrument'],
-      endorsements: []
+      endorsements: [],
     },
     typeRatings: [
       {
@@ -486,8 +497,8 @@ export const samplePilots: PilotProfile[] = [
         aircraftCategory: 'jet',
         issueDate: '2017-03-15',
         status: 'valid',
-        seats: 'right_seat'
-      }
+        seats: 'right_seat',
+      },
     ],
     medicalCertificate: {
       medicalId: 'med-pilot-002',
@@ -496,7 +507,7 @@ export const samplePilots: PilotProfile[] = [
       expiryDate: '2025-03-10',
       examiner: 'Dr. Flight Medicine',
       fitnessStatus: 'fit',
-      nextExamDate: '2025-02-10'
+      nextExamDate: '2025-02-10',
     },
     flightHours: {
       totalHours: 3200,
@@ -510,17 +521,17 @@ export const samplePilots: PilotProfile[] = [
       last90Days: 220,
       last12Months: 850,
       byAircraftType: {
-        'A320': 3200
+        A320: 3200,
       },
-      lastUpdated: '2024-12-13T00:00:00Z'
+      lastUpdated: '2024-12-13T00:00:00Z',
     },
     trainingRecords: [],
     checkResults: [],
     currentQualifications: [],
     status: 'training',
     createdAt: '2017-01-10T00:00:00Z',
-    updatedAt: '2024-12-13T00:00:00Z'
-  }
+    updatedAt: '2024-12-13T00:00:00Z',
+  },
 ];
 
 export const sampleTrainingRecords: TrainingRecord[] = [
@@ -535,7 +546,7 @@ export const sampleTrainingRecords: TrainingRecord[] = [
     duration: {
       groundSchoolHours: 72,
       simulatorHours: 40,
-      flightHours: 25
+      flightHours: 25,
     },
     syllabus: {
       syllabusId: 'syl-b787-001',
@@ -551,7 +562,7 @@ export const sampleTrainingRecords: TrainingRecord[] = [
           requiredScore: 80,
           completed: true,
           score: 92,
-          completionDate: '2024-10-15'
+          completionDate: '2024-10-15',
         },
         {
           moduleId: 'mod-002',
@@ -562,7 +573,7 @@ export const sampleTrainingRecords: TrainingRecord[] = [
           objectives: ['Execute normal procedures'],
           completed: true,
           score: 88,
-          completionDate: '2024-10-25'
+          completionDate: '2024-10-25',
         },
         {
           moduleId: 'mod-003',
@@ -573,11 +584,11 @@ export const sampleTrainingRecords: TrainingRecord[] = [
           objectives: ['Handle abnormal situations'],
           completed: true,
           score: 90,
-          completionDate: '2024-11-05'
-        }
+          completionDate: '2024-11-05',
+        },
       ],
       totalHours: 137,
-      requiredPassScore: 80
+      requiredPassScore: 80,
     },
     progress: {
       overallCompletion: 100,
@@ -586,8 +597,8 @@ export const sampleTrainingRecords: TrainingRecord[] = [
       hoursCompleted: {
         groundSchool: 72,
         simulator: 40,
-        flight: 25
-      }
+        flight: 25,
+      },
     },
     assessments: [
       {
@@ -599,7 +610,7 @@ export const sampleTrainingRecords: TrainingRecord[] = [
         passingScore: 80,
         result: 'pass',
         assessor: 'FAA Examiner',
-        topics: ['Systems', 'Procedures', 'Limitations']
+        topics: ['Systems', 'Procedures', 'Limitations'],
       },
       {
         assessmentId: 'assess-002',
@@ -612,14 +623,14 @@ export const sampleTrainingRecords: TrainingRecord[] = [
         assessor: 'FAA Designated Pilot Examiner',
         topics: ['Flight Operations', 'Emergency Procedures'],
         strengths: ['Excellent systems knowledge', 'Smooth flight control'],
-        comments: 'Highly competent, recommended for line operations'
-      }
+        comments: 'Highly competent, recommended for line operations',
+      },
     ],
     instructor: {
       instructorId: 'inst-001',
       name: 'Captain Robert Wilson',
       qualifications: ['B787 Check Airman', 'Training Captain'],
-      rating: 4.8
+      rating: 4.8,
     },
     status: 'completed',
     result: 'pass',
@@ -628,12 +639,13 @@ export const sampleTrainingRecords: TrainingRecord[] = [
       issueDate: '2024-11-15',
       expiryDate: '2029-11-14',
       issuingAuthority: 'FAA',
-      certificateUrl: 'https://certificates.faa.gov/b787-type-2024-1234.pdf'
+      certificateUrl: 'https://certificates.faa.gov/b787-type-2024-1234.pdf',
     },
-    comments: 'Excellent performance throughout training. Pilot demonstrates strong systems knowledge and decision-making skills.',
+    comments:
+      'Excellent performance throughout training. Pilot demonstrates strong systems knowledge and decision-making skills.',
     createdAt: '2024-10-01T00:00:00Z',
-    updatedAt: '2024-11-15T00:00:00Z'
-  }
+    updatedAt: '2024-11-15T00:00:00Z',
+  },
 ];
 
 export const sampleSimulatorSessions: SimulatorSession[] = [
@@ -653,12 +665,15 @@ export const sampleSimulatorSessions: SimulatorSession[] = [
         scenarioName: 'Engine Failure on Takeoff',
         scenarioType: 'emergency',
         description: 'V1 cut - left engine failure at rotation',
-        objectives: ['Execute rejected takeoff or continue takeoff procedures', 'Maintain aircraft control'],
+        objectives: [
+          'Execute rejected takeoff or continue takeoff procedures',
+          'Maintain aircraft control',
+        ],
         conditions: {
           weather: 'VMC, winds 270/15',
           time: 'Day',
           location: 'JFK Runway 31L',
-          systemFailures: ['Engine 1']
+          systemFailures: ['Engine 1'],
         },
         completed: true,
         performance: {
@@ -666,25 +681,29 @@ export const sampleSimulatorSessions: SimulatorSession[] = [
           criteriaEvaluated: [
             { criterion: 'Decision Making', rating: 5, notes: 'Correct decision to continue' },
             { criterion: 'Aircraft Control', rating: 5, notes: 'Maintained centerline' },
-            { criterion: 'Callouts', rating: 5, notes: 'Clear and timely' }
+            { criterion: 'Callouts', rating: 5, notes: 'Clear and timely' },
           ],
           errorsCommitted: [],
           decisionsCorrect: true,
           proceduresFollowed: true,
-          communicationEffective: true
-        }
+          communicationEffective: true,
+        },
       },
       {
         scenarioId: 'scen-002',
         scenarioName: 'Depressurization at FL390',
         scenarioType: 'emergency',
         description: 'Rapid depressurization requiring emergency descent',
-        objectives: ['Execute emergency descent', 'Communicate with ATC', 'Divert to suitable airport'],
+        objectives: [
+          'Execute emergency descent',
+          'Communicate with ATC',
+          'Divert to suitable airport',
+        ],
         conditions: {
           weather: 'IMC',
           time: 'Night',
           location: 'Over Atlantic - Oceanic Airspace',
-          systemFailures: ['Pressurization System']
+          systemFailures: ['Pressurization System'],
         },
         completed: true,
         performance: {
@@ -692,14 +711,14 @@ export const sampleSimulatorSessions: SimulatorSession[] = [
           criteriaEvaluated: [
             { criterion: 'Emergency Response', rating: 5, notes: 'Immediate mask donning' },
             { criterion: 'Descent Profile', rating: 4, notes: 'Slight overspeed during descent' },
-            { criterion: 'Communication', rating: 5, notes: 'Clear Mayday call' }
+            { criterion: 'Communication', rating: 5, notes: 'Clear Mayday call' },
           ],
           errorsCommitted: ['Brief VMO exceedance during emergency descent'],
           decisionsCorrect: true,
           proceduresFollowed: true,
-          communicationEffective: true
-        }
-      }
+          communicationEffective: true,
+        },
+      },
     ],
     instructor: 'inst-002',
     performance: {
@@ -711,11 +730,16 @@ export const sampleSimulatorSessions: SimulatorSession[] = [
       crm: 4.5,
       maneuvers: [
         { maneuver: 'Engine Failure Takeoff', rating: 5, withinLimits: true },
-        { maneuver: 'Emergency Descent', rating: 4.5, withinLimits: true, deviations: ['Brief VMO overspeed'] },
-        { maneuver: 'Diversion Landing', rating: 5, withinLimits: true }
+        {
+          maneuver: 'Emergency Descent',
+          rating: 4.5,
+          withinLimits: true,
+          deviations: ['Brief VMO overspeed'],
+        },
+        { maneuver: 'Diversion Landing', rating: 5, withinLimits: true },
       ],
       systemsKnowledge: 5,
-      emergencyResponse: 5
+      emergencyResponse: 5,
     },
     debriefing: {
       debriefingId: 'debrief-001',
@@ -725,21 +749,23 @@ export const sampleSimulatorSessions: SimulatorSession[] = [
         'Excellent decision making under pressure',
         'Strong systems knowledge',
         'Effective crew communication',
-        'Smooth aircraft control'
+        'Smooth aircraft control',
       ],
       areasForImprovement: [
-        'Monitor airspeed closely during emergency descent to avoid VMO exceedance'
+        'Monitor airspeed closely during emergency descent to avoid VMO exceedance',
       ],
       recommendations: [
         'Continue to maintain high proficiency',
-        'Review speed limits during emergency procedures'
+        'Review speed limits during emergency procedures',
       ],
-      instructorComments: 'Captain Thompson demonstrates exceptional proficiency and airmanship. Minor speed exceedance was brief and understandable given the emergency nature of the scenario. Overall excellent performance.',
-      pilotComments: 'Great learning experience. Will focus on speed management during high-workload situations.'
+      instructorComments:
+        'Captain Thompson demonstrates exceptional proficiency and airmanship. Minor speed exceedance was brief and understandable given the emergency nature of the scenario. Overall excellent performance.',
+      pilotComments:
+        'Great learning experience. Will focus on speed management during high-workload situations.',
     },
     status: 'completed',
-    createdAt: '2024-11-20T00:00:00Z'
-  }
+    createdAt: '2024-11-20T00:00:00Z',
+  },
 ];
 
 export const sampleProficiencyChecks: ProficiencyCheck[] = [
@@ -754,7 +780,7 @@ export const sampleProficiencyChecks: ProficiencyCheck[] = [
       name: 'Captain David Martinez',
       designation: 'FAA Designated Pilot Examiner',
       licenseNumber: 'DPE-12345',
-      qualifications: ['B777 Check Airman', 'ATPL', '15000+ hours']
+      qualifications: ['B777 Check Airman', 'ATPL', '15000+ hours'],
     },
     checklist: [
       {
@@ -763,7 +789,7 @@ export const sampleProficiencyChecks: ProficiencyCheck[] = [
         item: 'Aircraft Documentation Review',
         required: true,
         completed: true,
-        result: 'satisfactory'
+        result: 'satisfactory',
       },
       {
         itemId: 'item-002',
@@ -771,7 +797,7 @@ export const sampleProficiencyChecks: ProficiencyCheck[] = [
         item: 'Normal Takeoff',
         required: true,
         completed: true,
-        result: 'satisfactory'
+        result: 'satisfactory',
       },
       {
         itemId: 'item-003',
@@ -780,8 +806,8 @@ export const sampleProficiencyChecks: ProficiencyCheck[] = [
         required: true,
         completed: true,
         result: 'satisfactory',
-        comments: 'Excellent handling, smooth and safe'
-      }
+        comments: 'Excellent handling, smooth and safe',
+      },
     ],
     maneuvers: [
       {
@@ -789,22 +815,22 @@ export const sampleProficiencyChecks: ProficiencyCheck[] = [
         category: 'normal',
         performed: true,
         result: 'satisfactory',
-        comments: 'Within ACS standards'
+        comments: 'Within ACS standards',
       },
       {
         maneuver: 'Engine Failure on Approach',
         category: 'abnormal',
         performed: true,
         result: 'satisfactory',
-        comments: 'Proper procedures followed, safe landing executed'
+        comments: 'Proper procedures followed, safe landing executed',
       },
       {
         maneuver: 'Rejected Takeoff',
         category: 'emergency',
         performed: true,
         result: 'satisfactory',
-        comments: 'Decision-making excellent, smooth stop'
-      }
+        comments: 'Decision-making excellent, smooth stop',
+      },
     ],
     overallResult: 'satisfactory',
     recommendations: ['Maintain current proficiency level', 'Continue excellent CRM practices'],
@@ -813,10 +839,10 @@ export const sampleProficiencyChecks: ProficiencyCheck[] = [
       certificateNumber: 'PC-B777-2024-001',
       issueDate: '2024-06-15',
       expiryDate: '2025-06-14',
-      issuingAuthority: 'FAA'
+      issuingAuthority: 'FAA',
     },
-    createdAt: '2024-06-15T00:00:00Z'
-  }
+    createdAt: '2024-06-15T00:00:00Z',
+  },
 ];
 
 // ==================== Ground Operations Sample Data ====================
@@ -830,7 +856,7 @@ export const sampleGroundStaff: GroundStaffMember[] = [
       lastName: 'Rivera',
       email: 'carlos.rivera@groundops.com',
       phone: '+1-555-0501',
-      dateOfBirth: '1988-07-14'
+      dateOfBirth: '1988-07-14',
     },
     role: 'supervisor',
     station: 'JFK',
@@ -841,8 +867,8 @@ export const sampleGroundStaff: GroundStaffMember[] = [
       endTime: '14:00:00',
       breakSchedule: [
         { breakType: 'rest', startTime: '09:00:00', duration: 15 },
-        { breakType: 'meal', startTime: '11:00:00', duration: 30 }
-      ]
+        { breakType: 'meal', startTime: '11:00:00', duration: 30 },
+      ],
     },
     certifications: [
       {
@@ -853,7 +879,7 @@ export const sampleGroundStaff: GroundStaffMember[] = [
         expiryDate: '2026-03-19',
         certifyingBody: 'IATA',
         status: 'valid',
-        renewalRequired: true
+        renewalRequired: true,
       },
       {
         certificationId: 'gcert-002',
@@ -863,13 +889,31 @@ export const sampleGroundStaff: GroundStaffMember[] = [
         expiryDate: '2026-01-14',
         certifyingBody: 'IATA',
         status: 'valid',
-        renewalRequired: true
-      }
+        renewalRequired: true,
+      },
     ],
     equipmentQualifications: [
-      { qualificationId: 'eq-001', equipmentType: 'tug', qualificationDate: '2020-05-10', qualified: true, trainingHours: 40 },
-      { qualificationId: 'eq-002', equipmentType: 'belt_loader', qualificationDate: '2020-06-15', qualified: true, trainingHours: 24 },
-      { qualificationId: 'eq-003', equipmentType: 'gpu', qualificationDate: '2021-02-20', qualified: true, trainingHours: 16 }
+      {
+        qualificationId: 'eq-001',
+        equipmentType: 'tug',
+        qualificationDate: '2020-05-10',
+        qualified: true,
+        trainingHours: 40,
+      },
+      {
+        qualificationId: 'eq-002',
+        equipmentType: 'belt_loader',
+        qualificationDate: '2020-06-15',
+        qualified: true,
+        trainingHours: 24,
+      },
+      {
+        qualificationId: 'eq-003',
+        equipmentType: 'gpu',
+        qualificationDate: '2021-02-20',
+        qualified: true,
+        trainingHours: 16,
+      },
     ],
     safetyRecords: [],
     performanceMetrics: {
@@ -881,14 +925,28 @@ export const sampleGroundStaff: GroundStaffMember[] = [
       equipmentDamageIncidents: 2,
       commendations: 8,
       monthlyMetrics: [
-        { month: 'November', year: 2024, turnarounds: 105, avgTime: 37, onTimePercent: 97, incidents: 0 },
-        { month: 'October', year: 2024, turnarounds: 108, avgTime: 39, onTimePercent: 96, incidents: 0 }
-      ]
+        {
+          month: 'November',
+          year: 2024,
+          turnarounds: 105,
+          avgTime: 37,
+          onTimePercent: 97,
+          incidents: 0,
+        },
+        {
+          month: 'October',
+          year: 2024,
+          turnarounds: 108,
+          avgTime: 39,
+          onTimePercent: 96,
+          incidents: 0,
+        },
+      ],
     },
     status: 'active',
     createdAt: '2020-04-15T00:00:00Z',
-    updatedAt: '2024-12-13T00:00:00Z'
-  }
+    updatedAt: '2024-12-13T00:00:00Z',
+  },
 ];
 
 export const sampleTurnarounds: TurnaroundAssignment[] = [
@@ -915,7 +973,7 @@ export const sampleTurnarounds: TurnaroundAssignment[] = [
         actualStart: '2024-12-13T14:25:00Z',
         actualEnd: '2024-12-13T14:28:00Z',
         duration: 3,
-        status: 'completed'
+        status: 'completed',
       },
       {
         taskId: 'task-002',
@@ -928,7 +986,7 @@ export const sampleTurnarounds: TurnaroundAssignment[] = [
         actualStart: '2024-12-13T14:31:00Z',
         actualEnd: '2024-12-13T14:35:00Z',
         duration: 4,
-        status: 'completed'
+        status: 'completed',
       },
       {
         taskId: 'task-003',
@@ -941,7 +999,7 @@ export const sampleTurnarounds: TurnaroundAssignment[] = [
         actualStart: '2024-12-13T14:36:00Z',
         actualEnd: '2024-12-13T15:03:00Z',
         duration: 27,
-        status: 'completed'
+        status: 'completed',
       },
       {
         taskId: 'task-004',
@@ -950,7 +1008,7 @@ export const sampleTurnarounds: TurnaroundAssignment[] = [
         priority: 'critical',
         scheduledStart: '2024-12-13T14:40:00Z',
         scheduledEnd: '2024-12-13T15:20:00Z',
-        status: 'in_progress'
+        status: 'in_progress',
       },
       {
         taskId: 'task-005',
@@ -959,11 +1017,11 @@ export const sampleTurnarounds: TurnaroundAssignment[] = [
         priority: 'high',
         scheduledStart: '2024-12-13T14:45:00Z',
         scheduledEnd: '2024-12-13T15:30:00Z',
-        status: 'in_progress'
-      }
+        status: 'in_progress',
+      },
     ],
-    status: 'in_progress'
-  }
+    status: 'in_progress',
+  },
 ];
 
 export const sampleGroundEquipment: GroundEquipment[] = [
@@ -983,7 +1041,7 @@ export const sampleGroundEquipment: GroundEquipment[] = [
       dimensions: { length: 6.5, width: 3.2, height: 2.8 },
       weight: 28000,
       fuelType: 'Diesel',
-      maxSpeed: 25
+      maxSpeed: 25,
     },
     maintenanceSchedule: {
       lastMaintenance: '2024-11-20',
@@ -999,15 +1057,15 @@ export const sampleGroundEquipment: GroundEquipment[] = [
           workPerformed: 'Oil change, filter replacement, brake inspection',
           partsReplaced: [
             { partNumber: 'TLD-OIL-001', partName: 'Engine Oil Filter', quantity: 2 },
-            { partNumber: 'TLD-BRK-005', partName: 'Brake Pads', quantity: 4 }
+            { partNumber: 'TLD-BRK-005', partName: 'Brake Pads', quantity: 4 },
           ],
           technicianId: 'tech-001',
           technicianName: 'Mike Johnson',
           cost: 850,
           nextServiceDue: '2025-02-20',
-          notes: 'All systems operating normally'
-        }
-      ]
+          notes: 'All systems operating normally',
+        },
+      ],
     },
     usageLog: [
       {
@@ -1020,14 +1078,14 @@ export const sampleGroundEquipment: GroundEquipment[] = [
         duration: 0.25,
         hoursLogged: 0.25,
         location: 'Gate A12',
-        notes: 'Pushback for departure'
-      }
+        notes: 'Pushback for departure',
+      },
     ],
     location: {
       zone: 'Terminal A',
       gate: 'A12',
       coordinates: { latitude: 40.6413, longitude: -73.7781 },
-      lastUpdated: '2024-12-13T06:45:00Z'
+      lastUpdated: '2024-12-13T06:45:00Z',
     },
     inspections: [
       {
@@ -1039,18 +1097,18 @@ export const sampleGroundEquipment: GroundEquipment[] = [
         checklistItems: [
           { itemId: 'item-001', item: 'Tire Pressure', category: 'Safety', status: 'pass' },
           { itemId: 'item-002', item: 'Fluid Levels', category: 'Maintenance', status: 'pass' },
-          { itemId: 'item-003', item: 'Lights & Signals', category: 'Safety', status: 'pass' }
+          { itemId: 'item-003', item: 'Lights & Signals', category: 'Safety', status: 'pass' },
         ],
         overallCondition: 'excellent',
         issuesFound: [],
         result: 'pass',
         nextInspectionDue: '2024-12-14',
-        notes: 'Equipment in excellent condition'
-      }
+        notes: 'Equipment in excellent condition',
+      },
     ],
     createdAt: '2018-08-15T00:00:00Z',
-    updatedAt: '2024-12-13T06:45:00Z'
-  }
+    updatedAt: '2024-12-13T06:45:00Z',
+  },
 ];
 
 export const sampleRampProcedures: RampHandlingProcedure[] = [
@@ -1066,7 +1124,7 @@ export const sampleRampProcedures: RampHandlingProcedure[] = [
         responsibleRole: 'ramp_agent',
         timing: 'As aircraft approaches gate',
         criticalStep: true,
-        verificationRequired: true
+        verificationRequired: true,
       },
       {
         stepNumber: 2,
@@ -1074,7 +1132,7 @@ export const sampleRampProcedures: RampHandlingProcedure[] = [
         responsibleRole: 'ramp_agent',
         timing: 'Immediately after aircraft stops',
         criticalStep: true,
-        verificationRequired: true
+        verificationRequired: true,
       },
       {
         stepNumber: 3,
@@ -1083,7 +1141,7 @@ export const sampleRampProcedures: RampHandlingProcedure[] = [
         timing: 'After chocks in place',
         criticalStep: false,
         verificationRequired: false,
-        dependencies: [2]
+        dependencies: [2],
       },
       {
         stepNumber: 4,
@@ -1092,21 +1150,21 @@ export const sampleRampProcedures: RampHandlingProcedure[] = [
         timing: 'After aircraft secured',
         criticalStep: false,
         verificationRequired: true,
-        dependencies: [2]
-      }
+        dependencies: [2],
+      },
     ],
     safetyPrecautions: [
       'Maintain 15-foot clearance from engines until shutdown',
       'Wear hi-visibility vest and hearing protection',
       'Verify aircraft parking brake set before approaching',
-      'Check for hydraulic leaks'
+      'Check for hydraulic leaks',
     ],
     requiredEquipment: ['Chocks', 'Safety Cones', 'GPU', 'Marshalling Wands'],
     estimatedDuration: 15,
     certificationRequired: ['Ramp Safety', 'Aircraft Marshalling'],
     regulatoryReferences: ['FAA AC 150/5210-20', 'IATA AHM'],
-    lastUpdated: '2024-06-01T00:00:00Z'
-  }
+    lastUpdated: '2024-06-01T00:00:00Z',
+  },
 ];
 
 export const sampleSafetyCompliance: SafetyCompliance[] = [
@@ -1119,39 +1177,40 @@ export const sampleSafetyCompliance: SafetyCompliance[] = [
       auditorId: 'aud-001',
       name: 'Jane Wilson',
       organization: 'FAA',
-      certification: 'Aviation Safety Inspector'
+      certification: 'Aviation Safety Inspector',
     },
     areas: [
       {
         areaName: 'Ramp Safety Procedures',
         standards: ['FAA AC 150/5210-20', 'OSHA 1910'],
         score: 95,
-        status: 'compliant'
+        status: 'compliant',
       },
       {
         areaName: 'Equipment Maintenance',
         standards: ['Manufacturer Guidelines', 'FAA Advisory Circulars'],
         score: 92,
-        status: 'compliant'
+        status: 'compliant',
       },
       {
         areaName: 'Personnel Training',
         standards: ['IATA AHM Chapter 12', 'Company Training Manual'],
         score: 88,
-        status: 'compliant'
-      }
+        status: 'compliant',
+      },
     ],
     findings: [
       {
         findingId: 'find-001',
         category: 'Training Records',
         severity: 'minor',
-        description: 'Two staff members have training records that are 30 days past due for renewal',
+        description:
+          'Two staff members have training records that are 30 days past due for renewal',
         regulation: 'IATA AHM 12.3',
         recommendedAction: 'Schedule refresher training within 14 days',
         dueDate: '2024-10-01',
-        status: 'resolved'
-      }
+        status: 'resolved',
+      },
     ],
     overallScore: 92,
     status: 'compliant',
@@ -1168,13 +1227,13 @@ export const sampleSafetyCompliance: SafetyCompliance[] = [
           verifiedBy: 'Safety Manager',
           verificationDate: '2024-09-29',
           effective: true,
-          notes: 'Training completed and documented'
-        }
-      }
+          notes: 'Training completed and documented',
+        },
+      },
     ],
     nextAuditDue: '2025-09-15',
-    createdAt: '2024-09-15T00:00:00Z'
-  }
+    createdAt: '2024-09-15T00:00:00Z',
+  },
 ];
 
 // ==================== Settings ====================
@@ -1187,25 +1246,25 @@ export const sampleAviationSettings: AviationSettings = {
     minRestHours: 10,
     maxFlightDutyPeriod: 16,
     maxConsecutiveDutyDays: 6,
-    fatigueReportingEnabled: true
+    fatigueReportingEnabled: true,
   },
   pilotTrainingSettings: {
     recurrentTrainingInterval: 12,
     simulatorSessionsPerYear: 2,
     proficiencyCheckInterval: 12,
     minimumFlightHoursPerYear: 500,
-    trainingRecordRetention: 10
+    trainingRecordRetention: 10,
   },
   groundOperationsSettings: {
     turnaroundTargets: {
       'B777-300ER': 90,
       'B787-9': 75,
       'A350-900': 75,
-      'A320': 45
+      A320: 45,
     },
     safetyAuditFrequency: 12,
     equipmentInspectionFrequency: 1,
-    shiftDuration: 8
+    shiftDuration: 8,
   },
   regulatoryBody: 'FAA',
   notifications: {
@@ -1215,7 +1274,7 @@ export const sampleAviationSettings: AviationSettings = {
     equipmentMaintenance: true,
     safetyIncidents: true,
     complianceIssues: true,
-    advanceNoticeDays: 30
+    advanceNoticeDays: 30,
   },
-  updatedAt: '2024-01-01T00:00:00Z'
+  updatedAt: '2024-01-01T00:00:00Z',
 };

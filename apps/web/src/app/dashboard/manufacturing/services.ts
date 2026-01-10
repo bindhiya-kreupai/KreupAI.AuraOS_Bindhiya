@@ -11,7 +11,7 @@ import type {
   PPEInventory,
   SafetyTraining,
   ManufacturingSettings,
-  ManufacturingAlert
+  ManufacturingAlert,
 } from './types';
 
 export class PlantMaintenanceService {
@@ -27,7 +27,10 @@ export class PlantMaintenanceService {
     return APIClient.post<Equipment>(this.equipmentEndpoint, equipmentData);
   }
 
-  static async updateEquipment(equipmentId: string, updates: Partial<Equipment>): Promise<Equipment> {
+  static async updateEquipment(
+    equipmentId: string,
+    updates: Partial<Equipment>
+  ): Promise<Equipment> {
     return APIClient.put<Equipment>(`${this.equipmentEndpoint}/${equipmentId}`, updates);
   }
 
@@ -35,7 +38,9 @@ export class PlantMaintenanceService {
     return APIClient.get<MaintenanceSchedule[]>(this.schedulesEndpoint);
   }
 
-  static async createSchedule(scheduleData: Partial<MaintenanceSchedule>): Promise<MaintenanceSchedule> {
+  static async createSchedule(
+    scheduleData: Partial<MaintenanceSchedule>
+  ): Promise<MaintenanceSchedule> {
     return APIClient.post<MaintenanceSchedule>(this.schedulesEndpoint, scheduleData);
   }
 
@@ -47,7 +52,10 @@ export class PlantMaintenanceService {
     return APIClient.post<WorkOrder>(this.workOrdersEndpoint, orderData);
   }
 
-  static async updateWorkOrder(workOrderId: string, updates: Partial<WorkOrder>): Promise<WorkOrder> {
+  static async updateWorkOrder(
+    workOrderId: string,
+    updates: Partial<WorkOrder>
+  ): Promise<WorkOrder> {
     return APIClient.put<WorkOrder>(`${this.workOrdersEndpoint}/${workOrderId}`, updates);
   }
 }
@@ -65,7 +73,10 @@ export class ProductionEfficiencyService {
     return APIClient.post<ProductionLine>(this.linesEndpoint, lineData);
   }
 
-  static async updateLine(lineId: string, updates: Partial<ProductionLine>): Promise<ProductionLine> {
+  static async updateLine(
+    lineId: string,
+    updates: Partial<ProductionLine>
+  ): Promise<ProductionLine> {
     return APIClient.put<ProductionLine>(`${this.linesEndpoint}/${lineId}`, updates);
   }
 
@@ -104,7 +115,10 @@ export class SafetyComplianceService {
     return APIClient.post<SafetyIncident>(this.incidentsEndpoint, incidentData);
   }
 
-  static async updateIncident(incidentId: string, updates: Partial<SafetyIncident>): Promise<SafetyIncident> {
+  static async updateIncident(
+    incidentId: string,
+    updates: Partial<SafetyIncident>
+  ): Promise<SafetyIncident> {
     return APIClient.put<SafetyIncident>(`${this.incidentsEndpoint}/${incidentId}`, updates);
   }
 
@@ -112,11 +126,16 @@ export class SafetyComplianceService {
     return APIClient.get<SafetyInspection[]>(this.inspectionsEndpoint);
   }
 
-  static async createInspection(inspectionData: Partial<SafetyInspection>): Promise<SafetyInspection> {
+  static async createInspection(
+    inspectionData: Partial<SafetyInspection>
+  ): Promise<SafetyInspection> {
     return APIClient.post<SafetyInspection>(this.inspectionsEndpoint, inspectionData);
   }
 
-  static async updateInspection(inspectionId: string, updates: Partial<SafetyInspection>): Promise<SafetyInspection> {
+  static async updateInspection(
+    inspectionId: string,
+    updates: Partial<SafetyInspection>
+  ): Promise<SafetyInspection> {
     return APIClient.put<SafetyInspection>(`${this.inspectionsEndpoint}/${inspectionId}`, updates);
   }
 
@@ -128,7 +147,10 @@ export class SafetyComplianceService {
     return APIClient.post<PPEInventory>(this.ppeEndpoint, itemData);
   }
 
-  static async updatePPEItem(inventoryId: string, updates: Partial<PPEInventory>): Promise<PPEInventory> {
+  static async updatePPEItem(
+    inventoryId: string,
+    updates: Partial<PPEInventory>
+  ): Promise<PPEInventory> {
     return APIClient.put<PPEInventory>(`${this.ppeEndpoint}/${inventoryId}`, updates);
   }
 
@@ -140,7 +162,10 @@ export class SafetyComplianceService {
     return APIClient.post<SafetyTraining>(this.trainingEndpoint, trainingData);
   }
 
-  static async updateTraining(trainingId: string, updates: Partial<SafetyTraining>): Promise<SafetyTraining> {
+  static async updateTraining(
+    trainingId: string,
+    updates: Partial<SafetyTraining>
+  ): Promise<SafetyTraining> {
     return APIClient.put<SafetyTraining>(`${this.trainingEndpoint}/${trainingId}`, updates);
   }
 }
@@ -152,7 +177,9 @@ export class ManufacturingSettingsService {
     return APIClient.get<ManufacturingSettings>(this.endpoint);
   }
 
-  static async updateSettings(settings: Partial<ManufacturingSettings>): Promise<ManufacturingSettings> {
+  static async updateSettings(
+    settings: Partial<ManufacturingSettings>
+  ): Promise<ManufacturingSettings> {
     return APIClient.put<ManufacturingSettings>(this.endpoint, settings);
   }
 }
@@ -160,7 +187,7 @@ export class ManufacturingSettingsService {
 export class AlertsService {
   private static endpoint = '/manufacturing/alerts';
 
-  static async getAllAlerts(): Promise<ManufacturingAlert[]> {
+  static async getAll(): Promise<ManufacturingAlert[]> {
     return APIClient.get<ManufacturingAlert[]>(this.endpoint);
   }
 
