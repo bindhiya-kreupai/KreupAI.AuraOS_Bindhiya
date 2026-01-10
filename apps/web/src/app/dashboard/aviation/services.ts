@@ -27,7 +27,7 @@ import type {
  * Manages cabin crew members, assignments, duty times, and rest periods
  */
 export class CabinCrewService {
-  private static endpoint = '/aviation/cabin-crew';
+  private static endpoint = '/industry-aviation/cabin-crew';
 
   static async getAllCrewMembers(): Promise<CrewMemberProfile[]> {
     try {
@@ -204,7 +204,7 @@ export class CabinCrewService {
  * Manages pilot profiles, training records, simulator sessions, and proficiency checks
  */
 export class PilotTrainingService {
-  private static endpoint = '/aviation/pilot-training';
+  private static endpoint = '/industry-aviation/pilot-training';
 
   static async getAllPilots(): Promise<PilotProfile[]> {
     try {
@@ -383,7 +383,7 @@ export class PilotTrainingService {
  * Manages ground staff, equipment, turnaround operations, and safety compliance
  */
 export class GroundOperationsService {
-  private static endpoint = '/aviation/ground-operations';
+  private static endpoint = '/industry-aviation/ground-operations';
 
   static async getAllGroundStaff(): Promise<GroundStaffMember[]> {
     try {
@@ -626,7 +626,7 @@ export class GroundOperationsService {
  * Manages module settings and configurations
  */
 export class AviationSettingsService {
-  private static endpoint = '/aviation/settings';
+  private static endpoint = '/industry-aviation/settings';
 
   static async getSettings(): Promise<AviationSettings | null> {
     try {
@@ -648,7 +648,7 @@ export class AviationSettingsService {
  * Manages alerts and notifications
  */
 export class AlertsService {
-  private static endpoint = '/aviation/alerts';
+  private static endpoint = '/industry-aviation/alerts';
 
   static async getAll(): Promise<Alert[]> {
     try {

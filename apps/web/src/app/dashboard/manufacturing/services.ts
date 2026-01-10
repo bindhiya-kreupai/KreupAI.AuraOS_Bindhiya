@@ -15,9 +15,9 @@ import type {
 } from './types';
 
 export class PlantMaintenanceService {
-  private static equipmentEndpoint = '/manufacturing/equipment';
-  private static schedulesEndpoint = '/manufacturing/maintenance/schedules';
-  private static workOrdersEndpoint = '/manufacturing/maintenance/work-orders';
+  private static equipmentEndpoint = '/industry-manufacturing/equipment';
+  private static schedulesEndpoint = '/industry-manufacturing/maintenance/schedules';
+  private static workOrdersEndpoint = '/industry-manufacturing/maintenance/work-orders';
 
   static async getAllEquipment(): Promise<Equipment[]> {
     return APIClient.get<Equipment[]>(this.equipmentEndpoint);
@@ -61,9 +61,9 @@ export class PlantMaintenanceService {
 }
 
 export class ProductionEfficiencyService {
-  private static linesEndpoint = '/manufacturing/production/lines';
-  private static runsEndpoint = '/manufacturing/production/runs';
-  private static oeeEndpoint = '/manufacturing/production/oee-metrics';
+  private static linesEndpoint = '/industry-manufacturing/production/lines';
+  private static runsEndpoint = '/industry-manufacturing/production/runs';
+  private static oeeEndpoint = '/industry-manufacturing/production/oee-metrics';
 
   static async getAllLines(): Promise<ProductionLine[]> {
     return APIClient.get<ProductionLine[]>(this.linesEndpoint);
@@ -102,10 +102,10 @@ export class ProductionEfficiencyService {
 }
 
 export class SafetyComplianceService {
-  private static incidentsEndpoint = '/manufacturing/safety/incidents';
-  private static inspectionsEndpoint = '/manufacturing/safety/inspections';
-  private static ppeEndpoint = '/manufacturing/safety/ppe-inventory';
-  private static trainingEndpoint = '/manufacturing/safety/training';
+  private static incidentsEndpoint = '/industry-manufacturing/safety/incidents';
+  private static inspectionsEndpoint = '/industry-manufacturing/safety/inspections';
+  private static ppeEndpoint = '/industry-manufacturing/safety/ppe-inventory';
+  private static trainingEndpoint = '/industry-manufacturing/safety/training';
 
   static async getAllIncidents(): Promise<SafetyIncident[]> {
     return APIClient.get<SafetyIncident[]>(this.incidentsEndpoint);
@@ -171,7 +171,7 @@ export class SafetyComplianceService {
 }
 
 export class ManufacturingSettingsService {
-  private static endpoint = '/manufacturing/settings';
+  private static endpoint = '/industry-manufacturing/settings';
 
   static async getSettings(): Promise<ManufacturingSettings | null> {
     return APIClient.get<ManufacturingSettings>(this.endpoint);
@@ -185,7 +185,7 @@ export class ManufacturingSettingsService {
 }
 
 export class AlertsService {
-  private static endpoint = '/manufacturing/alerts';
+  private static endpoint = '/industry-manufacturing/alerts';
 
   static async getAll(): Promise<ManufacturingAlert[]> {
     return APIClient.get<ManufacturingAlert[]>(this.endpoint);
