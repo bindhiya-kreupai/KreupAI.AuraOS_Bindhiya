@@ -159,7 +159,7 @@ async function checkRateLimit(
       resetTime,
       total: config.maxRequests,
     };
-  } catch {
+  } catch (error) {
     logger.error({ error, key }, 'Rate limit check failed');
 
     // Fail open - allow request if Redis is unavailable
@@ -372,7 +372,7 @@ export async function resetRateLimit(
     await redis.del(key);
 
     logger.info({ key }, 'Rate limit reset');
-  } catch {
+  } catch (error) {
     logger.error({ error }, 'Failed to reset rate limit');
     throw error;
   }

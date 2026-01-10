@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to predict attrition',
@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch attrition data', errorAr: 'فشل في جلب بيانات المغادرة' },
       { status: 500 }

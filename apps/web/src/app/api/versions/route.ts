@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
         announcements,
       },
     });
-  } catch {
+  } catch (error) {
     logger.error({ error }, 'Error fetching API version information');
     return NextResponse.json(
       {

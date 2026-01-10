@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
         statistics: stats,
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to generate Mudad file', errorAr: 'فشل في إنشاء ملف مدد' },
       { status: 500 }
@@ -152,7 +152,7 @@ export async function GET() {
         ],
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch Mudad reference data', errorAr: 'فشل في جلب بيانات مدد المرجعية' },
       { status: 500 }

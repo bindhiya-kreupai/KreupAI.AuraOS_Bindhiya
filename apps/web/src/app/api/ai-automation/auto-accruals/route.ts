@@ -5,7 +5,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
   try {
     const accruals = [];
     return NextResponse.json({ accruals }, { status: 200 });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

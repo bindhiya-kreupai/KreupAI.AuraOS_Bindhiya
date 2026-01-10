@@ -225,7 +225,7 @@ export function withErrorTracking<T extends (...args: any[]) => Promise<any>>(
       }
 
       return await fn(...args);
-    } catch {
+    } catch (error) {
       if (error instanceof Error) {
         captureException(error, context?.context);
       }

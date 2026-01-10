@@ -7,10 +7,34 @@ import {
     Sun,
     Moon,
     BookOpen,
-    Users
+    Users,
+    Loader2
 } from 'lucide-react';
+import { useRemoteWork } from '../hooks/useRemoteWork';
 
 export default function WellbeingSupportPage() {
+    const { employees, loading, error } = useRemoteWork();
+
+    if (loading) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center text-rose-500 font-bold">
+                Error: {error}
+            </div>
+        );
+    }
+
+    // Aggregating wellbeing metrics from employees
+    const supportNeededCount = employees.filter(e => e.wellbeing.supportNeeded).length;
+    const highBurnoutCount = employees.filter(e => e.wellbeing.burnoutRisk === 'high').length;
+
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -22,6 +46,11 @@ export default function WellbeingSupportPage() {
                     </h1>
                     <p className="text-slate-500 text-sm">Mental health resources and daily check-ins.</p>
                 </div>
+                {(supportNeededCount > 0 || highBurnoutCount > 0) && (
+                    <div className="bg-rose-50 dark:bg-rose-900/20 px-4 py-2 rounded-xl text-rose-700 dark:text-rose-400 text-sm font-bold border border-rose-100 dark:border-rose-800/30 flex items-center gap-2">
+                        <Heart className="w-4 h-4 animate-pulse" /> {supportNeededCount} Team members need support
+                    </div>
+                )}
             </div>
 
             {/* Daily Check-in */}

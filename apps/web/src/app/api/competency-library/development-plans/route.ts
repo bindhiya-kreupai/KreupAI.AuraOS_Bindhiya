@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
             success: true,
             data: transformed
         });
-    } catch {
+    } catch (error) {
         logger.error('Error fetching development plans:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch development plans' },
@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
             data: plan,
             message: 'Development plan created successfully'
         });
-    } catch {
+    } catch (error) {
         logger.error('Error creating development plan:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to create development plan' },

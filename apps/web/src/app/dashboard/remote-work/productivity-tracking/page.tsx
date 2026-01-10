@@ -7,10 +7,43 @@ import {
     BarChart2,
     Layout,
     CheckCircle,
-    Coffee
+    Coffee,
+    Loader2
 } from 'lucide-react';
+import { useRemoteWork } from '../hooks/useRemoteWork';
 
 export default function ProductivityTrackingPage() {
+    const { employees, loading, error } = useRemoteWork();
+
+    if (loading) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center text-rose-500 font-bold">
+                Error: {error}
+            </div>
+        );
+    }
+
+    // Aggregating metrics
+    const avgPerformance = employees.length > 0
+        ? (employees.reduce((sum, e) => sum + e.productivity.performanceRating, 0) / employees.length).toFixed(1)
+        : '0.0';
+
+    const avgMeetingLoad = employees.length > 0
+        ? Math.round(employees.reduce((sum, e) => sum + e.productivity.meetingAttendance, 0) / employees.length)
+        : 0;
+
+    const avgTasks = employees.length > 0
+        ? Math.round(employees.reduce((sum, e) => sum + e.productivity.tasksCompleted, 0) / employees.length)
+        : 0;
+
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -32,7 +65,7 @@ export default function ProductivityTrackingPage() {
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <h3 className="text-sm font-bold text-slate-500 mb-2">Team Focus Score</h3>
                     <div className="flex items-end gap-2">
-                        <div className="text-4xl font-black text-indigo-600">8.4</div>
+                        <div className="text-4xl font-black text-indigo-600">{avgPerformance}</div>
                         <div className="text-sm font-bold text-emerald-500 mb-1">↑ 12%</div>
                     </div>
                     <p className="text-xs text-slate-400 mt-2">Based on task completion velocity</p>
@@ -40,18 +73,18 @@ export default function ProductivityTrackingPage() {
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <h3 className="text-sm font-bold text-slate-500 mb-2">Meeting Load</h3>
                     <div className="flex items-end gap-2">
-                        <div className="text-4xl font-black text-rose-500">18h</div>
-                        <div className="text-sm font-bold text-rose-500 mb-1">High</div>
+                        <div className="text-4xl font-black text-rose-500">{avgMeetingLoad}%</div>
+                        <div className="text-sm font-bold text-rose-500 mb-1">{avgMeetingLoad > 80 ? 'High' : 'Normal'}</div>
                     </div>
-                    <p className="text-xs text-slate-400 mt-2">Average weekly meeting duration</p>
+                    <p className="text-xs text-slate-400 mt-2">Average weekly meeting attendance</p>
                 </div>
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-                    <h3 className="text-sm font-bold text-slate-500 mb-2">Deep Work</h3>
+                    <h3 className="text-sm font-bold text-slate-500 mb-2">Tasks Completed</h3>
                     <div className="flex items-end gap-2">
-                        <div className="text-4xl font-black text-emerald-500">22h</div>
-                        <div className="text-sm font-bold text-slate-400 mb-1">/ week</div>
+                        <div className="text-4xl font-black text-emerald-500">{avgTasks}</div>
+                        <div className="text-sm font-bold text-slate-400 mb-1">avg / week</div>
                     </div>
-                    <p className="text-xs text-slate-400 mt-2">Uninterrupted block time</p>
+                    <p className="text-xs text-slate-400 mt-2">Team wide average task output</p>
                 </div>
             </div>
 
@@ -65,7 +98,7 @@ export default function ProductivityTrackingPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-12 gap-1 h-32">
+                <div className="grid grid-cols-12 gap-1 h-32 pr-2">
                     {[...Array(12)].map((_, i) => (
                         <div key={i} className="flex flex-col gap-1 items-center">
                             <div className={`w-full flex-1 rounded-lg ${i % 3 === 0 ? 'bg-indigo-500' : i % 2 === 0 ? 'bg-indigo-300' : 'bg-amber-400'

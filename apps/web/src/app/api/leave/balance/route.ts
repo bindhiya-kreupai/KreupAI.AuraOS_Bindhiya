@@ -72,7 +72,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: mockBalance,
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching leave balance:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch leave balance' },

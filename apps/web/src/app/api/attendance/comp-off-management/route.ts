@@ -86,7 +86,7 @@ export const GET = withEnhancedAuth(
         data: { compOffs: filteredData, summary },
         meta: { total: filteredData.length },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching comp-off management data:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch comp-off management data' },

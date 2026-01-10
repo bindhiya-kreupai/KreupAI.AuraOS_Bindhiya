@@ -63,7 +63,7 @@ export const GET = withEnhancedAuth(
         data: filteredData,
         meta: { total: filteredData.length },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching off-cycle payments:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch off-cycle payments' },
@@ -102,7 +102,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newPayment }, { status: 201 });
-    } catch {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -153,7 +153,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch {
+    } catch (error) {
       logger.error('Error updating off-cycle payment:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update off-cycle payment' },

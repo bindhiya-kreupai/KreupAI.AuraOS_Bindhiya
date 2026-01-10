@@ -31,7 +31,7 @@ export const GET = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: mockAnalytics });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching analytics:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch analytics' }, { status: 500 });
     }

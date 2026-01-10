@@ -87,7 +87,7 @@ export const POST = withEnhancedAuth(
           generatedAt: new Date().toISOString(),
         },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error generating bank file:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to generate bank file' },
@@ -133,7 +133,7 @@ export const GET = withEnhancedAuth(
         data: mockHistory,
         meta: { total: mockHistory.length },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching bank file history:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch bank file history' },

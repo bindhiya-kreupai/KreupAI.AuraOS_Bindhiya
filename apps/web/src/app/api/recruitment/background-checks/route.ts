@@ -137,7 +137,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     }
 
     return NextResponse.json({ data: mockBackgroundChecks }, { status: 200 });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -175,7 +175,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json({ data: newBackgroundCheck }, { status: 201 });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -210,7 +210,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json({ data: updatedBackgroundCheck }, { status: 200 });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

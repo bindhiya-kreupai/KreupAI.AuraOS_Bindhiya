@@ -66,7 +66,7 @@ export const GET = withEnhancedAuth(
         data: filteredData,
         meta: { total: filteredData.length },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching rosters:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch rosters' },
@@ -105,7 +105,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newRoster }, { status: 201 });
-    } catch {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

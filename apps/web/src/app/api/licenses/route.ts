@@ -48,7 +48,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       data: result.data,
       meta: result.meta,
     });
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
@@ -100,7 +100,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       },
       { status: 201 }
     );
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }

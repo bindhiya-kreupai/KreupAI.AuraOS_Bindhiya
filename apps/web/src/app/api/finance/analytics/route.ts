@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
         lastUpdated: new Date().toISOString(),
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch analytics' },
       { status: 500 }

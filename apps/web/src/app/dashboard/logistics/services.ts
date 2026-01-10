@@ -8,7 +8,7 @@ export class DriverManagementService {
     try {
       const response = await APIClient.get<{ drivers?: Driver[] }>(this.endpoint);
       return response.drivers || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -27,7 +27,7 @@ export class DriverManagementService {
     try {
       const response = await APIClient.get<{ driver?: Driver }>(`${this.endpoint}/employee/${employeeId}`);
       return response.driver || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -40,7 +40,7 @@ export class FleetManagementService {
     try {
       const response = await APIClient.get<{ vehicles?: FleetVehicle[] }>(this.endpoint);
       return response.vehicles || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -59,7 +59,7 @@ export class FleetManagementService {
     try {
       const response = await APIClient.get<{ inspections?: VehicleInspection[] }>(`${this.endpoint}/inspections`);
       return response.inspections || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -77,7 +77,7 @@ export class SafetyManagementService {
     try {
       const response = await APIClient.get<{ incidents?: SafetyIncident[] }>(this.endpoint);
       return response.incidents || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -100,7 +100,7 @@ export class WarehouseStaffingService {
     try {
       const response = await APIClient.get<{ workers?: WarehouseWorker[] }>(this.endpoint);
       return response.workers || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -123,7 +123,7 @@ export class LogisticsSettingsService {
     try {
       const response = await APIClient.get<{ settings?: LogisticsSettings }>(this.endpoint);
       return response.settings || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -141,7 +141,7 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: LogisticsAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }

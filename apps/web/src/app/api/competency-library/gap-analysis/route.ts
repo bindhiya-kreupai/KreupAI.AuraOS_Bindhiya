@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
             success: true,
             data: transformed
         });
-    } catch {
+    } catch (error) {
         logger.error('Error fetching gap analyses:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch gap analyses' },
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
             data: gapAnalysis,
             message: 'Gap analysis created successfully'
         });
-    } catch {
+    } catch (error) {
         logger.error('Error creating gap analysis:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to create gap analysis' },

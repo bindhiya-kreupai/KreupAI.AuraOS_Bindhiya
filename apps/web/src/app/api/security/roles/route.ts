@@ -37,7 +37,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     ];
 
     return NextResponse.json({ roles }, { status: 200 });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
@@ -58,7 +58,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ role }, { status: 201 });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
@@ -73,7 +73,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ role }, { status: 200 });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
@@ -84,7 +84,7 @@ export const DELETE = withEnhancedAuth(async (request, context) => {
     const roleId = searchParams.get('roleId');
 
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

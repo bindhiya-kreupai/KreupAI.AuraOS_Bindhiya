@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
       },
       message: 'Login successful',
     });
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Validation failed', details: error.errors },

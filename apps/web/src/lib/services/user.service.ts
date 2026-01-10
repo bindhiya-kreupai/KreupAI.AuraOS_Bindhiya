@@ -89,7 +89,7 @@ export class UserService extends BaseService {
         data: users,
         meta: this.buildPaginationMeta(total, page, limit),
       };
-    } catch {
+    } catch (error) {
       this.logger.error({ error, options }, 'Failed to list users');
       return {
         success: false,
@@ -136,7 +136,7 @@ export class UserService extends BaseService {
         success: true,
         data: user,
       };
-    } catch {
+    } catch (error) {
       this.logger.error({ error, userId }, 'Failed to get user by ID');
       return {
         success: false,
@@ -209,7 +209,7 @@ export class UserService extends BaseService {
         success: true,
         data: result,
       };
-    } catch {
+    } catch (error) {
       this.logger.error({ error, input: { email: input.email } }, 'Failed to create user');
       return {
         success: false,
@@ -298,7 +298,7 @@ export class UserService extends BaseService {
         success: true,
         data: result,
       };
-    } catch {
+    } catch (error) {
       this.logger.error({ error, userId, input }, 'Failed to update user');
       return {
         success: false,
@@ -351,7 +351,7 @@ export class UserService extends BaseService {
       return {
         success: true,
       };
-    } catch {
+    } catch (error) {
       this.logger.error({ error, userId, deletedBy }, 'Failed to delete user');
       return {
         success: false,

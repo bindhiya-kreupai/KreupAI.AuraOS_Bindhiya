@@ -74,7 +74,7 @@ export const useGovernment = () => {
       } else {
         setSettings(settingsData);
       }
-    } catch {
+    } catch (error) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
       addToast({ type: 'error', message: 'Failed to load government data' });
     } finally {
@@ -94,9 +94,9 @@ export const useGovernment = () => {
       setGrades(await CivilServiceGradeService.getAllGrades());
       addToast({ type: 'success', message: 'Grade assignment created' });
       return newGrade;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create grade' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -109,9 +109,9 @@ export const useGovernment = () => {
       setGrades(await CivilServiceGradeService.getAllGrades());
       addToast({ type: 'success', message: 'Grade updated successfully' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update grade' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -120,9 +120,9 @@ export const useGovernment = () => {
   const getGradeByEmployeeId = async (employeeId: string) => {
     try {
       return await CivilServiceGradeService.getGradeByEmployeeId(employeeId);
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to retrieve grade' });
-      throw err;
+      throw error;
     }
   };
 
@@ -134,9 +134,9 @@ export const useGovernment = () => {
       setClearances(await SecurityClearanceService.getAllClearances());
       addToast({ type: 'success', message: 'Security clearance created' });
       return newClearance;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create clearance' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -149,9 +149,9 @@ export const useGovernment = () => {
       setClearances(await SecurityClearanceService.getAllClearances());
       addToast({ type: 'success', message: 'Clearance updated successfully' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update clearance' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -160,18 +160,18 @@ export const useGovernment = () => {
   const getClearanceByEmployeeId = async (employeeId: string) => {
     try {
       return await SecurityClearanceService.getClearanceByEmployeeId(employeeId);
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to retrieve clearance' });
-      throw err;
+      throw error;
     }
   };
 
   const getExpiringSoonClearances = async (days: number = 90) => {
     try {
       return await SecurityClearanceService.getExpiringSoon(days);
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to retrieve expiring clearances' });
-      throw err;
+      throw error;
     }
   };
 
@@ -183,9 +183,9 @@ export const useGovernment = () => {
       setPensions(await PensionSchemeService.getAllPensions());
       addToast({ type: 'success', message: 'Pension scheme created' });
       return newPension;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create pension' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -198,9 +198,9 @@ export const useGovernment = () => {
       setPensions(await PensionSchemeService.getAllPensions());
       addToast({ type: 'success', message: 'Pension updated successfully' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update pension' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -209,18 +209,18 @@ export const useGovernment = () => {
   const getPensionByEmployeeId = async (employeeId: string) => {
     try {
       return await PensionSchemeService.getPensionByEmployeeId(employeeId);
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to retrieve pension' });
-      throw err;
+      throw error;
     }
   };
 
   const getRetirementEligibleEmployees = async () => {
     try {
       return await PensionSchemeService.getRetirementEligible();
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to retrieve retirement eligible employees' });
-      throw err;
+      throw error;
     }
   };
 
@@ -230,9 +230,9 @@ export const useGovernment = () => {
       await AlertsService.acknowledgeAlert(alertId, acknowledgedBy);
       setAlerts(await AlertsService.getAllAlerts());
       addToast({ type: 'success', message: 'Alert acknowledged' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to acknowledge alert' });
-      throw err;
+      throw error;
     }
   };
 

@@ -133,7 +133,7 @@ export const GET = withEnhancedAuth(
         data: { ipRestrictions: filteredData, summary },
         meta: { total: filteredData.length },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching IP restrictions:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch IP restrictions' },
@@ -224,7 +224,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newRestriction }, { status: 201 });
-    } catch {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -275,7 +275,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch {
+    } catch (error) {
       logger.error('Error updating IP restriction:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update IP restriction' },
@@ -313,7 +313,7 @@ export const DELETE = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, message: 'IP restriction deleted successfully' });
-    } catch {
+    } catch (error) {
       logger.error('Error deleting IP restriction:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to delete IP restriction' },

@@ -187,7 +187,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     ];
 
     return NextResponse.json({ data: mockPipelines }, { status: 200 });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -224,7 +224,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json({ data: newPipeline }, { status: 201 });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

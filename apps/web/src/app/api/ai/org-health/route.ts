@@ -155,7 +155,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: healthData,
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to fetch organization health',
@@ -262,7 +262,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process organization health request',

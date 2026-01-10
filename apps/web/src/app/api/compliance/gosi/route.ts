@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
         liability: GOSIService.calculateCompanyLiability(records),
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to generate GOSI file', errorAr: 'فشل في إنشاء ملف التأمينات' },
       { status: 500 }
@@ -136,7 +136,7 @@ export async function GET() {
         },
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch GOSI reference data', errorAr: 'فشل في جلب بيانات التأمينات المرجعية' },
       { status: 500 }

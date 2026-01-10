@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: request_data,
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process encashment',
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch encashment requests', errorAr: 'فشل في جلب طلبات صرف الإجازات' },
       { status: 500 }

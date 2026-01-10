@@ -54,7 +54,7 @@ export async function POST(
         timestamp: response.timestamp,
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { success: false, error: 'Failed to process message' },
       { status: 500 }
@@ -89,7 +89,7 @@ export async function GET(
         totalMessages: session.messages.length,
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { success: false, error: 'Failed to fetch messages' },
       { status: 500 }

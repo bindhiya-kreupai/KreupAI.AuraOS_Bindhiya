@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
             success: true,
             data: transformed
         });
-    } catch {
+    } catch (error) {
         logger.error('Error fetching categories:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch categories' },

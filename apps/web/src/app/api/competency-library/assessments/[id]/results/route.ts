@@ -107,7 +107,7 @@ export async function POST(
             data: createdResults,
             message: 'Results submitted successfully'
         });
-    } catch {
+    } catch (error) {
         logger.error('Error submitting results:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to submit results' },
@@ -140,7 +140,7 @@ export async function GET(
             success: true,
             data: results
         });
-    } catch {
+    } catch (error) {
         logger.error('Error fetching results:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch results' },

@@ -127,7 +127,7 @@ export function useCollaboration(userId: string = 'user-001'): UseCollaborationR
       setStandupResponses(responsesData);
       setAnalytics(analyticsData);
       setSettings(settingsData);
-    } catch {
+    } catch (error) {
       setError(err instanceof Error ? err.message : 'Failed to load collaboration data');
     } finally {
       setLoading(false);

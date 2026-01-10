@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
           },
         });
     }
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch leave data', errorAr: 'فشل في جلب بيانات الإجازات' },
       { status: 500 }
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
         createdAt: new Date().toISOString(),
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to submit leave request', errorAr: 'فشل في تقديم طلب الإجازة' },
       { status: 500 }

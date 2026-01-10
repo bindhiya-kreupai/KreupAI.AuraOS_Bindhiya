@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process report',
@@ -203,7 +203,7 @@ export async function GET(request: NextRequest) {
           },
         });
     }
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch reports', errorAr: 'فشل في جلب التقارير' },
       { status: 500 }

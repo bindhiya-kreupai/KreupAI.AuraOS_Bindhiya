@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: result,
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to process leave accrual', errorAr: 'فشل في معالجة استحقاق الإجازات' },
       { status: 500 }
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch accrual history', errorAr: 'فشل في جلب سجل الاستحقاق' },
       { status: 500 }

@@ -64,7 +64,7 @@ export const GET = withEnhancedAuth(
         data: filteredData,
         meta: { total: filteredData.length },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching WFH requests:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch WFH requests' },
@@ -102,7 +102,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newWFH }, { status: 201 });
-    } catch {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

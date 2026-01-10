@@ -28,7 +28,7 @@ export class DepartmentService {
       if (filters?.managerId) params.managerId = filters.managerId;
 
       return await APIClient.get<Department[]>(this.BASE_ENDPOINT, params);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to fetch departments: ${error.message}`);
       }
@@ -39,7 +39,7 @@ export class DepartmentService {
   static async getDepartmentById(id: string): Promise<Department | null> {
     try {
       return await APIClient.get<Department>(`${this.BASE_ENDPOINT}/${id}`);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError && error.statusCode === 404) {
         return null;
       }
@@ -53,7 +53,7 @@ export class DepartmentService {
   static async createDepartment(department: Department): Promise<Department> {
     try {
       return await APIClient.post<Department>(this.BASE_ENDPOINT, department);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to create department: ${error.message}`);
       }
@@ -64,7 +64,7 @@ export class DepartmentService {
   static async updateDepartment(id: string, updates: Partial<Department>): Promise<Department> {
     try {
       return await APIClient.put<Department>(`${this.BASE_ENDPOINT}/${id}`, updates);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to update department: ${error.message}`);
       }
@@ -75,7 +75,7 @@ export class DepartmentService {
   static async deleteDepartment(id: string): Promise<void> {
     try {
       await APIClient.delete<void>(`${this.BASE_ENDPOINT}/${id}`);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to delete department: ${error.message}`);
       }
@@ -93,7 +93,7 @@ export class DepartmentService {
       if (rootId) params.rootId = rootId;
 
       return await APIClient.get<Department[]>(this.BASE_ENDPOINT, params);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to fetch department hierarchy: ${error.message}`);
       }
@@ -121,7 +121,7 @@ export class PositionService {
       if (filters?.type) params.type = filters.type;
 
       return await APIClient.get<Position[]>(this.BASE_ENDPOINT, params);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to fetch positions: ${error.message}`);
       }
@@ -132,7 +132,7 @@ export class PositionService {
   static async getPositionById(id: string): Promise<Position | null> {
     try {
       return await APIClient.get<Position>(`${this.BASE_ENDPOINT}/${id}`);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError && error.statusCode === 404) {
         return null;
       }
@@ -165,7 +165,7 @@ export class PositionService {
       }
 
       return created;
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to create position: ${error.message}`);
       }
@@ -198,7 +198,7 @@ export class PositionService {
       }
 
       return updated;
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to update position: ${error.message}`);
       }
@@ -209,7 +209,7 @@ export class PositionService {
   static async deletePosition(id: string): Promise<void> {
     try {
       await APIClient.delete<void>(`${this.BASE_ENDPOINT}/${id}`);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to delete position: ${error.message}`);
       }
@@ -230,7 +230,7 @@ export class PositionService {
         },
         status: 'active'
       });
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to assign employee: ${error.message}`);
       }
@@ -261,7 +261,7 @@ export class PositionService {
         currentEmployee: undefined,
         status: 'vacant'
       });
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to remove employee: ${error.message}`);
       }
@@ -278,7 +278,7 @@ export class PositionService {
       return await APIClient.get<PositionHistory[]>(
         `${this.BASE_ENDPOINT}/${positionId}/history`
       );
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to fetch position history: ${error.message}`);
       }
@@ -292,7 +292,7 @@ export class PositionService {
         `/position-history`,
         history
       );
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to add position history: ${error.message}`);
       }
@@ -306,7 +306,7 @@ export class PositionService {
         `/position-history/${id}`,
         updates
       );
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to update position history: ${error.message}`);
       }
@@ -325,7 +325,7 @@ export class ReportingRelationshipService {
       if (filters?.subordinateId) params.subordinateId = filters.subordinateId;
 
       return await APIClient.get<ReportingRelationship[]>(this.BASE_ENDPOINT, params);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to fetch reporting relationships: ${error.message}`);
       }
@@ -341,7 +341,7 @@ export class ReportingRelationshipService {
       }
 
       return await APIClient.post<ReportingRelationship>(this.BASE_ENDPOINT, relationship);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to create reporting relationship: ${error.message}`);
       }
@@ -352,7 +352,7 @@ export class ReportingRelationshipService {
   static async deleteRelationship(id: string): Promise<void> {
     try {
       await APIClient.delete<void>(`${this.BASE_ENDPOINT}/${id}`);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to delete reporting relationship: ${error.message}`);
       }
@@ -368,7 +368,7 @@ export class ReportingRelationshipService {
     try {
       const relationships = await this.getRelationships({ subordinateId });
       return relationships.find(r => r.isPrimary) || relationships[0] || null;
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to fetch manager: ${error.message}`);
       }
@@ -384,7 +384,7 @@ export class ReportingRelationshipService {
       if (!managerRelationship) return false;
 
       return this.hasCircularReporting(employeeId, managerRelationship.managerId);
-    } catch {
+    } catch (error) {
       // If error occurs during circular check, assume false to allow operation
       return false;
     }
@@ -422,7 +422,7 @@ export class ReportingRelationshipService {
         isOptimal,
         recommendation: isOptimal ? undefined : directReports.length < 3 ? 'Consider consolidating roles' : 'Consider delegating to additional managers'
       };
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to calculate span of control: ${error.message}`);
       }
@@ -437,7 +437,7 @@ export class OrganizationLevelService {
   static async getLevels(): Promise<OrganizationLevel[]> {
     try {
       return await APIClient.get<OrganizationLevel[]>(this.BASE_ENDPOINT);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to fetch organization levels: ${error.message}`);
       }
@@ -448,7 +448,7 @@ export class OrganizationLevelService {
   static async createLevel(level: OrganizationLevel): Promise<OrganizationLevel> {
     try {
       return await APIClient.post<OrganizationLevel>(this.BASE_ENDPOINT, level);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to create organization level: ${error.message}`);
       }
@@ -459,7 +459,7 @@ export class OrganizationLevelService {
   static async updateLevel(id: string, updates: Partial<OrganizationLevel>): Promise<OrganizationLevel> {
     try {
       return await APIClient.put<OrganizationLevel>(`${this.BASE_ENDPOINT}/${id}`, updates);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to update organization level: ${error.message}`);
       }
@@ -478,7 +478,7 @@ export class PositionRequestService {
       if (filters?.status) params.status = filters.status;
 
       return await APIClient.get<PositionRequest[]>(this.BASE_ENDPOINT, params);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to fetch position requests: ${error.message}`);
       }
@@ -489,7 +489,7 @@ export class PositionRequestService {
   static async submitRequest(request: PositionRequest): Promise<PositionRequest> {
     try {
       return await APIClient.post<PositionRequest>(this.BASE_ENDPOINT, request);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to submit position request: ${error.message}`);
       }
@@ -512,7 +512,7 @@ export class PositionRequestService {
         `${this.BASE_ENDPOINT}/${id}/approve`,
         approval
       );
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to approve position request: ${error.message}`);
       }
@@ -536,7 +536,7 @@ export class PositionRequestService {
         `${this.BASE_ENDPOINT}/${id}/reject`,
         approval
       );
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to reject position request: ${error.message}`);
       }
@@ -554,7 +554,7 @@ export class OrganizationChangeService {
       if (filters?.status) params.status = filters.status;
 
       return await APIClient.get<OrganizationChange[]>(this.BASE_ENDPOINT, params);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to fetch organization changes: ${error.message}`);
       }
@@ -565,7 +565,7 @@ export class OrganizationChangeService {
   static async createChange(change: OrganizationChange): Promise<OrganizationChange> {
     try {
       return await APIClient.post<OrganizationChange>(this.BASE_ENDPOINT, change);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to create organization change: ${error.message}`);
       }
@@ -576,7 +576,7 @@ export class OrganizationChangeService {
   static async updateChange(id: string, updates: Partial<OrganizationChange>): Promise<OrganizationChange> {
     try {
       return await APIClient.put<OrganizationChange>(`${this.BASE_ENDPOINT}/${id}`, updates);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to update organization change: ${error.message}`);
       }
@@ -595,7 +595,7 @@ export class DepartmentTransferService {
       if (filters?.status) params.status = filters.status;
 
       return await APIClient.get<DepartmentTransfer[]>(this.BASE_ENDPOINT, params);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to fetch department transfers: ${error.message}`);
       }
@@ -606,7 +606,7 @@ export class DepartmentTransferService {
   static async createTransfer(transfer: DepartmentTransfer): Promise<DepartmentTransfer> {
     try {
       return await APIClient.post<DepartmentTransfer>(this.BASE_ENDPOINT, transfer);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to create department transfer: ${error.message}`);
       }
@@ -626,7 +626,7 @@ export class DepartmentTransferService {
         `${this.BASE_ENDPOINT}/${id}/approve`,
         approval
       );
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to approve department transfer: ${error.message}`);
       }
@@ -641,7 +641,7 @@ export class OrganizationAnalyticsService {
   static async getMetrics(): Promise<OrganizationMetrics> {
     try {
       return await APIClient.get<OrganizationMetrics>(this.BASE_ENDPOINT);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         // Return default metrics if API fails
                 return {
@@ -674,7 +674,7 @@ export class OrganizationAnalyticsService {
   static async calculateMetrics(): Promise<OrganizationMetrics> {
     try {
       return await APIClient.post<OrganizationMetrics>(`${this.BASE_ENDPOINT}/calculate`, {});
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to calculate metrics: ${error.message}`);
       }
@@ -689,7 +689,7 @@ export class OrganizationSettingsService {
   static async getSettings(): Promise<OrganizationSettings> {
     try {
       return await APIClient.get<OrganizationSettings>(this.BASE_ENDPOINT);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         // Return default settings if API fails
                 return {
@@ -719,7 +719,7 @@ export class OrganizationSettingsService {
   static async updateSettings(updates: Partial<OrganizationSettings>): Promise<OrganizationSettings> {
     try {
       return await APIClient.put<OrganizationSettings>(this.BASE_ENDPOINT, updates);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to update organization settings: ${error.message}`);
       }
@@ -734,7 +734,7 @@ export class OrgChartService {
   static async getViews(): Promise<OrgChartView[]> {
     try {
       return await APIClient.get<OrgChartView[]>(`${this.BASE_ENDPOINT}/views`);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to fetch org chart views: ${error.message}`);
       }
@@ -748,7 +748,7 @@ export class OrgChartService {
       if (rootDepartmentId) params.rootDepartmentId = rootDepartmentId;
 
       return await APIClient.get<OrganizationNode>(`${this.BASE_ENDPOINT}/build`, params);
-    } catch {
+    } catch (error) {
       if (error instanceof APIError) {
         throw new Error(`Failed to build org chart: ${error.message}`);
       }

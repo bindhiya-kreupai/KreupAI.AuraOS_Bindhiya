@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch payslips', errorAr: 'فشل في جلب كشوف الرواتب' },
       { status: 500 }
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
         generatedAt: new Date().toISOString(),
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to generate payslip', errorAr: 'فشل في إنشاء كشف الراتب' },
       { status: 500 }

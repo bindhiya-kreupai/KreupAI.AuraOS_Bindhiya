@@ -30,7 +30,7 @@ export const POST = authRateLimit(async function (request: NextRequest) {
     let decoded: JWTPayload;
     try {
       decoded = verifyToken(refreshToken);
-    } catch {
+    } catch (error) {
       logger.warn({ ipAddress }, 'Invalid refresh token attempt');
       return NextResponse.json(
         {
@@ -182,7 +182,7 @@ export const POST = authRateLimit(async function (request: NextRequest) {
       },
       message: 'Token refreshed successfully',
     });
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }

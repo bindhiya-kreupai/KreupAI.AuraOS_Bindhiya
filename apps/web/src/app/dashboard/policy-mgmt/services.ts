@@ -9,7 +9,7 @@ export class PolicyService {
     try {
       const response = await APIClient.get<{ policies?: Policy[] }>(this.endpoint);
       return response.policies || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -36,7 +36,7 @@ export class PolicySettingsService {
     try {
       const response = await APIClient.get<{ settings?: PolicySettings }>(this.endpoint);
       return response.settings || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -54,7 +54,7 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: PolicyAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }

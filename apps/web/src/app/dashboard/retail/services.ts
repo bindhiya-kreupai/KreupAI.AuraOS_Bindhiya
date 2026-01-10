@@ -8,7 +8,7 @@ export class StoreOperationsService {
     try {
       const response = await APIClient.get<{ stores?: Store[] }>(this.endpoint);
       return response.stores || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -31,7 +31,7 @@ export class CommissionService {
     try {
       const response = await APIClient.get<{ plans?: CommissionPlan[] }>(`${this.endpoint}/plans`);
       return response.plans || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -45,7 +45,7 @@ export class CommissionService {
     try {
       const response = await APIClient.get<{ commissions?: SalesCommission[] }>(this.endpoint);
       return response.commissions || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -68,7 +68,7 @@ export class SeasonalHiringService {
     try {
       const response = await APIClient.get<{ hires?: SeasonalHire[] }>(this.endpoint);
       return response.hires || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -91,7 +91,7 @@ export class RetailSettingsService {
     try {
       const response = await APIClient.get<{ settings?: RetailSettings }>(this.endpoint);
       return response.settings || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -109,7 +109,7 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: RetailAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }

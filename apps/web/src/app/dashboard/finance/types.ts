@@ -658,7 +658,7 @@ export interface PettyCashReconciliation {
   transactionCount: number;
   totalDisbursements: number;
   totalReplenishments: number;
-  unreconciled transactions: number;
+  unreconciledTransactions: number;
 
   // Physical Count
   cashOnHand: number;

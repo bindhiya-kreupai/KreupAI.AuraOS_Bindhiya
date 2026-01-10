@@ -36,7 +36,7 @@ export default function CreateJobModal({ isOpen, onClose, onSuccess }: CreateJob
             // Reset and close
             setFormData({ title: '', department: '', location: '', type: 'Full-time' });
             onSuccess();
-        } catch (err) {
+        } catch (error) {
             console.error('Failed to create job:', err);
             setError('Failed to create job. Please try again.');
         } finally {

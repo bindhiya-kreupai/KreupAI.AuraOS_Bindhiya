@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
         totalRemaining: 0,
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch budgets' },
       { status: 500 }
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to create budget' },
       { status: 500 }
@@ -119,7 +119,7 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to update budget' },
       { status: 500 }
@@ -147,7 +147,7 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Budget deleted successfully',
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to delete budget' },
       { status: 500 }

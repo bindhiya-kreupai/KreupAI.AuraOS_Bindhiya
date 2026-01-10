@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
             pageSize,
             totalPages: Math.ceil(total / pageSize)
         });
-    } catch {
+    } catch (error) {
         logger.error('Error fetching assessments:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch assessments' },
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
             data: assessment,
             message: 'Assessment created successfully'
         });
-    } catch {
+    } catch (error) {
         logger.error('Error creating assessment:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to create assessment' },

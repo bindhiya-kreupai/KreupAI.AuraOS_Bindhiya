@@ -76,7 +76,7 @@ export const useConstruction = () => {
         setSettings(sampleConstructionSettings);
       } else setSettings(settingsData);
 
-    } catch {
+    } catch (error) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
       addToast({ type: 'error', message: 'Failed to load construction data' });
     } finally {
@@ -94,9 +94,9 @@ export const useConstruction = () => {
       setProjects(await ProjectManagementService.getAllProjects());
       addToast({ type: 'success', message: 'Project created successfully' });
       return project;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create project' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -109,9 +109,9 @@ export const useConstruction = () => {
       setProjects(await ProjectManagementService.getAllProjects());
       addToast({ type: 'success', message: 'Project updated successfully' });
       return project;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update project' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -123,9 +123,9 @@ export const useConstruction = () => {
       await ProjectManagementService.deleteProject(projectId);
       setProjects(await ProjectManagementService.getAllProjects());
       addToast({ type: 'success', message: 'Project deleted successfully' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to delete project' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -138,9 +138,9 @@ export const useConstruction = () => {
       setTasks(await ProjectManagementService.getAllTasks());
       addToast({ type: 'success', message: 'Task created successfully' });
       return task;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create task' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -153,9 +153,9 @@ export const useConstruction = () => {
       setTasks(await ProjectManagementService.getAllTasks());
       addToast({ type: 'success', message: 'Task updated successfully' });
       return task;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update task' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -169,9 +169,9 @@ export const useConstruction = () => {
       setSafetyInspections(await SiteSafetyService.getAllInspections());
       addToast({ type: 'success', message: 'Safety inspection created' });
       return inspection;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create inspection' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -184,9 +184,9 @@ export const useConstruction = () => {
       setSafetyInspections(await SiteSafetyService.getAllInspections());
       addToast({ type: 'success', message: 'Inspection updated' });
       return inspection;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update inspection' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -199,9 +199,9 @@ export const useConstruction = () => {
       setSafetyIncidents(await SiteSafetyService.getAllIncidents());
       addToast({ type: 'success', message: 'Incident reported' });
       return incident;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to report incident' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -214,9 +214,9 @@ export const useConstruction = () => {
       setSafetyIncidents(await SiteSafetyService.getAllIncidents());
       addToast({ type: 'success', message: 'Incident updated' });
       return incident;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update incident' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -229,9 +229,9 @@ export const useConstruction = () => {
       setSafetyTraining(await SiteSafetyService.getAllTrainings());
       addToast({ type: 'success', message: 'Training record created' });
       return training;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create training' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -244,9 +244,9 @@ export const useConstruction = () => {
       setHazards(await SiteSafetyService.getAllHazards());
       addToast({ type: 'success', message: 'Hazard identified' });
       return hazard;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create hazard' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -260,9 +260,9 @@ export const useConstruction = () => {
       setEquipmentLeases(await EquipmentLeasingService.getAllLeases());
       addToast({ type: 'success', message: 'Equipment lease created' });
       return lease;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create lease' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -275,9 +275,9 @@ export const useConstruction = () => {
       setEquipmentLeases(await EquipmentLeasingService.getAllLeases());
       addToast({ type: 'success', message: 'Lease updated' });
       return lease;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update lease' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -289,9 +289,9 @@ export const useConstruction = () => {
       await EquipmentLeasingService.deleteLease(leaseId);
       setEquipmentLeases(await EquipmentLeasingService.getAllLeases());
       addToast({ type: 'success', message: 'Lease deleted' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to delete lease' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -305,9 +305,9 @@ export const useConstruction = () => {
       setSubcontractors(await SubcontractorPortalService.getAllSubcontractors());
       addToast({ type: 'success', message: 'Subcontractor created' });
       return sub;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create subcontractor' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -320,9 +320,9 @@ export const useConstruction = () => {
       setSubcontractors(await SubcontractorPortalService.getAllSubcontractors());
       addToast({ type: 'success', message: 'Subcontractor updated' });
       return sub;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update subcontractor' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -335,9 +335,9 @@ export const useConstruction = () => {
       setBidInvitations(await SubcontractorPortalService.getAllBidInvitations());
       addToast({ type: 'success', message: 'Bid invitation sent' });
       return invite;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to send invitation' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -350,9 +350,9 @@ export const useConstruction = () => {
       setBids(await SubcontractorPortalService.getAllBids());
       addToast({ type: 'success', message: 'Bid submitted' });
       return bid;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to submit bid' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -365,9 +365,9 @@ export const useConstruction = () => {
       setBids(await SubcontractorPortalService.getAllBids());
       addToast({ type: 'success', message: 'Bid updated' });
       return bid;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update bid' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -380,9 +380,9 @@ export const useConstruction = () => {
       setContracts(await SubcontractorPortalService.getAllContracts());
       addToast({ type: 'success', message: 'Contract created' });
       return contract;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create contract' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -395,9 +395,9 @@ export const useConstruction = () => {
       setContracts(await SubcontractorPortalService.getAllContracts());
       addToast({ type: 'success', message: 'Contract updated' });
       return contract;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update contract' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -410,9 +410,9 @@ export const useConstruction = () => {
       setInvoices(await SubcontractorPortalService.getAllInvoices());
       addToast({ type: 'success', message: 'Invoice created' });
       return invoice;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create invoice' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -425,9 +425,9 @@ export const useConstruction = () => {
       setInvoices(await SubcontractorPortalService.getAllInvoices());
       addToast({ type: 'success', message: 'Invoice updated' });
       return invoice;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update invoice' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -440,9 +440,9 @@ export const useConstruction = () => {
       setSettings(settingsData);
       addToast({ type: 'success', message: 'Settings updated' });
       return settingsData;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update settings' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -454,9 +454,9 @@ export const useConstruction = () => {
       const alert = await AlertsService.createAlert(alertData);
       setAlerts(await AlertsService.getAllAlerts());
       return alert;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create alert' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -469,9 +469,9 @@ export const useConstruction = () => {
       setAlerts(await AlertsService.getAllAlerts());
       addToast({ type: 'success', message: 'Alert acknowledged' });
       return alert;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to acknowledge alert' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }

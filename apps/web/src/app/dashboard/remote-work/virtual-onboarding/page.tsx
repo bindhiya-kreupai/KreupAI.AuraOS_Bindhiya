@@ -7,10 +7,32 @@ import {
     Mail,
     Video,
     Calendar,
-    Users
+    Users,
+    Loader2
 } from 'lucide-react';
+import { useRemoteWork } from '../hooks/useRemoteWork';
 
 export default function VirtualOnboardingPage() {
+    const { employees, loading, error } = useRemoteWork();
+
+    if (loading) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center text-rose-500 font-bold">
+                Error: {error}
+            </div>
+        );
+    }
+
+    const recentJoiners = employees.slice(0, 3);
+
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -28,9 +50,9 @@ export default function VirtualOnboardingPage() {
             <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl p-8 text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl">
                 <div className="space-y-4 max-w-lg">
                     <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-bold backdrop-blur-md border border-white/20">Active Session</span>
-                    <h2 className="text-3xl font-black">Welcome, Batch of Dec '25!</h2>
+                    <h2 className="text-3xl font-black">Welcome, New Remote Team Members!</h2>
                     <p className="text-indigo-100 opacity-90">
-                        3 new remote joiners starting today. Their equipment has been delivered and accounts are provisioned.
+                        {employees.length} remote joiners in the current cycle. Equipment has been delivered and accounts are provisioned.
                     </p>
                     <div className="flex gap-4 pt-2">
                         <button className="px-6 py-2 bg-white text-indigo-600 rounded-xl font-bold text-sm shadow-lg hover:bg-slate-50 transition-colors">Start Orientation</button>
@@ -39,9 +61,9 @@ export default function VirtualOnboardingPage() {
                 </div>
 
                 <div className="flex -space-x-4">
-                    {[1, 2, 3].map(i => (
-                        <div key={i} className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-md border-2 border-white/30 flex items-center justify-center text-xl font-bold">
-                            {String.fromCharCode(64 + i)}
+                    {recentJoiners.map((e, i) => (
+                        <div key={e.employeeId || i} className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-md border-2 border-white/30 flex items-center justify-center text-xl font-bold">
+                            {e.employeeName.charAt(0)}
                         </div>
                     ))}
                 </div>
@@ -63,8 +85,8 @@ export default function VirtualOnboardingPage() {
                         ].map((item, i) => (
                             <div key={i} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl group hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
                                 <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 ${item.status === 'done'
-                                        ? 'bg-emerald-500 border-emerald-500 text-white'
-                                        : 'border-slate-300 dark:border-slate-600 text-transparent'
+                                    ? 'bg-emerald-500 border-emerald-500 text-white'
+                                    : 'border-slate-300 dark:border-slate-600 text-transparent'
                                     }`}>
                                     <CheckSquare className="w-3 h-3" />
                                 </div>

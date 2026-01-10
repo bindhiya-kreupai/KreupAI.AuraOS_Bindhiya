@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: payrollRun,
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process payroll',
@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch payroll runs', errorAr: 'فشل في جلب سجلات الرواتب' },
       { status: 500 }

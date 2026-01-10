@@ -18,7 +18,7 @@ export class EmployeesService {
     static async getEmployees(): Promise<Employee[]> {
         try {
             return await APIClient.get<Employee[]>(API_ENDPOINT);
-        } catch {
+        } catch (error) {
             console.error('Error fetching employees:', error);
             const message = error instanceof APIError
                 ? `Failed to load employees: ${error.message}`
@@ -33,7 +33,7 @@ export class EmployeesService {
     static async getEmployee(id: string): Promise<Employee | null> {
         try {
             return await APIClient.get<Employee>(`${API_ENDPOINT}/${id}`);
-        } catch {
+        } catch (error) {
             if (error instanceof APIError && error.statusCode === 404) {
                 return null;
             }
@@ -51,7 +51,7 @@ export class EmployeesService {
     static async createEmployee(employee: Employee): Promise<Employee> {
         try {
             return await APIClient.post<Employee>(API_ENDPOINT, employee);
-        } catch {
+        } catch (error) {
             console.error('Error creating employee:', error);
             const message = error instanceof APIError
                 ? `Failed to create employee: ${error.message}`
@@ -66,7 +66,7 @@ export class EmployeesService {
     static async updateEmployee(id: string, updates: Partial<Employee>): Promise<Employee> {
         try {
             return await APIClient.patch<Employee>(`${API_ENDPOINT}/${id}`, updates);
-        } catch {
+        } catch (error) {
             console.error('Error updating employee:', error);
             const message = error instanceof APIError
                 ? `Failed to update employee: ${error.message}`
@@ -81,7 +81,7 @@ export class EmployeesService {
     static async deleteEmployee(id: string): Promise<void> {
         try {
             await APIClient.delete<void>(`${API_ENDPOINT}/${id}`);
-        } catch {
+        } catch (error) {
             console.error('Error deleting employee:', error);
             const message = error instanceof APIError
                 ? `Failed to delete employee: ${error.message}`
@@ -99,7 +99,7 @@ export class EmployeesService {
                 `${API_ENDPOINT}/${employeeId}/documents`,
                 document
             );
-        } catch {
+        } catch (error) {
             console.error('Error uploading document:', error);
             const message = error instanceof APIError
                 ? `Failed to upload document: ${error.message}`
@@ -116,7 +116,7 @@ export class EmployeesService {
             await APIClient.delete<void>(
                 `${API_ENDPOINT}/${employeeId}/documents/${documentId}`
             );
-        } catch {
+        } catch (error) {
             console.error('Error deleting document:', error);
             const message = error instanceof APIError
                 ? `Failed to delete document: ${error.message}`
@@ -137,7 +137,7 @@ export class EmployeesService {
                 `${API_ENDPOINT}/${employeeId}/history`,
                 event
             );
-        } catch {
+        } catch (error) {
             console.error('Error adding history event:', error);
             const message = error instanceof APIError
                 ? `Failed to add history event: ${error.message}`
@@ -152,7 +152,7 @@ export class EmployeesService {
     static async getStats(): Promise<EmployeeStats> {
         try {
             return await APIClient.get<EmployeeStats>(`${API_ENDPOINT}/stats`);
-        } catch {
+        } catch (error) {
             console.error('Error fetching stats:', error);
             const message = error instanceof APIError
                 ? `Failed to load statistics: ${error.message}`

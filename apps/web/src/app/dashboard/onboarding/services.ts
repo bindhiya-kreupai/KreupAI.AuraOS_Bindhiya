@@ -37,7 +37,7 @@ export class OnboardingProgramService {
         try {
             const response = await APIClient.get<{ programs?: OnboardingProgram[] }>(this.endpoint);
             return response.programs || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -46,7 +46,7 @@ export class OnboardingProgramService {
         try {
             const response = await APIClient.get<{ program: OnboardingProgram }>(`${this.endpoint}/${id}`);
             return response.program;
-        } catch {
+        } catch (error) {
                         return null;
         }
     }
@@ -82,7 +82,7 @@ export class OnboardingInstanceService {
         try {
             const response = await APIClient.get<{ instances?: OnboardingInstance[] }>(this.endpoint);
             return response.instances || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -91,7 +91,7 @@ export class OnboardingInstanceService {
         try {
             const response = await APIClient.get<{ instance: OnboardingInstance }>(`${this.endpoint}/${id}`);
             return response.instance;
-        } catch {
+        } catch (error) {
                         return null;
         }
     }
@@ -100,7 +100,7 @@ export class OnboardingInstanceService {
         try {
             const response = await APIClient.get<{ instance: OnboardingInstance }>(`${this.endpoint}/employee/${employeeId}`);
             return response.instance;
-        } catch {
+        } catch (error) {
                         return null;
         }
     }
@@ -338,7 +338,7 @@ export class BuddyAssignmentService {
         try {
             const response = await APIClient.get<{ assignments?: BuddyAssignment[] }>(this.endpoint);
             return response.assignments || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -347,7 +347,7 @@ export class BuddyAssignmentService {
         try {
             const response = await APIClient.get<{ assignment: BuddyAssignment }>(`${this.endpoint}/${id}`);
             return response.assignment;
-        } catch {
+        } catch (error) {
                         return null;
         }
     }
@@ -379,7 +379,7 @@ export class Day30_60_90PlanService {
         try {
             const response = await APIClient.get<{ plans?: Day30_60_90Plan[] }>(this.endpoint);
             return response.plans || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -388,7 +388,7 @@ export class Day30_60_90PlanService {
         try {
             const response = await APIClient.get<{ plan: Day30_60_90Plan }>(`${this.endpoint}/${id}`);
             return response.plan;
-        } catch {
+        } catch (error) {
                         return null;
         }
     }
@@ -429,7 +429,7 @@ export class OnboardingSurveyService {
         try {
             const response = await APIClient.get<{ surveys?: OnboardingSurvey[] }>(this.endpoint);
             return response.surveys || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -438,7 +438,7 @@ export class OnboardingSurveyService {
         try {
             const response = await APIClient.get<{ survey: OnboardingSurvey }>(`${this.endpoint}/${id}`);
             return response.survey;
-        } catch {
+        } catch (error) {
                         return null;
         }
     }
@@ -473,7 +473,7 @@ export class FeedbackService {
         try {
             const response = await APIClient.get<{ feedback?: NewHireFeedback[] }>(this.endpoint);
             return response.feedback || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -495,7 +495,7 @@ export class PreBoardingService {
         try {
             const response = await APIClient.get<{ packages?: PreBoardingPackage[] }>(this.endpoint);
             return response.packages || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -504,7 +504,7 @@ export class PreBoardingService {
         try {
             const response = await APIClient.get<{ package: PreBoardingPackage }>(`${this.endpoint}/${id}`);
             return response.package;
-        } catch {
+        } catch (error) {
                         return null;
         }
     }
@@ -536,7 +536,7 @@ export class OnboardingAnalyticsService {
         try {
             const response = await APIClient.get<{ metrics: OnboardingMetrics }>(this.endpoint);
             return response.metrics;
-        } catch {
+        } catch (error) {
                         return {
                 totalOnboardings: 0,
                 activeOnboardings: 0,
@@ -570,7 +570,7 @@ export class OnboardingSettingsService {
         try {
             const response = await APIClient.get<{ settings: OnboardingSettings }>(this.endpoint);
             return response.settings;
-        } catch {
+        } catch (error) {
                         return {
                 autoAssignBuddy: true,
                 buddyMatchingCriteria: 'department',

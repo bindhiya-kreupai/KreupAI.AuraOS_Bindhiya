@@ -113,7 +113,7 @@ export async function waitForElementWithPolling(
     try {
       await locator.waitFor({ state, timeout: pollInterval });
       return;
-    } catch {
+    } catch (error) {
       // Element not found, continue polling
     }
   }
@@ -136,7 +136,7 @@ export async function waitForAnyElement(
       try {
         await locators[i].waitFor({ state: 'visible', timeout: 100 });
         return i; // Return index of first visible locator
-      } catch {
+      } catch (error) {
         // Continue to next locator
       }
     }

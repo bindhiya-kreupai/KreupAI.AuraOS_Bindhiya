@@ -838,7 +838,7 @@ describe('useCoreHR', () => {
         await act(async () => {
           await result.current.createEmployee({ name: 'Test' });
         });
-      } catch {
+      } catch (error) {
         // Expected
       }
 

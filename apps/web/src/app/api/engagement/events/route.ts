@@ -27,7 +27,7 @@ export const GET = withEnhancedAuth(
       ];
 
       return NextResponse.json({ success: true, data: mockEvents });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching events:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch events' }, { status: 500 });
     }
@@ -44,7 +44,7 @@ export const POST = withEnhancedAuth(
       const newEvent = { ...body, id: `event-${Date.now()}`, createdAt: new Date().toISOString() };
 
       return NextResponse.json({ success: true, data: newEvent }, { status: 201 });
-    } catch {
+    } catch (error) {
       logger.error('Error creating event:', error);
       return NextResponse.json({ success: false, error: 'Failed to create event' }, { status: 500 });
     }
@@ -59,7 +59,7 @@ export const PUT = withEnhancedAuth(
 
       const body = await request.json();
       return NextResponse.json({ success: true, data: { ...body, lastModified: new Date().toISOString() } });
-    } catch {
+    } catch (error) {
       logger.error('Error updating event:', error);
       return NextResponse.json({ success: false, error: 'Failed to update event' }, { status: 500 });
     }

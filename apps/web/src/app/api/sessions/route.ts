@@ -84,7 +84,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
         totalPages: Math.ceil(total / limit),
       },
     });
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }

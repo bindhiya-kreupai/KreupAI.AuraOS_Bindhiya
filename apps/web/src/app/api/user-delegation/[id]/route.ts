@@ -47,7 +47,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: delegation,
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching user delegation:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch user delegation' },
@@ -168,7 +168,7 @@ export const PUT = withEnhancedAuth(
         message: 'User delegation updated successfully',
         data: updatedDelegation,
       });
-    } catch {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return validationErrorResponse(error);
       }
@@ -241,7 +241,7 @@ export const DELETE = withEnhancedAuth(
         success: true,
         message: 'User delegation deleted successfully',
       });
-    } catch {
+    } catch (error) {
       logger.error('Error deleting user delegation:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to delete user delegation' },

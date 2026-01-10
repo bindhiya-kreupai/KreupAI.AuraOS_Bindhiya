@@ -44,7 +44,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: mockYearEndData,
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching year-end data:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch year-end data' },
@@ -89,7 +89,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: result });
-    } catch {
+    } catch (error) {
       logger.error('Error processing year-end task:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to process year-end task' },

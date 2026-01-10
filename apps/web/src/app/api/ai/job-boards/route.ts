@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Failed to process job boards request' }, { status: 500 });
   }
 }
@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
         pendingSync: 3,
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Failed to fetch job boards data' }, { status: 500 });
   }
 }
@@ -136,7 +136,7 @@ export async function DELETE(request: NextRequest) {
         removedFrom: ['LinkedIn', 'Indeed', 'Glassdoor'],
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Failed to delete job posting' }, { status: 500 });
   }
 }

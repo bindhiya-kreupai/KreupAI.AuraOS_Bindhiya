@@ -136,7 +136,7 @@ export const GET = withEnhancedAuth(
         data: { rules: filteredData, categorySummary },
         meta: { total: filteredData.length },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching attendance rules:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch attendance rules' },
@@ -175,7 +175,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newRule }, { status: 201 });
-    } catch {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -226,7 +226,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch {
+    } catch (error) {
       logger.error('Error updating attendance rule:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update attendance rule' },
@@ -264,7 +264,7 @@ export const DELETE = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, message: 'Attendance rule deleted successfully' });
-    } catch {
+    } catch (error) {
       logger.error('Error deleting attendance rule:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to delete attendance rule' },

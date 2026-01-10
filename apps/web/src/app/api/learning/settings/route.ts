@@ -20,7 +20,7 @@ export const GET = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: mockSettings });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching settings:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch settings' }, { status: 500 });
     }
@@ -37,7 +37,7 @@ export const PUT = withEnhancedAuth(
       logger.info('Settings updated by:', user.userId);
 
       return NextResponse.json({ success: true, data: body });
-    } catch {
+    } catch (error) {
       logger.error('Error updating settings:', error);
       return NextResponse.json({ success: false, error: 'Failed to update settings' }, { status: 500 });
     }

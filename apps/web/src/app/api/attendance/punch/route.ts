@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
         isWithinGeofence: validationResult.isWithinGeofence,
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to record punch',
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
         date: date || new Date().toISOString().split('T')[0],
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch punch history', errorAr: 'فشل في جلب سجل البصمات' },
       { status: 500 }

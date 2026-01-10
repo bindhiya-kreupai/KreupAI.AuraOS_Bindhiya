@@ -50,8 +50,8 @@ export const useOrganization = () => {
       setIsLoading(true);
       const data = await DepartmentService.getDepartments(filters);
       setDepartments(data);
-    } catch {
-      toast.error(`Failed to load departments: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to load departments: ${(error as Error).message}`);
     } finally {
       setIsLoading(false);
     }
@@ -64,9 +64,9 @@ export const useOrganization = () => {
       setDepartments(prev => [...prev, created]);
       toast.success('Department created successfully');
       return created;
-    } catch {
-      toast.error(`Failed to create department: ${(err as Error).message}`);
-      throw err;
+    } catch (error) {
+      toast.error(`Failed to create department: ${(error as Error).message}`);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -79,9 +79,9 @@ export const useOrganization = () => {
       setDepartments(prev => prev.map(d => d.id === id ? updated : d));
       toast.success('Department updated successfully');
       return updated;
-    } catch {
-      toast.error(`Failed to update department: ${(err as Error).message}`);
-      throw err;
+    } catch (error) {
+      toast.error(`Failed to update department: ${(error as Error).message}`);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -93,8 +93,8 @@ export const useOrganization = () => {
       await DepartmentService.deleteDepartment(id);
       setDepartments(prev => prev.filter(d => d.id !== id));
       toast.success('Department deleted successfully');
-    } catch {
-      toast.error(`Failed to delete department: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to delete department: ${(error as Error).message}`);
     } finally {
       setIsSaving(false);
     }
@@ -106,8 +106,8 @@ export const useOrganization = () => {
       setIsLoading(true);
       const data = await PositionService.getPositions(filters);
       setPositions(data);
-    } catch {
-      toast.error(`Failed to load positions: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to load positions: ${(error as Error).message}`);
     } finally {
       setIsLoading(false);
     }
@@ -120,9 +120,9 @@ export const useOrganization = () => {
       setPositions(prev => [...prev, created]);
       toast.success('Position created successfully');
       return created;
-    } catch {
-      toast.error(`Failed to create position: ${(err as Error).message}`);
-      throw err;
+    } catch (error) {
+      toast.error(`Failed to create position: ${(error as Error).message}`);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -135,9 +135,9 @@ export const useOrganization = () => {
       setPositions(prev => prev.map(p => p.id === id ? updated : p));
       toast.success('Position updated successfully');
       return updated;
-    } catch {
-      toast.error(`Failed to update position: ${(err as Error).message}`);
-      throw err;
+    } catch (error) {
+      toast.error(`Failed to update position: ${(error as Error).message}`);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -149,8 +149,8 @@ export const useOrganization = () => {
       await PositionService.deletePosition(id);
       setPositions(prev => prev.filter(p => p.id !== id));
       toast.success('Position deleted successfully');
-    } catch {
-      toast.error(`Failed to delete position: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to delete position: ${(error as Error).message}`);
     } finally {
       setIsSaving(false);
     }
@@ -163,9 +163,9 @@ export const useOrganization = () => {
       setPositions(prev => prev.map(p => p.id === positionId ? updated : p));
       toast.success('Employee assigned to position');
       return updated;
-    } catch {
-      toast.error(`Failed to assign employee: ${(err as Error).message}`);
-      throw err;
+    } catch (error) {
+      toast.error(`Failed to assign employee: ${(error as Error).message}`);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -178,9 +178,9 @@ export const useOrganization = () => {
       setPositions(prev => prev.map(p => p.id === positionId ? updated : p));
       toast.success('Employee removed from position');
       return updated;
-    } catch {
-      toast.error(`Failed to remove employee: ${(err as Error).message}`);
-      throw err;
+    } catch (error) {
+      toast.error(`Failed to remove employee: ${(error as Error).message}`);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -190,8 +190,8 @@ export const useOrganization = () => {
     try {
       const vacant = await PositionService.getVacantPositions();
       return vacant;
-    } catch {
-      toast.error(`Failed to load vacant positions: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to load vacant positions: ${(error as Error).message}`);
       return [];
     }
   }, [toast]);
@@ -201,8 +201,8 @@ export const useOrganization = () => {
     try {
       const data = await ReportingRelationshipService.getRelationships(filters);
       setRelationships(data);
-    } catch {
-      toast.error(`Failed to load relationships: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to load relationships: ${(error as Error).message}`);
     }
   }, [toast]);
 
@@ -213,9 +213,9 @@ export const useOrganization = () => {
       setRelationships(prev => [...prev, created]);
       toast.success('Reporting relationship created');
       return created;
-    } catch {
-      toast.error(`Failed to create relationship: ${(err as Error).message}`);
-      throw err;
+    } catch (error) {
+      toast.error(`Failed to create relationship: ${(error as Error).message}`);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -227,8 +227,8 @@ export const useOrganization = () => {
       await ReportingRelationshipService.deleteRelationship(id);
       setRelationships(prev => prev.filter(r => r.id !== id));
       toast.success('Reporting relationship deleted');
-    } catch {
-      toast.error(`Failed to delete relationship: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to delete relationship: ${(error as Error).message}`);
     } finally {
       setIsSaving(false);
     }
@@ -238,8 +238,8 @@ export const useOrganization = () => {
     try {
       const span = await ReportingRelationshipService.calculateSpanOfControl(managerId);
       return span;
-    } catch {
-      toast.error(`Failed to calculate span of control: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to calculate span of control: ${(error as Error).message}`);
       return null;
     }
   }, [toast]);
@@ -249,8 +249,8 @@ export const useOrganization = () => {
     try {
       const data = await PositionRequestService.getRequests(filters);
       setPositionRequests(data);
-    } catch {
-      toast.error(`Failed to load position requests: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to load position requests: ${(error as Error).message}`);
     }
   }, [toast]);
 
@@ -261,9 +261,9 @@ export const useOrganization = () => {
       setPositionRequests(prev => [...prev, submitted]);
       toast.success('Position request submitted');
       return submitted;
-    } catch {
-      toast.error(`Failed to submit request: ${(err as Error).message}`);
-      throw err;
+    } catch (error) {
+      toast.error(`Failed to submit request: ${(error as Error).message}`);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -276,9 +276,9 @@ export const useOrganization = () => {
       setPositionRequests(prev => prev.map(r => r.id === id ? approved : r));
       toast.success('Position request approved');
       return approved;
-    } catch {
-      toast.error(`Failed to approve request: ${(err as Error).message}`);
-      throw err;
+    } catch (error) {
+      toast.error(`Failed to approve request: ${(error as Error).message}`);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -291,9 +291,9 @@ export const useOrganization = () => {
       setPositionRequests(prev => prev.map(r => r.id === id ? rejected : r));
       toast.success('Position request rejected');
       return rejected;
-    } catch {
-      toast.error(`Failed to reject request: ${(err as Error).message}`);
-      throw err;
+    } catch (error) {
+      toast.error(`Failed to reject request: ${(error as Error).message}`);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -304,8 +304,8 @@ export const useOrganization = () => {
     try {
       const data = await OrganizationChangeService.getChanges(filters);
       setOrgChanges(data);
-    } catch {
-      toast.error(`Failed to load organization changes: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to load organization changes: ${(error as Error).message}`);
     }
   }, [toast]);
 
@@ -316,9 +316,9 @@ export const useOrganization = () => {
       setOrgChanges(prev => [...prev, created]);
       toast.success('Organization change created');
       return created;
-    } catch {
-      toast.error(`Failed to create change: ${(err as Error).message}`);
-      throw err;
+    } catch (error) {
+      toast.error(`Failed to create change: ${(error as Error).message}`);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -331,9 +331,9 @@ export const useOrganization = () => {
       setOrgChanges(prev => prev.map(c => c.id === id ? updated : c));
       toast.success('Organization change updated');
       return updated;
-    } catch {
-      toast.error(`Failed to update change: ${(err as Error).message}`);
-      throw err;
+    } catch (error) {
+      toast.error(`Failed to update change: ${(error as Error).message}`);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -344,8 +344,8 @@ export const useOrganization = () => {
     try {
       const data = await DepartmentTransferService.getTransfers(filters);
       setTransfers(data);
-    } catch {
-      toast.error(`Failed to load transfers: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to load transfers: ${(error as Error).message}`);
     }
   }, [toast]);
 
@@ -356,9 +356,9 @@ export const useOrganization = () => {
       setTransfers(prev => [...prev, created]);
       toast.success('Transfer request created');
       return created;
-    } catch {
-      toast.error(`Failed to create transfer: ${(err as Error).message}`);
-      throw err;
+    } catch (error) {
+      toast.error(`Failed to create transfer: ${(error as Error).message}`);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -371,9 +371,9 @@ export const useOrganization = () => {
       setTransfers(prev => prev.map(t => t.id === id ? approved : t));
       toast.success('Transfer approved');
       return approved;
-    } catch {
-      toast.error(`Failed to approve transfer: ${(err as Error).message}`);
-      throw err;
+    } catch (error) {
+      toast.error(`Failed to approve transfer: ${(error as Error).message}`);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -386,8 +386,8 @@ export const useOrganization = () => {
       const chart = await OrgChartService.buildOrgChart(rootDepartmentId);
       setOrgChart(chart);
       return chart;
-    } catch {
-      toast.error(`Failed to build org chart: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to build org chart: ${(error as Error).message}`);
       return null;
     } finally {
       setIsLoading(false);
@@ -399,8 +399,8 @@ export const useOrganization = () => {
     try {
       const data = await OrganizationAnalyticsService.getMetrics();
       setMetrics(data);
-    } catch {
-      toast.error(`Failed to load metrics: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to load metrics: ${(error as Error).message}`);
     }
   }, [toast]);
 
@@ -409,8 +409,8 @@ export const useOrganization = () => {
       const data = await OrganizationAnalyticsService.calculateMetrics();
       setMetrics(data);
       toast.success('Metrics calculated successfully');
-    } catch {
-      toast.error(`Failed to calculate metrics: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to calculate metrics: ${(error as Error).message}`);
     }
   }, [toast]);
 
@@ -419,8 +419,8 @@ export const useOrganization = () => {
     try {
       const data = await OrganizationSettingsService.getSettings();
       setSettings(data);
-    } catch {
-      toast.error(`Failed to load settings: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to load settings: ${(error as Error).message}`);
     }
   }, [toast]);
 
@@ -431,9 +431,9 @@ export const useOrganization = () => {
       setSettings(updated);
       toast.success('Settings updated successfully');
       return updated;
-    } catch {
-      toast.error(`Failed to update settings: ${(err as Error).message}`);
-      throw err;
+    } catch (error) {
+      toast.error(`Failed to update settings: ${(error as Error).message}`);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -470,8 +470,8 @@ export const useOrganization = () => {
       await loadMetrics();
 
       toast.success('Sample data initialized');
-    } catch {
-      toast.error(`Failed to initialize data: ${(err as Error).message}`);
+    } catch (error) {
+      toast.error(`Failed to initialize data: ${(error as Error).message}`);
     } finally {
       setIsSaving(false);
     }

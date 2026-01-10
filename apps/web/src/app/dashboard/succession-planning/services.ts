@@ -27,7 +27,7 @@ export class CriticalPositionService {
         try {
             const response = await APIClient.get<{ positions?: CriticalPosition[] }>(this.endpoint, filters);
             return response.positions || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -54,7 +54,7 @@ export class SuccessionCandidateService {
         try {
             const response = await APIClient.get<{ candidates?: SuccessionCandidate[] }>(this.endpoint, filters);
             return response.candidates || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -77,7 +77,7 @@ export class SuccessionCandidateService {
     private static async updateSuccessionDepth(positionId: string): Promise<void> {
         try {
             await APIClient.post(`${this.endpoint}/update-succession-depth`, { positionId });
-        } catch {
+        } catch (error) {
                     }
     }
 }
@@ -89,7 +89,7 @@ export class SuccessionPoolService {
         try {
             const response = await APIClient.get<{ pools?: SuccessionPool[] }>(this.endpoint, filters);
             return response.pools || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -112,7 +112,7 @@ export class DevelopmentPlanService {
         try {
             const response = await APIClient.get<{ plans?: DevelopmentPlan[] }>(this.endpoint, filters);
             return response.plans || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -145,7 +145,7 @@ export class TalentReviewService {
         try {
             const response = await APIClient.get<{ reviews?: TalentReview[] }>(this.endpoint, filters);
             return response.reviews || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -173,7 +173,7 @@ export class CareerPathService {
         try {
             const response = await APIClient.get<{ paths?: CareerPath[] }>(this.endpoint, filters);
             return response.paths || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -196,7 +196,7 @@ export class EmergencySuccessionService {
         try {
             const response = await APIClient.get<{ plans?: EmergencySuccession[] }>(this.endpoint, filters);
             return response.plans || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -219,7 +219,7 @@ export class SuccessionAnalyticsService {
         try {
             const response = await APIClient.get<{ metrics?: SuccessionMetrics }>(`${this.endpoint}/metrics`);
             return response.metrics || {} as SuccessionMetrics;
-        } catch {
+        } catch (error) {
                         throw error;
         }
     }
@@ -228,7 +228,7 @@ export class SuccessionAnalyticsService {
         try {
             const response = await APIClient.get<{ analysis?: SuccessionRiskAnalysis[] }>(`${this.endpoint}/risk-analysis`);
             return response.analysis || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -259,7 +259,7 @@ export class SuccessionSettingsService {
         try {
             const response = await APIClient.get<{ settings?: SuccessionSettings }>(this.endpoint);
             return response.settings || null;
-        } catch {
+        } catch (error) {
                         return null;
         }
     }

@@ -23,7 +23,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       modelVersion: 'v1.0.0'
     };
     return NextResponse.json({ insight }, { status: 200 });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

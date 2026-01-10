@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         totalSpend: 0,
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch vendors' },
       { status: 500 }
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to create vendor' },
       { status: 500 }
@@ -85,7 +85,7 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to update vendor' },
       { status: 500 }
@@ -113,7 +113,7 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Vendor deleted successfully',
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to delete vendor' },
       { status: 500 }

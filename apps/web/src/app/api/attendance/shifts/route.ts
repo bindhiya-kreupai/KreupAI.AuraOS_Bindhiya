@@ -75,7 +75,7 @@ export const GET = withEnhancedAuth(
         data: mockShifts,
         meta: { total: mockShifts.length },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching shifts:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch shifts' },
@@ -115,7 +115,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newShift }, { status: 201 });
-    } catch {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

@@ -10,7 +10,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     const access_UPPER = [];
 
     return NextResponse.json({ access: access_UPPER }, { status: 200 });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
@@ -29,7 +29,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ access }, { status: 201 });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
@@ -47,7 +47,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ access }, { status: 200 });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

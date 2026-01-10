@@ -5,7 +5,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
   try {
     const forecasts = [];
     return NextResponse.json({ forecasts }, { status: 200 });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

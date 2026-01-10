@@ -359,7 +359,7 @@ describe('useEmployees', () => {
         await act(async () => {
           await result.current.createEmployee(mockEmployee);
         });
-      } catch {
+      } catch (error) {
         // Expected error
       }
 

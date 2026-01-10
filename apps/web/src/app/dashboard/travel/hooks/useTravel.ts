@@ -102,8 +102,7 @@ export const useTravel = (): UseTravelReturn => {
       setError(null);
       const data = await TravelRequestService.getRequests(filters);
       setRequests(data);
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       setError(error);
       toast.error(`Failed to load travel requests: ${error.message}`);
     } finally {
@@ -124,8 +123,7 @@ export const useTravel = (): UseTravelReturn => {
       await loadMetrics();
       toast.success('Travel request submitted successfully');
       return created;
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       setError(error);
       toast.error(`Failed to submit request: ${error.message}`);
       throw error;
@@ -143,8 +141,7 @@ export const useTravel = (): UseTravelReturn => {
       await loadMetrics();
       toast.success('Travel request updated successfully');
       return updated;
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       setError(error);
       toast.error(`Failed to update request: ${error.message}`);
       throw error;
@@ -162,8 +159,7 @@ export const useTravel = (): UseTravelReturn => {
       await loadMetrics();
       toast.success('Travel request approved successfully');
       return approved;
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       setError(error);
       toast.error(`Failed to approve request: ${error.message}`);
       throw error;
@@ -181,8 +177,7 @@ export const useTravel = (): UseTravelReturn => {
       await loadMetrics();
       toast.success('Travel request rejected');
       return rejected;
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       setError(error);
       toast.error(`Failed to reject request: ${error.message}`);
       throw error;
@@ -200,8 +195,7 @@ export const useTravel = (): UseTravelReturn => {
       await loadMetrics();
       toast.success('Travel request cancelled');
       return cancelled;
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       setError(error);
       toast.error(`Failed to cancel request: ${error.message}`);
       throw error;
@@ -219,8 +213,7 @@ export const useTravel = (): UseTravelReturn => {
 
       const updatedItinerary = [...request.itinerary, itinerary];
       return await updateRequest(requestId, { itinerary: updatedItinerary });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to add itinerary: ${error.message}`);
       throw error;
     } finally {
@@ -242,8 +235,7 @@ export const useTravel = (): UseTravelReturn => {
         i.id === itineraryId ? { ...i, ...updates } : i
       );
       return await updateRequest(requestId, { itinerary: updatedItinerary });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to update itinerary: ${error.message}`);
       throw error;
     } finally {
@@ -259,8 +251,7 @@ export const useTravel = (): UseTravelReturn => {
 
       const updatedItinerary = request.itinerary.filter(i => i.id !== itineraryId);
       return await updateRequest(requestId, { itinerary: updatedItinerary });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to remove itinerary: ${error.message}`);
       throw error;
     } finally {
@@ -280,8 +271,7 @@ export const useTravel = (): UseTravelReturn => {
 
       const updatedAccommodation = [...request.accommodation, accommodation];
       return await updateRequest(requestId, { accommodation: updatedAccommodation });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to add accommodation: ${error.message}`);
       throw error;
     } finally {
@@ -303,8 +293,7 @@ export const useTravel = (): UseTravelReturn => {
         a.id === accommodationId ? { ...a, ...updates } : a
       );
       return await updateRequest(requestId, { accommodation: updatedAccommodation });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to update accommodation: ${error.message}`);
       throw error;
     } finally {
@@ -320,8 +309,7 @@ export const useTravel = (): UseTravelReturn => {
 
       const updatedAccommodation = request.accommodation.filter(a => a.id !== accommodationId);
       return await updateRequest(requestId, { accommodation: updatedAccommodation });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to remove accommodation: ${error.message}`);
       throw error;
     } finally {
@@ -338,8 +326,7 @@ export const useTravel = (): UseTravelReturn => {
 
       const updatedTransport = [...request.transport, transport];
       return await updateRequest(requestId, { transport: updatedTransport });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to add transport: ${error.message}`);
       throw error;
     } finally {
@@ -361,8 +348,7 @@ export const useTravel = (): UseTravelReturn => {
         t.id === transportId ? { ...t, ...updates } : t
       );
       return await updateRequest(requestId, { transport: updatedTransport });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to update transport: ${error.message}`);
       throw error;
     } finally {
@@ -378,8 +364,7 @@ export const useTravel = (): UseTravelReturn => {
 
       const updatedTransport = request.transport.filter(t => t.id !== transportId);
       return await updateRequest(requestId, { transport: updatedTransport });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to remove transport: ${error.message}`);
       throw error;
     } finally {
@@ -392,8 +377,7 @@ export const useTravel = (): UseTravelReturn => {
     try {
       setIsSaving(true);
       return await updateRequest(requestId, { advance });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to request advance: ${error.message}`);
       throw error;
     } finally {
@@ -412,8 +396,7 @@ export const useTravel = (): UseTravelReturn => {
 
       const updatedAdvance = { ...request.advance, ...updates };
       return await updateRequest(requestId, { advance: updatedAdvance });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to update advance: ${error.message}`);
       throw error;
     } finally {
@@ -435,8 +418,7 @@ export const useTravel = (): UseTravelReturn => {
       };
 
       return await updateRequest(requestId, { advance: updatedAdvance });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to disburse advance: ${error.message}`);
       throw error;
     } finally {
@@ -464,8 +446,7 @@ export const useTravel = (): UseTravelReturn => {
       };
 
       return await updateRequest(requestId, { advance: updatedAdvance });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to settle advance: ${error.message}`);
       throw error;
     } finally {
@@ -481,8 +462,7 @@ export const useTravel = (): UseTravelReturn => {
       // For now, extract bookings from all requests
       const allBookings = requests.flatMap(r => r.bookings);
       setBookings(allBookings);
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       setError(error);
       toast.error(`Failed to load bookings: ${error.message}`);
     } finally {
@@ -497,8 +477,7 @@ export const useTravel = (): UseTravelReturn => {
       setBookings((prev) => [...prev, created]);
       toast.success('Booking created successfully');
       return created;
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to create booking: ${error.message}`);
       throw error;
     } finally {
@@ -513,8 +492,7 @@ export const useTravel = (): UseTravelReturn => {
       setBookings((prev) => prev.map(b => b.id === id ? confirmed : b));
       toast.success('Booking confirmed successfully');
       return confirmed;
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to confirm booking: ${error.message}`);
       throw error;
     } finally {
@@ -533,8 +511,7 @@ export const useTravel = (): UseTravelReturn => {
       setBookings((prev) => prev.map(b => b.id === id ? cancelled : b));
       toast.success('Booking cancelled');
       return cancelled;
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to cancel booking: ${error.message}`);
       throw error;
     } finally {
@@ -551,8 +528,7 @@ export const useTravel = (): UseTravelReturn => {
 
       const updatedExpenses = [...request.expenses, expense];
       return await updateRequest(requestId, { expenses: updatedExpenses });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to add expense: ${error.message}`);
       throw error;
     } finally {
@@ -574,8 +550,7 @@ export const useTravel = (): UseTravelReturn => {
         e.id === expenseId ? { ...e, ...updates } : e
       );
       return await updateRequest(requestId, { expenses: updatedExpenses });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to update expense: ${error.message}`);
       throw error;
     } finally {
@@ -591,8 +566,7 @@ export const useTravel = (): UseTravelReturn => {
 
       const updatedExpenses = request.expenses.filter(e => e.id !== expenseId);
       return await updateRequest(requestId, { expenses: updatedExpenses });
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to remove expense: ${error.message}`);
       throw error;
     } finally {
@@ -605,8 +579,7 @@ export const useTravel = (): UseTravelReturn => {
     try {
       const data = await TravelAnalyticsService.getMetrics();
       setMetrics(data);
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to load metrics: ${error.message}`);
     }
   }, [toast]);
@@ -621,8 +594,7 @@ export const useTravel = (): UseTravelReturn => {
     try {
       const data = await TravelSettingsService.getSettings();
       setSettings(data);
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to load settings: ${error.message}`);
     }
   }, [toast]);
@@ -633,8 +605,7 @@ export const useTravel = (): UseTravelReturn => {
       const updated = await TravelSettingsService.updateSettings(updates);
       setSettings(updated);
       toast.success('Settings updated successfully');
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to update settings: ${error.message}`);
     } finally {
       setIsSaving(false);
@@ -647,8 +618,7 @@ export const useTravel = (): UseTravelReturn => {
       setIsLoading(true);
       // In a real app, this would fetch from an API
       setPolicies(travelData.policies);
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to load policies: ${error.message}`);
     } finally {
       setIsLoading(false);
@@ -733,8 +703,7 @@ export const useTravel = (): UseTravelReturn => {
       await loadSettings();
 
       toast.success('Sample data initialized successfully');
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to initialize sample data: ${error.message}`);
     } finally {
       setIsSaving(false);
@@ -758,8 +727,7 @@ export const useTravel = (): UseTravelReturn => {
       setSettings(null);
 
       toast.success('All travel data cleared');
-    } catch {
-      const error = err as Error;
+    } catch (error) {
       toast.error(`Failed to clear data: ${error.message}`);
     } finally {
       setIsSaving(false);

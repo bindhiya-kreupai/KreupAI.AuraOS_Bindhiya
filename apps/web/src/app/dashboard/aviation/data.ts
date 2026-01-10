@@ -333,8 +333,13 @@ export const sampleDutyTimes: DutyTime[] = [
       withinLimits: true,
       warnings: ['Flight hours exceeded by 1 hour - requires special authorization']
     },
-    fatigueHoursLast24: 7,
-      sleepQuality: 'good'
+    fatigueSelfAssessment: {
+      assessmentId: 'fatigue-001',
+      assessmentTime: '2024-12-10T18:30:00Z',
+      fatigueLevel: 2,
+      sleepHoursLast24: 7,
+      sleepQuality: 'good',
+      reportedBy: 'crew-001'
     },
     createdAt: '2024-12-10T18:30:00Z'
   }

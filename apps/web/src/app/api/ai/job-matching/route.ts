@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Failed to process job matching' }, { status: 500 });
   }
 }
@@ -157,7 +157,7 @@ export async function GET(request: NextRequest) {
         pendingReview: 23,
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Failed to fetch job matching data' }, { status: 500 });
   }
 }

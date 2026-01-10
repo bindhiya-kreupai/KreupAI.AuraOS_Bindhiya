@@ -26,7 +26,7 @@ export const GET = withEnhancedAuth(
       ];
 
       return NextResponse.json({ success: true, data: mockSurveys });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching surveys:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch surveys' }, { status: 500 });
     }
@@ -47,7 +47,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: newSurvey }, { status: 201 });
-    } catch {
+    } catch (error) {
       logger.error('Error creating survey:', error);
       return NextResponse.json({ success: false, error: 'Failed to create survey' }, { status: 500 });
     }
@@ -62,7 +62,7 @@ export const PUT = withEnhancedAuth(
 
       const body = await request.json();
       return NextResponse.json({ success: true, data: { ...body, lastModified: new Date().toISOString() } });
-    } catch {
+    } catch (error) {
       logger.error('Error updating survey:', error);
       return NextResponse.json({ success: false, error: 'Failed to update survey' }, { status: 500 });
     }

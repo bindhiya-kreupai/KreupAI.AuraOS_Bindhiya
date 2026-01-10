@@ -256,7 +256,7 @@ export function rateLimit(options: RateLimitOptions = {}) {
         response.headers.set('X-RateLimit-Reset', new Date(Date.now() + windowMs).toISOString());
 
         return response;
-      } catch {
+      } catch (error) {
         if (error instanceof RateLimitError) {
           return NextResponse.json(
             {

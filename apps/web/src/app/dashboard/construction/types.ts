@@ -842,7 +842,7 @@ export interface FinancialInfo {
   dunsNumber?: string;
   annualRevenue?: number;
   numberOfEmployees: number;
-  bonding Capacity?: number;
+  bondingCapacity?: number;
   bondingCompany?: string;
   bankReferences: BankReference[];
   creditRating?: string;

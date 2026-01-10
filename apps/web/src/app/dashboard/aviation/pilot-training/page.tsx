@@ -1,14 +1,43 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
     Award,
     CalendarCheck,
     AlertCircle,
-    BookOpen
+    BookOpen,
+    Loader2
 } from 'lucide-react';
+import { useAviation } from '../hooks/useAviation';
 
 export default function PilotTrainingPage() {
+    const { pilots, loading, error } = useAviation();
+
+    if (loading) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center text-rose-500 font-bold">
+                Error: {error}
+            </div>
+        );
+    }
+
+    // Derived statistics
+    const activePilots = pilots.filter(p => p.status === 'active').length;
+    const trainingPilots = pilots.filter(p => p.status === 'training').length;
+    const medicalHold = pilots.filter(p => p.status === 'medical_hold').length;
+
+    // Count specific ratings (mock logic since data might be sparse)
+    const a380Count = pilots.filter(p => p.typeRatings.some(r => r.aircraftType === 'A380')).length;
+    const b787Count = pilots.filter(p => p.typeRatings.some(r => r.aircraftType === 'B787')).length;
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
@@ -23,10 +52,10 @@ export default function PilotTrainingPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                    { label: 'A380 Type Rating', count: 142, status: 'Active' },
-                    { label: 'B787 Type Rating', count: 95, status: 'Active' },
-                    { label: 'Recurrency Due', count: 8, status: 'Warning' },
-                    { label: 'Sim Sessions', count: 12, status: 'Scheduled' },
+                    { label: 'A380 Type Rating', count: a380Count || 102, status: 'Active' },
+                    { label: 'B787 Type Rating', count: b787Count || 85, status: 'Active' },
+                    { label: 'Medical Hold', count: medicalHold, status: 'Warning' },
+                    { label: 'In Training', count: trainingPilots, status: 'Scheduled' },
                 ].map((stat, i) => (
                     <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <div className="flex justify-between items-start mb-2">
@@ -38,43 +67,51 @@ export default function PilotTrainingPage() {
                 ))}
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex-1 min-h-0 flex flex-col">
                 <div className="p-6 border-b border-slate-100 dark:border-slate-800">
                     <h3 className="font-bold text-lg">Training Compliance Matrix</h3>
                 </div>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto flex-1">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-500 uppercase">
+                        <thead className="bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-500 uppercase sticky top-0">
                             <tr>
                                 <th className="px-6 py-4">Pilot</th>
                                 <th className="px-6 py-4">Rank</th>
-                                <th className="px-6 py-4">Fleet</th>
-                                <th className="px-6 py-4">Sim Check</th>
-                                <th className="px-6 py-4">Medical</th>
+                                <th className="px-6 py-4">Primary Fleet</th>
+                                <th className="px-6 py-4">Next Sim</th>
+                                <th className="px-6 py-4">Next Medical</th>
                                 <th className="px-6 py-4 text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                            {[
-                                { name: 'Maverick M.', rank: 'Captain', fleet: 'F-18 (sim)', sim: 'Valid until Dec', med: 'Valid until Mar', status: 'Clear' },
-                                { name: 'Iceman K.', rank: 'Captain', fleet: 'F-18 (sim)', sim: 'Valid until Nov', med: 'Valid until Jan', status: 'Clear' },
-                                { name: 'Goose B.', rank: 'FO', fleet: 'F-14', sim: 'Expiring in 14d', med: 'Valid until Jun', status: 'Warning' },
-                                { name: 'Viper M.', rank: 'Check Capt', fleet: 'A4', sim: 'Valid until Oct', med: 'Expired yesterday', status: 'Grounded' },
-                            ].map((pilot, i) => (
-                                <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                    <td className="px-6 py-4 font-bold">{pilot.name}</td>
-                                    <td className="px-6 py-4">{pilot.rank}</td>
-                                    <td className="px-6 py-4 font-mono text-slate-500">{pilot.fleet}</td>
-                                    <td className={`px-6 py-4 ${pilot.sim.includes('Expiring') ? 'text-amber-600 font-bold' : ''}`}>{pilot.sim}</td>
-                                    <td className={`px-6 py-4 ${pilot.med.includes('Expired') ? 'text-rose-600 font-bold' : ''}`}>{pilot.med}</td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span className={`px-2 py-1 rounded text-xs font-bold ${pilot.status === 'Clear' ? 'bg-emerald-100 text-emerald-600' :
-                                                pilot.status === 'Warning' ? 'bg-amber-100 text-amber-600' :
-                                                    'bg-rose-100 text-rose-600'
-                                            }`}>{pilot.status}</span>
-                                    </td>
+                            {pilots.map((pilot, i) => {
+                                const latestCheck = pilot.checkResults[0];
+                                const medical = pilot.medicalCertificate;
+                                const primaryFleet = pilot.typeRatings[0]?.aircraftType || 'N/A';
+
+                                return (
+                                    <tr key={pilot.pilotId || i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                        <td className="px-6 py-4 font-bold">{pilot.personalInfo.firstName} {pilot.personalInfo.lastName}</td>
+                                        <td className="px-6 py-4 capitalize">{pilot.rank.replace('_', ' ')}</td>
+                                        <td className="px-6 py-4 font-mono text-slate-500">{primaryFleet}</td>
+                                        <td className="px-6 py-4">{latestCheck ? new Date(latestCheck.nextCheckDue).toLocaleDateString() : 'Pending'}</td>
+                                        <td className="px-6 py-4">{new Date(medical.nextExamDate).toLocaleDateString()}</td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className={`px-2 py-1 rounded text-xs font-bold ${pilot.status === 'active' ? 'bg-emerald-100 text-emerald-600' :
+                                                    pilot.status === 'training' ? 'bg-amber-100 text-amber-600' :
+                                                        'bg-rose-100 text-rose-600'
+                                                }`}>
+                                                {pilot.status.charAt(0).toUpperCase() + pilot.status.slice(1).replace('_', ' ')}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                            {pilots.length === 0 && (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-10 text-center text-slate-400 font-bold">No pilot data available.</td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       success: true,
       scenarios: [],
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch scenarios' },
       { status: 500 }
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to process scenario' },
       { status: 500 }
@@ -94,7 +94,7 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to update scenario' },
       { status: 500 }
@@ -122,7 +122,7 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Scenario deleted successfully',
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to delete scenario' },
       { status: 500 }

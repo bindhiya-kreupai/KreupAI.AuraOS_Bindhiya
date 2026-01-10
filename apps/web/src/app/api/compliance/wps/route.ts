@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
         validation,
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to generate WPS file', errorAr: 'فشل في إنشاء ملف WPS' },
       { status: 500 }
@@ -137,7 +137,7 @@ export async function GET() {
         },
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch WPS reference data', errorAr: 'فشل في جلب بيانات WPS المرجعية' },
       { status: 500 }

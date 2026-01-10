@@ -20,7 +20,7 @@ async function verifySteadyState(page: any): Promise<boolean> {
   try {
     const response = await page.goto(`${BASE_URL}/api/health`);
     return response?.ok() || false;
-  } catch {
+  } catch (error) {
     return false;
   }
 }

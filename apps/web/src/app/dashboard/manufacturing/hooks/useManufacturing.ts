@@ -188,8 +188,8 @@ export const useManufacturing = () => {
       } else {
         setSettings(settingsData);
       }
-    } catch {
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to load data');
       addToast({ type: 'error', message: 'Failed to load manufacturing data' });
     } finally {
       setLoading(false);
@@ -208,9 +208,9 @@ export const useManufacturing = () => {
       setEquipment(await PlantMaintenanceService.getAllEquipment());
       addToast({ type: 'success', message: 'Equipment created successfully' });
       return newEquipment;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create equipment' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -223,9 +223,9 @@ export const useManufacturing = () => {
       setEquipment(await PlantMaintenanceService.getAllEquipment());
       addToast({ type: 'success', message: 'Equipment updated successfully' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update equipment' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -238,9 +238,9 @@ export const useManufacturing = () => {
       setMaintenanceSchedules(await PlantMaintenanceService.getAllSchedules());
       addToast({ type: 'success', message: 'Maintenance schedule created' });
       return newSchedule;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create schedule' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -253,9 +253,9 @@ export const useManufacturing = () => {
       setWorkOrders(await PlantMaintenanceService.getAllWorkOrders());
       addToast({ type: 'success', message: 'Work order created' });
       return newWorkOrder;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create work order' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -268,9 +268,9 @@ export const useManufacturing = () => {
       setWorkOrders(await PlantMaintenanceService.getAllWorkOrders());
       addToast({ type: 'success', message: 'Work order updated' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update work order' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -284,9 +284,9 @@ export const useManufacturing = () => {
       setProductionLines(await ProductionEfficiencyService.getAllLines());
       addToast({ type: 'success', message: 'Production line created' });
       return newLine;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create production line' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -299,9 +299,9 @@ export const useManufacturing = () => {
       setProductionLines(await ProductionEfficiencyService.getAllLines());
       addToast({ type: 'success', message: 'Production line updated' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update production line' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -314,9 +314,9 @@ export const useManufacturing = () => {
       setProductionRuns(await ProductionEfficiencyService.getAllRuns());
       addToast({ type: 'success', message: 'Production run created' });
       return newRun;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create production run' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -329,9 +329,9 @@ export const useManufacturing = () => {
       setProductionRuns(await ProductionEfficiencyService.getAllRuns());
       addToast({ type: 'success', message: 'Production run updated' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update production run' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -344,9 +344,9 @@ export const useManufacturing = () => {
       setOeeMetrics(await ProductionEfficiencyService.getAllOEEMetrics());
       addToast({ type: 'success', message: 'OEE metrics recorded' });
       return newMetrics;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to record OEE metrics' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -360,9 +360,9 @@ export const useManufacturing = () => {
       setSafetyIncidents(await SafetyComplianceService.getAllIncidents());
       addToast({ type: 'success', message: 'Safety incident reported' });
       return newIncident;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to report incident' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -375,9 +375,9 @@ export const useManufacturing = () => {
       setSafetyIncidents(await SafetyComplianceService.getAllIncidents());
       addToast({ type: 'success', message: 'Safety incident updated' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update incident' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -390,9 +390,9 @@ export const useManufacturing = () => {
       setSafetyInspections(await SafetyComplianceService.getAllInspections());
       addToast({ type: 'success', message: 'Safety inspection scheduled' });
       return newInspection;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create inspection' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -405,9 +405,9 @@ export const useManufacturing = () => {
       setSafetyInspections(await SafetyComplianceService.getAllInspections());
       addToast({ type: 'success', message: 'Safety inspection updated' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update inspection' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -420,9 +420,9 @@ export const useManufacturing = () => {
       setPpeInventory(await SafetyComplianceService.getAllPPEInventory());
       addToast({ type: 'success', message: 'PPE item added to inventory' });
       return newItem;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to add PPE item' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -435,9 +435,9 @@ export const useManufacturing = () => {
       setPpeInventory(await SafetyComplianceService.getAllPPEInventory());
       addToast({ type: 'success', message: 'PPE item updated' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update PPE item' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -450,9 +450,9 @@ export const useManufacturing = () => {
       setSafetyTraining(await SafetyComplianceService.getAllTraining());
       addToast({ type: 'success', message: 'Safety training scheduled' });
       return newTraining;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to schedule training' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -465,9 +465,9 @@ export const useManufacturing = () => {
       setSafetyTraining(await SafetyComplianceService.getAllTraining());
       addToast({ type: 'success', message: 'Safety training updated' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update training' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }

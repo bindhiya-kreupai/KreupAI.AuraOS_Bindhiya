@@ -193,7 +193,7 @@ export default function AIAnalyticsPage() {
       if (performanceResult.success) {
         setPerformanceData(performanceResult.data || PERFORMANCE_DATA);
       }
-    } catch {
+    } catch (error) {
       // Error handled silently
     } finally {
       setLoading(false);

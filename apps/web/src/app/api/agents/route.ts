@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         isActive: agent.isActive,
       })),
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { success: false, error: 'Failed to fetch agents' },
       { status: 500 }

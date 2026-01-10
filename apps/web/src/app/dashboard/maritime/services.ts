@@ -8,7 +8,7 @@ export class VesselCrewingService {
     try {
       const response = await APIClient.get<{ crew?: CrewMember[] }>(`${this.endpoint}/crew`);
       return response.crew || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -31,7 +31,7 @@ export class PortOperationsService {
     try {
       const response = await APIClient.get<{ operations?: PortOperation[] }>(this.endpoint);
       return response.operations || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -54,7 +54,7 @@ export class OffshoreComplianceService {
     try {
       const response = await APIClient.get<{ compliance?: OffshoreCompliance[] }>(this.endpoint);
       return response.compliance || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -77,7 +77,7 @@ export class MaritimeSettingsService {
     try {
       const response = await APIClient.get<{ settings?: MaritimeSettings }>(this.endpoint);
       return response.settings || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -95,7 +95,7 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: MaritimeAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }

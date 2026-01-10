@@ -31,7 +31,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, _context) => {
         }));
 
         return NextResponse.json({ data: transformedJobs }, { status: 200 });
-    } catch {
+    } catch (error) {
         return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
     }
 });
@@ -72,7 +72,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, _context) => {
         };
 
         return NextResponse.json({ data: transformedJob }, { status: 201 });
-    } catch {
+    } catch (error) {
         return NextResponse.json({ error: 'Failed to create job' }, { status: 500 });
     }
 });

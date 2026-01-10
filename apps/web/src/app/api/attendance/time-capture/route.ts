@@ -149,7 +149,7 @@ export const GET = withEnhancedAuth(
         data: { captures: filteredData, summary },
         meta: { total: filteredData.length },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching time captures:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch time captures' },
@@ -193,7 +193,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newCapture }, { status: 201 });
-    } catch {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -244,7 +244,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch {
+    } catch (error) {
       logger.error('Error updating time capture:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update time capture' },
@@ -282,7 +282,7 @@ export const DELETE = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, message: 'Time capture deleted successfully' });
-    } catch {
+    } catch (error) {
       logger.error('Error deleting time capture:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to delete time capture' },

@@ -201,7 +201,7 @@ test.describe('DOM-Based XSS Tests', () => {
         div.innerHTML = '<img src=x onerror=window.xssExecuted=true>';
         document.body.appendChild(div);
         return (window as any).xssExecuted === true;
-      } catch {
+      } catch (error) {
         return false;
       }
     });
@@ -478,7 +478,7 @@ test.describe('Content Security Policy (CSP)', () => {
         script.textContent = 'window.inlineScriptExecuted = true;';
         document.body.appendChild(script);
         return (window as any).inlineScriptExecuted === true;
-      } catch {
+      } catch (error) {
         return false;
       }
     });

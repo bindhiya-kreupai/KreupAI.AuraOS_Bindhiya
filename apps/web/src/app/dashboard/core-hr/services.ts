@@ -16,7 +16,7 @@ export class EmployeeService {
     try {
       const response = await APIClient.get<{ employees?: Employee[] }>(this.endpoint);
       return response.employees || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -25,7 +25,7 @@ export class EmployeeService {
     try {
       const response = await APIClient.get<{ employee: Employee }>(`${this.endpoint}/${employeeId}`);
       return response.employee;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -44,7 +44,7 @@ export class EmployeeService {
     try {
       const response = await APIClient.get<{ employees?: Employee[] }>(`${this.endpoint}/search`, { query });
       return response.employees || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -58,7 +58,7 @@ export class OrganizationService {
     try {
       const response = await APIClient.get<{ units?: OrganizationUnit[] }>(this.endpoint);
       return response.units || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -82,7 +82,7 @@ export class EmploymentHistoryService {
     try {
       const response = await APIClient.get<{ history?: EmploymentHistory[] }>(this.endpoint);
       return response.history || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -91,7 +91,7 @@ export class EmploymentHistoryService {
     try {
       const response = await APIClient.get<{ history?: EmploymentHistory[] }>(this.endpoint, { employeeId });
       return response.history || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -110,7 +110,7 @@ export class DocumentService {
     try {
       const response = await APIClient.get<{ documents?: EmployeeDocument[] }>(this.endpoint);
       return response.documents || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -119,7 +119,7 @@ export class DocumentService {
     try {
       const response = await APIClient.get<{ documents?: EmployeeDocument[] }>(this.endpoint, { employeeId });
       return response.documents || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -137,7 +137,7 @@ export class DocumentTemplateService {
     try {
       const response = await APIClient.get<{ templates?: DocumentTemplate[] }>(this.endpoint);
       return response.templates || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -156,7 +156,7 @@ export class PositionService {
     try {
       const response = await APIClient.get<{ positions?: Position[] }>(this.endpoint);
       return response.positions || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -180,7 +180,7 @@ export class CostCenterService {
     try {
       const response = await APIClient.get<{ costCenters?: CostCenter[] }>(this.endpoint);
       return response.costCenters || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -199,7 +199,7 @@ export class LifeEventService {
     try {
       const response = await APIClient.get<{ events?: LifeEvent[] }>(this.endpoint);
       return response.events || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -218,7 +218,7 @@ export class MassUpdateService {
     try {
       const response = await APIClient.get<{ updates?: MassUpdate[] }>(this.endpoint);
       return response.updates || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -242,7 +242,7 @@ export class IDCardService {
     try {
       const response = await APIClient.get<{ cards?: IDCard[] }>(this.endpoint);
       return response.cards || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -261,7 +261,7 @@ export class LetterService {
     try {
       const response = await APIClient.get<{ requests?: LetterRequest[] }>(this.endpoint);
       return response.requests || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -280,7 +280,7 @@ export class ExitService {
     try {
       const response = await APIClient.get<{ exits?: ExitProcess[] }>(this.endpoint);
       return response.exits || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -304,7 +304,7 @@ export class AnniversaryService {
     try {
       const response = await APIClient.get<{ anniversaries?: Anniversary[] }>(this.endpoint);
       return response.anniversaries || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -313,7 +313,7 @@ export class AnniversaryService {
     try {
       const response = await APIClient.get<{ anniversaries?: Anniversary[] }>(this.endpoint, { days });
       return response.anniversaries || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -327,7 +327,7 @@ export class AutoNumberService {
     try {
       const response = await APIClient.get<{ sequences?: AutoNumberSequence[] }>(this.endpoint);
       return response.sequences || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -346,7 +346,7 @@ export class ProbationService {
     try {
       const response = await APIClient.get<{ records?: ProbationRecord[] }>(this.endpoint);
       return response.records || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -365,7 +365,7 @@ export class ConfirmationLetterService {
     try {
       const response = await APIClient.get<{ letters?: ConfirmationLetter[] }>(this.endpoint);
       return response.letters || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -384,7 +384,7 @@ export class AssetService {
     try {
       const response = await APIClient.get<{ assets?: Asset[] }>(this.endpoint);
       return response.assets || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -410,7 +410,7 @@ export class AssetAssignmentService {
     try {
       const response = await APIClient.get<{ assignments?: AssetAssignment[] }>(this.endpoint);
       return response.assignments || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -419,7 +419,7 @@ export class AssetAssignmentService {
     try {
       const response = await APIClient.get<{ assignments?: AssetAssignment[] }>(this.endpoint, { employeeId });
       return response.assignments || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -433,7 +433,7 @@ export class CoreHRSettingsService {
     try {
       const response = await APIClient.get<{ settings: CoreHRSettings }>(this.endpoint);
       return response.settings;
-    } catch {
+    } catch (error) {
             return {
         settingsId: 'settings-1',
         employeeNumberPrefix: 'EMP',

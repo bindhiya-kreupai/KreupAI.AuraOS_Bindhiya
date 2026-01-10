@@ -130,7 +130,7 @@ export const GET = withEnhancedAuth(
         data: { visits: filteredData, summary },
         meta: { total: filteredData.length },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching field force data:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch field force data' },
@@ -204,7 +204,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newVisit }, { status: 201 });
-    } catch {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -254,7 +254,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch {
+    } catch (error) {
       logger.error('Error updating field visit:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update field visit' },

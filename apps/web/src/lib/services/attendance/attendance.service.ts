@@ -113,7 +113,7 @@ export class AttendanceService {
         } else if (record.status === 'ABSENT') {
           absent++;
         }
-      } catch {
+      } catch (error) {
         errors.push({
           employeeId: employee.id,
           employeeName: employee.name,

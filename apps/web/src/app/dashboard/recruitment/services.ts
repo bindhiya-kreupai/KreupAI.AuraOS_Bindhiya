@@ -36,7 +36,7 @@ export class JobRequisitionService {
 
             const response = await APIClient.get<{ items?: JobRequisition[] }>(url);
             return response.items || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -200,7 +200,7 @@ export class InterviewFeedbackService {
         try {
             const response = await APIClient.get<{ items?: InterviewFeedback[] }>(`${this.endpoint}?interviewId=${interviewId}`);
             return response.items || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -280,7 +280,7 @@ export class BackgroundCheckService {
             const url = applicationId ? `${this.endpoint}?applicationId=${applicationId}` : this.endpoint;
             const response = await APIClient.get<{ items?: BackgroundCheck[] }>(url);
             return response.items || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -303,7 +303,7 @@ export class HiringPipelineService {
         try {
             const response = await APIClient.get<{ items?: HiringPipeline[] }>(this.endpoint);
             return response.items || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -321,7 +321,7 @@ export class RecruitmentSettingsService {
         try {
             const response = await APIClient.get<RecruitmentSettings>(this.endpoint);
             return response;
-        } catch {
+        } catch (error) {
                         return null;
         }
     }
@@ -339,7 +339,7 @@ export class RecruitmentAnalyticsService {
         try {
             const response = await APIClient.get<RecruitmentStats>(this.endpoint);
             return response;
-        } catch {
+        } catch (error) {
                         // Return default/empty stats on error
             return {
                 totalRequisitions: 0,

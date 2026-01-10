@@ -126,7 +126,7 @@ export const GET = withEnhancedAuth(
         data: { requests: filteredData, summary },
         meta: { total: filteredData.length },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching regularization requests:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch regularization requests' },

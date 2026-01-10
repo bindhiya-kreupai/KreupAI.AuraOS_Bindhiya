@@ -60,7 +60,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       success: true,
       data
     });
-  } catch {
+  } catch (error) {
     logger.error('Error fetching APM metrics:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch APM metrics' },
@@ -95,7 +95,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
           { status: 400 }
         );
     }
-  } catch {
+  } catch (error) {
     logger.error('Error performing APM action:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to perform APM action' },

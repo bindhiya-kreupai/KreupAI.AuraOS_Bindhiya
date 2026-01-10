@@ -6,10 +6,30 @@ import {
     Upload,
     DollarSign,
     CreditCard,
-    CheckCircle
+    CheckCircle,
+    Loader2
 } from 'lucide-react';
+import { useRemoteWork } from '../hooks/useRemoteWork';
 
 export default function ExpenseManagementPage() {
+    const { loading, error, employees } = useRemoteWork();
+
+    if (loading) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center text-rose-500 font-bold">
+                Error: {error}
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}

@@ -53,7 +53,7 @@ export const GET = withEnhancedAuth(
       if (categoryId) filtered = filtered.filter(c => c.categoryId === categoryId);
 
       return NextResponse.json({ success: true, data: filtered });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching courses:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch courses' }, { status: 500 });
     }
@@ -77,7 +77,7 @@ export const POST = withEnhancedAuth(
 
       logger.info('Course created:', newCourse.id);
       return NextResponse.json({ success: true, data: newCourse }, { status: 201 });
-    } catch {
+    } catch (error) {
       logger.error('Error creating course:', error);
       return NextResponse.json({ success: false, error: 'Failed to create course' }, { status: 500 });
     }
@@ -99,7 +99,7 @@ export const PUT = withEnhancedAuth(
 
       logger.info('Course updated:', updatedCourse.id);
       return NextResponse.json({ success: true, data: updatedCourse });
-    } catch {
+    } catch (error) {
       logger.error('Error updating course:', error);
       return NextResponse.json({ success: false, error: 'Failed to update course' }, { status: 500 });
     }

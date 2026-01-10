@@ -8,7 +8,7 @@ export class CredentialingService {
     try {
       const response = await APIClient.get<{ providers?: HealthcareProvider[] }>(this.endpoint);
       return response.providers || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -17,7 +17,7 @@ export class CredentialingService {
     try {
       const response = await APIClient.get<{ provider?: HealthcareProvider }>(`${this.endpoint}/${id}`);
       return response.provider || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -40,7 +40,7 @@ export class NurseRosteringService {
     try {
       const response = await APIClient.get<{ schedules?: NurseSchedule[] }>(this.endpoint);
       return response.schedules || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -49,7 +49,7 @@ export class NurseRosteringService {
     try {
       const response = await APIClient.get<{ schedule?: NurseSchedule }>(`${this.endpoint}/${id}`);
       return response.schedule || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -72,7 +72,7 @@ export class LocumManagementService {
     try {
       const response = await APIClient.get<{ providers?: LocumProvider[] }>(`${this.endpoint}/providers`);
       return response.providers || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -81,7 +81,7 @@ export class LocumManagementService {
     try {
       const response = await APIClient.get<{ provider?: LocumProvider }>(`${this.endpoint}/providers/${id}`);
       return response.provider || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -100,7 +100,7 @@ export class LocumManagementService {
     try {
       const response = await APIClient.get<{ assignments?: LocumAssignment[] }>(`${this.endpoint}/assignments`);
       return response.assignments || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -118,7 +118,7 @@ export class HealthcareSettingsService {
     try {
       const response = await APIClient.get<{ settings?: HealthcareSettings }>(this.endpoint);
       return response.settings || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -136,7 +136,7 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: HealthcareAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }

@@ -51,7 +51,7 @@ export const GET = withEnhancedAuth(
           ? mockDeductions.deductions.find(d => d.employeeId === employeeId)
           : mockDeductions,
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching statutory deductions:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch statutory deductions' },
@@ -110,7 +110,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: result });
-    } catch {
+    } catch (error) {
       logger.error('Error calculating statutory deductions:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to calculate statutory deductions' },

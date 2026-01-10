@@ -32,7 +32,7 @@ export class PayrollRunService {
         try {
             const response = await APIClient.get<{ runs?: PayrollRun[] }>(this.endpoint);
             return response.runs || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -44,7 +44,7 @@ export class PayrollRunService {
         try {
             const response = await APIClient.get<{ run?: PayrollRun }>(`${this.endpoint}/${id}`);
             return response.run || null;
-        } catch {
+        } catch (error) {
                         return null;
         }
     }
@@ -104,7 +104,7 @@ export class PayslipService {
             const url = employeeId ? `${this.endpoint}?employeeId=${employeeId}` : this.endpoint;
             const response = await APIClient.get<{ payslips?: Payslip[] }>(url);
             return response.payslips || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -116,7 +116,7 @@ export class PayslipService {
         try {
             const response = await APIClient.get<{ payslip?: Payslip }>(`${this.endpoint}/${id}`);
             return response.payslip || null;
-        } catch {
+        } catch (error) {
                         return null;
         }
     }
@@ -152,7 +152,7 @@ export class EmployeeSalaryService {
         try {
             const response = await APIClient.get<{ salaries?: EmployeeSalary[] }>(this.endpoint);
             return response.salaries || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -164,7 +164,7 @@ export class EmployeeSalaryService {
         try {
             const response = await APIClient.get<{ salary?: EmployeeSalary }>(`${this.endpoint}/${employeeId}`);
             return response.salary || null;
-        } catch {
+        } catch (error) {
                         return null;
         }
     }
@@ -193,7 +193,7 @@ export class TaxDeclarationService {
             const url = employeeId ? `${this.endpoint}?employeeId=${employeeId}` : this.endpoint;
             const response = await APIClient.get<{ declarations?: TaxDeclaration[] }>(url);
             return response.declarations || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -205,7 +205,7 @@ export class TaxDeclarationService {
         try {
             const response = await APIClient.get<{ declaration?: TaxDeclaration }>(`${this.endpoint}/${id}`);
             return response.declaration || null;
-        } catch {
+        } catch (error) {
                         return null;
         }
     }
@@ -245,7 +245,7 @@ export class ReimbursementService {
             const url = employeeId ? `${this.endpoint}?employeeId=${employeeId}` : this.endpoint;
             const response = await APIClient.get<{ claims?: ReimbursementClaim[] }>(url);
             return response.claims || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -286,7 +286,7 @@ export class LoanService {
             const url = employeeId ? `${this.endpoint}?employeeId=${employeeId}` : this.endpoint;
             const response = await APIClient.get<{ loans?: EmployeeLoan[] }>(url);
             return response.loans || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -323,7 +323,7 @@ export class BonusService {
             const url = employeeId ? `${this.endpoint}?employeeId=${employeeId}` : this.endpoint;
             const response = await APIClient.get<{ bonuses?: Bonus[] }>(url);
             return response.bonuses || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -389,7 +389,7 @@ export class StatutoryReportService {
         try {
             const response = await APIClient.get<{ reports?: StatutoryReport[] }>(this.endpoint);
             return response.reports || [];
-        } catch {
+        } catch (error) {
                         return [];
         }
     }
@@ -421,7 +421,7 @@ export class PayrollSettingsService {
         try {
             const response = await APIClient.get<{ settings?: PayrollSettings }>(this.endpoint);
             return response.settings || null;
-        } catch {
+        } catch (error) {
                         return null;
         }
     }
@@ -467,7 +467,7 @@ export class PayrollAnalyticsService {
                 pendingStatutoryReturns: 0,
                 overdueReturns: 0,
             };
-        } catch {
+        } catch (error) {
                         return {
                 totalEmployees: 0,
                 activePayrolls: 0,

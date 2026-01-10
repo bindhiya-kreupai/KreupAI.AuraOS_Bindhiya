@@ -38,7 +38,7 @@ export const GET = withEnhancedAuth(
       ];
 
       return NextResponse.json({ success: true, data: mockComponents });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching salary components:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch salary components' }, { status: 500 });
     }
@@ -55,7 +55,7 @@ export const POST = withEnhancedAuth(
       const newComponent = { ...body, id: `comp-${Date.now()}`, createdAt: new Date().toISOString() };
 
       return NextResponse.json({ success: true, data: newComponent }, { status: 201 });
-    } catch {
+    } catch (error) {
       logger.error('Error creating salary component:', error);
       return NextResponse.json({ success: false, error: 'Failed to create salary component' }, { status: 500 });
     }
@@ -70,7 +70,7 @@ export const PUT = withEnhancedAuth(
 
       const body = await request.json();
       return NextResponse.json({ success: true, data: { ...body, updatedAt: new Date().toISOString() } });
-    } catch {
+    } catch (error) {
       logger.error('Error updating salary component:', error);
       return NextResponse.json({ success: false, error: 'Failed to update salary component' }, { status: 500 });
     }
@@ -84,7 +84,7 @@ export const DELETE = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       return NextResponse.json({ success: true, message: 'Salary component deleted' });
-    } catch {
+    } catch (error) {
       logger.error('Error deleting salary component:', error);
       return NextResponse.json({ success: false, error: 'Failed to delete salary component' }, { status: 500 });
     }

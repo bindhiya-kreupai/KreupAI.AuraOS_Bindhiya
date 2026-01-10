@@ -391,7 +391,7 @@ describe('NotificationService', () => {
         employeeId: 'emp-1',
         type: 'REMINDER',
         title: 'Reminder',
-        message: 'Don't forget',
+        message: "Don't forget",
         channels: ['EMAIL'],
         scheduledFor: scheduledDate,
       });

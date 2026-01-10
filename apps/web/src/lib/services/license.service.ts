@@ -101,7 +101,7 @@ export class LicenseService extends BaseService {
         data: licensesWithUtilization,
         meta: this.buildPaginationMeta(total, page, limit),
       };
-    } catch {
+    } catch (error) {
       logger.error('LicenseService.listLicenses error:', error);
       return {
         success: false,
@@ -130,7 +130,7 @@ export class LicenseService extends BaseService {
         success: true,
         data: this.calculateUtilization(license),
       };
-    } catch {
+    } catch (error) {
       logger.error('LicenseService.getLicenseById error:', error);
       return {
         success: false,
@@ -197,7 +197,7 @@ export class LicenseService extends BaseService {
         success: true,
         data: this.calculateUtilization(result),
       };
-    } catch {
+    } catch (error) {
       logger.error('LicenseService.createLicense error:', error);
       return {
         success: false,
@@ -277,7 +277,7 @@ export class LicenseService extends BaseService {
         success: true,
         data: this.calculateUtilization(result),
       };
-    } catch {
+    } catch (error) {
       logger.error('LicenseService.updateLicense error:', error);
       return {
         success: false,
@@ -328,7 +328,7 @@ export class LicenseService extends BaseService {
       return {
         success: true,
       };
-    } catch {
+    } catch (error) {
       logger.error('LicenseService.deleteLicense error:', error);
       return {
         success: false,
@@ -389,7 +389,7 @@ export class LicenseService extends BaseService {
         success: true,
         data: this.calculateUtilization(result),
       };
-    } catch {
+    } catch (error) {
       logger.error('LicenseService.allocateLicense error:', error);
       return {
         success: false,
@@ -444,7 +444,7 @@ export class LicenseService extends BaseService {
         success: true,
         data: this.calculateUtilization(result),
       };
-    } catch {
+    } catch (error) {
       logger.error('LicenseService.releaseLicense error:', error);
       return {
         success: false,

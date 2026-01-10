@@ -344,7 +344,7 @@ function LiveChatWidget() {
         setSubmitStatus('error');
         setStatusMessage(data.error || 'Failed to send message');
       }
-    } catch {
+    } catch (error) {
       setSubmitStatus('error');
       setStatusMessage('Network error. Please try again.');
     } finally {

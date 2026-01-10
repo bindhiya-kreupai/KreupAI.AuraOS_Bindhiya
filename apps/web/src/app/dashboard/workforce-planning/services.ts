@@ -26,7 +26,7 @@ export class DemandForecastService {
     try {
       const response = await APIClient.get<{ forecasts?: DemandForecast[] }>(this.endpoint);
       return response.forecasts || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -35,7 +35,7 @@ export class DemandForecastService {
     try {
       const response = await APIClient.get<{ forecast?: DemandForecast }>(`${this.endpoint}/${id}`);
       return response.forecast || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -81,7 +81,7 @@ export class SupplyAnalysisService {
     try {
       const response = await APIClient.get<{ analyses?: SupplyAnalysis[] }>(this.endpoint);
       return response.analyses || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -90,7 +90,7 @@ export class SupplyAnalysisService {
     try {
       const response = await APIClient.get<{ analysis?: SupplyAnalysis }>(`${this.endpoint}/${id}`);
       return response.analysis || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -126,7 +126,7 @@ export class GapAnalysisService {
     try {
       const response = await APIClient.get<{ analyses?: GapAnalysis[] }>(this.endpoint);
       return response.analyses || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -135,7 +135,7 @@ export class GapAnalysisService {
     try {
       const response = await APIClient.get<{ analysis?: GapAnalysis }>(`${this.endpoint}/${id}`);
       return response.analysis || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -174,7 +174,7 @@ export class ScenarioModelingService {
     try {
       const response = await APIClient.get<{ scenarios?: ScenarioModel[] }>(this.endpoint);
       return response.scenarios || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -183,7 +183,7 @@ export class ScenarioModelingService {
     try {
       const response = await APIClient.get<{ scenario?: ScenarioModel }>(`${this.endpoint}/${id}`);
       return response.scenario || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -229,7 +229,7 @@ export class SuccessionReadinessService {
     try {
       const response = await APIClient.get<{ assessments?: SuccessionReadiness[] }>(this.endpoint);
       return response.assessments || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -238,7 +238,7 @@ export class SuccessionReadinessService {
     try {
       const response = await APIClient.get<{ assessment?: SuccessionReadiness }>(`${this.endpoint}/${id}`);
       return response.assessment || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -274,7 +274,7 @@ export class TalentAcquisitionPlanService {
     try {
       const response = await APIClient.get<{ plans?: TalentAcquisitionPlan[] }>(this.endpoint);
       return response.plans || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -283,7 +283,7 @@ export class TalentAcquisitionPlanService {
     try {
       const response = await APIClient.get<{ plan?: TalentAcquisitionPlan }>(`${this.endpoint}/${id}`);
       return response.plan || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -323,7 +323,7 @@ export class WorkforceAnalyticsService {
     try {
       const response = await APIClient.get<{ metrics?: WorkforceAnalytics }>(this.endpoint);
       return response.metrics || {} as WorkforceAnalytics;
-    } catch {
+    } catch (error) {
             throw error;
     }
   }
@@ -340,7 +340,7 @@ export class WorkforcePlanningSettingsService {
     try {
       const response = await APIClient.get<{ settings?: WorkforcePlanningSettings }>(this.endpoint);
       return response.settings || {} as WorkforcePlanningSettings;
-    } catch {
+    } catch (error) {
             throw error;
     }
   }

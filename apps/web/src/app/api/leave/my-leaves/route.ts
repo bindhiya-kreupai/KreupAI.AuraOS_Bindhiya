@@ -93,7 +93,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: { leaves: filteredData, summary },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching my leaves:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch leave requests' },

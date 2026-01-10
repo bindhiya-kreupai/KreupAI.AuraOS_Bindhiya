@@ -37,7 +37,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       success: true,
       data: config,
     });
-  } catch {
+  } catch (error) {
     logger.error('Error fetching SSO configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch SSO configuration' },
@@ -99,7 +99,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       },
       { status: 201 }
     );
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
@@ -163,7 +163,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
       message: 'SSO configuration updated successfully',
       data: updatedConfig,
     });
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
@@ -221,7 +221,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, perm
       success: true,
       message: 'SSO configuration deleted successfully. SSO is now disabled.',
     });
-  } catch {
+  } catch (error) {
     logger.error('Error deleting SSO configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to delete SSO configuration' },

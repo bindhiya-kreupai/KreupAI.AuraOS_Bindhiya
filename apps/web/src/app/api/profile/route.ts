@@ -91,7 +91,7 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
       success: true,
       data: userProfile,
     });
-  } catch {
+  } catch (error) {
     logger.error('Error fetching profile:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch profile' },
@@ -174,7 +174,7 @@ export const PUT = withAuth(async (request: NextRequest, { user }) => {
       data: updatedEmployee,
       message: 'Profile updated successfully',
     });
-  } catch {
+  } catch (error) {
     logger.error('Error updating profile:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update profile' },

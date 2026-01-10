@@ -1,78 +1,77 @@
-// Remote Work Services - API Integrated
+// Remote Work Services - API Integrated with Engagement Backend
 import { APIClient } from '@/lib/api-client';
-import type { RemoteEmployee, RemoteWorkSettings, RemoteWorkAlert } from './types';
+import type { RemoteEmployee, RemoteWorkSettings, RemoteWorkAlert, RemotePolicy } from './types';
+
+const BASE_ENDPOINT = '/engagement/remote-work';
 
 export class RemoteEmployeeService {
-  private static endpoint = '/remote-work/employees';
-
   static async getAll(): Promise<RemoteEmployee[]> {
     try {
-      const response = await APIClient.get<{ employees?: RemoteEmployee[] }>(this.endpoint);
+      const response = await APIClient.get<{ employees?: RemoteEmployee[] }>(`${BASE_ENDPOINT}?type=employees`);
       return response.employees || [];
-    } catch {
-            return [];
-    }
-  }
-
-  static async create(data: Partial<RemoteEmployee>): Promise<RemoteEmployee> {
-    try {
-      const response = await APIClient.post<{ employee: RemoteEmployee }>(this.endpoint, data);
-      return response.employee;
-    } catch {
-            throw error;
+    } catch (error) {
+      return [];
     }
   }
 
   static async update(id: string, updates: Partial<RemoteEmployee>): Promise<RemoteEmployee> {
-    try {
-      const response = await APIClient.put<{ employee: RemoteEmployee }>(`${this.endpoint}/${id}`, updates);
-      return response.employee;
-    } catch {
-            throw error;
-    }
+    const response = await APIClient.put<{ employee: RemoteEmployee }>(`${BASE_ENDPOINT}`, { id, updates });
+    return response.employee;
   }
 }
 
-export class RemoteWorkSettingsService {
-  private static endpoint = '/remote-work/settings';
+export class RemotePolicyService {
+  static async getAll(): Promise<RemotePolicy[]> {
+    try {
+      const response = await APIClient.get<{ policies?: RemotePolicy[] }>(`${BASE_ENDPOINT}?type=policies`);
+      return response.policies || [];
+    } catch (error) {
+      return [];
+    }
+  }
 
+  static async create(data: Partial<RemotePolicy>): Promise<RemotePolicy> {
+    const response = await APIClient.post<{ policy: RemotePolicy }>(`${BASE_ENDPOINT}`, { ...data, action: 'createPolicy' });
+    return response.policy;
+  }
+
+  static async update(id: string, updates: Partial<RemotePolicy>): Promise<RemotePolicy> {
+    const response = await APIClient.put<{ policy: RemotePolicy }>(`${BASE_ENDPOINT}`, { id, updates, action: 'updatePolicy' });
+    return response.policy;
+  }
+}
+
+
+export class RemoteWorkSettingsService {
   static async get(): Promise<RemoteWorkSettings | null> {
     try {
-      const response = await APIClient.get<{ settings?: RemoteWorkSettings }>(this.endpoint);
-      return response.settings || null;
-    } catch {
-            return null;
+      const response = await APIClient.get<{ teamMetrics?: RemoteWorkSettings }>(`${BASE_ENDPOINT}?type=metrics`);
+      return response.teamMetrics || null;
+    } catch (error) {
+      return null;
     }
   }
 
   static async update(s: Partial<RemoteWorkSettings>): Promise<RemoteWorkSettings> {
-    try {
-      const response = await APIClient.put<{ settings: RemoteWorkSettings }>(this.endpoint, s);
-      return response.settings;
-    } catch {
-            throw error;
-    }
+    const response = await APIClient.put<{ settings: RemoteWorkSettings }>(`${BASE_ENDPOINT}`, { settings: s });
+    return response.settings;
   }
 }
 
 export class AlertsService {
-  private static endpoint = '/remote-work/alerts';
-
   static async getAll(): Promise<RemoteWorkAlert[]> {
     try {
-      const response = await APIClient.get<{ alerts?: RemoteWorkAlert[] }>(this.endpoint);
-      return response.alerts || [];
-    } catch {
-            return [];
+      const response = await APIClient.get<{ requests?: RemoteWorkAlert[] }>(`${BASE_ENDPOINT}?type=requests`);
+      return response.requests || [];
+    } catch (error) {
+      return [];
     }
   }
 
   static async create(data: Partial<RemoteWorkAlert>): Promise<RemoteWorkAlert> {
-    try {
-      const response = await APIClient.post<{ alert: RemoteWorkAlert }>(this.endpoint, data);
-      return response.alert;
-    } catch {
-            throw error;
-    }
+    const response = await APIClient.post<{ request: RemoteWorkAlert }>(`${BASE_ENDPOINT}`, data);
+    return response.request;
   }
 }
+
+

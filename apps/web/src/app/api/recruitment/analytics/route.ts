@@ -212,7 +212,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json({ data: mockAnalytics }, { status: 200 });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

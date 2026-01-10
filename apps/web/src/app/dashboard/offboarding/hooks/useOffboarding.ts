@@ -58,8 +58,8 @@ export const useOffboarding = () => {
       setError(null);
       const data = await ResignationService.getResignations();
       setResignations(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load resignations';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load resignations';
       setError(message);
       toast.error(message);
     } finally {
@@ -73,8 +73,8 @@ export const useOffboarding = () => {
       setError(null);
       const data = await TerminationService.getTerminations();
       setTerminations(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load terminations';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load terminations';
       setError(message);
       toast.error(message);
     } finally {
@@ -88,8 +88,8 @@ export const useOffboarding = () => {
       setError(null);
       const data = await OffboardingInstanceService.getInstances();
       setInstances(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load offboarding instances';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load offboarding instances';
       setError(message);
       toast.error(message);
     } finally {
@@ -103,8 +103,8 @@ export const useOffboarding = () => {
       setError(null);
       const data = await KnowledgeTransferService.getKnowledgeTransfers();
       setKnowledgeTransfers(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load knowledge transfers';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load knowledge transfers';
       setError(message);
       toast.error(message);
     } finally {
@@ -118,8 +118,8 @@ export const useOffboarding = () => {
       setError(null);
       const data = await ExitInterviewService.getExitInterviews();
       setExitInterviews(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load exit interviews';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load exit interviews';
       setError(message);
       toast.error(message);
     } finally {
@@ -133,8 +133,8 @@ export const useOffboarding = () => {
       setError(null);
       const data = await ExitSurveyService.getExitSurveys();
       setExitSurveys(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load exit surveys';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load exit surveys';
       setError(message);
       toast.error(message);
     } finally {
@@ -148,8 +148,8 @@ export const useOffboarding = () => {
       setError(null);
       const data = await FinalSettlementService.getFinalSettlements();
       setFinalSettlements(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load final settlements';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load final settlements';
       setError(message);
       toast.error(message);
     } finally {
@@ -163,8 +163,8 @@ export const useOffboarding = () => {
       setError(null);
       const data = await AlumniService.getAlumni();
       setAlumni(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load alumni';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load alumni';
       setError(message);
       toast.error(message);
     } finally {
@@ -178,8 +178,8 @@ export const useOffboarding = () => {
       setError(null);
       const data = await OffboardingAnalyticsService.getMetrics();
       setMetrics(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load metrics';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load metrics';
       setError(message);
       toast.error(message);
     } finally {
@@ -193,8 +193,8 @@ export const useOffboarding = () => {
       setError(null);
       const data = await OffboardingSettingsService.getSettings();
       setSettings(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load settings';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load settings';
       setError(message);
       toast.error(message);
     } finally {
@@ -241,10 +241,10 @@ export const useOffboarding = () => {
         setResignations((prev) => [...prev, created]);
         toast.success('Resignation submitted successfully');
         return created;
-      } catch {
-        const message = (err as Error).message || 'Failed to submit resignation';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to submit resignation';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -261,10 +261,10 @@ export const useOffboarding = () => {
         await loadMetrics();
         toast.success('Resignation accepted');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to accept resignation';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to accept resignation';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -280,10 +280,10 @@ export const useOffboarding = () => {
         setResignations((prev) => prev.map((r) => (r.id === id ? updated : r)));
         toast.success('Counter offer made');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to make counter offer';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to make counter offer';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -299,10 +299,10 @@ export const useOffboarding = () => {
         setResignations((prev) => prev.map((r) => (r.id === id ? updated : r)));
         toast.success('Resignation withdrawn');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to withdraw resignation';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to withdraw resignation';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -319,10 +319,10 @@ export const useOffboarding = () => {
         setTerminations((prev) => [...prev, created]);
         toast.success('Termination notice created');
         return created;
-      } catch {
-        const message = (err as Error).message || 'Failed to create termination';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to create termination';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -340,10 +340,10 @@ export const useOffboarding = () => {
         await loadMetrics();
         toast.success('Offboarding instance created');
         return created;
-      } catch {
-        const message = (err as Error).message || 'Failed to create instance';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to create instance';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -359,10 +359,10 @@ export const useOffboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === id ? updated : i)));
         toast.success('Instance updated');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to update instance';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to update instance';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -379,10 +379,10 @@ export const useOffboarding = () => {
         await loadMetrics();
         toast.success('Offboarding started');
         return started;
-      } catch {
-        const message = (err as Error).message || 'Failed to start offboarding';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to start offboarding';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -399,10 +399,10 @@ export const useOffboarding = () => {
         await loadMetrics();
         toast.success('Offboarding completed');
         return completed;
-      } catch {
-        const message = (err as Error).message || 'Failed to complete offboarding';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to complete offboarding';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -419,10 +419,10 @@ export const useOffboarding = () => {
         await loadMetrics();
         toast.success('Offboarding cancelled');
         return cancelled;
-      } catch {
-        const message = (err as Error).message || 'Failed to cancel offboarding';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to cancel offboarding';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -445,10 +445,10 @@ export const useOffboarding = () => {
         await loadMetrics();
         toast.success('Task status updated');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to update task status';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to update task status';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -471,10 +471,10 @@ export const useOffboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === instanceId ? updated : i)));
         toast.success('Equipment return recorded');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to record equipment return';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to record equipment return';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -491,10 +491,10 @@ export const useOffboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === instanceId ? updated : i)));
         toast.success('Access revoked');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to revoke access';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to revoke access';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -511,10 +511,10 @@ export const useOffboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === instanceId ? updated : i)));
         toast.success('Department clearance completed');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to clear department';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to clear department';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -531,10 +531,10 @@ export const useOffboarding = () => {
         setKnowledgeTransfers((prev) => [...prev, created]);
         toast.success('Knowledge transfer created');
         return created;
-      } catch {
-        const message = (err as Error).message || 'Failed to create knowledge transfer';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to create knowledge transfer';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -550,10 +550,10 @@ export const useOffboarding = () => {
         setKnowledgeTransfers((prev) => prev.map((t) => (t.id === id ? updated : t)));
         toast.success('Knowledge transfer session added');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to add session';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to add session';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -570,10 +570,10 @@ export const useOffboarding = () => {
         setExitInterviews((prev) => [...prev, created]);
         toast.success('Exit interview scheduled');
         return created;
-      } catch {
-        const message = (err as Error).message || 'Failed to create exit interview';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to create exit interview';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -589,10 +589,10 @@ export const useOffboarding = () => {
         setExitInterviews((prev) => prev.map((i) => (i.id === id ? completed : i)));
         toast.success('Exit interview completed');
         return completed;
-      } catch {
-        const message = (err as Error).message || 'Failed to complete exit interview';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to complete exit interview';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -617,10 +617,10 @@ export const useOffboarding = () => {
         await loadMetrics();
         toast.success('Exit survey submitted');
         return submitted;
-      } catch {
-        const message = (err as Error).message || 'Failed to submit exit survey';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to submit exit survey';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -637,10 +637,10 @@ export const useOffboarding = () => {
         setFinalSettlements((prev) => [...prev, created]);
         toast.success('Final settlement created');
         return created;
-      } catch {
-        const message = (err as Error).message || 'Failed to create final settlement';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to create final settlement';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -656,10 +656,10 @@ export const useOffboarding = () => {
         setFinalSettlements((prev) => prev.map((s) => (s.id === id ? approved : s)));
         toast.success('Final settlement approved');
         return approved;
-      } catch {
-        const message = (err as Error).message || 'Failed to approve settlement';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to approve settlement';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -675,10 +675,10 @@ export const useOffboarding = () => {
         setFinalSettlements((prev) => prev.map((s) => (s.id === id ? paid : s)));
         toast.success('Final settlement marked as paid');
         return paid;
-      } catch {
-        const message = (err as Error).message || 'Failed to mark settlement as paid';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to mark settlement as paid';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -695,10 +695,10 @@ export const useOffboarding = () => {
         setAlumni((prev) => [...prev, created]);
         toast.success('Alumni record created');
         return created;
-      } catch {
-        const message = (err as Error).message || 'Failed to create alumni record';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to create alumni record';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -714,10 +714,10 @@ export const useOffboarding = () => {
         setAlumni((prev) => prev.map((a) => (a.id === id ? updated : a)));
         toast.success('Alumni record updated');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to update alumni record';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to update alumni record';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -734,10 +734,10 @@ export const useOffboarding = () => {
         setSettings(updated);
         toast.success('Settings updated');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to update settings';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to update settings';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }

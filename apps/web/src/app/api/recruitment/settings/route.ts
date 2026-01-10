@@ -117,7 +117,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json({ data: mockSettings }, { status: 200 });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -144,7 +144,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json({ data: updatedSettings }, { status: 200 });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -38,7 +38,7 @@ export function withAudit<T>(handler: T, config: AuditConfig): T {
         try {
           responseBody = await clonedResponse.json();
           success = responseBody.success !== false;
-        } catch {
+        } catch (error) {
           // Response might not be JSON
         }
       }
@@ -90,7 +90,7 @@ async function logAuditEntry(
       try {
         const clonedRequest = request.clone();
         requestBody = await clonedRequest.json();
-      } catch {
+      } catch (error) {
         // Request might not have JSON body
       }
     }

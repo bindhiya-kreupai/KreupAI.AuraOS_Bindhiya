@@ -18,3 +18,12 @@ export { wellnessService } from './wellness.service';
 // DEI (Diversity, Equity & Inclusion) Service
 export * from './dei.service';
 export { deiService } from './dei.service';
+
+// ESG (Environmental, Social, Governance) Service
+export * from './esg.service';
+export { esgService } from './esg.service';
+
+// Remote Work Service
+export * from './remote-work.service';
+export { remoteWorkService } from './remote-work.service';
+

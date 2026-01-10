@@ -178,7 +178,7 @@ export const GET = withEnhancedAuth(
         data: { workflows: filteredData, summary },
         meta: { total: filteredData.length },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching approval workflows:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch approval workflows' },
@@ -217,7 +217,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newWorkflow }, { status: 201 });
-    } catch {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -268,7 +268,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch {
+    } catch (error) {
       logger.error('Error updating approval workflow:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update approval workflow' },
@@ -306,7 +306,7 @@ export const DELETE = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, message: 'Approval workflow deleted successfully' });
-    } catch {
+    } catch (error) {
       logger.error('Error deleting approval workflow:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to delete approval workflow' },

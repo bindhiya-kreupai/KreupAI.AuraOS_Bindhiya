@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       success: true,
       settings: defaultSettings,
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch settings' },
       { status: 500 }
@@ -75,7 +75,7 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to update settings' },
       { status: 500 }

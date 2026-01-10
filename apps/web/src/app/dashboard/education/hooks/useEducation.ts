@@ -50,7 +50,7 @@ export const useEducation = () => {
         loadFaculty(), loadTenureApplications(), loadGrants(),
         loadAdjuncts(), loadContracts(), loadSettings()
       ]);
-    } catch {
+    } catch (error) {
       console.error('Error loading data:', error);
       addToast({ type: 'error', message: 'Failed to load education data' });
     } finally {
@@ -71,7 +71,7 @@ export const useEducation = () => {
       await loadFaculty();
       addToast({ type: 'success', message: 'Faculty member created' });
       return faculty;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create faculty' });
       throw error;
     } finally {
@@ -86,7 +86,7 @@ export const useEducation = () => {
       await loadFaculty();
       addToast({ type: 'success', message: 'Faculty updated' });
       return faculty;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update faculty' });
       throw error;
     } finally {
@@ -100,7 +100,7 @@ export const useEducation = () => {
       await FacultyTenureService.addPublication(facultyId, publication);
       await loadFaculty();
       addToast({ type: 'success', message: 'Publication added' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to add publication' });
       throw error;
     } finally {
@@ -114,7 +114,7 @@ export const useEducation = () => {
       await FacultyTenureService.addEvaluation(facultyId, evaluation);
       await loadFaculty();
       addToast({ type: 'success', message: 'Evaluation added' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to add evaluation' });
       throw error;
     } finally {
@@ -134,7 +134,7 @@ export const useEducation = () => {
       await loadTenureApplications();
       addToast({ type: 'success', message: 'Tenure application created' });
       return application;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create application' });
       throw error;
     } finally {
@@ -149,7 +149,7 @@ export const useEducation = () => {
       await loadTenureApplications();
       addToast({ type: 'success', message: 'Application updated' });
       return application;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update application' });
       throw error;
     } finally {
@@ -163,7 +163,7 @@ export const useEducation = () => {
       await FacultyTenureService.submitApplication(applicationId);
       await loadTenureApplications();
       addToast({ type: 'success', message: 'Application submitted' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to submit application' });
       throw error;
     } finally {
@@ -177,7 +177,7 @@ export const useEducation = () => {
       await FacultyTenureService.recordCommitteeVote(applicationId, vote);
       await loadTenureApplications();
       addToast({ type: 'success', message: 'Vote recorded' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to record vote' });
       throw error;
     } finally {
@@ -191,7 +191,7 @@ export const useEducation = () => {
       await FacultyTenureService.recordDecision(applicationId, decision);
       await loadTenureApplications();
       addToast({ type: 'success', message: 'Decision recorded' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to record decision' });
       throw error;
     } finally {
@@ -212,7 +212,7 @@ export const useEducation = () => {
       await loadGrants();
       addToast({ type: 'success', message: 'Grant created' });
       return grant;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create grant' });
       throw error;
     } finally {
@@ -227,7 +227,7 @@ export const useEducation = () => {
       await loadGrants();
       addToast({ type: 'success', message: 'Grant updated' });
       return grant;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update grant' });
       throw error;
     } finally {
@@ -241,7 +241,7 @@ export const useEducation = () => {
       await ResearchGrantsService.submitGrant(grantId);
       await loadGrants();
       addToast({ type: 'success', message: 'Grant submitted' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to submit grant' });
       throw error;
     } finally {
@@ -255,7 +255,7 @@ export const useEducation = () => {
       await ResearchGrantsService.awardGrant(grantId, awardedAmount, startDate, endDate);
       await loadGrants();
       addToast({ type: 'success', message: 'Grant awarded' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to award grant' });
       throw error;
     } finally {
@@ -269,7 +269,7 @@ export const useEducation = () => {
       await ResearchGrantsService.recordExpenditure(grantId, expenditure);
       await loadGrants();
       addToast({ type: 'success', message: 'Expenditure recorded' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to record expenditure' });
       throw error;
     } finally {
@@ -283,7 +283,7 @@ export const useEducation = () => {
       await ResearchGrantsService.addMilestone(grantId, milestone);
       await loadGrants();
       addToast({ type: 'success', message: 'Milestone added' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to add milestone' });
       throw error;
     } finally {
@@ -297,7 +297,7 @@ export const useEducation = () => {
       await ResearchGrantsService.updateMilestone(grantId, milestoneId, updates);
       await loadGrants();
       addToast({ type: 'success', message: 'Milestone updated' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update milestone' });
       throw error;
     } finally {
@@ -311,7 +311,7 @@ export const useEducation = () => {
       const report = await ResearchGrantsService.createReport(reportData);
       addToast({ type: 'success', message: 'Report created' });
       return report;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create report' });
       throw error;
     } finally {
@@ -324,7 +324,7 @@ export const useEducation = () => {
     try {
       await ResearchGrantsService.submitReport(reportId);
       addToast({ type: 'success', message: 'Report submitted' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to submit report' });
       throw error;
     } finally {
@@ -345,7 +345,7 @@ export const useEducation = () => {
       await loadAdjuncts();
       addToast({ type: 'success', message: 'Adjunct faculty created' });
       return adjunct;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create adjunct' });
       throw error;
     } finally {
@@ -360,7 +360,7 @@ export const useEducation = () => {
       await loadAdjuncts();
       addToast({ type: 'success', message: 'Adjunct updated' });
       return adjunct;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update adjunct' });
       throw error;
     } finally {
@@ -374,7 +374,7 @@ export const useEducation = () => {
       await AdjunctManagementService.verifyCredentials(adjunctId, qualificationId, verifiedBy);
       await loadAdjuncts();
       addToast({ type: 'success', message: 'Credentials verified' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to verify credentials' });
       throw error;
     } finally {
@@ -394,7 +394,7 @@ export const useEducation = () => {
       await loadContracts();
       addToast({ type: 'success', message: 'Contract created' });
       return contract;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create contract' });
       throw error;
     } finally {
@@ -409,7 +409,7 @@ export const useEducation = () => {
       await loadContracts();
       addToast({ type: 'success', message: 'Contract updated' });
       return contract;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update contract' });
       throw error;
     } finally {
@@ -423,7 +423,7 @@ export const useEducation = () => {
       await AdjunctManagementService.signContract(contractId, signedBy);
       await loadContracts();
       addToast({ type: 'success', message: 'Contract signed' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to sign contract' });
       throw error;
     } finally {
@@ -437,7 +437,7 @@ export const useEducation = () => {
       await AdjunctManagementService.approveContract(contractId, approvedBy);
       await loadContracts();
       addToast({ type: 'success', message: 'Contract approved' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to approve contract' });
       throw error;
     } finally {
@@ -451,7 +451,7 @@ export const useEducation = () => {
       await AdjunctManagementService.processPayment(contractId, installmentNumber);
       await loadContracts();
       addToast({ type: 'success', message: 'Payment processed' });
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to process payment' });
       throw error;
     } finally {
@@ -477,7 +477,7 @@ export const useEducation = () => {
       setSettings(updated);
       addToast({ type: 'success', message: 'Settings updated' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update settings' });
       throw error;
     } finally {

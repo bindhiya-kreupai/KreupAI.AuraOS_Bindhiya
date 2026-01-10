@@ -188,7 +188,7 @@ export function useGamification(userId: string = 'user-001'): UseGamificationRet
       setAchievements(achievementsData);
       setAnalytics(analyticsData);
       setSettings(settingsData);
-    } catch {
+    } catch (error) {
       setError(err instanceof Error ? err.message : 'Failed to load gamification data');
     } finally {
       setLoading(false);

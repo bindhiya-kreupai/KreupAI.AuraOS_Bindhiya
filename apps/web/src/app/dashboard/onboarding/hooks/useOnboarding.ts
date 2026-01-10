@@ -66,8 +66,8 @@ export const useOnboarding = () => {
       setError(null);
       const data = await OnboardingProgramService.getPrograms();
       setPrograms(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load onboarding programs';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load onboarding programs';
       setError(message);
       toast.error(message);
     } finally {
@@ -81,8 +81,8 @@ export const useOnboarding = () => {
       setError(null);
       const data = await OnboardingInstanceService.getInstances();
       setInstances(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load onboarding instances';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load onboarding instances';
       setError(message);
       toast.error(message);
     } finally {
@@ -96,8 +96,8 @@ export const useOnboarding = () => {
       setError(null);
       const data = await BuddyAssignmentService.getAssignments();
       setBuddyAssignments(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load buddy assignments';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load buddy assignments';
       setError(message);
       toast.error(message);
     } finally {
@@ -111,8 +111,8 @@ export const useOnboarding = () => {
       setError(null);
       const data = await Day30_60_90PlanService.getPlans();
       setDay30_60_90Plans(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load 30-60-90 plans';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load 30-60-90 plans';
       setError(message);
       toast.error(message);
     } finally {
@@ -126,8 +126,8 @@ export const useOnboarding = () => {
       setError(null);
       const data = await PreBoardingService.getPackages();
       setPreBoardingPackages(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load pre-boarding packages';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load pre-boarding packages';
       setError(message);
       toast.error(message);
     } finally {
@@ -141,8 +141,8 @@ export const useOnboarding = () => {
       setError(null);
       const data = await OnboardingSurveyService.getSurveys();
       setSurveys(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load surveys';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load surveys';
       setError(message);
       toast.error(message);
     } finally {
@@ -156,8 +156,8 @@ export const useOnboarding = () => {
       setError(null);
       const data = await FeedbackService.getFeedback();
       setFeedback(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load feedback';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load feedback';
       setError(message);
       toast.error(message);
     } finally {
@@ -171,8 +171,8 @@ export const useOnboarding = () => {
       setError(null);
       const data = await OnboardingAnalyticsService.getMetrics();
       setMetrics(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load metrics';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load metrics';
       setError(message);
       toast.error(message);
     } finally {
@@ -186,8 +186,8 @@ export const useOnboarding = () => {
       setError(null);
       const data = await OnboardingSettingsService.getSettings();
       setSettings(data);
-    } catch {
-      const message = (err as Error).message || 'Failed to load settings';
+    } catch (error) {
+      const message = (error as Error).message || 'Failed to load settings';
       setError(message);
       toast.error(message);
     } finally {
@@ -235,10 +235,10 @@ export const useOnboarding = () => {
         setPrograms((prev) => [...prev, created]);
         toast.success('Onboarding program created successfully');
         return created;
-      } catch {
-        const message = (err as Error).message || 'Failed to create program';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to create program';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -254,10 +254,10 @@ export const useOnboarding = () => {
         setPrograms((prev) => prev.map((p) => (p.id === id ? updated : p)));
         toast.success('Program updated successfully');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to update program';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to update program';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -272,10 +272,10 @@ export const useOnboarding = () => {
         await OnboardingProgramService.deleteProgram(id);
         setPrograms((prev) => prev.filter((p) => p.id !== id));
         toast.success('Program deleted successfully');
-      } catch {
-        const message = (err as Error).message || 'Failed to delete program';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to delete program';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -291,10 +291,10 @@ export const useOnboarding = () => {
         setPrograms((prev) => prev.map((p) => (p.id === id ? activated : p)));
         toast.success('Program activated successfully');
         return activated;
-      } catch {
-        const message = (err as Error).message || 'Failed to activate program';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to activate program';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -310,10 +310,10 @@ export const useOnboarding = () => {
         setPrograms((prev) => prev.map((p) => (p.id === id ? deactivated : p)));
         toast.success('Program deactivated successfully');
         return deactivated;
-      } catch {
-        const message = (err as Error).message || 'Failed to deactivate program';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to deactivate program';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -334,10 +334,10 @@ export const useOnboarding = () => {
         await loadMetrics(); // Refresh metrics
         toast.success('Onboarding instance created successfully');
         return created;
-      } catch {
-        const message = (err as Error).message || 'Failed to create instance';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to create instance';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -353,10 +353,10 @@ export const useOnboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === id ? updated : i)));
         toast.success('Instance updated successfully');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to update instance';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to update instance';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -373,10 +373,10 @@ export const useOnboarding = () => {
         await loadMetrics();
         toast.success('Onboarding started successfully');
         return started;
-      } catch {
-        const message = (err as Error).message || 'Failed to start onboarding';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to start onboarding';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -393,10 +393,10 @@ export const useOnboarding = () => {
         await loadMetrics();
         toast.success('Onboarding completed successfully');
         return completed;
-      } catch {
-        const message = (err as Error).message || 'Failed to complete onboarding';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to complete onboarding';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -413,10 +413,10 @@ export const useOnboarding = () => {
         await loadMetrics();
         toast.success('Onboarding cancelled');
         return cancelled;
-      } catch {
-        const message = (err as Error).message || 'Failed to cancel onboarding';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to cancel onboarding';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -447,10 +447,10 @@ export const useOnboarding = () => {
         await loadMetrics();
         toast.success('Task status updated');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to update task status';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to update task status';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -466,10 +466,10 @@ export const useOnboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === instanceId ? updated : i)));
         toast.success('Task added successfully');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to add task';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to add task';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -485,10 +485,10 @@ export const useOnboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === instanceId ? updated : i)));
         toast.success('Task removed successfully');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to remove task';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to remove task';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -508,10 +508,10 @@ export const useOnboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === instanceId ? updated : i)));
         toast.success('Document uploaded successfully');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to upload document';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to upload document';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -531,10 +531,10 @@ export const useOnboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === instanceId ? updated : i)));
         toast.success('Document approved');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to approve document';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to approve document';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -555,10 +555,10 @@ export const useOnboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === instanceId ? updated : i)));
         toast.error(`Document rejected: ${reason}`);
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to reject document';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to reject document';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -578,10 +578,10 @@ export const useOnboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === instanceId ? updated : i)));
         toast.success('Equipment assigned successfully');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to assign equipment';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to assign equipment';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -601,10 +601,10 @@ export const useOnboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === instanceId ? updated : i)));
         toast.success('Equipment returned successfully');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to return equipment';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to return equipment';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -624,10 +624,10 @@ export const useOnboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === instanceId ? updated : i)));
         toast.success('Access granted successfully');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to grant access';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to grant access';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -647,10 +647,10 @@ export const useOnboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === instanceId ? updated : i)));
         toast.success('Access revoked successfully');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to revoke access';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to revoke access';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -670,10 +670,10 @@ export const useOnboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === instanceId ? updated : i)));
         toast.success('Training scheduled successfully');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to schedule training';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to schedule training';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -694,10 +694,10 @@ export const useOnboarding = () => {
         setInstances((prev) => prev.map((i) => (i.id === instanceId ? updated : i)));
         toast.success('Training completed successfully');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to complete training';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to complete training';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -727,10 +727,10 @@ export const useOnboarding = () => {
 
         toast.success('Buddy assigned successfully');
         return created;
-      } catch {
-        const message = (err as Error).message || 'Failed to assign buddy';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to assign buddy';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -749,10 +749,10 @@ export const useOnboarding = () => {
         setBuddyAssignments((prev) => prev.map((a) => (a.id === assignmentId ? updated : a)));
         toast.success('Check-in added successfully');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to add check-in';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to add check-in';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -768,10 +768,10 @@ export const useOnboarding = () => {
         setBuddyAssignments((prev) => prev.map((a) => (a.id === assignmentId ? completed : a)));
         toast.success('Buddy assignment completed successfully');
         return completed;
-      } catch {
-        const message = (err as Error).message || 'Failed to complete buddy assignment';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to complete buddy assignment';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -791,10 +791,10 @@ export const useOnboarding = () => {
         setDay30_60_90Plans((prev) => [...prev, created]);
         toast.success('30-60-90 day plan created successfully');
         return created;
-      } catch {
-        const message = (err as Error).message || 'Failed to create plan';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to create plan';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -810,10 +810,10 @@ export const useOnboarding = () => {
         setDay30_60_90Plans((prev) => prev.map((p) => (p.id === id ? updated : p)));
         toast.success('Plan updated successfully');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to update plan';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to update plan';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -833,10 +833,10 @@ export const useOnboarding = () => {
         setDay30_60_90Plans((prev) => prev.map((p) => (p.id === planId ? updated : p)));
         toast.success('Milestone completed');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to complete milestone';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to complete milestone';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -856,10 +856,10 @@ export const useOnboarding = () => {
         setPreBoardingPackages((prev) => [...prev, created]);
         toast.success('Pre-boarding package created successfully');
         return created;
-      } catch {
-        const message = (err as Error).message || 'Failed to create package';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to create package';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -875,10 +875,10 @@ export const useOnboarding = () => {
         setPreBoardingPackages((prev) => prev.map((p) => (p.id === packageId ? sent : p)));
         toast.success('Pre-boarding package sent successfully');
         return sent;
-      } catch {
-        const message = (err as Error).message || 'Failed to send package';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to send package';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -909,10 +909,10 @@ export const useOnboarding = () => {
         await loadMetrics();
         toast.success('Survey submitted successfully');
         return submitted;
-      } catch {
-        const message = (err as Error).message || 'Failed to submit survey';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to submit survey';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -932,10 +932,10 @@ export const useOnboarding = () => {
         setFeedback((prev) => [...prev, created]);
         toast.success('Feedback submitted successfully');
         return created;
-      } catch {
-        const message = (err as Error).message || 'Failed to submit feedback';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to submit feedback';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -955,10 +955,10 @@ export const useOnboarding = () => {
         setSettings(updated);
         toast.success('Settings updated successfully');
         return updated;
-      } catch {
-        const message = (err as Error).message || 'Failed to update settings';
+      } catch (error) {
+        const message = (error as Error).message || 'Failed to update settings';
         toast.error(message);
-        throw err;
+        throw error;
       } finally {
         setIsSaving(false);
       }

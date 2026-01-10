@@ -68,7 +68,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, _context) => {
     }));
 
     return NextResponse.json({ data: transformedOffers }, { status: 200 });
-  } catch {
+  } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch offers' }, { status: 500 });
   }
 });
@@ -109,7 +109,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, _context) => {
     });
 
     return NextResponse.json({ data: offer }, { status: 201 });
-  } catch {
+  } catch (error) {
     return NextResponse.json({ error: 'Failed to create offer' }, { status: 500 });
   }
 });
@@ -175,7 +175,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, _context) => {
     });
 
     return NextResponse.json({ data: offer }, { status: 200 });
-  } catch {
+  } catch (error) {
     return NextResponse.json({ error: 'Failed to update offer' }, { status: 500 });
   }
 });

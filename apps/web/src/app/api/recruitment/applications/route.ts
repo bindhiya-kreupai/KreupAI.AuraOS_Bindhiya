@@ -56,7 +56,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, _context) => {
     }));
 
     return NextResponse.json({ data: transformedApplications }, { status: 200 });
-  } catch {
+  } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch applications' }, { status: 500 });
   }
 });
@@ -113,7 +113,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, _context) => {
     });
 
     return NextResponse.json({ data: application }, { status: 201 });
-  } catch {
+  } catch (error) {
     return NextResponse.json({ error: 'Failed to create application' }, { status: 500 });
   }
 });
@@ -148,7 +148,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, _context) => {
     });
 
     return NextResponse.json({ data: application }, { status: 200 });
-  } catch {
+  } catch (error) {
     return NextResponse.json({ error: 'Failed to update application' }, { status: 500 });
   }
 });

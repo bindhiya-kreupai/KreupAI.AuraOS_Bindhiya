@@ -82,7 +82,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
         total: allPermissions.length,
       },
     });
-  } catch {
+  } catch (error) {
     logger.error({ error, userId: user.userId }, 'Error fetching permissions');
     return NextResponse.json(
       { success: false, error: 'Failed to fetch permissions' },

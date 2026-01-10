@@ -23,7 +23,7 @@ export const GET = withEnhancedAuth(
       ];
 
       return NextResponse.json({ success: true, data: mockBookings });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching bookings:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch bookings' }, { status: 500 });
     }
@@ -40,7 +40,7 @@ export const POST = withEnhancedAuth(
       const newBooking = { ...body, id: `booking-${Date.now()}`, createdAt: new Date().toISOString() };
 
       return NextResponse.json({ success: true, data: newBooking }, { status: 201 });
-    } catch {
+    } catch (error) {
       logger.error('Error creating booking:', error);
       return NextResponse.json({ success: false, error: 'Failed to create booking' }, { status: 500 });
     }

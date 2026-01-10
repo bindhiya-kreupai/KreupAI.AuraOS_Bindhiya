@@ -53,7 +53,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
         total: accessControlData.length,
       },
     });
-  } catch {
+  } catch (error) {
     logger.error('Error fetching access control data:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch access control data' },
@@ -128,7 +128,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         totalPermissions: rolePermissions.length,
       },
     });
-  } catch {
+  } catch (error) {
     logger.error('Error fetching role permissions:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch role permissions' },

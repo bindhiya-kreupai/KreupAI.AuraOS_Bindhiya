@@ -31,7 +31,7 @@ export function useEngagement() {
       setNewsletters(await NewsletterService.getNewsletters());
       setMetrics(await EngagementAnalyticsService.getMetrics());
       setSettings(await EngagementSettingsService.getSettings());
-    } catch {
+    } catch (error) {
       setError(err instanceof Error ? err.message : 'Failed to load engagement data');
     } finally {
       setLoading(false);

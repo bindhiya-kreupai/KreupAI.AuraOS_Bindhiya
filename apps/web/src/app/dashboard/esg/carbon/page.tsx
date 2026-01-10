@@ -9,12 +9,32 @@ import {
     TrendingDown,
     ArrowUpRight,
     ArrowDownRight,
-    Plane
+    Plane,
+    Loader2
 } from 'lucide-react';
+import { useESG } from '../hooks/useESG';
 
 export default function CarbonPage() {
+    const { metrics, initiatives, loading, error } = useESG();
+
+    if (loading) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center text-rose-500 font-bold">
+                Error: {error}
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100 overflow-y-auto pr-2">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
                 <div>
@@ -42,18 +62,18 @@ export default function CarbonPage() {
                         <div className="text-xs font-bold text-slate-500 uppercase">Total Emissions (YTD)</div>
                         <TrendingDown className="w-4 h-4 text-emerald-500" />
                     </div>
-                    <div className="text-3xl font-black">124.5 <span className="text-lg opacity-50">tCO2e</span></div>
+                    <div className="text-3xl font-black">{metrics?.carbonFootprint || '124.5'} <span className="text-lg opacity-50">tCO2e</span></div>
                     <div className="text-xs text-emerald-500 mt-1 flex items-center gap-1">
                         <ArrowDownRight className="w-3 h-3" /> -12% vs last year
                     </div>
                 </div>
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <div className="flex justify-between items-start mb-2">
-                        <div className="text-xs font-bold text-slate-500 uppercase">Energy Intensity</div>
+                        <div className="text-xs font-bold text-slate-500 uppercase">Renewable Energy</div>
                         <Zap className="w-4 h-4 text-amber-500" />
                     </div>
-                    <div className="text-3xl font-black">45 <span className="text-lg opacity-50">kWh/sqft</span></div>
-                    <div className="text-xs text-slate-400 mt-1">Within efficient range</div>
+                    <div className="text-3xl font-black">{metrics?.renewableEnergy || '45'} <span className="text-lg opacity-50">%</span></div>
+                    <div className="text-xs text-slate-400 mt-1">Increasing quarterly</div>
                 </div>
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <div className="flex justify-between items-start mb-2">
@@ -65,8 +85,8 @@ export default function CarbonPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full min-h-0">
-                {/* Breakdown Chart */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0 flex-1">
+                {/* Breakdown View */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col">
                     <h3 className="font-bold text-lg mb-6">Emissions by Source</h3>
                     <div className="space-y-6 flex-1">
@@ -92,41 +112,40 @@ export default function CarbonPage() {
                     </div>
                 </div>
 
-                {/* Recommendations */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col">
-                    <h3 className="font-bold text-lg mb-6">Reduction Opportunities</h3>
+                {/* Initiatives */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col overflow-hidden">
+                    <h3 className="font-bold text-lg mb-6">Active Initiatives</h3>
 
-                    <div className="space-y-4 flex-1">
-                        <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800 rounded-xl">
-                            <div className="flex gap-4">
-                                <div className="mt-1">
-                                    <Zap className="w-5 h-5 text-emerald-600" />
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-emerald-900 dark:text-emerald-400 text-sm">Switch to LED Lighting in Warehouse B</h4>
-                                    <p className="text-xs text-emerald-800 dark:text-emerald-500 mt-1">
-                                        Estimated Impact: <span className="font-bold">-2.5 tons CO2e/year</span>
-                                    </p>
-                                    <p className="text-xs text-emerald-700/70 mt-1">ROI: 8 months</p>
+                    <div className="space-y-4 flex-1 overflow-y-auto">
+                        {initiatives.filter(i => i.category === 'environmental').map(initiative => (
+                            <div key={initiative.id} className="p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800 rounded-xl">
+                                <div className="flex gap-4">
+                                    <div className="mt-1">
+                                        <Zap className="w-5 h-5 text-emerald-600" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-emerald-900 dark:text-emerald-400 text-sm">{initiative.name}</h4>
+                                        <p className="text-xs text-emerald-800 dark:text-emerald-500 mt-1">
+                                            Status: <span className="font-bold capitalize">{initiative.status.replace('_', ' ')}</span>
+                                        </p>
+                                        <p className="text-xs text-emerald-700/70 mt-1">Impact: {initiative.impact}</p>
+                                        <div className="mt-2 w-full h-1.5 bg-emerald-100 dark:bg-emerald-900/40 rounded-full overflow-hidden">
+                                            <div className="h-full bg-emerald-500" style={{ width: `${initiative.progress}%` }}></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <button className="mt-3 w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold">
-                                Approve Project
-                            </button>
-                        </div>
+                        ))}
 
-                        <div className="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl">
-                            <h4 className="font-bold text-sm">Optimize Cloud Instance Usage</h4>
-                            <p className="text-xs text-slate-500 mt-1 mb-2">
-                                Rightsizing AWS EC2 instances can reduce energy consumption by 15%.
-                            </p>
-                            <button className="text-indigo-600 text-xs font-bold hover:underline">
-                                View IT Report
-                            </button>
-                        </div>
+                        {initiatives.length === 0 && (
+                            <div className="text-center py-10 text-slate-400 text-sm">
+                                No active initiatives found.
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
         </div>
     );
 }
+

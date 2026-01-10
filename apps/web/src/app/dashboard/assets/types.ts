@@ -382,7 +382,7 @@ export interface AssetSettings {
   enableAssetAudits: boolean;
   auditFrequency: 'monthly' | 'quarterly' | 'semi_annually' | 'annually';
   enableQRCodes: boolean;
-  enableBarcodeScan ning: boolean;
+  enableBarcodeScanning: boolean;
   enableGeolocation: boolean;
   lowStockThreshold: number;
   notificationEmail: string;

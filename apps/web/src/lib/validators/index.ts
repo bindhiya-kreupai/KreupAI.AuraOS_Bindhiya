@@ -83,7 +83,7 @@ export function withValidation<T extends z.ZodType>(
       const body = await request.json();
       const validatedData = validateRequest(schema, body);
       return await handler(validatedData, request);
-    } catch {
+    } catch (error) {
       if (error instanceof ZodError) {
         return validationErrorResponse(error);
       }

@@ -242,7 +242,7 @@ export const useLearning = () => {
             } else {
                 setSettings(settingsData);
             }
-        } catch {
+        } catch (error) {
             toast.error('Failed to load learning data');
             console.error('Load error:', error);
         } finally {
@@ -258,7 +258,7 @@ export const useLearning = () => {
             setCourses(prev => [...prev, created]);
             toast.success('Course created successfully!');
             return created;
-        } catch {
+        } catch (error) {
             toast.error((error as Error).message || 'Failed to create course');
             throw error;
         } finally {
@@ -273,7 +273,7 @@ export const useLearning = () => {
             setCourses(prev => prev.map(c => c.id === id ? updated : c));
             toast.success('Course updated successfully!');
             return updated;
-        } catch {
+        } catch (error) {
             toast.error((error as Error).message || 'Failed to update course');
             throw error;
         } finally {
@@ -288,7 +288,7 @@ export const useLearning = () => {
             setCourses(prev => prev.map(c => c.id === id ? published : c));
             toast.success('Course published!');
             return published;
-        } catch {
+        } catch (error) {
             toast.error((error as Error).message || 'Failed to publish course');
             throw error;
         } finally {
@@ -304,7 +304,7 @@ export const useLearning = () => {
             setEnrollments(prev => [...prev, created]);
             toast.success('Enrolled successfully!');
             return created;
-        } catch {
+        } catch (error) {
             toast.error((error as Error).message || 'Failed to enroll');
             throw error;
         } finally {
@@ -319,7 +319,7 @@ export const useLearning = () => {
             setEnrollments(prev => prev.map(e => e.id === id ? started : e));
             toast.success('Course started!');
             return started;
-        } catch {
+        } catch (error) {
             toast.error((error as Error).message || 'Failed to start course');
             throw error;
         } finally {
@@ -334,7 +334,7 @@ export const useLearning = () => {
             setEnrollments(prev => prev.map(e => e.id === id ? completed : e));
             toast.success('Course completed!');
             return completed;
-        } catch {
+        } catch (error) {
             toast.error((error as Error).message || 'Failed to complete course');
             throw error;
         } finally {
@@ -347,7 +347,7 @@ export const useLearning = () => {
             const updated = await EnrollmentService.updateProgress(id, progress, timeSpent);
             setEnrollments(prev => prev.map(e => e.id === id ? updated : e));
             return updated;
-        } catch {
+        } catch (error) {
             console.error('Failed to update progress:', error);
             throw error;
         }
@@ -361,7 +361,7 @@ export const useLearning = () => {
             setAssessmentAttempts(prev => [...prev, submitted]);
             toast.success('Assessment submitted!');
             return submitted;
-        } catch {
+        } catch (error) {
             toast.error((error as Error).message || 'Failed to submit assessment');
             throw error;
         } finally {
@@ -377,7 +377,7 @@ export const useLearning = () => {
             setCertifications(prev => [...prev, issued]);
             toast.success('Certificate issued!');
             return issued;
-        } catch {
+        } catch (error) {
             toast.error((error as Error).message || 'Failed to issue certificate');
             throw error;
         } finally {
@@ -393,7 +393,7 @@ export const useLearning = () => {
             setTrainingSessions(prev => [...prev, created]);
             toast.success('Training session created!');
             return created;
-        } catch {
+        } catch (error) {
             toast.error((error as Error).message || 'Failed to create session');
             throw error;
         } finally {
@@ -408,7 +408,7 @@ export const useLearning = () => {
             setTrainingSessions(prev => prev.map(s => s.id === sessionId ? updated : s));
             toast.success('Attendance marked!');
             return updated;
-        } catch {
+        } catch (error) {
             toast.error((error as Error).message || 'Failed to mark attendance');
             throw error;
         } finally {
@@ -424,7 +424,7 @@ export const useLearning = () => {
             setExternalTraining(prev => [...prev, created]);
             toast.success('External training request created!');
             return created;
-        } catch {
+        } catch (error) {
             toast.error((error as Error).message || 'Failed to create external training');
             throw error;
         } finally {
@@ -439,7 +439,7 @@ export const useLearning = () => {
             setExternalTraining(prev => prev.map(t => t.id === id ? approved : t));
             toast.success('External training approved!');
             return approved;
-        } catch {
+        } catch (error) {
             toast.error((error as Error).message || 'Failed to approve training');
             throw error;
         } finally {
@@ -455,7 +455,7 @@ export const useLearning = () => {
             setSkillGaps(prev => [...prev, created]);
             toast.success('Skill gap analysis created!');
             return created;
-        } catch {
+        } catch (error) {
             toast.error((error as Error).message || 'Failed to create analysis');
             throw error;
         } finally {
@@ -471,7 +471,7 @@ export const useLearning = () => {
             setTrainingFeedback(prev => [...prev, submitted]);
             toast.success('Feedback submitted!');
             return submitted;
-        } catch {
+        } catch (error) {
             toast.error((error as Error).message || 'Failed to submit feedback');
             throw error;
         } finally {
@@ -484,7 +484,7 @@ export const useLearning = () => {
         try {
             const analyticsData = await LearningAnalyticsService.getAnalytics();
             setAnalytics(analyticsData);
-        } catch {
+        } catch (error) {
             toast.error('Failed to refresh analytics');
             console.error('Analytics error:', error);
         }

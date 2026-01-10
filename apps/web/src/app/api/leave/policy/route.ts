@@ -72,7 +72,7 @@ export const GET = withEnhancedAuth(
         data: mockPolicies,
         meta: { total: mockPolicies.length },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching leave policies:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch leave policies' },
@@ -111,7 +111,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newPolicy }, { status: 201 });
-    } catch {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

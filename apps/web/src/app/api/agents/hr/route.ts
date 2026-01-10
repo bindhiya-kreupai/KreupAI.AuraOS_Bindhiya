@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         isActive: definition.isActive,
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { success: false, error: 'Failed to fetch HR agent' },
       { status: 500 }
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: result,
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       {
         success: false,

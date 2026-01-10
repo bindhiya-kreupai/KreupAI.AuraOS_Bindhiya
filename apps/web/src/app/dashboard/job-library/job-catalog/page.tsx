@@ -35,7 +35,7 @@ export default function JobCatalogPage() {
                 setJobs(data);
             } catch (error) {
             console.error('Error:', error);
-                console.error(err);
+                console.error(error);
                 setError('Failed to load job catalog');
             } finally {
                 setLoading(false);

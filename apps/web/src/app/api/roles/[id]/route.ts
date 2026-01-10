@@ -84,7 +84,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: role,
       });
-    } catch {
+    } catch (error) {
       logger.error({ error, userId: user.userId, roleId: params.id }, 'Error fetching role');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch role' },
@@ -200,7 +200,7 @@ export const PUT = withEnhancedAuth(
         data: updatedRole,
         message: 'Role updated successfully',
       });
-    } catch {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation failed', details: error.errors },
@@ -305,7 +305,7 @@ export const DELETE = withEnhancedAuth(
         success: true,
         message: 'Role deactivated successfully',
       });
-    } catch {
+    } catch (error) {
       logger.error({ error, userId: user.userId, roleId: params.id }, 'Error deleting role');
       return NextResponse.json(
         { success: false, error: 'Failed to delete role' },

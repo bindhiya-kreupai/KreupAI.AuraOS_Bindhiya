@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process dashboard',
@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch dashboard data', errorAr: 'فشل في جلب بيانات لوحة المعلومات' },
       { status: 500 }

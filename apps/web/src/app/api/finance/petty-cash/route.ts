@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
         pendingReconciliations: 0,
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch petty cash funds' },
       { status: 500 }
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to create petty cash fund' },
       { status: 500 }
@@ -83,7 +83,7 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to update petty cash fund' },
       { status: 500 }

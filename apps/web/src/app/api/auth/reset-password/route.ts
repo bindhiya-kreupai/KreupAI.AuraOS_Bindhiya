@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Password reset successful. Please login with your new password.',
     });
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Validation failed', details: error.errors },

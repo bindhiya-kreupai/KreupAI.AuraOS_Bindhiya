@@ -75,7 +75,7 @@ export const GET = withEnhancedAuth(
           stats: monthStats,
         },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching leave calendar:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch leave calendar' },

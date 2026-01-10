@@ -133,7 +133,7 @@ export function useWorkforcePlanning(): UseWorkforcePlanningReturn {
       setAcquisitionPlans(plansData);
       setMetrics(metricsData);
       setSettings(settingsData);
-    } catch {
+    } catch (error) {
       setError(err instanceof Error ? err.message : 'Failed to load workforce planning data');
     } finally {
       setLoading(false);

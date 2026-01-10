@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: metrics,
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { success: false, error: 'Failed to fetch metrics' },
       { status: 500 }

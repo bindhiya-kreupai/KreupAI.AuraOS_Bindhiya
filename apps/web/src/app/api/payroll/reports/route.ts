@@ -117,7 +117,7 @@ export const GET = withEnhancedAuth(
         data: reportType ? report : reports,
         meta: { month, format },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error generating report:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to generate report' },

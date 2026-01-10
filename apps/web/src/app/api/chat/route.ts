@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       },
       { status: 200 }
     );
-  } catch {
+  } catch (error) {
     return NextResponse.json(
       { error: 'Failed to send message. Please try again.' },
       { status: 500 }

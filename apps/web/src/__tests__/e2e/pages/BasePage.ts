@@ -99,7 +99,7 @@ export class BasePage {
     try {
       await locator.waitFor({ state: 'visible', timeout: 2000 });
       return true;
-    } catch {
+    } catch (error) {
       return false;
     }
   }

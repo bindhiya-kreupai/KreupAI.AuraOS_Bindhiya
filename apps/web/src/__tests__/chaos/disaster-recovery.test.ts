@@ -192,7 +192,7 @@ test.describe('Data Corruption Recovery', () => {
       try {
         const cached = localStorage.getItem('cache_employees');
         return cached !== 'corrupted{invalid:json}';
-      } catch {
+      } catch (error) {
         return true;
       }
     });
@@ -260,7 +260,7 @@ test.describe('Multi-Region Failover', () => {
 
     try {
       await page.goto(BASE_URL, { timeout: 10000 });
-    } catch {
+    } catch (error) {
       console.log('Primary region failed, attempting backup...');
       // In real scenario, DNS/load balancer would redirect
     }

@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         bandColor,
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to calculate Nitaqat status', errorAr: 'فشل في حساب حالة نطاقات' },
       { status: 500 }
@@ -177,7 +177,7 @@ export async function GET(request: NextRequest) {
         ],
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json(
       { error: 'Failed to fetch Nitaqat reference data', errorAr: 'فشل في جلب بيانات نطاقات المرجعية' },
       { status: 500 }

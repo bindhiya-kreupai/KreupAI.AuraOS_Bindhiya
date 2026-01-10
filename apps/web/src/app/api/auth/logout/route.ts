@@ -52,7 +52,7 @@ export const POST = withAuth(async (request: NextRequest, { user }) => {
       success: true,
       message: 'Logout successful',
     });
-  } catch {
+  } catch (error) {
     logger.error({
       error,
       userId: user.userId

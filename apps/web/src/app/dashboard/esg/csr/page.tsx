@@ -7,12 +7,34 @@ import {
     Users,
     DollarSign,
     ArrowRight,
-    Target
+    Target,
+    Loader2
 } from 'lucide-react';
+import { useESG } from '../hooks/useESG';
 
 export default function CSRPage() {
+    const { initiatives, loading, error } = useESG();
+
+    if (loading) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center text-rose-500 font-bold">
+                Error: {error}
+            </div>
+        );
+    }
+
+    const socialInitiatives = initiatives.filter(i => i.category === 'social');
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100 overflow-y-auto pr-2">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
                 <div>
@@ -27,37 +49,32 @@ export default function CSRPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-y-auto pb-20">
-                {[
-                    { title: 'Tech for Schools', loc: 'Local Community', metric: '500 Laptops Donated', status: 'Active', progress: 75, img: '💻' },
-                    { title: 'Green City Drive', loc: 'Urban Parks', metric: '1000 Trees Planted', status: 'Completed', progress: 100, img: '🌳' },
-                    { title: 'Women in STEM Scholarship', loc: 'University Partners', metric: '25 Students Funded', status: 'Active', progress: 40, img: '🎓' },
-                    { title: 'Clean Water Access', loc: 'Rural Villages', metric: '10 Wells Built', status: 'Planning', progress: 0, img: '💧' },
-                ].map((proj, i) => (
-                    <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col hover:shadow-lg transition-all group">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 h-full min-h-0 pb-20">
+                {socialInitiatives.map((proj, i) => (
+                    <div key={proj.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col hover:shadow-lg transition-all group">
                         <div className="flex justify-between items-start mb-4">
                             <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-3xl">
-                                {proj.img}
+                                {proj.category === 'social' ? '🤝' : '🌍'}
                             </div>
                             <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase
-                                ${proj.status === 'Completed' ? 'bg-emerald-100 text-emerald-600' :
-                                    proj.status === 'Planning' ? 'bg-slate-100 text-slate-500' :
+                                ${proj.status === 'completed' ? 'bg-emerald-100 text-emerald-600' :
+                                    proj.status === 'planned' ? 'bg-slate-100 text-slate-500' :
                                         'bg-indigo-100 text-indigo-600'}
                             `}>
-                                {proj.status}
+                                {proj.status.replace('_', ' ')}
                             </span>
                         </div>
 
-                        <h3 className="font-bold text-lg mb-1 group-hover:text-indigo-600 transition-colors">{proj.title}</h3>
+                        <h3 className="font-bold text-lg mb-1 group-hover:text-indigo-600 transition-colors">{proj.name}</h3>
                         <div className="flex items-center gap-1 text-xs text-slate-400 mb-4">
-                            <Globe className="w-3 h-3" /> {proj.loc}
+                            <Globe className="w-3 h-3" /> Community
                         </div>
 
                         <div className="mt-auto">
                             <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl mb-4">
                                 <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
                                     <Target className="w-4 h-4 text-rose-500" />
-                                    {proj.metric}
+                                    {proj.impact}
                                 </div>
                             </div>
 
@@ -72,8 +89,14 @@ export default function CSRPage() {
                     </div>
                 ))}
 
+                {socialInitiatives.length === 0 && (
+                    <div className="col-span-full text-center py-20 text-slate-400">
+                        No active CSR initiatives found.
+                    </div>
+                )}
+
                 {/* New Project Card */}
-                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors opacity-80 hover:opacity-100">
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors opacity-80 hover:opacity-100 min-h-[300px]">
                     <div className="w-12 h-12 bg-white dark:bg-slate-700 rounded-full flex items-center justify-center mb-3 shadow-sm">
                         <Users className="w-6 h-6 text-slate-400" />
                     </div>
@@ -84,3 +107,4 @@ export default function CSRPage() {
         </div>
     );
 }
+

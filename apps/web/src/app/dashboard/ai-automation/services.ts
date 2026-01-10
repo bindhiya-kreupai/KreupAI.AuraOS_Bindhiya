@@ -32,7 +32,7 @@ export class OrgHealthPredictorService {
     try {
       const response = await APIClient.get<{ predictions?: OrgHealthPrediction[] }>(this.endpoint);
       return response.predictions || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -41,7 +41,7 @@ export class OrgHealthPredictorService {
     try {
       const response = await APIClient.get<{ prediction?: OrgHealthPrediction }>(`${this.endpoint}/latest`);
       return response.prediction || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -50,7 +50,7 @@ export class OrgHealthPredictorService {
     try {
       const response = await APIClient.post<{ prediction: OrgHealthPrediction }>(`${this.endpoint}/generate`);
       return response.prediction;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -67,7 +67,7 @@ export class AICoachingBotService {
     try {
       const response = await APIClient.get<{ sessions?: CoachingSession[] }>(this.endpoint);
       return response.sessions || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -76,7 +76,7 @@ export class AICoachingBotService {
     try {
       const response = await APIClient.get<{ session?: CoachingSession }>(`${this.endpoint}/${sessionId}`);
       return response.session || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -85,7 +85,7 @@ export class AICoachingBotService {
     try {
       const response = await APIClient.post<{ session: CoachingSession }>(this.endpoint, sessionData);
       return response.session;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -94,7 +94,7 @@ export class AICoachingBotService {
     try {
       const response = await APIClient.post<{ session: CoachingSession }>(`${this.endpoint}/${sessionId}/message`, { message, sender });
       return response.session;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -103,7 +103,7 @@ export class AICoachingBotService {
     try {
       const response = await APIClient.put<{ session: CoachingSession }>(`${this.endpoint}/${sessionId}/end`);
       return response.session;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -120,7 +120,7 @@ export class WorkflowGeneratorService {
     try {
       const response = await APIClient.get<{ workflows?: GeneratedWorkflow[] }>(this.endpoint);
       return response.workflows || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -129,7 +129,7 @@ export class WorkflowGeneratorService {
     try {
       const response = await APIClient.get<{ workflow?: GeneratedWorkflow }>(`${this.endpoint}/${workflowId}`);
       return response.workflow || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -138,7 +138,7 @@ export class WorkflowGeneratorService {
     try {
       const response = await APIClient.post<{ workflow: GeneratedWorkflow }>(`${this.endpoint}/generate`, { description });
       return response.workflow;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -147,7 +147,7 @@ export class WorkflowGeneratorService {
     try {
       const response = await APIClient.put<{ workflow: GeneratedWorkflow }>(`${this.endpoint}/${workflowId}`, updates);
       return response.workflow;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -156,7 +156,7 @@ export class WorkflowGeneratorService {
     try {
       const response = await APIClient.post<{ workflow: GeneratedWorkflow }>(`${this.endpoint}/${workflowId}/deploy`);
       return response.workflow;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -173,7 +173,7 @@ export class ResumeScreeningService {
     try {
       const response = await APIClient.get<{ screenings?: ResumeScreening[] }>(this.endpoint);
       return response.screenings || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -182,7 +182,7 @@ export class ResumeScreeningService {
     try {
       const response = await APIClient.post<{ screening: ResumeScreening }>(this.endpoint, screeningData);
       return response.screening;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -199,7 +199,7 @@ export class AttritionPredictionService {
     try {
       const response = await APIClient.get<{ predictions?: AttritionPrediction[] }>(this.endpoint);
       return response.predictions || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -208,7 +208,7 @@ export class AttritionPredictionService {
     try {
       const response = await APIClient.post<{ prediction: AttritionPrediction }>(`${this.endpoint}/predict`, { employeeId });
       return response.prediction;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -217,7 +217,7 @@ export class AttritionPredictionService {
     try {
       const response = await APIClient.get<{ predictions?: AttritionPrediction[] }>(`${this.endpoint}/high-risk`);
       return response.predictions || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -234,7 +234,7 @@ export class LeaveForecastingService {
     try {
       const response = await APIClient.get<{ forecasts?: LeaveForecast[] }>(this.endpoint);
       return response.forecasts || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -243,7 +243,7 @@ export class LeaveForecastingService {
     try {
       const response = await APIClient.post<{ forecast: LeaveForecast }>(`${this.endpoint}/generate`, { startDate, endDate, department });
       return response.forecast;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -260,7 +260,7 @@ export class AnomalyDetectionService {
     try {
       const response = await APIClient.get<{ anomalies?: DetectedAnomaly[] }>(this.endpoint);
       return response.anomalies || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -269,7 +269,7 @@ export class AnomalyDetectionService {
     try {
       const response = await APIClient.get<{ anomalies?: DetectedAnomaly[] }>(`${this.endpoint}/active`);
       return response.anomalies || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -278,7 +278,7 @@ export class AnomalyDetectionService {
     try {
       const response = await APIClient.put<{ anomaly: DetectedAnomaly }>(`${this.endpoint}/${anomalyId}`, updates);
       return response.anomaly;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -295,7 +295,7 @@ export class ChatbotService {
     try {
       const response = await APIClient.get<{ conversations?: ChatbotConversation[] }>(this.endpoint);
       return response.conversations || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -304,7 +304,7 @@ export class ChatbotService {
     try {
       const response = await APIClient.post<{ conversation: ChatbotConversation }>(this.endpoint, { employeeId, employeeName });
       return response.conversation;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -313,7 +313,7 @@ export class ChatbotService {
     try {
       const response = await APIClient.post<{ conversation: ChatbotConversation }>(`${this.endpoint}/${conversationId}/message`, { message, sender });
       return response.conversation;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -330,7 +330,7 @@ export class InterviewSchedulingService {
     try {
       const response = await APIClient.get<{ schedules?: InterviewSchedule[] }>(this.endpoint);
       return response.schedules || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -339,7 +339,7 @@ export class InterviewSchedulingService {
     try {
       const response = await APIClient.post<{ schedule: InterviewSchedule }>(this.endpoint, scheduleData);
       return response.schedule;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -348,7 +348,7 @@ export class InterviewSchedulingService {
     try {
       const response = await APIClient.put<{ schedule: InterviewSchedule }>(`${this.endpoint}/${scheduleId}/confirm`, { slotId });
       return response.schedule;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -365,7 +365,7 @@ export class PerformanceAnalysisService {
     try {
       const response = await APIClient.post<{ analysis: PerformanceAnalysis }>(`${this.endpoint}/analyze`, { employeeId });
       return response.analysis;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -378,7 +378,7 @@ export class LDRecommendationService {
     try {
       const response = await APIClient.get<{ recommendation: LDRecommendation }>(`${this.endpoint}/${employeeId}`);
       return response.recommendation;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -391,7 +391,7 @@ export class JobMatchingService {
     try {
       const response = await APIClient.get<{ matches?: JobMatch[] }>(`${this.endpoint}/${employeeId}`);
       return response.matches || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -404,7 +404,7 @@ export class EmailParsingService {
     try {
       const response = await APIClient.post<{ parsing: EmailParsing }>(`${this.endpoint}/parse`, { emailId });
       return response.parsing;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -417,7 +417,7 @@ export class AutoAccrualService {
     try {
       const response = await APIClient.post<{ accruals?: AutoAccrual[] }>(`${this.endpoint}/calculate`);
       return response.accruals || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -430,7 +430,7 @@ export class NLPInsightsService {
     try {
       const response = await APIClient.post<{ insight: NLPInsight }>(`${this.endpoint}/extract`, { text, sourceType });
       return response.insight;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -447,7 +447,7 @@ export class AIAutomationSettingsService {
     try {
       const response = await APIClient.get<{ settings: AIAutomationSettings }>(this.endpoint);
       return response.settings;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -456,7 +456,7 @@ export class AIAutomationSettingsService {
     try {
       const response = await APIClient.put<{ settings: AIAutomationSettings }>(this.endpoint, updates);
       return response.settings;
-    } catch {
+    } catch (error) {
             return null;
     }
   }

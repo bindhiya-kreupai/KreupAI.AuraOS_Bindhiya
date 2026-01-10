@@ -135,7 +135,7 @@ export const useHelpdesk = () => {
       } else {
         setSettings(settingsData);
       }
-    } catch {
+    } catch (error) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
       addToast({ type: 'error', message: 'Failed to load helpdesk data' });
     } finally {
@@ -155,9 +155,9 @@ export const useHelpdesk = () => {
       setTickets(await TicketManagementService.getAllTickets());
       addToast({ type: 'success', message: 'Ticket created successfully' });
       return newTicket;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create ticket' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -170,9 +170,9 @@ export const useHelpdesk = () => {
       setTickets(await TicketManagementService.getAllTickets());
       addToast({ type: 'success', message: 'Ticket updated successfully' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update ticket' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -185,9 +185,9 @@ export const useHelpdesk = () => {
       setTickets(await TicketManagementService.getAllTickets());
       addToast({ type: 'success', message: 'Ticket assigned successfully' });
       return assigned;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to assign ticket' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -200,9 +200,9 @@ export const useHelpdesk = () => {
       setTickets(await TicketManagementService.getAllTickets());
       addToast({ type: 'success', message: 'Comment added' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to add comment' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -216,9 +216,9 @@ export const useHelpdesk = () => {
       setSlaPolicies(await SLATrackingService.getAllPolicies());
       addToast({ type: 'success', message: 'SLA policy created' });
       return newPolicy;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create SLA policy' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -231,9 +231,9 @@ export const useHelpdesk = () => {
       setSlaPolicies(await SLATrackingService.getAllPolicies());
       addToast({ type: 'success', message: 'SLA policy updated' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update SLA policy' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -247,9 +247,9 @@ export const useHelpdesk = () => {
       setAgents(await AgentManagementService.getAllAgents());
       addToast({ type: 'success', message: 'Agent created successfully' });
       return newAgent;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create agent' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -262,9 +262,9 @@ export const useHelpdesk = () => {
       setAgents(await AgentManagementService.getAllAgents());
       addToast({ type: 'success', message: 'Agent updated successfully' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update agent' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -273,9 +273,9 @@ export const useHelpdesk = () => {
   const getAvailableAgents = async () => {
     try {
       return await AgentManagementService.getAvailableAgents();
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to retrieve available agents' });
-      throw err;
+      throw error;
     }
   };
 
@@ -287,9 +287,9 @@ export const useHelpdesk = () => {
       setKnowledgeBase(await KnowledgeBaseService.getAllArticles());
       addToast({ type: 'success', message: 'Article created' });
       return newArticle;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create article' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -302,9 +302,9 @@ export const useHelpdesk = () => {
       setKnowledgeBase(await KnowledgeBaseService.getAllArticles());
       addToast({ type: 'success', message: 'Article updated' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update article' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -313,9 +313,9 @@ export const useHelpdesk = () => {
   const searchArticles = async (query: string) => {
     try {
       return await KnowledgeBaseService.searchArticles(query);
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to search articles' });
-      throw err;
+      throw error;
     }
   };
 
@@ -327,9 +327,9 @@ export const useHelpdesk = () => {
       setCannedResponses(await CannedResponseService.getAllResponses());
       addToast({ type: 'success', message: 'Canned response created' });
       return newResponse;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create canned response' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -342,9 +342,9 @@ export const useHelpdesk = () => {
       setCannedResponses(await CannedResponseService.getAllResponses());
       addToast({ type: 'success', message: 'Canned response updated' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update canned response' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -358,9 +358,9 @@ export const useHelpdesk = () => {
       setEscalationMatrices(await EscalationMatrixService.getAllMatrices());
       addToast({ type: 'success', message: 'Escalation matrix created' });
       return newMatrix;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to create escalation matrix' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -373,9 +373,9 @@ export const useHelpdesk = () => {
       setEscalationMatrices(await EscalationMatrixService.getAllMatrices());
       addToast({ type: 'success', message: 'Escalation matrix updated' });
       return updated;
-    } catch {
+    } catch (error) {
       addToast({ type: 'error', message: 'Failed to update escalation matrix' });
-      throw err;
+      throw error;
     } finally {
       setLoading(false);
     }

@@ -5,7 +5,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
   try {
     const screenings = [];
     return NextResponse.json({ screenings }, { status: 200 });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
@@ -41,7 +41,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       reviewedByHuman: false
     };
     return NextResponse.json({ screening }, { status: 201 });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

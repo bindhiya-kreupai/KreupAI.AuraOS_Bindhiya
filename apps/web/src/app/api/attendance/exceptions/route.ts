@@ -93,7 +93,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: { exceptions: filteredData, summary },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching exceptions:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch exceptions' },

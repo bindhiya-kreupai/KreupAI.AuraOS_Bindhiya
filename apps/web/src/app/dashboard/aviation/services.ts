@@ -33,7 +33,7 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ crewMembers?: CrewMemberProfile[] }>(`${this.endpoint}/members`);
       return response.crewMembers || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -42,7 +42,7 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ crewMember?: CrewMemberProfile }>(`${this.endpoint}/members/${crewId}`);
       return response.crewMember || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -67,7 +67,7 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ assignments?: FlightAssignment[] }>(`${this.endpoint}/assignments`);
       return response.assignments || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -76,7 +76,7 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ assignment?: FlightAssignment }>(`${this.endpoint}/assignments/${assignmentId}`);
       return response.assignment || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -85,7 +85,7 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ assignments?: FlightAssignment[] }>(`${this.endpoint}/members/${crewId}/assignments`);
       return response.assignments || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -105,7 +105,7 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ dutyTimes?: DutyTime[] }>(`${this.endpoint}/duty-times`);
       return response.dutyTimes || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -114,7 +114,7 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ dutyTimes?: DutyTime[] }>(`${this.endpoint}/members/${crewId}/duty-times`);
       return response.dutyTimes || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -129,7 +129,7 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ restPeriods?: RestPeriod[] }>(`${this.endpoint}/rest-periods`);
       return response.restPeriods || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -138,7 +138,7 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<{ restPeriods?: RestPeriod[] }>(`${this.endpoint}/members/${crewId}/rest-periods`);
       return response.restPeriods || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -164,7 +164,7 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ pilots?: PilotProfile[] }>(`${this.endpoint}/pilots`);
       return response.pilots || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -173,7 +173,7 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ pilot?: PilotProfile }>(`${this.endpoint}/pilots/${pilotId}`);
       return response.pilot || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -198,7 +198,7 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ trainingRecords?: TrainingRecord[] }>(`${this.endpoint}/training-records`);
       return response.trainingRecords || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -207,7 +207,7 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ trainingRecords?: TrainingRecord[] }>(`${this.endpoint}/pilots/${pilotId}/training-records`);
       return response.trainingRecords || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -227,7 +227,7 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ simulatorSessions?: SimulatorSession[] }>(`${this.endpoint}/simulator-sessions`);
       return response.simulatorSessions || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -236,7 +236,7 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ simulatorSessions?: SimulatorSession[] }>(`${this.endpoint}/pilots/${pilotId}/simulator-sessions`);
       return response.simulatorSessions || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -256,7 +256,7 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ proficiencyChecks?: ProficiencyCheck[] }>(`${this.endpoint}/proficiency-checks`);
       return response.proficiencyChecks || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -265,7 +265,7 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ proficiencyChecks?: ProficiencyCheck[] }>(`${this.endpoint}/pilots/${pilotId}/proficiency-checks`);
       return response.proficiencyChecks || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -292,7 +292,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ groundStaff?: GroundStaffMember[] }>(`${this.endpoint}/staff`);
       return response.groundStaff || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -301,7 +301,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ groundStaff?: GroundStaffMember }>(`${this.endpoint}/staff/${staffId}`);
       return response.groundStaff || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -326,7 +326,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ turnarounds?: TurnaroundAssignment[] }>(`${this.endpoint}/turnarounds`);
       return response.turnarounds || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -335,7 +335,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ turnaround?: TurnaroundAssignment }>(`${this.endpoint}/turnarounds/${assignmentId}`);
       return response.turnaround || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -355,7 +355,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ equipment?: GroundEquipment[] }>(`${this.endpoint}/equipment`);
       return response.equipment || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -364,7 +364,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ equipment?: GroundEquipment }>(`${this.endpoint}/equipment/${equipmentId}`);
       return response.equipment || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -394,7 +394,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ procedures?: RampHandlingProcedure[] }>(`${this.endpoint}/procedures`);
       return response.procedures || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -403,7 +403,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ procedure?: RampHandlingProcedure }>(`${this.endpoint}/procedures/${procedureId}`);
       return response.procedure || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -423,7 +423,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ safetyCompliance?: SafetyCompliance[] }>(`${this.endpoint}/safety-compliance`);
       return response.safetyCompliance || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }
@@ -432,7 +432,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<{ safetyCompliance?: SafetyCompliance }>(`${this.endpoint}/safety-compliance/${complianceId}`);
       return response.safetyCompliance || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -459,7 +459,7 @@ export class AviationSettingsService {
     try {
       const response = await APIClient.get<{ settings?: AviationSettings }>(this.endpoint);
       return response.settings || null;
-    } catch {
+    } catch (error) {
             return null;
     }
   }
@@ -481,7 +481,7 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: Alert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch {
+    } catch (error) {
             return [];
     }
   }

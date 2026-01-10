@@ -111,7 +111,7 @@ export const GET = withEnhancedAuth(
         data: filteredData,
         meta: { total: filteredData.length },
       });
-    } catch {
+    } catch (error) {
       logger.error('Error fetching time rounding rules:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch time rounding rules' },
@@ -204,7 +204,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: newRule }, { status: 201 });
-    } catch {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -255,7 +255,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch {
+    } catch (error) {
       logger.error('Error updating time rounding rule:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update time rounding rule' },
@@ -293,7 +293,7 @@ export const DELETE = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, message: 'Time rounding rule deleted successfully' });
-    } catch {
+    } catch (error) {
       logger.error('Error deleting time rounding rule:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to delete time rounding rule' },

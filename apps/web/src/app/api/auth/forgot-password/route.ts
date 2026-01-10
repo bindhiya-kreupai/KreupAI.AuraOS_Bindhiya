@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
         devWarning: 'Token is provided for development testing only. Remove in production!',
       }),
     });
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Invalid email address', details: error.errors },

@@ -8,10 +8,56 @@ import {
     MapPin,
     User,
     AlertCircle,
-    CheckCircle
+    CheckCircle,
+    Loader2,
+    Laptop,
+    Watch
 } from 'lucide-react';
+import { useRemoteWork } from '../hooks/useRemoteWork';
 
 export default function EquipmentTrackingPage() {
+    const { employees, loading, error } = useRemoteWork();
+
+    if (loading) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex h-[calc(100vh-6rem)] items-center justify-center text-rose-500 font-bold">
+                Error: {error}
+            </div>
+        );
+    }
+
+    // Flattening and status tracking
+    const allAssets = employees.flatMap(emp =>
+        emp.equipment.map(eq => ({
+            ...eq,
+            assignedTo: emp.employeeName,
+            location: emp.location
+        }))
+    );
+
+    const stats = {
+        total: allAssets.length,
+        inUse: allAssets.filter(a => a.status === 'assigned').length,
+        available: allAssets.filter(a => a.status === 'available').length,
+        maintenance: allAssets.filter(a => a.status === 'maintenance').length,
+    };
+
+    const getIcon = (type: string) => {
+        const t = type.toLowerCase();
+        if (t.includes('laptop')) return Monitor;
+        if (t.includes('phone')) return Smartphone;
+        if (t.includes('headset')) return Headphones;
+        return Watch;
+    };
+
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -31,19 +77,19 @@ export default function EquipmentTrackingPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <div className="text-xs font-bold text-slate-500 uppercase mb-1">Total Assets</div>
-                    <div className="text-2xl font-black text-indigo-600">342</div>
+                    <div className="text-2xl font-black text-indigo-600">{stats.total}</div>
                 </div>
                 <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <div className="text-xs font-bold text-slate-500 uppercase mb-1">In Use</div>
-                    <div className="text-2xl font-black text-emerald-600">315</div>
+                    <div className="text-2xl font-black text-emerald-600">{stats.inUse}</div>
                 </div>
                 <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <div className="text-xs font-bold text-slate-500 uppercase mb-1">Available</div>
-                    <div className="text-2xl font-black text-slate-600">27</div>
+                    <div className="text-2xl font-black text-slate-600">{stats.available}</div>
                 </div>
                 <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <div className="text-xs font-bold text-slate-500 uppercase mb-1">Maintenance</div>
-                    <div className="text-2xl font-black text-amber-500">12</div>
+                    <div className="text-2xl font-black text-amber-500">{stats.maintenance}</div>
                 </div>
             </div>
 
@@ -56,52 +102,51 @@ export default function EquipmentTrackingPage() {
                     </div>
                 </div>
 
-                <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {[
-                        { type: 'Laptop', model: 'MacBook Pro 16"', sn: 'C02G1234XYZ', user: 'Alex Chen', loc: 'San Francisco, CA', status: 'Active', icon: Monitor },
-                        { type: 'Phone', model: 'iPhone 14 Pro', sn: 'DX4500982', user: 'Sarah Miller', loc: 'Denver, CO', status: 'Active', icon: Smartphone },
-                        { type: 'Peripherals', model: 'Dell UltraSharp 27"', sn: 'DEL-27-001', user: 'James Wilson', loc: 'Austin, TX', status: 'Repair', icon: Monitor },
-                        { type: 'Headset', model: 'Bose QC45', sn: 'BO-45-992', user: 'Emily Davis', loc: 'New York, NY', status: 'Active', icon: Headphones },
-                    ].map((asset, i) => (
-                        <div key={i} className="p-4 flex flex-col md:flex-row md:items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-500 shrink-0">
-                                <asset.icon className="w-6 h-6" />
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                                <h4 className="font-bold text-sm block md:hidden mb-1">Asset</h4>
-                                <div className="font-bold text-indigo-600 dark:text-indigo-400">{asset.model}</div>
-                                <div className="text-xs text-slate-500">S/N: {asset.sn}</div>
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                                <h4 className="font-bold text-sm block md:hidden mb-1">Assigned To</h4>
-                                <div className="flex items-center gap-2">
-                                    <User className="w-4 h-4 text-slate-400" />
-                                    <span className="font-bold text-sm text-slate-700 dark:text-slate-300">{asset.user}</span>
+                <div className="divide-y divide-slate-100 dark:divide-slate-800 overflow-y-auto max-h-[500px]">
+                    {allAssets.map((asset, i) => {
+                        const Icon = getIcon(asset.equipmentType);
+                        return (
+                            <div key={asset.equipmentId || i} className="p-4 flex flex-col md:flex-row md:items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-500 shrink-0">
+                                    <Icon className="w-6 h-6" />
                                 </div>
-                                <div className="text-xs text-slate-500 pl-6 flex items-center gap-1">
-                                    <MapPin className="w-3 h-3" /> {asset.loc}
+
+                                <div className="flex-1 min-w-0">
+                                    <div className="font-bold text-indigo-600 dark:text-indigo-400">{asset.equipmentType}</div>
+                                    <div className="text-xs text-slate-500">S/N: {asset.serialNumber}</div>
                                 </div>
-                            </div>
 
-                            <div className="w-32 flex items-center">
-                                {asset.status === 'Active' ? (
-                                    <span className="flex items-center gap-1 text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded text-xs font-bold border border-emerald-100 dark:border-emerald-900/50">
-                                        <CheckCircle className="w-3 h-3" /> Active
-                                    </span>
-                                ) : (
-                                    <span className="flex items-center gap-1 text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded text-xs font-bold border border-amber-100 dark:border-amber-900/50">
-                                        <AlertCircle className="w-3 h-3" /> Repair
-                                    </span>
-                                )}
-                            </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <User className="w-4 h-4 text-slate-400" />
+                                        <span className="font-bold text-sm text-slate-700 dark:text-slate-300">{asset.assignedTo}</span>
+                                    </div>
+                                    <div className="text-xs text-slate-500 pl-6 flex items-center gap-1">
+                                        <MapPin className="w-3 h-3" /> {asset.location}
+                                    </div>
+                                </div>
 
-                            <button className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                                Details
-                            </button>
-                        </div>
-                    ))}
+                                <div className="w-32 flex items-center">
+                                    {asset.status === 'assigned' || asset.status === 'available' ? (
+                                        <span className="flex items-center gap-1 text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded text-xs font-bold border border-emerald-100 dark:border-emerald-900/50">
+                                            <CheckCircle className="w-3 h-3" /> {asset.status}
+                                        </span>
+                                    ) : (
+                                        <span className="flex items-center gap-1 text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded text-xs font-bold border border-amber-100 dark:border-amber-900/50">
+                                            <AlertCircle className="w-3 h-3" /> {asset.status}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <button className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                    Details
+                                </button>
+                            </div>
+                        );
+                    })}
+                    {allAssets.length === 0 && (
+                        <div className="text-center py-10 text-slate-400 italic">No assets registered.</div>
+                    )}
                 </div>
             </div>
         </div>

@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Failed to process learning recommendation' }, { status: 500 });
   }
 }
@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
         ],
       },
     });
-  } catch {
+  } catch (error) {
         return NextResponse.json({ error: 'Failed to fetch learning data' }, { status: 500 });
   }
 }

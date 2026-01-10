@@ -60,7 +60,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, _context) => {
     }));
 
     return NextResponse.json({ data: transformedInterviews }, { status: 200 });
-  } catch {
+  } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch interviews' }, { status: 500 });
   }
 });
@@ -98,7 +98,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, _context) => {
     });
 
     return NextResponse.json({ data: interview }, { status: 201 });
-  } catch {
+  } catch (error) {
     return NextResponse.json({ error: 'Failed to create interview' }, { status: 500 });
   }
 });
@@ -145,7 +145,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, _context) => {
     });
 
     return NextResponse.json({ data: interview }, { status: 200 });
-  } catch {
+  } catch (error) {
     return NextResponse.json({ error: 'Failed to update interview' }, { status: 500 });
   }
 });

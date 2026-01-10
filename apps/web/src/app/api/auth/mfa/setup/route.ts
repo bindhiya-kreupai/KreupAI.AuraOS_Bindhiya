@@ -141,7 +141,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
       },
       message: 'MFA setup initiated. Scan the QR code with your authenticator app and verify with a code.',
     });
-  } catch {
+  } catch (error) {
     logger.error({ error, userId: user.userId }, 'Error in MFA setup');
 
     return NextResponse.json(
@@ -181,7 +181,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user }) => {
         verifiedDate: mfaSettings?.verifiedAt,
       },
     });
-  } catch {
+  } catch (error) {
     logger.error({ error, userId: user.userId }, 'Error checking MFA status');
 
     return NextResponse.json(
