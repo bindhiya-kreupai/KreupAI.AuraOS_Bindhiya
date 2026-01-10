@@ -1,9 +1,6 @@
-
-import { NextResponse } from 'next/server';
-
 // Type definitions for the registry
-type MockDataGenerator = () => any;
-type MockRegistry = Record<string, MockDataGenerator | any>;
+type MockDataGenerator = () => unknown;
+type MockRegistry = Record<string, MockDataGenerator | unknown>;
 
 /**
  * Universal Mock Registry
@@ -121,13 +118,13 @@ export const mockRegistry: MockRegistry = {
  * Tries to find a match for the requested path.
  * Handles exact matches and potentially param-based matching in future iterations.
  */
-export function getMockData(pathSegments: string[]): any | null {
+export function getMockData(pathSegments: string[]): unknown | null {
     const path = pathSegments.join('/');
 
     // 1. Try exact match
     if (mockRegistry[path]) {
         const data = mockRegistry[path];
-        return typeof data === 'function' ? data() : data;
+        return typeof data === 'function' ? (data as MockDataGenerator)() : data;
     }
 
     // 2. Try partial match for detail views (basic heuristic)
@@ -135,7 +132,7 @@ export function getMockData(pathSegments: string[]): any | null {
     const parentPath = pathSegments.slice(0, -1).join('/');
     if (mockRegistry[parentPath] && Array.isArray(mockRegistry[parentPath])) {
         // Return a generic item from the list or null
-        const list = mockRegistry[parentPath];
+        const list = mockRegistry[parentPath] as unknown[];
         return list.length > 0 ? list[0] : {};
     }
 
