@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
+        "verify": "node verify-setup.js",
         "build": "turbo run build",
         "dev": "turbo run dev --concurrency=15",
         "lint": "turbo run lint",

@@ -54,7 +54,14 @@
       "Bash(env)",
       "Bash(export NODE_ENV=development)",
       "Bash(pnpm dev:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(findstr:*)",
+      "Bash(node --version:*)",
+      "Bash(pnpm --version:*)",
+      "Bash(test -f:*)",
+      "Bash(cp:*)",
+      "Bash(NODE_ENV=development pnpm install:*)",
+      "Bash(node verify-setup.js:*)"
     ],
     "deny": [],
     "ask": []
