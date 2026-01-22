@@ -61,11 +61,11 @@ jobs:
 
       - name: Run ESLint
         run: pnpm lint
-        continue-on-error: true
+        # continue-on-error: false - Updated Jan 2026: Lint failures now block CI
 
       - name: Check TypeScript
         run: pnpm type-check
-        continue-on-error: true
+        # continue-on-error: false - Updated Jan 2026: Type errors now block CI
 
   # =============================================================================
   # UNIT TESTS - Week 4: Enhanced with Coverage Gates
@@ -319,11 +319,11 @@ jobs:
 
       - name: Run pnpm audit
         run: pnpm audit --audit-level=moderate
-        continue-on-error: true
+        # continue-on-error: false - Updated Jan 2026: Security issues now block CI
 
       - name: Run tenant isolation audit
         run: pnpm --filter web audit:tenant-isolation
-        continue-on-error: true
+        # continue-on-error: false - Updated Jan 2026: Isolation issues now block CI
 
   # =============================================================================
   # BUILD VERIFICATION

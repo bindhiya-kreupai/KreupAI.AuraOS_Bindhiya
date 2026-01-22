@@ -15,6 +15,8 @@
     "test:run": "vitest run",
     "test:watch": "vitest --watch",
     "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:smoke": "vitest run src/__tests__/smoke --reporter=verbose",
+    "test:security": "vitest run src/__tests__/security --reporter=verbose",
     "test:e2e": "playwright test",
     "test:db:setup": "ts-node scripts/setup-test-db.ts",
     "test:db:reset": "ts-node scripts/setup-test-db.ts",
@@ -23,8 +25,13 @@
     "check": "npm run type-check && npm run lint && npm run test:run"
   },
   "dependencies": {
+    "@aura/auth": "workspace:*",
     "@aura/config": "workspace:*",
     "@aura/database": "workspace:^",
+    "@aura/events": "workspace:*",
+    "@aura/messaging": "workspace:*",
+    "@aura/monitoring": "workspace:*",
+    "@aura/search": "workspace:*",
     "@aura/types": "workspace:*",
     "@aura/ui": "workspace:*",
     "@dnd-kit/core": "^6.3.1",

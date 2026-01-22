@@ -45,12 +45,13 @@ export default defineConfig({
         '**/*.test.{ts,tsx}',
         '**/*.spec.{ts,tsx}',
       ],
-      // Coverage thresholds - starting at 30%, will increase weekly
+      // Coverage thresholds - Updated January 2026
+      // Target: 70% coverage for production readiness
       thresholds: {
-        lines: 30,
-        functions: 30,
-        branches: 25,
-        statements: 30,
+        lines: 70,
+        functions: 70,
+        branches: 60,
+        statements: 70,
       },
       // Fail build if coverage falls below thresholds
       all: true,
