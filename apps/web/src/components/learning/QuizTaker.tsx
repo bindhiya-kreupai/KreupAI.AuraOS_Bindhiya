@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   Send,
   Flag,
+  Link2,
 } from "lucide-react";
 
 interface QuizOption {
@@ -17,12 +18,19 @@ interface QuizOption {
   text: string;
 }
 
+interface MatchItem {
+  id: string;
+  left: string;
+  right: string;
+}
+
 interface QuizQuestion {
   id: string;
-  type: "multiple-choice" | "true-false" | "short-answer";
+  type: "multiple-choice" | "true-false" | "short-answer" | "matching";
   text: string;
   options: QuizOption[];
   points: number;
+  matchItems?: MatchItem[];
 }
 
 interface QuizData {
@@ -36,7 +44,7 @@ interface QuizData {
 const mockQuiz: QuizData = {
   id: "quiz-001",
   title: "Module 7: Regression Analysis Quiz",
-  totalQuestions: 5,
+  totalQuestions: 6,
   timeLimit: 1800,
   questions: [
     {
@@ -92,6 +100,19 @@ const mockQuiz: QuizData = {
       ],
       points: 10,
     },
+    {
+      id: "q-006",
+      type: "matching",
+      text: "Match each regression technique with its primary use case:",
+      options: [],
+      points: 15,
+      matchItems: [
+        { id: "m-1", left: "Linear Regression", right: "Continuous outcome prediction" },
+        { id: "m-2", left: "Logistic Regression", right: "Binary classification" },
+        { id: "m-3", left: "Ridge Regression", right: "Handling multicollinearity" },
+        { id: "m-4", left: "Lasso Regression", right: "Feature selection" },
+      ],
+    },
   ],
 };
 
@@ -99,6 +120,7 @@ export default function QuizTaker() {
   const [quiz] = useState<QuizData>(mockQuiz);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [matchAnswers, setMatchAnswers] = useState<Record<string, Record<string, string>>>({});
   const [flagged, setFlagged] = useState<Set<string>>(new Set());
   const [timeRemaining, setTimeRemaining] = useState(quiz.timeLimit);
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
@@ -129,6 +151,30 @@ export default function QuizTaker() {
   const selectAnswer = (questionId: string, value: string) => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
+
+  const selectMatchAnswer = (questionId: string, leftId: string, rightValue: string) => {
+    setMatchAnswers((prev) => ({
+      ...prev,
+      [questionId]: { ...(prev[questionId] || {}), [leftId]: rightValue },
+    }));
+    const question = quiz.questions.find((q) => q.id === questionId);
+    if (question?.matchItems) {
+      const updated = { ...(matchAnswers[questionId] || {}), [leftId]: rightValue };
+      if (Object.keys(updated).length === question.matchItems.length) {
+        setAnswers((prev) => ({ ...prev, [questionId]: JSON.stringify(updated) }));
+      }
+    }
+  };
+
+  const [shuffledOptions] = useState<Record<string, string[]>>(() => {
+    const map: Record<string, string[]> = {};
+    mockQuiz.questions.forEach((q) => {
+      if (q.type === "matching" && q.matchItems) {
+        map[q.id] = [...q.matchItems.map((i) => i.right)].sort(() => 0.5 - Math.random());
+      }
+    });
+    return map;
+  });
 
   const toggleFlag = (questionId: string) => {
     setFlagged((prev) => {
@@ -278,6 +324,42 @@ export default function QuizTaker() {
               placeholder="Type your answer..."
               className="w-full px-4 py-3 rounded-lg border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-ink-black dark:text-pearl placeholder:text-silver-mist focus:ring-2 focus:ring-celestial-indigo focus:outline-none"
             />
+          )}
+
+          {currentQuestion.type === "matching" && currentQuestion.matchItems && (
+            <div className="space-y-3">
+              {currentQuestion.matchItems.map((item) => {
+                const selectedValue = matchAnswers[currentQuestion.id]?.[item.id] || "";
+                return (
+                  <div key={item.id} className="flex items-center gap-3">
+                    <div className="flex-1 px-4 py-3 rounded-lg border border-cloud dark:border-nebula-purple/50 bg-slate-50 dark:bg-deep-cosmos">
+                      <span className="text-sm font-medium text-ink-black dark:text-pearl">
+                        {item.left}
+                      </span>
+                    </div>
+                    <Link2 className="w-4 h-4 text-celestial-indigo flex-shrink-0" />
+                    <select
+                      value={selectedValue}
+                      onChange={(e) =>
+                        selectMatchAnswer(currentQuestion.id, item.id, e.target.value)
+                      }
+                      className={`flex-1 px-4 py-3 rounded-lg border text-sm transition-colors focus:ring-2 focus:ring-celestial-indigo focus:outline-none ${
+                        selectedValue
+                          ? "border-celestial-indigo bg-celestial-indigo/5 text-ink-black dark:text-pearl"
+                          : "border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-silver-mist"
+                      }`}
+                    >
+                      <option value="">Select match...</option>
+                      {(shuffledOptions[currentQuestion.id] || []).map((opt, idx) => (
+                        <option key={idx} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
 
