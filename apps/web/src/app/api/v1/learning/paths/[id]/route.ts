@@ -1,0 +1,115 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
+
+  const pathDetails = {
+    id,
+    title: 'Leadership Essentials',
+    description: 'Develop core leadership competencies for emerging managers',
+    category: 'leadership',
+    level: 'intermediate',
+    duration: '40 hours',
+    enrolledCount: 245,
+    completionRate: 72,
+    rating: 4.7,
+    reviewsCount: 89,
+    skills: ['communication', 'decision-making', 'team-management'],
+    prerequisites: ['Basic management experience', 'At least 1 year in current role'],
+    instructor: {
+      id: 'inst-001',
+      name: 'Dr. Sarah Chen',
+      title: 'Leadership Development Director',
+      avatar: '/images/instructors/sarah-chen.jpg',
+    },
+    modules: [
+      {
+        id: 'mod-001',
+        title: 'Introduction to Leadership',
+        description: 'Understanding leadership styles and self-assessment',
+        duration: '4 hours',
+        order: 1,
+        type: 'video',
+        lessonsCount: 6,
+        status: 'published',
+      },
+      {
+        id: 'mod-002',
+        title: 'Effective Communication',
+        description: 'Master verbal and written communication in leadership contexts',
+        duration: '6 hours',
+        order: 2,
+        type: 'mixed',
+        lessonsCount: 8,
+        status: 'published',
+      },
+      {
+        id: 'mod-003',
+        title: 'Decision Making Frameworks',
+        description: 'Learn structured approaches to complex decisions',
+        duration: '5 hours',
+        order: 3,
+        type: 'interactive',
+        lessonsCount: 5,
+        status: 'published',
+      },
+      {
+        id: 'mod-004',
+        title: 'Team Building & Motivation',
+        description: 'Strategies for building high-performing teams',
+        duration: '6 hours',
+        order: 4,
+        type: 'mixed',
+        lessonsCount: 7,
+        status: 'published',
+      },
+      {
+        id: 'mod-005',
+        title: 'Conflict Resolution',
+        description: 'Navigate and resolve workplace conflicts effectively',
+        duration: '5 hours',
+        order: 5,
+        type: 'case-study',
+        lessonsCount: 5,
+        status: 'published',
+      },
+      {
+        id: 'mod-006',
+        title: 'Strategic Thinking',
+        description: 'Develop long-term strategic planning skills',
+        duration: '5 hours',
+        order: 6,
+        type: 'video',
+        lessonsCount: 6,
+        status: 'published',
+      },
+      {
+        id: 'mod-007',
+        title: 'Change Management',
+        description: 'Lead organizational change initiatives',
+        duration: '5 hours',
+        order: 7,
+        type: 'interactive',
+        lessonsCount: 5,
+        status: 'published',
+      },
+      {
+        id: 'mod-008',
+        title: 'Capstone Project',
+        description: 'Apply all learned concepts in a real-world scenario',
+        duration: '4 hours',
+        order: 8,
+        type: 'project',
+        lessonsCount: 3,
+        status: 'published',
+      },
+    ],
+    createdAt: '2025-06-15T10:00:00Z',
+    updatedAt: '2025-12-01T14:30:00Z',
+  };
+
+  return NextResponse.json({ success: true, data: pathDetails });
+}

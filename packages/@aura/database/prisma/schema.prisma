@@ -4678,3 +4678,421 @@ model PremiumDeduction {
   @@index([employeeId])
   @@index([payrollDate])
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// GAP CLOSURE MODELS - Added for 100% feature parity
+// ═══════════════════════════════════════════════════════════════════
+
+// Tax Documents - W2, 1099, Form 16
+model TaxDocument {
+  id           String   @id @default(uuid())
+  tenantId     String
+  employeeId   String
+  type         String   // W2, 1099, FORM_16, etc.
+  taxYear      Int
+  status       String   @default("GENERATED") // GENERATED, DELIVERED, AMENDED
+  fileUrl      String?
+  generatedAt  DateTime @default(now())
+  deliveredAt  DateTime?
+  amendments   Int      @default(0)
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([taxYear])
+  @@unique([tenantId, employeeId, type, taxYear])
+}
+
+// Continuous Feedback - Praise, Constructive, Suggestions
+model ContinuousFeedback {
+  id           String   @id @default(uuid())
+  tenantId     String
+  fromUserId   String
+  toEmployeeId String
+  type         String   // PRAISE, CONSTRUCTIVE, SUGGESTION
+  message      String   @db.Text
+  isAnonymous  Boolean  @default(false)
+  visibility   String   @default("PRIVATE") // PRIVATE, MANAGER_ONLY, PUBLIC
+  relatedGoalId String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([fromUserId])
+  @@index([toEmployeeId])
+  @@index([type])
+}
+
+// Recognition - Kudos, Awards, Badges
+model Recognition {
+  id           String   @id @default(uuid())
+  tenantId     String
+  giverId      String
+  receiverId   String
+  message      String   @db.Text
+  coreValue    String?  // INNOVATION, TEAMWORK, CUSTOMER_FIRST, etc.
+  badgeType    String?  // TEAM_PLAYER, INNOVATOR, CHAMPION, etc.
+  points       Int      @default(0)
+  visibility   String   @default("PUBLIC")
+  reactions    Json?    // { thumbsUp: 5, heart: 2 }
+  createdAt    DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([giverId])
+  @@index([receiverId])
+  @@index([createdAt])
+}
+
+// One-on-One Meetings
+model OneOnOneMeeting {
+  id            String   @id @default(uuid())
+  tenantId      String
+  managerId     String
+  employeeId    String
+  scheduledAt   DateTime
+  duration      Int      @default(30) // minutes
+  recurring     String?  // WEEKLY, BIWEEKLY, MONTHLY
+  status        String   @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  notes       OneOnOneNote[]
+  actionItems OneOnOneActionItem[]
+
+  @@index([tenantId])
+  @@index([managerId])
+  @@index([employeeId])
+  @@index([scheduledAt])
+}
+
+// One-on-One Notes
+model OneOnOneNote {
+  id        String   @id @default(uuid())
+  meetingId String
+  authorId  String
+  content   String   @db.Text
+  isPrivate Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  meeting OneOnOneMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+}
+
+// One-on-One Action Items
+model OneOnOneActionItem {
+  id        String    @id @default(uuid())
+  meetingId String
+  assigneeId String
+  title     String
+  status    String    @default("PENDING") // PENDING, IN_PROGRESS, DONE
+  dueDate   DateTime?
+  completedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  meeting OneOnOneMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+  @@index([assigneeId])
+  @@index([status])
+}
+
+// Learning Paths
+model LearningPath {
+  id          String   @id @default(uuid())
+  tenantId    String
+  title       String
+  description String?  @db.Text
+  difficulty  String   @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
+  duration    Int?     // estimated hours
+  modules     Json     // [{ id, title, type, contentUrl, order }]
+  skills      String[] // target skills
+  isPublished Boolean  @default(false)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  enrollments LearningPathEnrollment[]
+
+  @@index([tenantId])
+  @@index([isPublished])
+}
+
+// Learning Path Enrollments
+model LearningPathEnrollment {
+  id           String    @id @default(uuid())
+  tenantId     String
+  pathId       String
+  employeeId   String
+  status       String    @default("ENROLLED") // ENROLLED, IN_PROGRESS, COMPLETED, DROPPED
+  enrolledAt   DateTime  @default(now())
+  completedAt  DateTime?
+  progress     Float     @default(0) // 0-100 percentage
+
+  path LearningPath @relation(fields: [pathId], references: [id])
+
+  @@index([tenantId])
+  @@index([pathId])
+  @@index([employeeId])
+  @@unique([pathId, employeeId])
+}
+
+// Learning Progress Tracking
+model LearningProgress {
+  id           String   @id @default(uuid())
+  tenantId     String
+  employeeId   String
+  contentId    String   // module or video ID
+  contentType  String   // VIDEO, ARTICLE, QUIZ, ASSIGNMENT
+  progress     Float    @default(0) // 0-100
+  lastPosition Float?   // video timestamp or page number
+  timeSpent    Int      @default(0) // seconds
+  completedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([contentId])
+  @@unique([employeeId, contentId])
+}
+
+// Assessments / Quizzes
+model Assessment {
+  id          String   @id @default(uuid())
+  tenantId    String
+  title       String
+  description String?  @db.Text
+  pathId      String?  // linked to learning path module
+  questions   Json     // [{ id, type, text, options, correctAnswer, points }]
+  passingScore Float   @default(70)
+  timeLimit   Int?     // minutes
+  maxAttempts Int      @default(3)
+  isPublished Boolean  @default(false)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  submissions AssessmentSubmission[]
+
+  @@index([tenantId])
+  @@index([pathId])
+}
+
+// Assessment Submissions
+model AssessmentSubmission {
+  id           String   @id @default(uuid())
+  assessmentId String
+  employeeId   String
+  answers      Json     // [{ questionId, answer }]
+  score        Float?
+  passed       Boolean?
+  attemptNumber Int     @default(1)
+  startedAt    DateTime @default(now())
+  submittedAt  DateTime?
+  reviewedAt   DateTime?
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id])
+
+  @@index([assessmentId])
+  @@index([employeeId])
+}
+
+// Webhooks
+model Webhook {
+  id        String   @id @default(uuid())
+  tenantId  String
+  url       String
+  events    String[] // employee.created, leave.approved, etc.
+  secret    String   // HMAC signing key
+  isActive  Boolean  @default(true)
+  headers   Json?    // custom headers
+  retryCount Int     @default(3)
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  logs WebhookLog[]
+
+  @@index([tenantId])
+  @@index([isActive])
+}
+
+// Webhook Delivery Logs
+model WebhookLog {
+  id           String   @id @default(uuid())
+  webhookId    String
+  event        String
+  payload      Json
+  statusCode   Int?
+  responseBody String?  @db.Text
+  responseTime Int?     // milliseconds
+  success      Boolean  @default(false)
+  attempts     Int      @default(1)
+  lastAttempt  DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([createdAt])
+  @@index([success])
+}
+
+// Custom Reports
+model CustomReport {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?
+  dataSource  String   // employees, attendance, payroll, etc.
+  columns     Json     // [{ field, label, type }]
+  filters     Json?    // [{ field, operator, value }]
+  chartType   String?  // bar, line, pie, table
+  schedule    Json?    // { frequency, dayOfWeek, time, recipients }
+  createdBy   String
+  isPublic    Boolean  @default(false)
+  lastRunAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([createdBy])
+}
+
+// Workflow Definitions
+model WorkflowDefinition {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?
+  trigger     String   // MANUAL, EVENT, SCHEDULED
+  triggerEvent String? // employee.created, leave.requested, etc.
+  nodes       Json     // [{ id, type, config, position }]
+  edges       Json     // [{ source, target, condition }]
+  isActive    Boolean  @default(true)
+  version     Int      @default(1)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  instances WorkflowInstance[]
+
+  @@index([tenantId])
+  @@index([isActive])
+  @@index([trigger])
+}
+
+// Workflow Instances (Executions)
+model WorkflowInstance {
+  id           String    @id @default(uuid())
+  definitionId String
+  tenantId     String
+  status       String    @default("RUNNING") // RUNNING, COMPLETED, FAILED, CANCELLED
+  currentNode  String?
+  context      Json?     // runtime variables
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+  error        String?   @db.Text
+  triggeredBy  String
+
+  definition WorkflowDefinition @relation(fields: [definitionId], references: [id])
+
+  @@index([definitionId])
+  @@index([tenantId])
+  @@index([status])
+}
+
+// Project Time Entries
+model ProjectTimeEntry {
+  id         String   @id @default(uuid())
+  tenantId   String
+  employeeId String
+  projectId  String
+  taskId     String?
+  date       DateTime @db.Date
+  hours      Float
+  notes      String?  @db.Text
+  billable   Boolean  @default(true)
+  status     String   @default("DRAFT") // DRAFT, SUBMITTED, APPROVED
+  approvedBy String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([projectId])
+  @@index([date])
+  @@unique([employeeId, projectId, date])
+}
+
+// Geofence Locations
+model GeofenceLocation {
+  id        String  @id @default(uuid())
+  tenantId  String
+  name      String
+  latitude  Float
+  longitude Float
+  radius    Float   // meters
+  address   String?
+  isActive  Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([isActive])
+}
+
+// Expense Claims
+model ExpenseClaim {
+  id          String    @id @default(uuid())
+  tenantId    String
+  employeeId  String
+  title       String
+  amount      Float
+  currency    String    @default("USD")
+  category    String    // MEALS, TRANSPORT, TRAINING, SUPPLIES, OTHER
+  date        DateTime  @db.Date
+  receiptUrl  String?
+  description String?   @db.Text
+  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED, PAID
+  approvedBy  String?
+  approvedAt  DateTime?
+  paidAt      DateTime?
+  rejectionReason String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([date])
+}
+
+// API Keys
+model APIKey {
+  id          String    @id @default(uuid())
+  tenantId    String
+  name        String
+  keyHash     String    @unique // hashed key for lookup
+  prefix      String    // first 8 chars for display (e.g., "aura_sk_")
+  scopes      String[]  // read:employees, write:payroll, etc.
+  expiresAt   DateTime?
+  lastUsedAt  DateTime?
+  requestCount Int      @default(0)
+  isActive    Boolean   @default(true)
+  createdBy   String
+  createdAt   DateTime  @default(now())
+  revokedAt   DateTime?
+
+  @@index([tenantId])
+  @@index([keyHash])
+  @@index([isActive])
+}
