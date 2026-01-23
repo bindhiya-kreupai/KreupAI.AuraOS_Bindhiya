@@ -1176,22 +1176,22 @@
 ### 4.4 Real-Time WebSocket Layer (14 Tasks)
 
 #### 4.4.1 WebSocket Infrastructure
-- [ ] Install `socket.io` and `socket.io-client` packages
+- [x] Install `socket.io` and `socket.io-client` packages
 - [ ] Create `/apps/web/src/lib/websocket/socket-server.ts` - server setup
-- [ ] Create `/apps/web/src/lib/websocket/socket-client.ts` - client connection
-- [ ] Create `/apps/web/src/lib/websocket/socket-events.ts` - event type definitions
-- [ ] Create `/apps/web/src/providers/SocketProvider.tsx` - React context
-- [ ] Create `/apps/web/src/hooks/useSocket.ts` - subscription hook
-- [ ] Create `/apps/web/src/hooks/useSocketEvent.ts` - listen to specific event
+- [x] Create `/apps/web/src/lib/websocket/socket-client.ts` - client connection
+- [x] Create `/apps/web/src/lib/websocket/socket-events.ts` - event type definitions
+- [x] Create `/apps/web/src/providers/SocketProvider.tsx` - React context
+- [x] Create `/apps/web/src/hooks/useSocket.ts` - subscription hook
+- [x] Create `/apps/web/src/hooks/useSocketEvent.ts` - listen to specific event
 
 #### 4.4.2 WebSocket Events
-- [ ] Implement `notification.new` event (new notification arrives)
-- [ ] Implement `approval.pending` event (new approval needed)
-- [ ] Implement `approval.completed` event (approval decision made)
-- [ ] Implement `attendance.update` event (team member clocked in/out)
-- [ ] Implement `leave.status_change` event (leave approved/rejected)
-- [ ] Implement `chat.message` event (new message received)
-- [ ] Implement `presence.update` event (user online/offline)
+- [x] Implement `notification.new` event (new notification arrives)
+- [x] Implement `approval.pending` event (new approval needed)
+- [x] Implement `approval.completed` event (approval decision made)
+- [x] Implement `attendance.update` event (team member clocked in/out)
+- [x] Implement `leave.status_change` event (leave approved/rejected)
+- [x] Implement `chat.message` event (new message received)
+- [x] Implement `presence.update` event (user online/offline)
 
 ---
 
@@ -1211,25 +1211,25 @@
 ### 4.6 Third-Party Integrations (13 Tasks)
 
 #### 4.6.1 Slack Integration
-- [ ] Create `/apps/web/src/lib/integrations/slack/client.ts` - Slack Web API client
-- [ ] Create `/apps/web/src/lib/integrations/slack/oauth.ts` - OAuth 2.0 flow
-- [ ] Create `/apps/web/src/lib/integrations/slack/messages.ts` - message posting
+- [x] Create `/apps/web/src/lib/integrations/slack/client.ts` - Slack Web API client
+- [x] Create `/apps/web/src/lib/integrations/slack/oauth.ts` - OAuth 2.0 flow
+- [x] Create `/apps/web/src/lib/integrations/slack/messages.ts` - message posting
 - [ ] Create `GET/POST /api/v1/integrations/slack/oauth/callback` - OAuth callback
 
 #### 4.6.2 Microsoft Teams Integration
-- [ ] Create `/apps/web/src/lib/integrations/teams/client.ts` - Graph API client
-- [ ] Create `/apps/web/src/lib/integrations/teams/oauth.ts` - Azure AD OAuth
-- [ ] Create `/apps/web/src/lib/integrations/teams/cards.ts` - adaptive cards
+- [x] Create `/apps/web/src/lib/integrations/teams/client.ts` - Graph API client
+- [x] Create `/apps/web/src/lib/integrations/teams/oauth.ts` - Azure AD OAuth
+- [x] Create `/apps/web/src/lib/integrations/teams/cards.ts` - adaptive cards
 - [ ] Create `GET/POST /api/v1/integrations/teams/oauth/callback` - OAuth callback
 
 #### 4.6.3 DocuSign Integration
-- [ ] Create `/apps/web/src/lib/integrations/docusign/client.ts` - DocuSign client
-- [ ] Create `/apps/web/src/lib/integrations/docusign/envelopes.ts` - envelope management
+- [x] Create `/apps/web/src/lib/integrations/docusign/client.ts` - DocuSign client
+- [x] Create `/apps/web/src/lib/integrations/docusign/envelopes.ts` - envelope management
 - [ ] Create `POST /api/v1/integrations/docusign/webhook` - signing webhook
 
 #### 4.6.4 Calendar Integration
-- [ ] Create `/apps/web/src/lib/integrations/calendar/google.ts` - Google Calendar API
-- [ ] Create `/apps/web/src/lib/integrations/calendar/outlook.ts` - Microsoft Graph Calendar
+- [x] Create `/apps/web/src/lib/integrations/calendar/google.ts` - Google Calendar API
+- [x] Create `/apps/web/src/lib/integrations/calendar/outlook.ts` - Microsoft Graph Calendar
 
 ---
 
@@ -1251,9 +1251,9 @@
 Frontend:         [█████░░░░░░░░░░░░░░░] 64/189 (34%)
 Backend:          [░░░░░░░░░░░░░░░░░░░░] 0/143 (0%)
 Seeds & Data:     [░░░░░░░░░░░░░░░░░░░░] 0/78  (0%)
-Backend-UI:       [█████████████░░░░░░░] 50/77  (65%)
+Backend-UI:       [██████████████████░░] 73/77  (95%)
 ─────────────────────────────────────────────────
-OVERALL:          [█████░░░░░░░░░░░░░░░] 114/487 (23%)
+OVERALL:          [██████░░░░░░░░░░░░░░] 137/487 (28%)
 ```
 
 ---
