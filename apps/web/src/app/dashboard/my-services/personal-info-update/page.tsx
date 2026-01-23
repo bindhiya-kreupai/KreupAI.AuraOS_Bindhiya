@@ -7,9 +7,14 @@ import {
     MapPin,
     Mail,
     Save,
-    Camera,
-    Shield
+    Shield,
+    Building2,
+    CreditCard,
+    Hash
 } from 'lucide-react';
+import ProfilePhotoUpload from '@/components/profile/ProfilePhotoUpload';
+import ProfileCompletenessIndicator from '@/components/profile/ProfileCompletenessIndicator';
+import CertificationsSelfUpdate from '@/components/skills/CertificationsSelfUpdate';
 
 export default function PersonalInfoPage() {
     const [loading, setLoading] = useState(false);
@@ -46,26 +51,26 @@ export default function PersonalInfoPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Profile Card */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col items-center text-center shadow-sm h-fit">
-                    <div className="w-32 h-32 rounded-full bg-slate-100 dark:bg-slate-800 mb-4 relative group cursor-pointer overflow-hidden">
-                        <img src="https://i.pravatar.cc/300" alt="Profile" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Camera className="w-8 h-8 text-white" />
+                {/* Profile Card & Completeness */}
+                <div className="space-y-6">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col items-center text-center shadow-sm">
+                        <div className="mb-4">
+                            <ProfilePhotoUpload currentPhoto="https://i.pravatar.cc/300" />
+                        </div>
+                        <h2 className="text-xl font-bold">Alex Morgan</h2>
+                        <p className="text-slate-500">Senior Product Designer</p>
+                        <div className="mt-4 flex gap-2 w-full">
+                            <div className="flex-1 bg-indigo-50 dark:bg-indigo-900/20 p-2 rounded-lg">
+                                <div className="text-xs text-indigo-500 font-bold uppercase">Emp ID</div>
+                                <div className="font-bold text-indigo-700 dark:text-indigo-300">EMP-042</div>
+                            </div>
+                            <div className="flex-1 bg-emerald-50 dark:bg-emerald-900/20 p-2 rounded-lg">
+                                <div className="text-xs text-emerald-500 font-bold uppercase">Status</div>
+                                <div className="font-bold text-emerald-700 dark:text-emerald-300">Active</div>
+                            </div>
                         </div>
                     </div>
-                    <h2 className="text-xl font-bold">Alex Morgan</h2>
-                    <p className="text-slate-500">Senior Product Designer</p>
-                    <div className="mt-4 flex gap-2 w-full">
-                        <div className="flex-1 bg-indigo-50 dark:bg-indigo-900/20 p-2 rounded-lg">
-                            <div className="text-xs text-indigo-500 font-bold uppercase">Emp ID</div>
-                            <div className="font-bold text-indigo-700 dark:text-indigo-300">EMP-042</div>
-                        </div>
-                        <div className="flex-1 bg-emerald-50 dark:bg-emerald-900/20 p-2 rounded-lg">
-                            <div className="text-xs text-emerald-500 font-bold uppercase">Status</div>
-                            <div className="font-bold text-emerald-700 dark:text-emerald-300">Active</div>
-                        </div>
-                    </div>
+                    <ProfileCompletenessIndicator />
                 </div>
 
                 {/* Edit Form */}
@@ -125,6 +130,49 @@ export default function PersonalInfoPage() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Bank Details */}
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                        <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
+                            <Building2 className="w-5 h-5 text-emerald-500" /> Bank Details
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Bank Name</label>
+                                <div className="relative">
+                                    <Building2 className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                                    <input type="text" defaultValue="First National Bank" className="w-full pl-10 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 border border-transparent focus:border-indigo-500 transition-all" />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Account Type</label>
+                                <select className="w-full p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 border border-transparent focus:border-indigo-500 transition-all">
+                                    <option>Checking</option>
+                                    <option>Savings</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Account Number</label>
+                                <div className="relative">
+                                    <CreditCard className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                                    <input type="password" defaultValue="123456789" className="w-full pl-10 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 border border-transparent focus:border-indigo-500 transition-all" />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Routing Number</label>
+                                <div className="relative">
+                                    <Hash className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                                    <input type="text" defaultValue="021000021" className="w-full pl-10 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 border border-transparent focus:border-indigo-500 transition-all" />
+                                </div>
+                            </div>
+                        </div>
+                        <p className="mt-4 text-xs text-slate-400 flex items-center gap-1">
+                            <Shield className="w-3 h-3" /> Your bank details are encrypted and stored securely.
+                        </p>
+                    </div>
+
+                    {/* Skills & Certifications */}
+                    <CertificationsSelfUpdate />
                 </div>
             </div>
         </div>
