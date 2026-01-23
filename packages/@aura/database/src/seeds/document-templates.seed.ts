@@ -345,6 +345,52 @@ Authorized Signatory
 {{companyName}}`,
   },
   {
+    name: 'Policy Acknowledgment Form',
+    type: 'policy_acknowledgment',
+    jurisdiction: 'GLOBAL',
+    placeholders: [
+      'employeeName', 'employeeId', 'policyName',
+      'policyVersion', 'effectiveDate', 'companyName',
+      'policyDescription', 'keyPoints', 'acknowledgmentDate',
+    ],
+    template: `# Policy Acknowledgment Form
+
+## Company
+**{{companyName}}**
+
+## Policy Details
+- **Policy Name:** {{policyName}}
+- **Version:** {{policyVersion}}
+- **Effective Date:** {{effectiveDate}}
+
+## Description
+{{policyDescription}}
+
+## Key Points
+{{keyPoints}}
+
+## Acknowledgment
+
+I, **{{employeeName}}** (Employee ID: {{employeeId}}), hereby acknowledge that:
+
+1. I have received and read the above-referenced policy
+2. I understand the contents and requirements of this policy
+3. I agree to comply with the guidelines set forth in this policy
+4. I understand that failure to comply may result in disciplinary action
+5. I have had the opportunity to ask questions about this policy
+
+**Employee Signature:** _________________________
+
+**Date:** {{acknowledgmentDate}}
+
+**Employee Name:** {{employeeName}}
+
+**Employee ID:** {{employeeId}}
+
+---
+*This form will be maintained in the employee's personnel file.*`,
+  },
+  {
     name: 'Probation Confirmation',
     type: 'probation_confirmation',
     jurisdiction: 'GLOBAL',
