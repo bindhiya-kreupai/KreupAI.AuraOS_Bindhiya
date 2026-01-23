@@ -191,6 +191,144 @@ export class BenefitsService extends BaseService {
     };
   }
 
+  // --------------------------------------------------------------------------
+  // ELIGIBILITY RULES ENGINE
+  // --------------------------------------------------------------------------
+
+  /**
+   * Check if an employee is eligible for a specific benefit plan
+   * Evaluates waiting period, employment type, and hours per week rules
+   */
+  async checkEligibility(params: {
+    employeeId: string;
+    planId: string;
+    tenantId: string;
+  }): Promise<{
+    eligible: boolean;
+    reasons: string[];
+    eligibleDate?: Date;
+    rulesEvaluated: Array<{ rule: EligibilityRule; passed: boolean; message: string }>;
+  }> {
+    const plan = await this.getPlanById(params.planId);
+    if (!plan) throw new Error('Plan not found');
+
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: params.employeeId },
+      select: {
+        id: true,
+        hireDate: true,
+        employmentType: true,
+        hoursPerWeek: true,
+        status: true,
+      },
+    });
+
+    if (!employee) throw new Error('Employee not found');
+
+    const rulesEvaluated: Array<{ rule: EligibilityRule; passed: boolean; message: string }> = [];
+    const reasons: string[] = [];
+    let eligibleDate: Date | undefined;
+
+    for (const rule of plan.eligibilityRules) {
+      const result = this.evaluateRule(rule, employee);
+      rulesEvaluated.push(result);
+      if (!result.passed) {
+        reasons.push(result.message);
+        if (rule.type === 'waiting_period' && employee.hireDate) {
+          const waitDays = parseInt(rule.value) || 30;
+          const hireDate = new Date(employee.hireDate);
+          eligibleDate = new Date(hireDate.getTime() + waitDays * 24 * 60 * 60 * 1000);
+        }
+      }
+    }
+
+    return {
+      eligible: reasons.length === 0,
+      reasons,
+      eligibleDate: reasons.length > 0 ? eligibleDate : undefined,
+      rulesEvaluated,
+    };
+  }
+
+  /**
+   * Evaluate a single eligibility rule against employee data
+   */
+  private evaluateRule(
+    rule: EligibilityRule,
+    employee: { hireDate: Date | null; employmentType: string | null; hoursPerWeek: number | null; status: string | null }
+  ): { rule: EligibilityRule; passed: boolean; message: string } {
+    switch (rule.type) {
+      case 'waiting_period': {
+        const waitDays = parseInt(rule.value) || 30;
+        if (!employee.hireDate) {
+          return { rule, passed: false, message: 'No hire date recorded' };
+        }
+        const hireDate = new Date(employee.hireDate);
+        const eligDate = new Date(hireDate.getTime() + waitDays * 24 * 60 * 60 * 1000);
+        const passed = new Date() >= eligDate;
+        return {
+          rule,
+          passed,
+          message: passed
+            ? `Waiting period of ${waitDays} days satisfied`
+            : `Waiting period not met. Eligible after ${eligDate.toISOString().split('T')[0]}`,
+        };
+      }
+
+      case 'employment_type': {
+        const allowedTypes = rule.value.split(',').map((t) => t.trim().toLowerCase());
+        const empType = (employee.employmentType || '').toLowerCase();
+        const passed = allowedTypes.includes(empType);
+        return {
+          rule,
+          passed,
+          message: passed
+            ? `Employment type "${empType}" is eligible`
+            : `Employment type "${empType}" is not eligible. Required: ${rule.value}`,
+        };
+      }
+
+      case 'hours_per_week': {
+        const minHours = parseInt(rule.value) || 0;
+        const empHours = employee.hoursPerWeek || 0;
+        const passed = empHours >= minHours;
+        return {
+          rule,
+          passed,
+          message: passed
+            ? `Employee works ${empHours} hours/week (minimum: ${minHours})`
+            : `Employee works ${empHours} hours/week but minimum is ${minHours}`,
+        };
+      }
+
+      default:
+        return { rule, passed: true, message: `Unknown rule type: ${rule.type}` };
+    }
+  }
+
+  /**
+   * Get all eligible plans for an employee
+   */
+  async getEligiblePlans(employeeId: string, tenantId: string): Promise<{
+    eligible: BenefitPlan[];
+    ineligible: Array<{ plan: BenefitPlan; reasons: string[]; eligibleDate?: Date }>;
+  }> {
+    const plans = await this.getAvailablePlans(tenantId);
+    const eligible: BenefitPlan[] = [];
+    const ineligible: Array<{ plan: BenefitPlan; reasons: string[]; eligibleDate?: Date }> = [];
+
+    for (const plan of plans) {
+      const result = await this.checkEligibility({ employeeId, planId: plan.id, tenantId });
+      if (result.eligible) {
+        eligible.push(plan);
+      } else {
+        ineligible.push({ plan, reasons: result.reasons, eligibleDate: result.eligibleDate });
+      }
+    }
+
+    return { eligible, ineligible };
+  }
+
   async comparePlans(planIds: string[]): Promise<BenefitPlan[]> {
     const plans = await this.prisma.benefitPlan.findMany({
       where: { id: { in: planIds } },

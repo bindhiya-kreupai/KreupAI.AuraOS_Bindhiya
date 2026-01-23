@@ -12,14 +12,21 @@ import {
   HelpCircle,
   ToggleLeft,
   Type,
+  Link2,
 } from "lucide-react";
 
-type QuestionType = "multiple-choice" | "true-false" | "short-answer";
+type QuestionType = "multiple-choice" | "true-false" | "short-answer" | "matching";
 
 interface AnswerOption {
   id: string;
   text: string;
   isCorrect: boolean;
+}
+
+interface MatchPair {
+  id: string;
+  left: string;
+  right: string;
 }
 
 interface Question {
@@ -29,6 +36,7 @@ interface Question {
   options: AnswerOption[];
   correctAnswer: string;
   points: number;
+  matchPairs?: MatchPair[];
 }
 
 interface QuizConfig {
@@ -82,6 +90,20 @@ const initialQuestions: Question[] = [
     correctAnswer: "multicollinearity",
     points: 10,
   },
+  {
+    id: "q-004",
+    type: "matching",
+    text: "Match each regression technique with its primary use case:",
+    options: [],
+    correctAnswer: "",
+    points: 15,
+    matchPairs: [
+      { id: "mp-1", left: "Linear Regression", right: "Continuous outcome prediction" },
+      { id: "mp-2", left: "Logistic Regression", right: "Binary classification" },
+      { id: "mp-3", left: "Ridge Regression", right: "Handling multicollinearity" },
+      { id: "mp-4", left: "Lasso Regression", right: "Feature selection" },
+    ],
+  },
 ];
 
 export default function QuizBuilder() {
@@ -110,7 +132,15 @@ export default function QuizBuilder() {
             ]
           : [],
       correctAnswer: "",
-      points: 10,
+      points: type === "matching" ? 15 : 10,
+      matchPairs:
+        type === "matching"
+          ? [
+              { id: `mp-${now}-1`, left: "", right: "" },
+              { id: `mp-${now}-2`, left: "", right: "" },
+              { id: `mp-${now}-3`, left: "", right: "" },
+            ]
+          : undefined,
     };
     setQuestions((prev) => [...prev, newQuestion]);
   };
@@ -165,6 +195,42 @@ export default function QuizBuilder() {
     );
   };
 
+  const updateMatchPair = (questionId: string, pairId: string, side: "left" | "right", value: string) => {
+    setQuestions((prev) =>
+      prev.map((q) =>
+        q.id === questionId
+          ? {
+              ...q,
+              matchPairs: q.matchPairs?.map((mp) =>
+                mp.id === pairId ? { ...mp, [side]: value } : mp
+              ),
+            }
+          : q
+      )
+    );
+  };
+
+  const addMatchPair = (questionId: string) => {
+    const id = `mp-${Date.now()}`;
+    setQuestions((prev) =>
+      prev.map((q) =>
+        q.id === questionId
+          ? { ...q, matchPairs: [...(q.matchPairs || []), { id, left: "", right: "" }] }
+          : q
+      )
+    );
+  };
+
+  const removeMatchPair = (questionId: string, pairId: string) => {
+    setQuestions((prev) =>
+      prev.map((q) =>
+        q.id === questionId
+          ? { ...q, matchPairs: q.matchPairs?.filter((mp) => mp.id !== pairId) }
+          : q
+      )
+    );
+  };
+
   const updatePoints = (id: string, points: number) => {
     setQuestions((prev) =>
       prev.map((q) => (q.id === id ? { ...q, points } : q))
@@ -181,6 +247,8 @@ export default function QuizBuilder() {
         return <ToggleLeft className="w-4 h-4" />;
       case "short-answer":
         return <Type className="w-4 h-4" />;
+      case "matching":
+        return <Link2 className="w-4 h-4" />;
     }
   };
 
@@ -335,6 +403,12 @@ export default function QuizBuilder() {
               >
                 <Plus className="w-4 h-4" /> Short Answer
               </button>
+              <button
+                onClick={() => addQuestion("matching")}
+                className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-cloud dark:border-nebula-purple/50 text-ink-black dark:text-pearl hover:bg-cloud dark:hover:bg-nebula-purple/20"
+              >
+                <Plus className="w-4 h-4" /> Matching
+              </button>
             </div>
 
             {/* Questions */}
@@ -425,6 +499,53 @@ export default function QuizBuilder() {
                         placeholder="Enter correct answer..."
                         className="w-full px-3 py-1.5 text-sm rounded-lg border border-aurora-green/50 bg-aurora-green/5 text-ink-black dark:text-pearl placeholder:text-silver-mist focus:ring-2 focus:ring-aurora-green focus:outline-none"
                       />
+                    </div>
+                  )}
+
+                  {question.type === "matching" && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-medium text-silver-mist flex-1 pl-2">Term</span>
+                        <span className="text-xs font-medium text-silver-mist flex-1 pl-2">Match</span>
+                        <span className="w-8" />
+                      </div>
+                      <div className="space-y-2">
+                        {question.matchPairs?.map((pair) => (
+                          <div key={pair.id} className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={pair.left}
+                              onChange={(e) =>
+                                updateMatchPair(question.id, pair.id, "left", e.target.value)
+                              }
+                              placeholder="Left term..."
+                              className="flex-1 px-3 py-1.5 text-sm rounded-lg border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-ink-black dark:text-pearl placeholder:text-silver-mist focus:ring-2 focus:ring-celestial-indigo focus:outline-none"
+                            />
+                            <Link2 className="w-4 h-4 text-celestial-indigo flex-shrink-0" />
+                            <input
+                              type="text"
+                              value={pair.right}
+                              onChange={(e) =>
+                                updateMatchPair(question.id, pair.id, "right", e.target.value)
+                              }
+                              placeholder="Right match..."
+                              className="flex-1 px-3 py-1.5 text-sm rounded-lg border border-aurora-green/50 bg-aurora-green/5 text-ink-black dark:text-pearl placeholder:text-silver-mist focus:ring-2 focus:ring-aurora-green focus:outline-none"
+                            />
+                            <button
+                              onClick={() => removeMatchPair(question.id, pair.id)}
+                              className="text-red-400 hover:text-red-600 flex-shrink-0"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => addMatchPair(question.id)}
+                        className="mt-2 flex items-center gap-1 text-xs text-celestial-indigo hover:text-celestial-indigo/80"
+                      >
+                        <Plus className="w-3 h-3" /> Add Pair
+                      </button>
                     </div>
                   )}
                 </div>

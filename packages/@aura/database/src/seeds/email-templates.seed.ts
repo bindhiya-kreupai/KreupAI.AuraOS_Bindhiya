@@ -65,6 +65,40 @@ Cheers,
     category: 'onboarding',
   },
   {
+    slug: 'onboarding-week-1-checklist',
+    subject: 'Week 1 Checklist - How\'s it going, {{firstName}}?',
+    body: `Hi {{firstName}},
+
+You have completed your first week at **{{companyName}}**! Here is your Week 1 checklist to make sure everything is on track:
+
+## Completed This Week
+- [ ] All Day 1 tasks completed
+- [ ] IT equipment set up and working
+- [ ] Access to all required systems confirmed
+- [ ] Met key team members and stakeholders
+- [ ] Attended all scheduled orientation sessions
+
+## This Week's Goals
+- [ ] Complete all mandatory compliance trainings: {{complianceTrainingLink}}
+- [ ] Review team documentation and processes
+- [ ] Set up 1:1 recurring meeting with {{managerName}}
+- [ ] Familiarize yourself with current projects
+- [ ] Complete your profile in the HR portal: {{profileLink}}
+
+## Key Contacts
+- Manager: {{managerName}} ({{managerEmail}})
+- Buddy: {{buddyName}} ({{buddyEmail}})
+- HR: {{hrContactName}} ({{hrEmail}})
+- IT Support: {{itSupportEmail}}
+
+## Feedback
+How was your first week? Share your thoughts: {{feedbackLink}}
+
+We are glad to have you on the team!
+{{companyName}} People Team`,
+    category: 'onboarding',
+  },
+  {
     slug: 'leave-request-notification',
     subject: 'Leave Request from {{employeeName}} - {{leaveType}}',
     body: `Hi {{approverName}},
@@ -139,6 +173,42 @@ Unfortunately, your leave request has not been approved.
 Regards,
 HR System`,
     category: 'leave',
+  },
+  {
+    slug: 'performance-review-initiation',
+    subject: 'Performance Review Cycle Started: {{reviewPeriod}}',
+    body: `Hi {{employeeName}},
+
+The **{{reviewPeriod}}** performance review cycle has been initiated.
+
+## Timeline
+- **Self-Assessment Due:** {{selfAssessmentDeadline}}
+- **Manager Review Due:** {{managerReviewDeadline}}
+- **Calibration:** {{calibrationDate}}
+- **Feedback Meetings:** {{feedbackPeriod}}
+
+## Your Tasks
+1. Complete your self-assessment: {{selfAssessmentLink}}
+2. Review your goals from the last period
+3. Document key achievements and challenges
+4. Identify development areas and career aspirations
+5. Gather any supporting evidence or metrics
+
+## Review Criteria
+{{reviewCriteria}}
+
+## Tips for a Great Self-Assessment
+- Be specific with examples and data
+- Highlight impact, not just activities
+- Be honest about challenges faced
+- Propose actionable development goals
+
+Start your self-assessment: {{selfAssessmentLink}}
+
+If you have questions about the process, contact {{hrEmail}}.
+
+People Operations Team`,
+    category: 'performance',
   },
   {
     slug: 'performance-review-reminder',
@@ -262,6 +332,66 @@ For security, never share this link with anyone.
 
 {{appName}} Security Team`,
     category: 'security',
+  },
+  {
+    slug: 'account-locked',
+    subject: 'Security Alert: Your Account Has Been Locked',
+    body: `Hi {{userName}},
+
+Your account on **{{appName}}** has been **locked** due to multiple failed login attempts.
+
+## Details
+- **Time:** {{lockTime}}
+- **Failed Attempts:** {{failedAttempts}}
+- **IP Address:** {{ipAddress}}
+- **Location:** {{location}}
+
+## What To Do
+1. If this was you: Wait {{lockoutDuration}} minutes and try again, or reset your password: {{resetLink}}
+2. If this was NOT you: Your account may be compromised. Please:
+   - Reset your password immediately: {{resetLink}}
+   - Enable two-factor authentication
+   - Report this to security: {{securityEmail}}
+
+## Unlock Your Account
+If you need immediate access, contact your IT administrator or call {{supportPhone}}.
+
+Your account will automatically unlock after {{lockoutDuration}} minutes.
+
+{{appName}} Security Team`,
+    category: 'security',
+  },
+  {
+    slug: 'document-expiry-warning',
+    subject: 'Document Expiring Soon: {{documentName}}',
+    body: `Hi {{employeeName}},
+
+This is a reminder that the following document is expiring soon:
+
+## Document Details
+- **Document:** {{documentName}}
+- **Type:** {{documentType}}
+- **Expiry Date:** {{expiryDate}}
+- **Days Remaining:** {{daysRemaining}}
+
+## Action Required
+Please upload a renewed version of this document before the expiry date to avoid any compliance issues.
+
+Upload here: {{uploadLink}}
+
+## Impact if Not Renewed
+{{complianceImpact}}
+
+## Documents Expiring Soon
+{{#each expiringDocuments}}
+- {{documentName}}: expires {{expiryDate}}
+{{/each}}
+
+If you need assistance, contact HR at {{hrEmail}}.
+
+Regards,
+HR Compliance Team`,
+    category: 'compliance',
   },
   {
     slug: 'benefits-enrollment-reminder',
