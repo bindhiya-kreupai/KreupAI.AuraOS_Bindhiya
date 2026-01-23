@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getPendingApprovals,
+  getApprovals,
   approveItem,
   rejectItem,
   bulkApprove,
@@ -27,6 +28,7 @@ import type {
 
 const approvalKeys = {
   all: ['approvals'] as const,
+  list: (params?: FilterParams) => [...approvalKeys.all, 'list', params] as const,
   pending: (params?: { type?: string; page?: number }) => [...approvalKeys.all, 'pending', params] as const,
   history: (params?: FilterParams) => [...approvalKeys.all, 'history', params] as const,
 };
@@ -39,6 +41,16 @@ const workflowKeys = {
 // ============================================================================
 // APPROVAL HOOKS
 // ============================================================================
+
+/**
+ * Hook to fetch all approval items with optional filtering by type and status
+ */
+export function useApprovals(params?: FilterParams) {
+  return useQuery<PaginatedResponse<ApprovalItem>, Error>({
+    queryKey: approvalKeys.list(params),
+    queryFn: () => getApprovals(params),
+  });
+}
 
 /**
  * Hook to fetch pending approval items with optional filters

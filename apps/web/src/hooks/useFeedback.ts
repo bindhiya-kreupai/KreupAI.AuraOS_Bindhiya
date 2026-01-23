@@ -6,6 +6,7 @@ import {
   getReceivedFeedback,
   getGivenFeedback,
   getAllFeedback,
+  submitRecognition,
 } from '@/services/feedbackService';
 import type {
   FeedbackSubmission,
@@ -68,6 +69,20 @@ export function useSubmitFeedback() {
 
   return useMutation<Feedback, Error, FeedbackSubmission>({
     mutationFn: submitFeedback,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: feedbackKeys.all });
+    },
+  });
+}
+
+/**
+ * Hook to submit a recognition for a colleague
+ */
+export function useRecognitions() {
+  const queryClient = useQueryClient();
+
+  return useMutation<Feedback, Error, { recipientId: string; message: string; values?: string[]; badgeId?: string }>({
+    mutationFn: submitRecognition,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: feedbackKeys.all });
     },
