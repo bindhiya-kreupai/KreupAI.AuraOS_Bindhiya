@@ -39,3 +39,10 @@ export async function getAvailableYears(): Promise<number[]> {
   const response = await axios.get<number[]>(`${BASE_PATH}/years`);
   return response.data;
 }
+
+export async function getByYear(year: number): Promise<TaxDocument[]> {
+  const response = await axios.get<TaxDocument[]>(BASE_PATH, {
+    params: { year },
+  });
+  return response.data;
+}
