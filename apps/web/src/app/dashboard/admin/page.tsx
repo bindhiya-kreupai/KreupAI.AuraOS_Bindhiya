@@ -10,11 +10,14 @@ import {
   GitBranch,
   Globe2,
   Heart,
+  Key,
   Layers,
   Network,
+  Paintbrush,
   Plane,
   Shield,
   ShieldCheck,
+  Upload,
   Workflow,
   Zap,
 } from "lucide-react";
@@ -91,6 +94,30 @@ const adminSpaces = [
     href: "/dashboard/admin/system/import-export",
     description: "Bulk uploads, data pipelines, and backup/restore jobs.",
     icon: GitBranch,
+  },
+  {
+    title: "API Keys",
+    href: "/dashboard/admin/system/api-keys",
+    description: "Manage API keys, scopes, and usage monitoring.",
+    icon: Key,
+  },
+  {
+    title: "Branding",
+    href: "/dashboard/admin/system/branding",
+    description: "Customize logo, colors, favicon, and white-label settings.",
+    icon: Paintbrush,
+  },
+  {
+    title: "Permission Matrix",
+    href: "/dashboard/admin/system/permissions",
+    description: "Role-based permission grid with granular module access control.",
+    icon: Shield,
+  },
+  {
+    title: "Data Import Wizard",
+    href: "/dashboard/admin/system/data-import",
+    description: "Step-by-step wizard for importing employee data from CSV/Excel.",
+    icon: Upload,
   },
 ];
 
