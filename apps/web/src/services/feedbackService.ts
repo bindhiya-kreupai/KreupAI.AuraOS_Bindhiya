@@ -93,3 +93,16 @@ export async function getAllFeedback(params?: FilterParams): Promise<PaginatedRe
   const response = await apiClient.get<PaginatedResponse<Feedback>>('/', { params });
   return response.data;
 }
+
+/**
+ * Submit a recognition for a colleague (combines feedback with recognition)
+ */
+export async function submitRecognition(data: {
+  recipientId: string;
+  message: string;
+  values?: string[];
+  badgeId?: string;
+}): Promise<Feedback> {
+  const response = await apiClient.post<Feedback>('/recognition', data);
+  return response.data;
+}

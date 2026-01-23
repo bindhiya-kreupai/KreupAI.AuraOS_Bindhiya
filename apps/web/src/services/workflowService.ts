@@ -155,6 +155,14 @@ export async function getApprovalHistory(params?: FilterParams): Promise<Paginat
   return response.data;
 }
 
+/**
+ * Get all approval items with optional filtering by type and status
+ */
+export async function getApprovals(params?: FilterParams): Promise<PaginatedResponse<ApprovalItem>> {
+  const response = await approvalsClient.get<PaginatedResponse<ApprovalItem>>('/', { params });
+  return response.data;
+}
+
 // ============================================================================
 // WORKFLOW SERVICE FUNCTIONS
 // ============================================================================
