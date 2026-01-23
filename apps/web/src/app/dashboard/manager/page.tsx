@@ -7,8 +7,11 @@ export default function MssPage() {
   const features = [
     'Team Dashboard',
     'Approval Center',
+    'One-on-Ones',
+    'Team Capacity',
     'Team Reports',
-    'Delegation'
+    'Delegation',
+    'Team Analytics'
   ];
 
   return (
