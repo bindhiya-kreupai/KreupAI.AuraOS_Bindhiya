@@ -1,21 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 
-// API Response Standard
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: Record<string, unknown>;
-  };
-  meta?: {
-    timestamp: string;
-    requestId: string;
-    apiVersion: string;
-  };
-}
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/v1/leave/balance/:employeeId
@@ -25,102 +12,29 @@ interface ApiResponse<T = any> {
  * - year (optional): Year for leave balance (defaults to current year)
  */
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { params }: { params: { employeeId: string } }) => {
+  async (request: NextRequest, context: { params: { employeeId: string } } & Record<string, any>) => {
     try {
-      const { employeeId } = params;
+      const { user } = context;
+      const { employeeId } = context.params;
       const { searchParams } = new URL(request.url);
-      const year = searchParams.get('year') || new Date().getFullYear().toString();
+      const year = parseInt(searchParams.get('year') || new Date().getFullYear().toString());
 
-      // TODO: Implement actual leave balance calculation
-      // 1. Get employee's applicable leave policies
-      // 2. Calculate accrued leave based on joining date and accrual type
-      // 3. Get utilized leave for the year
-      // 4. Calculate carry forward from previous year
-      // 5. Calculate pending leave requests
-      // 6. Calculate available balance
-
-      const mockLeaveBalance = {
-        employeeId,
-        employeeCode: 'EMP001',
-        employeeName: 'John Doe',
-        year: parseInt(year),
-        balances: [
-          {
-            leavePolicyId: crypto.randomUUID(),
-            leaveType: 'Annual Leave',
-            leaveTypeCode: 'AL',
-            annualEntitlement: 21,
-            accrued: 21, // Based on accrual type and months
-            utilized: 8,
-            pending: 3, // Leave requests in PENDING status
-            carriedForward: 2,
-            encashed: 0,
-            lapsed: 0,
-            available: 12, // accrued + carriedForward - utilized - pending
-            maxCarryForward: 5,
-            canEncash: true,
-            maxEncashment: 10,
-          },
-          {
-            leavePolicyId: crypto.randomUUID(),
-            leaveType: 'Sick Leave',
-            leaveTypeCode: 'SL',
-            annualEntitlement: 12,
-            accrued: 12,
-            utilized: 4,
-            pending: 0,
-            carriedForward: 0,
-            encashed: 0,
-            lapsed: 0,
-            available: 8,
-            maxCarryForward: 0,
-            canEncash: false,
-            maxEncashment: 0,
-          },
-          {
-            leavePolicyId: crypto.randomUUID(),
-            leaveType: 'Casual Leave',
-            leaveTypeCode: 'CL',
-            annualEntitlement: 7,
-            accrued: 7,
-            utilized: 3,
-            pending: 1,
-            carriedForward: 0,
-            encashed: 0,
-            lapsed: 0,
-            available: 3,
-            maxCarryForward: 0,
-            canEncash: false,
-            maxEncashment: 0,
-          },
-        ],
-        summary: {
-          totalEntitlement: 40,
-          totalAccrued: 40,
-          totalUtilized: 15,
-          totalPending: 4,
-          totalAvailable: 23,
-          totalCarriedForward: 2,
+      // Verify the employee belongs to the same tenant
+      const employee = await prisma.employee.findFirst({
+        where: {
+          id: employeeId,
+          company: { tenantId: user.tenantId },
         },
-        generatedAt: new Date().toISOString(),
-      };
-
-      const response: ApiResponse = {
-        success: true,
-        data: mockLeaveBalance,
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
+        select: {
+          id: true,
+          employeeCode: true,
+          firstName: true,
+          lastName: true,
         },
-      };
+      });
 
-      return NextResponse.json(response, { status: 200 });
-    } catch (error) {
-      console.error('[Leave Balance API] GET Error:', error);
-
-      if (error instanceof Error && error.message.includes('not found')) {
-        const response: ApiResponse = {
+      if (!employee) {
+        return NextResponse.json({
           success: false,
           error: {
             code: 'E3001',
@@ -131,12 +45,107 @@ export const GET = withEnhancedAuth(
             requestId: crypto.randomUUID(),
             apiVersion: 'v1',
           },
-        };
-
-        return NextResponse.json(response, { status: 404 });
+        }, { status: 404 });
       }
 
-      const response: ApiResponse = {
+      // Get all leave balances for this employee and year, joined with policy
+      const balances = await prisma.leaveBalance.findMany({
+        where: {
+          tenantId: user.tenantId,
+          employeeId,
+          leaveYear: year,
+        },
+        include: {
+          policy: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+              leaveTypeId: true,
+              annualEntitlement: true,
+              allowCarryForward: true,
+              maxCarryForwardDays: true,
+              allowEncashment: true,
+              maxEncashmentDays: true,
+            },
+          },
+        },
+        orderBy: { policy: { name: 'asc' } },
+      });
+
+      // Count pending leave requests per policy for this employee
+      const pendingRequests = await prisma.leaveRequest.groupBy({
+        by: ['policyId'],
+        where: {
+          tenantId: user.tenantId,
+          employeeId,
+          status: 'PENDING',
+          startDate: {
+            gte: new Date(`${year}-01-01`),
+          },
+          endDate: {
+            lte: new Date(`${year}-12-31`),
+          },
+        },
+        _sum: { totalDays: true },
+      });
+
+      const pendingByPolicy = new Map(
+        pendingRequests.map(p => [p.policyId, Number(p._sum.totalDays ?? 0)])
+      );
+
+      // Build the response balances
+      const balanceItems = balances.map(b => {
+        const pending = pendingByPolicy.get(b.policyId) ?? 0;
+        return {
+          leavePolicyId: b.policyId,
+          leaveType: b.policy.name,
+          leaveTypeCode: b.policy.code,
+          annualEntitlement: Number(b.policy.annualEntitlement),
+          accrued: Number(b.accrued),
+          utilized: Number(b.taken),
+          pending,
+          carriedForward: Number(b.carriedForward),
+          encashed: Number(b.encashed),
+          lapsed: Number(b.lapsed),
+          available: Number(b.currentBalance),
+          maxCarryForward: b.policy.maxCarryForwardDays ? Number(b.policy.maxCarryForwardDays) : 0,
+          canEncash: b.policy.allowEncashment,
+          maxEncashment: b.policy.maxEncashmentDays ? Number(b.policy.maxEncashmentDays) : 0,
+        };
+      });
+
+      // Build summary
+      const summary = {
+        totalEntitlement: balanceItems.reduce((sum, b) => sum + b.annualEntitlement, 0),
+        totalAccrued: balanceItems.reduce((sum, b) => sum + b.accrued, 0),
+        totalUtilized: balanceItems.reduce((sum, b) => sum + b.utilized, 0),
+        totalPending: balanceItems.reduce((sum, b) => sum + b.pending, 0),
+        totalAvailable: balanceItems.reduce((sum, b) => sum + b.available, 0),
+        totalCarriedForward: balanceItems.reduce((sum, b) => sum + b.carriedForward, 0),
+      };
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          employeeId: employee.id,
+          employeeCode: employee.employeeCode,
+          employeeName: `${employee.firstName} ${employee.lastName}`,
+          year,
+          balances: balanceItems,
+          summary,
+          generatedAt: new Date().toISOString(),
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      }, { status: 200 });
+    } catch (error) {
+      console.error('[Leave Balance API] GET Error:', error);
+
+      return NextResponse.json({
         success: false,
         error: {
           code: 'E5001',
@@ -148,9 +157,7 @@ export const GET = withEnhancedAuth(
           requestId: crypto.randomUUID(),
           apiVersion: 'v1',
         },
-      };
-
-      return NextResponse.json(response, { status: 500 });
+      }, { status: 500 });
     }
   }
 );

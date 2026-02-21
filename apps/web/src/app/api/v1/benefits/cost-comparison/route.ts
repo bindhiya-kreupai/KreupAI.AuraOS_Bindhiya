@@ -1,130 +1,233 @@
-/**
- * @api GET /api/v1/benefits/cost-comparison
- * @description Compare plan costs across available benefit plans
- */
-
 import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 
-interface PlanCostComparison {
-  planId: string;
-  planName: string;
-  category: string;
-  type: string;
-  provider: string;
-  coverageLevels: {
+export const dynamic = 'force-dynamic';
+
+export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+  try {
+    const { user } = context;
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category') || 'HEALTH_INSURANCE';
+    const coverageLevel = searchParams.get('coverageLevel') || 'employee_only';
+    const planIds = searchParams.get('planIds')?.split(',').filter(Boolean);
+
+    // Normalize category to enum format
+    const categoryEnum = category.toUpperCase().replace(/-/g, '_');
+
+    // Build where clause with tenant isolation
+    const where: Record<string, unknown> = {
+      tenantId: user.tenantId,
+      category: categoryEnum,
+      status: 'ACTIVE',
+    };
+    if (planIds?.length) {
+      where.id = { in: planIds };
+    }
+
+    // Fetch plans with their premium rates
+    const plans = await prisma.benefitPlan.findMany({
+      where,
+      orderBy: { displayOrder: 'asc' },
+      include: {
+        premiumRates: {
+          orderBy: { effectiveFrom: 'desc' },
+        },
+        _count: {
+          select: { enrollments: true },
+        },
+      },
+    });
+
+    // Map plans to the cost comparison response shape
+    const comparisonPlans = plans.map((plan) => {
+      // Build coverage levels from premium rates if available, otherwise from plan defaults
+      const coverageLevels = buildCoverageLevels(plan);
+
+      const deductible = plan.deductible
+        ? { individual: plan.deductible, family: (plan.deductible ?? 0) * 2 }
+        : { individual: 0, family: 0 };
+
+      const outOfPocketMax = plan.outOfPocketMax
+        ? { individual: plan.outOfPocketMax, family: (plan.outOfPocketMax ?? 0) * 2 }
+        : { individual: 0, family: 0 };
+
+      // Estimate annual costs based on deductible and premiums
+      const employeeOnlyCoverage = coverageLevels.find(
+        (c) => c.level === 'employee_only'
+      );
+      const annualEmployeePremium = (employeeOnlyCoverage?.annualEmployeeCost ?? 0);
+      const estimatedAnnualCost = {
+        low: annualEmployeePremium + deductible.individual * 0.1,
+        medium: annualEmployeePremium + deductible.individual * 0.5,
+        high: annualEmployeePremium + (plan.outOfPocketMax ?? deductible.individual),
+      };
+
+      // Determine HSA eligibility from coverage JSON or plan tier
+      const coverageData = plan.coverage as Record<string, unknown> | null;
+      const hsaEligible = coverageData?.hsaEligible === true ||
+        plan.planTier === 'BASIC' ||
+        (plan.deductible != null && plan.deductible >= 1600);
+
+      return {
+        planId: plan.id,
+        planName: plan.planName,
+        planCode: plan.planCode,
+        category: plan.category.toLowerCase().replace(/_/g, '-'),
+        type: plan.planTier || plan.category,
+        provider: plan.carrierName,
+        coverageLevels,
+        deductible,
+        outOfPocketMax,
+        estimatedAnnualCost,
+        hsaEligible,
+        enrollmentCount: plan._count.enrollments,
+        description: plan.description,
+      };
+    });
+
+    // Calculate savings comparison
+    let savings = null;
+    if (comparisonPlans.length >= 2) {
+      const annualCosts = comparisonPlans.map((p) => {
+        const level = p.coverageLevels.find(
+          (c) => c.level === coverageLevel.toLowerCase().replace(/-/g, '_')
+        );
+        return { planId: p.planId, cost: level?.annualEmployeeCost ?? 0 };
+      });
+
+      const minCost = annualCosts.reduce((min, c) =>
+        c.cost < min.cost ? c : min
+      );
+      const maxCost = annualCosts.reduce((max, c) =>
+        c.cost > max.cost ? c : max
+      );
+
+      savings = {
+        lowestCostPlan: minCost.planId,
+        potentialAnnualSavings: maxCost.cost - minCost.cost,
+      };
+    }
+
+    const data = {
+      plans: comparisonPlans,
+      coverageLevel,
+      savings,
+      disclaimer:
+        'Estimated costs are based on average usage patterns. Actual costs may vary based on individual healthcare utilization.',
+    };
+
+    return NextResponse.json({
+      success: true,
+      data,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
+    });
+  } catch (error) {
+    console.error('[Benefits Cost Comparison API] Error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E5001',
+          message: 'Failed to fetch cost comparison',
+          details: {
+            error: error instanceof Error ? error.message : 'Unknown error',
+          },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      },
+      { status: 500 }
+    );
+  }
+});
+
+/**
+ * Build coverage levels from plan data and premium rates.
+ * Returns an array of coverage level objects with cost breakdowns.
+ */
+function buildCoverageLevels(plan: {
+  employeePremium: number;
+  employerPremium: number;
+  spousePremium: number | null;
+  childPremium: number | null;
+  familyPremium: number | null;
+  premiumRates: {
+    coverageLevel: string;
+    employeePremium: number;
+    employerPremium: number;
+    totalPremium: number;
+  }[];
+}) {
+  const levels: {
     level: string;
     employeeMonthlyCost: number;
     employerMonthlyCost: number;
     totalMonthlyCost: number;
     annualEmployeeCost: number;
     annualTotalCost: number;
-  }[];
-  deductible: {
-    individual: number;
-    family: number;
-  };
-  outOfPocketMax: {
-    individual: number;
-    family: number;
-  };
-  estimatedAnnualCost: {
-    low: number;
-    medium: number;
-    high: number;
-  };
-  hsaEligible: boolean;
-  rating: number;
-}
+  }[] = [];
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const category = searchParams.get('category') || 'health';
-  const coverageLevel = searchParams.get('coverageLevel') || 'employee_only';
-  const planIds = searchParams.get('planIds')?.split(',');
+  // Check if premium rates exist for detailed tier pricing
+  const ratesByLevel = new Map<string, typeof plan.premiumRates[0]>();
+  for (const rate of plan.premiumRates) {
+    const levelKey = rate.coverageLevel.toLowerCase();
+    if (!ratesByLevel.has(levelKey)) {
+      ratesByLevel.set(levelKey, rate);
+    }
+  }
 
-  const mockComparisons: PlanCostComparison[] = [
+  const coverageTiers = [
     {
-      planId: 'plan-health-001',
-      planName: 'Premium Health Plus',
-      category: 'health',
-      type: 'PPO',
-      provider: 'Blue Cross Blue Shield',
-      coverageLevels: [
-        { level: 'employee_only', employeeMonthlyCost: 50, employerMonthlyCost: 200, totalMonthlyCost: 250, annualEmployeeCost: 600, annualTotalCost: 3000 },
-        { level: 'employee_spouse', employeeMonthlyCost: 100, employerMonthlyCost: 400, totalMonthlyCost: 500, annualEmployeeCost: 1200, annualTotalCost: 6000 },
-        { level: 'employee_children', employeeMonthlyCost: 90, employerMonthlyCost: 360, totalMonthlyCost: 450, annualEmployeeCost: 1080, annualTotalCost: 5400 },
-        { level: 'family', employeeMonthlyCost: 140, employerMonthlyCost: 560, totalMonthlyCost: 700, annualEmployeeCost: 1680, annualTotalCost: 8400 },
-      ],
-      deductible: { individual: 1500, family: 3000 },
-      outOfPocketMax: { individual: 5000, family: 10000 },
-      estimatedAnnualCost: { low: 2100, medium: 4500, high: 7500 },
-      hsaEligible: false,
-      rating: 4.5,
+      level: 'employee_only',
+      enumKey: 'EMPLOYEE_ONLY',
+      defaultEmployee: plan.employeePremium,
+      defaultEmployer: plan.employerPremium,
     },
     {
-      planId: 'plan-health-002',
-      planName: 'Basic Health HDHP',
-      category: 'health',
-      type: 'HDHP',
-      provider: 'Aetna',
-      coverageLevels: [
-        { level: 'employee_only', employeeMonthlyCost: 25, employerMonthlyCost: 125, totalMonthlyCost: 150, annualEmployeeCost: 300, annualTotalCost: 1800 },
-        { level: 'employee_spouse', employeeMonthlyCost: 60, employerMonthlyCost: 240, totalMonthlyCost: 300, annualEmployeeCost: 720, annualTotalCost: 3600 },
-        { level: 'employee_children', employeeMonthlyCost: 55, employerMonthlyCost: 220, totalMonthlyCost: 275, annualEmployeeCost: 660, annualTotalCost: 3300 },
-        { level: 'family', employeeMonthlyCost: 85, employerMonthlyCost: 340, totalMonthlyCost: 425, annualEmployeeCost: 1020, annualTotalCost: 5100 },
-      ],
-      deductible: { individual: 3000, family: 6000 },
-      outOfPocketMax: { individual: 7000, family: 14000 },
-      estimatedAnnualCost: { low: 3300, medium: 5800, high: 10000 },
-      hsaEligible: true,
-      rating: 4.0,
+      level: 'employee_spouse',
+      enumKey: 'EMPLOYEE_SPOUSE',
+      defaultEmployee: plan.spousePremium ?? plan.employeePremium * 2,
+      defaultEmployer: plan.employerPremium * 2,
     },
     {
-      planId: 'plan-health-003',
-      planName: 'Standard Health HMO',
-      category: 'health',
-      type: 'HMO',
-      provider: 'Kaiser Permanente',
-      coverageLevels: [
-        { level: 'employee_only', employeeMonthlyCost: 35, employerMonthlyCost: 165, totalMonthlyCost: 200, annualEmployeeCost: 420, annualTotalCost: 2400 },
-        { level: 'employee_spouse', employeeMonthlyCost: 75, employerMonthlyCost: 325, totalMonthlyCost: 400, annualEmployeeCost: 900, annualTotalCost: 4800 },
-        { level: 'employee_children', employeeMonthlyCost: 65, employerMonthlyCost: 285, totalMonthlyCost: 350, annualEmployeeCost: 780, annualTotalCost: 4200 },
-        { level: 'family', employeeMonthlyCost: 110, employerMonthlyCost: 440, totalMonthlyCost: 550, annualEmployeeCost: 1320, annualTotalCost: 6600 },
-      ],
-      deductible: { individual: 500, family: 1000 },
-      outOfPocketMax: { individual: 3000, family: 6000 },
-      estimatedAnnualCost: { low: 920, medium: 2800, high: 5000 },
-      hsaEligible: false,
-      rating: 4.2,
+      level: 'employee_children',
+      enumKey: 'EMPLOYEE_CHILDREN',
+      defaultEmployee: plan.childPremium ?? plan.employeePremium * 1.8,
+      defaultEmployer: plan.employerPremium * 1.8,
+    },
+    {
+      level: 'family',
+      enumKey: 'FAMILY',
+      defaultEmployee: plan.familyPremium ?? plan.employeePremium * 2.8,
+      defaultEmployer: plan.employerPremium * 2.8,
     },
   ];
 
-  let filtered = mockComparisons.filter((p) => p.category === category);
+  for (const tier of coverageTiers) {
+    const rate = ratesByLevel.get(tier.enumKey.toLowerCase()) || ratesByLevel.get(tier.level);
+    const employeeMonthlyCost = rate ? rate.employeePremium : tier.defaultEmployee;
+    const employerMonthlyCost = rate ? rate.employerPremium : tier.defaultEmployer;
+    const totalMonthlyCost = rate
+      ? rate.totalPremium
+      : employeeMonthlyCost + employerMonthlyCost;
 
-  if (planIds?.length) {
-    filtered = filtered.filter((p) => planIds.includes(p.planId));
+    levels.push({
+      level: tier.level,
+      employeeMonthlyCost: Math.round(employeeMonthlyCost * 100) / 100,
+      employerMonthlyCost: Math.round(employerMonthlyCost * 100) / 100,
+      totalMonthlyCost: Math.round(totalMonthlyCost * 100) / 100,
+      annualEmployeeCost: Math.round(employeeMonthlyCost * 12 * 100) / 100,
+      annualTotalCost: Math.round(totalMonthlyCost * 12 * 100) / 100,
+    });
   }
 
-  // Calculate savings comparison
-  const savings = filtered.length >= 2 ? {
-    lowestCostPlan: filtered.reduce((min, p) => {
-      const level = p.coverageLevels.find((c) => c.level === coverageLevel);
-      const minLevel = min.coverageLevels.find((c) => c.level === coverageLevel);
-      return (level?.annualEmployeeCost || 0) < (minLevel?.annualEmployeeCost || 0) ? p : min;
-    }).planId,
-    potentialAnnualSavings: Math.max(
-      ...filtered.map((p) => p.coverageLevels.find((c) => c.level === coverageLevel)?.annualEmployeeCost || 0)
-    ) - Math.min(
-      ...filtered.map((p) => p.coverageLevels.find((c) => c.level === coverageLevel)?.annualEmployeeCost || 0)
-    ),
-  } : null;
-
-  return NextResponse.json({
-    data: {
-      plans: filtered,
-      coverageLevel,
-      savings,
-      disclaimer: 'Estimated costs are based on average usage patterns. Actual costs may vary based on individual healthcare utilization.',
-    },
-  });
+  return levels;
 }

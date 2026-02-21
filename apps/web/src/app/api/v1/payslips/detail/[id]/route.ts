@@ -1,104 +1,38 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-
-// API Response Standard
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: Record<string, unknown>;
-  };
-  meta?: {
-    timestamp: string;
-    requestId: string;
-    apiVersion: string;
-  };
-}
+import { prisma } from '@aura/database';
 
 /**
  * GET /api/v1/payslips/detail/:id
  * Get detailed payslip information including all earnings and deductions breakdown
  */
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
     try {
-      const { id } = params;
+      const { id } = await context.params;
+      const user = (context as unknown as { user: { tenantId: string; userId: string } }).user;
+      const tenantId = user.tenantId;
 
-      // TODO: Implement actual database query
-      const mockPayslip = {
-        id,
-        payrollRunId: crypto.randomUUID(),
-        employeeId: crypto.randomUUID(),
-        employeeCode: 'EMP001',
-        employeeName: 'John Doe',
-        month: '2024-12',
-
-        // Salary Structure
-        basicSalary: 5000,
-
-        // Earnings breakdown
-        earnings: [
-          { code: 'HRA', name: 'House Rent Allowance', amount: 1000 },
-          { code: 'TA', name: 'Transport Allowance', amount: 300 },
-          { code: 'MA', name: 'Medical Allowance', amount: 200 },
-        ],
-        totalEarnings: 1500,
-
-        // Deductions breakdown
-        deductions: [
-          { code: 'PF', name: 'Provident Fund', amount: 600 },
-          { code: 'ESI', name: 'Employee State Insurance', amount: 97.5 },
-          { code: 'PT', name: 'Professional Tax', amount: 82.5 },
-        ],
-        totalDeductions: 780,
-
-        // Statutory contributions
-        employeePF: 600,
-        employeeESI: 97.5,
-        employeePT: 82.5,
-        employeeTDS: 0,
-        totalStatutoryEmployee: 780,
-
-        employerPF: 600,
-        employerESI: 162.5,
-        totalStatutoryEmployer: 762.5,
-
-        // Calculations
-        grossSalary: 6500,
-        netSalary: 5720,
-
-        // Attendance & overtime
-        workingDays: 30,
-        paidDays: 30,
-        lopDays: 0,
-        overtimeHours: 0,
-        overtimeAmount: 0,
-
-        // Status & metadata
-        status: 'PAID',
-        pdfUrl: `/payslips/${id}.pdf`,
-        paidAt: new Date().toISOString(),
-        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      };
-
-      const response: ApiResponse = {
-        success: true,
-        data: mockPayslip,
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
+      const payslip = await prisma.payslip.findFirst({
+        where: {
+          id,
+          payrollRun: { tenantId },
         },
-      };
+        include: {
+          payrollRun: {
+            select: {
+              payrollMonth: true,
+              currency: true,
+              paidAt: true,
+            },
+          },
+        },
+      });
 
-      return NextResponse.json(response, { status: 200 });
-    } catch (error) {
-      console.error('[Payslip Detail API] GET Error:', error);
-
-      if (error instanceof Error && error.message.includes('not found')) {
-        const response: ApiResponse = {
+      if (!payslip) {
+        return NextResponse.json({
           success: false,
           error: {
             code: 'E3001',
@@ -109,12 +43,75 @@ export const GET = withEnhancedAuth(
             requestId: crypto.randomUUID(),
             apiVersion: 'v1',
           },
-        };
-
-        return NextResponse.json(response, { status: 404 });
+        }, { status: 404 });
       }
 
-      const response: ApiResponse = {
+      const data = {
+        id: payslip.id,
+        payrollRunId: payslip.payrollRunId,
+        employeeId: payslip.employeeId,
+        employeeCode: payslip.employeeCode,
+        employeeName: payslip.employeeName,
+        month: payslip.payrollRun.payrollMonth,
+
+        // Salary Structure
+        basicSalary: Number(payslip.basicSalary),
+
+        // Earnings breakdown
+        earnings: payslip.earnings,
+        totalEarnings: Number(payslip.totalEarnings),
+
+        // Deductions breakdown
+        deductions: payslip.deductions,
+        totalDeductions: Number(payslip.totalDeductions),
+
+        // Statutory contributions - employee
+        employeePF: Number(payslip.employeePF),
+        employeeESI: Number(payslip.employeeESI),
+        employeePension: Number(payslip.employeePension),
+        employeeTDS: Number(payslip.employeeTDS),
+        employeeSaned: Number(payslip.employeeSaned),
+        totalStatutoryEmployee: Number(payslip.totalStatutoryEmployee),
+
+        // Statutory contributions - employer
+        employerPF: Number(payslip.employerPF),
+        employerESI: Number(payslip.employerESI),
+        employerPension: Number(payslip.employerPension),
+        employerGOSI: Number(payslip.employerGOSI),
+        totalStatutoryEmployer: Number(payslip.totalStatutoryEmployer),
+
+        // Calculations
+        grossSalary: Number(payslip.grossSalary),
+        netSalary: Number(payslip.netSalary),
+
+        // Attendance & overtime
+        workingDays: payslip.workingDays,
+        paidDays: Number(payslip.paidDays),
+        lopDays: Number(payslip.lopDays),
+        overtimeHours: Number(payslip.overtimeHours),
+        overtimeAmount: Number(payslip.overtimeAmount),
+
+        // Status & metadata
+        currency: payslip.payrollRun.currency,
+        status: payslip.status,
+        pdfUrl: payslip.pdfUrl,
+        paidAt: payslip.payrollRun.paidAt?.toISOString() || null,
+        createdAt: payslip.createdAt.toISOString(),
+      };
+
+      return NextResponse.json({
+        success: true,
+        data,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      }, { status: 200 });
+    } catch (error) {
+      console.error('[Payslip Detail API] GET Error:', error);
+
+      return NextResponse.json({
         success: false,
         error: {
           code: 'E5001',
@@ -126,9 +123,7 @@ export const GET = withEnhancedAuth(
           requestId: crypto.randomUUID(),
           apiVersion: 'v1',
         },
-      };
-
-      return NextResponse.json(response, { status: 500 });
+      }, { status: 500 });
     }
   }
 );

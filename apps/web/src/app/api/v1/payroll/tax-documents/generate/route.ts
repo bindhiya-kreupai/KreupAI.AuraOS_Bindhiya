@@ -1,56 +1,140 @@
-import { NextRequest, NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
 
-interface TaxDocGenerationRequest {
-  taxYear: number;
-  type: "W2" | "1099";
-  employeeIds?: string[];
-}
+import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
+import { z } from 'zod';
 
-interface TaxDocGenerationResponse {
-  jobId: string;
-  status: "queued";
-  type: "W2" | "1099";
-  taxYear: number;
-  totalDocuments: number;
-  estimatedCompletionTime: string;
-  message: string;
-}
+const generateSchema = z.object({
+  taxYear: z.number().int().min(2000).max(2099),
+  type: z.enum(['W2', '1099', 'FORM_16']),
+  employeeIds: z.array(z.string().uuid()).optional(),
+});
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/v1/payroll/tax-documents/generate
+ * Queue tax document generation for a specific year and type
+ */
+export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const body: TaxDocGenerationRequest = await request.json();
+    const { user } = context;
+    const tenantId = user.tenantId;
+    const body = await request.json();
 
-    if (!body.taxYear || !body.type) {
-      return NextResponse.json(
-        { error: "taxYear and type are required" },
-        { status: 400 }
-      );
+    // Validate request body
+    const validationResult = generateSchema.safeParse(body);
+    if (!validationResult.success) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'E2001',
+          message: 'Validation failed',
+          details: { errors: validationResult.error.errors },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      }, { status: 400 });
     }
 
-    if (body.type !== "W2" && body.type !== "1099") {
-      return NextResponse.json(
-        { error: "type must be W2 or 1099" },
-        { status: 400 }
-      );
+    const { taxYear, type, employeeIds } = validationResult.data;
+
+    // Get employees to generate documents for
+    const employeeWhere: Record<string, unknown> = { tenantId, status: 'Active' };
+    if (employeeIds && employeeIds.length > 0) {
+      employeeWhere.id = { in: employeeIds };
     }
 
-    const totalDocs = body.employeeIds ? body.employeeIds.length : (body.type === "W2" ? 55 : 12);
+    const employees = await prisma.employee.findMany({
+      where: employeeWhere,
+      select: { id: true, firstName: true, lastName: true },
+    });
 
-    const response: TaxDocGenerationResponse = {
-      jobId: `taxgen-${Date.now()}`,
-      status: "queued",
-      type: body.type,
-      taxYear: body.taxYear,
-      totalDocuments: totalDocs,
-      estimatedCompletionTime: new Date(Date.now() + 300000).toISOString(),
-      message: `Tax document generation job queued for ${totalDocs} ${body.type} forms.`,
-    };
+    if (employees.length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'E3001',
+          message: 'No eligible employees found',
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      }, { status: 404 });
+    }
 
-    return NextResponse.json(response, { status: 202 });
-  } catch {
-    return NextResponse.json(
-      { error: "Invalid request body" },
-      { status: 400 }
+    // Create tax document records for each employee (upsert to handle reruns)
+    const results = await Promise.allSettled(
+      employees.map((emp) =>
+        prisma.taxDocument.upsert({
+          where: {
+            tenantId_employeeId_type_taxYear: {
+              tenantId,
+              employeeId: emp.id,
+              type,
+              taxYear,
+            },
+          },
+          create: {
+            tenantId,
+            employeeId: emp.id,
+            type,
+            taxYear,
+            status: 'GENERATED',
+            generatedAt: new Date(),
+            metadata: { generatedBy: user.userId, batchGeneration: true },
+          },
+          update: {
+            status: 'GENERATED',
+            generatedAt: new Date(),
+            amendments: { increment: 1 },
+            metadata: { regeneratedBy: user.userId, regeneratedAt: new Date().toISOString() },
+          },
+        })
+      )
     );
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length;
+    const failedCount = results.filter((r) => r.status === 'rejected').length;
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        jobId: `taxgen-${Date.now()}`,
+        status: 'queued',
+        type,
+        taxYear,
+        totalDocuments: employees.length,
+        successCount,
+        failedCount,
+        estimatedCompletionTime: new Date(Date.now() + 300000).toISOString(),
+        message: `Tax document generation completed for ${successCount} ${type} forms.${failedCount > 0 ? ` ${failedCount} failed.` : ''}`,
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
+    }, { status: 202 });
+  } catch (error) {
+    console.error('[Tax Documents Generate API] POST Error:', error);
+
+    return NextResponse.json({
+      success: false,
+      error: {
+        code: 'E5001',
+        message: 'Failed to generate tax documents',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
+    }, { status: 500 });
   }
-}
+});

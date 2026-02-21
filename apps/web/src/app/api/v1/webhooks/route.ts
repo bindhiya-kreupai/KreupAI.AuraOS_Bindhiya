@@ -1,143 +1,235 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 
-interface Webhook {
-  id: string;
-  url: string;
-  events: string[];
-  secret: string;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
-  lastDeliveryAt: string | null;
-  lastDeliveryStatus: 'success' | 'failed' | null;
-}
+export const dynamic = 'force-dynamic';
 
-interface WebhookCreatePayload {
-  url: string;
-  events: string[];
-  secret: string;
-}
-
-interface PaginationMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-}
-
-const mockWebhooks: Webhook[] = [
-  {
-    id: 'wh_001',
-    url: 'https://example.com/webhooks/orders',
-    events: ['order.created', 'order.updated', 'order.cancelled'],
-    secret: 'whsec_abc123def456',
-    active: true,
-    createdAt: '2026-01-10T08:00:00Z',
-    updatedAt: '2026-01-20T14:30:00Z',
-    lastDeliveryAt: '2026-01-23T09:15:00Z',
-    lastDeliveryStatus: 'success',
-  },
-  {
-    id: 'wh_002',
-    url: 'https://example.com/webhooks/users',
-    events: ['user.created', 'user.updated'],
-    secret: 'whsec_ghi789jkl012',
-    active: true,
-    createdAt: '2026-01-12T10:00:00Z',
-    updatedAt: '2026-01-18T11:45:00Z',
-    lastDeliveryAt: '2026-01-22T16:20:00Z',
-    lastDeliveryStatus: 'success',
-  },
-  {
-    id: 'wh_003',
-    url: 'https://staging.example.com/hooks/payments',
-    events: ['payment.completed', 'payment.failed', 'payment.refunded'],
-    secret: 'whsec_mno345pqr678',
-    active: false,
-    createdAt: '2026-01-05T12:00:00Z',
-    updatedAt: '2026-01-15T09:00:00Z',
-    lastDeliveryAt: '2026-01-14T22:10:00Z',
-    lastDeliveryStatus: 'failed',
-  },
-];
-
-function generateWebhookId(): string {
-  return 'wh_' + Date.now().toString(36);
-}
-
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const limit = parseInt(searchParams.get('limit') || '20', 10);
-  const activeOnly = searchParams.get('active');
-
-  let filtered = [...mockWebhooks];
-
-  if (activeOnly === 'true') {
-    filtered = filtered.filter((wh) => wh.active);
-  } else if (activeOnly === 'false') {
-    filtered = filtered.filter((wh) => !wh.active);
-  }
-
-  const total = filtered.length;
-  const totalPages = Math.ceil(total / limit);
-  const startIndex = (page - 1) * limit;
-  const paginated = filtered.slice(startIndex, startIndex + limit);
-
-  const pagination: PaginationMeta = {
-    page,
-    limit,
-    total,
-    totalPages,
-  };
-
-  return NextResponse.json({ data: paginated, pagination });
-}
-
-export async function POST(request: NextRequest) {
+/**
+ * GET /api/v1/webhooks
+ * List webhooks with optional active filter and pagination
+ */
+export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const body: WebhookCreatePayload = await request.json();
+    const { user } = context;
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '20', 10);
+    const activeOnly = searchParams.get('active');
+    const skip = (page - 1) * limit;
 
+    const whereClause: Record<string, unknown> = {
+      tenantId: user.tenantId,
+    };
+
+    if (activeOnly === 'true') {
+      whereClause.isActive = true;
+    } else if (activeOnly === 'false') {
+      whereClause.isActive = false;
+    }
+
+    const [webhooks, total] = await Promise.all([
+      prisma.webhook.findMany({
+        where: whereClause,
+        include: {
+          logs: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            select: {
+              createdAt: true,
+              success: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.webhook.count({
+        where: whereClause,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    // Map to shape compatible with existing frontend expectations
+    const data = webhooks.map((wh) => {
+      const lastLog = wh.logs[0] || null;
+      return {
+        id: wh.id,
+        url: wh.url,
+        events: wh.events,
+        secret: wh.secret,
+        active: wh.isActive,
+        headers: wh.headers,
+        retryCount: wh.retryCount,
+        createdBy: wh.createdBy,
+        createdAt: wh.createdAt.toISOString(),
+        updatedAt: wh.updatedAt.toISOString(),
+        lastDeliveryAt: lastLog?.createdAt?.toISOString() || null,
+        lastDeliveryStatus: lastLog ? (lastLog.success ? 'success' : 'failed') : null,
+      };
+    });
+
+    return NextResponse.json({
+      success: true,
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
+    });
+  } catch (error) {
+    console.error('[Webhooks API] GET Error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E5001',
+          message: 'Failed to fetch webhooks',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      },
+      { status: 500 }
+    );
+  }
+});
+
+/**
+ * POST /api/v1/webhooks
+ * Create a new webhook
+ */
+export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+  try {
+    const { user } = context;
+    const body = await request.json();
+
+    // Validate required fields
     if (!body.url || !body.events || !body.secret) {
       return NextResponse.json(
-        { error: 'Missing required fields: url, events, secret' },
+        {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Missing required fields: url, events, secret',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        },
         { status: 400 }
       );
     }
 
     if (!Array.isArray(body.events) || body.events.length === 0) {
       return NextResponse.json(
-        { error: 'events must be a non-empty array of event types' },
+        {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'events must be a non-empty array of event types',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        },
         { status: 400 }
       );
     }
 
+    // Validate URL format
     try {
       new URL(body.url);
     } catch {
       return NextResponse.json(
-        { error: 'Invalid URL format' },
+        {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Invalid URL format',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        },
         { status: 400 }
       );
     }
 
-    const newWebhook: Webhook = {
-      id: generateWebhookId(),
-      url: body.url,
-      events: body.events,
-      secret: body.secret,
-      active: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    const webhook = await prisma.webhook.create({
+      data: {
+        tenantId: user.tenantId,
+        url: body.url,
+        events: body.events,
+        secret: body.secret,
+        isActive: true,
+        headers: body.headers || null,
+        retryCount: body.retryCount ?? 3,
+        createdBy: user.userId,
+      },
+    });
+
+    const data = {
+      id: webhook.id,
+      url: webhook.url,
+      events: webhook.events,
+      secret: webhook.secret,
+      active: webhook.isActive,
+      headers: webhook.headers,
+      retryCount: webhook.retryCount,
+      createdBy: webhook.createdBy,
+      createdAt: webhook.createdAt.toISOString(),
+      updatedAt: webhook.updatedAt.toISOString(),
       lastDeliveryAt: null,
       lastDeliveryStatus: null,
     };
 
-    return NextResponse.json({ data: newWebhook }, { status: 201 });
-  } catch {
     return NextResponse.json(
-      { error: 'Invalid request body' },
-      { status: 400 }
+      {
+        success: true,
+        data,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error('[Webhooks API] POST Error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E5001',
+          message: 'Failed to create webhook',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      },
+      { status: 500 }
     );
   }
-}
+});

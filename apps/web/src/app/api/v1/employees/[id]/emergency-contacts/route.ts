@@ -1,94 +1,214 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { id } = params;
-  const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get('page') || '1');
-  const limit = parseInt(searchParams.get('limit') || '20');
+export const dynamic = 'force-dynamic';
 
-  const mockContacts = [
-    {
-      id: 'ec-001',
-      employeeId: id,
-      name: 'Emily Smith',
-      relationship: 'spouse',
-      isPrimary: true,
-      phone: '+1-555-0101',
-      alternatePhone: '+1-555-0102',
-      email: 'emily.smith@email.com',
-      address: {
-        street: '123 Main Street',
-        city: 'San Francisco',
-        state: 'CA',
-        zip: '94102',
+/**
+ * GET /api/v1/employees/[id]/emergency-contacts
+ * List emergency contacts for an employee
+ */
+export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+  try {
+    const { user } = context;
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const employeeId = pathParts[pathParts.indexOf('employees') + 1];
+
+    const { searchParams } = url;
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const skip = (page - 1) * limit;
+
+    // Verify employee belongs to this tenant
+    const employee = await prisma.employee.findFirst({
+      where: { id: employeeId, company: { tenantId: user.tenantId } },
+      select: { id: true },
+    });
+
+    if (!employee) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E3001',
+            message: 'Employee not found',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        },
+        { status: 404 }
+      );
+    }
+
+    const [contacts, total] = await Promise.all([
+      prisma.emergencyContact.findMany({
+        where: {
+          tenantId: user.tenantId,
+          employeeId,
+        },
+        orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+        skip,
+        take: limit,
+      }),
+      prisma.emergencyContact.count({
+        where: {
+          tenantId: user.tenantId,
+          employeeId,
+        },
+      }),
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      data: contacts,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
       },
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-01-15T10:00:00Z',
-    },
-    {
-      id: 'ec-002',
-      employeeId: id,
-      name: 'Robert Smith',
-      relationship: 'parent',
-      isPrimary: false,
-      phone: '+1-555-0201',
-      alternatePhone: null,
-      email: 'robert.smith@email.com',
-      address: {
-        street: '456 Oak Avenue',
-        city: 'Los Angeles',
-        state: 'CA',
-        zip: '90001',
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
       },
-      createdAt: '2024-01-15T10:05:00Z',
-      updatedAt: '2024-01-15T10:05:00Z',
-    },
-  ];
-
-  return NextResponse.json({
-    data: mockContacts,
-    pagination: {
-      page,
-      limit,
-      total: mockContacts.length,
-      totalPages: 1,
-    },
-  });
-}
-
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { id } = params;
-  const body = await request.json();
-
-  if (!body.name || !body.relationship || !body.phone) {
+    });
+  } catch (error) {
+    console.error('[Emergency Contacts API] GET Error:', error);
     return NextResponse.json(
       {
-        error: 'Bad Request',
-        message: 'Fields name, relationship, and phone are required',
+        success: false,
+        error: {
+          code: 'E5001',
+          message: 'Failed to fetch emergency contacts',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
-      { status: 400 }
+      { status: 500 }
     );
   }
+});
 
-  const newContact = {
-    id: 'ec-' + Date.now(),
-    employeeId: id,
-    name: body.name,
-    relationship: body.relationship,
-    isPrimary: body.isPrimary || false,
-    phone: body.phone,
-    alternatePhone: body.alternatePhone || null,
-    email: body.email || null,
-    address: body.address || null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+/**
+ * POST /api/v1/employees/[id]/emergency-contacts
+ * Create a new emergency contact for an employee
+ */
+export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+  try {
+    const { user } = context;
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const employeeId = pathParts[pathParts.indexOf('employees') + 1];
 
-  return NextResponse.json({ data: newContact }, { status: 201 });
-}
+    const body = await request.json();
+
+    // Validate required fields
+    if (!body.name || !body.relationship || !body.phone) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Fields name, relationship, and phone are required',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // Verify employee belongs to this tenant
+    const employee = await prisma.employee.findFirst({
+      where: { id: employeeId, company: { tenantId: user.tenantId } },
+      select: { id: true },
+    });
+
+    if (!employee) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E3001',
+            message: 'Employee not found',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        },
+        { status: 404 }
+      );
+    }
+
+    // If this contact is marked as primary, unset any existing primary contact
+    if (body.isPrimary) {
+      await prisma.emergencyContact.updateMany({
+        where: {
+          tenantId: user.tenantId,
+          employeeId,
+          isPrimary: true,
+        },
+        data: { isPrimary: false },
+      });
+    }
+
+    const newContact = await prisma.emergencyContact.create({
+      data: {
+        tenantId: user.tenantId,
+        employeeId,
+        name: body.name,
+        relationship: body.relationship,
+        isPrimary: body.isPrimary || false,
+        phone: body.phone,
+        alternatePhone: body.alternatePhone || null,
+        email: body.email || null,
+        address: body.address ? (typeof body.address === 'string' ? body.address : JSON.stringify(body.address)) : null,
+      },
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: newContact,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error('[Emergency Contacts API] POST Error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E5001',
+          message: 'Failed to create emergency contact',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      },
+      { status: 500 }
+    );
+  }
+});

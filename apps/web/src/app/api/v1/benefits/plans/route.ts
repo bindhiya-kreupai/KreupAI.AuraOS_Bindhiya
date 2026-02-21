@@ -1,127 +1,108 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get('page') || '1');
-  const limit = parseInt(searchParams.get('limit') || '20');
-  const category = searchParams.get('category');
+export const dynamic = 'force-dynamic';
 
-  const mockPlans = [
-    {
-      id: 'plan-health-001',
-      name: 'Premium Health Plus',
-      category: 'health',
-      type: 'PPO',
-      provider: 'Blue Cross Blue Shield',
-      status: 'active',
-      premiums: {
-        employeeOnly: 250.0,
-        employeeSpouse: 500.0,
-        employeeChildren: 450.0,
-        family: 700.0,
-      },
-      employerContribution: 80,
-      deductible: { individual: 1500, family: 3000 },
-      outOfPocketMax: { individual: 5000, family: 10000 },
-      copay: { primaryCare: 25, specialist: 50, urgentCare: 75, emergency: 250 },
-      enrollmentCount: 245,
-    },
-    {
-      id: 'plan-health-002',
-      name: 'Basic Health HDHP',
-      category: 'health',
-      type: 'HDHP',
-      provider: 'Aetna',
-      status: 'active',
-      premiums: {
-        employeeOnly: 150.0,
-        employeeSpouse: 300.0,
-        employeeChildren: 275.0,
-        family: 425.0,
-      },
-      employerContribution: 75,
-      deductible: { individual: 3000, family: 6000 },
-      outOfPocketMax: { individual: 7000, family: 14000 },
-      copay: { primaryCare: 0, specialist: 0, urgentCare: 0, emergency: 0 },
-      hsaEligible: true,
-      enrollmentCount: 180,
-    },
-    {
-      id: 'plan-dental-001',
-      name: 'Comprehensive Dental',
-      category: 'dental',
-      type: 'DPPO',
-      provider: 'Delta Dental',
-      status: 'active',
-      premiums: {
-        employeeOnly: 45.0,
-        employeeSpouse: 85.0,
-        employeeChildren: 80.0,
-        family: 120.0,
-      },
-      employerContribution: 100,
-      annualMax: 2000,
-      deductible: { individual: 50, family: 150 },
-      coverage: { preventive: 100, basic: 80, major: 50, orthodontia: 50 },
-      enrollmentCount: 380,
-    },
-    {
-      id: 'plan-vision-001',
-      name: 'Vision Care Plus',
-      category: 'vision',
-      type: 'vision',
-      provider: 'VSP',
-      status: 'active',
-      premiums: {
-        employeeOnly: 15.0,
-        employeeSpouse: 28.0,
-        employeeChildren: 25.0,
-        family: 40.0,
-      },
-      employerContribution: 100,
-      examCopay: 10,
-      frameAllowance: 200,
-      contactLensAllowance: 150,
-      enrollmentCount: 350,
-    },
-    {
-      id: 'plan-life-001',
-      name: 'Group Life Insurance',
-      category: 'life',
-      type: 'term',
-      provider: 'MetLife',
-      status: 'active',
-      baseCoverage: '2x annual salary',
-      maxCoverage: 500000,
-      voluntaryOptions: [100000, 200000, 300000, 400000, 500000],
-      employerPaid: true,
-      enrollmentCount: 420,
-    },
-    {
-      id: 'plan-401k-001',
-      name: '401(k) Retirement Plan',
-      category: 'retirement',
-      type: '401k',
-      provider: 'Fidelity',
-      status: 'active',
-      employerMatch: { percentage: 100, upTo: 6 },
-      vestingSchedule: '3-year graded',
-      contributionLimits: { employee: 23000, catchUp: 7500 },
-      enrollmentCount: 395,
-    },
-  ];
+export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+  try {
+    const { user } = context;
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const category = searchParams.get('category');
 
-  const filtered = category
-    ? mockPlans.filter((plan) => plan.category === category)
-    : mockPlans;
+    const skip = (page - 1) * limit;
 
-  return NextResponse.json({
-    data: filtered,
-    pagination: {
-      page,
-      limit,
-      total: filtered.length,
-      totalPages: Math.ceil(filtered.length / limit),
-    },
-  });
-}
+    // Build where clause with tenant isolation
+    const where: Record<string, unknown> = { tenantId: user.tenantId };
+    if (category) {
+      where.category = category.toUpperCase().replace(/-/g, '_');
+    }
+
+    const [plans, total] = await Promise.all([
+      prisma.benefitPlan.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: [{ displayOrder: 'asc' }, { planName: 'asc' }],
+        include: {
+          _count: {
+            select: { enrollments: true },
+          },
+        },
+      }),
+      prisma.benefitPlan.count({ where }),
+    ]);
+
+    // Map DB records to the API response shape the frontend expects
+    const data = plans.map((plan) => ({
+      id: plan.id,
+      name: plan.planName,
+      planCode: plan.planCode,
+      category: plan.category.toLowerCase().replace(/_/g, '-'),
+      type: plan.planTier || plan.category,
+      provider: plan.carrierName,
+      status: plan.status.toLowerCase(),
+      premiums: {
+        employeeOnly: plan.employeePremium,
+        employeeSpouse: plan.spousePremium ?? plan.employeePremium,
+        employeeChildren: plan.childPremium ?? plan.employeePremium,
+        family: plan.familyPremium ?? plan.employeePremium,
+      },
+      employerContribution: plan.employerPremium,
+      deductible: plan.deductible
+        ? { individual: plan.deductible, family: (plan.deductible ?? 0) * 2 }
+        : null,
+      outOfPocketMax: plan.outOfPocketMax
+        ? { individual: plan.outOfPocketMax, family: (plan.outOfPocketMax ?? 0) * 2 }
+        : null,
+      copay: plan.copay ?? null,
+      coinsurance: plan.coinsurance ?? null,
+      coverage: plan.coverage ?? null,
+      networkInfo: plan.networkInfo ?? null,
+      description: plan.description,
+      effectiveFrom: plan.effectiveFrom.toISOString(),
+      effectiveTo: plan.effectiveTo?.toISOString() ?? null,
+      waitingPeriodDays: plan.waitingPeriodDays,
+      isEmployeeContribution: plan.isEmployeeContribution,
+      enrollmentCount: plan._count.enrollments,
+    }));
+
+    return NextResponse.json({
+      success: true,
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
+    });
+  } catch (error) {
+    console.error('[Benefits Plans API] Error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E5001',
+          message: 'Failed to fetch benefit plans',
+          details: {
+            error: error instanceof Error ? error.message : 'Unknown error',
+          },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      },
+      { status: 500 }
+    );
+  }
+});

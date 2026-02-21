@@ -282,6 +282,12 @@ model Employee {
   // WPS Relations
   wpsRecords           WPSRecord[]
 
+  // Additional Relations
+  emergencyContacts    EmergencyContact[]
+  garnishments         Garnishment[]
+  hsaFsaAccounts       HSAFSAAccount[]
+  taxDocuments         TaxDocument[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -5097,6 +5103,110 @@ model APIKey {
   @@index([tenantId])
   @@index([keyHash])
   @@index([isActive])
+}
+
+// ============================================================================
+// EMPLOYEE EMERGENCY CONTACTS
+// ============================================================================
+
+model EmergencyContact {
+  id         String  @id @default(uuid())
+  tenantId   String
+  employeeId String
+  name       String
+  relationship String
+  isPrimary  Boolean @default(false)
+  phone      String
+  alternatePhone String?
+  email      String?
+  address    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([employeeId])
+}
+
+// ============================================================================
+// PAYROLL GARNISHMENTS
+// ============================================================================
+
+model Garnishment {
+  id          String   @id @default(uuid())
+  tenantId    String
+  employeeId  String
+  type        String   // CHILD_SUPPORT, TAX_LEVY, CREDITOR, STUDENT_LOAN, BANKRUPTCY
+  caseNumber  String?
+  courtOrder  String?
+  amount      Decimal
+  amountType  String   // FIXED, PERCENTAGE
+  maxAmount   Decimal?
+  startDate   DateTime
+  endDate     DateTime?
+  status      String   @default("ACTIVE") // ACTIVE, PAUSED, COMPLETED, CANCELLED
+  priority    Int      @default(1)
+  totalDeducted Decimal @default(0)
+  payeeInfo   Json?    // { name, address, accountNumber }
+
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+// ============================================================================
+// HSA/FSA ACCOUNTS
+// ============================================================================
+
+model HSAFSAAccount {
+  id           String  @id @default(uuid())
+  tenantId     String
+  employeeId   String
+  accountType  String  // HSA, FSA, DCFSA, LPFSA
+  status       String  @default("ACTIVE") // ACTIVE, FROZEN, CLOSED
+  balance      Decimal @default(0)
+  yearToDateContributions Decimal @default(0)
+  annualLimit  Decimal
+  investmentBalance Decimal @default(0)
+  cashBalance  Decimal @default(0)
+  planYear     Int
+
+  contributionAmount   Decimal @default(0)
+  contributionFrequency String @default("PER_PAYCHECK") // PER_PAYCHECK, MONTHLY
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+  transactions HSAFSATransaction[]
+
+  @@unique([employeeId, accountType, planYear])
+  @@index([tenantId])
+  @@index([employeeId])
+}
+
+model HSAFSATransaction {
+  id          String   @id @default(uuid())
+  accountId   String
+  account     HSAFSAAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  type        String   // CONTRIBUTION, DISTRIBUTION, INVESTMENT, FEE
+  amount      Decimal
+  description String?
+  date        DateTime
+  status      String   @default("COMPLETED") // PENDING, COMPLETED, REVERSED
+
+  createdAt DateTime @default(now())
+
+  @@index([accountId])
+  @@index([date])
 }
 
 // ============================================================================

@@ -1,86 +1,130 @@
-import { NextRequest, NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
 
-interface TaxDocument {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  type: "W2" | "1099";
-  taxYear: number;
-  status: "generated" | "pending" | "delivered" | "corrected";
-  generatedAt: string | null;
-  deliveredAt: string | null;
-  downloadUrl: string | null;
-}
+import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 
-const mockDocuments: TaxDocument[] = [
-  {
-    id: "td-001",
-    employeeId: "emp-001",
-    employeeName: "John Smith",
-    type: "W2",
-    taxYear: 2024,
-    status: "delivered",
-    generatedAt: "2025-01-15T00:00:00Z",
-    deliveredAt: "2025-01-20T00:00:00Z",
-    downloadUrl: "/api/v1/payroll/tax-documents/td-001/download",
-  },
-  {
-    id: "td-002",
-    employeeId: "emp-002",
-    employeeName: "Jane Doe",
-    type: "W2",
-    taxYear: 2024,
-    status: "generated",
-    generatedAt: "2025-01-15T00:00:00Z",
-    deliveredAt: null,
-    downloadUrl: "/api/v1/payroll/tax-documents/td-002/download",
-  },
-  {
-    id: "td-003",
-    employeeId: "con-001",
-    employeeName: "Alex Contractor",
-    type: "1099",
-    taxYear: 2024,
-    status: "pending",
-    generatedAt: null,
-    deliveredAt: null,
-    downloadUrl: null,
-  },
-  {
-    id: "td-004",
-    employeeId: "emp-003",
-    employeeName: "Bob Wilson",
-    type: "W2",
-    taxYear: 2024,
-    status: "corrected",
-    generatedAt: "2025-01-15T00:00:00Z",
-    deliveredAt: "2025-01-22T00:00:00Z",
-    downloadUrl: "/api/v1/payroll/tax-documents/td-004/download",
-  },
-];
+/**
+ * GET /api/v1/payroll/tax-documents
+ * Get tax documents list for the tenant
+ *
+ * Query Parameters:
+ * - type (optional): Filter by document type (W2, 1099, FORM_16)
+ * - year (optional): Filter by tax year
+ * - status (optional): Filter by status (GENERATED, DELIVERED, AMENDED)
+ * - employeeId (optional): Filter by employee
+ * - page (optional): Page number (default: 1)
+ * - limit (optional): Records per page (default: 50, max: 100)
+ */
+export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+  try {
+    const { user } = context;
+    const tenantId = user.tenantId;
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type');
+    const year = searchParams.get('year');
+    const status = searchParams.get('status');
+    const employeeId = searchParams.get('employeeId');
+    const page = Math.max(parseInt(searchParams.get('page') || '1'), 1);
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100);
+    const skip = (page - 1) * limit;
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const type = searchParams.get("type");
-  const year = searchParams.get("year");
+    // Build where clause
+    const where: Record<string, unknown> = { tenantId };
+    if (type) where.type = type.toUpperCase();
+    if (year) where.taxYear = parseInt(year);
+    if (status) where.status = status.toUpperCase();
+    if (employeeId) where.employeeId = employeeId;
 
-  let filtered = mockDocuments;
+    const [documents, total] = await Promise.all([
+      prisma.taxDocument.findMany({
+        where,
+        orderBy: [{ taxYear: 'desc' }, { createdAt: 'desc' }],
+        take: limit,
+        skip,
+        include: {
+          employee: {
+            select: {
+              id: true,
+              employeeCode: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      }),
+      prisma.taxDocument.count({ where }),
+    ]);
 
-  if (type) {
-    filtered = filtered.filter((doc) => doc.type === type);
+    const data = documents.map((doc) => ({
+      id: doc.id,
+      employeeId: doc.employeeId,
+      employeeName: `${doc.employee.firstName} ${doc.employee.lastName}`,
+      employeeCode: doc.employee.employeeCode,
+      type: doc.type,
+      taxYear: doc.taxYear,
+      status: doc.status.toLowerCase(),
+      generatedAt: doc.generatedAt.toISOString(),
+      deliveredAt: doc.deliveredAt?.toISOString() || null,
+      fileUrl: doc.fileUrl,
+      amendments: doc.amendments,
+      downloadUrl: doc.fileUrl ? `/api/v1/payroll/tax-documents/${doc.id}/download` : null,
+    }));
+
+    // Compute summary
+    const allDocs = await prisma.taxDocument.groupBy({
+      by: ['type', 'status'],
+      where: { tenantId, ...(year ? { taxYear: parseInt(year) } : {}) },
+      _count: true,
+    });
+
+    const summaryMap: Record<string, number> = {};
+    for (const group of allDocs) {
+      const key = `${group.type}_${group.status}`;
+      summaryMap[key] = group._count;
+    }
+
+    const summary = {
+      w2Count: (summaryMap['W2_GENERATED'] || 0) + (summaryMap['W2_DELIVERED'] || 0) + (summaryMap['W2_AMENDED'] || 0),
+      form1099Count: (summaryMap['1099_GENERATED'] || 0) + (summaryMap['1099_DELIVERED'] || 0) + (summaryMap['1099_AMENDED'] || 0),
+      pendingCount: (summaryMap['W2_GENERATED'] || 0) + (summaryMap['1099_GENERATED'] || 0),
+      deliveredCount: (summaryMap['W2_DELIVERED'] || 0) + (summaryMap['1099_DELIVERED'] || 0),
+    };
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        documents: data,
+        total,
+        summary,
+      },
+      meta: {
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
+    }, { status: 200 });
+  } catch (error) {
+    console.error('[Tax Documents API] GET Error:', error);
+
+    return NextResponse.json({
+      success: false,
+      error: {
+        code: 'E5001',
+        message: 'Failed to fetch tax documents',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
+    }, { status: 500 });
   }
-  if (year) {
-    filtered = filtered.filter((doc) => doc.taxYear === parseInt(year));
-  }
-
-  return NextResponse.json({
-    documents: filtered,
-    total: filtered.length,
-    summary: {
-      w2Count: filtered.filter((d) => d.type === "W2").length,
-      form1099Count: filtered.filter((d) => d.type === "1099").length,
-      pendingCount: filtered.filter((d) => d.status === "pending").length,
-      deliveredCount: filtered.filter((d) => d.status === "delivered").length,
-    },
-  });
-}
+});

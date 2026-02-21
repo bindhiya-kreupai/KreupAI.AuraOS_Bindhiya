@@ -1,21 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 
-// API Response Standard
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: Record<string, unknown>;
-  };
-  meta?: {
-    timestamp: string;
-    requestId: string;
-    apiVersion: string;
-  };
-}
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/v1/shifts/roster
@@ -30,6 +17,7 @@ interface ApiResponse<T = any> {
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
+    const { user } = context;
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
     const departmentId = searchParams.get('departmentId');
@@ -38,206 +26,264 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     const shiftId = searchParams.get('shiftId');
 
     if (!companyId || !startDate || !endDate) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'companyId, startDate, and endDate are required in query parameters',
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'companyId, startDate, and endDate are required in query parameters',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 400 });
+        { status: 400 }
+      );
     }
 
     // Validate date format
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
-      const response: ApiResponse = {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Invalid date format. Use YYYY-MM-DD',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Get employees matching company/department filter for this tenant
+    const employeeFilter: Record<string, unknown> = {
+      companyId,
+      company: { tenantId: user.tenantId },
+    };
+    if (departmentId) {
+      employeeFilter.departmentId = departmentId;
+    }
+
+    const employees = await prisma.employee.findMany({
+      where: employeeFilter,
+      select: {
+        id: true,
+        employeeCode: true,
+        firstName: true,
+        lastName: true,
+        departmentId: true,
+        department: { select: { name: true } },
+      },
+    });
+
+    const employeeIds = employees.map((e) => e.id);
+    const employeeMap = new Map(employees.map((e) => [e.id, e]));
+
+    // Build roster query filter
+    const rosterWhere: Record<string, unknown> = {
+      tenantId: user.tenantId,
+      employeeId: { in: employeeIds },
+      rosterDate: {
+        gte: start,
+        lte: end,
+      },
+    };
+    if (shiftId) {
+      rosterWhere.shiftId = shiftId;
+    }
+
+    // Fetch roster entries with shift details
+    const rosterEntries = await prisma.shiftRoster.findMany({
+      where: rosterWhere,
+      include: {
+        shift: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            startTime: true,
+            endTime: true,
+            isActive: true,
+          },
+        },
+      },
+      orderBy: [{ rosterDate: 'asc' }, { shiftId: 'asc' }],
+    });
+
+    // Get unique shifts used in the roster
+    const shiftsMap = new Map<string, { id: string; code: string; name: string; startTime: string; endTime: string }>();
+    for (const entry of rosterEntries) {
+      if (!shiftsMap.has(entry.shiftId)) {
+        shiftsMap.set(entry.shiftId, {
+          id: entry.shift.id,
+          code: entry.shift.code,
+          name: entry.shift.name,
+          startTime: entry.shift.startTime,
+          endTime: entry.shift.endTime,
+        });
+      }
+    }
+
+    // Group roster entries by date, then by shift
+    const dateGroups = new Map<string, typeof rosterEntries>();
+    for (const entry of rosterEntries) {
+      const dateKey = entry.rosterDate.toISOString().split('T')[0];
+      if (!dateGroups.has(dateKey)) {
+        dateGroups.set(dateKey, []);
+      }
+      dateGroups.get(dateKey)!.push(entry);
+    }
+
+    // Build roster response grouped by date
+    const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    const roster = [];
+
+    // Iterate through each day in the range
+    const current = new Date(start);
+    while (current <= end) {
+      const dateKey = current.toISOString().split('T')[0];
+      const dayOfWeek = dayNames[current.getDay()];
+      const isWeekend = current.getDay() === 0 || current.getDay() === 6;
+      const entriesForDate = dateGroups.get(dateKey) || [];
+
+      // Group entries by shift for this date
+      const shiftGroups = new Map<string, typeof rosterEntries>();
+      let dateIsHoliday = false;
+      for (const entry of entriesForDate) {
+        if (entry.isHoliday) dateIsHoliday = true;
+        if (!shiftGroups.has(entry.shiftId)) {
+          shiftGroups.set(entry.shiftId, []);
+        }
+        shiftGroups.get(entry.shiftId)!.push(entry);
+      }
+
+      const shiftsForDate = [];
+      let totalPlanned = 0;
+      let totalActual = 0;
+
+      for (const [sid, entries] of shiftGroups) {
+        const shiftInfo = shiftsMap.get(sid);
+        const scheduledEmployees = entries.filter((e) => e.status === 'SCHEDULED' || e.status === 'COMPLETED');
+        const cancelledEmployees = entries.filter((e) => e.status === 'CANCELLED' || e.status === 'SWAPPED');
+
+        const planned = entries.length;
+        const actual = scheduledEmployees.length;
+        totalPlanned += planned;
+        totalActual += actual;
+
+        shiftsForDate.push({
+          shiftId: sid,
+          shiftCode: shiftInfo?.code || '',
+          shiftName: shiftInfo?.name || '',
+          plannedStrength: planned,
+          actualStrength: actual,
+          employees: scheduledEmployees.map((e) => {
+            const emp = employeeMap.get(e.employeeId);
+            return {
+              employeeId: e.employeeId,
+              employeeCode: emp?.employeeCode || '',
+              employeeName: emp ? `${emp.firstName} ${emp.lastName}` : '',
+              department: emp?.department?.name || '',
+              status: e.status,
+              customStartTime: e.customStartTime,
+              customEndTime: e.customEndTime,
+              isWeekOff: e.isWeekOff,
+            };
+          }),
+          absentEmployees: cancelledEmployees.map((e) => {
+            const emp = employeeMap.get(e.employeeId);
+            return {
+              employeeId: e.employeeId,
+              employeeCode: emp?.employeeCode || '',
+              employeeName: emp ? `${emp.firstName} ${emp.lastName}` : '',
+              reason: e.status === 'SWAPPED' ? 'Shift Swapped' : 'Cancelled',
+            };
+          }),
+        });
+      }
+
+      roster.push({
+        date: dateKey,
+        dayOfWeek,
+        isWeekend,
+        isHoliday: dateIsHoliday,
+        shifts: shiftsForDate,
+        totalPlannedStrength: totalPlanned,
+        totalActualStrength: totalActual,
+        attendancePercentage: totalPlanned > 0 ? Math.round((totalActual / totalPlanned) * 10000) / 100 : 0,
+      });
+
+      current.setDate(current.getDate() + 1);
+    }
+
+    // Compute summary
+    const totalDays = roster.length;
+    const workingDays = roster.filter((d) => !d.isWeekend && !d.isHoliday).length;
+    const weekendDays = roster.filter((d) => d.isWeekend).length;
+    const holidays = roster.filter((d) => d.isHoliday).length;
+    const totalStrengths = roster.map((d) => d.totalActualStrength);
+    const averageStrength = totalStrengths.length > 0 ? Math.round((totalStrengths.reduce((a, b) => a + b, 0) / totalStrengths.length) * 100) / 100 : 0;
+    const attendancePercentages = roster.filter((d) => d.totalPlannedStrength > 0).map((d) => d.attendancePercentage);
+    const averageAttendancePercentage = attendancePercentages.length > 0 ? Math.round((attendancePercentages.reduce((a, b) => a + b, 0) / attendancePercentages.length) * 100) / 100 : 0;
+
+    const responseData = {
+      companyId,
+      departmentId,
+      startDate,
+      endDate,
+      shifts: Array.from(shiftsMap.values()),
+      roster,
+      summary: {
+        totalDays,
+        workingDays,
+        weekendDays,
+        holidays,
+        averageStrength,
+        averageAttendancePercentage,
+      },
+      generatedAt: new Date().toISOString(),
+    };
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: responseData,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('[Shift Roster API] GET Error:', error);
+    return NextResponse.json(
+      {
         success: false,
         error: {
-          code: 'E2001',
-          message: 'Invalid date format. Use YYYY-MM-DD',
+          code: 'E5001',
+          message: 'Failed to fetch shift roster',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
         meta: {
           timestamp: new Date().toISOString(),
           requestId: crypto.randomUUID(),
           apiVersion: 'v1',
         },
-      };
-
-      return NextResponse.json(response, { status: 400 });
-    }
-
-    // TODO: Implement actual shift roster query
-    // 1. Get all shift assignments for date range
-    // 2. Get employee details
-    // 3. Check for leave/absences
-    // 4. Group by date and shift
-    // 5. Calculate shift strength
-
-    const mockRoster = {
-      companyId,
-      departmentId,
-      startDate,
-      endDate,
-      shifts: [
-        {
-          id: crypto.randomUUID(),
-          code: 'GEN',
-          name: 'General Shift',
-          startTime: '09:00:00',
-          endTime: '18:00:00',
-          colorCode: '#3B82F6',
-        },
-        {
-          id: crypto.randomUUID(),
-          code: 'NIGHT',
-          name: 'Night Shift',
-          startTime: '22:00:00',
-          endTime: '06:00:00',
-          colorCode: '#6366F1',
-        },
-      ],
-      roster: [
-        {
-          date: '2024-12-26',
-          dayOfWeek: 'THU',
-          isWeekend: false,
-          isHoliday: false,
-          shifts: [
-            {
-              shiftId: crypto.randomUUID(),
-              shiftCode: 'GEN',
-              shiftName: 'General Shift',
-              plannedStrength: 120,
-              actualStrength: 115,
-              employees: [
-                {
-                  employeeId: crypto.randomUUID(),
-                  employeeCode: 'EMP001',
-                  employeeName: 'John Doe',
-                  department: 'Engineering',
-                  status: 'SCHEDULED',
-                },
-                {
-                  employeeId: crypto.randomUUID(),
-                  employeeCode: 'EMP002',
-                  employeeName: 'Jane Smith',
-                  department: 'Engineering',
-                  status: 'SCHEDULED',
-                },
-                // ... more employees
-              ],
-              absentEmployees: [
-                {
-                  employeeId: crypto.randomUUID(),
-                  employeeCode: 'EMP015',
-                  employeeName: 'Mike Johnson',
-                  reason: 'On Leave (Annual Leave)',
-                },
-              ],
-            },
-            {
-              shiftId: crypto.randomUUID(),
-              shiftCode: 'NIGHT',
-              shiftName: 'Night Shift',
-              plannedStrength: 35,
-              actualStrength: 35,
-              employees: [
-                {
-                  employeeId: crypto.randomUUID(),
-                  employeeCode: 'EMP101',
-                  employeeName: 'Alice Cooper',
-                  department: 'Operations',
-                  status: 'SCHEDULED',
-                },
-                // ... more employees
-              ],
-              absentEmployees: [],
-            },
-          ],
-          totalPlannedStrength: 155,
-          totalActualStrength: 150,
-          attendancePercentage: 96.77,
-        },
-        {
-          date: '2024-12-27',
-          dayOfWeek: 'FRI',
-          isWeekend: false,
-          isHoliday: false,
-          shifts: [
-            {
-              shiftId: crypto.randomUUID(),
-              shiftCode: 'GEN',
-              shiftName: 'General Shift',
-              plannedStrength: 120,
-              actualStrength: 118,
-              employees: [],
-              absentEmployees: [
-                {
-                  employeeId: crypto.randomUUID(),
-                  employeeCode: 'EMP001',
-                  employeeName: 'John Doe',
-                  reason: 'On Leave (Annual Leave)',
-                },
-                {
-                  employeeId: crypto.randomUUID(),
-                  employeeCode: 'EMP023',
-                  employeeName: 'Sarah Wilson',
-                  reason: 'Sick Leave',
-                },
-              ],
-            },
-          ],
-          totalPlannedStrength: 155,
-          totalActualStrength: 153,
-          attendancePercentage: 98.71,
-        },
-      ],
-      summary: {
-        totalDays: 7,
-        workingDays: 5,
-        weekendDays: 2,
-        holidays: 0,
-        averageStrength: 151.4,
-        averageAttendancePercentage: 97.74,
       },
-      generatedAt: new Date().toISOString(),
-    };
-
-    const response: ApiResponse = {
-      success: true,
-      data: mockRoster,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 200 });
-  } catch (error) {
-    console.error('[Shift Roster API] GET Error:', error);
-
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to fetch shift roster',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 500 });
+      { status: 500 }
+    );
   }
 });
