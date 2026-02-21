@@ -1,28 +1,41 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { PlayCircle, Terminal, Cpu } from 'lucide-react';
-import { WorkflowExecutionService } from '../services';
+import { PlayCircle, Terminal, Cpu, Loader2 } from 'lucide-react';
+import { WorkflowExecutionService, WorkflowService } from '../services';
 
 export default function TestingModePage() {
+    const [workflows, setWorkflows] = useState<any[]>([]);
     const [executions, setExecutions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchExecutions();
+        fetchData();
     }, []);
 
-    const fetchExecutions = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            const data = await WorkflowExecutionService.getExecutions();
-            setExecutions(data);
+            const [wfs, execs] = await Promise.all([
+                WorkflowService.getWorkflows(),
+                WorkflowExecutionService.getExecutions(),
+            ]);
+            setWorkflows(wfs || []);
+            setExecutions(execs || []);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
@@ -37,7 +50,6 @@ export default function TestingModePage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[500px]">
-                {/* Input Panel */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col">
                     <h3 className="font-bold mb-4 flex items-center gap-2">
                         <Cpu className="w-5 h-5 text-slate-500" /> Test Inputs
@@ -46,8 +58,13 @@ export default function TestingModePage() {
                         <div>
                             <label className="text-xs font-bold text-slate-500 uppercase">Workflow Context</label>
                             <select className="w-full mt-1 bg-slate-50 dark:bg-slate-800 border-none rounded-lg p-3 text-sm">
-                                <option>Expense Approval (v1.4)</option>
-                                <option>Leave Request (v2.0)</option>
+                                {workflows.length > 0 ? (
+                                    workflows.map((wf: any) => (
+                                        <option key={wf.id} value={wf.id}>{wf.name} (v{wf.version})</option>
+                                    ))
+                                ) : (
+                                    <option>No workflows available</option>
+                                )}
                             </select>
                         </div>
                         <div>
@@ -55,11 +72,10 @@ export default function TestingModePage() {
                             <textarea
                                 className="w-full h-40 mt-1 bg-slate-900 text-emerald-400 font-mono text-xs rounded-lg p-3 border-none resize-none"
                                 defaultValue={`{
-  "request_id": "EXP-2024-001",
+  "request_id": "TEST-001",
   "employee_id": "EMP123",
   "amount": 5500.00,
-  "category": "Travel",
-  "justification": "Client meeting in NY"
+  "category": "Travel"
 }`}
                             />
                         </div>
@@ -69,21 +85,21 @@ export default function TestingModePage() {
                     </div>
                 </div>
 
-                {/* Output Console */}
                 <div className="bg-slate-900 text-slate-300 rounded-2xl border border-slate-800 p-6 font-mono text-sm overflow-y-auto">
                     <h3 className="font-bold mb-4 flex items-center gap-2 text-white">
                         <Terminal className="w-5 h-5" /> Execution Log
                     </h3>
-                    <div className="space-y-2 text-xs">
-                        <div className="text-slate-500">[10:45:01] Initializing simulation...</div>
-                        <div className="text-blue-400">[10:45:01] Trigger: 'Form Submitted' fired</div>
-                        <div>[10:45:01] Data: {"{"} amount: 5500 {"}"}</div>
-                        <div className="text-amber-400">[10:45:02] Evaluating Condition: Amount &gt; 5000</div>
-                        <div className="text-emerald-400">[10:45:02] Result: TRUE</div>
-                        <div className="text-blue-400">[10:45:02] Action: 'Route to CFO' initiated</div>
-                        <div className="text-purple-400">[10:45:03] Notification: Email sent to cfo@company.com</div>
-                        <div className="text-emerald-500 font-bold mt-4">✓ Workflow Completed Successfully</div>
-                    </div>
+                    {executions.length === 0 ? (
+                        <div className="text-slate-500 text-xs">No execution history. Run a simulation to see results.</div>
+                    ) : (
+                        <div className="space-y-2 text-xs">
+                            {executions.slice(0, 10).map((exec: any, idx: number) => (
+                                <div key={idx} className={exec.status === 'COMPLETED' ? 'text-emerald-400' : exec.status === 'FAILED' ? 'text-red-400' : 'text-blue-400'}>
+                                    [{exec.startedAt ? new Date(exec.startedAt).toLocaleTimeString() : 'N/A'}] {exec.definition?.name || 'Workflow'} - {exec.status}
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

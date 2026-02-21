@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
     Users,
@@ -19,61 +19,123 @@ import {
     AlertTriangle,
     FileWarning,
     Zap,
-    Search
+    Search,
+    Loader2
 } from 'lucide-react';
 import { DraggableWidgetGrid } from '@/components/dashboard/DraggableWidgetGrid';
 import { WidgetConfigPanel } from '@/components/dashboard/WidgetConfigPanel';
 import { AIInsightsPanel } from '@/components/dashboard/AIInsightsPanel';
 import { GlobalSearchCommand } from '@/components/search/GlobalSearchCommand';
 
+interface OverviewData {
+    totalEmployees: number;
+    onLeaveToday: number;
+    newJoiners: number;
+    attritionRate: string;
+    openPositions: number;
+    activeCandidates: number;
+    pendingApprovals: number;
+    pendingLeaves: number;
+}
+
 export default function OverviewPage() {
+    const [data, setData] = useState<OverviewData | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchOverviewData();
+    }, []);
+
+    const fetchOverviewData = async () => {
+        try {
+            const [realtimeRes, headcountRes] = await Promise.all([
+                fetch('/api/v1/analytics/real-time').then((r) => r.json()).catch(() => null),
+                fetch('/api/v1/analytics/headcount').then((r) => r.json()).catch(() => null),
+            ]);
+
+            const rt = realtimeRes?.data;
+            const hc = headcountRes?.data;
+
+            setData({
+                totalEmployees: rt?.activeEmployees?.total ?? hc?.total ?? 0,
+                onLeaveToday: rt?.todayLeaves?.total ?? 0,
+                newJoiners: hc?.newHires?.thisMonth ?? 0,
+                attritionRate: hc?.netGrowth?.growthRate !== undefined ? `${Math.abs(hc.netGrowth.growthRate)}%` : '0%',
+                openPositions: 0,
+                activeCandidates: 0,
+                pendingApprovals: rt?.pendingApprovals?.total ?? 0,
+                pendingLeaves: rt?.pendingApprovals?.byType?.find((t: any) => t.type === 'Leave Requests')?.count ?? 0,
+            });
+        } catch (error) {
+            console.error('Failed to fetch overview data:', error);
+            setData({
+                totalEmployees: 0,
+                onLeaveToday: 0,
+                newJoiners: 0,
+                attritionRate: '0%',
+                openPositions: 0,
+                activeCandidates: 0,
+                pendingApprovals: 0,
+                pendingLeaves: 0,
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const formatNumber = (num: number) => num.toLocaleString();
+
     return (
         <div className="space-y-6 pb-10">
             <GlobalSearchCommand />
             <WidgetConfigPanel />
 
-            {/* KPI Sections */}
+            {loading && (
+                <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-celestial-indigo" />
+                </div>
+            )}
+
             <section>
                 <h2 className="text-xs font-bold text-silver-mist uppercase tracking-wider mb-1 px-1">Workforce Overview</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-                    <KPICard label="Total Employees" value="1,234" change="+12%" icon={Users} color="text-celestial-indigo" />
-                    <KPICard label="On Leave Today" value="12" change="-2%" icon={Calendar} color="text-neural-mint" />
-                    <KPICard label="New Joiners" value="8" change="+4" icon={UserPlus} color="text-quantum-rose" />
-                    <KPICard label="Attrition Rate" value="2.4%" change="-0.5%" icon={TrendingUp} color="text-sunset-amber" />
+                    <KPICard label="Total Employees" value={data ? formatNumber(data.totalEmployees) : '--'} change={data ? `${data.newJoiners > 0 ? '+' : ''}${data.newJoiners} this month` : '--'} icon={Users} color="text-celestial-indigo" />
+                    <KPICard label="On Leave Today" value={data ? String(data.onLeaveToday) : '--'} change="Today" icon={Calendar} color="text-neural-mint" />
+                    <KPICard label="New Joiners" value={data ? String(data.newJoiners) : '--'} change="This month" icon={UserPlus} color="text-quantum-rose" />
+                    <KPICard label="Pending Approvals" value={data ? String(data.pendingApprovals) : '--'} change={data && data.pendingLeaves > 0 ? `${data.pendingLeaves} leaves` : 'None'} icon={TrendingUp} color="text-sunset-amber" />
                 </div>
             </section>
 
             <section>
                 <h2 className="text-xs font-bold text-silver-mist uppercase tracking-wider mb-1 px-1">Recruitment & Talent</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-                    <KPICard label="Open Positions" value="45" change="+5%" icon={Briefcase} color="text-celestial-indigo" />
-                    <KPICard label="Active Candidates" value="128" change="+15%" icon={Search} color="text-neural-mint" />
-                    <KPICard label="Interviews Today" value="14" change="+2" icon={Clock} color="text-quantum-rose" />
-                    <KPICard label="Offer Acceptance" value="92%" change="+1.5%" icon={CheckCircle} color="text-sunset-amber" />
+                    <KPICard label="Open Positions" value={data ? String(data.openPositions) : '--'} change="Active" icon={Briefcase} color="text-celestial-indigo" />
+                    <KPICard label="Active Candidates" value={data ? String(data.activeCandidates) : '--'} change="In pipeline" icon={Search} color="text-neural-mint" />
+                    <KPICard label="Interviews Today" value="--" change="--" icon={Clock} color="text-quantum-rose" />
+                    <KPICard label="Offer Acceptance" value="--" change="--" icon={CheckCircle} color="text-sunset-amber" />
                 </div>
             </section>
 
             <section>
                 <h2 className="text-xs font-bold text-silver-mist uppercase tracking-wider mb-1 px-1">Compliance & Risk</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-                    <KPICard label="Expiring Documents" value="7" change="Critical" icon={FileWarning} color="text-coral-alert" alert />
-                    <KPICard label="Pending Audits" value="3" change="Due Soon" icon={Shield} color="text-sunset-amber" />
-                    <KPICard label="Safety Incidents" value="0" change="Safe" icon={AlertTriangle} color="text-neural-mint" />
-                    <KPICard label="Compliance Score" value="98%" change="+2%" icon={Activity} color="text-celestial-indigo" />
+                    <KPICard label="Expiring Documents" value="--" change="--" icon={FileWarning} color="text-coral-alert" />
+                    <KPICard label="Pending Audits" value="--" change="--" icon={Shield} color="text-sunset-amber" />
+                    <KPICard label="Safety Incidents" value="--" change="--" icon={AlertTriangle} color="text-neural-mint" />
+                    <KPICard label="Compliance Score" value="--" change="--" icon={Activity} color="text-celestial-indigo" />
                 </div>
             </section>
 
             <section>
                 <h2 className="text-xs font-bold text-silver-mist uppercase tracking-wider mb-1 px-1">Finance & Performance</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-                    <KPICard label="Payroll Status" value="Processing" change="85%" icon={DollarSign} color="text-neural-mint" />
-                    <KPICard label="Pending Claims" value="24" change="$4.2k" icon={FileText} color="text-quantum-rose" />
-                    <KPICard label="Reviews Due" value="15" change="Urgent" icon={Zap} color="text-sunset-amber" />
-                    <KPICard label="Training Completion" value="76%" change="+5%" icon={BookOpen} color="text-celestial-indigo" />
+                    <KPICard label="Payroll Status" value="--" change="--" icon={DollarSign} color="text-neural-mint" />
+                    <KPICard label="Pending Claims" value="--" change="--" icon={FileText} color="text-quantum-rose" />
+                    <KPICard label="Reviews Due" value="--" change="--" icon={Zap} color="text-sunset-amber" />
+                    <KPICard label="Training Completion" value="--" change="--" icon={BookOpen} color="text-celestial-indigo" />
                 </div>
             </section>
 
-            {/* Personalized Widget Grid with AI Insights */}
             <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
                 <div className="xl:col-span-3">
                     <DraggableWidgetGrid />
@@ -85,7 +147,6 @@ export default function OverviewPage() {
                 </div>
             </div>
 
-            {/* Quick Actions */}
             <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
                 <h2 className="text-sm font-bold text-ink-black dark:text-pearl mb-4">Quick Actions</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -113,8 +174,8 @@ function KPICard({ label, value, change, icon: Icon, color, alert = false }: any
                     <Icon className="w-5 h-5" />
                 </div>
                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${alert ? 'bg-coral-alert/10 text-coral-alert' :
-                    change.startsWith('+') ? 'bg-neural-mint/10 text-neural-mint' :
-                        change.startsWith('-') ? 'bg-coral-alert/10 text-coral-alert' :
+                    typeof change === 'string' && change.startsWith('+') ? 'bg-neural-mint/10 text-neural-mint' :
+                        typeof change === 'string' && change.startsWith('-') ? 'bg-coral-alert/10 text-coral-alert' :
                             'bg-pearl dark:bg-deep-cosmos text-silver-mist'
                     }`}>
                     {change}

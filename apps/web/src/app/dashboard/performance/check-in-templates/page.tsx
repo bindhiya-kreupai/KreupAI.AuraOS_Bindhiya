@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
-import { FileText, Plus, Copy, Edit2, Trash2, Clock, Users, Star, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ReviewCycleService } from '../core/services';
+import { FileText, Plus, Copy, Edit2, Trash2, Clock, Users, Star, ChevronRight, Loader2 } from 'lucide-react';
 
 interface Template {
   id: string;
@@ -14,68 +15,51 @@ interface Template {
   isDefault: boolean;
 }
 
-const mockTemplates: Template[] = [
-  {
-    id: '1',
-    name: 'Weekly 1:1 Check-in',
-    description: 'Standard weekly check-in template for direct reports',
-    questions: ['What did you accomplish this week?', 'What blockers are you facing?', 'What are your priorities for next week?', 'How can I support you better?'],
-    category: '1:1 Meetings',
-    usageCount: 45,
-    lastUsed: '2 days ago',
-    isDefault: true,
-  },
-  {
-    id: '2',
-    name: 'Career Development',
-    description: 'Quarterly career growth and development discussion',
-    questions: ['How do you feel about your career progress?', 'What skills would you like to develop?', 'Where do you see yourself in 1-2 years?', 'What projects excite you most?'],
-    category: 'Development',
-    usageCount: 12,
-    lastUsed: '2 weeks ago',
-    isDefault: false,
-  },
-  {
-    id: '3',
-    name: 'Performance Mid-Cycle',
-    description: 'Mid-cycle performance review discussion guide',
-    questions: ['Progress on current goals?', 'Any goals need to be adjusted?', 'Feedback on recent projects', 'Areas for improvement', 'Recognition and wins'],
-    category: 'Performance',
-    usageCount: 8,
-    lastUsed: '1 month ago',
-    isDefault: false,
-  },
-  {
-    id: '4',
-    name: 'New Hire 30-Day',
-    description: 'Check-in template for new employees at 30 days',
-    questions: ['How is onboarding going?', 'Do you have everything you need?', 'How is the team culture?', 'Any surprises (good or bad)?', 'Questions about role expectations?'],
-    category: 'Onboarding',
-    usageCount: 6,
-    lastUsed: '3 weeks ago',
-    isDefault: false,
-  },
-  {
-    id: '5',
-    name: 'Project Retrospective',
-    description: 'Post-project reflection and learnings',
-    questions: ['What went well?', 'What could be improved?', 'What did you learn?', 'Who deserves recognition?'],
-    category: 'Projects',
-    usageCount: 15,
-    lastUsed: '1 week ago',
-    isDefault: false,
-  },
-];
-
 const categories = ['All', '1:1 Meetings', 'Development', 'Performance', 'Onboarding', 'Projects'];
 
 export default function CheckInTemplatesPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [expandedTemplate, setExpandedTemplate] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [templates, setTemplates] = useState<Template[]>([]);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        // Templates could come from review cycles or a dedicated templates endpoint
+        const cycles = await ReviewCycleService.getCycles();
+        // Derive templates from review cycles
+        const derived: Template[] = cycles.map((c: any) => ({
+          id: c.id,
+          name: c.name || 'Review Template',
+          description: c.description || `Template for ${c.type || 'review'} cycle`,
+          questions: c.questions || [],
+          category: c.type === 'quarterly' ? 'Performance' : c.type === 'annual' ? 'Performance' : 'Development',
+          usageCount: c.participantCount || 0,
+          lastUsed: c.updatedAt ? new Date(c.updatedAt).toLocaleDateString() : 'N/A',
+          isDefault: c.isActive || false,
+        }));
+        setTemplates(derived);
+      } catch (error) {
+        console.error('Failed to load templates:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
 
   const filteredTemplates = selectedCategory === 'All'
-    ? mockTemplates
-    : mockTemplates.filter(t => t.category === selectedCategory);
+    ? templates
+    : templates.filter(t => t.category === selectedCategory);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="w-8 h-8 animate-spin text-celestial-indigo" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-10">
@@ -109,7 +93,13 @@ export default function CheckInTemplatesPage() {
 
       {/* Templates Grid */}
       <div className="space-y-3">
-        {filteredTemplates.map((template) => (
+        {filteredTemplates.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+            <FileText className="w-12 h-12 mb-3 opacity-30" />
+            <p className="font-bold text-lg">No templates found</p>
+            <p className="text-sm mt-1">Create check-in templates to streamline your meetings</p>
+          </div>
+        ) : filteredTemplates.map((template) => (
           <div
             key={template.id}
             className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 overflow-hidden"

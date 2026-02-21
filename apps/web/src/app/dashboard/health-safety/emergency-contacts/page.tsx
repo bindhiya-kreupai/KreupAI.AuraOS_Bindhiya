@@ -1,15 +1,47 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Phone,
     Plus,
     Ambulance,
     ShieldAlert,
-    Flame
+    Flame,
+    Loader2
 } from 'lucide-react';
+import { EmergencyService } from '../services';
+import type { EmergencyContact } from '../services';
 
 export default function EmergencyContactsPage() {
+    const [contacts, setContacts] = useState<EmergencyContact[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await EmergencyService.getContacts();
+                setContacts(data);
+            } catch {
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
+    // Separate emergency services from other contacts
+    const emergencyServices = contacts.filter(c => c.type === 'emergency');
+    const workplaceContacts = contacts.filter(c => c.type === 'workplace' || c.type === 'safety');
+    const personalContacts = contacts.filter(c => c.type === 'personal' || c.type === 'medical');
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
@@ -27,19 +59,46 @@ export default function EmergencyContactsPage() {
 
             {/* Quick Dial Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {[
-                    { label: 'Ambulance', number: '911', icon: Ambulance, color: 'bg-rose-500' },
-                    { label: 'Fire Department', number: '911', icon: Flame, color: 'bg-orange-500' },
-                    { label: 'Police', number: '911', icon: ShieldAlert, color: 'bg-blue-600' },
-                ].map((item, i) => (
-                    <div key={i} className={`${item.color} rounded-2xl p-6 text-white shadow-lg flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity`}>
-                        <div>
-                            <h3 className="font-bold text-lg">{item.label}</h3>
-                            <p className="text-2xl font-black">{item.number}</p>
+                {emergencyServices.length > 0 ? (
+                    emergencyServices.slice(0, 3).map((item, i) => {
+                        const colors = ['bg-rose-500', 'bg-orange-500', 'bg-blue-600'];
+                        const icons = [Ambulance, Flame, ShieldAlert];
+                        const Icon = icons[i % icons.length];
+                        return (
+                            <div key={item.id || i} className={`${colors[i % colors.length]} rounded-2xl p-6 text-white shadow-lg flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity`}>
+                                <div>
+                                    <h3 className="font-bold text-lg">{item.name}</h3>
+                                    <p className="text-2xl font-black">{item.number}</p>
+                                </div>
+                                <Icon className="w-10 h-10 opacity-80" />
+                            </div>
+                        );
+                    })
+                ) : (
+                    <>
+                        <div className="bg-rose-500 rounded-2xl p-6 text-white shadow-lg flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity">
+                            <div>
+                                <h3 className="font-bold text-lg">Ambulance</h3>
+                                <p className="text-2xl font-black">911</p>
+                            </div>
+                            <Ambulance className="w-10 h-10 opacity-80" />
                         </div>
-                        <item.icon className="w-10 h-10 opacity-80" />
-                    </div>
-                ))}
+                        <div className="bg-orange-500 rounded-2xl p-6 text-white shadow-lg flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity">
+                            <div>
+                                <h3 className="font-bold text-lg">Fire Department</h3>
+                                <p className="text-2xl font-black">911</p>
+                            </div>
+                            <Flame className="w-10 h-10 opacity-80" />
+                        </div>
+                        <div className="bg-blue-600 rounded-2xl p-6 text-white shadow-lg flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity">
+                            <div>
+                                <h3 className="font-bold text-lg">Police</h3>
+                                <p className="text-2xl font-black">911</p>
+                            </div>
+                            <ShieldAlert className="w-10 h-10 opacity-80" />
+                        </div>
+                    </>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -47,20 +106,21 @@ export default function EmergencyContactsPage() {
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                     <h3 className="font-bold text-lg mb-4">Workplace Safety Officers</h3>
                     <div className="space-y-4">
-                        {[
-                            { name: 'John Doe', role: 'Chief Safety Officer', phone: '+1 (555) 012-3456' },
-                            { name: 'Jane Smith', role: 'Floor Warden (L3)', phone: '+1 (555) 012-7890' },
-                        ].map((contact, i) => (
-                            <div key={i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                                <div>
-                                    <h4 className="font-bold text-sm">{contact.name}</h4>
-                                    <div className="text-xs text-slate-500">{contact.role}</div>
+                        {workplaceContacts.length === 0 ? (
+                            <div className="text-center py-4 text-slate-400 text-sm">No workplace contacts configured.</div>
+                        ) : (
+                            workplaceContacts.map((contact, i) => (
+                                <div key={contact.id || i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                                    <div>
+                                        <h4 className="font-bold text-sm">{contact.name}</h4>
+                                        <div className="text-xs text-slate-500">{contact.type}</div>
+                                    </div>
+                                    <a href={`tel:${contact.number}`} className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center hover:bg-emerald-200 transition-colors">
+                                        <Phone className="w-4 h-4" />
+                                    </a>
                                 </div>
-                                <a href={`tel:${contact.phone}`} className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center hover:bg-emerald-200 transition-colors">
-                                    <Phone className="w-4 h-4" />
-                                </a>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </div>
 
@@ -68,20 +128,21 @@ export default function EmergencyContactsPage() {
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                     <h3 className="font-bold text-lg mb-4">My Emergency Contacts</h3>
                     <div className="space-y-4">
-                        {[
-                            { name: 'Sarah Connor', relation: 'Spouse', phone: '+1 (555) 999-8888' },
-                            { name: 'Dr. Silberman', relation: 'Doctor', phone: '+1 (555) 111-2222' },
-                        ].map((contact, i) => (
-                            <div key={i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                                <div>
-                                    <h4 className="font-bold text-sm">{contact.name}</h4>
-                                    <div className="text-xs text-slate-500">{contact.relation}</div>
+                        {personalContacts.length === 0 ? (
+                            <div className="text-center py-4 text-slate-400 text-sm">No personal emergency contacts set up.</div>
+                        ) : (
+                            personalContacts.map((contact, i) => (
+                                <div key={contact.id || i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                                    <div>
+                                        <h4 className="font-bold text-sm">{contact.name}</h4>
+                                        <div className="text-xs text-slate-500">{contact.type}</div>
+                                    </div>
+                                    <a href={`tel:${contact.number}`} className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center hover:bg-indigo-200 transition-colors">
+                                        <Phone className="w-4 h-4" />
+                                    </a>
                                 </div>
-                                <a href={`tel:${contact.phone}`} className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center hover:bg-indigo-200 transition-colors">
-                                    <Phone className="w-4 h-4" />
-                                </a>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </div>
             </div>

@@ -150,3 +150,30 @@ export class PerformanceAnalyticsService {
         }
     }
 }
+
+export class OneOnOneMeetingService {
+    private static endpoint = '/performance/one-on-one';
+
+    static async getMeetings(filters?: { employeeId?: string; managerId?: string; status?: string }): Promise<any[]> {
+        try {
+            const response = await APIClient.get<{ meetings?: any[] }>(this.endpoint, filters);
+            return response.meetings || [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    static async createMeeting(meeting: any): Promise<any> {
+        const response = await APIClient.post<{ meeting: any }>(this.endpoint, meeting);
+        return response.meeting;
+    }
+
+    static async updateMeeting(id: string, updates: any): Promise<any> {
+        const response = await APIClient.put<{ meeting: any }>(this.endpoint, { id, ...updates });
+        return response.meeting;
+    }
+
+    static async deleteMeeting(id: string): Promise<void> {
+        await APIClient.delete(`${this.endpoint}?id=${id}`);
+    }
+}

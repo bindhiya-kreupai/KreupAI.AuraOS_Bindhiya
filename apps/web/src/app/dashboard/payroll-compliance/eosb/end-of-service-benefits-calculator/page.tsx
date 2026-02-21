@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Calculator,
   Calendar,
@@ -8,25 +8,57 @@ import {
   ArrowLeft,
   Info,
   FileText,
-  Download
+  Download,
+  Loader2,
+  AlertCircle,
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 
 type CountryCode = 'AE' | 'SA' | 'BH' | 'QA' | 'OM' | 'KW' | 'IN';
-type TerminationType = 'RESIGNATION' | 'TERMINATION' | 'END_OF_CONTRACT' | 'RETIREMENT' | 'DEATH';
+type TerminationType = 'RESIGNATION' | 'TERMINATION' | 'TERMINATION_WITHOUT_CAUSE' | 'END_OF_CONTRACT' | 'RETIREMENT' | 'DEATH' | 'DISABILITY' | 'MUTUAL_AGREEMENT';
 
 interface CalculationResult {
+  employeeId: string;
+  countryCode: string;
+  currency: string;
   yearsOfService: number;
   monthsOfService: number;
   daysOfService: number;
   basicSalary: number;
   dailyRate: number;
+  firstPeriodYears: number;
+  firstPeriodDays: number;
   firstPeriodAmount: number;
+  secondPeriodYears: number;
+  secondPeriodDays: number;
   secondPeriodAmount: number;
   grossAmount: number;
+  terminationType: string;
   resignationFactor: number;
   adjustedAmount: number;
+  deductions: number;
   netAmount: number;
+  calculationDetails: {
+    law: string;
+    formula: string;
+    notes: string[];
+    notesAr: string[];
+  };
+}
+
+interface CountryRules {
+  countryCode: string;
+  eosb: {
+    firstPeriodYears: number;
+    firstPeriodDaysPerYear: number;
+    afterPeriodDaysPerYear: number;
+    maxMonths?: number;
+    resignationFactor1?: number;
+    resignationFactor2?: number;
+    minServiceMonths: number;
+    calculationBase: string;
+  };
   currency: string;
 }
 
@@ -43,9 +75,12 @@ const countries = [
 const terminationTypes = [
   { code: 'RESIGNATION', name: 'Resignation', nameAr: 'استقالة' },
   { code: 'TERMINATION', name: 'Termination', nameAr: 'إنهاء خدمة' },
+  { code: 'TERMINATION_WITHOUT_CAUSE', name: 'Termination Without Cause', nameAr: 'إنهاء خدمة بدون سبب' },
   { code: 'END_OF_CONTRACT', name: 'End of Contract', nameAr: 'انتهاء العقد' },
   { code: 'RETIREMENT', name: 'Retirement', nameAr: 'تقاعد' },
   { code: 'DEATH', name: 'Death', nameAr: 'وفاة' },
+  { code: 'DISABILITY', name: 'Disability', nameAr: 'إعاقة' },
+  { code: 'MUTUAL_AGREEMENT', name: 'Mutual Agreement', nameAr: 'اتفاق متبادل' },
 ];
 
 export default function EOSBPage() {
@@ -54,58 +89,80 @@ export default function EOSBPage() {
   const [joiningDate, setJoiningDate] = useState('');
   const [lastWorkingDate, setLastWorkingDate] = useState('');
   const [basicSalary, setBasicSalary] = useState('');
+  const [contractType, setContractType] = useState<'FIXED' | 'INDEFINITE'>('INDEFINITE');
   const [result, setResult] = useState<CalculationResult | null>(null);
+  const [countryRules, setCountryRules] = useState<CountryRules | null>(null);
+
+  // Loading / error states
+  const [loading, setLoading] = useState(false);
+  const [calculating, setCalculating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [rulesLoading, setRulesLoading] = useState(false);
 
   const selectedCountry = countries.find(c => c.code === countryCode);
 
-  const handleCalculate = () => {
+  // Fetch country-specific EOSB rules when country changes
+  useEffect(() => {
+    const fetchCountryRules = async () => {
+      setRulesLoading(true);
+      try {
+        const res = await fetch(`/api/compliance/eosb?countryCode=${countryCode}`);
+        const data = await res.json();
+        if (data.success) {
+          setCountryRules(data.data);
+        }
+      } catch {
+        // Silently fail - rules display will fall back to generic
+      } finally {
+        setRulesLoading(false);
+      }
+    };
+    fetchCountryRules();
+  }, [countryCode]);
+
+  // Clear result when inputs change
+  useEffect(() => {
+    setResult(null);
+  }, [countryCode, terminationType]);
+
+  const handleCalculate = async () => {
     if (!joiningDate || !lastWorkingDate || !basicSalary) return;
 
-    const start = new Date(joiningDate);
-    const end = new Date(lastWorkingDate);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const years = diffDays / 365;
-    const salary = parseFloat(basicSalary);
-    const dailyRate = salary / 30;
+    setCalculating(true);
+    setError(null);
 
-    // Calculate based on UAE rules (simplified)
-    let firstPeriodAmount = 0;
-    let secondPeriodAmount = 0;
+    try {
+      const res = await fetch('/api/compliance/eosb', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          employeeId: 'calculator',
+          countryCode,
+          joiningDate,
+          lastWorkingDate,
+          basicSalary: parseFloat(basicSalary),
+          terminationType,
+          contractType,
+        }),
+      });
 
-    if (years <= 5) {
-      firstPeriodAmount = years * 21 * dailyRate;
-    } else {
-      firstPeriodAmount = 5 * 21 * dailyRate;
-      secondPeriodAmount = (years - 5) * 30 * dailyRate;
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Failed to calculate EOSB');
+        return;
+      }
+
+      if (data.success) {
+        setResult(data.data);
+      } else {
+        setError(data.error || 'Calculation failed');
+      }
+    } catch {
+      setError('Failed to connect to EOSB calculation service');
+    } finally {
+      setCalculating(false);
     }
-
-    const grossAmount = firstPeriodAmount + secondPeriodAmount;
-
-    // Resignation factor based on service years
-    let resignationFactor = 1;
-    if (terminationType === 'RESIGNATION') {
-      if (years < 1) resignationFactor = 0;
-      else if (years < 3) resignationFactor = 0.33;
-      else if (years < 5) resignationFactor = 0.67;
-    }
-
-    const adjustedAmount = grossAmount * resignationFactor;
-
-    setResult({
-      yearsOfService: Math.floor(years),
-      monthsOfService: Math.floor((years % 1) * 12),
-      daysOfService: diffDays,
-      basicSalary: salary,
-      dailyRate,
-      firstPeriodAmount,
-      secondPeriodAmount,
-      grossAmount,
-      resignationFactor,
-      adjustedAmount,
-      netAmount: adjustedAmount,
-      currency: selectedCountry?.currency || 'AED',
-    });
   };
 
   return (
@@ -127,6 +184,19 @@ export default function EOSBPage() {
           </p>
         </div>
       </div>
+
+      {/* Error Banner */}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+          </div>
+          <button onClick={() => setError(null)}>
+            <X className="w-4 h-4 text-red-400 hover:text-red-600" />
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Calculator Form */}
@@ -178,6 +248,21 @@ export default function EOSBPage() {
               </select>
             </div>
 
+            {/* Contract Type */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Contract Type | <span dir="rtl">نوع العقد</span>
+              </label>
+              <select
+                value={contractType}
+                onChange={(e) => setContractType(e.target.value as 'FIXED' | 'INDEFINITE')}
+                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800"
+              >
+                <option value="INDEFINITE">Indefinite | غير محدد المدة</option>
+                <option value="FIXED">Fixed Term | محدد المدة</option>
+              </select>
+            </div>
+
             {/* Dates */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -223,10 +308,20 @@ export default function EOSBPage() {
 
             <button
               onClick={handleCalculate}
-              className="w-full py-3 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-600 transition-colors flex items-center justify-center gap-2"
+              disabled={calculating || !joiningDate || !lastWorkingDate || !basicSalary}
+              className="w-full py-3 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Calculator className="w-5 h-5" />
-              Calculate EOSB | <span dir="rtl">احسب المكافأة</span>
+              {calculating ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Calculating...
+                </>
+              ) : (
+                <>
+                  <Calculator className="w-5 h-5" />
+                  Calculate EOSB | <span dir="rtl">احسب المكافأة</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -244,7 +339,7 @@ export default function EOSBPage() {
               <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
                 <div className="text-sm text-indigo-600 dark:text-indigo-400 mb-1">Service Duration</div>
                 <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-300">
-                  {result.yearsOfService} years, {result.monthsOfService} months
+                  {result.yearsOfService} years, {result.monthsOfService - (result.yearsOfService * 12)} months
                 </div>
                 <div className="text-sm text-indigo-500">{result.daysOfService} days total</div>
               </div>
@@ -260,13 +355,19 @@ export default function EOSBPage() {
                   <span className="font-medium">{result.currency} {result.dailyRate.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-600 dark:text-slate-400">First 5 Years (21 days/year)</span>
+                  <span className="text-slate-600 dark:text-slate-400">
+                    First Period ({result.firstPeriodDays} days)
+                  </span>
                   <span className="font-medium">{result.currency} {result.firstPeriodAmount.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-600 dark:text-slate-400">After 5 Years (30 days/year)</span>
-                  <span className="font-medium">{result.currency} {result.secondPeriodAmount.toFixed(2)}</span>
-                </div>
+                {result.secondPeriodAmount > 0 && (
+                  <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-600 dark:text-slate-400">
+                      Second Period ({result.secondPeriodDays} days)
+                    </span>
+                    <span className="font-medium">{result.currency} {result.secondPeriodAmount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
                   <span className="text-slate-600 dark:text-slate-400">Gross Amount</span>
                   <span className="font-medium">{result.currency} {result.grossAmount.toFixed(2)}</span>
@@ -274,10 +375,35 @@ export default function EOSBPage() {
                 {result.resignationFactor < 1 && (
                   <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
                     <span className="text-amber-600 dark:text-amber-400">Resignation Factor</span>
-                    <span className="font-medium text-amber-600">× {(result.resignationFactor * 100).toFixed(0)}%</span>
+                    <span className="font-medium text-amber-600">x {(result.resignationFactor * 100).toFixed(0)}%</span>
+                  </div>
+                )}
+                {result.deductions > 0 && (
+                  <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-red-600 dark:text-red-400">Deductions</span>
+                    <span className="font-medium text-red-600">- {result.currency} {result.deductions.toFixed(2)}</span>
                   </div>
                 )}
               </div>
+
+              {/* Calculation Details */}
+              {result.calculationDetails && (
+                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-sm">
+                  <div className="font-medium text-slate-700 dark:text-slate-300 mb-1">Legal Reference</div>
+                  <div className="text-slate-500">{result.calculationDetails.law}</div>
+                  <div className="text-xs text-slate-400 mt-1">Formula: {result.calculationDetails.formula}</div>
+                  {result.calculationDetails.notes.length > 0 && (
+                    <ul className="mt-2 space-y-1">
+                      {result.calculationDetails.notes.map((note, i) => (
+                        <li key={i} className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-1">
+                          <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                          {note}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
 
               {/* Final Amount */}
               <div className="p-6 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl text-white">
@@ -317,23 +443,59 @@ export default function EOSBPage() {
           {selectedCountry?.name} EOSB Rules
           <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">قواعد مكافأة نهاية الخدمة</span>
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-            <div className="text-sm text-slate-500 mb-1">First 5 Years</div>
-            <div className="text-lg font-semibold">21 days per year</div>
-            <div className="text-sm text-slate-400" dir="rtl">21 يوم لكل سنة</div>
+        {rulesLoading ? (
+          <div className="flex items-center justify-center py-8 text-slate-400">
+            <Loader2 className="w-6 h-6 animate-spin mr-2" />
+            Loading rules...
           </div>
-          <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-            <div className="text-sm text-slate-500 mb-1">After 5 Years</div>
-            <div className="text-lg font-semibold">30 days per year</div>
-            <div className="text-sm text-slate-400" dir="rtl">30 يوم لكل سنة</div>
+        ) : countryRules?.eosb ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+              <div className="text-sm text-slate-500 mb-1">
+                {countryRules.eosb.firstPeriodYears > 0
+                  ? `First ${countryRules.eosb.firstPeriodYears} Years`
+                  : 'Rate per Year'}
+              </div>
+              <div className="text-lg font-semibold">{countryRules.eosb.firstPeriodDaysPerYear} days per year</div>
+              <div className="text-sm text-slate-400" dir="rtl">{countryRules.eosb.firstPeriodDaysPerYear} يوم لكل سنة</div>
+            </div>
+            {countryRules.eosb.firstPeriodYears > 0 && countryRules.eosb.afterPeriodDaysPerYear !== countryRules.eosb.firstPeriodDaysPerYear && (
+              <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                <div className="text-sm text-slate-500 mb-1">After {countryRules.eosb.firstPeriodYears} Years</div>
+                <div className="text-lg font-semibold">{countryRules.eosb.afterPeriodDaysPerYear} days per year</div>
+                <div className="text-sm text-slate-400" dir="rtl">{countryRules.eosb.afterPeriodDaysPerYear} يوم لكل سنة</div>
+              </div>
+            )}
+            <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+              <div className="text-sm text-slate-500 mb-1">Minimum Service Required</div>
+              <div className="text-lg font-semibold">{countryRules.eosb.minServiceMonths} months</div>
+              <div className="text-sm text-slate-400" dir="rtl">{countryRules.eosb.minServiceMonths} شهر كحد أدنى</div>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+              <div className="text-sm text-slate-500 mb-1">Calculation Base</div>
+              <div className="text-lg font-semibold">{countryRules.eosb.calculationBase === 'BASIC' ? 'Basic Salary' : 'Total Salary'}</div>
+              <div className="text-sm text-slate-400" dir="rtl">الراتب الأساسي</div>
+            </div>
           </div>
-          <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-            <div className="text-sm text-slate-500 mb-1">Calculation Base</div>
-            <div className="text-lg font-semibold">Basic Salary</div>
-            <div className="text-sm text-slate-400" dir="rtl">الراتب الأساسي</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+              <div className="text-sm text-slate-500 mb-1">First 5 Years</div>
+              <div className="text-lg font-semibold">21 days per year</div>
+              <div className="text-sm text-slate-400" dir="rtl">21 يوم لكل سنة</div>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+              <div className="text-sm text-slate-500 mb-1">After 5 Years</div>
+              <div className="text-lg font-semibold">30 days per year</div>
+              <div className="text-sm text-slate-400" dir="rtl">30 يوم لكل سنة</div>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+              <div className="text-sm text-slate-500 mb-1">Calculation Base</div>
+              <div className="text-lg font-semibold">Basic Salary</div>
+              <div className="text-sm text-slate-400" dir="rtl">الراتب الأساسي</div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

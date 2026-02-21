@@ -1,12 +1,13 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
-// GET - Fetch my leave requests
+// GET - Fetch current user's leave requests from database
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
+  async (request: NextRequest, { user, permissions, employeeId }) => {
     try {
       const permissionError = requirePermission(Resource.LEAVE, Action.READ, permissions);
       if (permissionError) return permissionError;
@@ -15,83 +16,43 @@ export const GET = withEnhancedAuth(
       const status = searchParams.get('status');
       const year = searchParams.get('year') || new Date().getFullYear().toString();
 
-      const mockLeaves = [
-        {
-          id: '1',
-          employeeId: user.userId,
-          leaveTypeId: '1',
-          leaveType: 'Annual Leave',
-          startDate: `${year}-12-20`,
-          endDate: `${year}-12-24`,
-          days: 5,
-          reason: 'Family vacation',
-          status: 'APPROVED',
-          approvedBy: 'manager-1',
-          approverName: 'Sarah Manager',
-          approvedAt: `${year}-12-10`,
-          appliedAt: `${year}-12-05`,
-        },
-        {
-          id: '2',
-          employeeId: user.userId,
-          leaveTypeId: '2',
-          leaveType: 'Sick Leave',
-          startDate: `${year}-10-15`,
-          endDate: `${year}-10-15`,
-          days: 1,
-          reason: 'Flu',
-          status: 'APPROVED',
-          approvedBy: 'manager-1',
-          approverName: 'Sarah Manager',
-          approvedAt: `${year}-10-15`,
-          appliedAt: `${year}-10-14`,
-        },
-        {
-          id: '3',
-          employeeId: user.userId,
-          leaveTypeId: '3',
-          leaveType: 'Casual Leave',
-          startDate: `${year}-11-05`,
-          endDate: `${year}-11-05`,
-          days: 1,
-          reason: 'Personal work',
-          status: 'PENDING',
-          appliedAt: `${year}-11-01`,
-        },
-        {
-          id: '4',
-          employeeId: user.userId,
-          leaveTypeId: '1',
-          leaveType: 'Annual Leave',
-          startDate: `${year}-09-10`,
-          endDate: `${year}-09-12`,
-          days: 3,
-          reason: 'Weekend trip',
-          status: 'REJECTED',
-          approvedBy: 'manager-1',
-          approverName: 'Sarah Manager',
-          rejectionReason: 'Insufficient coverage',
-          approvedAt: `${year}-09-08`,
-          appliedAt: `${year}-09-05`,
-        },
-      ];
+      const tenantId = user.tenantId;
+      // Use employeeId from auth context if available, otherwise fall back to userId
+      const currentEmployeeId = employeeId || user.userId;
 
-      let filteredData = mockLeaves;
-      if (status) {
-        filteredData = mockLeaves.filter(l => l.status === status);
-      }
+      const yearStart = new Date(parseInt(year), 0, 1);
+      const yearEnd = new Date(parseInt(year), 11, 31, 23, 59, 59);
 
+      const where: Record<string, unknown> = {
+        tenantId,
+        employeeId: currentEmployeeId,
+        appliedAt: {
+          gte: yearStart,
+          lte: yearEnd,
+        },
+      };
+      if (status) where.status = status;
+
+      const leaves = await prisma.leaveRequest.findMany({
+        where,
+        orderBy: { appliedAt: 'desc' },
+      });
+
+      // Calculate summary from real data
       const summary = {
-        total: filteredData.length,
-        approved: filteredData.filter(l => l.status === 'APPROVED').length,
-        pending: filteredData.filter(l => l.status === 'PENDING').length,
-        rejected: filteredData.filter(l => l.status === 'REJECTED').length,
-        totalDaysUsed: filteredData.filter(l => l.status === 'APPROVED').reduce((sum, l) => sum + l.days, 0),
+        total: leaves.length,
+        approved: leaves.filter(l => l.status === 'APPROVED').length,
+        pending: leaves.filter(l => l.status === 'PENDING').length,
+        rejected: leaves.filter(l => l.status === 'REJECTED').length,
+        cancelled: leaves.filter(l => l.status === 'CANCELLED').length,
+        totalDaysUsed: leaves
+          .filter(l => l.status === 'APPROVED')
+          .reduce((sum, l) => sum + Number(l.totalDays), 0),
       };
 
       return NextResponse.json({
         success: true,
-        data: { leaves: filteredData, summary },
+        data: { leaves, summary },
       });
     } catch (error) {
       logger.error('Error fetching my leaves:', error);

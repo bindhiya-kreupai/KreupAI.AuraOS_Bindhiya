@@ -1,16 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { FileBadge, Plus, Clock, Download, CheckCircle } from 'lucide-react';
+import { FileBadge, Plus, Download, Loader2 } from 'lucide-react';
 import { TravelRequestService } from '../services';
 
-const REQUESTS = [
-    { id: 1, country: 'United Kingdom', type: 'Business Visa Letter', date: 'Oct 15, 2024', status: 'Completed' },
-    { id: 2, country: 'United Arab Emirates', type: 'Visa Processing', date: 'Dec 12, 2024', status: 'In Process' },
-];
-
 export default function VisaSupportPage() {
-    const [data, setData] = useState<any[]>([]);
+    const [requests, setRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -20,14 +15,23 @@ export default function VisaSupportPage() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const requests = await TravelRequestService.getRequests();
-            setData(requests);
+            const data = await TravelRequestService.getRequests();
+            setRequests(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+                <span className="ml-2 text-sm text-slate-500">Loading visa support...</span>
+            </div>
+        );
+    }
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
@@ -45,7 +49,6 @@ export default function VisaSupportPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Services */}
                 <div className="lg:col-span-2 space-y-6">
                     <h3 className="font-bold text-xl text-slate-900 dark:text-slate-100">Available Services</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -72,31 +75,36 @@ export default function VisaSupportPage() {
                     </div>
                 </div>
 
-                {/* History */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                     <h3 className="font-bold text-lg mb-6 text-slate-900 dark:text-slate-100">My Requests</h3>
-                    <div className="space-y-4">
-                        {REQUESTS.map((req) => (
-                            <div key={req.id} className="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
-                                <div className="flex justify-between items-start mb-2">
-                                    <div className="font-bold text-slate-900 dark:text-slate-100">{req.country}</div>
-                                    <div className={`text-xs font-bold px-2 py-1 rounded-full ${req.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                                        }`}>
-                                        {req.status}
+                    {requests.length === 0 ? (
+                        <div className="text-center py-8 text-slate-400">
+                            <FileBadge className="w-10 h-10 mx-auto mb-3 opacity-50" />
+                            <p className="text-sm font-medium">No visa requests found</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {requests.map((req: any) => (
+                                <div key={req.id} className="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="font-bold text-slate-900 dark:text-slate-100">{req.destination || 'Visa Request'}</div>
+                                        <div className={`text-xs font-bold px-2 py-1 rounded-full ${req.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                            {req.status}
+                                        </div>
+                                    </div>
+                                    <div className="text-sm text-slate-500 mb-3">{req.purpose || 'Business Visa'}</div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-xs text-slate-400">{new Date(req.createdAt).toLocaleDateString()}</div>
+                                        {req.status === 'approved' && (
+                                            <button className="text-indigo-600 hover:text-indigo-700 text-xs font-bold flex items-center gap-1">
+                                                <Download className="w-3 h-3" /> Download
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="text-sm text-slate-500 mb-3">{req.type}</div>
-                                <div className="flex items-center justify-between">
-                                    <div className="text-xs text-slate-400">{req.date}</div>
-                                    {req.status === 'Completed' && (
-                                        <button className="text-indigo-600 hover:text-indigo-700 text-xs font-bold flex items-center gap-1">
-                                            <Download className="w-3 h-3" /> Download
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

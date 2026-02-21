@@ -41,16 +41,12 @@ export default function IPRestrictionPage() {
         try {
             setLoading(true);
             const result = await IPRestrictionService.getIPRules();
-            if (result && result.length > 0) {
-                setWhitelist(result as any);
-            }
+            setWhitelist((result || []) as any);
             const blockedResult = await IPRestrictionService.getBlockedAttempts();
-            if (blockedResult && blockedResult.length > 0) {
-                setBlockedAttempts(blockedResult as any);
-            }
+            setBlockedAttempts((blockedResult || []) as any);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };

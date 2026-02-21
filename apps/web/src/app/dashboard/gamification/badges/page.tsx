@@ -1,23 +1,46 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Medal,
     Lock,
     Star,
-    Shield
+    Shield,
+    Loader2
 } from 'lucide-react';
+import { BadgesService } from '../services';
 
 export default function BadgesPage() {
-    const badges = [
-        { title: 'Early Riser', desc: 'Clock in before 8AM for 5 days', tier: 'Common', icon: Star, color: 'text-slate-400', bg: 'bg-slate-100', status: 'Unlocked' },
-        { title: 'Bug Hunter', desc: 'Report 10 verified bugs', tier: 'Rare', icon: Shield, color: 'text-indigo-500', bg: 'bg-indigo-50', status: 'Unlocked' },
-        { title: 'Innovation Champion', desc: 'Win a hackathon', tier: 'Legendary', icon: Medal, color: 'text-amber-500', bg: 'bg-amber-50', status: 'Locked', progress: 50 },
-        { title: 'Team Player', desc: 'Receive 50 peer recognitions', tier: 'Epic', icon: Users, color: 'text-purple-500', bg: 'bg-purple-50', status: 'Locked', progress: 80 },
-    ];
+    const [badges, setBadges] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await BadgesService.getBadges();
+                setBadges(data as any);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+
 
     // Quick fix for missing icon import
     function Users(props: any) { return <Medal {...props} /> }
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">

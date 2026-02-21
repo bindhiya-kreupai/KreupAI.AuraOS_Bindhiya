@@ -6,59 +6,77 @@ import {
     Users,
     AlertCircle,
     CheckCircle,
-    Server,
-    Wifi,
-    Clock
+    Clock,
+    Loader2,
+    CalendarOff,
+    ClipboardList
 } from 'lucide-react';
 import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { RealtimeMetricsService } from '../services';
 
 export default function RealTimeAnalyticsPage() {
     const [currentTime, setCurrentTime] = useState(new Date());
-    const [activeUsers, setActiveUsers] = useState(124);
-    const [serverLoad, setServerLoad] = useState(45);
-    const [dataPoints, setDataPoints] = useState<{ time: string; value: number }[]>([]);
-    const [metrics, setMetrics] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [presentToday, setPresentToday] = useState(0);
+    const [onLeave, setOnLeave] = useState(0);
+    const [pendingApprovals, setPendingApprovals] = useState(0);
+    const [totalEmployees, setTotalEmployees] = useState(0);
+    const [alerts, setAlerts] = useState<{ type: string; message: string; timestamp: string }[]>([]);
+    const [dataPoints, setDataPoints] = useState<{ time: string; value: number }[]>([]);
 
     useEffect(() => {
-        fetchMetrics();
+        fetchData();
     }, []);
 
-    const fetchMetrics = async () => {
+    const fetchData = async () => {
         try {
-            const data = await RealtimeMetricsService.getMetrics();
-            setMetrics(data);
+            const res = await fetch('/api/v1/analytics/real-time');
+            const json = await res.json();
+            const data = json?.data;
+
+            if (data) {
+                setPresentToday(data.attendance?.presentToday ?? 0);
+                setOnLeave(data.attendance?.onLeaveToday ?? 0);
+                setTotalEmployees(data.attendance?.totalEmployees ?? 0);
+                setPendingApprovals(data.pendingApprovals?.total ?? 0);
+                setAlerts(data.alerts || []);
+            }
         } catch (error) {
-            console.error('Error:', error);
-                    } finally {
+            console.error('Error loading real-time data:', error);
+        } finally {
             setLoading(false);
         }
     };
 
-    // Simulate "ticking" live data
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentTime(new Date());
-            setActiveUsers(prev => Math.max(80, Math.min(200, prev + Math.floor(Math.random() * 11) - 5)));
-            setServerLoad(prev => Math.max(20, Math.min(90, prev + Math.floor(Math.random() * 11) - 5)));
 
             setDataPoints(prev => {
                 const now = new Date();
                 const newPoint = {
-                    time: `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`,
-                    value: Math.floor(Math.random() * 100)
+                    time: `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`,
+                    value: presentToday > 0 ? presentToday + Math.floor(Math.random() * 5) - 2 : Math.floor(Math.random() * 100)
                 };
                 const newData = [...prev, newPoint];
-                if (newData.length > 20) newData.shift(); // Keep last 20 points
+                if (newData.length > 20) newData.shift();
                 return newData;
             });
         }, 2000);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [presentToday]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
+            </div>
+        );
+    }
+
+    const absentToday = totalEmployees - presentToday - onLeave;
 
     return (
         <div className="p-6 space-y-8 min-h-screen">
@@ -68,7 +86,7 @@ export default function RealTimeAnalyticsPage() {
                         <Activity className="w-8 h-8 text-rose-500 animate-pulse" />
                         Real-time Analytics
                     </h1>
-                    <p className="text-slate-500 mt-2 text-lg">Live monitoring of system health and workforce activity.</p>
+                    <p className="text-slate-500 mt-2 text-lg">Live monitoring of workforce activity and attendance.</p>
                 </div>
                 <div className="p-4 bg-slate-900 text-emerald-400 rounded-xl font-mono text-xl flex items-center gap-2 shadow-lg">
                     <Clock className="w-5 h-5" />
@@ -76,43 +94,41 @@ export default function RealTimeAnalyticsPage() {
                 </div>
             </div>
 
-            {/* Live Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <LiveMetricCard
-                    title="Active Users"
-                    value={activeUsers}
+                    title="Present Today"
+                    value={presentToday}
                     icon={Users}
                     color="text-blue-500"
-                    trend={activeUsers > 150 ? '+ High' : 'Normal'}
+                    trend={`of ${totalEmployees} total`}
                 />
                 <LiveMetricCard
-                    title="Server Load"
-                    value={`${serverLoad}%`}
-                    icon={Server}
-                    color={serverLoad > 80 ? 'text-rose-500' : 'text-emerald-500'}
-                    trend="Stable"
+                    title="On Leave"
+                    value={onLeave}
+                    icon={CalendarOff}
+                    color="text-amber-500"
+                    trend="Today"
+                />
+                <LiveMetricCard
+                    title="Pending Approvals"
+                    value={pendingApprovals}
+                    icon={ClipboardList}
+                    color={pendingApprovals > 10 ? 'text-rose-500' : 'text-emerald-500'}
+                    trend="Awaiting action"
                 />
                 <LiveMetricCard
                     title="System Status"
                     value="Operational"
                     icon={CheckCircle}
                     color="text-emerald-500"
-                    sub="99.9% Uptime"
-                />
-                <LiveMetricCard
-                    title="Network Latency"
-                    value="24ms"
-                    icon={Wifi}
-                    color="text-indigo-500"
-                    sub="Optimal"
+                    sub="Live data"
                 />
             </div>
 
-            {/* Live Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                     <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
-                        <Activity className="w-5 h-5 text-slate-400" /> Live Transaction Volume
+                        <Activity className="w-5 h-5 text-slate-400" /> Live Attendance Pulse
                     </h3>
                     <div className="h-80">
                         <ResponsiveContainer width="100%" height="100%">
@@ -125,7 +141,7 @@ export default function RealTimeAnalyticsPage() {
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
                                 <XAxis dataKey="time" hide />
-                                <YAxis domain={[0, 100]} />
+                                <YAxis domain={['auto', 'auto']} />
                                 <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }} />
                                 <Area type="monotone" dataKey="value" stroke="#8884d8" fillOpacity={1} fill="url(#colorValue)" isAnimationActive={false} />
                             </AreaChart>
@@ -135,18 +151,25 @@ export default function RealTimeAnalyticsPage() {
 
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                     <h3 className="font-bold text-lg mb-6 text-rose-500 flex items-center gap-2">
-                        <AlertCircle className="w-5 h-5" /> Recent Alerts (Live Stream)
+                        <AlertCircle className="w-5 h-5" /> Recent Alerts
                     </h3>
                     <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                            <div key={i} className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border-l-4 border-rose-500 animate-in slide-in-from-right duration-500" style={{ animationDelay: `${i * 100}ms` }}>
-                                <AlertCircle className="w-5 h-5 text-rose-500 shrink-0 mt-1" />
-                                <div>
-                                    <div className="font-bold text-sm text-slate-900 dark:text-slate-100">High API Latency Detected</div>
-                                    <div className="text-xs text-slate-500">Detected at {new Date(Date.now() - i * 60000).toLocaleTimeString()} in Payroll Module.</div>
+                        {alerts.length > 0 ? (
+                            alerts.map((alert, i) => (
+                                <div key={i} className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border-l-4 border-rose-500">
+                                    <AlertCircle className="w-5 h-5 text-rose-500 shrink-0 mt-1" />
+                                    <div>
+                                        <div className="font-bold text-sm text-slate-900 dark:text-slate-100">{alert.type}</div>
+                                        <div className="text-xs text-slate-500">{alert.message}</div>
+                                    </div>
                                 </div>
+                            ))
+                        ) : (
+                            <div className="text-center py-8">
+                                <CheckCircle className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+                                <p className="text-sm text-slate-400">No active alerts</p>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
             </div>

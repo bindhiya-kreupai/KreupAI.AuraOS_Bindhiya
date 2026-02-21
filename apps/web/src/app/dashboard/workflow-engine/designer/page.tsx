@@ -21,8 +21,6 @@ import 'reactflow/dist/style.css';
 import {
     Zap,
     Mail,
-    MessageSquare,
-    Clock,
     UserPlus,
     CheckSquare,
     Slack,
@@ -31,11 +29,10 @@ import {
     Play,
     Save,
     MoreHorizontal,
-    Trash2
+    Clock,
+    Loader2
 } from 'lucide-react';
 import { WorkflowService } from '../services';
-
-// --- CUSTOM NODE COMPONENTS ---
 
 const TriggerNode = ({ data }: { data: any }) => {
     return (
@@ -82,9 +79,7 @@ const nodeTypes = {
     action: ActionNode,
 };
 
-// --- MOCK DATA ---
-
-const initialNodes: Node[] = [
+const defaultNodes: Node[] = [
     {
         id: '1',
         type: 'trigger',
@@ -111,7 +106,7 @@ const initialNodes: Node[] = [
     }
 ];
 
-const initialEdges: Edge[] = [
+const defaultEdges: Edge[] = [
     { id: 'e1-2', source: '1', target: '2', type: 'smoothstep', animated: true, style: { stroke: '#cbd5e1', strokeWidth: 2 }, markerEnd: { type: MarkerType.ArrowClosed } },
     { id: 'e2-3', source: '2', target: '3', type: 'smoothstep', style: { stroke: '#cbd5e1', strokeWidth: 2 } },
     { id: 'e2-4', source: '2', target: '4', type: 'smoothstep', style: { stroke: '#cbd5e1', strokeWidth: 2 } },
@@ -128,8 +123,8 @@ const TOOLS = [
 ];
 
 export default function WorkflowDesignerPage() {
-    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+    const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
+    const [edges, setEdges, onEdgesChange] = useEdgesState(defaultEdges);
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
     const [workflows, setWorkflows] = useState<any[]>([]);
@@ -144,9 +139,35 @@ export default function WorkflowDesignerPage() {
             setLoading(true);
             const data = await WorkflowService.getWorkflows();
             setWorkflows(data);
+            if (data.length > 0) {
+                const wf = data[0];
+                const wfNodes = Array.isArray(wf.nodes) ? wf.nodes : [];
+                const wfEdges = Array.isArray(wf.edges) ? wf.edges : [];
+                if (wfNodes.length > 0) {
+                    const mappedNodes: Node[] = wfNodes.map((n: any, i: number) => ({
+                        id: n.id || String(i),
+                        type: n.type === 'start' || n.type === 'trigger' ? 'trigger' : 'action',
+                        position: { x: n.x || n.position?.x || 250, y: n.y || n.position?.y || i * 150 },
+                        data: { label: n.label || n.name || `Step ${i + 1}` },
+                    }));
+                    setNodes(mappedNodes);
+                    if (wfEdges.length > 0) {
+                        const mappedEdges: Edge[] = wfEdges.map((e: any, i: number) => ({
+                            id: e.id || `e-${i}`,
+                            source: e.source || e.sourceNodeId,
+                            target: e.target || e.targetNodeId,
+                            type: 'smoothstep',
+                            animated: true,
+                            style: { stroke: '#cbd5e1', strokeWidth: 2 },
+                            markerEnd: { type: MarkerType.ArrowClosed },
+                        }));
+                        setEdges(mappedEdges);
+                    }
+                }
+            }
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -185,7 +206,7 @@ export default function WorkflowDesignerPage() {
                 id: `${type}-${Date.now()}`,
                 type,
                 position,
-                data: { label, icon: <Settings className="w-5 h-5" /> }, // Simplified icon for drop
+                data: { label, icon: <Settings className="w-5 h-5" /> },
             };
 
             setNodes((nds) => nds.concat(newNode));
@@ -193,10 +214,17 @@ export default function WorkflowDesignerPage() {
         [reactFlowInstance, setNodes]
     );
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-celestial-indigo" />
+            </div>
+        );
+    }
+
     return (
         <ReactFlowProvider>
             <div className="h-[calc(100vh-6rem)] flex flex-col md:flex-row gap-4">
-                {/* Sidebar */}
                 <div className="w-full md:w-64 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-4 flex flex-col shadow-sm flex-shrink-0">
                     <h2 className="font-bold text-ink-black dark:text-pearl mb-4">Workflow Tools</h2>
 
@@ -238,12 +266,11 @@ export default function WorkflowDesignerPage() {
 
                     <div className="mt-4 pt-4 border-t border-cloud dark:border-nebula-purple/20">
                         <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-lg text-xs">
-                            💡 Drag blocks to the canvas to build your automation.
+                            Drag blocks to the canvas to build your automation.
                         </div>
                     </div>
                 </div>
 
-                {/* Canvas */}
                 <div className="flex-1 bg-slate-50 dark:bg-slate-900 rounded-xl border border-cloud dark:border-nebula-purple/50 overflow-hidden relative shadow-inner" ref={reactFlowWrapper}>
                     <ReactFlow
                         nodes={nodes}

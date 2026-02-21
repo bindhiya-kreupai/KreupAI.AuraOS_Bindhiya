@@ -12,7 +12,7 @@ import {
 import UnifiedApprovalCenter from '@/components/approvals/UnifiedApprovalCenter';
 import ApprovalFilters from '@/components/approvals/ApprovalFilters';
 import BulkApproval from '@/components/approvals/BulkApproval';
-import ApprovalHistory from '@/components/approvals/ApprovalHistory';
+import { ApprovalHistory } from '@/components/approvals/ApprovalHistory';
 
 type Tab = 'pending' | 'bulk' | 'history';
 

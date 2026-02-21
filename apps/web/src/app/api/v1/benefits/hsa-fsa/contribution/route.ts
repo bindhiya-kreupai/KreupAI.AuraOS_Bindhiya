@@ -4,7 +4,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { accountId, accountType, contributionAmount, frequency, effectiveDate } = body;
 
-  if (\!accountId || \!contributionAmount) {
+  if (!accountId || !contributionAmount) {
     return NextResponse.json(
       {
         error: 'Bad Request',

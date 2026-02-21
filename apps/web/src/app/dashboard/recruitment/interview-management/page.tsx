@@ -6,71 +6,14 @@ import {
     Calendar as CalendarIcon,
     Clock,
     Plus,
-    User,
     Video,
     MapPin,
     MoreHorizontal,
     Search,
     ChevronLeft,
     ChevronRight,
-    Users
+    Loader2
 } from 'lucide-react';
-
-// --- MOCK DATA ---
-
-interface Interview {
-    id: string;
-    candidate: string;
-    role: string;
-    type: 'Technical' | 'Behavioral' | 'System Design' | 'HR Round';
-    interviewer: string;
-    date: string;
-    time: string;
-    duration: string;
-    status: 'Scheduled' | 'Completed' | 'Cancelled';
-    location: 'Google Meet' | 'Room 304' | 'Zoom';
-    isConflict?: boolean;
-}
-
-const UPCOMING_INTERVIEWS: Interview[] = [
-    {
-        id: 'INT-101',
-        candidate: 'Liam Johnson',
-        role: 'Senior Frontend Dev',
-        type: 'Technical',
-        interviewer: 'Alice Chen',
-        date: 'Today',
-        time: '10:00 AM',
-        duration: '1h',
-        status: 'Scheduled',
-        location: 'Google Meet'
-    },
-    {
-        id: 'INT-102',
-        candidate: 'Sophia Williams',
-        role: 'Product Manager',
-        type: 'Behavioral',
-        interviewer: 'Bob Smith',
-        date: 'Today',
-        time: '02:00 PM',
-        duration: '45m',
-        status: 'Scheduled',
-        location: 'Room 304'
-    },
-    {
-        id: 'INT-103',
-        candidate: 'Ethan Hunt',
-        role: 'Security Engineer',
-        type: 'System Design',
-        interviewer: 'Charlie Kim',
-        date: 'Tomorrow',
-        time: '11:00 AM',
-        duration: '1h',
-        status: 'Scheduled',
-        location: 'Zoom',
-        isConflict: true
-    }
-];
 
 const TIME_SLOTS = [
     '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
@@ -79,7 +22,7 @@ const TIME_SLOTS = [
 
 export default function InterviewSchedulingPage() {
     const [view, setView] = useState<'Day' | 'Week'>('Day');
-    const [interviews, setInterviews] = useState<Interview[]>(UPCOMING_INTERVIEWS);
+    const [interviews, setInterviews] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -88,13 +31,12 @@ export default function InterviewSchedulingPage() {
 
     const fetchInterviews = async () => {
         try {
+            setLoading(true);
             const data = await InterviewService.getInterviews();
-            if (data.length > 0) {
-                setInterviews(data);
-            }
+            setInterviews(data);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -105,8 +47,50 @@ export default function InterviewSchedulingPage() {
             await fetchInterviews();
         } catch (error) {
             console.error('Error:', error);
-                    }
+        }
     };
+
+    const getInterviewDisplayName = (interview: any) => {
+        return interview.candidate || interview.title || 'Interview';
+    };
+
+    const getInterviewTime = (interview: any) => {
+        if (interview.time) return interview.time;
+        if (interview.scheduledDate) {
+            return new Date(interview.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        return 'TBD';
+    };
+
+    const getInterviewDate = (interview: any) => {
+        if (interview.date) return interview.date;
+        if (interview.scheduledDate) {
+            const date = new Date(interview.scheduledDate);
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            if (date.toDateString() === today.toDateString()) return 'Today';
+            if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
+            return date.toLocaleDateString();
+        }
+        return 'Not scheduled';
+    };
+
+    const getInterviewLocation = (interview: any) => {
+        return interview.location || interview.meetingLink || 'TBD';
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                    <p className="text-sm text-silver-mist font-medium">Loading interviews...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10">
@@ -149,44 +133,49 @@ export default function InterviewSchedulingPage() {
                             <button className="text-xs text-celestial-indigo font-bold hover:underline">View All</button>
                         </div>
                         <div className="space-y-3">
-                            {UPCOMING_INTERVIEWS.map(interview => (
-                                <div key={interview.id} className="p-3 bg-slate-50 dark:bg-deep-cosmos/30 rounded-lg border border-cloud dark:border-nebula-purple/20 group hover:border-celestial-indigo/30 transition-colors">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="text-xs font-bold text-slate-500 uppercase">{interview.date}</div>
-                                        <div className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded cursor-pointer">
-                                            <MoreHorizontal className="w-3 h-3 text-slate-400" />
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-celestial-indigo flex items-center justify-center text-xs font-bold">
-                                            {interview.candidate.charAt(0)}
-                                        </div>
-                                        <div className="text-sm font-bold text-ink-black dark:text-pearl truncate">{interview.candidate}</div>
-                                    </div>
-                                    <div className="text-xs text-silver-mist mb-2">{interview.role}</div>
-
-                                    <div className="flex items-center gap-2 text-[10px] text-slate-500 font-medium">
-                                        <span className="flex items-center gap-1 bg-white dark:bg-stellar-blue px-1.5 py-0.5 rounded border border-slate-100 dark:border-slate-800">
-                                            <Clock className="w-3 h-3" /> {interview.time}
-                                        </span>
-                                        {interview.location.includes('Meet') || interview.location.includes('Zoom') ? (
-                                            <span className="flex items-center gap-1 bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded">
-                                                <Video className="w-3 h-3" /> Remote
-                                            </span>
-                                        ) : (
-                                            <span className="flex items-center gap-1 bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded">
-                                                <MapPin className="w-3 h-3" /> {interview.location}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {interview.isConflict && (
-                                        <div className="mt-2 text-[10px] text-rose-500 font-bold bg-rose-50 px-2 py-1 rounded border border-rose-100 flex items-center gap-1">
-                                            ⚠️ Potential Conflict
-                                        </div>
-                                    )}
+                            {interviews.length === 0 && (
+                                <div className="text-center py-8 text-slate-400">
+                                    <CalendarIcon className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                                    <p className="text-xs">No upcoming interviews</p>
                                 </div>
-                            ))}
+                            )}
+                            {interviews.map((interview: any) => {
+                                const loc = getInterviewLocation(interview);
+                                const isRemote = loc.includes('Meet') || loc.includes('Zoom') || loc.includes('http');
+
+                                return (
+                                    <div key={interview.id} className="p-3 bg-slate-50 dark:bg-deep-cosmos/30 rounded-lg border border-cloud dark:border-nebula-purple/20 group hover:border-celestial-indigo/30 transition-colors">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="text-xs font-bold text-slate-500 uppercase">{getInterviewDate(interview)}</div>
+                                            <div className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded cursor-pointer">
+                                                <MoreHorizontal className="w-3 h-3 text-slate-400" />
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-celestial-indigo flex items-center justify-center text-xs font-bold">
+                                                {getInterviewDisplayName(interview).charAt(0)}
+                                            </div>
+                                            <div className="text-sm font-bold text-ink-black dark:text-pearl truncate">{getInterviewDisplayName(interview)}</div>
+                                        </div>
+                                        <div className="text-xs text-silver-mist mb-2">{interview.type || interview.role || ''}</div>
+
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-500 font-medium">
+                                            <span className="flex items-center gap-1 bg-white dark:bg-stellar-blue px-1.5 py-0.5 rounded border border-slate-100 dark:border-slate-800">
+                                                <Clock className="w-3 h-3" /> {getInterviewTime(interview)}
+                                            </span>
+                                            {isRemote ? (
+                                                <span className="flex items-center gap-1 bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded">
+                                                    <Video className="w-3 h-3" /> Remote
+                                                </span>
+                                            ) : (
+                                                <span className="flex items-center gap-1 bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded">
+                                                    <MapPin className="w-3 h-3" /> {loc}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
@@ -196,7 +185,9 @@ export default function InterviewSchedulingPage() {
                     {/* Calendar Toolbar */}
                     <div className="p-4 border-b border-cloud dark:border-nebula-purple/20 flex justify-between items-center">
                         <div className="flex items-center gap-4">
-                            <h2 className="text-lg font-bold text-ink-black dark:text-pearl">December 2024</h2>
+                            <h2 className="text-lg font-bold text-ink-black dark:text-pearl">
+                                {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
+                            </h2>
                             <div className="flex items-center gap-1">
                                 <button className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-500">
                                     <ChevronLeft className="w-5 h-5" />
@@ -230,58 +221,35 @@ export default function InterviewSchedulingPage() {
                                 ))}
                             </div>
 
-                            {/* Days Columns (Mocked for view) */}
-                            {['Mon 11', 'Tue 12', 'Wed 13', 'Thu 14', 'Fri 15', 'Sat 16', 'Sun 17'].map((day, i) => (
-                                <div key={day} className="col-span-1 relative">
-                                    <div className="sticky top-0 bg-white dark:bg-stellar-blue z-10 border-b border-cloud dark:border-nebula-purple/20 py-2 text-center text-xs font-bold text-ink-black dark:text-pearl uppercase tracking-wide">
-                                        {day}
-                                    </div>
-                                    <div className="divide-y divide-cloud dark:divide-nebula-purple/20">
-                                        {TIME_SLOTS.map(time => (
-                                            <div key={time} className="h-20 group hover:bg-slate-50 dark:hover:bg-deep-cosmos/20 transition-colors relative">
-                                                {/* Mock Event Placements */}
-                                                {(i === 0 && time === '10:00 AM') && (
-                                                    <div className="absolute top-1 left-1 right-1 bottom-1 bg-indigo-100 dark:bg-indigo-900/40 border-l-4 border-celestial-indigo rounded p-1.5 cursor-pointer hover:shadow-md transition-all z-10">
-                                                        <div className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 truncate">L. Johnson - Frontend</div>
-                                                        <div className="text-[9px] text-indigo-500 dark:text-indigo-400">Alice Chen</div>
-                                                    </div>
-                                                )}
-                                                {(i === 1 && time === '02:00 PM') && (
-                                                    <div className="absolute top-1 left-1 right-1 bottom-1 bg-emerald-100 dark:bg-emerald-900/40 border-l-4 border-emerald-500 rounded p-1.5 cursor-pointer hover:shadow-md transition-all z-10">
-                                                        <div className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 truncate">S. Williams - PM</div>
-                                                        <div className="text-[9px] text-emerald-500 dark:text-emerald-400">Bob Smith</div>
-                                                    </div>
-                                                )}
-                                                {(i === 4 && time === '11:00 AM') && (
-                                                    <div className="absolute top-1 left-1 right-1 bottom-1 bg-rose-100 dark:bg-rose-900/40 border-l-4 border-rose-500 rounded p-1.5 cursor-pointer hover:shadow-md transition-all z-10">
-                                                        <div className="text-[10px] font-bold text-rose-700 dark:text-rose-300 truncate">E. Hunt - Security</div>
-                                                        <div className="text-[8px] text-rose-600 font-bold flex items-center gap-1 mt-0.5"><AlertCircle className="w-2 h-2" /> Conflict</div>
-                                                    </div>
-                                                )}
+                            {/* Days Columns */}
+                            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => {
+                                const today = new Date();
+                                const startOfWeek = new Date(today);
+                                startOfWeek.setDate(today.getDate() - today.getDay() + 1 + i);
+                                const dayLabel = `${day} ${startOfWeek.getDate()}`;
 
-                                                {/* Add button on hover */}
-                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
-                                                    <Plus className="w-4 h-4 text-slate-400" />
+                                return (
+                                    <div key={day} className="col-span-1 relative">
+                                        <div className="sticky top-0 bg-white dark:bg-stellar-blue z-10 border-b border-cloud dark:border-nebula-purple/20 py-2 text-center text-xs font-bold text-ink-black dark:text-pearl uppercase tracking-wide">
+                                            {dayLabel}
+                                        </div>
+                                        <div className="divide-y divide-cloud dark:divide-nebula-purple/20">
+                                            {TIME_SLOTS.map(time => (
+                                                <div key={time} className="h-20 group hover:bg-slate-50 dark:hover:bg-deep-cosmos/20 transition-colors relative">
+                                                    {/* Add button on hover */}
+                                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
+                                                        <Plus className="w-4 h-4 text-slate-400" />
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    );
-}
-
-function AlertCircle({ className }: { className?: string }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
     );
 }

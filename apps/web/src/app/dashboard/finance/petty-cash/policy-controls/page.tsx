@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Shield,
     DollarSign,
@@ -20,8 +20,10 @@ import {
     TrendingUp,
     Package,
     Briefcase,
-    UserCheck
+    UserCheck,
+    Loader2
 } from 'lucide-react';
+import { PettyCashService } from '../../services';
 
 type PolicyCategory = 'all' | 'spending-limits' | 'approval-workflow' | 'category-rules' | 'receipt-policy';
 
@@ -63,81 +65,24 @@ interface CategoryRule {
 
 export default function PolicyControlsPage() {
     const [activeTab, setActiveTab] = useState<'limits' | 'approvals' | 'categories' | 'compliance'>('limits');
+    const [loading, setLoading] = useState(true);
 
-    const spendingLimits: SpendingLimit[] = [
-        {
-            id: 'SL-001',
-            name: 'Standard Employee',
-            type: 'role',
-            target: 'Employee',
-            singleTransactionLimit: 50,
-            dailyLimit: 100,
-            monthlyLimit: 500,
-            requiresApproval: true,
-            approvalThreshold: 50,
-            status: 'active'
-        },
-        {
-            id: 'SL-002',
-            name: 'Team Lead',
-            type: 'role',
-            target: 'Team Lead',
-            singleTransactionLimit: 150,
-            dailyLimit: 300,
-            monthlyLimit: 1500,
-            requiresApproval: true,
-            approvalThreshold: 100,
-            status: 'active'
-        },
-        {
-            id: 'SL-003',
-            name: 'Manager',
-            type: 'role',
-            target: 'Manager',
-            singleTransactionLimit: 500,
-            dailyLimit: 1000,
-            monthlyLimit: 5000,
-            requiresApproval: true,
-            approvalThreshold: 300,
-            status: 'active'
-        },
-        {
-            id: 'SL-004',
-            name: 'Engineering Department',
-            type: 'department',
-            target: 'Engineering',
-            singleTransactionLimit: 200,
-            dailyLimit: 500,
-            monthlyLimit: 3000,
-            requiresApproval: true,
-            approvalThreshold: 150,
-            status: 'active'
-        },
-        {
-            id: 'SL-005',
-            name: 'Sales Department',
-            type: 'department',
-            target: 'Sales',
-            singleTransactionLimit: 300,
-            dailyLimit: 600,
-            monthlyLimit: 4000,
-            requiresApproval: true,
-            approvalThreshold: 200,
-            status: 'active'
-        },
-        {
-            id: 'SL-006',
-            name: 'Office Supplies Category',
-            type: 'category',
-            target: 'Office Supplies',
-            singleTransactionLimit: 100,
-            dailyLimit: 200,
-            monthlyLimit: 1000,
-            requiresApproval: true,
-            approvalThreshold: 75,
-            status: 'active'
-        }
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await PettyCashService.getFunds();
+                setPolicies(data as any[]);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const [spendingLimits, setSpendingLimits] = useState<any[]>([]);
 
     const approvalRules: ApprovalRule[] = [
         {
@@ -305,6 +250,14 @@ export default function PolicyControlsPage() {
             subtext: 'Across all policies'
         }
     ];
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">

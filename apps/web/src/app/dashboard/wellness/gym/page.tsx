@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Dumbbell,
     Calendar,
@@ -13,8 +13,10 @@ import {
     Zap,
     Users,
     ChevronRight,
-    Star
+    Star,
+    Loader2
 } from 'lucide-react';
+import { GymMembershipService } from '../services';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- MOCK DATA ---
@@ -84,6 +86,23 @@ const TRAINERS = [
 
 export default function GymPage() {
     const [selectedDay, setSelectedDay] = useState('Today');
+    const [providers, setProviders] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await GymMembershipService.getProviders();
+                setProviders(data as any[]);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
     const [filter, setFilter] = useState('All');
     const [bookedClasses, setBookedClasses] = useState<number[]>([]);
 
@@ -96,6 +115,14 @@ export default function GymPage() {
     const filteredClasses = filter === 'All'
         ? CLASSES
         : CLASSES.filter(c => c.type === filter);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">

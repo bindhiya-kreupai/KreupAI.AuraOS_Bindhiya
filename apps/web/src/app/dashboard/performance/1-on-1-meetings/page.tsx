@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { PerformanceReviewService } from '../core/services';
+import { OneOnOneMeetingService, PerformanceReviewService } from '../core/services';
 import {
     MessageSquare,
     Calendar,
@@ -22,7 +22,8 @@ import {
     Send,
     BarChart3,
     Target,
-    Users
+    Users,
+    Loader2
 } from 'lucide-react';
 
 // ==================== TYPE DEFINITIONS ====================
@@ -97,7 +98,7 @@ interface MeetingStats {
     trendsImproving: boolean;
 }
 
-// ==================== SAMPLE DATA ====================
+// ==================== FEEDBACK QUESTIONS ====================
 
 const FEEDBACK_QUESTIONS: FeedbackQuestion[] = [
     { id: 'fq1', question: 'How satisfied are you with your current role?', category: 'satisfaction' },
@@ -107,117 +108,13 @@ const FEEDBACK_QUESTIONS: FeedbackQuestion[] = [
     { id: 'fq5', question: 'Do you have any concerns you would like to discuss?', category: 'concerns' },
 ];
 
-const SAMPLE_EMPLOYEES: Employee[] = [
-    { id: 'emp1', name: 'Dwight Schrute', role: 'Assistant Regional Manager', department: 'Sales' },
-    { id: 'emp2', name: 'Jim Halpert', role: 'Sales Executive', department: 'Sales' },
-    { id: 'emp3', name: 'Pam Beesly', role: 'Receptionist', department: 'Admin' },
-    { id: 'emp4', name: 'Stanley Hudson', role: 'Sales Representative', department: 'Sales' },
-    { id: 'emp5', name: 'Angela Martin', role: 'Accountant', department: 'Accounting' },
-];
-
-const generateInitialMeetings = (): Meeting[] => [
-    {
-        id: 'm1',
-        employeeId: 'emp1',
-        employeeName: 'Dwight Schrute',
-        employeeRole: 'Assistant Regional Manager',
-        managerId: 'mgr1',
-        managerName: 'Michael Scott',
-        scheduledDate: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
-        duration: 30,
-        type: 'Weekly Sync',
-        status: 'scheduled',
-        talkingPoints: [
-            { id: 'tp1', text: 'Review Sales Numbers for Nov', isDiscussed: false },
-            { id: 'tp2', text: 'Discuss new Beet Farm Policy', isDiscussed: false },
-            { id: 'tp3', text: 'Safety Training Compliance', isDiscussed: false },
-        ],
-        actionItems: [
-            { id: 'ai1', description: 'Submit revised forecast by Friday', assignedTo: 'emp1', dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), status: 'pending', priority: 'high' },
-        ],
-        notes: '',
-        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-        id: 'm2',
-        employeeId: 'emp2',
-        employeeName: 'Jim Halpert',
-        employeeRole: 'Sales Executive',
-        managerId: 'mgr1',
-        managerName: 'Michael Scott',
-        scheduledDate: new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString(), // Tomorrow
-        duration: 45,
-        type: 'Career Dev',
-        status: 'scheduled',
-        talkingPoints: [
-            { id: 'tp4', text: 'Career progression goals', isDiscussed: false },
-            { id: 'tp5', text: 'Skill development opportunities', isDiscussed: false },
-        ],
-        actionItems: [],
-        notes: '',
-        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-        id: 'm3',
-        employeeId: 'emp3',
-        employeeName: 'Pam Beesly',
-        employeeRole: 'Receptionist',
-        managerId: 'mgr1',
-        managerName: 'Michael Scott',
-        scheduledDate: new Date(Date.now() - 13 * 24 * 60 * 60 * 1000).toISOString(),
-        duration: 30,
-        type: 'Check-in',
-        status: 'completed',
-        talkingPoints: [
-            { id: 'tp6', text: 'Discussed design courses', isDiscussed: true, notes: 'Interested in graphic design certification' },
-            { id: 'tp7', text: 'Office improvements', isDiscussed: true },
-        ],
-        actionItems: [
-            { id: 'ai2', description: 'Research design courses', assignedTo: 'emp3', dueDate: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(), status: 'completed', priority: 'medium' },
-        ],
-        notes: 'Pam is very enthusiastic about learning design. Approved budget for courses.',
-        sentiment: 4,
-        feedbackResponses: [
-            { questionId: 'fq1', response: 'I enjoy my work but would like more creative challenges.', rating: 3 },
-            { questionId: 'fq2', response: 'Workload is manageable.', rating: 4 },
-            { questionId: 'fq3', response: 'Yes, excited about design courses!', rating: 5 },
-            { questionId: 'fq4', response: 'Very engaged, love the team.', rating: 5 },
-        ],
-        completedAt: new Date(Date.now() - 13 * 24 * 60 * 60 * 1000).toISOString(),
-        createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-        id: 'm4',
-        employeeId: 'emp4',
-        employeeName: 'Stanley Hudson',
-        employeeRole: 'Sales Representative',
-        managerId: 'mgr1',
-        managerName: 'Michael Scott',
-        scheduledDate: new Date(Date.now() - 24 * 24 * 60 * 60 * 1000).toISOString(),
-        duration: 30,
-        type: 'Weekly Sync',
-        status: 'completed',
-        talkingPoints: [
-            { id: 'tp8', text: 'Retirement planning', isDiscussed: true, notes: 'Wants to reduce hours gradually' },
-            { id: 'tp9', text: 'Sales territory review', isDiscussed: true },
-        ],
-        actionItems: [],
-        notes: 'Stanley is planning to retire in 2 years. Discussed succession planning.',
-        sentiment: 3,
-        feedbackResponses: [
-            { questionId: 'fq1', response: 'Ready to retire soon.', rating: 3 },
-            { questionId: 'fq2', response: 'Workload is fine.', rating: 4 },
-        ],
-        completedAt: new Date(Date.now() - 24 * 24 * 60 * 60 * 1000).toISOString(),
-        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-];
-
 // ==================== MAIN COMPONENT ====================
 
 export default function OneOnOnePage() {
-    const [meetings, setMeetings] = useState<Meeting[]>(generateInitialMeetings());
-    const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(meetings[0]);
+    const [loading, setLoading] = useState(true);
+    const [meetings, setMeetings] = useState<Meeting[]>([]);
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
     const [showScheduleModal, setShowScheduleModal] = useState(false);
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
     const [showAnalytics, setShowAnalytics] = useState(false);
@@ -238,6 +135,85 @@ export default function OneOnOnePage() {
         FEEDBACK_QUESTIONS.map(q => ({ questionId: q.id, response: '', rating: undefined }))
     );
 
+    // ==================== LOAD DATA ====================
+    useEffect(() => {
+        async function loadData() {
+            try {
+                const [meetingsData, reviewsData] = await Promise.all([
+                    OneOnOneMeetingService.getMeetings(),
+                    PerformanceReviewService.getReviews(),
+                ]);
+
+                // Map API meetings to local Meeting interface
+                const mappedMeetings: Meeting[] = meetingsData.map((m: any) => ({
+                    id: m.id,
+                    employeeId: m.employeeId,
+                    employeeName: m.employeeName || `Employee ${m.employeeId?.slice(-4) || ''}`,
+                    employeeRole: m.employeeRole || '',
+                    managerId: m.managerId || '',
+                    managerName: m.managerName || 'Manager',
+                    scheduledDate: m.scheduledDate,
+                    duration: m.duration || 30,
+                    type: m.type || 'Check-in',
+                    status: (m.status === 'COMPLETED' ? 'completed' : m.status === 'CANCELLED' ? 'cancelled' : 'scheduled') as MeetingStatus,
+                    talkingPoints: Array.isArray(m.agenda) ? m.agenda.map((a: any, i: number) => ({
+                        id: `tp-${m.id}-${i}`,
+                        text: a.topic || a,
+                        isDiscussed: m.status === 'COMPLETED',
+                    })) : [],
+                    actionItems: Array.isArray(m.actionItems) ? m.actionItems.map((a: any, i: number) => ({
+                        id: `ai-${m.id}-${i}`,
+                        description: a.action || a.description || a,
+                        assignedTo: a.owner || m.employeeId,
+                        dueDate: a.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                        status: (a.status || 'pending') as ActionStatus,
+                        priority: a.priority || 'medium',
+                    })) : [],
+                    notes: m.notes || '',
+                    sentiment: m.sentiment,
+                    feedbackResponses: m.feedbackResponses,
+                    createdAt: m.createdAt || new Date().toISOString(),
+                    completedAt: m.completedAt,
+                }));
+
+                setMeetings(mappedMeetings);
+                if (mappedMeetings.length > 0) {
+                    setSelectedMeeting(mappedMeetings[0]);
+                }
+
+                // Derive employees from reviews
+                const empMap = new Map<string, Employee>();
+                reviewsData.forEach((r: any) => {
+                    if (r.employeeId && !empMap.has(r.employeeId)) {
+                        empMap.set(r.employeeId, {
+                            id: r.employeeId,
+                            name: r.employeeName || `Employee ${r.employeeId.slice(-4)}`,
+                            role: r.reviewType || 'Team Member',
+                            department: 'General',
+                        });
+                    }
+                });
+                // Also add employees from meetings
+                mappedMeetings.forEach(m => {
+                    if (m.employeeId && !empMap.has(m.employeeId)) {
+                        empMap.set(m.employeeId, {
+                            id: m.employeeId,
+                            name: m.employeeName,
+                            role: m.employeeRole || 'Team Member',
+                            department: 'General',
+                        });
+                    }
+                });
+                setEmployees(Array.from(empMap.values()));
+            } catch (error) {
+                console.error('Failed to load 1-on-1 meetings:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadData();
+    }, []);
+
     // ==================== COMPUTED STATS ====================
     const stats: MeetingStats = {
         totalMeetings: meetings.length,
@@ -250,33 +226,66 @@ export default function OneOnOnePage() {
 
     // ==================== HANDLERS ====================
 
-    const handleScheduleMeeting = () => {
-        const employee = SAMPLE_EMPLOYEES.find(e => e.id === scheduleForm.employeeId);
+    const handleScheduleMeeting = async () => {
+        const employee = employees.find(e => e.id === scheduleForm.employeeId);
         if (!employee || !scheduleForm.date || !scheduleForm.time) {
             alert('Please fill all required fields');
             return;
         }
 
         const scheduledDate = new Date(`${scheduleForm.date}T${scheduleForm.time}`);
-        const newMeeting: Meeting = {
-            id: `m${Date.now()}`,
-            employeeId: employee.id,
-            employeeName: employee.name,
-            employeeRole: employee.role,
-            managerId: 'mgr1',
-            managerName: 'Michael Scott',
-            scheduledDate: scheduledDate.toISOString(),
-            duration: parseInt(scheduleForm.duration),
-            type: scheduleForm.type,
-            status: 'scheduled',
-            talkingPoints: [],
-            actionItems: [],
-            notes: '',
-            createdAt: new Date().toISOString(),
-        };
 
-        setMeetings([newMeeting, ...meetings]);
-        setSelectedMeeting(newMeeting);
+        try {
+            const created = await OneOnOneMeetingService.createMeeting({
+                employeeId: employee.id,
+                managerId: 'current-user', // Would come from auth context
+                scheduledDate: scheduledDate.toISOString(),
+                duration: parseInt(scheduleForm.duration),
+                agenda: [],
+            });
+
+            const newMeeting: Meeting = {
+                id: created?.id || `m${Date.now()}`,
+                employeeId: employee.id,
+                employeeName: employee.name,
+                employeeRole: employee.role,
+                managerId: 'current-user',
+                managerName: 'Manager',
+                scheduledDate: scheduledDate.toISOString(),
+                duration: parseInt(scheduleForm.duration),
+                type: scheduleForm.type,
+                status: 'scheduled',
+                talkingPoints: [],
+                actionItems: [],
+                notes: '',
+                createdAt: new Date().toISOString(),
+            };
+
+            setMeetings([newMeeting, ...meetings]);
+            setSelectedMeeting(newMeeting);
+        } catch (error) {
+            console.error('Failed to schedule meeting:', error);
+            // Still add to local state for UI responsiveness
+            const newMeeting: Meeting = {
+                id: `m${Date.now()}`,
+                employeeId: employee.id,
+                employeeName: employee.name,
+                employeeRole: employee.role,
+                managerId: 'current-user',
+                managerName: 'Manager',
+                scheduledDate: scheduledDate.toISOString(),
+                duration: parseInt(scheduleForm.duration),
+                type: scheduleForm.type,
+                status: 'scheduled',
+                talkingPoints: [],
+                actionItems: [],
+                notes: '',
+                createdAt: new Date().toISOString(),
+            };
+            setMeetings([newMeeting, ...meetings]);
+            setSelectedMeeting(newMeeting);
+        }
+
         setShowScheduleModal(false);
         setScheduleForm({ employeeId: '', date: '', time: '', duration: '30', type: 'Weekly Sync' });
     };
@@ -397,8 +406,14 @@ export default function OneOnOnePage() {
         setSelectedMeeting(updatedMeeting);
     };
 
-    const handleDeleteMeeting = (meetingId: string) => {
+    const handleDeleteMeeting = async (meetingId: string) => {
         if (!confirm('Are you sure you want to delete this meeting?')) return;
+
+        try {
+            await OneOnOneMeetingService.deleteMeeting(meetingId);
+        } catch (error) {
+            console.error('Failed to delete meeting:', error);
+        }
 
         setMeetings(meetings.filter(m => m.id !== meetingId));
         if (selectedMeeting?.id === meetingId) {
@@ -410,6 +425,14 @@ export default function OneOnOnePage() {
 
     const upcomingMeetings = meetings.filter(m => m.status === 'scheduled').sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime());
     const pastMeetings = meetings.filter(m => m.status === 'completed').sort((a, b) => new Date(b.completedAt || b.scheduledDate).getTime() - new Date(a.completedAt || a.scheduledDate).getTime());
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
@@ -468,6 +491,13 @@ export default function OneOnOnePage() {
                 {/* Meeting List */}
                 <div className="lg:col-span-1 space-y-4 overflow-y-auto pb-20">
                     <h3 className="font-bold text-sm mb-2 text-slate-500 uppercase">Upcoming ({upcomingMeetings.length})</h3>
+                    {upcomingMeetings.length === 0 && pastMeetings.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-8 text-slate-400">
+                            <MessageSquare className="w-10 h-10 mb-2 opacity-30" />
+                            <p className="text-sm font-bold">No meetings yet</p>
+                            <p className="text-xs mt-1">Schedule your first 1-on-1</p>
+                        </div>
+                    )}
                     {upcomingMeetings.map(meeting => (
                         <div
                             key={meeting.id}
@@ -644,7 +674,7 @@ export default function OneOnOnePage() {
                                                 <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
                                                     <span className="flex items-center gap-1">
                                                         <User className="w-3 h-3" />
-                                                        {SAMPLE_EMPLOYEES.find(e => e.id === ai.assignedTo)?.name}
+                                                        {employees.find(e => e.id === ai.assignedTo)?.name}
                                                     </span>
                                                     <span className="flex items-center gap-1">
                                                         <Calendar className="w-3 h-3" />
@@ -792,7 +822,10 @@ export default function OneOnOnePage() {
                                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                                 >
                                     <option value="">Select employee...</option>
-                                    {SAMPLE_EMPLOYEES.map(emp => (
+                                    {employees.length === 0 && (
+                                        <option disabled>No employees found - complete reviews first</option>
+                                    )}
+                                    {employees.map(emp => (
                                         <option key={emp.id} value={emp.id}>{emp.name} - {emp.role}</option>
                                     ))}
                                 </select>

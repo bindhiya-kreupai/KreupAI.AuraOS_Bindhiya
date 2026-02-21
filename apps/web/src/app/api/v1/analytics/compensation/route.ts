@@ -1,76 +1,158 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@/lib/database';
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const department = searchParams.get('department');
+export const GET = withEnhancedAuth(async (request, context) => {
+  try {
+    const { user } = context;
+    const tenantId = user.tenantId;
 
-  const compensationData = {
-    generatedAt: '2026-01-23T00:00:00Z',
-    summary: {
-      totalPayroll: 156000000,
-      averageSalary: 125060,
-      medianSalary: 112000,
-      salaryRangeMin: 45000,
-      salaryRangeMax: 425000,
-      totalBenefitsCost: 31200000,
-      benefitsPerEmployee: 25020,
-    },
-    byDepartment: [
-      { department: 'Engineering', avgSalary: 145000, median: 138000, min: 85000, max: 280000, headcount: 342 },
-      { department: 'Sales', avgSalary: 118000, median: 105000, min: 55000, max: 320000, headcount: 215 },
-      { department: 'Marketing', avgSalary: 108000, median: 98000, min: 52000, max: 220000, headcount: 128 },
-      { department: 'Finance', avgSalary: 125000, median: 115000, min: 62000, max: 245000, headcount: 104 },
-      { department: 'Product', avgSalary: 140000, median: 132000, min: 78000, max: 265000, headcount: 95 },
-      { department: 'Operations', avgSalary: 95000, median: 88000, min: 45000, max: 195000, headcount: 178 },
-    ],
-    payEquity: {
-      genderGap: {
-        overall: 3.2,
-        adjustedGap: 1.1,
-        byLevel: [
-          { level: 'Individual Contributor', gap: 2.1 },
-          { level: 'Manager', gap: 3.8 },
-          { level: 'Director', gap: 4.5 },
-          { level: 'VP+', gap: 5.2 },
-        ],
+    const employees = await prisma.employee.findMany({
+      where: { company: { tenantId } },
+      select: {
+        id: true,
+        departmentId: true,
+        department: { select: { name: true } },
+        grade: { select: { code: true, name: true } },
       },
-      ethnicityGap: {
-        overall: 4.1,
-        adjustedGap: 1.8,
-      },
-      compRatio: {
-        average: 0.98,
-        belowRange: 45,
-        withinRange: 1156,
-        aboveRange: 46,
-      },
-    },
-    marketComparison: {
-      overallPosition: 'P65',
-      byRole: [
-        { role: 'Software Engineer', internal: 142000, market50: 135000, market75: 155000, position: 'P58' },
-        { role: 'Product Manager', internal: 148000, market50: 145000, market75: 168000, position: 'P52' },
-        { role: 'Sales Representative', internal: 95000, market50: 88000, market75: 105000, position: 'P62' },
-        { role: 'Data Scientist', internal: 155000, market50: 148000, market75: 172000, position: 'P55' },
-      ],
-      lastBenchmarkDate: '2025-11-15T00:00:00Z',
-      dataSource: 'Radford, Mercer, Levels.fyi',
-    },
-    budgetUtilization: {
-      annualBudget: 165000000,
-      utilized: 156000000,
-      remaining: 9000000,
-      utilizationRate: 94.5,
-      projectedYearEnd: 163500000,
-    },
-    trends: [
-      { quarter: '2025-Q1', avgSalary: 120500, totalPayroll: 148200000 },
-      { quarter: '2025-Q2', avgSalary: 121800, totalPayroll: 150600000 },
-      { quarter: '2025-Q3', avgSalary: 123200, totalPayroll: 152800000 },
-      { quarter: '2025-Q4', avgSalary: 124500, totalPayroll: 155100000 },
-      { quarter: '2026-Q1', avgSalary: 125060, totalPayroll: 156000000 },
-    ],
-  };
+    });
 
-  return NextResponse.json({ success: true, data: compensationData });
-}
+    const totalEmployees = employees.length;
+
+    const salaryStructures = await prisma.employeeSalaryStructure.findMany({
+      where: { tenantId, isActive: true },
+      select: {
+        employeeId: true,
+        grossSalary: true,
+        basicSalary: true,
+        ctc: true,
+      },
+    });
+
+    const salaryMap = new Map<string, { grossSalary: number; basicSalary: number; ctc: number }>();
+    for (const s of salaryStructures) {
+      salaryMap.set(s.employeeId, {
+        grossSalary: Number(s.grossSalary),
+        basicSalary: Number(s.basicSalary),
+        ctc: Number(s.ctc),
+      });
+    }
+
+    const allSalaries = employees
+      .map((e) => salaryMap.get(e.id)?.grossSalary ?? 0)
+      .filter((s) => s > 0);
+
+    const totalPayroll = allSalaries.reduce((sum, s) => sum + s, 0);
+    const averageSalary = allSalaries.length > 0 ? Math.round(totalPayroll / allSalaries.length) : 0;
+    const sortedSalaries = [...allSalaries].sort((a, b) => a - b);
+    const medianSalary =
+      sortedSalaries.length > 0
+        ? sortedSalaries.length % 2 === 0
+          ? Math.round((sortedSalaries[sortedSalaries.length / 2 - 1] + sortedSalaries[sortedSalaries.length / 2]) / 2)
+          : sortedSalaries[Math.floor(sortedSalaries.length / 2)]
+        : 0;
+    const salaryRangeMin = sortedSalaries.length > 0 ? sortedSalaries[0] : 0;
+    const salaryRangeMax = sortedSalaries.length > 0 ? sortedSalaries[sortedSalaries.length - 1] : 0;
+
+    const deptMap = new Map<string, { name: string; salaries: number[] }>();
+    for (const emp of employees) {
+      const salary = salaryMap.get(emp.id)?.grossSalary ?? 0;
+      const existing = deptMap.get(emp.departmentId);
+      if (existing) {
+        existing.salaries.push(salary);
+      } else {
+        deptMap.set(emp.departmentId, { name: emp.department.name, salaries: [salary] });
+      }
+    }
+
+    const byDepartment = Array.from(deptMap.values()).map((dept) => {
+      const validSalaries = dept.salaries.filter((s) => s > 0);
+      const sorted = [...validSalaries].sort((a, b) => a - b);
+      const avg = validSalaries.length > 0 ? Math.round(validSalaries.reduce((s, v) => s + v, 0) / validSalaries.length) : 0;
+      const median =
+        sorted.length > 0
+          ? sorted.length % 2 === 0
+            ? Math.round((sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2)
+            : sorted[Math.floor(sorted.length / 2)]
+          : 0;
+      return {
+        department: dept.name,
+        avgSalary: avg,
+        median,
+        min: sorted.length > 0 ? sorted[0] : 0,
+        max: sorted.length > 0 ? sorted[sorted.length - 1] : 0,
+        headcount: dept.salaries.length,
+      };
+    });
+
+    const payrollRuns = await prisma.payrollRun.findMany({
+      where: { tenantId },
+      orderBy: { payrollMonth: 'desc' },
+      take: 5,
+      select: {
+        payrollMonth: true,
+        totalGrossSalary: true,
+        totalNetSalary: true,
+        totalEmployees: true,
+      },
+    });
+
+    const trends = payrollRuns.reverse().map((run) => ({
+      period: run.payrollMonth,
+      avgSalary: run.totalEmployees > 0 ? Math.round(Number(run.totalGrossSalary) / run.totalEmployees) : 0,
+      totalPayroll: Number(run.totalGrossSalary),
+    }));
+
+    const benefitsTotal = await prisma.employeeBenefit.aggregate({
+      where: { tenantId, isActive: true },
+      _sum: { totalPremium: true },
+    });
+
+    const totalBenefitsCost = Number(benefitsTotal._sum.totalPremium ?? 0);
+
+    const compensationData = {
+      generatedAt: new Date().toISOString(),
+      summary: {
+        totalPayroll: totalPayroll * 12,
+        averageSalary,
+        medianSalary,
+        salaryRangeMin,
+        salaryRangeMax,
+        totalBenefitsCost,
+        benefitsPerEmployee: totalEmployees > 0 ? Math.round(totalBenefitsCost / totalEmployees) : 0,
+      },
+      byDepartment,
+      payEquity: {
+        genderGap: { overall: 0, adjustedGap: 0, byLevel: [] },
+        ethnicityGap: { overall: 0, adjustedGap: 0 },
+        compRatio: {
+          average: averageSalary > 0 ? Math.round((averageSalary / (medianSalary || 1)) * 100) / 100 : 0,
+          belowRange: 0,
+          withinRange: totalEmployees,
+          aboveRange: 0,
+        },
+      },
+      marketComparison: {
+        overallPosition: 'N/A',
+        byRole: [],
+        lastBenchmarkDate: null,
+        dataSource: 'Internal Data',
+      },
+      budgetUtilization: {
+        annualBudget: totalPayroll * 12,
+        utilized: totalPayroll * 12,
+        remaining: 0,
+        utilizationRate: 100,
+        projectedYearEnd: totalPayroll * 12,
+      },
+      trends,
+    };
+
+    return NextResponse.json({ success: true, data: compensationData });
+  } catch (error) {
+    console.error('Compensation analytics error:', error);
+    return NextResponse.json(
+      { success: true, data: { generatedAt: new Date().toISOString(), summary: { totalPayroll: 0, averageSalary: 0, medianSalary: 0, salaryRangeMin: 0, salaryRangeMax: 0, totalBenefitsCost: 0, benefitsPerEmployee: 0 }, byDepartment: [], payEquity: { genderGap: { overall: 0, adjustedGap: 0, byLevel: [] }, ethnicityGap: { overall: 0, adjustedGap: 0 }, compRatio: { average: 0, belowRange: 0, withinRange: 0, aboveRange: 0 } }, marketComparison: { overallPosition: 'N/A', byRole: [], lastBenchmarkDate: null, dataSource: 'Internal Data' }, budgetUtilization: { annualBudget: 0, utilized: 0, remaining: 0, utilizationRate: 0, projectedYearEnd: 0 }, trends: [] } }
+    );
+  }
+});

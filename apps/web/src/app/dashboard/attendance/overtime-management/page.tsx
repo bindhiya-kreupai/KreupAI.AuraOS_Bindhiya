@@ -42,11 +42,23 @@ export default function OvertimeManagementPage() {
             setLoading(true);
             // Using OvertimeService.getOvertimeManagement() for overtime policy data
             const result = await OvertimeService.getOvertimeManagement();
-            if (result && result.length > 0) {
-                            }
+            if (result && (Array.isArray(result) ? result.length > 0 : true)) {
+                const policyData = Array.isArray(result) ? result[0] : result;
+                if (policyData) {
+                    setPolicy({
+                        calculationBase: policyData.calculationBase || policy.calculationBase,
+                        minimumDuration: policyData.minimumDuration ?? policy.minimumDuration,
+                        monthlyCap: policyData.monthlyCap ?? policy.monthlyCap,
+                        normalMultiplier: policyData.normalMultiplier ?? policy.normalMultiplier,
+                        weekendMultiplier: policyData.weekendMultiplier ?? policy.weekendMultiplier,
+                        holidayMultiplier: policyData.holidayMultiplier ?? policy.holidayMultiplier,
+                        payoutMode: policyData.payoutMode || policy.payoutMode,
+                    });
+                }
+            }
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };

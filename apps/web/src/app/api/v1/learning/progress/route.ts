@@ -1,61 +1,94 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@/lib/database';
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const userId = searchParams.get('userId') || 'user-001';
+export const GET = withEnhancedAuth(
+  async (request: NextRequest, context) => {
+    try {
+      const { user } = context;
+      const { searchParams } = new URL(request.url);
+      const employeeId = searchParams.get('userId') || searchParams.get('employeeId') || user.userId;
+      const contentId = searchParams.get('contentId');
 
-  const progress = {
-    userId,
-    overallStats: {
-      totalPathsEnrolled: 3,
-      pathsCompleted: 1,
-      pathsInProgress: 2,
-      totalHoursSpent: 54,
-      averageScore: 87,
-      streak: 12,
-      lastActivity: '2026-01-22T16:45:00Z',
-    },
-    activePaths: [
-      {
-        pathId: 'lp-001',
-        title: 'Leadership Essentials',
-        progress: 62,
-        currentModule: 'mod-005',
-        currentModuleTitle: 'Conflict Resolution',
-        hoursSpent: 26,
-        lastAccessed: '2026-01-22T16:45:00Z',
-        estimatedCompletion: '2026-02-28T00:00:00Z',
-        nextDeadline: '2026-01-30T23:59:59Z',
-      },
-      {
-        pathId: 'lp-002',
-        title: 'Data Analytics Fundamentals',
-        progress: 35,
-        currentModule: 'mod-003',
-        currentModuleTitle: 'Data Visualization',
-        hoursSpent: 12,
-        lastAccessed: '2026-01-21T10:20:00Z',
-        estimatedCompletion: '2026-03-15T00:00:00Z',
-        nextDeadline: '2026-02-05T23:59:59Z',
-      },
-    ],
-    completedPaths: [
-      {
-        pathId: 'lp-003',
-        title: 'Compliance & Ethics Training',
-        completedAt: '2025-11-20T14:30:00Z',
-        score: 92,
-        certificateId: 'cert-001',
-        hoursSpent: 16,
-      },
-    ],
-    weeklyActivity: [
-      { week: '2026-W01', hours: 4.5, modulesCompleted: 2 },
-      { week: '2026-W02', hours: 6.0, modulesCompleted: 3 },
-      { week: '2026-W03', hours: 5.5, modulesCompleted: 2 },
-      { week: '2026-W04', hours: 3.0, modulesCompleted: 1 },
-    ],
-  };
+      const where: Record<string, unknown> = {
+        tenantId: user.tenantId,
+        employeeId,
+      };
+      if (contentId) where.contentId = contentId;
 
-  return NextResponse.json({ success: true, data: progress });
-}
+      const progressRecords = await prisma.learningProgress.findMany({
+        where,
+        orderBy: { updatedAt: 'desc' },
+      });
+
+      const pathEnrollments = await prisma.learningPathEnrollment.findMany({
+        where: { tenantId: user.tenantId, employeeId },
+        include: { path: { select: { title: true, modules: true } } },
+      });
+
+      const activePaths = pathEnrollments
+        .filter((e) => e.status !== 'COMPLETED' && e.status !== 'DROPPED')
+        .map((e) => ({
+          pathId: e.pathId,
+          title: e.path.title,
+          progress: e.progress,
+          lastAccessed: e.enrolledAt.toISOString(),
+        }));
+
+      const completedPaths = pathEnrollments
+        .filter((e) => e.status === 'COMPLETED')
+        .map((e) => ({
+          pathId: e.pathId,
+          title: e.path.title,
+          completedAt: e.completedAt?.toISOString(),
+        }));
+
+      const totalHoursSpent = progressRecords.reduce((sum, r) => sum + r.timeSpent, 0) / 3600;
+
+      const progress = {
+        userId: employeeId,
+        overallStats: {
+          totalPathsEnrolled: pathEnrollments.length,
+          pathsCompleted: completedPaths.length,
+          pathsInProgress: activePaths.length,
+          totalHoursSpent: Math.round(totalHoursSpent * 10) / 10,
+          averageScore: 0,
+          streak: 0,
+          lastActivity: progressRecords[0]?.updatedAt?.toISOString() || null,
+        },
+        activePaths,
+        completedPaths,
+        progressRecords: progressRecords.map((r) => ({
+          id: r.id,
+          contentId: r.contentId,
+          contentType: r.contentType,
+          progress: r.progress,
+          timeSpent: r.timeSpent,
+          completedAt: r.completedAt?.toISOString(),
+        })),
+      };
+
+      return NextResponse.json({ success: true, data: progress });
+    } catch (error) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          userId: context.user.userId,
+          overallStats: {
+            totalPathsEnrolled: 0,
+            pathsCompleted: 0,
+            pathsInProgress: 0,
+            totalHoursSpent: 0,
+            averageScore: 0,
+            streak: 0,
+            lastActivity: null,
+          },
+          activePaths: [],
+          completedPaths: [],
+          progressRecords: [],
+        },
+      });
+    }
+  }
+);

@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    if (\!body.employeeId || \!body.shiftType || \!body.startTime || \!body.endTime) {
+    if (!body.employeeId || !body.shiftType || !body.startTime || !body.endTime) {
       return NextResponse.json(
         { error: "employeeId, shiftType, startTime, and endTime are required" },
         { status: 400 }

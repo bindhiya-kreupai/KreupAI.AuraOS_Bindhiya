@@ -1,28 +1,74 @@
 "use client";
 
-import React from 'react';
-import { Landmark, TrendingUp, PiggyBank, Target, DollarSign, BarChart3, ArrowUpRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Landmark, TrendingUp, ArrowUpRight, Loader2 } from 'lucide-react';
+import { BenefitPlanService, EnrollmentService } from '../services';
 
-interface Fund {
+interface RetirementPlan {
   name: string;
-  allocation: number;
-  returns: number;
-  value: number;
+  employeePremium: number;
+  employerPremium: number;
+  totalPremium: number;
 }
 
-const funds: Fund[] = [
-  { name: 'S&P 500 Index Fund', allocation: 40, returns: 12.5, value: 45200 },
-  { name: 'Total Bond Market', allocation: 25, returns: 4.2, value: 28250 },
-  { name: 'International Equity', allocation: 20, returns: 8.7, value: 22600 },
-  { name: 'Target Date 2055', allocation: 10, returns: 9.1, value: 11300 },
-  { name: 'REIT Fund', allocation: 5, returns: 6.3, value: 5650 },
-];
-
 export default function RetirementPage() {
-  const totalBalance = funds.reduce((sum, f) => sum + f.value, 0);
-  const yearlyContribution = 19500;
-  const employerMatch = 6;
-  const vestingPercentage = 75;
+  const [plans, setPlans] = useState<RetirementPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await BenefitPlanService.getPlans({ category: 'RETIREMENT' });
+      const data = response?.data || response || [];
+      if (Array.isArray(data) && data.length > 0) {
+        setPlans(data.map((p: any) => ({
+          name: p.planName || p.name || 'Retirement Plan',
+          employeePremium: p.employeePremium || 0,
+          employerPremium: p.employerPremium || 0,
+          totalPremium: (p.employeePremium || 0) + (p.employerPremium || 0),
+        })));
+      } else {
+        setPlans([]);
+      }
+    } catch (error) {
+      console.error('Error fetching retirement data:', error);
+      setPlans([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader2 className="w-8 h-8 text-celestial-indigo animate-spin" />
+      </div>
+    );
+  }
+
+  const totalContributions = plans.reduce((sum, p) => sum + p.totalPremium, 0);
+  const totalEmployeeContributions = plans.reduce((sum, p) => sum + p.employeePremium, 0);
+  const totalEmployerContributions = plans.reduce((sum, p) => sum + p.employerPremium, 0);
+
+  if (plans.length === 0) {
+    return (
+      <div className="space-y-6 pb-10">
+        <div>
+          <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Retirement</h1>
+          <p className="text-sm text-silver-mist mt-1">Track your 401(k) balance, contributions, and investment performance</p>
+        </div>
+        <div className="flex flex-col items-center justify-center h-[40vh] text-center">
+          <Landmark className="w-12 h-12 text-slate-300 mb-4" />
+          <h2 className="text-xl font-bold text-ink-black dark:text-pearl mb-2">No Retirement Plans</h2>
+          <p className="text-silver-mist max-w-md">You are not currently enrolled in any retirement benefit plans. Contact HR for enrollment options.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-10">
@@ -34,87 +80,55 @@ export default function RetirementPage() {
 
       {/* Balance Overview */}
       <div className="bg-gradient-to-r from-celestial-indigo to-purple-600 rounded-xl p-6 text-white">
-        <p className="text-sm opacity-80">Total Retirement Balance</p>
-        <p className="text-4xl font-bold mt-1">${totalBalance.toLocaleString()}</p>
+        <p className="text-sm opacity-80">Total Monthly Contributions</p>
+        <p className="text-4xl font-bold mt-1">${totalContributions.toLocaleString()}</p>
         <div className="flex items-center gap-4 mt-3">
           <div className="flex items-center gap-1 text-sm">
             <ArrowUpRight className="w-4 h-4" />
-            <span>+$12,450 this year</span>
+            <span>Employee: ${totalEmployeeContributions.toLocaleString()}/mo</span>
           </div>
           <span className="text-sm opacity-70">|</span>
-          <span className="text-sm opacity-80">Vested: {vestingPercentage}%</span>
+          <span className="text-sm opacity-80">Employer: ${totalEmployerContributions.toLocaleString()}/mo</span>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Your Contribution</p>
-          <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">12%</p>
-          <p className="text-[10px] text-silver-mist">${yearlyContribution.toLocaleString()}/year</p>
+          <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">${totalEmployeeContributions.toLocaleString()}</p>
+          <p className="text-[10px] text-silver-mist">per month</p>
         </div>
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Employer Match</p>
-          <p className="text-2xl font-bold text-emerald-600 mt-1">{employerMatch}%</p>
-          <p className="text-[10px] text-silver-mist">Up to 6% of salary</p>
+          <p className="text-2xl font-bold text-emerald-600 mt-1">${totalEmployerContributions.toLocaleString()}</p>
+          <p className="text-[10px] text-silver-mist">per month</p>
         </div>
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
-          <p className="text-xs text-silver-mist uppercase font-medium">YTD Returns</p>
-          <p className="text-2xl font-bold text-celestial-indigo mt-1">+9.8%</p>
-          <p className="text-[10px] text-silver-mist">Benchmark: +8.2%</p>
-        </div>
-        <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
-          <p className="text-xs text-silver-mist uppercase font-medium">Projected at 65</p>
-          <p className="text-2xl font-bold text-sunset-amber mt-1">$1.8M</p>
-          <p className="text-[10px] text-silver-mist">At current rate</p>
+          <p className="text-xs text-silver-mist uppercase font-medium">Annual Total</p>
+          <p className="text-2xl font-bold text-celestial-indigo mt-1">${(totalContributions * 12).toLocaleString()}</p>
+          <p className="text-[10px] text-silver-mist">projected yearly</p>
         </div>
       </div>
 
-      {/* Investment Allocation */}
+      {/* Plan Details */}
       <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 overflow-hidden">
         <div className="px-5 py-3 border-b border-cloud dark:border-nebula-purple/50 flex items-center justify-between">
-          <h3 className="font-bold text-sm text-ink-black dark:text-pearl">Investment Allocation</h3>
-          <button className="text-xs text-celestial-indigo font-medium hover:underline">Rebalance</button>
+          <h3 className="font-bold text-sm text-ink-black dark:text-pearl">Retirement Plans</h3>
         </div>
         <div className="divide-y divide-cloud dark:divide-nebula-purple/50">
-          {funds.map((fund) => (
-            <div key={fund.name} className="flex items-center gap-4 px-5 py-3">
+          {plans.map((plan, idx) => (
+            <div key={idx} className="flex items-center gap-4 px-5 py-3">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-ink-black dark:text-pearl">{fund.name}</p>
-                <p className="text-xs text-silver-mist mt-0.5">{fund.allocation}% allocation</p>
-              </div>
-              <div className="w-32">
-                <div className="w-full h-2 bg-slate-100 dark:bg-deep-cosmos rounded-full overflow-hidden">
-                  <div className="h-full bg-celestial-indigo rounded-full" style={{ width: `${fund.allocation}%` }} />
-                </div>
+                <p className="text-sm font-medium text-ink-black dark:text-pearl">{plan.name}</p>
+                <p className="text-xs text-silver-mist mt-0.5">Employee: ${plan.employeePremium}/mo | Employer: ${plan.employerPremium}/mo</p>
               </div>
               <div className="w-20 text-right">
-                <p className="text-sm font-bold text-ink-black dark:text-pearl">${(fund.value / 1000).toFixed(1)}K</p>
-                <p className={`text-[10px] font-medium ${fund.returns > 0 ? 'text-emerald-600' : 'text-coral-alert'}`}>
-                  {fund.returns > 0 ? '+' : ''}{fund.returns}%
-                </p>
+                <p className="text-sm font-bold text-ink-black dark:text-pearl">${plan.totalPremium}/mo</p>
               </div>
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Vesting Schedule */}
-      <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-5">
-        <h3 className="font-bold text-sm text-ink-black dark:text-pearl mb-3">Vesting Schedule</h3>
-        <div className="flex items-center gap-2 mb-2">
-          <div className="flex-1 h-3 bg-slate-100 dark:bg-deep-cosmos rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full" style={{ width: `${vestingPercentage}%` }} />
-          </div>
-          <span className="text-sm font-bold text-emerald-600">{vestingPercentage}%</span>
-        </div>
-        <div className="flex justify-between text-[10px] text-silver-mist mt-1">
-          <span>Year 1: 25%</span>
-          <span>Year 2: 50%</span>
-          <span>Year 3: 75%</span>
-          <span>Year 4: 100%</span>
-        </div>
-        <p className="text-xs text-silver-mist mt-3">You are in year 3. Full vesting in 12 months.</p>
       </div>
     </div>
   );

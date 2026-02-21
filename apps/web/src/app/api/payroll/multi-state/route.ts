@@ -1,62 +1,65 @@
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
-// GET - Fetch multi-state payroll configuration
+// GET - Fetch multi-state/multi-country payroll configuration
 export const GET = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
       const permissionError = requirePermission(Resource.PAYROLL, Action.READ, permissions);
       if (permissionError) return permissionError;
 
+      const tenantId = user.tenantId;
       const { searchParams } = new URL(request.url);
-      const state = searchParams.get('state');
+      const countryCode = searchParams.get('state') || searchParams.get('countryCode');
 
-      const mockStateConfig = {
-        states: [
-          {
-            code: 'CA',
-            name: 'California',
-            taxRates: { state: 9.3, sdi: 1.2, sui: 3.4 },
-            minWage: 16.0,
-            employeeCount: 15,
-          },
-          {
-            code: 'NY',
-            name: 'New York',
-            taxRates: { state: 6.85, sdi: 0.5, sui: 4.1 },
-            minWage: 15.0,
-            employeeCount: 20,
-          },
-          {
-            code: 'TX',
-            name: 'Texas',
-            taxRates: { state: 0, sdi: 0, sui: 2.7 },
-            minWage: 7.25,
-            employeeCount: 15,
-          },
-        ],
-        summary: {
-          totalStates: 3,
-          totalEmployees: 50,
-          complianceStatus: 'COMPLIANT',
-          lastUpdated: new Date().toISOString(),
-        },
-      };
+      const where: Record<string, unknown> = { tenantId };
+      if (countryCode) where.countryCode = countryCode;
 
-      if (state) {
-        const stateData = mockStateConfig.states.find(s => s.code === state);
+      const configs = await prisma.payrollConfiguration.findMany({
+        where,
+        orderBy: { countryCode: 'asc' },
+      });
+
+      if (countryCode && configs.length === 1) {
         return NextResponse.json({
           success: true,
-          data: stateData || null,
+          data: configs[0],
         });
       }
 
+      // Count employees per config by looking at payroll runs
+      const configsWithCounts = await Promise.all(
+        configs.map(async (config) => {
+          const latestRun = await prisma.payrollRun.findFirst({
+            where: { configId: config.id },
+            orderBy: { payrollMonth: 'desc' },
+            select: { totalEmployees: true },
+          });
+          return {
+            ...config,
+            employeeCount: latestRun?.totalEmployees || 0,
+          };
+        })
+      );
+
+      const summary = {
+        totalConfigs: configs.length,
+        totalEmployees: configsWithCounts.reduce((sum, c) => sum + c.employeeCount, 0),
+        countries: configs.map((c) => c.countryCode),
+        lastUpdated: new Date().toISOString(),
+      };
+
       return NextResponse.json({
         success: true,
-        data: mockStateConfig,
+        data: {
+          states: configsWithCounts,
+          configs: configsWithCounts,
+          summary,
+        },
       });
     } catch (error) {
       logger.error('Error fetching multi-state config:', error);
@@ -75,6 +78,7 @@ export const POST = withEnhancedAuth(
       const permissionError = requirePermission(Resource.PAYROLL, Action.CREATE, permissions);
       if (permissionError) return permissionError;
 
+      const tenantId = user.tenantId;
       const body = await request.json();
       const { month, states } = body;
 
@@ -85,18 +89,48 @@ export const POST = withEnhancedAuth(
         );
       }
 
+      // Aggregate actual payroll data per country/state
+      const calculations = await Promise.all(
+        (states as string[]).map(async (countryCode: string) => {
+          const config = await prisma.payrollConfiguration.findFirst({
+            where: { tenantId, countryCode },
+          });
+
+          if (!config) {
+            return {
+              state: countryCode,
+              employeeCount: 0,
+              totalGross: 0,
+              totalDeductions: 0,
+              totalNet: 0,
+              configFound: false,
+            };
+          }
+
+          const run = await prisma.payrollRun.findFirst({
+            where: { configId: config.id, payrollMonth: month },
+          });
+
+          return {
+            state: countryCode,
+            configId: config.id,
+            employeeCount: run?.totalEmployees || 0,
+            totalGross: Number(run?.totalGrossSalary || 0),
+            totalDeductions: Number(run?.totalDeductions || 0),
+            totalNet: Number(run?.totalNetSalary || 0),
+            totalEmployerCost: Number(run?.totalEmployerCost || 0),
+            status: run?.status || 'NOT_PROCESSED',
+            configFound: true,
+          };
+        })
+      );
+
       const result = {
         month,
-        calculations: states.map((state: string) => ({
-          state,
-          employeeCount: 10,
-          totalGross: 85000,
-          totalTax: 7900,
-          totalNet: 77100,
-        })),
-        totalGross: 255000,
-        totalTax: 23700,
-        totalNet: 231300,
+        calculations,
+        totalGross: calculations.reduce((sum, c) => sum + c.totalGross, 0),
+        totalDeductions: calculations.reduce((sum, c) => sum + c.totalDeductions, 0),
+        totalNet: calculations.reduce((sum, c) => sum + c.totalNet, 0),
         calculatedAt: new Date().toISOString(),
       };
 

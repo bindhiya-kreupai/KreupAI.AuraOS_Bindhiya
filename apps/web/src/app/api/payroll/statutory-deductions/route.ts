@@ -1,55 +1,84 @@
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
-// GET - Fetch statutory deductions
+// GET - Fetch statutory deductions / payments
 export const GET = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
       const permissionError = requirePermission(Resource.PAYROLL, Action.READ, permissions);
       if (permissionError) return permissionError;
 
+      const tenantId = user.tenantId;
       const { searchParams } = new URL(request.url);
-      const month = searchParams.get('month') || new Date().toISOString().slice(0, 7);
-      const employeeId = searchParams.get('employeeId');
+      const month = searchParams.get('month');
+      const statutoryType = searchParams.get('type') || searchParams.get('statutoryType');
+      const status = searchParams.get('status');
+      const page = parseInt(searchParams.get('page') || '1', 10);
+      const limit = parseInt(searchParams.get('limit') || '50', 10);
 
-      // Mock data - replace with actual database query
-      const mockDeductions = {
-        month,
-        summary: {
-          totalEmployees: 50,
-          totalPF: 18000,
-          totalESI: 3750,
-          totalPT: 1000,
-          totalTDS: 12500,
-        },
-        deductions: [
-          {
-            employeeId: 'emp-1',
-            employeeName: 'Sarah Jenkins',
-            pf: { employee: 360, employer: 360 },
-            esi: { employee: 75, employer: 75 },
-            pt: 20,
-            tds: 620,
-          },
-          {
-            employeeId: 'emp-2',
-            employeeName: 'Mike Chen',
-            pf: { employee: 300, employer: 300 },
-            esi: { employee: 60, employer: 60 },
-            pt: 20,
-            tds: 480,
-          },
-        ],
+      const where: Record<string, unknown> = { tenantId };
+      if (month) where.paymentMonth = month;
+      if (statutoryType) where.statutoryType = statutoryType;
+      if (status) where.status = status;
+
+      const [total, payments] = await Promise.all([
+        prisma.statutoryPayment.count({ where }),
+        prisma.statutoryPayment.findMany({
+          where,
+          orderBy: { paymentMonth: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+      ]);
+
+      // Compute summary
+      const summary = {
+        totalPayments: total,
+        totalPF: payments
+          .filter((p) => p.statutoryType === 'PF')
+          .reduce((sum, p) => sum + Number(p.totalAmount || 0), 0),
+        totalESI: payments
+          .filter((p) => p.statutoryType === 'ESI')
+          .reduce((sum, p) => sum + Number(p.totalAmount || 0), 0),
+        totalPT: payments
+          .filter((p) => p.statutoryType === 'PT')
+          .reduce((sum, p) => sum + Number(p.totalAmount || 0), 0),
+        totalTDS: payments
+          .filter((p) => p.statutoryType === 'TDS')
+          .reduce((sum, p) => sum + Number(p.totalAmount || 0), 0),
+        totalGOSI: payments
+          .filter((p) => p.statutoryType === 'GOSI')
+          .reduce((sum, p) => sum + Number(p.totalAmount || 0), 0),
       };
+
+      // Map to frontend shape
+      const reports = payments.map((p) => ({
+        id: p.id,
+        payrollRunId: p.payrollRunId,
+        paymentMonth: p.paymentMonth,
+        statutoryType: p.statutoryType,
+        employeeContribution: Number(p.employeeContribution || 0),
+        employerContribution: Number(p.employerContribution || 0),
+        totalAmount: Number(p.totalAmount || 0),
+        challanNumber: p.challanNumber,
+        paymentDate: p.paymentDate?.toISOString(),
+        paymentReference: p.paymentReference,
+        status: p.status,
+        isPaid: p.isPaid,
+        bankName: p.bankName,
+        accountNumber: p.accountNumber,
+        ifscCode: p.ifscCode,
+      }));
 
       return NextResponse.json({
         success: true,
-        data: employeeId
-          ? mockDeductions.deductions.find(d => d.employeeId === employeeId)
-          : mockDeductions,
+        data: { payments: reports, summary, month: month || new Date().toISOString().slice(0, 7) },
+        reports,
+        meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
     } catch (error) {
       logger.error('Error fetching statutory deductions:', error);
@@ -61,59 +90,65 @@ export const GET = withEnhancedAuth(
   }
 );
 
-// POST - Calculate statutory deductions
+// POST - Mark statutory payment as filed/paid
 export const POST = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
       const permissionError = requirePermission(Resource.PAYROLL, Action.CREATE, permissions);
       if (permissionError) return permissionError;
 
+      const tenantId = user.tenantId;
       const body = await request.json();
-      const { employeeId, basicSalary, month } = body;
+      const { id, challanNumber, paymentReference, bankName, accountNumber, ifscCode } = body;
 
-      if (!employeeId || !basicSalary || !month) {
+      if (!id) {
         return NextResponse.json(
-          { success: false, error: 'Missing required fields: employeeId, basicSalary, month' },
+          { success: false, error: 'Payment id is required' },
           { status: 400 }
         );
       }
 
-      // Simple statutory calculation (India example)
-      const pf = {
-        employee: Math.min(basicSalary * 0.12, 1800), // 12% capped at 15000 basic
-        employer: Math.min(basicSalary * 0.12, 1800),
-      };
+      // Verify the payment belongs to this tenant
+      const existing = await prisma.statutoryPayment.findFirst({
+        where: { id, tenantId },
+      });
 
-      const esi = basicSalary <= 21000 ? {
-        employee: basicSalary * 0.0075, // 0.75%
-        employer: basicSalary * 0.0325, // 3.25%
-      } : { employee: 0, employer: 0 };
+      if (!existing) {
+        return NextResponse.json(
+          { success: false, error: 'Statutory payment not found' },
+          { status: 404 }
+        );
+      }
 
-      const pt = basicSalary > 10000 ? 20 : 0; // Professional tax
-
-      const result = {
-        employeeId,
-        month,
-        basicSalary,
-        deductions: {
-          pf,
-          esi,
-          pt,
-          total: pf.employee + esi.employee + pt,
+      const updated = await prisma.statutoryPayment.update({
+        where: { id },
+        data: {
+          status: 'PAID',
+          isPaid: true,
+          paymentDate: new Date(),
+          challanNumber: challanNumber || existing.challanNumber,
+          paymentReference: paymentReference || existing.paymentReference,
+          bankName: bankName || existing.bankName,
+          accountNumber: accountNumber || existing.accountNumber,
+          ifscCode: ifscCode || existing.ifscCode,
         },
-        employerContribution: {
-          pf: pf.employer,
-          esi: esi.employer,
-          total: pf.employer + esi.employer,
-        },
-        calculatedAt: new Date().toISOString(),
-      };
+      });
 
-      return NextResponse.json({ success: true, data: result });
+      await prisma.auditLog.create({
+        data: {
+          userId: user.userId,
+          action: 'UPDATE',
+          module: 'Payroll - Statutory Deductions',
+          details: `Marked ${existing.statutoryType} payment as PAID for ${existing.paymentMonth}${challanNumber ? ` - Challan: ${challanNumber}` : ''}`,
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+        },
+      });
+
+      return NextResponse.json({ success: true, data: updated });
     } catch (error) {
-      logger.error('Error calculating statutory deductions:', error);
+      logger.error('Error filing statutory payment:', error);
       return NextResponse.json(
-        { success: false, error: 'Failed to calculate statutory deductions' },
+        { success: false, error: 'Failed to file statutory payment' },
         { status: 500 }
       );
     }

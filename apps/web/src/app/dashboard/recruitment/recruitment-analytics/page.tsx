@@ -11,7 +11,8 @@ import {
     ArrowUpRight,
     ArrowDownRight,
     PieChart,
-    Calendar
+    Calendar,
+    Loader2
 } from 'lucide-react';
 
 export default function HiringAnalyticsPage() {
@@ -31,10 +32,46 @@ export default function HiringAnalyticsPage() {
             }
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                    <p className="text-sm text-silver-mist font-medium">Loading analytics...</p>
+                </div>
+            </div>
+        );
+    }
+
+    const totalHires = analytics?.hires || analytics?.overview?.totalHires || 0;
+    const timeToHire = analytics?.averageTimeToHire || analytics?.pipelineMetrics?.averageTimeToHire || 0;
+    const offerAcceptance = analytics?.offerAcceptanceRate || analytics?.pipelineMetrics?.offerAcceptanceRate || 0;
+    const totalApplications = analytics?.totalApplications || analytics?.overview?.totalApplications || 0;
+    const interviewsScheduled = analytics?.interviewsScheduled || analytics?.overview?.interviewsScheduled || 0;
+    const offersExtended = analytics?.offersExtended || analytics?.overview?.totalOffers || 0;
+
+    // Build funnel stages from analytics
+    const funnelStages = [
+        { label: 'Applications', count: totalApplications, color: 'bg-indigo-500' },
+        { label: 'Interviews', count: interviewsScheduled, color: 'bg-indigo-300' },
+        { label: 'Offers Sent', count: offersExtended, color: 'bg-emerald-400' },
+        { label: 'Hired', count: totalHires, color: 'bg-emerald-500' },
+    ];
+
+    const maxCount = Math.max(...funnelStages.map(s => s.count), 1);
+
+    // Build source data from analytics
+    const sources = analytics?.sourceAnalytics?.sources || [];
+    const sourcesByApplications = Object.entries(analytics?.applicationsBySource || {}).map(([name, count]) => ({
+        source: name,
+        count: count as number,
+    }));
+    const totalSourceApplications = sourcesByApplications.reduce((sum, s) => sum + s.count, 0) || 1;
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
@@ -64,11 +101,8 @@ export default function HiringAnalyticsPage() {
                         <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600">
                             <Users className="w-5 h-5" />
                         </div>
-                        <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">
-                            <ArrowUpRight className="w-3 h-3" /> +12%
-                        </span>
                     </div>
-                    <div className="text-2xl font-bold">45</div>
+                    <div className="text-2xl font-bold">{totalHires}</div>
                     <div className="text-sm text-slate-500">Total Hires</div>
                 </div>
 
@@ -77,11 +111,8 @@ export default function HiringAnalyticsPage() {
                         <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600">
                             <Clock className="w-5 h-5" />
                         </div>
-                        <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">
-                            <ArrowDownRight className="w-3 h-3" /> -2 days
-                        </span>
                     </div>
-                    <div className="text-2xl font-bold">18 Days</div>
+                    <div className="text-2xl font-bold">{timeToHire} Days</div>
                     <div className="text-sm text-slate-500">Time to Hire</div>
                 </div>
 
@@ -90,12 +121,9 @@ export default function HiringAnalyticsPage() {
                         <div className="w-10 h-10 rounded-full bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-600">
                             <PieChart className="w-5 h-5" />
                         </div>
-                        <span className="flex items-center gap-1 text-xs font-bold text-rose-600 bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded-full">
-                            <ArrowUpRight className="w-3 h-3" /> +5%
-                        </span>
                     </div>
-                    <div className="text-2xl font-bold">15%</div>
-                    <div className="text-sm text-slate-500">Offer Rejection Rate</div>
+                    <div className="text-2xl font-bold">{totalApplications}</div>
+                    <div className="text-sm text-slate-500">Total Applications</div>
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
@@ -104,7 +132,7 @@ export default function HiringAnalyticsPage() {
                             <TrendingUp className="w-5 h-5" />
                         </div>
                     </div>
-                    <div className="text-2xl font-bold">88%</div>
+                    <div className="text-2xl font-bold">{offerAcceptance}%</div>
                     <div className="text-sm text-slate-500">Offer Acceptance</div>
                 </div>
             </div>
@@ -116,28 +144,27 @@ export default function HiringAnalyticsPage() {
                     <h3 className="font-bold text-lg mb-6">Recruitment Funnel</h3>
 
                     <div className="flex-1 space-y-4">
-                        {[
-                            { label: 'Applications', count: 1250, width: '100%', color: 'bg-indigo-500' },
-                            { label: 'Screening', count: 450, width: '75%', color: 'bg-indigo-400' },
-                            { label: 'Interviews', count: 120, width: '50%', color: 'bg-indigo-300' },
-                            { label: 'Offers Sent', count: 55, width: '30%', color: 'bg-emerald-400' },
-                            { label: 'Hired', count: 45, width: '25%', color: 'bg-emerald-500' },
-                        ].map((stage, idx) => (
-                            <div key={idx} className="flex items-center gap-4">
-                                <div className="w-24 text-sm font-bold text-slate-500 text-right">{stage.label}</div>
-                                <div className="flex-1 h-10 bg-slate-50 dark:bg-slate-800 rounded-r-xl relative overflow-hidden group hover:shadow-md transition-all">
-                                    <div
-                                        className={`h-full ${stage.color} rounded-r-xl flex items-center px-4 text-white font-bold text-sm transition-all duration-500`}
-                                        style={{ width: stage.width }}
-                                    >
-                                        {stage.count}
+                        {funnelStages.map((stage, idx) => {
+                            const widthPercent = maxCount > 0 ? Math.max((stage.count / maxCount) * 100, 5) : 5;
+                            return (
+                                <div key={idx} className="flex items-center gap-4">
+                                    <div className="w-24 text-sm font-bold text-slate-500 text-right">{stage.label}</div>
+                                    <div className="flex-1 h-10 bg-slate-50 dark:bg-slate-800 rounded-r-xl relative overflow-hidden group hover:shadow-md transition-all">
+                                        <div
+                                            className={`h-full ${stage.color} rounded-r-xl flex items-center px-4 text-white font-bold text-sm transition-all duration-500`}
+                                            style={{ width: `${widthPercent}%` }}
+                                        >
+                                            {stage.count}
+                                        </div>
+                                    </div>
+                                    <div className="w-12 text-xs text-slate-400">
+                                        {idx > 0 && funnelStages[idx - 1].count > 0 && (
+                                            `${Math.round((stage.count / funnelStages[idx - 1].count) * 100)}%`
+                                        )}
                                     </div>
                                 </div>
-                                <div className="w-12 text-xs text-slate-400">
-                                    {idx > 0 && '35%'} {/* Mock conversion rate */}
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -145,29 +172,28 @@ export default function HiringAnalyticsPage() {
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col">
                     <h3 className="font-bold text-lg mb-6">Source of Hire</h3>
                     <div className="space-y-4 flex-1">
-                        {[
-                            { source: 'LinkedIn', percent: 45, color: 'bg-blue-600' },
-                            { source: 'Referrals', percent: 30, color: 'bg-emerald-500' },
-                            { source: 'Careers Page', percent: 15, color: 'bg-indigo-500' },
-                            { source: 'Agencies', percent: 10, color: 'bg-amber-500' },
-                        ].map(src => (
-                            <div key={src.source}>
-                                <div className="flex justify-between text-sm mb-1">
-                                    <span className="font-bold text-slate-700 dark:text-slate-300">{src.source}</span>
-                                    <span className="text-slate-500">{src.percent}%</span>
-                                </div>
-                                <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                    <div className={`h-full ${src.color}`} style={{ width: `${src.percent}%` }}></div>
-                                </div>
+                        {sourcesByApplications.length === 0 && (
+                            <div className="text-center py-8 text-slate-400 text-sm">
+                                No source data available yet.
                             </div>
-                        ))}
-                    </div>
+                        )}
+                        {sourcesByApplications.map(src => {
+                            const percent = Math.round((src.count / totalSourceApplications) * 100);
+                            const colors = ['bg-blue-600', 'bg-emerald-500', 'bg-indigo-500', 'bg-amber-500', 'bg-rose-500'];
+                            const colorIdx = sourcesByApplications.indexOf(src) % colors.length;
 
-                    <div className="mt-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/30 text-sm">
-                        <span className="font-bold text-indigo-700 dark:text-indigo-300">Analysis:</span>
-                        <p className="text-indigo-600 dark:text-indigo-400 mt-1">
-                            Referrals have the highest offer acceptance rate (95%) and shortest time-to-hire (12 days).
-                        </p>
+                            return (
+                                <div key={src.source}>
+                                    <div className="flex justify-between text-sm mb-1">
+                                        <span className="font-bold text-slate-700 dark:text-slate-300">{src.source}</span>
+                                        <span className="text-slate-500">{percent}% ({src.count})</span>
+                                    </div>
+                                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                        <div className={`h-full ${colors[colorIdx]}`} style={{ width: `${percent}%` }}></div>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>

@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   try {
     const body: RetroactivePayRequest = await request.json();
 
-    if (\!body.employeeId || \!body.effectiveDate || \!body.previousRate || \!body.newRate) {
+    if (!body.employeeId || !body.effectiveDate || !body.previousRate || !body.newRate) {
       return NextResponse.json(
         { error: "employeeId, effectiveDate, previousRate, and newRate are required" },
         { status: 400 }

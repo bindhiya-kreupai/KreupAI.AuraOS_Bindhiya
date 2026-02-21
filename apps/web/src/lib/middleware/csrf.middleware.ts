@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { redisClient } from '@/lib/cache/redis';
+import { redis as redisClient } from '@/lib/cache/redis';
 import { sessionService } from '@/lib/auth/session.service';
 import { logger } from '@/lib/logger';
 import crypto from 'crypto';

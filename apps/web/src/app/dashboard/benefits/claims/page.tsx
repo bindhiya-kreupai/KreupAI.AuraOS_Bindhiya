@@ -6,7 +6,8 @@ import {
     TrendingUp,
     Plus,
     Filter,
-    ChevronRight
+    ChevronRight,
+    Loader2
 } from 'lucide-react';
 import { ClaimService } from '../services';
 
@@ -21,26 +22,38 @@ export default function ClaimsPage() {
     const fetchClaims = async () => {
         try {
             setLoading(true);
-            const data = await ClaimService.getClaims({ employeeId: 'EMP-001' });
-            if (data.length === 0) {
-                setClaims(mockClaims);
-            } else {
-                setClaims(data);
-            }
+            const response = await ClaimService.getClaims();
+            const data = response?.data || response || [];
+            setClaims(Array.isArray(data) ? data : []);
         } catch (error) {
-            console.error('Error:', error);
-                        setClaims(mockClaims);
+            console.error('Error fetching claims:', error);
+            setClaims([]);
         } finally {
             setLoading(false);
         }
     };
 
-    const mockClaims = [
-        { id: 'CLM-001', date: 'Oct 24, 2024', provider: 'City Hospital', amount: '$150.00', status: 'Approved', type: 'Medical' },
-        { id: 'CLM-002', date: 'Oct 10, 2024', provider: 'LensCrafters', amount: '$220.00', status: 'Pending', type: 'Vision' },
-        { id: 'CLM-003', date: 'Sep 15, 2024', provider: 'Delta Dental', amount: '$850.00', status: 'Approved', type: 'Dental' },
-        { id: 'CLM-004', date: 'Aug 01, 2024', provider: 'Walgreens Pharmacy', amount: '$45.00', status: 'Rejected', type: 'Rx' },
-    ];
+    const getClaimId = (claim: any) => claim.claimNumber || claim.id || 'N/A';
+    const getDate = (claim: any) => {
+        const d = claim.date || claim.claimDate || claim.serviceDate;
+        if (!d) return 'N/A';
+        return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+    const getProvider = (claim: any) => claim.provider || claim.providerName || 'Unknown';
+    const getAmount = (claim: any) => {
+        const amt = claim.amount || claim.claimAmount;
+        if (typeof amt === 'number') return `$${amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+        if (typeof amt === 'string' && amt.startsWith('$')) return amt;
+        return amt ? `$${amt}` : '$0.00';
+    };
+    const getStatus = (claim: any) => {
+        const s = claim.status || 'Pending';
+        return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase().replace(/_/g, ' ');
+    };
+    const getType = (claim: any) => {
+        const t = claim.type || claim.claimType || 'Other';
+        return t.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+    };
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
@@ -71,39 +84,49 @@ export default function ClaimsPage() {
                     <div className="flex-1 overflow-y-auto p-2 space-y-2">
                         {loading ? (
                             <div className="flex justify-center items-center py-20">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                                <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
                             </div>
-                        ) : claims.map((claim, i) => (
-                            <div key={i} className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl cursor-pointer group transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
-                                <div className="flex items-center gap-4">
-                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold
-                                        ${claim.type === 'Medical' ? 'bg-rose-50 text-rose-500' :
-                                            claim.type === 'Dental' ? 'bg-indigo-50 text-indigo-500' :
-                                                'bg-emerald-50 text-emerald-500'}`}>
-                                        {claim.type.charAt(0)}
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-slate-800 dark:text-slate-200">{claim.provider}</h4>
-                                        <div className="flex items-center gap-2 text-xs text-slate-400">
-                                            <span>{claim.date}</span>
-                                            <span>•</span>
-                                            <span>{claim.id}</span>
+                        ) : claims.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-20 text-center">
+                                <FileText className="w-12 h-12 text-slate-300 mb-4" />
+                                <h3 className="font-bold text-lg text-slate-600 dark:text-slate-300">No Claims Found</h3>
+                                <p className="text-sm text-slate-500 max-w-sm mt-1">Submit a new claim to track your reimbursements.</p>
+                            </div>
+                        ) : claims.map((claim, i) => {
+                            const type = getType(claim);
+                            const status = getStatus(claim);
+                            return (
+                                <div key={claim.id || i} className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl cursor-pointer group transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold
+                                            ${type.includes('Health') || type.includes('Medical') ? 'bg-rose-50 text-rose-500' :
+                                                type.includes('Dental') ? 'bg-indigo-50 text-indigo-500' :
+                                                    'bg-emerald-50 text-emerald-500'}`}>
+                                            {type.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-800 dark:text-slate-200">{getProvider(claim)}</h4>
+                                            <div className="flex items-center gap-2 text-xs text-slate-400">
+                                                <span>{getDate(claim)}</span>
+                                                <span>&#8226;</span>
+                                                <span>{getClaimId(claim)}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className="flex items-center gap-6">
-                                    <span className="font-mono font-bold">{claim.amount}</span>
-                                    <span className={`text-xs font-bold px-2 py-1 rounded uppercase min-w-[80px] text-center
-                                        ${claim.status === 'Approved' ? 'bg-emerald-100 text-emerald-600' :
-                                            claim.status === 'Rejected' ? 'bg-rose-100 text-rose-600' :
-                                                'bg-amber-100 text-amber-600'}`}>
-                                        {claim.status}
-                                    </span>
-                                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500" />
+                                    <div className="flex items-center gap-6">
+                                        <span className="font-mono font-bold">{getAmount(claim)}</span>
+                                        <span className={`text-xs font-bold px-2 py-1 rounded uppercase min-w-[80px] text-center
+                                            ${status === 'Approved' || status === 'Paid' ? 'bg-emerald-100 text-emerald-600' :
+                                                status === 'Rejected' || status === 'Denied' ? 'bg-rose-100 text-rose-600' :
+                                                    'bg-amber-100 text-amber-600'}`}>
+                                            {status}
+                                        </span>
+                                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500" />
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -114,19 +137,10 @@ export default function ClaimsPage() {
                             <div>
                                 <div className="flex justify-between text-sm mb-1">
                                     <span className="font-bold">Deductible Met</span>
-                                    <span>$1,200 / $1,500</span>
+                                    <span>{claims.length > 0 ? 'In Progress' : 'N/A'}</span>
                                 </div>
                                 <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                                    <div className="bg-indigo-500 w-[80%] h-full rounded-full"></div>
-                                </div>
-                            </div>
-                            <div>
-                                <div className="flex justify-between text-sm mb-1">
-                                    <span className="font-bold">Dental Max</span>
-                                    <span>$850 / $2,000</span>
-                                </div>
-                                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                                    <div className="bg-emerald-500 w-[42%] h-full rounded-full"></div>
+                                    <div className="bg-indigo-500 w-[0%] h-full rounded-full"></div>
                                 </div>
                             </div>
                         </div>
@@ -136,9 +150,9 @@ export default function ClaimsPage() {
                         <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-sm text-indigo-500 mb-3">
                             <TrendingUp className="w-6 h-6" />
                         </div>
-                        <h3 className="font-bold text-slate-700 dark:text-slate-300">HSA Balance</h3>
-                        <div className="text-3xl font-bold text-indigo-600 my-1">$3,450.00</div>
-                        <p className="text-xs text-slate-400">Available to spend</p>
+                        <h3 className="font-bold text-slate-700 dark:text-slate-300">Claims Summary</h3>
+                        <div className="text-3xl font-bold text-indigo-600 my-1">{claims.length}</div>
+                        <p className="text-xs text-slate-400">Total claims submitted</p>
                     </div>
                 </div>
             </div>

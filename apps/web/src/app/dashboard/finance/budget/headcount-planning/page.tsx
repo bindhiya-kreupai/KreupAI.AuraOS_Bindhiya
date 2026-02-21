@@ -1,15 +1,48 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Users,
     TrendingUp,
     Plus,
     UserPlus,
-    ArrowUpRight
+    ArrowUpRight,
+    Loader2
 } from 'lucide-react';
+import { BudgetService, FinanceAnalyticsService } from '../../services';
 
 export default function HeadcountPlanningPage() {
+    const [budgets, setBudgets] = useState<any[]>([]);
+    const [metrics, setMetrics] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const [budgetData, metricsData] = await Promise.all([
+                    BudgetService.getBudgets(),
+                    FinanceAnalyticsService.getMetrics(),
+                ]);
+                setBudgets(budgetData);
+                setMetrics(metricsData);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
@@ -25,70 +58,72 @@ export default function HeadcountPlanningPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Stats */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-                    <div>
-                        <div className="text-slate-500 text-xs font-bold uppercase mb-1">Current Headcount</div>
-                        <div className="text-3xl font-bold">1,245</div>
+            {budgets.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center text-slate-400">
+                        <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        <p className="font-bold">No headcount plans found</p>
+                        <p className="text-sm">Plans will appear here once configured.</p>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-                    <div>
-                        <div className="text-slate-500 text-xs font-bold uppercase mb-1">Planned Hires (Q1)</div>
-                        <div className="text-3xl font-bold text-emerald-600">+45</div>
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div className="text-slate-500 text-xs font-bold uppercase mb-1">Total Budgets</div>
+                            <div className="text-3xl font-bold">{metrics?.totalBudgets ?? 0}</div>
+                        </div>
                     </div>
-                </div>
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-                    <div>
-                        <div className="text-slate-500 text-xs font-bold uppercase mb-1">Attrition Rate</div>
-                        <div className="text-3xl font-bold text-amber-500">8.2%</div>
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div className="text-slate-500 text-xs font-bold uppercase mb-1">Active Budgets</div>
+                            <div className="text-3xl font-bold text-emerald-600">{metrics?.activeBudgets ?? 0}</div>
+                        </div>
                     </div>
-                </div>
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div className="text-slate-500 text-xs font-bold uppercase mb-1">Avg Utilization</div>
+                            <div className="text-3xl font-bold text-amber-500">{(metrics?.averageUtilization ?? 0).toFixed(1)}%</div>
+                        </div>
+                    </div>
 
-                {/* Plan List */}
-                <div className="lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                    <h3 className="font-bold text-lg mb-4">Active Plans</h3>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                            <thead className="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-800/50">
-                                <tr>
-                                    <th className="px-4 py-3 rounded-l-lg">Department</th>
-                                    <th className="px-4 py-3">Current</th>
-                                    <th className="px-4 py-3">Planned</th>
-                                    <th className="px-4 py-3">Growth</th>
-                                    <th className="px-4 py-3">Budget Impact</th>
-                                    <th className="px-4 py-3 rounded-r-lg">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                {[
-                                    { dept: 'Engineering', curr: 450, plan: 485, growth: '+35', cost: '$4.2M', status: 'Approved' },
-                                    { dept: 'Sales', curr: 210, plan: 240, growth: '+30', cost: '$2.8M', status: 'Pending' },
-                                    { dept: 'Marketing', curr: 85, plan: 90, growth: '+5', cost: '$0.5M', status: 'Draft' },
-                                ].map((row, i) => (
-                                    <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                        <td className="px-4 py-3 font-bold">{row.dept}</td>
-                                        <td className="px-4 py-3">{row.curr}</td>
-                                        <td className="px-4 py-3 text-indigo-600 font-bold">{row.plan}</td>
-                                        <td className="px-4 py-3 text-emerald-600 font-bold flex items-center gap-1">
-                                            {row.growth} <ArrowUpRight className="w-3 h-3" />
-                                        </td>
-                                        <td className="px-4 py-3">{row.cost}</td>
-                                        <td className="px-4 py-3">
-                                            <span className={`px-2 py-1 rounded text-xs font-bold ${row.status === 'Approved' ? 'bg-emerald-100 text-emerald-700' :
-                                                    row.status === 'Pending' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
-                                                }`}>
-                                                {row.status}
-                                            </span>
-                                        </td>
+                    <div className="lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                        <h3 className="font-bold text-lg mb-4">Active Plans</h3>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left">
+                                <thead className="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-800/50">
+                                    <tr>
+                                        <th className="px-4 py-3 rounded-l-lg">Department</th>
+                                        <th className="px-4 py-3">Budget</th>
+                                        <th className="px-4 py-3">Spent</th>
+                                        <th className="px-4 py-3">Remaining</th>
+                                        <th className="px-4 py-3 rounded-r-lg">Status</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                    {budgets.map((row: any, i: number) => (
+                                        <tr key={row.id || i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <td className="px-4 py-3 font-bold">{row.name || row.department || 'Department'}</td>
+                                            <td className="px-4 py-3">${((row.totalAmount || 0) / 1000000).toFixed(1)}M</td>
+                                            <td className="px-4 py-3 text-indigo-600 font-bold">${((row.spentAmount || 0) / 1000000).toFixed(1)}M</td>
+                                            <td className="px-4 py-3 text-emerald-600 font-bold flex items-center gap-1">
+                                                ${(((row.totalAmount || 0) - (row.spentAmount || 0)) / 1000000).toFixed(1)}M
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className={`px-2 py-1 rounded text-xs font-bold ${row.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
+                                                        row.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
+                                                    }`}>
+                                                    {row.status || 'Active'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

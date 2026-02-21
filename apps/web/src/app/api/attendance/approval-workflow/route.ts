@@ -40,6 +40,144 @@ const WorkflowSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+// In-memory storage for approval workflows (per-tenant)
+// Since there is no ApprovalWorkflow Prisma model, we store workflows in memory
+// with sensible defaults. In production, this should be backed by a database table.
+interface StoredWorkflow {
+  id: string;
+  tenantId: string;
+  name: string;
+  description?: string;
+  requestType: string;
+  applicableTo: string;
+  departments?: string[];
+  designations?: string[];
+  employees?: string[];
+  approvalLevels: Array<{
+    level: number;
+    approverType: string;
+    approvers?: string[];
+    isRequired: boolean;
+    canSkip: boolean;
+    autoApproveAfterDays?: number;
+  }>;
+  escalationRules?: {
+    enabled: boolean;
+    escalateAfterDays?: number;
+    escalateTo?: string[];
+  };
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string;
+}
+
+const workflowStore = new Map<string, StoredWorkflow[]>();
+
+function getDefaultWorkflows(tenantId: string): StoredWorkflow[] {
+  const now = new Date().toISOString();
+  return [
+    {
+      id: `default-leave-${tenantId}`,
+      tenantId,
+      name: 'Standard Leave Approval',
+      description: 'Two-level approval for leave requests',
+      requestType: 'LEAVE',
+      applicableTo: 'ALL',
+      approvalLevels: [
+        { level: 1, approverType: 'REPORTING_MANAGER', isRequired: true, canSkip: false },
+        { level: 2, approverType: 'HR', isRequired: true, canSkip: false },
+      ],
+      escalationRules: { enabled: true, escalateAfterDays: 3 },
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: `default-overtime-${tenantId}`,
+      tenantId,
+      name: 'Overtime Approval',
+      description: 'Single-level approval for overtime requests',
+      requestType: 'OVERTIME',
+      applicableTo: 'ALL',
+      approvalLevels: [
+        { level: 1, approverType: 'REPORTING_MANAGER', isRequired: true, canSkip: false, autoApproveAfterDays: 2 },
+      ],
+      escalationRules: { enabled: false },
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: `default-regularization-${tenantId}`,
+      tenantId,
+      name: 'Regularization Approval',
+      description: 'Manager approval for attendance regularization',
+      requestType: 'REGULARIZATION',
+      applicableTo: 'ALL',
+      approvalLevels: [
+        { level: 1, approverType: 'REPORTING_MANAGER', isRequired: true, canSkip: false },
+      ],
+      escalationRules: { enabled: true, escalateAfterDays: 2 },
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: `default-compoff-${tenantId}`,
+      tenantId,
+      name: 'Comp-Off Approval',
+      description: 'Manager approval for compensatory off requests',
+      requestType: 'COMP_OFF',
+      applicableTo: 'ALL',
+      approvalLevels: [
+        { level: 1, approverType: 'REPORTING_MANAGER', isRequired: true, canSkip: false },
+      ],
+      escalationRules: { enabled: false },
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: `default-wfh-${tenantId}`,
+      tenantId,
+      name: 'WFH Approval',
+      description: 'Manager approval for work from home requests',
+      requestType: 'WFH',
+      applicableTo: 'ALL',
+      approvalLevels: [
+        { level: 1, approverType: 'REPORTING_MANAGER', isRequired: true, canSkip: false },
+      ],
+      escalationRules: { enabled: true, escalateAfterDays: 1 },
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: `default-shiftswap-${tenantId}`,
+      tenantId,
+      name: 'Shift Swap Approval',
+      description: 'Peer and manager approval for shift swaps',
+      requestType: 'SHIFT_SWAP',
+      applicableTo: 'ALL',
+      approvalLevels: [
+        { level: 1, approverType: 'REPORTING_MANAGER', isRequired: true, canSkip: false },
+      ],
+      escalationRules: { enabled: false },
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    },
+  ];
+}
+
+function getTenantWorkflows(tenantId: string): StoredWorkflow[] {
+  if (!workflowStore.has(tenantId)) {
+    workflowStore.set(tenantId, getDefaultWorkflows(tenantId));
+  }
+  return workflowStore.get(tenantId)!;
+}
+
 // GET - Fetch approval workflows
 export const GET = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
@@ -51,132 +189,34 @@ export const GET = withEnhancedAuth(
       const requestType = searchParams.get('requestType');
       const isActive = searchParams.get('isActive');
 
-      const mockWorkflows = [
-        {
-          id: '1',
-          name: 'Standard Leave Approval',
-          description: 'Two-level approval for leave requests',
-          requestType: 'LEAVE',
-          applicableTo: 'ALL',
-          approvalLevels: [
-            {
-              level: 1,
-              approverType: 'REPORTING_MANAGER',
-              isRequired: true,
-              canSkip: false,
-            },
-            {
-              level: 2,
-              approverType: 'HR',
-              approvers: ['hr-1', 'hr-2'],
-              isRequired: true,
-              canSkip: false,
-            },
-          ],
-          escalationRules: {
-            enabled: true,
-            escalateAfterDays: 3,
-            escalateTo: ['hr-manager'],
-          },
-          isActive: true,
-          createdAt: '2024-01-01T00:00:00',
-          updatedAt: '2024-01-01T00:00:00',
-        },
-        {
-          id: '2',
-          name: 'Quick Overtime Approval',
-          description: 'Single-level approval for overtime',
-          requestType: 'OVERTIME',
-          applicableTo: 'ALL',
-          approvalLevels: [
-            {
-              level: 1,
-              approverType: 'REPORTING_MANAGER',
-              isRequired: true,
-              canSkip: false,
-              autoApproveAfterDays: 2,
-            },
-          ],
-          escalationRules: {
-            enabled: false,
-          },
-          isActive: true,
-          createdAt: '2024-01-15T00:00:00',
-          updatedAt: '2024-01-15T00:00:00',
-        },
-        {
-          id: '3',
-          name: 'Engineering WFH Approval',
-          description: 'Department-specific WFH approval workflow',
-          requestType: 'WFH',
-          applicableTo: 'DEPARTMENT',
-          departments: ['Engineering', 'Product'],
-          approvalLevels: [
-            {
-              level: 1,
-              approverType: 'REPORTING_MANAGER',
-              isRequired: true,
-              canSkip: false,
-            },
-          ],
-          escalationRules: {
-            enabled: true,
-            escalateAfterDays: 1,
-            escalateTo: ['dept-head'],
-          },
-          isActive: true,
-          createdAt: '2024-02-01T00:00:00',
-          updatedAt: '2024-02-01T00:00:00',
-        },
-        {
-          id: '4',
-          name: 'Executive Regularization',
-          description: 'Fast-track approval for executives',
-          requestType: 'REGULARIZATION',
-          applicableTo: 'DESIGNATION',
-          designations: ['VP', 'Director', 'C-Level'],
-          approvalLevels: [
-            {
-              level: 1,
-              approverType: 'HR',
-              approvers: ['hr-manager'],
-              isRequired: false,
-              canSkip: true,
-              autoApproveAfterDays: 1,
-            },
-          ],
-          escalationRules: {
-            enabled: false,
-          },
-          isActive: true,
-          createdAt: '2024-03-01T00:00:00',
-          updatedAt: '2024-03-01T00:00:00',
-        },
-      ];
+      let workflows = getTenantWorkflows(user.tenantId);
 
-      let filteredData = mockWorkflows;
-      if (requestType) filteredData = filteredData.filter(w => w.requestType === requestType);
-      if (isActive !== null) filteredData = filteredData.filter(w => w.isActive === (isActive === 'true'));
+      if (requestType) {
+        workflows = workflows.filter(w => w.requestType === requestType);
+      }
+      if (isActive !== null && isActive !== undefined && isActive !== '') {
+        workflows = workflows.filter(w => w.isActive === (isActive === 'true'));
+      }
 
       const summary = {
-        total: filteredData.length,
-        active: filteredData.filter(w => w.isActive).length,
-        inactive: filteredData.filter(w => !w.isActive).length,
+        total: workflows.length,
+        active: workflows.filter(w => w.isActive).length,
+        inactive: workflows.filter(w => !w.isActive).length,
         byRequestType: {
-          leave: filteredData.filter(w => w.requestType === 'LEAVE').length,
-          overtime: filteredData.filter(w => w.requestType === 'OVERTIME').length,
-          compOff: filteredData.filter(w => w.requestType === 'COMP_OFF').length,
-          wfh: filteredData.filter(w => w.requestType === 'WFH').length,
-          shiftSwap: filteredData.filter(w => w.requestType === 'SHIFT_SWAP').length,
-          regularization: filteredData.filter(w => w.requestType === 'REGULARIZATION').length,
-          timesheet: filteredData.filter(w => w.requestType === 'TIMESHEET').length,
+          leave: workflows.filter(w => w.requestType === 'LEAVE').length,
+          overtime: workflows.filter(w => w.requestType === 'OVERTIME').length,
+          compOff: workflows.filter(w => w.requestType === 'COMP_OFF').length,
+          wfh: workflows.filter(w => w.requestType === 'WFH').length,
+          shiftSwap: workflows.filter(w => w.requestType === 'SHIFT_SWAP').length,
+          regularization: workflows.filter(w => w.requestType === 'REGULARIZATION').length,
+          timesheet: workflows.filter(w => w.requestType === 'TIMESHEET').length,
         },
       };
 
       return NextResponse.json({
         success: true,
-        data: { workflows: filteredData, summary },
-        meta: { total: filteredData.length },
+        data: { workflows, summary },
+        meta: { total: workflows.length },
       });
     } catch (error) {
       logger.error('Error fetching approval workflows:', error);
@@ -198,13 +238,19 @@ export const POST = withEnhancedAuth(
       const body = await request.json();
       const data = WorkflowSchema.parse(body);
 
-      const newWorkflow = {
-        id: Math.random().toString(36).substr(2, 9),
+      const now = new Date().toISOString();
+      const newWorkflow: StoredWorkflow = {
+        id: crypto.randomUUID(),
+        tenantId: user.tenantId,
         ...data,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: now,
+        updatedAt: now,
         createdBy: user.userId,
       };
+
+      const workflows = getTenantWorkflows(user.tenantId);
+      workflows.push(newWorkflow);
+      workflowStore.set(user.tenantId, workflows);
 
       await prisma.auditLog.create({
         data: {
@@ -250,12 +296,23 @@ export const PUT = withEnhancedAuth(
         );
       }
 
-      const updated = {
-        id,
+      const workflows = getTenantWorkflows(user.tenantId);
+      const index = workflows.findIndex(w => w.id === id);
+
+      if (index === -1) {
+        return NextResponse.json(
+          { success: false, error: 'Workflow not found' },
+          { status: 404 }
+        );
+      }
+
+      const updated: StoredWorkflow = {
+        ...workflows[index],
         ...updates,
         updatedAt: new Date().toISOString(),
-        updatedBy: user.userId,
       };
+      workflows[index] = updated;
+      workflowStore.set(user.tenantId, workflows);
 
       await prisma.auditLog.create({
         data: {
@@ -294,6 +351,19 @@ export const DELETE = withEnhancedAuth(
           { status: 400 }
         );
       }
+
+      const workflows = getTenantWorkflows(user.tenantId);
+      const index = workflows.findIndex(w => w.id === id);
+
+      if (index === -1) {
+        return NextResponse.json(
+          { success: false, error: 'Workflow not found' },
+          { status: 404 }
+        );
+      }
+
+      workflows.splice(index, 1);
+      workflowStore.set(user.tenantId, workflows);
 
       await prisma.auditLog.create({
         data: {

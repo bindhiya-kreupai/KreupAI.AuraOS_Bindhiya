@@ -32,12 +32,10 @@ export default function GeoFencingPage() {
         try {
             setLoading(true);
             const result = await GeoFencingService.getGeoFences();
-            if (result && result.length > 0) {
-                setLocations(result as any);
-            }
+            setLocations((result || []) as any);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };

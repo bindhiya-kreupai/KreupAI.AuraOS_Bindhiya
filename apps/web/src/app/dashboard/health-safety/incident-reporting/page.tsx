@@ -1,16 +1,43 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     AlertTriangle,
     FileText,
     Camera,
     MapPin,
     Send,
-    Clock
+    Clock,
+    Loader2
 } from 'lucide-react';
+import { IncidentService } from '../services';
+import type { Incident } from '../services';
 
 export default function IncidentReportingPage() {
+    const [incidents, setIncidents] = useState<Incident[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await IncidentService.getAll();
+                setIncidents(data);
+            } catch {
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
@@ -63,39 +90,41 @@ export default function IncidentReportingPage() {
                 {/* Recent Reports Log */}
                 <div className="lg:col-span-2 space-y-4">
                     <h3 className="font-bold text-lg">Recent Logs</h3>
-                    {[
-                        { id: 'INC-2023-089', title: 'Slippery Floor near Elevator B', type: 'Hazard', loc: 'Lobby', status: 'Resolved', date: '2 hours ago', severiry: 'Low' },
-                        { id: 'INC-2023-088', title: 'Broken Chair in Conf Room', type: 'Equipment', loc: 'Room 302', status: 'In Progress', date: 'Yesterday', severiry: 'Medium' },
-                        { id: 'INC-2023-087', title: 'First Aid Kit Empty', type: 'resource', loc: '3rd Floor', status: 'Investigating', date: 'Dec 02', severiry: 'High' },
-                    ].map((inc, i) => (
-                        <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${inc.severiry === 'High' ? 'border-rose-200 text-rose-600 bg-rose-50' :
-                                            inc.severiry === 'Medium' ? 'border-amber-200 text-amber-600 bg-amber-50' :
-                                                'border-slate-200 text-slate-500 bg-slate-50'
-                                        }`}>
-                                        {inc.type}
-                                    </span>
-                                    <h4 className="font-bold text-sm">{inc.title}</h4>
-                                </div>
-                                <div className="flex items-center gap-4 text-xs text-slate-500">
-                                    <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> {inc.id}</span>
-                                    <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {inc.loc}</span>
-                                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {inc.date}</span>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto">
-                                <div className={`text-xs font-bold px-3 py-1 rounded-full ${inc.status === 'Resolved' ? 'bg-emerald-100 text-emerald-700' :
-                                        inc.status === 'In Progress' ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'
-                                    }`}>
-                                    {inc.status}
-                                </div>
-                                <button className="text-xs font-bold text-slate-500 hover:text-rose-600">View Details</button>
-                            </div>
+                    {incidents.length === 0 ? (
+                        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-slate-400">
+                            No incidents reported yet.
                         </div>
-                    ))}
+                    ) : (
+                        incidents.map((inc, i) => (
+                            <div key={inc.id || i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${inc.severity === 'High' || inc.severity === 'Critical' ? 'border-rose-200 text-rose-600 bg-rose-50' :
+                                                inc.severity === 'Medium' || inc.severity === 'Major' ? 'border-amber-200 text-amber-600 bg-amber-50' :
+                                                    'border-slate-200 text-slate-500 bg-slate-50'
+                                            }`}>
+                                            {inc.type}
+                                        </span>
+                                        <h4 className="font-bold text-sm">{inc.description?.substring(0, 60) || inc.type}</h4>
+                                    </div>
+                                    <div className="flex items-center gap-4 text-xs text-slate-500">
+                                        <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> {inc.id}</span>
+                                        <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {inc.location}</span>
+                                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {inc.date}</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto">
+                                    <div className={`text-xs font-bold px-3 py-1 rounded-full ${inc.status === 'Closed' ? 'bg-emerald-100 text-emerald-700' :
+                                            inc.status === 'Investigating' || inc.status === 'Action Taken' ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'
+                                        }`}>
+                                        {inc.status}
+                                    </div>
+                                    <button className="text-xs font-bold text-slate-500 hover:text-rose-600">View Details</button>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

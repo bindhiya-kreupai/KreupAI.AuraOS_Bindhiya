@@ -5,7 +5,8 @@ import {
     Settings,
     Edit,
     Trash2,
-    Plus
+    Plus,
+    Loader2
 } from 'lucide-react';
 import { LeaveTypeService } from '../services';
 import type { LeaveType } from '../types';
@@ -22,12 +23,10 @@ export default function LeaveTypesPage() {
         try {
             setLoading(true);
             const result = await LeaveTypeService.getLeaveTypes();
-            if (result.length > 0) {
-                setLeaveTypes(result);
-            }
+            setLeaveTypes(result);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -65,16 +64,19 @@ export default function LeaveTypesPage() {
                         {loading ? (
                             <tr>
                                 <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
-                                    Loading leave types...
+                                    <div className="flex items-center justify-center gap-2">
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Loading leave types...
+                                    </div>
                                 </td>
                             </tr>
-                        ) : (leaveTypes.length > 0 ? leaveTypes : [
-                            { id: '1', name: 'Annual Leave', code: 'AL', isPaid: true, carryForwardLimit: 10, isEncashable: true, color: '#10b981', icon: 'plane' },
-                            { id: '2', name: 'Sick Leave', code: 'SL', isPaid: true, carryForwardLimit: 0, isEncashable: false, color: '#ef4444', icon: 'thermometer' },
-                            { id: '3', name: 'Casual Leave', code: 'CL', isPaid: true, carryForwardLimit: 0, isEncashable: false, color: '#f59e0b', icon: 'briefcase' },
-                            { id: '4', name: 'Maternity Leave', code: 'ML', isPaid: true, carryForwardLimit: 0, isEncashable: false, color: '#8b5cf6', icon: 'baby' },
-                            { id: '5', name: 'Unpaid Leave', code: 'LOP', isPaid: false, carryForwardLimit: 0, isEncashable: false, color: '#6b7280', icon: 'ban' },
-                        ] as LeaveType[]).map((type, i) => (
+                        ) : leaveTypes.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
+                                    No leave types configured yet.
+                                </td>
+                            </tr>
+                        ) : leaveTypes.map((type, i) => (
                             <tr key={type.id || i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                 <td className="px-6 py-4 font-bold">{type.name}</td>
                                 <td className="px-6 py-4 font-mono text-slate-500">{type.code}</td>
@@ -83,10 +85,18 @@ export default function LeaveTypesPage() {
                                         }`}>{type.isPaid ? 'Paid' : 'Unpaid'}</span>
                                 </td>
                                 <td className="px-6 py-4">
-                                    {type.carryForwardLimit > 0 ? `Max ${type.carryForwardLimit} Days` : 'No'}
+                                    {type.isCarryForwardAllowed != null
+                                        ? (type.isCarryForwardAllowed
+                                            ? `Max ${type.maxCarryForwardDays ?? 'N/A'} Days`
+                                            : 'No')
+                                        : 'N/A'}
                                 </td>
                                 <td className="px-6 py-4">
-                                    {type.isEncashable ? <span className="text-emerald-600 font-bold">Yes</span> : <span className="text-slate-400">No</span>}
+                                    {type.isEncashable != null
+                                        ? (type.isEncashable
+                                            ? <span className="text-emerald-600 font-bold">Yes</span>
+                                            : <span className="text-slate-400">No</span>)
+                                        : <span className="text-slate-400">N/A</span>}
                                 </td>
                                 <td className="px-6 py-4 text-center flex items-center justify-center gap-3">
                                     <button className="text-slate-400 hover:text-indigo-600"><Edit className="w-4 h-4" /></button>

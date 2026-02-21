@@ -20,14 +20,14 @@ export async function POST(request: NextRequest) {
   try {
     const body: TaxDocGenerationRequest = await request.json();
 
-    if (\!body.taxYear || \!body.type) {
+    if (!body.taxYear || !body.type) {
       return NextResponse.json(
         { error: "taxYear and type are required" },
         { status: 400 }
       );
     }
 
-    if (body.type \!== "W2" && body.type \!== "1099") {
+    if (body.type !== "W2" && body.type !== "1099") {
       return NextResponse.json(
         { error: "type must be W2 or 1099" },
         { status: 400 }

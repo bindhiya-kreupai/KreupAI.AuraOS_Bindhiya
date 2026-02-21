@@ -5,12 +5,15 @@ import {
     Map,
     Building2,
     AlertTriangle,
-    CheckCircle2
+    CheckCircle2,
+    Loader2
 } from 'lucide-react';
-import { PayrollRunService } from '../services';
+import { PayrollRunService, EmployeeSalaryService } from '../services';
+import type { PayrollRun, EmployeeSalary } from '../types';
 
 export default function MultiStatePayrollPage() {
-    const [payrollRuns, setPayrollRuns] = useState<any[]>([]);
+    const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([]);
+    const [salaries, setSalaries] = useState<EmployeeSalary[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -20,21 +23,43 @@ export default function MultiStatePayrollPage() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const result = await PayrollRunService.getPayrollRuns();
-            if (result.length > 0) {
-                setPayrollRuns(result);
-            }
+            const [runs, sals] = await Promise.all([
+                PayrollRunService.getPayrollRuns(),
+                EmployeeSalaryService.getEmployeeSalaries(),
+            ]);
+            setPayrollRuns(runs);
+            setSalaries(sals);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
-    const states = [
-        { name: 'California', taxId: 'CA-55291', status: 'Compliant', employees: 85 },
-        { name: 'New York', taxId: 'NY-11202', status: 'Action Needed', employees: 42, alert: 'Tax rate update pending' },
-        { name: 'Texas', taxId: 'TX-00291', status: 'Compliant', employees: 31 }
-    ];
+
+    // Group employees by department as a proxy for "state/location"
+    const departmentGroups = salaries.reduce((acc, emp) => {
+        const dept = emp.department || 'Unassigned';
+        if (!acc[dept]) acc[dept] = [];
+        acc[dept].push(emp);
+        return acc;
+    }, {} as Record<string, EmployeeSalary[]>);
+
+    const stateConfigs = Object.entries(departmentGroups).map(([dept, employees]) => ({
+        name: dept,
+        employees: employees.length,
+        status: 'Compliant' as const,
+    }));
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                    <p className="text-sm text-slate-500 font-medium">Loading multi-state configuration...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
@@ -52,44 +77,47 @@ export default function MultiStatePayrollPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Visual Map (Mock) */}
-                <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl min-h-[300px] flex items-center justify-center border border-slate-200 dark:border-slate-700 relative overflow-hidden">
-                    <div className="text-slate-400 text-sm font-bold">Interactive Map Visualization Component</div>
+            {stateConfigs.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <Map className="w-12 h-12 text-slate-300 dark:text-slate-600 mb-3" />
+                    <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300">No Department/State Data</h3>
+                    <p className="text-sm text-slate-500 mt-1">Configure employee salary structures to see department-wise state compliance.</p>
                 </div>
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Visual Map (Placeholder) */}
+                    <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl min-h-[300px] flex items-center justify-center border border-slate-200 dark:border-slate-700 relative overflow-hidden">
+                        <div className="text-slate-400 text-sm font-bold">Interactive Map Visualization Component</div>
+                    </div>
 
-                {/* State List */}
-                <div className="space-y-4">
-                    {states.map((state, i) => (
-                        <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-between items-center shadow-sm">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600">
-                                    <Building2 className="w-5 h-5" />
+                    {/* State List */}
+                    <div className="space-y-4">
+                        {stateConfigs.map((state, i) => (
+                            <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-between items-center shadow-sm">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600">
+                                        <Building2 className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-lg">{state.name}</h4>
+                                        <div className="text-xs text-slate-500">{state.employees} Employees</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h4 className="font-bold text-lg">{state.name}</h4>
-                                    <div className="text-xs text-slate-500">Tax ID: {state.taxId} • {state.employees} Employees</div>
-                                    {state.alert && (
-                                        <div className="flex items-center gap-1 text-xs text-rose-600 font-bold mt-1">
-                                            <AlertTriangle className="w-3 h-3" /> {state.alert}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${state.status === 'Compliant' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'
-                                    }`}>
-                                    {state.status === 'Compliant' ? <CheckCircle2 className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
-                                    {state.status}
-                                </div>
-                                <div className="mt-2">
-                                    <button className="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors">Manage Rules</button>
+                                <div className="text-right">
+                                    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${state.status === 'Compliant' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'
+                                        }`}>
+                                        {state.status === 'Compliant' ? <CheckCircle2 className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
+                                        {state.status}
+                                    </div>
+                                    <div className="mt-2">
+                                        <button className="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors">Manage Rules</button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

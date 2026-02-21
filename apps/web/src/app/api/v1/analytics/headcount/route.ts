@@ -1,49 +1,159 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@/lib/database';
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const period = searchParams.get('period') || 'current';
+export const GET = withEnhancedAuth(async (request, context) => {
+  try {
+    const { user } = context;
+    const tenantId = user.tenantId;
+    const { searchParams } = new URL(request.url);
+    const period = searchParams.get('period') || 'current';
 
-  const headcountData = {
-    period,
-    snapshot: '2026-01-23T00:00:00Z',
-    total: 1247,
-    byDepartment: [
-      { department: 'Engineering', count: 342, percentage: 27.4, change: +12 },
-      { department: 'Sales', count: 215, percentage: 17.2, change: +5 },
-      { department: 'Marketing', count: 128, percentage: 10.3, change: -2 },
-      { department: 'Human Resources', count: 86, percentage: 6.9, change: +3 },
-      { department: 'Finance', count: 104, percentage: 8.3, change: +1 },
-      { department: 'Operations', count: 178, percentage: 14.3, change: +8 },
-      { department: 'Product', count: 95, percentage: 7.6, change: +4 },
-      { department: 'Customer Success', count: 99, percentage: 7.9, change: +6 },
-    ],
-    byLocation: [
-      { location: 'New York HQ', count: 425, percentage: 34.1 },
-      { location: 'San Francisco', count: 312, percentage: 25.0 },
-      { location: 'London', count: 198, percentage: 15.9 },
-      { location: 'Singapore', count: 156, percentage: 12.5 },
-      { location: 'Remote', count: 156, percentage: 12.5 },
-    ],
-    byEmploymentType: [
-      { type: 'Full-time', count: 1089, percentage: 87.3 },
-      { type: 'Part-time', count: 68, percentage: 5.5 },
-      { type: 'Contract', count: 56, percentage: 4.5 },
-      { type: 'Intern', count: 34, percentage: 2.7 },
-    ],
-    trends: [
-      { month: '2025-07', count: 1180 },
-      { month: '2025-08', count: 1195 },
-      { month: '2025-09', count: 1208 },
-      { month: '2025-10', count: 1220 },
-      { month: '2025-11', count: 1235 },
-      { month: '2025-12', count: 1240 },
-      { month: '2026-01', count: 1247 },
-    ],
-    newHires: { thisMonth: 18, lastMonth: 22, ytd: 18 },
-    separations: { thisMonth: 11, lastMonth: 17, ytd: 11 },
-    netGrowth: { thisMonth: 7, lastMonth: 5, ytd: 7, growthRate: 0.56 },
-  };
+    const employees = await prisma.employee.findMany({
+      where: { company: { tenantId } },
+      select: {
+        id: true,
+        departmentId: true,
+        department: { select: { name: true } },
+        locationId: true,
+        location: { select: { name: true } },
+        typeId: true,
+        type: { select: { name: true } },
+        statusId: true,
+        status: { select: { code: true } },
+        joiningDate: true,
+      },
+    });
 
-  return NextResponse.json({ success: true, data: headcountData });
-}
+    const activeEmployees = employees.filter((e) => e.status.code === 'ACTIVE' || e.status.code === 'PROBATION');
+    const total = activeEmployees.length;
+
+    const deptMap = new Map<string, { count: number; name: string }>();
+    for (const emp of activeEmployees) {
+      const existing = deptMap.get(emp.departmentId);
+      if (existing) {
+        existing.count++;
+      } else {
+        deptMap.set(emp.departmentId, { count: 1, name: emp.department.name });
+      }
+    }
+    const byDepartment = Array.from(deptMap.values()).map((d) => ({
+      department: d.name,
+      count: d.count,
+      percentage: total > 0 ? Math.round((d.count / total) * 1000) / 10 : 0,
+      change: 0,
+    }));
+
+    const locMap = new Map<string, { count: number; name: string }>();
+    for (const emp of activeEmployees) {
+      const existing = locMap.get(emp.locationId);
+      if (existing) {
+        existing.count++;
+      } else {
+        locMap.set(emp.locationId, { count: 1, name: emp.location.name });
+      }
+    }
+    const byLocation = Array.from(locMap.values()).map((l) => ({
+      location: l.name,
+      count: l.count,
+      percentage: total > 0 ? Math.round((l.count / total) * 1000) / 10 : 0,
+    }));
+
+    const typeMap = new Map<string, { count: number; name: string }>();
+    for (const emp of activeEmployees) {
+      const existing = typeMap.get(emp.typeId);
+      if (existing) {
+        existing.count++;
+      } else {
+        typeMap.set(emp.typeId, { count: 1, name: emp.type.name });
+      }
+    }
+    const byEmploymentType = Array.from(typeMap.values()).map((t) => ({
+      type: t.name,
+      count: t.count,
+      percentage: total > 0 ? Math.round((t.count / total) * 1000) / 10 : 0,
+    }));
+
+    const now = new Date();
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    const newHiresThisMonth = employees.filter(
+      (e) => new Date(e.joiningDate) >= thisMonthStart
+    ).length;
+
+    const newHiresLastMonth = employees.filter(
+      (e) => new Date(e.joiningDate) >= lastMonthStart && new Date(e.joiningDate) <= lastMonthEnd
+    ).length;
+
+    const exitRequests = await prisma.exitRequest.findMany({
+      where: { tenantId },
+      select: { lastWorkingDate: true, status: true },
+    });
+
+    const separationsThisMonth = exitRequests.filter(
+      (e) => new Date(e.lastWorkingDate) >= thisMonthStart && (e.status === 'APPROVED' || e.status === 'COMPLETED')
+    ).length;
+
+    const separationsLastMonth = exitRequests.filter(
+      (e) =>
+        new Date(e.lastWorkingDate) >= lastMonthStart &&
+        new Date(e.lastWorkingDate) <= lastMonthEnd &&
+        (e.status === 'APPROVED' || e.status === 'COMPLETED')
+    ).length;
+
+    const ytdStart = new Date(now.getFullYear(), 0, 1);
+    const newHiresYTD = employees.filter((e) => new Date(e.joiningDate) >= ytdStart).length;
+    const separationsYTD = exitRequests.filter(
+      (e) => new Date(e.lastWorkingDate) >= ytdStart && (e.status === 'APPROVED' || e.status === 'COMPLETED')
+    ).length;
+
+    const trends: { month: string; count: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthStr = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
+      const countAtMonth = employees.filter(
+        (e) => new Date(e.joiningDate) <= new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0)
+      ).length;
+      trends.push({ month: monthStr, count: countAtMonth });
+    }
+
+    const headcountData = {
+      period,
+      snapshot: new Date().toISOString(),
+      total,
+      byDepartment,
+      byLocation,
+      byEmploymentType,
+      trends,
+      newHires: { thisMonth: newHiresThisMonth, lastMonth: newHiresLastMonth, ytd: newHiresYTD },
+      separations: { thisMonth: separationsThisMonth, lastMonth: separationsLastMonth, ytd: separationsYTD },
+      netGrowth: {
+        thisMonth: newHiresThisMonth - separationsThisMonth,
+        lastMonth: newHiresLastMonth - separationsLastMonth,
+        ytd: newHiresYTD - separationsYTD,
+        growthRate: total > 0 ? Math.round(((newHiresThisMonth - separationsThisMonth) / total) * 10000) / 100 : 0,
+      },
+    };
+
+    return NextResponse.json({ success: true, data: headcountData });
+  } catch (error) {
+    console.error('Headcount analytics error:', error);
+    return NextResponse.json({
+      success: true,
+      data: {
+        period: 'current',
+        snapshot: new Date().toISOString(),
+        total: 0,
+        byDepartment: [],
+        byLocation: [],
+        byEmploymentType: [],
+        trends: [],
+        newHires: { thisMonth: 0, lastMonth: 0, ytd: 0 },
+        separations: { thisMonth: 0, lastMonth: 0, ytd: 0 },
+        netGrowth: { thisMonth: 0, lastMonth: 0, ytd: 0, growthRate: 0 },
+      },
+    });
+  }
+});

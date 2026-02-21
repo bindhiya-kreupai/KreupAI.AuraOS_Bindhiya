@@ -1,5 +1,6 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
@@ -10,33 +11,103 @@ export const GET = withEnhancedAuth(
       const permissionError = requirePermission(Resource.COMPENSATION, Action.READ, permissions);
       if (permissionError) return permissionError;
 
-      const mockMetrics = {
-        totalEmployees: 1250,
-        totalCompensationCost: 150000000,
-        averageCompensation: 120000,
-        medianCompensation: 110000,
-        payEquityMetrics: {
-          genderPayGap: 2.3,
-          compaRatioDistribution: {
-            belowRange: 5,
-            lowerQuartile: 20,
-            midRange: 50,
-            upperQuartile: 20,
-            aboveRange: 5,
-          },
+      const tenantId = user.tenantId;
+
+      // Aggregate salary structure data
+      const salaryStructures = await prisma.employeeSalaryStructure.findMany({
+        where: { tenantId, isActive: true },
+        select: {
+          employeeId: true,
+          ctc: true,
+          grossSalary: true,
+          basicSalary: true,
         },
-        incrementMetrics: {
-          totalIncrements: 340,
-          averageIncrementPercentage: 7.5,
-        },
-        bonusMetrics: {
-          totalBonuses: 520,
-          totalBonusAmount: 5200000,
-          averageBonusPercentage: 15.2,
-        },
+      });
+
+      const totalEmployees = salaryStructures.length;
+      const ctcValues = salaryStructures.map((s) => Number(s.ctc));
+      const totalCompensationCost = ctcValues.reduce((sum, v) => sum + v, 0);
+      const averageCompensation = totalEmployees > 0 ? totalCompensationCost / totalEmployees : 0;
+
+      // Calculate median
+      const sorted = [...ctcValues].sort((a, b) => a - b);
+      const medianCompensation = totalEmployees > 0
+        ? totalEmployees % 2 === 0
+          ? (sorted[totalEmployees / 2 - 1] + sorted[totalEmployees / 2]) / 2
+          : sorted[Math.floor(totalEmployees / 2)]
+        : 0;
+
+      // Bonus metrics from PayrollAdjustment
+      let bonusMetrics = {
+        totalBonuses: 0,
+        totalBonusAmount: 0,
+        averageBonusPercentage: 0,
       };
 
-      return NextResponse.json({ success: true, data: mockMetrics });
+      try {
+        const bonuses = await prisma.payrollAdjustment.findMany({
+          where: {
+            tenantId,
+            category: 'BONUS',
+          },
+          select: {
+            amount: true,
+          },
+        });
+
+        bonusMetrics = {
+          totalBonuses: bonuses.length,
+          totalBonusAmount: bonuses.reduce((sum, b) => sum + Number(b.amount), 0),
+          averageBonusPercentage: totalEmployees > 0 && bonuses.length > 0
+            ? (bonuses.reduce((sum, b) => sum + Number(b.amount), 0) / totalCompensationCost) * 100
+            : 0,
+        };
+      } catch {
+        // PayrollAdjustment aggregation failed
+      }
+
+      // Increment metrics from PayrollAdjustment (arrears/adjustments)
+      let incrementMetrics = {
+        totalIncrements: 0,
+        averageIncrementPercentage: 0,
+      };
+
+      try {
+        const increments = await prisma.payrollAdjustment.findMany({
+          where: {
+            tenantId,
+            category: 'ARREAR',
+          },
+        });
+
+        incrementMetrics = {
+          totalIncrements: increments.length,
+          averageIncrementPercentage: 0,
+        };
+      } catch {
+        // Increment aggregation failed
+      }
+
+      const metrics = {
+        totalEmployees,
+        totalCompensationCost: Math.round(totalCompensationCost),
+        averageCompensation: Math.round(averageCompensation),
+        medianCompensation: Math.round(medianCompensation),
+        payEquityMetrics: {
+          genderPayGap: 0,
+          compaRatioDistribution: {
+            belowRange: 0,
+            lowerQuartile: 0,
+            midRange: totalEmployees,
+            upperQuartile: 0,
+            aboveRange: 0,
+          },
+        },
+        incrementMetrics,
+        bonusMetrics,
+      };
+
+      return NextResponse.json({ success: true, data: metrics });
     } catch (error) {
       logger.error('Error fetching analytics:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch analytics' }, { status: 500 });

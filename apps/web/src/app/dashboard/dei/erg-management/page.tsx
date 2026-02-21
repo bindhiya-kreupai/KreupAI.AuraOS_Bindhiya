@@ -1,15 +1,35 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Users,
     Heart,
     Calendar,
     MessageCircle,
-    Plus
+    Plus,
+    Loader2
 } from 'lucide-react';
+import { ERGService } from '../services';
 
 export default function ErgManagementPage() {
+    const [groups, setGroups] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await ERGService.getAllERGs();
+                setGroups(Array.isArray(data) ? data : []);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
     const ergs = [
         {
             name: 'Women @ Aura',
@@ -44,6 +64,14 @@ export default function ErgManagementPage() {
             color: 'bg-slate-600'
         }
     ];
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">

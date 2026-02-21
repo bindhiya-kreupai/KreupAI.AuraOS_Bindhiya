@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FileText,
     Building2,
@@ -20,8 +20,10 @@ import {
     Bell,
     FileCheck,
     Lock,
-    Unlock
+    Unlock,
+    Loader2
 } from 'lucide-react';
+import { VendorContractService } from '../../services';
 
 type ContractStatus = 'all' | 'active' | 'expiring-soon' | 'expired' | 'pending-renewal' | 'terminated';
 
@@ -49,176 +51,24 @@ interface VendorContract {
 
 export default function ContractsPage() {
     const [filter, setFilter] = useState<ContractStatus>('all');
+    const [loading, setLoading] = useState(true);
 
-    const contracts: VendorContract[] = [
-        {
-            id: 'CT-001',
-            contractNumber: 'SVC-2024-001',
-            vendorName: 'Tech Solutions Inc',
-            contractType: 'service-agreement',
-            description: 'IT Support & Managed Services',
-            startDate: '2024-01-01',
-            endDate: '2025-12-31',
-            contractValue: 120000,
-            paymentTerms: 'Net 30',
-            paymentFrequency: 'monthly',
-            status: 'active',
-            autoRenewal: true,
-            renewalNoticeDays: 90,
-            category: 'IT Services',
-            owner: 'IT Department',
-            lastReviewed: '2024-11-15',
-            notificationSent: false,
-            documents: 3,
-            notes: 'Annual price increase capped at 3%'
-        },
-        {
-            id: 'CT-002',
-            contractNumber: 'SLA-2024-002',
-            vendorName: 'Cloud Services Pro',
-            contractType: 'sla',
-            description: 'Cloud Infrastructure & Hosting',
-            startDate: '2024-03-01',
-            endDate: '2025-02-28',
-            contractValue: 85000,
-            paymentTerms: 'Net 15',
-            paymentFrequency: 'monthly',
-            status: 'expiring-soon',
-            autoRenewal: false,
-            renewalNoticeDays: 60,
-            category: 'Cloud Services',
-            owner: 'Engineering',
-            lastReviewed: '2024-12-01',
-            notificationSent: true,
-            documents: 5,
-            notes: 'Expiring in 2 months - negotiate renewal'
-        },
-        {
-            id: 'CT-003',
-            contractNumber: 'MSA-2024-003',
-            vendorName: 'Marketing Solutions LLC',
-            contractType: 'msa',
-            description: 'Digital Marketing Services',
-            startDate: '2023-06-01',
-            endDate: '2024-05-31',
-            contractValue: 60000,
-            paymentTerms: 'Net 30',
-            paymentFrequency: 'quarterly',
-            status: 'expired',
-            autoRenewal: false,
-            renewalNoticeDays: 30,
-            category: 'Marketing',
-            owner: 'Marketing Department',
-            lastReviewed: '2024-04-15',
-            notificationSent: true,
-            documents: 2,
-            notes: 'Contract expired - awaiting decision on renewal'
-        },
-        {
-            id: 'CT-004',
-            contractNumber: 'LSE-2024-004',
-            vendorName: 'Office Space Realty',
-            contractType: 'lease',
-            description: 'Office Lease - 5th Floor',
-            startDate: '2022-01-01',
-            endDate: '2026-12-31',
-            contractValue: 480000,
-            paymentTerms: 'Net 15',
-            paymentFrequency: 'monthly',
-            status: 'active',
-            autoRenewal: false,
-            renewalNoticeDays: 180,
-            category: 'Facilities',
-            owner: 'Operations',
-            lastReviewed: '2024-10-01',
-            notificationSent: false,
-            documents: 8,
-            notes: '5-year lease with option to extend'
-        },
-        {
-            id: 'CT-005',
-            contractNumber: 'PO-2024-005',
-            vendorName: 'Global Office Supplies',
-            contractType: 'purchase-order',
-            description: 'Office Supplies & Equipment',
-            startDate: '2024-01-01',
-            endDate: '2024-12-31',
-            contractValue: 25000,
-            paymentTerms: 'Net 30',
-            paymentFrequency: 'monthly',
-            status: 'expiring-soon',
-            autoRenewal: true,
-            renewalNoticeDays: 30,
-            category: 'Office Supplies',
-            owner: 'Operations',
-            lastReviewed: '2024-11-20',
-            notificationSent: true,
-            documents: 2,
-            notes: 'Volume discount negotiated for 2025'
-        },
-        {
-            id: 'CT-006',
-            contractNumber: 'NDA-2024-006',
-            vendorName: 'Legal Advisory Partners',
-            contractType: 'nda',
-            description: 'Non-Disclosure Agreement',
-            startDate: '2024-07-01',
-            endDate: '2027-06-30',
-            contractValue: 0,
-            paymentTerms: 'N/A',
-            paymentFrequency: 'one-time',
-            status: 'active',
-            autoRenewal: false,
-            renewalNoticeDays: 90,
-            category: 'Legal',
-            owner: 'Legal Team',
-            lastReviewed: '2024-07-01',
-            notificationSent: false,
-            documents: 1
-        },
-        {
-            id: 'CT-007',
-            contractNumber: 'SVC-2024-007',
-            vendorName: 'Facilities Maintenance Corp',
-            contractType: 'service-agreement',
-            description: 'Building Maintenance Services',
-            startDate: '2024-02-01',
-            endDate: '2025-01-31',
-            contractValue: 45000,
-            paymentTerms: 'Net 30',
-            paymentFrequency: 'monthly',
-            status: 'pending-renewal',
-            autoRenewal: false,
-            renewalNoticeDays: 60,
-            category: 'Facilities',
-            owner: 'Facilities Manager',
-            lastReviewed: '2024-12-01',
-            notificationSent: true,
-            documents: 3,
-            notes: 'Renewal proposal received - under review'
-        },
-        {
-            id: 'CT-008',
-            contractNumber: 'SVC-2023-008',
-            vendorName: 'Old Tech Vendor',
-            contractType: 'service-agreement',
-            description: 'Legacy System Support',
-            startDate: '2023-01-01',
-            endDate: '2024-06-30',
-            contractValue: 35000,
-            paymentTerms: 'Net 30',
-            paymentFrequency: 'monthly',
-            status: 'terminated',
-            autoRenewal: false,
-            renewalNoticeDays: 30,
-            category: 'IT Services',
-            owner: 'IT Department',
-            lastReviewed: '2024-05-15',
-            notificationSent: false,
-            documents: 4,
-            notes: 'Terminated early - migrated to new vendor'
-        }
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await VendorContractService.getContracts();
+                setContracts(data as any[]);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const [contracts, setContracts] = useState<any[]>([]);
 
     const filteredContracts = filter === 'all'
         ? contracts
@@ -326,6 +176,14 @@ export default function ContractsPage() {
             subtext: 'Enabled contracts'
         }
     ];
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">

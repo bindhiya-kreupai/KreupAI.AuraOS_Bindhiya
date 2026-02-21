@@ -8,12 +8,14 @@ import {
     CheckCircle2,
     Settings,
     ArrowRight,
-    RefreshCw
+    RefreshCw,
+    Loader2
 } from 'lucide-react';
-import { BankFileService } from '../services';
+import { PayrollRunService } from '../services';
+import type { PayrollRun } from '../types';
 
 export default function BankFileGenerationPage() {
-    const [bankFiles, setBankFiles] = useState<any[]>([]);
+    const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -23,17 +25,35 @@ export default function BankFileGenerationPage() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            // BankFileService doesn't have a getAll method, keeping mock data
+            const result = await PayrollRunService.getPayrollRuns();
+            setPayrollRuns(result);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
-    const banks = [
-        { id: 1, name: 'HDFC Bank', format: 'Excel (.xlsx)', status: 'Ready', lastGenerated: '2 mins ago' },
-        { id: 2, name: 'ICICI Bank', format: 'Text (.txt)', status: 'Pending', lastGenerated: '1 month ago' },
-        { id: 3, name: 'SBI', format: 'CSV', status: 'Ready', lastGenerated: '5 mins ago' }
+
+    // Filter for approved/disbursed payroll runs that are ready for bank file generation
+    const eligibleRuns = payrollRuns.filter(r => r.status === 'approved' || r.status === 'disbursed');
+    const latestRun = eligibleRuns[0];
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                    <p className="text-sm text-slate-500 font-medium">Loading bank file data...</p>
+                </div>
+            </div>
+        );
+    }
+
+    const bankFormats = [
+        { id: 'neft', name: 'NEFT Transfer', format: 'Text (.txt)' },
+        { id: 'rtgs', name: 'RTGS Transfer', format: 'Text (.txt)' },
+        { id: 'csv', name: 'CSV Export', format: 'CSV (.csv)' },
+        { id: 'excel', name: 'Excel Export', format: 'Excel (.xlsx)' },
     ];
 
     return (
@@ -52,69 +72,74 @@ export default function BankFileGenerationPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Generator */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-                        <h3 className="font-bold text-lg mb-4">Select Bank Format</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {banks.map(bank => (
-                                <div key={bank.id} className={`p-4 rounded-xl border cursor-pointer transition-all ${bank.status === 'Ready'
-                                        ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800 ring-1 ring-indigo-500'
-                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-60'
-                                    }`}>
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="font-bold">{bank.name}</div>
-                                        {bank.status === 'Ready' && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
+            {eligibleRuns.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <FileSpreadsheet className="w-12 h-12 text-slate-300 dark:text-slate-600 mb-3" />
+                    <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300">No Approved Payroll Runs</h3>
+                    <p className="text-sm text-slate-500 mt-1">Approve a payroll run to generate bank transfer files.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Main Generator */}
+                    <div className="lg:col-span-2 space-y-6">
+                        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
+                            <h3 className="font-bold text-lg mb-4">Select Bank Format</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {bankFormats.map(bank => (
+                                    <div key={bank.id} className="p-4 rounded-xl border cursor-pointer transition-all bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-indigo-300 hover:ring-1 hover:ring-indigo-500/30">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="font-bold">{bank.name}</div>
+                                        </div>
+                                        <div className="text-xs text-slate-500 mb-4">Format: {bank.format}</div>
+                                        <button className="w-full py-2 bg-white dark:bg-slate-900 text-indigo-600 text-xs font-bold rounded-lg border border-indigo-100 dark:border-indigo-900 hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2">
+                                            <Download className="w-3 h-3" /> Download File
+                                        </button>
                                     </div>
-                                    <div className="text-xs text-slate-500 mb-4">Format: {bank.format}</div>
-                                    <button className="w-full py-2 bg-white dark:bg-slate-900 text-indigo-600 text-xs font-bold rounded-lg border border-indigo-100 dark:border-indigo-900 hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2">
-                                        <Download className="w-3 h-3" /> Download File
-                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="bg-indigo-50 dark:bg-indigo-900/10 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex items-start gap-4">
+                            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
+                                <CreditCard className="w-6 h-6 text-indigo-500" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-indigo-900 dark:text-indigo-100">Direct Integration Available</h4>
+                                <p className="text-sm text-slate-600 dark:text-slate-300 mt-1 mb-3">Connect directly with your corporate banking portal to process salaries without manual file uploads.</p>
+                                <button className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">
+                                    Setup Integration <ArrowRight className="w-3 h-3" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Status Sidebar */}
+                    <div className="space-y-4">
+                        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
+                            <h4 className="font-bold mb-4">Batch Summary</h4>
+                            <div className="space-y-4">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-500">Payroll Run</span>
+                                    <span className="font-bold">{latestRun.monthName}</span>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="bg-indigo-50 dark:bg-indigo-900/10 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex items-start gap-4">
-                        <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
-                            <CreditCard className="w-6 h-6 text-indigo-500" />
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-indigo-900 dark:text-indigo-100">Direct Integration Available</h4>
-                            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1 mb-3">Connect directly with HDFC and ICICI corporate banking to process salaries without manual file uploads.</p>
-                            <button className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">
-                                Setup Integration <ArrowRight className="w-3 h-3" />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Status Sidebar */}
-                <div className="space-y-4">
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-                        <h4 className="font-bold mb-4">Batch Summary</h4>
-                        <div className="space-y-4">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-slate-500">Total Employees</span>
-                                <span className="font-bold">158</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-slate-500">Total Net Pay</span>
-                                <span className="font-bold font-mono">$452,100.00</span>
-                            </div>
-                            <div className="h-px bg-slate-100 dark:bg-slate-800 my-2"></div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-slate-500">Payment Date</span>
-                                <span className="font-bold">31 Dec 2025</span>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-500">Total Employees</span>
+                                    <span className="font-bold">{latestRun.totalEmployees}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-500">Total Net Pay</span>
+                                    <span className="font-bold font-mono">${latestRun.totalNetPay.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                </div>
+                                <div className="h-px bg-slate-100 dark:bg-slate-800 my-2"></div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-500">Status</span>
+                                    <span className="font-bold capitalize">{latestRun.status}</span>
+                                </div>
                             </div>
                         </div>
-                        <button className="hidden w-full mt-6 py-2.5 bg-slate-900 dark:bg-slate-700 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors gap-2">
-                            <RefreshCw className="w-4 h-4 animate-spin" /> Regenerating...
-                        </button>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

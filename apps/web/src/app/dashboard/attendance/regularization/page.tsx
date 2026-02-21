@@ -40,12 +40,10 @@ export default function RegularizationPage() {
     const fetchRegularizations = async () => {
         try {
             const result = await RegularizationService.getRegularizations({ status: 'PENDING' });
-            if (result.length > 0) {
-                setRequests(result as any);
-            }
+            setRequests(result as any);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };

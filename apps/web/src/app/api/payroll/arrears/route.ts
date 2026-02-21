@@ -1,6 +1,6 @@
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
-import { prisma } from '@aura/database';
+import { prisma } from '@/lib/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
@@ -12,6 +12,7 @@ const ArrearSchema = z.object({
   amount: z.number(),
   effectiveMonth: z.string(),
   reason: z.string().optional(),
+  payrollMonth: z.string().optional(),
 });
 
 // GET - Fetch arrears
@@ -21,49 +22,50 @@ export const GET = withEnhancedAuth(
       const permissionError = requirePermission(Resource.PAYROLL, Action.READ, permissions);
       if (permissionError) return permissionError;
 
+      const tenantId = user.tenantId;
       const { searchParams } = new URL(request.url);
       const employeeId = searchParams.get('employeeId');
       const status = searchParams.get('status');
+      const page = parseInt(searchParams.get('page') || '1', 10);
+      const limit = parseInt(searchParams.get('limit') || '50', 10);
 
-      // Mock data
-      const mockArrears = [
-        {
-          id: '1',
-          employeeId: 'emp-1',
-          employeeName: 'Sarah Jenkins',
-          type: 'Salary Revision Backpay',
-          amount: 5000,
-          effectiveMonth: '2024-01',
-          status: 'PENDING',
-          reason: 'Annual increment retroactive payment',
-          createdAt: new Date('2024-08-01').toISOString(),
-        },
-        {
-          id: '2',
-          employeeId: 'emp-2',
-          employeeName: 'Mike Chen',
-          type: 'Overtime Adjustment',
-          amount: 1200,
-          effectiveMonth: '2024-07',
-          status: 'PROCESSED',
-          reason: 'Overtime hours correction',
-          createdAt: new Date('2024-07-28').toISOString(),
-          processedAt: new Date('2024-08-01').toISOString(),
-        },
-      ];
+      const where: Record<string, unknown> = {
+        tenantId,
+        category: 'ARREAR',
+      };
+      if (employeeId) where.employeeId = employeeId;
+      if (status) where.approvalStatus = status;
 
-      let filteredData = mockArrears;
-      if (employeeId) {
-        filteredData = mockArrears.filter(arr => arr.employeeId === employeeId);
-      }
-      if (status) {
-        filteredData = filteredData.filter(arr => arr.status === status);
-      }
+      const [total, adjustments] = await Promise.all([
+        prisma.payrollAdjustment.count({ where }),
+        prisma.payrollAdjustment.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+      ]);
+
+      const arrears = adjustments.map((adj) => ({
+        id: adj.id,
+        employeeId: adj.employeeId,
+        type: adj.name,
+        code: adj.code,
+        amount: Number(adj.amount),
+        effectiveMonth: adj.payrollMonth,
+        reason: adj.reason,
+        status: adj.approvalStatus,
+        isProcessed: adj.isProcessed,
+        adjustmentType: adj.adjustmentType,
+        createdAt: adj.createdAt?.toISOString(),
+        createdBy: adj.createdBy,
+        processedInRun: adj.processedInRun,
+      }));
 
       return NextResponse.json({
         success: true,
-        data: filteredData,
-        meta: { total: filteredData.length },
+        data: arrears,
+        meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
     } catch (error) {
       logger.error('Error fetching arrears:', error);
@@ -82,16 +84,25 @@ export const POST = withEnhancedAuth(
       const permissionError = requirePermission(Resource.PAYROLL, Action.CREATE, permissions);
       if (permissionError) return permissionError;
 
+      const tenantId = user.tenantId;
       const body = await request.json();
       const data = ArrearSchema.parse(body);
 
-      const newArrear = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data,
-        status: 'PENDING',
-        createdAt: new Date().toISOString(),
-        createdBy: user.userId,
-      };
+      const adjustment = await prisma.payrollAdjustment.create({
+        data: {
+          tenantId,
+          employeeId: data.employeeId,
+          payrollMonth: data.payrollMonth || data.effectiveMonth,
+          adjustmentType: data.amount >= 0 ? 'EARNING' : 'DEDUCTION',
+          code: `ARREAR-${data.type.toUpperCase().replace(/\s+/g, '-')}`,
+          name: data.type,
+          amount: Math.abs(data.amount),
+          reason: data.reason || `Arrear: ${data.type} for ${data.effectiveMonth}`,
+          category: 'ARREAR',
+          approvalStatus: 'PENDING',
+          createdBy: user.userId,
+        },
+      });
 
       await prisma.auditLog.create({
         data: {
@@ -103,7 +114,7 @@ export const POST = withEnhancedAuth(
         },
       });
 
-      return NextResponse.json({ success: true, data: newArrear }, { status: 201 });
+      return NextResponse.json({ success: true, data: adjustment }, { status: 201 });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(

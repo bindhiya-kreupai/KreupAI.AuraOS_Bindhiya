@@ -11,10 +11,41 @@ import {
     Download
 } from 'lucide-react';
 import { MassUpdateService } from '../services';
+import type { MassUpdate } from '../types';
+
+const formatDate = (date: Date | string): string => {
+    const d = new Date(date);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+        return `Today, ${d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    if (diffDays === 1) {
+        return `Yesterday, ${d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+};
+
+const getStatusDisplay = (status: string) => {
+    switch (status) {
+        case 'executed':
+            return { label: 'Success', style: 'success' };
+        case 'failed':
+            return { label: 'Partial Error', style: 'error' };
+        case 'pending_approval':
+        case 'approved':
+        case 'draft':
+            return { label: 'Processing', style: 'processing' };
+        default:
+            return { label: status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' '), style: 'processing' };
+    }
+};
 
 export default function MassUpdatesPage() {
     const [isDragging, setIsDragging] = useState(false);
-    const [massUpdates, setMassUpdates] = useState<any[]>([]);
+    const [massUpdates, setMassUpdates] = useState<MassUpdate[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -27,26 +58,15 @@ export default function MassUpdatesPage() {
             setMassUpdates(data);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
 
-    const [jobs, setJobs] = useState([
-        { name: 'Salary_Revision_2024.csv', date: 'Today, 10:30 AM', status: 'Success', records: 142 },
-        { name: 'New_Hires_Nov_Batch.xlsx', date: 'Yesterday, 4:15 PM', status: 'Partial Error', records: 12 },
-        { name: 'Dept_Restruct_Data.csv', date: 'Dec 01, 2023', status: 'Success', records: 450 },
-    ]);
-
     const handleUpload = () => {
         alert("Simulating file upload...");
         setTimeout(() => {
-            setJobs(prev => [{
-                name: `Bulk_Update_${new Date().toLocaleTimeString()}.csv`,
-                date: 'Just now',
-                status: 'Processing',
-                records: 0
-            }, ...prev]);
+            fetchMassUpdates();
         }, 1000);
     };
 
@@ -108,45 +128,67 @@ export default function MassUpdatesPage() {
                 {/* Recent History */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm overflow-y-auto max-h-[500px]">
                     <h3 className="font-bold text-lg mb-4">Recent Import Jobs</h3>
-                    <div className="space-y-4">
-                        {jobs.map((job, i) => (
-                            <div key={i} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                                <div>
-                                    <div className="font-bold text-sm">{job.name}</div>
-                                    <div className="text-xs text-slate-500 mt-1">{job.date} • {job.records} Records</div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    {job.status === 'Success' && (
-                                        <span className="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded flex items-center gap-1">
-                                            <CheckCircle className="w-3 h-3" /> Success
-                                        </span>
-                                    )}
-                                    {job.status === 'Partial Error' && (
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xs font-bold text-amber-600 bg-amber-100 px-2 py-1 rounded flex items-center gap-1">
-                                                <AlertTriangle className="w-3 h-3" /> Errors
-                                            </span>
-                                            <button
-                                                onClick={() => handleRetry(job.name)}
-                                                className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500"
-                                                title="Retry Failed Records"
-                                            >
-                                                <RefreshCw className="w-3 h-3" />
-                                            </button>
-                                            <button className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500" title="Download Error Log">
-                                                <Download className="w-3 h-3" />
-                                            </button>
+
+                    {loading && (
+                        <div className="flex items-center justify-center h-48">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+                        </div>
+                    )}
+
+                    {!loading && massUpdates.length === 0 && (
+                        <div className="flex flex-col items-center justify-center h-48 text-slate-400">
+                            <Database className="w-12 h-12 mb-4 opacity-50" />
+                            <p className="text-lg font-medium">No import jobs found</p>
+                            <p className="text-sm">Import jobs will appear here once data is uploaded.</p>
+                        </div>
+                    )}
+
+                    {!loading && massUpdates.length > 0 && (
+                        <div className="space-y-4">
+                            {massUpdates.map((job) => {
+                                const statusInfo = getStatusDisplay(job.status);
+                                const recordCount = job.targetEmployees?.length ?? 0;
+
+                                return (
+                                    <div key={job.updateId} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                        <div>
+                                            <div className="font-bold text-sm">{job.updateName}</div>
+                                            <div className="text-xs text-slate-500 mt-1">{formatDate(job.createdDate)} {recordCount > 0 ? `\u2022 ${recordCount} Records` : ''}</div>
                                         </div>
-                                    )}
-                                    {job.status === 'Processing' && (
-                                        <span className="text-xs font-bold text-indigo-600 bg-indigo-100 px-2 py-1 rounded flex items-center gap-1 animate-pulse">
-                                            <RefreshCw className="w-3 h-3 animate-spin" /> Processing
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                                        <div className="flex items-center gap-2">
+                                            {statusInfo.style === 'success' && (
+                                                <span className="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded flex items-center gap-1">
+                                                    <CheckCircle className="w-3 h-3" /> Success
+                                                </span>
+                                            )}
+                                            {statusInfo.style === 'error' && (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-bold text-amber-600 bg-amber-100 px-2 py-1 rounded flex items-center gap-1">
+                                                        <AlertTriangle className="w-3 h-3" /> Errors
+                                                    </span>
+                                                    <button
+                                                        onClick={() => handleRetry(job.updateName)}
+                                                        className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500"
+                                                        title="Retry Failed Records"
+                                                    >
+                                                        <RefreshCw className="w-3 h-3" />
+                                                    </button>
+                                                    <button className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500" title="Download Error Log">
+                                                        <Download className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+                                            )}
+                                            {statusInfo.style === 'processing' && (
+                                                <span className="text-xs font-bold text-indigo-600 bg-indigo-100 px-2 py-1 rounded flex items-center gap-1 animate-pulse">
+                                                    <RefreshCw className="w-3 h-3 animate-spin" /> {statusInfo.label}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

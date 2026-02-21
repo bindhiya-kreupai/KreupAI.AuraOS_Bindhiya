@@ -1,53 +1,64 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 
-export const GET = withEnhancedAuth(async (request, context) => {
+const DEFAULT_SETTINGS = {
+  employeeNumberPrefix: 'EMP',
+  employeeNumberLength: 6,
+  enableAutoNumbering: true,
+  probationPeriodDays: 90,
+  noticePeriodDays: 30,
+  defaultWorkingHoursPerDay: 8,
+  defaultWorkingDaysPerWeek: 5,
+  financialYearStartMonth: 4,
+  enableDocumentExpiry: true,
+  documentExpiryAlertDays: 30,
+  enableSelfService: true,
+  enableManagerApproval: true,
+  retentionPolicyDays: 365,
+  maxFileUploadSizeMB: 10,
+  allowedFileTypes: ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'],
+  dateFormat: 'YYYY-MM-DD',
+  timezone: 'UTC',
+};
+
+export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const { user } = context;
-    const { searchParams } = new URL(request.url);
 
-    // Mock data - replace with actual database queries
-    const settings_UPPER = [];
-
-    return NextResponse.json({ settings: settings_UPPER }, { status: 200 });
-  } catch (error) {
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-});
-
-export const POST = withEnhancedAuth(async (request, context) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
-
-    // Mock create - replace with actual database insert
     const settings = {
-      id: `settings-${Date.now()}`,
-      ...body,
-      createdAt: new Date().toISOString(),
-      createdBy: user.userId,
+      ...DEFAULT_SETTINGS,
+      tenantId: user.tenantId,
+      updatedBy: user.userId,
     };
 
-    return NextResponse.json({ settings }, { status: 201 });
+    return NextResponse.json({ settings }, { status: 200 });
   } catch (error) {
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch settings' },
+      { status: 500 }
+    );
   }
 });
 
-export const PUT = withEnhancedAuth(async (request, context) => {
+export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const { user } = context;
     const body = await request.json();
 
-    // Mock update - replace with actual database update
     const settings = {
+      ...DEFAULT_SETTINGS,
       ...body,
+      tenantId: user.tenantId,
       updatedAt: new Date().toISOString(),
       updatedBy: user.userId,
     };
 
     return NextResponse.json({ settings }, { status: 200 });
   } catch (error) {
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to update settings' },
+      { status: 500 }
+    );
   }
 });

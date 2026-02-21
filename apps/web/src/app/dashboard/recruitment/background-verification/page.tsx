@@ -8,7 +8,8 @@ import {
     CheckCircle,
     Clock,
     User,
-    FileText
+    FileText,
+    Loader2
 } from 'lucide-react';
 
 export default function BackgroundVerificationPage() {
@@ -22,16 +23,17 @@ export default function BackgroundVerificationPage() {
 
     const fetchChecks = async () => {
         try {
+            setLoading(true);
             const data = await BackgroundCheckService.getBackgroundChecks();
             setChecks(data);
 
-            const inProgress = data.filter((c: any) => c.status === 'in-progress').length;
+            const inProgress = data.filter((c: any) => c.status === 'in-progress' || c.status === 'pending').length;
             const completed = data.filter((c: any) => c.status === 'completed').length;
-            const flagged = data.filter((c: any) => c.status === 'flagged').length;
+            const flagged = data.filter((c: any) => c.status === 'flagged' || c.result === 'flagged').length;
             setStats({ inProgress, completed, flagged });
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -42,8 +44,37 @@ export default function BackgroundVerificationPage() {
             await fetchChecks();
         } catch (error) {
             console.error('Error:', error);
-                    }
+        }
     };
+
+    const getStatusStyle = (status: string) => {
+        switch (status) {
+            case 'completed': return 'bg-emerald-100 text-emerald-600';
+            case 'flagged': return 'bg-rose-100 text-rose-600';
+            default: return 'bg-indigo-100 text-indigo-600';
+        }
+    };
+
+    const getStatusLabel = (status: string) => {
+        switch (status) {
+            case 'pending': return 'Pending';
+            case 'in-progress': return 'In Progress';
+            case 'completed': return 'Completed';
+            case 'flagged': return 'Flagged';
+            default: return status;
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                    <p className="text-sm text-silver-mist font-medium">Loading background checks...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
@@ -64,48 +95,61 @@ export default function BackgroundVerificationPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Status Column */}
                 <div className="lg:col-span-2 space-y-4">
-                    {[
-                        { name: 'Michael Chen', role: 'Senior Frontend Engineer', vendor: 'Checkr', status: 'In Progress', progress: 65, checks: ['Identity', 'Criminal', 'Education'] },
-                        { name: 'James Wilson', role: 'DevOps Engineer', vendor: 'Hireright', status: 'Completed', progress: 100, checks: ['Identity', 'Criminal', 'Education', 'Employment'], result: 'Clear' },
-                        { name: 'Emily Davis', role: 'UX Designer', vendor: 'Checkr', status: 'Flagged', progress: 100, checks: ['Identity', 'Employment'], result: 'Discrepancy' },
-                    ].map((check, i) => (
-                        <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <h3 className="font-bold text-lg flex items-center gap-2">
-                                        {check.name}
-                                        {check.status === 'Flagged' && <AlertCircle className="w-5 h-5 text-rose-500" />}
-                                        {check.status === 'Completed' && <CheckCircle className="w-5 h-5 text-emerald-500" />}
-                                    </h3>
-                                    <div className="text-sm text-slate-500">{check.role} • via {check.vendor}</div>
-                                </div>
-                                <div className={`px-3 py-1 rounded-full text-xs font-bold ${check.status === 'Completed' ? 'bg-emerald-100 text-emerald-600' :
-                                        check.status === 'Flagged' ? 'bg-rose-100 text-rose-600' : 'bg-indigo-100 text-indigo-600'
-                                    }`}>
-                                    {check.status}
-                                </div>
-                            </div>
-
-                            <div className="space-y-2 mb-4">
-                                <div className="flex justify-between text-xs font-bold text-slate-500">
-                                    <span>Verification Progress</span>
-                                    <span>{check.progress}%</span>
-                                </div>
-                                <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                    <div className={`h-full rounded-full ${check.status === 'Flagged' ? 'bg-rose-500' : 'bg-indigo-500'
-                                        }`} style={{ width: `${check.progress}%` }}></div>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-2">
-                                {check.checks.map((c, j) => (
-                                    <span key={j} className="px-2 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1">
-                                        <CheckCircle className="w-3 h-3 text-emerald-500" /> {c}
-                                    </span>
-                                ))}
-                            </div>
+                    {checks.length === 0 && (
+                        <div className="bg-white dark:bg-slate-900 p-12 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
+                            <ShieldCheck className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                            <h3 className="text-lg font-bold text-slate-500 dark:text-slate-400 mb-2">No background checks</h3>
+                            <p className="text-sm text-slate-400 dark:text-slate-500">Initiate a new background check to get started.</p>
                         </div>
-                    ))}
+                    )}
+                    {checks.map((check: any) => {
+                        const progress = check.status === 'completed' ? 100 :
+                            check.status === 'flagged' ? 100 :
+                                check.status === 'in-progress' ? 50 : 10;
+
+                        return (
+                            <div key={check.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h3 className="font-bold text-lg flex items-center gap-2">
+                                            {check.checkType}
+                                            {check.status === 'flagged' && <AlertCircle className="w-5 h-5 text-rose-500" />}
+                                            {check.status === 'completed' && <CheckCircle className="w-5 h-5 text-emerald-500" />}
+                                        </h3>
+                                        <div className="text-sm text-slate-500">
+                                            {check.provider || 'Unknown Provider'} {check.candidateId && `- Candidate: ${check.candidateId.substring(0, 8)}`}
+                                        </div>
+                                    </div>
+                                    <div className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusStyle(check.status)}`}>
+                                        {getStatusLabel(check.status)}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2 mb-4">
+                                    <div className="flex justify-between text-xs font-bold text-slate-500">
+                                        <span>Verification Progress</span>
+                                        <span>{progress}%</span>
+                                    </div>
+                                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                        <div className={`h-full rounded-full ${check.status === 'flagged' ? 'bg-rose-500' : 'bg-indigo-500'
+                                            }`} style={{ width: `${progress}%` }}></div>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-2 text-xs text-slate-500">
+                                    <span>Requested: {check.requestDate ? new Date(check.requestDate).toLocaleDateString() : 'N/A'}</span>
+                                    {check.completionDate && (
+                                        <span>Completed: {new Date(check.completionDate).toLocaleDateString()}</span>
+                                    )}
+                                    {check.result && (
+                                        <span className={`font-bold ${check.result === 'clear' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                            Result: {check.result}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
 
                 {/* Right Panel: Vendor Integration */}
@@ -129,10 +173,20 @@ export default function BackgroundVerificationPage() {
                     </div>
 
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-                        <h3 className="font-bold text-lg mb-4">Pending Requests</h3>
-                        <div className="text-center py-8 text-slate-400">
-                            <FileText className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                            <p className="text-sm">No pending BGV requests</p>
+                        <h3 className="font-bold text-lg mb-4">Summary</h3>
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-slate-500">In Progress</span>
+                                <span className="font-bold text-indigo-600">{stats.inProgress}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-slate-500">Completed</span>
+                                <span className="font-bold text-emerald-600">{stats.completed}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-slate-500">Flagged</span>
+                                <span className="font-bold text-rose-600">{stats.flagged}</span>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -1,43 +1,42 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     GraduationCap,
     PlayCircle,
     CheckCircle2,
     Clock,
-    BookOpen
+    BookOpen,
+    Loader2
 } from 'lucide-react';
+import { BiasTrainingService } from '../services';
 
 export default function BiasTrainingPage() {
-    const modules = [
-        {
-            title: 'Unconscious Bias Fundamentals',
-            duration: '45 mins',
-            status: 'Completed',
-            completedDate: 'Oct 15, 2023',
-            thumb: 'bg-indigo-100'
-        },
-        {
-            title: 'Inclusive Leadership',
-            duration: '60 mins',
-            status: 'In Progress',
-            progress: 45,
-            thumb: 'bg-pink-100'
-        },
-        {
-            title: 'Microaggressions at Work',
-            duration: '30 mins',
-            status: 'Not Started',
-            thumb: 'bg-amber-100'
-        },
-        {
-            title: 'Allyship 101',
-            duration: '40 mins',
-            status: 'Assigned',
-            thumb: 'bg-emerald-100'
-        }
-    ];
+    const [modules, setModules] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await BiasTrainingService.getAllTrainings();
+                setModules(Array.isArray(data) ? data : []);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">

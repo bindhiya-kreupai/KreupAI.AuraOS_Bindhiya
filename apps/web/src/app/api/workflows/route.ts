@@ -1,279 +1,97 @@
-/**
- * Workflow Engine API Routes
- * Phase 4: Enterprise Expansion - Approval Workflows
- */
-
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { WorkflowService } from '@/lib/services/enterprise';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@/lib/database';
 
-/**
- * POST /api/workflows
- * Manage workflows and instances
- */
-export async function POST(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request, context) => {
   try {
-    const body = await request.json();
-
-    if (!body.tenantId) {
-      return NextResponse.json(
-        { error: 'tenantId is required', errorAr: 'معرف المستأجر مطلوب' },
-        { status: 400 }
-      );
-    }
-
-    const action = body.action || 'create';
-
-    switch (action) {
-      case 'create':
-        if (!body.definition) {
-          return NextResponse.json(
-            { error: 'workflow definition is required', errorAr: 'تعريف سير العمل مطلوب' },
-            { status: 400 }
-          );
-        }
-
-        const workflow = await WorkflowService.createWorkflow(
-          body.tenantId,
-          body.definition,
-          body.createdBy || 'system'
-        );
-
-        return NextResponse.json({
-          success: true,
-          data: workflow,
-        });
-
-      case 'create-from-template':
-        if (!body.type || !body.name) {
-          return NextResponse.json(
-            { error: 'type and name are required', errorAr: 'النوع والاسم مطلوبان' },
-            { status: 400 }
-          );
-        }
-
-        const fromTemplate = await WorkflowService.createFromTemplate(
-          body.tenantId,
-          body.type,
-          body.name,
-          body.createdBy || 'system'
-        );
-
-        return NextResponse.json({
-          success: true,
-          data: fromTemplate,
-        });
-
-      case 'publish':
-        if (!body.workflowId) {
-          return NextResponse.json(
-            { error: 'workflowId is required', errorAr: 'معرف سير العمل مطلوب' },
-            { status: 400 }
-          );
-        }
-
-        const published = await WorkflowService.publishWorkflow(body.workflowId);
-
-        return NextResponse.json({
-          success: true,
-          data: published,
-        });
-
-      case 'start':
-        if (!body.workflowId || !body.requesterId || !body.referenceType || !body.referenceId) {
-          return NextResponse.json(
-            { error: 'workflowId, requesterId, referenceType and referenceId are required', errorAr: 'معرف سير العمل ومعرف الطالب ونوع المرجع ومعرف المرجع مطلوبان' },
-            { status: 400 }
-          );
-        }
-
-        const instance = await WorkflowService.startWorkflow(
-          body.tenantId,
-          body.workflowId,
-          body.requesterId,
-          body.requesterName || 'Requester',
-          body.entityId || body.tenantId,
-          body.referenceType,
-          body.referenceId,
-          body.requestData || {}
-        );
-
-        return NextResponse.json({
-          success: true,
-          data: instance,
-        });
-
-      case 'process':
-        if (!body.instanceId || !body.taskId || !body.taskAction || !body.actorId) {
-          return NextResponse.json(
-            { error: 'instanceId, taskId, taskAction and actorId are required', errorAr: 'معرف المثيل ومعرف المهمة والإجراء ومعرف المنفذ مطلوبان' },
-            { status: 400 }
-          );
-        }
-
-        const processed = await WorkflowService.processAction(
-          body.instanceId,
-          body.taskId,
-          body.taskAction,
-          body.actorId,
-          body.actorName || 'Actor',
-          body.comments,
-          body.delegateTo
-        );
-
-        return NextResponse.json({
-          success: true,
-          data: processed,
-        });
-
-      case 'cancel':
-        if (!body.instanceId || !body.cancelledBy) {
-          return NextResponse.json(
-            { error: 'instanceId and cancelledBy are required', errorAr: 'معرف المثيل ومن ألغى مطلوبان' },
-            { status: 400 }
-          );
-        }
-
-        const cancelled = await WorkflowService.cancelInstance(
-          body.instanceId,
-          body.cancelledBy,
-          body.reason || ''
-        );
-
-        return NextResponse.json({
-          success: true,
-          data: cancelled,
-        });
-
-      case 'delegate':
-        if (!body.delegation) {
-          return NextResponse.json(
-            { error: 'delegation is required', errorAr: 'التفويض مطلوب' },
-            { status: 400 }
-          );
-        }
-
-        const delegation = await WorkflowService.createDelegation({
-          tenantId: body.tenantId,
-          ...body.delegation,
-          createdBy: body.createdBy || 'system',
-        });
-
-        return NextResponse.json({
-          success: true,
-          data: delegation,
-        });
-
-      default:
-        return NextResponse.json(
-          { error: 'Invalid action', errorAr: 'إجراء غير صالح' },
-          { status: 400 }
-        );
-    }
-  } catch (error) {
-        return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to process workflow',
-        errorAr: 'فشل في معالجة سير العمل',
-      },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * GET /api/workflows
- * Get workflows, instances and tasks
- */
-export async function GET(request: NextRequest) {
-  try {
+    const { user } = context;
+    const tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId');
     const type = searchParams.get('type') || 'definitions';
-    const userId = searchParams.get('userId');
-
-    if (!tenantId && type !== 'templates') {
-      return NextResponse.json(
-        { error: 'tenantId is required', errorAr: 'معرف المستأجر مطلوب' },
-        { status: 400 }
-      );
-    }
 
     switch (type) {
-      case 'templates':
-        const templates = await WorkflowService.getTemplates(
-          searchParams.get('workflowType') as any
-        );
+      case 'definitions': {
+        const definitions = await prisma.workflowDefinition.findMany({
+          where: { tenantId },
+          orderBy: { createdAt: 'desc' },
+        });
 
         return NextResponse.json({
           success: true,
-          data: templates,
+          data: definitions,
         });
+      }
 
-      case 'definitions':
-        // In production, fetch from database
-        return NextResponse.json({
-          success: true,
-          data: [],
-        });
+      case 'instances': {
+        const statusFilter = searchParams.get('status') || undefined;
+        const definitionIdFilter = searchParams.get('definitionId') || undefined;
 
-      case 'instances':
-        const instances = await WorkflowService.getInstances(tenantId!, {
-          workflowType: searchParams.get('workflowType') as any,
-          status: searchParams.get('status') || undefined,
-          requesterId: searchParams.get('requesterId') || undefined,
-          entityId: searchParams.get('entityId') || undefined,
+        const where: any = { tenantId };
+        if (statusFilter) where.status = statusFilter;
+        if (definitionIdFilter) where.definitionId = definitionIdFilter;
+
+        const instances = await prisma.workflowInstance.findMany({
+          where,
+          include: { definition: true },
+          orderBy: { startedAt: 'desc' },
         });
 
         return NextResponse.json({
           success: true,
           data: instances,
         });
+      }
 
-      case 'tasks':
-        if (!userId) {
-          return NextResponse.json(
-            { error: 'userId is required for tasks', errorAr: 'معرف المستخدم مطلوب للمهام' },
-            { status: 400 }
-          );
-        }
-
-        const tasks = await WorkflowService.getPendingTasks(userId, {
-          workflowType: searchParams.get('workflowType') as any,
-          priority: searchParams.get('priority') || undefined,
-          status: searchParams.get('status') || undefined,
+      case 'templates': {
+        const templates = await prisma.workflowDefinition.findMany({
+          where: { tenantId, isActive: true },
+          orderBy: { createdAt: 'desc' },
         });
 
         return NextResponse.json({
           success: true,
-          data: tasks,
+          data: templates,
         });
+      }
 
-      case 'delegations':
-        if (!userId) {
-          return NextResponse.json(
-            { error: 'userId is required for delegations', errorAr: 'معرف المستخدم مطلوب للتفويضات' },
-            { status: 400 }
-          );
-        }
+      case 'analytics': {
+        const [
+          totalDefinitions,
+          activeDefinitions,
+          totalInstances,
+          runningInstances,
+          completedInstances,
+          failedInstances,
+          cancelledInstances,
+        ] = await Promise.all([
+          prisma.workflowDefinition.count({ where: { tenantId } }),
+          prisma.workflowDefinition.count({ where: { tenantId, isActive: true } }),
+          prisma.workflowInstance.count({ where: { tenantId } }),
+          prisma.workflowInstance.count({ where: { tenantId, status: 'RUNNING' } }),
+          prisma.workflowInstance.count({ where: { tenantId, status: 'COMPLETED' } }),
+          prisma.workflowInstance.count({ where: { tenantId, status: 'FAILED' } }),
+          prisma.workflowInstance.count({ where: { tenantId, status: 'CANCELLED' } }),
+        ]);
 
-        const delegations = await WorkflowService.getActiveDelegations(userId);
+        const successRate = totalInstances > 0
+          ? (completedInstances / totalInstances) * 100
+          : 0;
 
         return NextResponse.json({
           success: true,
-          data: delegations,
+          data: {
+            totalDefinitions,
+            activeDefinitions,
+            totalInstances,
+            runningInstances,
+            completedInstances,
+            failedInstances,
+            cancelledInstances,
+            successRate,
+          },
         });
-
-      case 'analytics':
-        const analytics = await WorkflowService.getAnalytics(
-          tenantId!,
-          searchParams.get('period') || 'month'
-        );
-
-        return NextResponse.json({
-          success: true,
-          data: analytics,
-        });
+      }
 
       default:
         return NextResponse.json(
@@ -282,9 +100,148 @@ export async function GET(request: NextRequest) {
         );
     }
   } catch (error) {
-        return NextResponse.json(
+    return NextResponse.json(
       { error: 'Failed to fetch workflow data', errorAr: 'فشل في جلب بيانات سير العمل' },
       { status: 500 }
     );
   }
-}
+});
+
+export const POST = withEnhancedAuth(async (request, context) => {
+  try {
+    const { user } = context;
+    const tenantId = user.tenantId;
+    const body = await request.json();
+    const action = body.action || 'create';
+
+    switch (action) {
+      case 'create': {
+        if (!body.name) {
+          return NextResponse.json(
+            { error: 'Workflow name is required', errorAr: 'اسم سير العمل مطلوب' },
+            { status: 400 }
+          );
+        }
+
+        const workflow = await prisma.workflowDefinition.create({
+          data: {
+            tenantId,
+            name: body.name,
+            description: body.description || null,
+            trigger: body.trigger || 'MANUAL',
+            triggerEvent: body.triggerEvent || null,
+            nodes: body.nodes || [],
+            edges: body.edges || [],
+            isActive: body.isActive ?? false,
+            version: 1,
+            createdBy: user.userId,
+          },
+        });
+
+        return NextResponse.json({
+          success: true,
+          data: workflow,
+        }, { status: 201 });
+      }
+
+      case 'start': {
+        if (!body.definitionId) {
+          return NextResponse.json(
+            { error: 'definitionId is required', errorAr: 'معرف التعريف مطلوب' },
+            { status: 400 }
+          );
+        }
+
+        const definition = await prisma.workflowDefinition.findFirst({
+          where: { id: body.definitionId, tenantId },
+        });
+
+        if (!definition) {
+          return NextResponse.json(
+            { error: 'Workflow definition not found', errorAr: 'لم يتم العثور على تعريف سير العمل' },
+            { status: 404 }
+          );
+        }
+
+        const nodes = definition.nodes as any[];
+        const startNode = Array.isArray(nodes) && nodes.length > 0 ? nodes[0]?.id : null;
+
+        const instance = await prisma.workflowInstance.create({
+          data: {
+            definitionId: body.definitionId,
+            tenantId,
+            status: 'RUNNING',
+            currentNode: startNode || null,
+            context: body.context || {},
+            triggeredBy: user.userId,
+          },
+          include: { definition: true },
+        });
+
+        return NextResponse.json({
+          success: true,
+          data: instance,
+        }, { status: 201 });
+      }
+
+      case 'process': {
+        if (!body.instanceId || !body.status) {
+          return NextResponse.json(
+            { error: 'instanceId and status are required', errorAr: 'معرف المثيل والحالة مطلوبان' },
+            { status: 400 }
+          );
+        }
+
+        const existing = await prisma.workflowInstance.findFirst({
+          where: { id: body.instanceId, tenantId },
+        });
+
+        if (!existing) {
+          return NextResponse.json(
+            { error: 'Workflow instance not found', errorAr: 'لم يتم العثور على مثيل سير العمل' },
+            { status: 404 }
+          );
+        }
+
+        const updateData: any = {
+          status: body.status,
+          currentNode: body.currentNode || existing.currentNode,
+          context: body.context || existing.context,
+        };
+
+        if (body.status === 'COMPLETED' || body.status === 'FAILED' || body.status === 'CANCELLED') {
+          updateData.completedAt = new Date();
+        }
+
+        if (body.error) {
+          updateData.error = body.error;
+        }
+
+        const updated = await prisma.workflowInstance.update({
+          where: { id: body.instanceId },
+          data: updateData,
+          include: { definition: true },
+        });
+
+        return NextResponse.json({
+          success: true,
+          data: updated,
+        });
+      }
+
+      default:
+        return NextResponse.json(
+          { error: 'Invalid action', errorAr: 'إجراء غير صالح' },
+          { status: 400 }
+        );
+    }
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : 'Failed to process workflow',
+        errorAr: 'فشل في معالجة سير العمل',
+      },
+      { status: 500 }
+    );
+  }
+});

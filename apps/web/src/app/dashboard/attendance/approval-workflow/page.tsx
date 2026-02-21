@@ -35,12 +35,10 @@ export default function ApprovalWorkflowPage() {
         try {
             setLoading(true);
             const result = await ApprovalWorkflowService.getWorkflows();
-            if (result && result.length > 0) {
-                setWorkflows(result);
-            }
+            setWorkflows(result || []);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };

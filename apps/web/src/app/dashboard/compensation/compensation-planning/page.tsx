@@ -1,34 +1,47 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DollarSign, TrendingUp, Users, Target, BarChart3,
-  ChevronDown, ArrowUpRight, ArrowDownRight, Minus
+  ChevronDown, ArrowUpRight, ArrowDownRight, Minus, Loader2
 } from 'lucide-react';
-
-interface TeamMember {
-  id: string;
-  name: string;
-  avatar: string;
-  role: string;
-  currentSalary: number;
-  proposedIncrease: number;
-  performanceRating: number;
-  compaRatio: number;
-}
-
-const mockTeam: TeamMember[] = [
-  { id: '1', name: 'Emily Davis', avatar: 'ED', role: 'Senior Engineer', currentSalary: 125000, proposedIncrease: 8, performanceRating: 4.5, compaRatio: 0.95 },
-  { id: '2', name: 'Raj Patel', avatar: 'RP', role: 'Engineer II', currentSalary: 105000, proposedIncrease: 10, performanceRating: 4.2, compaRatio: 0.88 },
-  { id: '3', name: 'Anna Lee', avatar: 'AL', role: 'Senior Engineer', currentSalary: 130000, proposedIncrease: 5, performanceRating: 3.8, compaRatio: 1.02 },
-  { id: '4', name: 'Mike Chen', avatar: 'MC', role: 'Staff Engineer', currentSalary: 155000, proposedIncrease: 6, performanceRating: 4.0, compaRatio: 0.92 },
-  { id: '5', name: 'Sarah Johnson', avatar: 'SJ', role: 'Engineer II', currentSalary: 98000, proposedIncrease: 12, performanceRating: 4.8, compaRatio: 0.82 },
-];
+import { EmployeeCompensationService, CompensationAnalyticsService } from '../services';
 
 export default function CompensationPlanningPage() {
-  const [budgetUsed] = useState(72);
-  const totalBudget = 85000;
-  const usedBudget = Math.round(totalBudget * budgetUsed / 100);
+  const [compensations, setCompensations] = useState<any[]>([]);
+  const [metrics, setMetrics] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [compData, metricsData] = await Promise.all([
+        EmployeeCompensationService.getCompensations(),
+        CompensationAnalyticsService.getMetrics(),
+      ]);
+      setCompensations(compData);
+      setMetrics(metricsData);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const totalBudget = metrics?.totalCompensationCost || 0;
+  const avgIncrease = metrics?.incrementMetrics?.averageIncrementPercentage || 0;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-10">
@@ -41,112 +54,108 @@ export default function CompensationPlanningPage() {
       {/* Budget Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
-          <p className="text-xs text-silver-mist uppercase font-medium">Total Budget</p>
-          <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">${totalBudget.toLocaleString()}</p>
-          <p className="text-[10px] text-silver-mist">FY 2025</p>
+          <p className="text-xs text-silver-mist uppercase font-medium">Total Compensation</p>
+          <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">
+            ${totalBudget > 0 ? (totalBudget / 1000).toFixed(0) + 'K' : '--'}
+          </p>
+          <p className="text-[10px] text-silver-mist">Active employees: {metrics?.totalEmployees || 0}</p>
         </div>
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
-          <p className="text-xs text-silver-mist uppercase font-medium">Allocated</p>
-          <p className="text-2xl font-bold text-celestial-indigo mt-1">${usedBudget.toLocaleString()}</p>
-          <p className="text-[10px] text-silver-mist">{budgetUsed}% of budget</p>
+          <p className="text-xs text-silver-mist uppercase font-medium">Avg Compensation</p>
+          <p className="text-2xl font-bold text-celestial-indigo mt-1">
+            ${metrics?.averageCompensation ? (metrics.averageCompensation / 1000).toFixed(0) + 'K' : '--'}
+          </p>
+          <p className="text-[10px] text-silver-mist">Per employee</p>
         </div>
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
-          <p className="text-xs text-silver-mist uppercase font-medium">Remaining</p>
-          <p className="text-2xl font-bold text-neural-mint mt-1">${(totalBudget - usedBudget).toLocaleString()}</p>
-          <p className="text-[10px] text-silver-mist">{100 - budgetUsed}% available</p>
+          <p className="text-xs text-silver-mist uppercase font-medium">Median Compensation</p>
+          <p className="text-2xl font-bold text-neural-mint mt-1">
+            ${metrics?.medianCompensation ? (metrics.medianCompensation / 1000).toFixed(0) + 'K' : '--'}
+          </p>
+          <p className="text-[10px] text-silver-mist">50th percentile</p>
         </div>
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Avg Increase</p>
-          <p className="text-2xl font-bold text-sunset-amber mt-1">8.2%</p>
-          <p className="text-[10px] text-silver-mist">Market avg: 5%</p>
-        </div>
-      </div>
-
-      {/* Budget Bar */}
-      <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-medium text-ink-black dark:text-pearl">Budget Utilization</span>
-          <span className="text-xs text-silver-mist">{budgetUsed}%</span>
-        </div>
-        <div className="w-full h-3 bg-slate-100 dark:bg-deep-cosmos rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-celestial-indigo to-purple-500 rounded-full transition-all" style={{ width: `${budgetUsed}%` }} />
+          <p className="text-2xl font-bold text-sunset-amber mt-1">{avgIncrease > 0 ? avgIncrease.toFixed(1) + '%' : '--'}</p>
+          <p className="text-[10px] text-silver-mist">Last cycle</p>
         </div>
       </div>
 
       {/* Team Compensation Table */}
       <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 overflow-hidden">
         <div className="px-4 py-3 border-b border-cloud dark:border-nebula-purple/50">
-          <h3 className="font-bold text-sm text-ink-black dark:text-pearl">Team Salary Review</h3>
+          <h3 className="font-bold text-sm text-ink-black dark:text-pearl">Employee Compensation Details</h3>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="text-xs text-silver-mist uppercase border-b border-cloud dark:border-nebula-purple/50">
-                <th className="text-left px-4 py-3 font-medium">Employee</th>
-                <th className="text-left px-4 py-3 font-medium">Role</th>
-                <th className="text-right px-4 py-3 font-medium">Current Salary</th>
-                <th className="text-right px-4 py-3 font-medium">Proposed %</th>
-                <th className="text-right px-4 py-3 font-medium">New Salary</th>
-                <th className="text-center px-4 py-3 font-medium">Rating</th>
-                <th className="text-center px-4 py-3 font-medium">Compa-Ratio</th>
-              </tr>
-            </thead>
-            <tbody>
-              {mockTeam.map((member) => {
-                const newSalary = Math.round(member.currentSalary * (1 + member.proposedIncrease / 100));
-                return (
-                  <tr key={member.id} className="border-b border-cloud dark:border-nebula-purple/50 last:border-0 hover:bg-slate-50 dark:hover:bg-deep-cosmos">
+        {compensations.length === 0 ? (
+          <div className="p-8 text-center text-sm text-slate-400">No compensation data available.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-xs text-silver-mist uppercase border-b border-cloud dark:border-nebula-purple/50">
+                  <th className="text-left px-4 py-3 font-medium">Employee</th>
+                  <th className="text-right px-4 py-3 font-medium">Annual CTC</th>
+                  <th className="text-right px-4 py-3 font-medium">Monthly CTC</th>
+                  <th className="text-right px-4 py-3 font-medium">Basic Salary</th>
+                  <th className="text-center px-4 py-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {compensations.map((comp: any) => (
+                  <tr key={comp.id} className="border-b border-cloud dark:border-nebula-purple/50 last:border-0 hover:bg-slate-50 dark:hover:bg-deep-cosmos">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full bg-celestial-indigo/10 flex items-center justify-center">
-                          <span className="text-[10px] font-bold text-celestial-indigo">{member.avatar}</span>
+                          <span className="text-[10px] font-bold text-celestial-indigo">
+                            {(comp.employeeName || comp.employeeId || '?').substring(0, 2).toUpperCase()}
+                          </span>
                         </div>
-                        <span className="text-sm font-medium text-ink-black dark:text-pearl">{member.name}</span>
+                        <span className="text-sm font-medium text-ink-black dark:text-pearl">
+                          {comp.employeeName || comp.employeeId}
+                        </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-xs text-silver-mist">{member.role}</td>
-                    <td className="px-4 py-3 text-sm text-right font-mono text-ink-black dark:text-pearl">${member.currentSalary.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right">
-                      <span className={`text-sm font-medium ${member.proposedIncrease >= 10 ? 'text-emerald-600' : member.proposedIncrease >= 7 ? 'text-celestial-indigo' : 'text-silver-mist'}`}>
-                        +{member.proposedIncrease}%
-                      </span>
+                    <td className="px-4 py-3 text-sm text-right font-mono text-ink-black dark:text-pearl">
+                      ${comp.annualCTC ? Number(comp.annualCTC).toLocaleString() : '--'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right font-mono font-medium text-ink-black dark:text-pearl">${newSalary.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-celestial-indigo/10 text-celestial-indigo">
-                        {member.performanceRating}
-                      </span>
+                    <td className="px-4 py-3 text-sm text-right font-mono text-ink-black dark:text-pearl">
+                      ${comp.monthlyCTC ? Number(comp.monthlyCTC).toLocaleString() : '--'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-right font-mono text-ink-black dark:text-pearl">
+                      ${comp.annualBasic ? Number(comp.annualBasic).toLocaleString() : '--'}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`text-xs font-medium ${
-                        member.compaRatio >= 1.0 ? 'text-emerald-600' : member.compaRatio >= 0.9 ? 'text-sunset-amber' : 'text-coral-alert'
-                      }`}>
-                        {member.compaRatio.toFixed(2)}
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${comp.isActive ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
+                        {comp.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Market Benchmarking */}
       <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-4">
-        <h3 className="text-sm font-bold text-ink-black dark:text-pearl mb-3">Market Benchmarking</h3>
+        <h3 className="text-sm font-bold text-ink-black dark:text-pearl mb-3">Compensation Distribution</h3>
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center p-3 bg-slate-50 dark:bg-deep-cosmos rounded-lg">
-            <p className="text-xs text-silver-mist">25th Percentile</p>
-            <p className="text-lg font-bold text-ink-black dark:text-pearl mt-1">$95,000</p>
+            <p className="text-xs text-silver-mist">Total Employees</p>
+            <p className="text-lg font-bold text-ink-black dark:text-pearl mt-1">{metrics?.totalEmployees || 0}</p>
           </div>
           <div className="text-center p-3 bg-celestial-indigo/5 dark:bg-celestial-indigo/10 rounded-lg border border-celestial-indigo/20">
-            <p className="text-xs text-celestial-indigo font-medium">50th Percentile (Target)</p>
-            <p className="text-lg font-bold text-celestial-indigo mt-1">$120,000</p>
+            <p className="text-xs text-celestial-indigo font-medium">Average CTC</p>
+            <p className="text-lg font-bold text-celestial-indigo mt-1">
+              ${metrics?.averageCompensation ? Math.round(metrics.averageCompensation).toLocaleString() : '--'}
+            </p>
           </div>
           <div className="text-center p-3 bg-slate-50 dark:bg-deep-cosmos rounded-lg">
-            <p className="text-xs text-silver-mist">75th Percentile</p>
-            <p className="text-lg font-bold text-ink-black dark:text-pearl mt-1">$145,000</p>
+            <p className="text-xs text-silver-mist">Median CTC</p>
+            <p className="text-lg font-bold text-ink-black dark:text-pearl mt-1">
+              ${metrics?.medianCompensation ? Math.round(metrics.medianCompensation).toLocaleString() : '--'}
+            </p>
           </div>
         </div>
       </div>

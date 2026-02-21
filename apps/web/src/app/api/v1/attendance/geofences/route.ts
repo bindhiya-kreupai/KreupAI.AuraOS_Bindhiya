@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    if (\!body.name || body.lat === undefined || body.lng === undefined || \!body.radius) {
+    if (!body.name || body.lat === undefined || body.lng === undefined || !body.radius) {
       return NextResponse.json(
         { error: "name, lat, lng, and radius are required" },
         { status: 400 }

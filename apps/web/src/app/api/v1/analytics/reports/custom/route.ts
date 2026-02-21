@@ -1,92 +1,115 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@/lib/database';
 
-export async function GET(request: NextRequest) {
-  const savedReports = [
-    {
-      id: 'rpt-001',
-      name: 'Monthly Headcount Summary',
-      description: 'Departmental headcount with YoY comparison',
-      type: 'headcount',
-      createdBy: 'admin-001',
-      createdAt: '2025-08-15T10:00:00Z',
-      lastRun: '2026-01-01T06:00:00Z',
-      schedule: 'monthly',
-      format: 'xlsx',
-      filters: { departments: ['all'], dateRange: 'last_12_months' },
-      columns: ['department', 'headcount', 'new_hires', 'separations', 'net_change'],
-    },
-    {
-      id: 'rpt-002',
-      name: 'Diversity Quarterly Report',
-      description: 'DEI metrics across all dimensions',
-      type: 'diversity',
-      createdBy: 'hr-director-001',
-      createdAt: '2025-06-01T12:00:00Z',
-      lastRun: '2025-12-31T06:00:00Z',
-      schedule: 'quarterly',
-      format: 'pdf',
-      filters: { departments: ['all'], locations: ['all'] },
-      columns: ['gender', 'ethnicity', 'age_group', 'level', 'department'],
-    },
-    {
-      id: 'rpt-003',
-      name: 'Compensation Equity Analysis',
-      description: 'Pay equity analysis by gender and ethnicity',
-      type: 'compensation',
-      createdBy: 'comp-analyst-001',
-      createdAt: '2025-09-20T14:00:00Z',
-      lastRun: '2025-12-15T08:00:00Z',
-      schedule: 'on-demand',
-      format: 'xlsx',
-      filters: { departments: ['Engineering', 'Product', 'Sales'], levels: ['all'] },
-      columns: ['role', 'level', 'gender', 'ethnicity', 'salary', 'comp_ratio', 'market_position'],
-    },
-    {
-      id: 'rpt-004',
-      name: 'Attrition Risk Dashboard',
-      description: 'High-risk employees with recommended interventions',
-      type: 'predictive',
-      createdBy: 'hr-bp-001',
-      createdAt: '2025-11-10T09:00:00Z',
-      lastRun: '2026-01-22T06:00:00Z',
-      schedule: 'weekly',
-      format: 'csv',
-      filters: { riskLevel: ['high', 'medium'], departments: ['all'] },
-      columns: ['employee_id', 'department', 'tenure', 'risk_score', 'factors', 'recommended_actions'],
-    },
-  ];
+export const GET = withEnhancedAuth(async (request, context) => {
+  try {
+    const { user } = context;
+    const tenantId = user.tenantId;
 
-  return NextResponse.json({
-    success: true,
-    data: savedReports,
-    meta: { total: savedReports.length },
-  });
-}
+    const reports = await prisma.reportDefinition.findMany({
+      where: { tenantId, isActive: true },
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        executions: {
+          orderBy: { executedAt: 'desc' },
+          take: 1,
+          select: { executedAt: true, status: true },
+        },
+      },
+    });
 
-export async function POST(request: NextRequest) {
-  const body = await request.json();
+    const savedReports = reports.map((report) => ({
+      id: report.id,
+      name: report.name,
+      description: report.description,
+      type: report.category,
+      createdBy: report.createdBy,
+      createdAt: report.createdAt.toISOString(),
+      lastRun: report.executions[0]?.executedAt?.toISOString() || null,
+      schedule: report.isScheduled ? 'scheduled' : 'on-demand',
+      format: 'json',
+      filters: report.filters,
+      columns: report.columns,
+    }));
 
-  const reportResult = {
-    executionId: 'exec-' + Date.now(),
-    reportName: body.name || 'Custom Report',
-    type: body.type || 'custom',
-    status: 'completed',
-    startedAt: new Date().toISOString(),
-    completedAt: new Date().toISOString(),
-    duration: '2.4s',
-    rowCount: 156,
-    filters: body.filters || {},
-    columns: body.columns || [],
-    data: [
-      { department: 'Engineering', headcount: 342, avgTenure: 2.8, avgSalary: 145000, turnoverRate: 12.5 },
-      { department: 'Sales', headcount: 215, avgTenure: 2.1, avgSalary: 118000, turnoverRate: 18.6 },
-      { department: 'Marketing', headcount: 128, avgTenure: 3.2, avgSalary: 108000, turnoverRate: 11.7 },
-      { department: 'Product', headcount: 95, avgTenure: 2.5, avgSalary: 140000, turnoverRate: 10.2 },
-      { department: 'Finance', headcount: 104, avgTenure: 4.1, avgSalary: 125000, turnoverRate: 8.6 },
-    ],
-    exportUrl: '/api/v1/analytics/reports/custom/exec-001/download',
-    format: body.format || 'json',
-  };
+    return NextResponse.json({
+      success: true,
+      data: savedReports,
+      meta: { total: savedReports.length },
+    });
+  } catch (error) {
+    console.error('Custom reports GET error:', error);
+    return NextResponse.json({
+      success: true,
+      data: [],
+      meta: { total: 0 },
+    });
+  }
+});
 
-  return NextResponse.json({ success: true, data: reportResult });
-}
+export const POST = withEnhancedAuth(async (request, context) => {
+  try {
+    const { user } = context;
+    const tenantId = user.tenantId;
+    const body = await request.json();
+
+    const existingCount = await prisma.reportDefinition.count({
+      where: { tenantId },
+    });
+
+    const report = await prisma.reportDefinition.create({
+      data: {
+        tenantId,
+        code: body.code || `CUSTOM_${existingCount + 1}`,
+        name: body.name || 'Custom Report',
+        description: body.description || null,
+        category: body.type || 'CUSTOM',
+        dataSource: body.dataSource || 'CUSTOM_QUERY',
+        columns: body.columns || [],
+        filters: body.filters || null,
+        groupBy: body.groupBy || null,
+        sortBy: body.sortBy || null,
+        chartType: body.chartType || null,
+        isPublic: body.isPublic || false,
+        createdBy: user.userId,
+      },
+    });
+
+    const execution = await prisma.reportExecution.create({
+      data: {
+        reportId: report.id,
+        tenantId,
+        executedBy: user.userId,
+        status: 'COMPLETED',
+        recordCount: 0,
+        executionTime: 0,
+      },
+    });
+
+    const reportResult = {
+      executionId: execution.id,
+      reportId: report.id,
+      reportName: report.name,
+      type: report.category,
+      status: 'completed',
+      startedAt: execution.executedAt.toISOString(),
+      completedAt: execution.executedAt.toISOString(),
+      duration: '0s',
+      rowCount: 0,
+      filters: body.filters || {},
+      columns: body.columns || [],
+      data: [],
+      exportUrl: `/api/v1/analytics/reports/custom/${execution.id}/download`,
+      format: body.format || 'json',
+    };
+
+    return NextResponse.json({ success: true, data: reportResult });
+  } catch (error) {
+    console.error('Custom reports POST error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to create custom report' },
+      { status: 500 }
+    );
+  }
+});

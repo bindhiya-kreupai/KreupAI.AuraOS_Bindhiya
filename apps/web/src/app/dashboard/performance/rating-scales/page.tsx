@@ -1,16 +1,49 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { PerformanceReviewService } from '../core/services';
+import { PerformanceAnalyticsService } from '../core/services';
+import type { PerformanceStats } from '../core/types';
 import {
     Star,
     Sliders,
     BarChart,
     Settings,
-    Check
+    Check,
+    Loader2
 } from 'lucide-react';
 
 export default function RatingScalesPage() {
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState<PerformanceStats>({
+        totalReviews: 0,
+        completedReviews: 0,
+        averageRating: 0,
+        ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+        goalAchievementRate: 0,
+    });
+
+    useEffect(() => {
+        async function loadData() {
+            try {
+                const data = await PerformanceAnalyticsService.getStats();
+                setStats(data);
+            } catch (error) {
+                console.error('Failed to load rating stats:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}

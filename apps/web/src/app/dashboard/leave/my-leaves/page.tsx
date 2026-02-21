@@ -8,14 +8,12 @@ import {
     CheckCircle2,
     XCircle,
     ChevronDown,
-    Filter,
     Plane,
     Thermometer,
     Briefcase,
     MoreHorizontal,
-    ChevronLeft,
-    ChevronRight,
-    Users
+    Users,
+    Loader2
 } from 'lucide-react';
 import {
     PieChart,
@@ -26,21 +24,21 @@ import {
 import { LeaveRequestService, LeaveBalanceService } from '../services';
 import type { LeaveRequest as LeaveRequestType, LeaveBalance as LeaveBalanceType } from '../types';
 
-// --- MOCK DATA FOR UI STRUCTURE ---
-
-interface LeaveBalance {
-    type: string;
-    total: number;
-    used: number;
-    balance: number;
-    color: string;
-    icon: any;
+function getLeaveIcon(leaveTypeId: string) {
+    switch (leaveTypeId) {
+        case 'AL': return Plane;
+        case 'SL': return Thermometer;
+        default: return Briefcase;
+    }
 }
 
-const TEAM_AWAY = [
-    { name: 'Mike Ross', date: 'Today', avatar: 'MR' },
-    { name: 'Linda M.', date: 'Tomorrow', avatar: 'LM' },
-];
+function getLeaveColor(leaveTypeId: string): string {
+    switch (leaveTypeId) {
+        case 'AL': return '#10b981';
+        case 'SL': return '#ef4444';
+        default: return '#f59e0b';
+    }
+}
 
 export default function MyLeavesPage() {
     const [leaveRequests, setLeaveRequests] = useState<LeaveRequestType[]>([]);
@@ -61,52 +59,58 @@ export default function MyLeavesPage() {
                 LeaveRequestService.getRequests({ employeeId: currentUserId }),
                 LeaveBalanceService.getBalances(currentUserId)
             ]);
-            if (requestsData.length > 0) {
-                setLeaveRequests(requestsData);
-            }
-            if (balancesData.length > 0) {
-                setLeaveBalances(balancesData);
-            }
+            setLeaveRequests(requestsData);
+            setLeaveBalances(balancesData);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
 
     // Transform API balances to UI format
-    const BALANCES: LeaveBalance[] = leaveBalances.length > 0
-        ? leaveBalances.map(bal => ({
-            type: bal.leaveTypeName || bal.leaveTypeId,
-            total: bal.totalBalance,
-            used: bal.availed,
-            balance: bal.availableBalance,
-            color: bal.leaveTypeId === 'AL' ? '#10b981' : bal.leaveTypeId === 'SL' ? '#ef4444' : '#f59e0b',
-            icon: bal.leaveTypeId === 'AL' ? Plane : bal.leaveTypeId === 'SL' ? Thermometer : Briefcase,
-        }))
-        : [
-            { type: 'Annual Leave', total: 24, used: 10, balance: 14, color: '#10b981', icon: Plane },
-            { type: 'Sick Leave', total: 12, used: 2, balance: 10, color: '#ef4444', icon: Thermometer },
-            { type: 'Casual Leave', total: 10, used: 8, balance: 2, color: '#f59e0b', icon: Briefcase },
-        ];
+    const BALANCES = leaveBalances.map(bal => ({
+        type: bal.leaveTypeName || bal.leaveTypeId,
+        total: (bal.openingBalance ?? 0) + (bal.accrued ?? 0),
+        used: bal.availed ?? 0,
+        balance: bal.availableBalance ?? 0,
+        color: getLeaveColor(bal.leaveTypeId),
+        icon: getLeaveIcon(bal.leaveTypeId),
+    }));
 
     // Transform API requests to UI format
-    const HISTORY = leaveRequests.length > 0
-        ? leaveRequests.slice(0, 3).map(req => ({
-            id: req.id,
-            type: req.leaveTypeName || req.leaveTypeId,
-            startDate: new Date(req.fromDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            endDate: new Date(req.toDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            days: req.numberOfDays,
-            status: req.status === 'approved' ? 'Approved' as const : req.status === 'rejected' ? 'Rejected' as const : 'Pending' as const,
-            approver: req.approvedBy || 'Pending',
-            appliedOn: req.appliedDate ? new Date(req.appliedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A',
-        }))
-        : [
-            { id: 'LR-202', type: 'Annual Leave', startDate: 'Dec 24, 2024', endDate: 'Dec 31, 2024', days: 6, status: 'Approved' as const, approver: 'Sarah Jenkins', appliedOn: 'Oct 15, 2024' },
-            { id: 'LR-205', type: 'Sick Leave', startDate: 'Nov 12, 2024', endDate: 'Nov 12, 2024', days: 1, status: 'Approved' as const, approver: 'Auto-Approved', appliedOn: 'Nov 12, 2024' },
-            { id: 'LR-210', type: 'Casual Leave', startDate: 'Jan 05, 2025', endDate: 'Jan 06, 2025', days: 2, status: 'Pending' as const, approver: 'Sarah Jenkins', appliedOn: 'Dec 02, 2024' },
-        ];
+    const HISTORY = leaveRequests.slice(0, 3).map(req => ({
+        id: req.id,
+        type: req.leaveTypeName || req.leaveTypeId,
+        startDate: new Date(req.fromDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        endDate: new Date(req.toDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        days: req.totalDays,
+        status: req.status === 'approved' ? 'Approved' as const : req.status === 'rejected' ? 'Rejected' as const : 'Pending' as const,
+        approver: req.approvals?.find(a => a.status === 'approved')?.approverName || req.currentApprover || 'Pending',
+        appliedOn: req.submittedAt ? new Date(req.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A',
+    }));
+
+    // Derive team away from approved leave requests (those covering today)
+    const today = new Date().toISOString().split('T')[0];
+    const teamAway = leaveRequests
+        .filter(r => r.status === 'approved' && r.fromDate <= today && r.toDate >= today)
+        .map(r => ({
+            name: r.employeeName,
+            date: 'Today',
+            avatar: r.employeeName?.split(' ').map(n => n[0]).join('') || 'NA',
+        }));
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-celestial-indigo" />
+                    <p className="text-silver-mist text-sm">Loading your leave data...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -124,53 +128,59 @@ export default function MyLeavesPage() {
             </div>
 
             {/* Leave Balances */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {BALANCES.map((bal, idx) => {
-                    const data = [
-                        { name: 'Balance', value: bal.balance, color: bal.color },
-                        { name: 'Used', value: bal.used, color: '#e2e8f0' }, // slate-200
-                    ];
-                    return (
-                        <div key={idx} className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm relative overflow-hidden group hover:border-celestial-indigo/30 transition-all">
-                            <div className="flex justify-between items-start relative z-10">
-                                <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className={`p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500`}>
-                                            <bal.icon className="w-4 h-4" />
+            {BALANCES.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {BALANCES.map((bal, idx) => {
+                        const data = [
+                            { name: 'Balance', value: bal.balance, color: bal.color },
+                            { name: 'Used', value: bal.used, color: '#e2e8f0' },
+                        ];
+                        return (
+                            <div key={idx} className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm relative overflow-hidden group hover:border-celestial-indigo/30 transition-all">
+                                <div className="flex justify-between items-start relative z-10">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <div className={`p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500`}>
+                                                <bal.icon className="w-4 h-4" />
+                                            </div>
+                                            <h3 className="font-bold text-ink-black dark:text-pearl">{bal.type}</h3>
                                         </div>
-                                        <h3 className="font-bold text-ink-black dark:text-pearl">{bal.type}</h3>
+                                        <div className="text-3xl font-bold text-ink-black dark:text-pearl mb-1">{bal.balance}</div>
+                                        <div className="text-xs text-silver-mist">Days Available</div>
                                     </div>
-                                    <div className="text-3xl font-bold text-ink-black dark:text-pearl mb-1">{bal.balance}</div>
-                                    <div className="text-xs text-silver-mist">Days Available</div>
+                                    <div className="h-16 w-16 relative">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={data}
+                                                    innerRadius={25}
+                                                    outerRadius={32}
+                                                    paddingAngle={2}
+                                                    dataKey="value"
+                                                    startAngle={90}
+                                                    endAngle={-270}
+                                                >
+                                                    {data.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                                                    ))}
+                                                </Pie>
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
                                 </div>
-                                <div className="h-16 w-16 relative">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <PieChart>
-                                            <Pie
-                                                data={data}
-                                                innerRadius={25}
-                                                outerRadius={32}
-                                                paddingAngle={2}
-                                                dataKey="value"
-                                                startAngle={90}
-                                                endAngle={-270}
-                                            >
-                                                {data.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                                                ))}
-                                            </Pie>
-                                        </PieChart>
-                                    </ResponsiveContainer>
+                                <div className="mt-4 pt-4 border-t border-cloud dark:border-nebula-purple/20 flex justify-between text-xs text-slate-500">
+                                    <span>Used: {bal.used}</span>
+                                    <span>Total: {bal.total}</span>
                                 </div>
                             </div>
-                            <div className="mt-4 pt-4 border-t border-cloud dark:border-nebula-purple/20 flex justify-between text-xs text-slate-500">
-                                <span>Used: {bal.used}</span>
-                                <span>Total: {bal.total}</span>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <div className="bg-white dark:bg-stellar-blue p-8 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm text-center">
+                    <p className="text-silver-mist text-sm">No leave balances found.</p>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Content: History & Calendar */}
@@ -182,32 +192,38 @@ export default function MyLeavesPage() {
                             Recent Requests
                         </h3>
                         <div className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden">
-                            <div className="divide-y divide-cloud dark:divide-nebula-purple/20">
-                                {HISTORY.map(req => (
-                                    <div key={req.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors">
-                                        <div className="flex items-start gap-3">
-                                            <div className="mt-1">
-                                                {req.status === 'Approved' && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
-                                                {req.status === 'Pending' && <Clock className="w-5 h-5 text-amber-500" />}
-                                                {req.status === 'Rejected' && <XCircle className="w-5 h-5 text-rose-500" />}
+                            {HISTORY.length > 0 ? (
+                                <div className="divide-y divide-cloud dark:divide-nebula-purple/20">
+                                    {HISTORY.map(req => (
+                                        <div key={req.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors">
+                                            <div className="flex items-start gap-3">
+                                                <div className="mt-1">
+                                                    {req.status === 'Approved' && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
+                                                    {req.status === 'Pending' && <Clock className="w-5 h-5 text-amber-500" />}
+                                                    {req.status === 'Rejected' && <XCircle className="w-5 h-5 text-rose-500" />}
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-ink-black dark:text-pearl text-sm">{req.type}</h4>
+                                                    <div className="text-xs text-silver-mist mt-0.5">{req.startDate} - {req.endDate} &bull; {req.days} Days</div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h4 className="font-bold text-ink-black dark:text-pearl text-sm">{req.type}</h4>
-                                                <div className="text-xs text-silver-mist mt-0.5">{req.startDate} - {req.endDate} • {req.days} Days</div>
+                                            <div className="flex items-center justify-between sm:justify-end gap-6">
+                                                <div className="text-right hidden sm:block">
+                                                    <div className="text-xs font-bold text-ink-black dark:text-pearl">{req.status}</div>
+                                                    <div className="text-[10px] text-silver-mist">By {req.approver}</div>
+                                                </div>
+                                                <button className="text-silver-mist hover:text-ink-black dark:hover:text-pearl">
+                                                    <MoreHorizontal className="w-4 h-4" />
+                                                </button>
                                             </div>
                                         </div>
-                                        <div className="flex items-center justify-between sm:justify-end gap-6">
-                                            <div className="text-right hidden sm:block">
-                                                <div className="text-xs font-bold text-ink-black dark:text-pearl">{req.status}</div>
-                                                <div className="text-[10px] text-silver-mist">By {req.approver}</div>
-                                            </div>
-                                            <button className="text-silver-mist hover:text-ink-black dark:hover:text-pearl">
-                                                <MoreHorizontal className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="p-8 text-center text-silver-mist text-sm">
+                                    No leave requests found.
+                                </div>
+                            )}
                             <button className="w-full py-3 text-xs font-bold text-silver-mist hover:text-celestial-indigo border-t border-cloud dark:border-nebula-purple/20 transition-colors">
                                 View Full History
                             </button>
@@ -229,7 +245,7 @@ export default function MyLeavesPage() {
                                     <span className="text-lg font-bold">01</span>
                                 </div>
                                 <div>
-                                    <div className="font-bold text-ink-black dark:text-pearl">New Year's Day</div>
+                                    <div className="font-bold text-ink-black dark:text-pearl">New Year&apos;s Day</div>
                                     <div className="text-xs text-silver-mist">Wednesday</div>
                                 </div>
                             </div>
@@ -244,13 +260,13 @@ export default function MyLeavesPage() {
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                                 <Users className="w-4 h-4 text-slate-500" />
-                                Who's Away
+                                Who&apos;s Away
                             </h3>
                             <button className="text-[10px] font-bold text-celestial-indigo hover:underline">View Calendar</button>
                         </div>
                         <div className="space-y-4">
-                            {TEAM_AWAY.length > 0 ? (
-                                TEAM_AWAY.map((person, i) => (
+                            {teamAway.length > 0 ? (
+                                teamAway.map((person, i) => (
                                     <div key={i} className="flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-300">
                                             {person.avatar}

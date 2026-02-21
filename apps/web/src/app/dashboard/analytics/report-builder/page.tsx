@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BarChart3, Table, PieChart, LineChart, Download,
-  Plus, Filter, Columns, Eye, Save, Play
+  Plus, Filter, Columns, Eye, Save, Play, Loader2
 } from 'lucide-react';
 
 const dataSources = ['Employees', 'Attendance', 'Leave', 'Payroll', 'Performance', 'Recruitment', 'Benefits'];
@@ -29,6 +29,39 @@ export default function ReportBuilderPage() {
   const [selectedColumns, setSelectedColumns] = useState<string[]>(['Name', 'Department', 'Designation', 'Location']);
   const [selectedChart, setSelectedChart] = useState('table');
   const [filters, setFilters] = useState<{ field: string; operator: string; value: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [previewData, setPreviewData] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchPreview();
+  }, []);
+
+  const fetchPreview = async () => {
+    try {
+      const res = await fetch('/api/v1/analytics/headcount');
+      const json = await res.json();
+      const data = json?.data;
+
+      if (data?.byDepartment) {
+        setPreviewData(
+          data.byDepartment.map((d: any, i: number) => ({
+            Name: `Employee ${i + 1}`,
+            Department: d.department,
+            Designation: 'Staff',
+            Location: 'Main Office',
+            'Hire Date': '--',
+            Status: 'Active',
+            Manager: '--',
+            'Salary Band': '--',
+          }))
+        );
+      }
+    } catch (error) {
+      console.error('Error loading preview:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleColumn = (col: string) => {
     setSelectedColumns((prev) =>
@@ -42,7 +75,6 @@ export default function ReportBuilderPage() {
 
   return (
     <div className="space-y-6 pb-10">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Report Builder</h1>
@@ -59,9 +91,7 @@ export default function ReportBuilderPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Sidebar - Configuration */}
         <div className="space-y-4">
-          {/* Data Source */}
           <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-4">
             <h3 className="text-xs font-bold text-ink-black dark:text-pearl uppercase mb-3">Data Source</h3>
             <div className="space-y-1">
@@ -81,7 +111,6 @@ export default function ReportBuilderPage() {
             </div>
           </div>
 
-          {/* Columns */}
           <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-4">
             <h3 className="text-xs font-bold text-ink-black dark:text-pearl uppercase mb-3 flex items-center gap-1.5">
               <Columns className="w-3.5 h-3.5" /> Columns
@@ -101,7 +130,6 @@ export default function ReportBuilderPage() {
             </div>
           </div>
 
-          {/* Chart Type */}
           <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-4">
             <h3 className="text-xs font-bold text-ink-black dark:text-pearl uppercase mb-3">Visualization</h3>
             <div className="grid grid-cols-2 gap-2">
@@ -123,9 +151,7 @@ export default function ReportBuilderPage() {
           </div>
         </div>
 
-        {/* Main - Preview */}
         <div className="lg:col-span-3 space-y-4">
-          {/* Filters Bar */}
           <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-bold text-ink-black dark:text-pearl uppercase flex items-center gap-1.5">
@@ -158,7 +184,6 @@ export default function ReportBuilderPage() {
             )}
           </div>
 
-          {/* Report Preview */}
           <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 overflow-hidden">
             <div className="px-4 py-3 border-b border-cloud dark:border-nebula-purple/50 flex items-center justify-between">
               <h3 className="text-sm font-bold text-ink-black dark:text-pearl flex items-center gap-2">
@@ -169,7 +194,11 @@ export default function ReportBuilderPage() {
               </button>
             </div>
             <div className="p-4">
-              {selectedColumns.length === 0 ? (
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-6 h-6 animate-spin text-celestial-indigo" />
+                </div>
+              ) : selectedColumns.length === 0 ? (
                 <div className="text-center py-12">
                   <Columns className="w-8 h-8 text-silver-mist mx-auto mb-2" />
                   <p className="text-sm text-silver-mist">Select columns to preview your report</p>
@@ -185,23 +214,28 @@ export default function ReportBuilderPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr className="border-b border-cloud dark:border-nebula-purple/50">
-                        {selectedColumns.map((col) => (
-                          <td key={col} className="px-3 py-2.5 text-ink-black dark:text-pearl">
-                            <span className="bg-slate-100 dark:bg-deep-cosmos px-2 py-0.5 rounded text-silver-mist italic">Sample data</span>
+                      {previewData.length > 0 ? (
+                        previewData.slice(0, 5).map((row, i) => (
+                          <tr key={i} className="border-b border-cloud dark:border-nebula-purple/50">
+                            {selectedColumns.map((col) => (
+                              <td key={col} className="px-3 py-2.5 text-ink-black dark:text-pearl">
+                                {row[col] || <span className="text-silver-mist italic">--</span>}
+                              </td>
+                            ))}
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={selectedColumns.length} className="px-3 py-8 text-center text-silver-mist">
+                            Run report to see actual data
                           </td>
-                        ))}
-                      </tr>
-                      <tr className="border-b border-cloud dark:border-nebula-purple/50">
-                        {selectedColumns.map((col) => (
-                          <td key={col} className="px-3 py-2.5 text-ink-black dark:text-pearl">
-                            <span className="bg-slate-100 dark:bg-deep-cosmos px-2 py-0.5 rounded text-silver-mist italic">Sample data</span>
-                          </td>
-                        ))}
-                      </tr>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
-                  <p className="text-center text-[10px] text-silver-mist mt-3">Run report to see actual data</p>
+                  <p className="text-center text-[10px] text-silver-mist mt-3">
+                    {previewData.length > 0 ? `Showing ${Math.min(5, previewData.length)} of ${previewData.length} rows` : 'Run report to see actual data'}
+                  </p>
                 </div>
               )}
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CheckCircle2,
     Circle,
@@ -14,10 +14,11 @@ import {
     GraduationCap,
     Trophy,
     ArrowRight,
-    PlayCircle
+    PlayCircle,
+    Loader2,
+    BookOpen
 } from 'lucide-react';
-
-// --- MOCK DATA ---
+import { OnboardingInstanceService } from '../services';
 
 type Task = {
     id: string;
@@ -29,14 +30,22 @@ type Phase = {
     id: string;
     title: string;
     subtitle: string;
-    icon: any;
+    icon: typeof Briefcase;
     color: string;
     bg: string;
     tasks: Task[];
     status: 'completed' | 'current' | 'locked';
 };
 
-const INITIAL_JOURNEY: Phase[] = [
+const DEFAULT_PHASES: Array<{
+    id: string;
+    title: string;
+    subtitle: string;
+    icon: typeof Briefcase;
+    color: string;
+    bg: string;
+    phase: string;
+}> = [
     {
         id: 'preboarding',
         title: 'Pre-boarding',
@@ -44,26 +53,16 @@ const INITIAL_JOURNEY: Phase[] = [
         icon: Briefcase,
         color: 'text-emerald-600',
         bg: 'bg-emerald-100 dark:bg-emerald-900/30',
-        status: 'completed',
-        tasks: [
-            { id: 't1', label: 'Sign Offer Letter', completed: true },
-            { id: 't2', label: 'Upload ID Proofs', completed: true },
-            { id: 't3', label: 'Choose Laptop Preference', completed: true },
-        ]
+        phase: 'pre_boarding',
     },
     {
         id: 'day1',
         title: 'Day 1: Welcome Aboard',
-        subtitle: 'Your first day at Aura',
+        subtitle: 'Your first day',
         icon: Trophy,
         color: 'text-celestial-indigo',
         bg: 'bg-indigo-100 dark:bg-indigo-900/30',
-        status: 'current',
-        tasks: [
-            { id: 't4', label: 'Collect ID Card & Welcome Kit', completed: true },
-            { id: 't5', label: 'IT Setup & Access Configuration', completed: false },
-            { id: 't6', label: 'Team Lunch', completed: false },
-        ]
+        phase: 'first_day',
     },
     {
         id: 'week1',
@@ -72,12 +71,7 @@ const INITIAL_JOURNEY: Phase[] = [
         icon: Users,
         color: 'text-amber-600',
         bg: 'bg-amber-100 dark:bg-amber-900/30',
-        status: 'locked',
-        tasks: [
-            { id: 't7', label: 'Meet your Buddy', completed: false },
-            { id: 't8', label: 'Product Training: Module 1', completed: false },
-            { id: 't9', label: 'HR Induction Session', completed: false },
-        ]
+        phase: 'first_week',
     },
     {
         id: 'month1',
@@ -86,17 +80,104 @@ const INITIAL_JOURNEY: Phase[] = [
         icon: GraduationCap,
         color: 'text-purple-600',
         bg: 'bg-purple-100 dark:bg-purple-900/30',
-        status: 'locked',
-        tasks: [
-            { id: 't10', label: 'Complete First Assignment', completed: false },
-            { id: 't11', label: '30-Day Check-in with Manager', completed: false },
-        ]
-    }
+        phase: 'first_month',
+    },
 ];
 
 export default function InductionProgramPage() {
-    const [journey, setJourney] = useState(INITIAL_JOURNEY);
-    const [expandedPhase, setExpandedPhase] = useState<string | null>('day1');
+    const [journey, setJourney] = useState<Phase[]>([]);
+    const [expandedPhase, setExpandedPhase] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const instances = await OnboardingInstanceService.getInstances();
+
+                // Find the active onboarding instance
+                const activeInstance = instances.find(
+                    (i: Record<string, unknown>) => i.status === 'in_progress' || i.status === 'not_started'
+                ) || instances[0];
+
+                if (activeInstance) {
+                    const instanceTasks = (activeInstance as { tasks?: Array<Record<string, unknown>> }).tasks || [];
+                    const currentPhase = (activeInstance as { currentPhase?: string }).currentPhase || 'first_day';
+
+                    // Build journey phases from actual tasks
+                    const phases: Phase[] = DEFAULT_PHASES.map((phaseConfig) => {
+                        const phaseTasks = instanceTasks.filter(
+                            (t: Record<string, unknown>) => t.phase === phaseConfig.phase
+                        );
+
+                        const tasks: Task[] = phaseTasks.map((t: Record<string, unknown>) => ({
+                            id: (t.id as string) || String(Math.random()),
+                            label: (t.taskName as string) || (t.description as string) || 'Task',
+                            completed: (t.status as string) === 'completed',
+                        }));
+
+                        const allCompleted = tasks.length > 0 && tasks.every((t) => t.completed);
+                        const isCurrentPhase = phaseConfig.phase === currentPhase;
+
+                        let status: 'completed' | 'current' | 'locked';
+                        if (allCompleted) {
+                            status = 'completed';
+                        } else if (isCurrentPhase || tasks.some((t) => t.completed)) {
+                            status = 'current';
+                        } else {
+                            status = 'locked';
+                        }
+
+                        return {
+                            id: phaseConfig.id,
+                            title: phaseConfig.title,
+                            subtitle: phaseConfig.subtitle,
+                            icon: phaseConfig.icon,
+                            color: phaseConfig.color,
+                            bg: phaseConfig.bg,
+                            tasks,
+                            status,
+                        };
+                    });
+
+                    setJourney(phases);
+                    // Expand the current phase
+                    const currentIdx = phases.findIndex((p) => p.status === 'current');
+                    if (currentIdx >= 0) {
+                        setExpandedPhase(phases[currentIdx].id);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching induction program data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                    <p className="text-sm text-silver-mist font-medium">Loading induction program...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (journey.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3 text-center">
+                    <BookOpen className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+                    <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300">No Induction Program</h3>
+                    <p className="text-sm text-silver-mist">Your induction program will appear here once onboarding begins.</p>
+                </div>
+            </div>
+        );
+    }
 
     const togglePhase = (id: string) => {
         if (expandedPhase === id) {
@@ -121,14 +202,14 @@ export default function InductionProgramPage() {
     // Calculate overall progress
     const allTasks = journey.flatMap(p => p.tasks);
     const completedTasks = allTasks.filter(t => t.completed);
-    const progress = Math.round((completedTasks.length / allTasks.length) * 100);
+    const progress = allTasks.length > 0 ? Math.round((completedTasks.length / allTasks.length) * 100) : 0;
 
     return (
         <div className="max-w-4xl mx-auto pb-10">
             {/* Header */}
             <div className="mb-8 text-center">
-                <h1 className="text-3xl font-bold text-ink-black dark:text-pearl mb-2">Welcome to Aura! 🚀</h1>
-                <p className="text-silver-mist">We're thrilled to have you. Follow this journey to get started.</p>
+                <h1 className="text-3xl font-bold text-ink-black dark:text-pearl mb-2">Induction Program</h1>
+                <p className="text-silver-mist">Follow this journey to get started with your onboarding.</p>
             </div>
 
             {/* Progress Bar */}
@@ -140,7 +221,7 @@ export default function InductionProgramPage() {
                     </div>
                     <div className="hidden md:flex items-center gap-2 text-sm text-silver-mist bg-slate-50 dark:bg-deep-cosmos px-3 py-1 rounded-full">
                         <PlayCircle className="w-4 h-4 text-emerald-500" />
-                        Next: IT Setup
+                        {completedTasks.length}/{allTasks.length} Tasks Done
                     </div>
                 </div>
                 <div className="w-full h-3 bg-cloud dark:bg-deep-cosmos rounded-full overflow-hidden">
@@ -169,7 +250,7 @@ export default function InductionProgramPage() {
                                 <div
                                     className={`absolute left-0 top-0 w-16 h-16 rounded-2xl flex items-center justify-center border-4 border-slate-50 dark:border-slate-900 z-10 transition-colors ${isCompleted ? 'bg-emerald-500 text-white' :
                                             isLocked ? 'bg-slate-200 dark:bg-slate-800 text-slate-400' :
-                                                phases[index].bg + ' ' + phases[index].color
+                                                phase.bg + ' ' + phase.color
                                         }`}
                                 >
                                     {isCompleted ? <CheckCircle2 className="w-8 h-8" /> : <Icon className="w-8 h-8" />}
@@ -204,28 +285,32 @@ export default function InductionProgramPage() {
                                     {/* Expandable Tasks */}
                                     <div className={`transition-all duration-300 ease-in-out bg-slate-50 dark:bg-slate-900/50 ${isExpanded ? 'max-h-96 opacity-100 border-t border-cloud dark:border-nebula-purple/10' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                                         <div className="p-5 space-y-3">
-                                            {phase.tasks.map(task => (
-                                                <label key={task.id} className="flex items-center gap-3 p-3 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/20 hover:border-celestial-indigo/50 cursor-pointer transition-colors group">
-                                                    <button
-                                                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${task.completed
-                                                                ? 'bg-emerald-500 border-emerald-500 text-white'
-                                                                : 'border-slate-300 dark:border-slate-600 group-hover:border-celestial-indigo'
-                                                            }`}
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            toggleTask(phase.id, task.id);
-                                                        }}
-                                                    >
-                                                        {task.completed && <CheckCircle2 className="w-4 h-4" />}
-                                                    </button>
-                                                    <span className={`text-sm font-medium ${task.completed ? 'text-slate-400 line-through' : 'text-ink-black dark:text-pearl'}`}>
-                                                        {task.label}
-                                                    </span>
-                                                </label>
-                                            ))}
+                                            {phase.tasks.length === 0 ? (
+                                                <p className="text-sm text-silver-mist text-center py-4">No tasks assigned for this phase yet.</p>
+                                            ) : (
+                                                phase.tasks.map(task => (
+                                                    <label key={task.id} className="flex items-center gap-3 p-3 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/20 hover:border-celestial-indigo/50 cursor-pointer transition-colors group">
+                                                        <button
+                                                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${task.completed
+                                                                    ? 'bg-emerald-500 border-emerald-500 text-white'
+                                                                    : 'border-slate-300 dark:border-slate-600 group-hover:border-celestial-indigo'
+                                                                }`}
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                toggleTask(phase.id, task.id);
+                                                            }}
+                                                        >
+                                                            {task.completed && <CheckCircle2 className="w-4 h-4" />}
+                                                        </button>
+                                                        <span className={`text-sm font-medium ${task.completed ? 'text-slate-400 line-through' : 'text-ink-black dark:text-pearl'}`}>
+                                                            {task.label}
+                                                        </span>
+                                                    </label>
+                                                ))
+                                            )}
 
                                             {/* Phase Completion Action */}
-                                            {phase.tasks.every(t => t.completed) && !isCompleted && (
+                                            {phase.tasks.length > 0 && phase.tasks.every(t => t.completed) && !isCompleted && (
                                                 <div className="mt-4 flex justify-end">
                                                     <button className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 transition-colors animate-in fade-in zoom-in">
                                                         Mark Phase Complete <ArrowRight className="w-4 h-4" />
@@ -243,6 +328,3 @@ export default function InductionProgramPage() {
         </div>
     );
 }
-
-// Helper to keep icon mapping safe
-const phases = INITIAL_JOURNEY;

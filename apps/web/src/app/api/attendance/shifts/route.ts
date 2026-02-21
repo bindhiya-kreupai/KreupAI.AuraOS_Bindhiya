@@ -25,55 +25,56 @@ export const GET = withEnhancedAuth(
       const permissionError = requirePermission(Resource.ATTENDANCE, Action.READ, permissions);
       if (permissionError) return permissionError;
 
-      const mockShifts = [
-        {
-          id: '1',
-          name: 'General Shift',
-          code: 'GEN',
-          startTime: '09:00',
-          endTime: '18:00',
-          gracePeriod: 15,
-          halfDayHours: 4,
-          fullDayHours: 8,
-          breakDuration: 60,
-          weeklyOff: [0, 6],
-          status: 'ACTIVE',
-          employeeCount: 45,
+      const { searchParams } = new URL(request.url);
+      const isActive = searchParams.get('isActive');
+      const search = searchParams.get('search');
+
+      const where: Record<string, unknown> = { tenantId: user.tenantId };
+      if (isActive !== null && isActive !== undefined && isActive !== '') {
+        where.isActive = isActive === 'true';
+      }
+      if (search) {
+        where.OR = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { code: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
+      const shifts = await prisma.shift.findMany({
+        where,
+        include: {
+          _count: {
+            select: { assignments: true },
+          },
         },
-        {
-          id: '2',
-          name: 'Night Shift',
-          code: 'NIGHT',
-          startTime: '22:00',
-          endTime: '06:00',
-          gracePeriod: 15,
-          halfDayHours: 4,
-          fullDayHours: 8,
-          breakDuration: 60,
-          weeklyOff: [0, 6],
-          status: 'ACTIVE',
-          employeeCount: 12,
-        },
-        {
-          id: '3',
-          name: 'Flexible Shift',
-          code: 'FLEX',
-          startTime: '10:00',
-          endTime: '19:00',
-          gracePeriod: 30,
-          halfDayHours: 4,
-          fullDayHours: 8,
-          breakDuration: 60,
-          weeklyOff: [0, 6],
-          status: 'ACTIVE',
-          employeeCount: 28,
-        },
-      ];
+        orderBy: { name: 'asc' },
+      });
+
+      const data = shifts.map((shift) => ({
+        id: shift.id,
+        name: shift.name,
+        code: shift.code,
+        description: shift.description,
+        startTime: shift.startTime,
+        endTime: shift.endTime,
+        gracePeriod: shift.graceInMinutes,
+        halfDayHours: shift.workHours ? shift.workHours / 2 : 4,
+        fullDayHours: shift.workHours || 8,
+        breakDuration: shift.breakDuration,
+        weeklyOff: shift.weekendDays,
+        status: shift.isActive ? 'ACTIVE' : 'INACTIVE',
+        employeeCount: shift._count.assignments,
+        isFlexible: shift.isFlexible,
+        flexWindow: shift.flexWindow,
+        overtimeAllowed: shift.overtimeAllowed,
+        maxOvertimeHours: shift.maxOvertimeHours,
+        isDefault: shift.isDefault,
+      }));
 
       return NextResponse.json({
         success: true,
-        data: mockShifts,
-        meta: { total: mockShifts.length },
+        data,
+        meta: { total: data.length },
       });
     } catch (error) {
       logger.error('Error fetching shifts:', error);
@@ -95,14 +96,25 @@ export const POST = withEnhancedAuth(
       const body = await request.json();
       const data = ShiftSchema.parse(body);
 
-      const newShift = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data,
-        status: 'ACTIVE',
-        employeeCount: 0,
-        createdAt: new Date().toISOString(),
-        createdBy: user.userId,
-      };
+      const newShift = await prisma.shift.create({
+        data: {
+          tenantId: user.tenantId,
+          code: data.code,
+          name: data.name,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          graceInMinutes: data.gracePeriod,
+          breakDuration: data.breakDuration,
+          workHours: data.fullDayHours,
+          weekendDays: data.weeklyOff.map(String),
+          isActive: true,
+        },
+        include: {
+          _count: {
+            select: { assignments: true },
+          },
+        },
+      });
 
       await prisma.auditLog.create({
         data: {
@@ -114,7 +126,22 @@ export const POST = withEnhancedAuth(
         },
       });
 
-      return NextResponse.json({ success: true, data: newShift }, { status: 201 });
+      const responseData = {
+        id: newShift.id,
+        name: newShift.name,
+        code: newShift.code,
+        startTime: newShift.startTime,
+        endTime: newShift.endTime,
+        gracePeriod: newShift.graceInMinutes,
+        halfDayHours: newShift.workHours ? newShift.workHours / 2 : 4,
+        fullDayHours: newShift.workHours || 8,
+        breakDuration: newShift.breakDuration,
+        weeklyOff: newShift.weekendDays,
+        status: 'ACTIVE',
+        employeeCount: newShift._count.assignments,
+      };
+
+      return NextResponse.json({ success: true, data: responseData }, { status: 201 });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(

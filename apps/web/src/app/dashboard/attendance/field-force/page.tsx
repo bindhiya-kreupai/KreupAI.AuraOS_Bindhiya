@@ -58,16 +58,12 @@ export default function FieldForcePage() {
         try {
             setLoading(true);
             const agentsResult = await FieldForceService.getFieldAgents();
-            if (agentsResult && agentsResult.length > 0) {
-                setAgents(agentsResult as any);
-            }
+            setAgents((agentsResult || []) as any);
             const visitsResult = await FieldForceService.getVisitLogs();
-            if (visitsResult && visitsResult.length > 0) {
-                setVisitLogs(visitsResult as any);
-            }
+            setVisitLogs((visitsResult || []) as any);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -106,7 +102,14 @@ export default function FieldForcePage() {
 
                     {/* Agents List */}
                     <div className="bg-white dark:bg-stellar-blue p-4 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex-1 overflow-y-auto space-y-3">
-                        {agents.map(agent => (
+                        {loading ? (
+                            <div className="p-8 text-center">
+                                <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                                <p className="mt-2 text-slate-500">Loading agents...</p>
+                            </div>
+                        ) : agents.length === 0 ? (
+                            <div className="p-8 text-center text-slate-400">No field agents found</div>
+                        ) : agents.map(agent => (
                             <div
                                 key={agent.id}
                                 onClick={() => setSelectedAgent(agent)}
@@ -188,7 +191,13 @@ export default function FieldForcePage() {
                         </div>
 
                         <div className="overflow-y-auto space-y-4 pr-1">
-                            {visitLogs.map(log => (
+                            {loading ? (
+                            <div className="p-8 text-center">
+                                <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                            </div>
+                        ) : visitLogs.length === 0 ? (
+                            <div className="p-8 text-center text-slate-400">No visit logs for today</div>
+                        ) : visitLogs.map(log => (
                                 <div key={log.id} className="flex gap-4 p-4 border border-cloud dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-800 transition-colors">
                                     <div className="flex flex-col items-center gap-1">
                                         <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs border border-indigo-100 dark:border-indigo-800">

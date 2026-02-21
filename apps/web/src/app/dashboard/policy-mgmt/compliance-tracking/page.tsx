@@ -1,12 +1,48 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ShieldCheck,
-    PieChart
+    PieChart,
+    Loader2
 } from 'lucide-react';
+import { PolicyAnalyticsService } from '../services';
 
 export default function ComplianceTrackingPage() {
+    const [analytics, setAnalytics] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await PolicyAnalyticsService.get();
+                setAnalytics(data);
+            } catch {
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
+    const overallCompliance = analytics?.overallCompliance || 0;
+    const acknowledgementRate = analytics?.acknowledgementRate || 0;
+
+    const complianceAreas = [
+        { area: 'Policy Acknowledgement', score: `${acknowledgementRate}%`, status: acknowledgementRate >= 90 ? 'Excellent' : acknowledgementRate >= 70 ? 'Good' : 'Needs Attention', color: acknowledgementRate >= 90 ? 'bg-emerald-500' : acknowledgementRate >= 70 ? 'bg-teal-500' : 'bg-amber-500' },
+        { area: 'Overall Compliance', score: `${overallCompliance}%`, status: overallCompliance >= 90 ? 'Excellent' : overallCompliance >= 70 ? 'Good' : 'Needs Attention', color: overallCompliance >= 90 ? 'bg-emerald-500' : overallCompliance >= 70 ? 'bg-teal-500' : 'bg-amber-500' },
+        { area: 'Published Policies', score: `${analytics?.publishedPolicies || 0}`, status: 'Active', color: 'bg-indigo-500' },
+        { area: 'Pending Approvals', score: `${analytics?.pendingApprovals || 0}`, status: analytics?.pendingApprovals > 0 ? 'Action Required' : 'Clear', color: analytics?.pendingApprovals > 0 ? 'bg-amber-500' : 'bg-emerald-500' },
+    ];
+
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -25,17 +61,13 @@ export default function ComplianceTrackingPage() {
                     <div className="text-center">
                         <PieChart className="w-16 h-16 text-slate-200 mx-auto mb-4" />
                         <h3 className="font-bold text-slate-500">Overall Adherence</h3>
-                        <p className="text-sm text-slate-400 mt-2">Chart component visualization goes here.</p>
+                        <p className="text-3xl font-bold mt-2 text-indigo-600">{overallCompliance}%</p>
+                        <p className="text-sm text-slate-400 mt-2">Total Policies: {analytics?.totalPolicies || 0}</p>
                     </div>
                 </div>
 
                 <div className="space-y-4">
-                    {[
-                        { area: 'GDPR Compliance', score: '98%', status: 'Excellent', color: 'bg-emerald-500' },
-                        { area: 'ISO 27001 InfoSec', score: '92%', status: 'Good', color: 'bg-teal-500' },
-                        { area: 'Anti-Harassment', score: '100%', status: 'Perfect', color: 'bg-indigo-500' },
-                        { area: 'Code of Ethics', score: '88%', status: 'Needs Attention', color: 'bg-amber-500' },
-                    ].map((item, i) => (
+                    {complianceAreas.map((item, i) => (
                         <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                             <div className="flex justify-between items-end mb-2">
                                 <div>
@@ -44,9 +76,11 @@ export default function ComplianceTrackingPage() {
                                 </div>
                                 <div className="text-2xl font-bold font-mono">{item.score}</div>
                             </div>
-                            <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                <div className={`h-full ${item.color}`} style={{ width: item.score }}></div>
-                            </div>
+                            {item.score.includes('%') && (
+                                <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <div className={`h-full ${item.color}`} style={{ width: item.score }}></div>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

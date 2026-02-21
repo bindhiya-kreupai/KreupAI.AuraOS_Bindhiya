@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import WorkflowDesigner from "@/components/workflow/WorkflowDesigner";
 import NodePalette from "@/components/workflow/NodePalette";
 import NodeEditor from "@/components/workflow/NodeEditor";
 
 export default function WorkflowDesignerPage() {
   const [activeView, setActiveView] = useState<"designer" | "palette" | "editor">("designer");
+  const handleDragStart = useCallback(() => {}, []);
 
   return (
     <div className="p-6 bg-white dark:bg-stellar-blue min-h-screen">
@@ -36,7 +37,7 @@ export default function WorkflowDesignerPage() {
         {activeView === "designer" && <WorkflowDesigner />}
         {activeView === "palette" && (
           <div className="max-w-sm">
-            <NodePalette />
+            <NodePalette onDragStart={handleDragStart} />
           </div>
         )}
         {activeView === "editor" && (

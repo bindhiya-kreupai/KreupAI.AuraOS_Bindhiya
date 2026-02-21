@@ -76,7 +76,7 @@ export class MobileAppConfigService {
 
 export class PushNotificationService {
   private static endpoint = '/mobile-app/notifications';
-  private static templatesEndpoint = '/mobile-app/notification-templates';
+  private static templatesEndpoint = '/notifications/templates';
 
   static async getAllNotifications(): Promise<PushNotification[]> {
     try {

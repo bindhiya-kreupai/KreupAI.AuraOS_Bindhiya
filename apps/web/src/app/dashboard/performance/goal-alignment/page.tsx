@@ -1,68 +1,19 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Target, ChevronDown, ChevronRight, Link2, TrendingUp, Users, Building2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { GoalService } from '../core/services';
+import { Target, ChevronDown, ChevronRight, Link2, TrendingUp, Users, Building2, Loader2 } from 'lucide-react';
 
-interface Goal {
+interface GoalNode {
   id: string;
   title: string;
   owner: string;
   progress: number;
   level: 'company' | 'department' | 'team' | 'individual';
-  children?: Goal[];
+  children?: GoalNode[];
 }
 
-const goalTree: Goal[] = [
-  {
-    id: '1',
-    title: 'Increase Annual Revenue by 25%',
-    owner: 'Company',
-    progress: 62,
-    level: 'company',
-    children: [
-      {
-        id: '1a',
-        title: 'Expand Enterprise Customer Base',
-        owner: 'Sales Department',
-        progress: 55,
-        level: 'department',
-        children: [
-          { id: '1a1', title: 'Close 15 new enterprise deals in Q1', owner: 'Enterprise Sales Team', progress: 73, level: 'team' },
-          { id: '1a2', title: 'Improve sales pipeline conversion by 20%', owner: 'You', progress: 40, level: 'individual' },
-        ]
-      },
-      {
-        id: '1b',
-        title: 'Launch 3 New Product Features',
-        owner: 'Engineering',
-        progress: 70,
-        level: 'department',
-        children: [
-          { id: '1b1', title: 'Deliver reporting module by Q2', owner: 'Platform Team', progress: 85, level: 'team' },
-          { id: '1b2', title: 'Implement API v3 endpoints', owner: 'You', progress: 60, level: 'individual' },
-        ]
-      }
-    ]
-  },
-  {
-    id: '2',
-    title: 'Improve Employee Satisfaction Score to 4.5',
-    owner: 'Company',
-    progress: 78,
-    level: 'company',
-    children: [
-      {
-        id: '2a',
-        title: 'Reduce Voluntary Turnover by 10%',
-        owner: 'HR Department',
-        progress: 80,
-        level: 'department',
-      }
-    ]
-  }
-];
-
-const GoalNode = ({ goal, depth = 0 }: { goal: Goal; depth?: number }) => {
+const GoalNodeComponent = ({ goal, depth = 0 }: { goal: GoalNode; depth?: number }) => {
   const [expanded, setExpanded] = useState(depth < 2);
 
   const getLevelColor = (level: string) => {
@@ -122,13 +73,77 @@ const GoalNode = ({ goal, depth = 0 }: { goal: Goal; depth?: number }) => {
         </div>
       </div>
       {expanded && goal.children?.map((child) => (
-        <GoalNode key={child.id} goal={child} depth={depth + 1} />
+        <GoalNodeComponent key={child.id} goal={child} depth={depth + 1} />
       ))}
     </div>
   );
 };
 
 export default function GoalAlignmentPage() {
+  const [loading, setLoading] = useState(true);
+  const [goals, setGoals] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function loadGoals() {
+      try {
+        const data = await GoalService.getGoals();
+        setGoals(data);
+      } catch (error) {
+        console.error('Failed to load goals:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadGoals();
+  }, []);
+
+  // Build a goal tree from flat goals
+  const buildGoalTree = (flatGoals: any[]): GoalNode[] => {
+    const goalMap = new Map<string, GoalNode>();
+    const roots: GoalNode[] = [];
+
+    flatGoals.forEach(g => {
+      const level = g.type === 'company' ? 'company' :
+        g.type === 'department' ? 'department' :
+        g.type === 'team' ? 'team' : 'individual';
+
+      goalMap.set(g.id, {
+        id: g.id,
+        title: g.title,
+        owner: g.alignedTo || g.type || 'Individual',
+        progress: g.progress || 0,
+        level,
+        children: [],
+      });
+    });
+
+    flatGoals.forEach(g => {
+      const node = goalMap.get(g.id);
+      if (node && g.parentGoalId && goalMap.has(g.parentGoalId)) {
+        goalMap.get(g.parentGoalId)!.children!.push(node);
+      } else if (node) {
+        roots.push(node);
+      }
+    });
+
+    return roots;
+  };
+
+  const goalTree = buildGoalTree(goals);
+  const myGoals = goals.filter(g => g.type === 'individual');
+  const avgProgress = goals.length > 0 ? Math.round(goals.reduce((sum, g) => sum + (g.progress || 0), 0) / goals.length) : 0;
+  const alignedGoals = goals.filter(g => g.parentGoalId || g.alignedTo).length;
+  const alignmentScore = goals.length > 0 ? Math.round((alignedGoals / goals.length) * 100) : 0;
+  const atRisk = goals.filter(g => g.progress < 30 && g.status !== 'completed').length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="w-8 h-8 animate-spin text-celestial-indigo" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 pb-10">
       {/* Header */}
@@ -141,22 +156,22 @@ export default function GoalAlignmentPage() {
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">My Goals</p>
-          <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">4</p>
-          <p className="text-[10px] text-silver-mist">2 aligned to company OKRs</p>
+          <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">{myGoals.length}</p>
+          <p className="text-[10px] text-silver-mist">{alignedGoals} aligned to objectives</p>
         </div>
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Avg Progress</p>
-          <p className="text-2xl font-bold text-celestial-indigo mt-1">52%</p>
+          <p className="text-2xl font-bold text-celestial-indigo mt-1">{avgProgress}%</p>
           <p className="text-[10px] text-silver-mist">Across all goals</p>
         </div>
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Alignment Score</p>
-          <p className="text-2xl font-bold text-emerald-600 mt-1">85%</p>
+          <p className="text-2xl font-bold text-emerald-600 mt-1">{alignmentScore}%</p>
           <p className="text-[10px] text-silver-mist">Goals linked to strategy</p>
         </div>
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">At Risk</p>
-          <p className="text-2xl font-bold text-coral-alert mt-1">1</p>
+          <p className="text-2xl font-bold text-coral-alert mt-1">{atRisk}</p>
           <p className="text-[10px] text-silver-mist">Below 30% progress</p>
         </div>
       </div>
@@ -173,9 +188,17 @@ export default function GoalAlignmentPage() {
           </div>
         </div>
         <div className="p-2">
-          {goalTree.map((goal) => (
-            <GoalNode key={goal.id} goal={goal} />
-          ))}
+          {goalTree.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+              <Target className="w-10 h-10 mb-2 opacity-30" />
+              <p className="text-sm font-medium">No goals to display</p>
+              <p className="text-xs mt-1">Create goals and set parent relationships to see alignment</p>
+            </div>
+          ) : (
+            goalTree.map((goal) => (
+              <GoalNodeComponent key={goal.id} goal={goal} />
+            ))
+          )}
         </div>
       </div>
     </div>

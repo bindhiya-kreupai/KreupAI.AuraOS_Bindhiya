@@ -41,15 +41,13 @@ export default function CompOffManagementPage() {
         try {
             setLoading(true);
             const result = await CompOffManagementService.getCompOffData();
-            if (result && result.length > 0) {
-                setData({
-                    ...data,
-                    transactions: result
-                });
-            }
+            setData({
+                ...data,
+                transactions: result || []
+            });
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -121,27 +119,36 @@ export default function CompOffManagementPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-cloud dark:divide-nebula-purple/20">
-                        <tr>
-                            <td className="px-6 py-4 font-bold text-slate-700 dark:text-slate-200">Sun, 24 Mar 2025</td>
-                            <td className="px-6 py-4 text-slate-500">Project Beta Go-Live Support</td>
-                            <td className="px-6 py-4 text-center font-bold text-emerald-500">+1.0</td>
-                            <td className="px-6 py-4 text-center text-xs text-slate-400">23 May 2025</td>
-                            <td className="px-6 py-4 text-center"><span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">Credited</span></td>
-                        </tr>
-                        <tr>
-                            <td className="px-6 py-4 font-bold text-slate-700 dark:text-slate-200">Sat, 09 Mar 2025</td>
-                            <td className="px-6 py-4 text-slate-500">Urgent Client Fixes</td>
-                            <td className="px-6 py-4 text-center font-bold text-emerald-500">+1.0</td>
-                            <td className="px-6 py-4 text-center text-xs text-slate-400">08 May 2025</td>
-                            <td className="px-6 py-4 text-center"><span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">Credited</span></td>
-                        </tr>
-                        <tr className="bg-slate-50/50 dark:bg-slate-900/20">
-                            <td className="px-6 py-4 font-bold text-slate-700 dark:text-slate-200">Mon, 01 Apr 2025</td>
-                            <td className="px-6 py-4 text-slate-500">Leave Utilization (Comp-off)</td>
-                            <td className="px-6 py-4 text-center font-bold text-rose-500">-1.0</td>
-                            <td className="px-6 py-4 text-center text-xs text-slate-400">-</td>
-                            <td className="px-6 py-4 text-center"><span className="text-xs font-bold text-slate-500">Utilized</span></td>
-                        </tr>
+                        {loading ? (
+                            <tr>
+                                <td colSpan={5} className="p-8 text-center">
+                                    <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                                </td>
+                            </tr>
+                        ) : data.transactions.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="p-8 text-center text-slate-400">No transactions found</td>
+                            </tr>
+                        ) : data.transactions.map((tx) => (
+                            <tr key={tx.id} className={`${tx.credit < 0 ? 'bg-slate-50/50 dark:bg-slate-900/20' : ''}`}>
+                                <td className="px-6 py-4 font-bold text-slate-700 dark:text-slate-200">{tx.dateWorked}</td>
+                                <td className="px-6 py-4 text-slate-500">{tx.reason}</td>
+                                <td className={`px-6 py-4 text-center font-bold ${tx.credit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                    {tx.credit >= 0 ? '+' : ''}{tx.credit.toFixed(1)}
+                                </td>
+                                <td className="px-6 py-4 text-center text-xs text-slate-400">{tx.expiry || '-'}</td>
+                                <td className="px-6 py-4 text-center">
+                                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                                        tx.status === 'Credited' ? 'bg-emerald-100 text-emerald-700' :
+                                        tx.status === 'Utilized' ? 'text-slate-500' :
+                                        tx.status === 'Pending' ? 'bg-amber-100 text-amber-700' :
+                                        'text-slate-500'
+                                    }`}>
+                                        {tx.status}
+                                    </span>
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>

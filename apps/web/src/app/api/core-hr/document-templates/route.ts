@@ -1,17 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { z } from 'zod';
+import { randomUUID } from 'crypto';
+
+// Validation schema for creating a template
+const CreateTemplateSchema = z.object({
+  name: z.string().min(1, 'Template name is required'),
+  description: z.string().optional(),
+  category: z.string().optional(),
+  content: z.string().optional(),
+  format: z.string().optional(),
+  isActive: z.boolean().optional(),
+});
 
 export const GET = withEnhancedAuth(async (request, context) => {
   try {
-    const { user } = context;
-    const { searchParams } = new URL(request.url);
-
-    // Mock data - replace with actual database queries
-    const templates_UPPER = [];
-
-    return NextResponse.json({ templates: templates_UPPER }, { status: 200 });
+    // No Prisma model exists for document templates yet
+    // Return empty array as placeholder
+    return NextResponse.json({ templates: [] }, { status: 200 });
   } catch (error) {
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error fetching document templates:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch document templates' },
+      { status: 500 }
+    );
   }
 });
 
@@ -20,17 +32,31 @@ export const POST = withEnhancedAuth(async (request, context) => {
     const { user } = context;
     const body = await request.json();
 
-    // Mock create - replace with actual database insert
+    const validated = CreateTemplateSchema.parse(body);
+
+    // No Prisma model exists yet - return submitted data with generated id
     const template = {
-      id: `template-${Date.now()}`,
-      ...body,
+      id: randomUUID(),
+      ...validated,
+      tenantId: user.tenantId,
+      isActive: validated.isActive ?? true,
       createdAt: new Date().toISOString(),
       createdBy: user.userId,
     };
 
     return NextResponse.json({ template }, { status: 201 });
   } catch (error) {
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: error.errors },
+        { status: 400 }
+      );
+    }
+    console.error('Error creating document template:', error);
+    return NextResponse.json(
+      { error: 'Failed to create document template' },
+      { status: 500 }
+    );
   }
 });
 
@@ -39,7 +65,14 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     const { user } = context;
     const body = await request.json();
 
-    // Mock update - replace with actual database update
+    if (!body.id) {
+      return NextResponse.json(
+        { error: 'Template ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // No Prisma model exists yet - return submitted data as updated
     const template = {
       ...body,
       updatedAt: new Date().toISOString(),
@@ -48,6 +81,10 @@ export const PUT = withEnhancedAuth(async (request, context) => {
 
     return NextResponse.json({ template }, { status: 200 });
   } catch (error) {
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error updating document template:', error);
+    return NextResponse.json(
+      { error: 'Failed to update document template' },
+      { status: 500 }
+    );
   }
 });

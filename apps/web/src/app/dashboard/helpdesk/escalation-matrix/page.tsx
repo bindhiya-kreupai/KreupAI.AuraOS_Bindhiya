@@ -1,13 +1,53 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     GitMerge,
     ShieldAlert,
-    UserPlus
+    Loader2
 } from 'lucide-react';
+import { EscalationMatrixService } from '../services';
+import type { EscalationMatrix } from '../types';
 
 export default function EscalationMatrixPage() {
+    const [matrices, setMatrices] = useState<EscalationMatrix[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await EscalationMatrixService.getAllMatrices();
+                setMatrices(data);
+            } catch {
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
+    const levels = matrices.length > 0 && matrices[0].levels
+        ? matrices[0].levels.map(lvl => ({
+            level: `Level ${lvl.level}: ${lvl.levelName}`,
+            trigger: `${lvl.timeThreshold}min threshold`,
+            action: lvl.notifyManagement ? 'Notify Management & Re-assign' : 'Re-assign to escalation team',
+            color: lvl.level === 1 ? 'text-amber-500' : lvl.level === 2 ? 'text-orange-500' : 'text-rose-500',
+            bg: lvl.level === 1 ? 'bg-amber-50 dark:bg-amber-900/20' : lvl.level === 2 ? 'bg-orange-50 dark:bg-orange-900/20' : 'bg-rose-50 dark:bg-rose-900/20',
+        }))
+        : [
+            { level: 'Level 1: SLA Breach Warning', trigger: '50% Time Elapsed', action: 'Notify Agent & Team Lead', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+            { level: 'Level 2: SLA Breach Imminent', trigger: '90% Time Elapsed', action: 'Notify Manager, Re-assign Priority', color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20' },
+            { level: 'Level 3: SLA BREACHED', trigger: '100% Time Elapsed', action: 'Escalate to HR Director, Flag for Audit', color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-900/20' },
+        ];
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
@@ -21,19 +61,13 @@ export default function EscalationMatrixPage() {
             </div>
 
             <div className="space-y-6">
-                {/* Level 1 -> 2 -> 3 */}
-                {[
-                    { level: 'Level 1: SLA Breach Warning', trigger: '50% Time Elapsed', action: 'Notify Agent & Team Lead', icon: ShieldAlert, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-                    { level: 'Level 2: SLA Breach imminent', trigger: '90% Time Elapsed', action: 'Notify Manager, Re-assign Priority', icon: ShieldAlert, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20' },
-                    { level: 'Level 3: SLA BREACHED', trigger: '100% Time Elapsed', action: 'Escalate to HR Director, Flag for Audit', icon: ShieldAlert, color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-900/20' },
-                ].map((lvl, i) => (
+                {levels.map((lvl, i) => (
                     <div key={i} className="relative pl-8 md:pl-0">
-                        {/* Connecting Line */}
-                        {i !== 2 && <div className="absolute left-8 md:left-1/2 top-16 md:top-full w-0.5 h-6 bg-slate-300 dark:bg-slate-700 -ml-px z-0"></div>}
+                        {i !== levels.length - 1 && <div className="absolute left-8 md:left-1/2 top-16 md:top-full w-0.5 h-6 bg-slate-300 dark:bg-slate-700 -ml-px z-0"></div>}
 
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center gap-6 relative z-10">
                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${lvl.bg} ${lvl.color}`}>
-                                <lvl.icon className="w-6 h-6" />
+                                <ShieldAlert className="w-6 h-6" />
                             </div>
                             <div className="flex-1">
                                 <h3 className="font-bold text-lg mb-1">{lvl.level}</h3>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Users,
   ArrowLeft,
@@ -11,22 +11,12 @@ import {
   Target,
   UserPlus,
   UserMinus,
-  Building2
+  Building2,
+  Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 
 type NitaqatBand = 'PLATINUM' | 'GREEN_HIGH' | 'GREEN_MEDIUM' | 'GREEN_LOW' | 'YELLOW' | 'RED';
-
-interface NitaqatStatus {
-  band: NitaqatBand;
-  saudiEmployees: number;
-  nonSaudiEmployees: number;
-  totalEmployees: number;
-  currentRatio: number;
-  requiredRatio: number;
-  deficit: number;
-  surplus: number;
-}
 
 const bandColors: Record<NitaqatBand, { bg: string; text: string; border: string; name: string; nameAr: string }> = {
   PLATINUM: { bg: 'bg-gradient-to-r from-slate-300 to-slate-400', text: 'text-slate-900', border: 'border-slate-400', name: 'Platinum', nameAr: 'البلاتيني' },
@@ -37,14 +27,11 @@ const bandColors: Record<NitaqatBand, { bg: string; text: string; border: string
   RED: { bg: 'bg-gradient-to-r from-red-500 to-red-600', text: 'text-white', border: 'border-red-500', name: 'Red', nameAr: 'الأحمر' },
 };
 
-const industries = [
-  { code: '47', name: 'Retail Trade', nameAr: 'تجارة التجزئة' },
-  { code: '41', name: 'Construction', nameAr: 'البناء والتشييد' },
-  { code: '62', name: 'IT & Technology', nameAr: 'تقنية المعلومات' },
-  { code: '55', name: 'Hospitality', nameAr: 'الضيافة' },
-  { code: '86', name: 'Healthcare', nameAr: 'الرعاية الصحية' },
-  { code: '64', name: 'Financial Services', nameAr: 'الخدمات المالية' },
-];
+interface IndustryInfo {
+  code: string;
+  name: string;
+  nameAr: string;
+}
 
 export default function NitaqatPage() {
   const [industry, setIndustry] = useState('47');
@@ -52,28 +39,133 @@ export default function NitaqatPage() {
   const [nonSaudiEmployees, setNonSaudiEmployees] = useState(75);
   const [simulateSaudi, setSimulateSaudi] = useState(0);
   const [simulateNonSaudi, setSimulateNonSaudi] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [calculating, setCalculating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Data from API
+  const [industries, setIndustries] = useState<IndustryInfo[]>([]);
+  const [apiBandColors, setApiBandColors] = useState<any>(null);
+  const [currentStatus, setCurrentStatus] = useState<any>(null);
+  const [simStatus, setSimStatus] = useState<any>(null);
+
+  useEffect(() => {
+    fetchReferenceData();
+  }, []);
+
+  // Calculate status via API whenever inputs change
+  useEffect(() => {
+    if (!loading) {
+      calculateStatus();
+    }
+  }, [saudiEmployees, nonSaudiEmployees, industry]);
+
+  const fetchReferenceData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch('/api/compliance/nitaqat');
+      const result = await response.json();
+      if (result.success) {
+        setIndustries(result.data.industries || []);
+        setApiBandColors(result.data.bandColors || null);
+      } else {
+        setError(result.error || 'Failed to load Nitaqat reference data');
+      }
+    } catch (err) {
+      console.error('Error fetching Nitaqat data:', err);
+      setError('Failed to connect to Nitaqat service');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateStatus = async () => {
+    const totalEmployees = saudiEmployees + nonSaudiEmployees;
+    if (totalEmployees === 0) return;
+
+    try {
+      const response = await fetch('/api/compliance/nitaqat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyId: 'default',
+          industryCode: industry,
+          industryName: industries.find(i => i.code === industry)?.name || 'Unknown',
+          totalEmployees,
+          saudiEmployees,
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setCurrentStatus(result.data);
+      }
+    } catch (err) {
+      console.error('Error calculating Nitaqat status:', err);
+    }
+  };
+
+  const handleSimulate = async () => {
+    if (simulateSaudi === 0 && simulateNonSaudi === 0) {
+      setSimStatus(null);
+      return;
+    }
+
+    const totalEmployees = saudiEmployees + nonSaudiEmployees;
+    const params = new URLSearchParams({
+      action: 'simulate',
+      companyId: 'default',
+      industryCode: industry,
+      industryName: industries.find(i => i.code === industry)?.name || 'Unknown',
+      totalEmployees: totalEmployees.toString(),
+      saudiEmployees: saudiEmployees.toString(),
+      saudiChange: simulateSaudi.toString(),
+      nonSaudiChange: simulateNonSaudi.toString(),
+    });
+
+    try {
+      const response = await fetch(`/api/compliance/nitaqat?${params.toString()}`);
+      const result = await response.json();
+      if (result.success) {
+        setSimStatus(result.data);
+      }
+    } catch (err) {
+      console.error('Error simulating Nitaqat:', err);
+    }
+  };
+
+  // Trigger simulation when simulate values change
+  useEffect(() => {
+    handleSimulate();
+  }, [simulateSaudi, simulateNonSaudi]);
 
   const totalEmployees = saudiEmployees + nonSaudiEmployees;
   const currentRatio = totalEmployees > 0 ? (saudiEmployees / totalEmployees) * 100 : 0;
 
-  // Determine band based on ratio (simplified)
-  const getBand = (ratio: number): NitaqatBand => {
-    if (ratio >= 40) return 'PLATINUM';
-    if (ratio >= 27) return 'GREEN_HIGH';
-    if (ratio >= 20) return 'GREEN_MEDIUM';
-    if (ratio >= 10) return 'GREEN_LOW';
-    if (ratio >= 5) return 'YELLOW';
+  // Use API status band if available, otherwise fallback to local calculation
+  const currentBand: NitaqatBand = currentStatus?.status?.band || (() => {
+    if (currentRatio >= 40) return 'PLATINUM';
+    if (currentRatio >= 27) return 'GREEN_HIGH';
+    if (currentRatio >= 20) return 'GREEN_MEDIUM';
+    if (currentRatio >= 10) return 'GREEN_LOW';
+    if (currentRatio >= 5) return 'YELLOW';
     return 'RED';
-  };
-
-  const currentBand = getBand(currentRatio);
+  })();
   const bandInfo = bandColors[currentBand];
 
   // Simulation
   const simTotalEmployees = saudiEmployees + simulateSaudi + nonSaudiEmployees + simulateNonSaudi;
   const simSaudiEmployees = saudiEmployees + simulateSaudi;
   const simRatio = simTotalEmployees > 0 ? (simSaudiEmployees / simTotalEmployees) * 100 : 0;
-  const simBand = getBand(simRatio);
+  const simBand: NitaqatBand = simStatus?.simulated?.band || (() => {
+    if (simRatio >= 40) return 'PLATINUM';
+    if (simRatio >= 27) return 'GREEN_HIGH';
+    if (simRatio >= 20) return 'GREEN_MEDIUM';
+    if (simRatio >= 10) return 'GREEN_LOW';
+    if (simRatio >= 5) return 'YELLOW';
+    return 'RED';
+  })();
   const simBandInfo = bandColors[simBand];
 
   // Calculate how many Saudis needed for next band
@@ -92,6 +184,15 @@ export default function NitaqatPage() {
   };
 
   const nextBandInfo = getNextBandTarget(currentBand);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+        <span className="ml-3 text-slate-500">Loading Nitaqat data...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-10">
@@ -116,6 +217,15 @@ export default function NitaqatPage() {
           <span className="font-medium text-green-700 dark:text-green-400">Saudi Arabia</span>
         </div>
       </div>
+
+      {/* Error Banner */}
+      {error && (
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-red-500" />
+          <span className="text-red-700 dark:text-red-400">{error}</span>
+          <button onClick={() => setError(null)} className="ml-auto text-red-500 hover:text-red-700 text-sm">Dismiss</button>
+        </div>
+      )}
 
       {/* Current Status */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -228,11 +338,20 @@ export default function NitaqatPage() {
               onChange={(e) => setIndustry(e.target.value)}
               className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800"
             >
-              {industries.map((ind) => (
+              {industries.length > 0 ? industries.map((ind) => (
                 <option key={ind.code} value={ind.code}>
-                  {ind.name} | {ind.nameAr}
+                  {ind.name} {ind.nameAr ? `| ${ind.nameAr}` : ''}
                 </option>
-              ))}
+              )) : (
+                <>
+                  <option value="47">Retail Trade</option>
+                  <option value="41">Construction</option>
+                  <option value="62">IT & Technology</option>
+                  <option value="55">Hospitality</option>
+                  <option value="86">Healthcare</option>
+                  <option value="64">Financial Services</option>
+                </>
+              )}
             </select>
           </div>
 
@@ -280,7 +399,7 @@ export default function NitaqatPage() {
               </button>
             </div>
             <button
-              onClick={() => { setSimulateSaudi(0); setSimulateNonSaudi(0); }}
+              onClick={() => { setSimulateSaudi(0); setSimulateNonSaudi(0); setSimStatus(null); }}
               className="px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm hover:bg-slate-200"
             >
               Reset Simulation

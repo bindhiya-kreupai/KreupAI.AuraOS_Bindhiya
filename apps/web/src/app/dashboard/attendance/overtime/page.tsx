@@ -48,23 +48,22 @@ export default function OvertimePage() {
     const fetchOvertimeData = async () => {
         try {
             const records = await OvertimeService.getOvertimeRequests();
-            if (records.length > 0) {
-                setOvertimeRecords(records as any);
-                // Calculate summary from records
-                const approved = records.filter((r: any) => r.status === 'Approved');
-                const totalHours = records.reduce((sum: number, r: any) => sum + (r.hours || 0), 0);
-                setSummary({
-                    totalHours,
-                    weekdayHours: totalHours * 0.6,
-                    weekendHours: totalHours * 0.4,
-                    approvedHours: approved.reduce((sum: number, r: any) => sum + (r.hours || 0), 0),
-                    totalEarnings: records.reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
-                    pendingEarnings: records.filter((r: any) => r.status === 'Pending').reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
-                });
-            }
+            setOvertimeRecords((records || []) as any);
+            // Calculate summary from records
+            const recordsArr = (records || []) as any[];
+            const approved = recordsArr.filter((r: any) => r.status === 'Approved');
+            const totalHours = recordsArr.reduce((sum: number, r: any) => sum + (r.hours || 0), 0);
+            setSummary({
+                totalHours,
+                weekdayHours: totalHours * 0.6,
+                weekendHours: totalHours * 0.4,
+                approvedHours: approved.reduce((sum: number, r: any) => sum + (r.hours || 0), 0),
+                totalEarnings: recordsArr.reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
+                pendingEarnings: recordsArr.filter((r: any) => r.status === 'Pending').reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
+            });
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };

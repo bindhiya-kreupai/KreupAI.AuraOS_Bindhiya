@@ -1,5 +1,4 @@
 "use client";
-// Force rebuild
 
 import React, { useState, useEffect } from 'react';
 import { PerformanceReviewService } from '../core/services';
@@ -10,19 +9,55 @@ import {
     Heart,
     Clock,
     Filter,
-    ArrowRight
+    ArrowRight,
+    Loader2
 } from 'lucide-react';
 
-const REWARDS = [
-    { id: 1, name: 'Amazon Gift Card $50', cost: 500, category: 'Vouchers', image: '🎁' },
-    { id: 2, name: 'Extra Day Off', cost: 1000, category: 'Perks', image: '🏖️' },
-    { id: 3, name: 'Company Swag Pack', cost: 300, category: 'Merchandise', image: '👕' },
-    { id: 4, name: 'Lunch with CEO', cost: 5000, category: 'Experiences', image: '🍽️' },
-    { id: 5, name: 'Netflix Subscription', cost: 150, category: 'Subscriptions', image: '🎬' },
-    { id: 6, name: 'Charity Donation', cost: 100, category: 'Donations', image: '🤲' },
-];
+interface Reward {
+    id: string;
+    name: string;
+    cost: number;
+    category: string;
+    image: string;
+}
 
 export default function RewardsMarketplacePage() {
+    const [loading, setLoading] = useState(true);
+    const [rewards, setRewards] = useState<Reward[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState('All');
+
+    useEffect(() => {
+        async function loadData() {
+            try {
+                // Rewards could come from a dedicated rewards API
+                // For now, derive from performance review data
+                const reviews = await PerformanceReviewService.getReviews();
+                // Calculate points from completed reviews
+                // The rewards catalog would typically come from a settings/config endpoint
+                // For now, show empty state until a rewards catalog is configured
+                setRewards([]);
+            } catch (error) {
+                console.error('Failed to load rewards data:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadData();
+    }, []);
+
+    const categories = ['All', 'Vouchers', 'Perks', 'Merchandise', 'Experiences', 'Donations'];
+    const filteredRewards = selectedCategory === 'All'
+        ? rewards
+        : rewards.filter(r => r.category === selectedCategory);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -47,8 +82,16 @@ export default function RewardsMarketplacePage() {
 
             {/* Filter Terms */}
             <div className="flex gap-2 shrink-0 overflow-x-auto pb-2">
-                {['All', 'Vouchers', 'Perks', 'Merchandise', 'Experiences', 'Donations'].map(cat => (
-                    <button key={cat} className="px-4 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-indigo-500 hover:text-indigo-500 transition-colors whitespace-nowrap">
+                {categories.map(cat => (
+                    <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`px-4 py-1.5 rounded-full border text-xs font-bold transition-colors whitespace-nowrap ${
+                            selectedCategory === cat
+                                ? 'bg-indigo-500 text-white border-indigo-500'
+                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-indigo-500 hover:text-indigo-500'
+                        }`}
+                    >
                         {cat}
                     </button>
                 ))}
@@ -56,7 +99,13 @@ export default function RewardsMarketplacePage() {
 
             {/* Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-y-auto pb-20">
-                {REWARDS.map(item => (
+                {filteredRewards.length === 0 ? (
+                    <div className="col-span-full flex flex-col items-center justify-center py-16 text-slate-400">
+                        <Gift className="w-12 h-12 mb-3 opacity-30" />
+                        <p className="font-bold text-lg">No rewards available</p>
+                        <p className="text-sm mt-1">Rewards catalog will be configured by your HR administrator</p>
+                    </div>
+                ) : filteredRewards.map(item => (
                     <div key={item.id} className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all group flex flex-col items-center text-center">
                         <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-5xl mb-4 group-hover:scale-110 transition-transform">
                             {item.image}

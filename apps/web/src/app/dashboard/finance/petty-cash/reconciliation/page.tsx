@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Scale,
     Wallet,
@@ -17,8 +17,10 @@ import {
     RefreshCw,
     Search,
     FileCheck,
-    Clock
+    Clock,
+    Loader2
 } from 'lucide-react';
+import { PettyCashService } from '../../services';
 
 type ReconciliationStatus = 'all' | 'balanced' | 'variance' | 'pending';
 
@@ -41,166 +43,24 @@ interface Reconciliation {
 
 export default function ReconciliationPage() {
     const [filter, setFilter] = useState<ReconciliationStatus>('all');
+    const [loading, setLoading] = useState(true);
 
-    const reconciliations: Reconciliation[] = [
-        {
-            id: 'RC-001',
-            date: '2024-12-13',
-            reconciledBy: 'Finance Team',
-            openingBalance: 1000.00,
-            totalDisbursements: 450.25,
-            totalReplenishments: 500.00,
-            expectedBalance: 1049.75,
-            actualBalance: 1049.75,
-            variance: 0,
-            variancePercent: 0,
-            status: 'balanced',
-            disbursementCount: 8,
-            replenishmentCount: 1,
-            notes: 'Monthly reconciliation completed successfully'
-        },
-        {
-            id: 'RC-002',
-            date: '2024-12-12',
-            reconciledBy: 'Sarah Connor',
-            openingBalance: 1000.00,
-            totalDisbursements: 325.50,
-            totalReplenishments: 0,
-            expectedBalance: 674.50,
-            actualBalance: 670.00,
-            variance: -4.50,
-            variancePercent: -0.67,
-            status: 'variance',
-            disbursementCount: 6,
-            replenishmentCount: 0,
-            notes: 'Minor discrepancy found - investigating missing receipt'
-        },
-        {
-            id: 'RC-003',
-            date: '2024-12-11',
-            reconciledBy: 'Kyle Reese',
-            openingBalance: 1000.00,
-            totalDisbursements: 580.75,
-            totalReplenishments: 600.00,
-            expectedBalance: 1019.25,
-            actualBalance: 1019.25,
-            variance: 0,
-            variancePercent: 0,
-            status: 'balanced',
-            disbursementCount: 10,
-            replenishmentCount: 1,
-            notes: 'Weekly reconciliation - all clear'
-        },
-        {
-            id: 'RC-004',
-            date: '2024-12-10',
-            reconciledBy: 'Lisa Garcia',
-            openingBalance: 1000.00,
-            totalDisbursements: 285.00,
-            totalReplenishments: 300.00,
-            expectedBalance: 1015.00,
-            actualBalance: 1022.50,
-            variance: 7.50,
-            variancePercent: 0.74,
-            status: 'variance',
-            disbursementCount: 5,
-            replenishmentCount: 1,
-            notes: 'Extra cash found - verifying source'
-        },
-        {
-            id: 'RC-005',
-            date: '2024-12-09',
-            reconciledBy: 'Mike Chen',
-            openingBalance: 1000.00,
-            totalDisbursements: 412.30,
-            totalReplenishments: 450.00,
-            expectedBalance: 1037.70,
-            actualBalance: 1037.70,
-            variance: 0,
-            variancePercent: 0,
-            status: 'balanced',
-            disbursementCount: 7,
-            replenishmentCount: 1
-        },
-        {
-            id: 'RC-006',
-            date: '2024-12-08',
-            reconciledBy: 'Emma Wilson',
-            openingBalance: 1000.00,
-            totalDisbursements: 195.80,
-            totalReplenishments: 0,
-            expectedBalance: 804.20,
-            actualBalance: 800.00,
-            variance: -4.20,
-            variancePercent: -0.52,
-            status: 'variance',
-            disbursementCount: 4,
-            replenishmentCount: 0,
-            notes: 'Small shortage - pending investigation'
-        },
-        {
-            id: 'RC-007',
-            date: '2024-12-07',
-            reconciledBy: 'David Park',
-            openingBalance: 1000.00,
-            totalDisbursements: 520.45,
-            totalReplenishments: 550.00,
-            expectedBalance: 1029.55,
-            actualBalance: 1029.55,
-            variance: 0,
-            variancePercent: 0,
-            status: 'balanced',
-            disbursementCount: 9,
-            replenishmentCount: 1
-        },
-        {
-            id: 'RC-008',
-            date: '2024-12-06',
-            reconciledBy: 'Alex Johnson',
-            openingBalance: 1000.00,
-            totalDisbursements: 365.90,
-            totalReplenishments: 400.00,
-            expectedBalance: 1034.10,
-            actualBalance: 1034.10,
-            variance: 0,
-            variancePercent: 0,
-            status: 'balanced',
-            disbursementCount: 6,
-            replenishmentCount: 1,
-            notes: 'End of week reconciliation'
-        },
-        {
-            id: 'RC-009',
-            date: '2024-12-05',
-            reconciledBy: 'Rachel Green',
-            openingBalance: 1000.00,
-            totalDisbursements: 445.60,
-            totalReplenishments: 0,
-            expectedBalance: 554.40,
-            actualBalance: 560.00,
-            variance: 5.60,
-            variancePercent: 1.01,
-            status: 'variance',
-            disbursementCount: 8,
-            replenishmentCount: 0,
-            notes: 'Excess found - returned unprocessed receipt'
-        },
-        {
-            id: 'RC-010',
-            date: '2024-12-04',
-            reconciledBy: 'Tom Hardy',
-            openingBalance: 1000.00,
-            totalDisbursements: 298.75,
-            totalReplenishments: 300.00,
-            expectedBalance: 1001.25,
-            actualBalance: 1001.25,
-            variance: 0,
-            variancePercent: 0,
-            status: 'balanced',
-            disbursementCount: 5,
-            replenishmentCount: 1
-        }
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await PettyCashService.getReconciliations();
+                setReconciliations(data as any[]);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const [reconciliations, setReconciliations] = useState<any[]>([]);
 
     const filteredReconciliations = filter === 'all'
         ? reconciliations
@@ -268,6 +128,14 @@ export default function ReconciliationPage() {
             subtext: 'Last 10 periods'
         }
     ];
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">

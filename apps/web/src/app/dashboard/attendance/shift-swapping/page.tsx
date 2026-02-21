@@ -15,8 +15,6 @@ import {
 } from 'lucide-react';
 import { ShiftSwapService } from '../services';
 
-// --- MOCK DATA ---
-
 interface Shift {
     id: string;
     date: string;
@@ -53,16 +51,12 @@ export default function ShiftSwappingPage() {
         try {
             setLoading(true);
             const shiftsResult = await ShiftSwapService.getMyShifts('current-user-id');
-            if (shiftsResult && shiftsResult.length > 0) {
-                setMyShifts(shiftsResult as any);
-            }
+            setMyShifts((shiftsResult || []) as any);
             const marketplaceResult = await ShiftSwapService.getMarketplace();
-            if (marketplaceResult && marketplaceResult.length > 0) {
-                setMarketplace(marketplaceResult as any);
-            }
+            setMarketplace((marketplaceResult || []) as any);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -125,7 +119,14 @@ export default function ShiftSwappingPage() {
 
             {activeTab === 'My Shifts' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-300">
-                    {myShifts.map(shift => (
+                    {loading ? (
+                        <div className="col-span-full p-8 text-center">
+                            <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                            <p className="mt-2 text-slate-500">Loading shifts...</p>
+                        </div>
+                    ) : myShifts.length === 0 ? (
+                        <div className="col-span-full p-8 text-center text-slate-400">No shifts assigned</div>
+                    ) : myShifts.map(shift => (
                         <div key={shift.id} className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm relative group">
                             {shift.status === 'Swap Requested' && (
                                 <div className="absolute top-4 right-4 bg-amber-100 dark:bg-amber-900/20 text-amber-600 text-[10px] font-bold uppercase px-2 py-1 rounded-full flex items-center gap-1">
@@ -172,10 +173,12 @@ export default function ShiftSwappingPage() {
                     ))}
 
                     {/* Add Shift Placeholder */}
+                    {!loading && (
                     <div className="border-2 border-dashed border-cloud dark:border-nebula-purple/30 rounded-2xl flex flex-col items-center justify-center p-6 text-center text-slate-400 hover:border-celestial-indigo/50 hover:bg-slate-50 dark:hover:bg-deep-cosmos/30 transition-all cursor-pointer">
                         <Calendar className="w-8 h-8 mb-2 opacity-50" />
                         <div className="font-bold text-sm">View Full Roster</div>
                     </div>
+                    )}
                 </div>
             )}
 
@@ -189,7 +192,14 @@ export default function ShiftSwappingPage() {
                     </div>
 
                     <div className="grid grid-cols-1 gap-4">
-                        {marketplace.map(item => (
+                        {loading ? (
+                            <div className="p-8 text-center">
+                                <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                                <p className="mt-2 text-slate-500">Loading marketplace...</p>
+                            </div>
+                        ) : marketplace.length === 0 ? (
+                            <div className="p-8 text-center text-slate-400">No shifts available in the marketplace</div>
+                        ) : marketplace.map(item => (
                             <div key={item.id} className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-col md:flex-row items-center gap-6 group hover:border-celestial-indigo/30 transition-colors">
                                 <div className="flex items-center gap-4 flex-1">
                                     <div className={`w-12 h-12 rounded-full ${item.offeredBy.avatar} flex items-center justify-center text-white font-bold text-lg shadow-md`}>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { PerformanceReviewService } from '../core/services';
+import { ReviewCycleService } from '../core/services';
 import {
     Settings,
     List,
@@ -11,10 +11,36 @@ import {
     HelpCircle,
     ToggleLeft,
     ToggleRight,
-    Save
+    Save,
+    Loader2
 } from 'lucide-react';
 
 export default function FeedbackConfigPage() {
+    const [loading, setLoading] = useState(true);
+    const [cycles, setCycles] = useState<any[]>([]);
+
+    useEffect(() => {
+        async function loadData() {
+            try {
+                const data = await ReviewCycleService.getCycles();
+                setCycles(data);
+            } catch (error) {
+                console.error('Failed to load feedback config:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -81,11 +107,12 @@ export default function FeedbackConfigPage() {
                     </div>
 
                     <div className="space-y-3">
-                        {[
-                            { q: 'What are this persons core strengths?', type: 'Text' },
-                            { q: 'How well does this person collaborate?', type: 'Rating' },
-                            { q: 'Areas for improvement?', type: 'Text' },
-                        ].map((item, i) => (
+                        {(cycles.length > 0 && cycles[0].questions?.length > 0
+                            ? cycles[0].questions.map((q: any) => ({ q: q.text || q.question || q, type: q.type || 'Text' }))
+                            : [
+                                { q: 'No questions configured yet', type: 'Info' },
+                            ]
+                        ).map((item: any, i: number) => (
                             <div key={i} className="p-3 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
                                 <div className="text-sm font-bold mb-1">{item.q}</div>
                                 <div className="text-[10px] text-slate-500 uppercase bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded w-fit">{item.type}</div>

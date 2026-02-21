@@ -1,5 +1,6 @@
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
@@ -12,59 +13,113 @@ export const GET = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const { searchParams } = new URL(request.url);
-      const employeeId = searchParams.get('employeeId') || user.userId;
+      const employeeId = searchParams.get('employeeId');
       const startDate = searchParams.get('startDate');
       const endDate = searchParams.get('endDate');
       const status = searchParams.get('status');
 
-      const mockTimesheets = [
-        {
-          id: '1',
-          employeeId,
-          employeeName: 'John Doe',
-          weekEnding: '2024-08-31',
-          totalHours: 40,
-          regularHours: 40,
-          overtimeHours: 0,
-          status: 'APPROVED',
-          approvedBy: 'manager-1',
-          approvedAt: '2024-09-01',
-          entries: [
-            { date: '2024-08-26', checkIn: '09:00', checkOut: '18:00', hours: 8, status: 'PRESENT' },
-            { date: '2024-08-27', checkIn: '09:05', checkOut: '18:10', hours: 8, status: 'PRESENT' },
-            { date: '2024-08-28', checkIn: '09:00', checkOut: '18:00', hours: 8, status: 'PRESENT' },
-            { date: '2024-08-29', checkIn: '09:00', checkOut: '18:00', hours: 8, status: 'PRESENT' },
-            { date: '2024-08-30', checkIn: '09:00', checkOut: '18:00', hours: 8, status: 'PRESENT' },
-          ],
-        },
-        {
-          id: '2',
-          employeeId,
-          employeeName: 'John Doe',
-          weekEnding: '2024-08-24',
-          totalHours: 45,
-          regularHours: 40,
-          overtimeHours: 5,
-          status: 'PENDING',
-          entries: [
-            { date: '2024-08-19', checkIn: '09:00', checkOut: '18:00', hours: 8, status: 'PRESENT' },
-            { date: '2024-08-20', checkIn: '09:00', checkOut: '20:00', hours: 10, status: 'PRESENT' },
-            { date: '2024-08-21', checkIn: '09:00', checkOut: '18:00', hours: 8, status: 'PRESENT' },
-            { date: '2024-08-22', checkIn: '09:00', checkOut: '19:00', hours: 9, status: 'PRESENT' },
-            { date: '2024-08-23', checkIn: '09:00', checkOut: '19:00', hours: 10, status: 'PRESENT' },
-          ],
-        },
-      ];
+      const where: Record<string, unknown> = { tenantId: user.tenantId };
 
-      let filteredData = mockTimesheets;
-      if (status) {
-        filteredData = mockTimesheets.filter(t => t.status === status);
+      if (employeeId) {
+        where.employeeId = employeeId;
       }
+
+      if (startDate || endDate) {
+        const dateFilter: Record<string, Date> = {};
+        if (startDate) dateFilter.gte = new Date(startDate);
+        if (endDate) dateFilter.lte = new Date(endDate);
+        where.date = dateFilter;
+      }
+
+      if (status) {
+        where.status = status;
+      }
+
+      const records = await prisma.attendanceRecord.findMany({
+        where,
+        orderBy: [{ date: 'desc' }, { employeeId: 'asc' }],
+      });
+
+      // Collect unique employee IDs and look up names
+      const employeeIds = [...new Set(records.map(r => r.employeeId))];
+      const employees = employeeIds.length > 0
+        ? await prisma.employee.findMany({
+            where: { id: { in: employeeIds } },
+            select: { id: true, firstName: true, lastName: true },
+          })
+        : [];
+      const employeeMap = new Map(employees.map(e => [e.id, `${e.firstName} ${e.lastName}`]));
+
+      // Group records by employee and week for timesheet view
+      const timesheetMap = new Map<string, {
+        employeeId: string;
+        employeeName: string;
+        weekEnding: string;
+        entries: Array<{
+          date: string;
+          checkIn: string | null;
+          checkOut: string | null;
+          hours: number;
+          status: string;
+        }>;
+        totalHours: number;
+        overtimeHours: number;
+      }>();
+
+      for (const record of records) {
+        const recordDate = new Date(record.date);
+        // Calculate week ending (Sunday)
+        const dayOfWeek = recordDate.getUTCDay();
+        const weekEnd = new Date(recordDate);
+        weekEnd.setUTCDate(weekEnd.getUTCDate() + (7 - dayOfWeek) % 7);
+        const weekEnding = weekEnd.toISOString().split('T')[0];
+        const key = `${record.employeeId}-${weekEnding}`;
+
+        if (!timesheetMap.has(key)) {
+          timesheetMap.set(key, {
+            employeeId: record.employeeId,
+            employeeName: employeeMap.get(record.employeeId) || 'Unknown Employee',
+            weekEnding,
+            entries: [],
+            totalHours: 0,
+            overtimeHours: 0,
+          });
+        }
+
+        const ts = timesheetMap.get(key)!;
+        ts.entries.push({
+          date: record.date.toISOString().split('T')[0],
+          checkIn: record.clockIn ? record.clockIn.toISOString() : null,
+          checkOut: record.clockOut ? record.clockOut.toISOString() : null,
+          hours: Math.round(record.workHours * 100) / 100,
+          status: record.status,
+        });
+        ts.totalHours += record.workHours;
+        ts.overtimeHours += record.overtimeHours;
+      }
+
+      const timesheets = Array.from(timesheetMap.values()).map((ts, index) => {
+        const totalHoursRounded = Math.round(ts.totalHours * 100) / 100;
+        const overtimeHoursRounded = Math.round(ts.overtimeHours * 100) / 100;
+        const regularHours = Math.round((totalHoursRounded - overtimeHoursRounded) * 100) / 100;
+
+        return {
+          id: `ts-${index + 1}`,
+          employeeId: ts.employeeId,
+          employeeName: ts.employeeName,
+          weekEnding: ts.weekEnding,
+          totalHours: totalHoursRounded,
+          regularHours: Math.max(regularHours, 0),
+          overtimeHours: overtimeHoursRounded,
+          status: ts.entries.some(e => e.status === 'ABSENT') ? 'PENDING' : 'APPROVED',
+          entries: ts.entries.sort((a, b) => a.date.localeCompare(b.date)),
+        };
+      });
 
       return NextResponse.json({
         success: true,
-        data: filteredData,
-        meta: { total: filteredData.length },
+        data: timesheets,
+        meta: { total: timesheets.length },
       });
     } catch (error) {
       logger.error('Error fetching timesheets:', error);
@@ -93,12 +148,47 @@ export const POST = withEnhancedAuth(
         );
       }
 
-      const totalHours = entries.reduce((sum: number, e: any) => sum + e.hours, 0);
+      const totalHours = entries.reduce((sum: number, e: { hours: number }) => sum + e.hours, 0);
       const regularHours = Math.min(totalHours, 40);
       const overtimeHours = Math.max(totalHours - 40, 0);
 
+      // Upsert attendance records for each entry
+      const upsertedRecords = [];
+      for (const entry of entries) {
+        const entryDate = new Date(entry.date);
+        const record = await prisma.attendanceRecord.upsert({
+          where: {
+            tenantId_employeeId_date: {
+              tenantId: user.tenantId,
+              employeeId,
+              date: entryDate,
+            },
+          },
+          update: {
+            clockIn: entry.checkIn ? new Date(`${entry.date}T${entry.checkIn}`) : undefined,
+            clockOut: entry.checkOut ? new Date(`${entry.date}T${entry.checkOut}`) : undefined,
+            workHours: entry.hours || 0,
+            status: entry.status || 'PRESENT',
+            approvalStatus: 'PENDING',
+            remarks: entry.notes || undefined,
+          },
+          create: {
+            tenantId: user.tenantId,
+            employeeId,
+            date: entryDate,
+            clockIn: entry.checkIn ? new Date(`${entry.date}T${entry.checkIn}`) : undefined,
+            clockOut: entry.checkOut ? new Date(`${entry.date}T${entry.checkOut}`) : undefined,
+            workHours: entry.hours || 0,
+            status: entry.status || 'PRESENT',
+            approvalStatus: 'PENDING',
+            remarks: entry.notes || undefined,
+          },
+        });
+        upsertedRecords.push(record);
+      }
+
       const newTimesheet = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: `ts-${Date.now()}`,
         employeeId,
         weekEnding,
         totalHours,
@@ -107,6 +197,7 @@ export const POST = withEnhancedAuth(
         status: 'PENDING',
         entries,
         submittedAt: new Date().toISOString(),
+        recordCount: upsertedRecords.length,
       };
 
       return NextResponse.json({ success: true, data: newTimesheet }, { status: 201 });

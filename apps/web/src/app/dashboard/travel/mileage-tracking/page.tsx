@@ -1,17 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Gauge, Plus, MapPin, Car } from 'lucide-react';
+import { Gauge, Plus, Car, Loader2 } from 'lucide-react';
 import { TravelRequestService } from '../services';
 
-const LOGS = [
-    { id: 1, date: 'Oct 28', from: 'Office', to: 'Client Site A', dist: '12 mi', amount: '$7.80', vehicle: 'Personal Car' },
-    { id: 2, date: 'Oct 29', from: 'Client Site A', to: 'Warehouse', dist: '24 mi', amount: '$15.60', vehicle: 'Personal Car' },
-    { id: 3, date: 'Oct 30', from: 'Warehouse', to: 'Office', dist: '18 mi', amount: '$11.70', vehicle: 'Company Van' },
-];
-
 export default function MileageTrackingPage() {
-    const [data, setData] = useState<any[]>([]);
+    const [logs, setLogs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -22,13 +16,22 @@ export default function MileageTrackingPage() {
         try {
             setLoading(true);
             const requests = await TravelRequestService.getRequests();
-            setData(requests);
+            setLogs(Array.isArray(requests) ? requests : []);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+                <span className="ml-2 text-sm text-slate-500">Loading mileage data...</span>
+            </div>
+        );
+    }
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
@@ -46,7 +49,6 @@ export default function MileageTrackingPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Stats */}
                 <div className="col-span-1 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-8 text-white shadow-lg">
                     <div className="flex items-center gap-3 mb-6 opacity-80">
                         <Car className="w-6 h-6" />
@@ -56,37 +58,44 @@ export default function MileageTrackingPage() {
                     <div className="text-indigo-100 text-sm font-medium">per mile</div>
 
                     <div className="mt-8 pt-8 border-t border-white/20">
-                        <div className="text-3xl font-bold mb-1">2,450 mi</div>
+                        <div className="text-3xl font-bold mb-1">{logs.length > 0 ? `${logs.length} trips` : '0 mi'}</div>
                         <div className="text-indigo-100 text-sm">YTD Distance Logged</div>
                     </div>
                 </div>
 
-                {/* Table */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-                    <table className="w-full text-left">
-                        <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-800">
-                            <tr>
-                                <th className="p-4 text-xs font-bold text-slate-500 uppercase">Date</th>
-                                <th className="p-4 text-xs font-bold text-slate-500 uppercase">Route</th>
-                                <th className="p-4 text-xs font-bold text-slate-500 uppercase">Distance</th>
-                                <th className="p-4 text-xs font-bold text-slate-500 uppercase">Reimbursement</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                            {LOGS.map((log) => (
-                                <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td className="p-4 font-bold text-slate-700 dark:text-slate-300">{log.date}</td>
-                                    <td className="p-4">
-                                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                                            {log.from} <span className="text-slate-300">→</span> {log.to}
-                                        </div>
-                                    </td>
-                                    <td className="p-4 font-bold text-slate-900 dark:text-slate-100">{log.dist}</td>
-                                    <td className="p-4 font-bold text-emerald-600 dark:text-emerald-400">{log.amount}</td>
+                    {logs.length === 0 ? (
+                        <div className="text-center py-12 text-slate-400">
+                            <Gauge className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                            <p className="text-lg font-medium">No mileage logs found</p>
+                            <p className="text-sm mt-1">Add your first mileage log to start tracking.</p>
+                        </div>
+                    ) : (
+                        <table className="w-full text-left">
+                            <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-800">
+                                <tr>
+                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase">Date</th>
+                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase">Details</th>
+                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase">Amount</th>
+                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase">Status</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                {logs.map((log: any) => (
+                                    <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <td className="p-4 font-bold text-slate-700 dark:text-slate-300">{new Date(log.createdAt).toLocaleDateString()}</td>
+                                        <td className="p-4">
+                                            <div className="text-sm text-slate-600 dark:text-slate-400">
+                                                {log.destination || log.title || 'Mileage Entry'}
+                                            </div>
+                                        </td>
+                                        <td className="p-4 font-bold text-slate-900 dark:text-slate-100">${log.estimatedCost || log.amount || 0}</td>
+                                        <td className="p-4 font-bold text-emerald-600 dark:text-emerald-400">{log.status}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             </div>
         </div>

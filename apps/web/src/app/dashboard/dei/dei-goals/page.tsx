@@ -1,53 +1,42 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Target,
     CheckCircle2,
     Calendar,
     ArrowRight,
-    Plus
+    Plus,
+    Loader2
 } from 'lucide-react';
+import { DEIGoalsService } from '../services';
 
 export default function DeiGoalsPage() {
-    const goals = [
-        {
-            title: 'Increase Executive Diversity',
-            target: '30% Women in Leadership',
-            current: '22%',
-            deadline: 'Q4 2024',
-            progress: 73,
-            status: 'On Track',
-            color: 'bg-emerald-500'
-        },
-        {
-            title: 'Bias Training Completion',
-            target: '100% Employee Coverage',
-            current: '85%',
-            deadline: 'Q2 2024',
-            progress: 85,
-            status: 'On Track',
-            color: 'bg-indigo-500'
-        },
-        {
-            title: 'Supplier Diversity',
-            target: '15% Spend w/ Minority Businesses',
-            current: '8%',
-            deadline: 'Q4 2025',
-            progress: 53,
-            status: 'Behind',
-            color: 'bg-amber-500'
-        },
-        {
-            title: 'ERG Participation',
-            target: '40% Employee Membership',
-            current: '35%',
-            deadline: 'Q3 2024',
-            progress: 87,
-            status: 'On Track',
-            color: 'bg-emerald-500'
-        }
-    ];
+    const [goals, setGoals] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await DEIGoalsService.getAllGoals();
+                setGoals(Array.isArray(data) ? data : []);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">

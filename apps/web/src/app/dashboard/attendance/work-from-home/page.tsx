@@ -40,9 +40,7 @@ export default function WorkFromHomePage() {
         try {
             setLoading(true);
             const result = await WFHService.getWFHRequests();
-            if (result && result.length > 0) {
-                setWfhRequests(result);
-            }
+            setWfhRequests(result || []);
             const currentMonth = new Date().toISOString().slice(0, 7);
             const summaryData = await WFHService.getWFHSummary('current-user-id', currentMonth);
             if (summaryData) {
@@ -54,7 +52,7 @@ export default function WorkFromHomePage() {
             }
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };

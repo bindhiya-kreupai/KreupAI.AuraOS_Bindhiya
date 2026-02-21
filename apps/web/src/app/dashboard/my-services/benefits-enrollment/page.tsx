@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Shield, ChevronRight, ChevronLeft, CheckCircle, Circle,
-  Heart, DollarSign, Users, AlertCircle
+  Heart, DollarSign, Users, AlertCircle, Loader2
 } from 'lucide-react';
+import { BenefitsEnrollmentService } from '../services';
 
 type Step = 'plan' | 'coverage' | 'dependents' | 'cost' | 'confirm';
 
@@ -16,7 +17,7 @@ const steps: { id: Step; label: string }[] = [
   { id: 'confirm', label: 'Confirmation' },
 ];
 
-const plans = [
+const defaultPlans = [
   { id: 'basic', name: 'Basic Health', premium: 150, deductible: 5000, coverage: '80%', network: 'Standard' },
   { id: 'standard', name: 'Standard Health', premium: 300, deductible: 2500, coverage: '90%', network: 'Preferred' },
   { id: 'premium', name: 'Premium Health', premium: 500, deductible: 1000, coverage: '95%', network: 'Premier' },
@@ -32,6 +33,43 @@ export default function BenefitsEnrollmentPage() {
   const [currentStep, setCurrentStep] = useState<Step>('plan');
   const [selectedPlan, setSelectedPlan] = useState('standard');
   const [selectedCoverage, setSelectedCoverage] = useState('employee');
+  const [fetching, setFetching] = useState(true);
+  const [plans, setPlans] = useState(defaultPlans);
+  const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [plansRes, enrollRes] = await Promise.allSettled([
+          BenefitsEnrollmentService.getPlans(),
+          BenefitsEnrollmentService.getEnrollments(),
+        ]);
+
+        if (plansRes.status === 'fulfilled' && plansRes.value?.success && Array.isArray(plansRes.value.data) && plansRes.value.data.length > 0) {
+          const mapped = plansRes.value.data.map((p: any) => ({
+            id: p.id,
+            name: p.name || p.planName,
+            premium: p.basePremium || p.premium || 0,
+            deductible: p.deductible || 0,
+            coverage: p.coveragePercentage ? `${p.coveragePercentage}%` : '90%',
+            network: p.networkType || p.network || 'Standard',
+          }));
+          setPlans(mapped);
+          setSelectedPlan(mapped[1]?.id || mapped[0]?.id);
+        }
+
+        if (enrollRes.status === 'fulfilled' && enrollRes.value?.success && Array.isArray(enrollRes.value.data)) {
+          setEnrollments(enrollRes.value.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch benefits data:', err);
+      } finally {
+        setFetching(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const currentStepIndex = steps.findIndex((s) => s.id === currentStep);
   const selectedPlanData = plans.find((p) => p.id === selectedPlan);
@@ -50,19 +88,46 @@ export default function BenefitsEnrollmentPage() {
     }
   };
 
+  const handleConfirm = async () => {
+    setSubmitting(true);
+    try {
+      await BenefitsEnrollmentService.enroll({
+        planId: selectedPlan,
+        coverageLevel: selectedCoverage === 'employee' ? 'EMPLOYEE_ONLY' : selectedCoverage === 'spouse' ? 'EMPLOYEE_SPOUSE' : 'FAMILY',
+        enrollmentType: 'OPEN_ENROLLMENT',
+        employeePremium: monthlyPremium,
+        employerPremium: 0,
+        totalPremium: monthlyPremium,
+        effectiveFrom: new Date().toISOString(),
+      });
+      alert('Enrollment confirmed successfully!');
+    } catch (err) {
+      console.error('Failed to enroll:', err);
+      alert('Failed to confirm enrollment. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (fetching) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 pb-10 max-w-4xl mx-auto">
-      {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
           <span className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 rounded-full font-medium">Open Enrollment</span>
-          <span className="text-[10px] text-silver-mist">Ends Feb 28, 2025</span>
+          <span className="text-[10px] text-silver-mist">Ends Feb 28, 2026</span>
         </div>
         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Benefits Enrollment</h1>
         <p className="text-sm text-silver-mist mt-1">Choose your healthcare plan for the upcoming year</p>
       </div>
 
-      {/* Progress Steps */}
       <div className="flex items-center justify-between">
         {steps.map((step, i) => (
           <React.Fragment key={step.id}>
@@ -83,7 +148,6 @@ export default function BenefitsEnrollmentPage() {
         ))}
       </div>
 
-      {/* Step Content */}
       <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-6">
         {currentStep === 'plan' && (
           <div className="space-y-4">
@@ -178,14 +242,18 @@ export default function BenefitsEnrollmentPage() {
             <p className="text-sm text-silver-mist mb-6">
               You are enrolling in <span className="font-medium">{selectedPlanData?.name}</span> with <span className="font-medium">{selectedCoverageData?.label}</span> coverage at <span className="font-bold text-celestial-indigo">${monthlyPremium}/mo</span>.
             </p>
-            <button className="px-6 py-3 bg-emerald-500 text-white rounded-lg font-medium text-sm hover:bg-emerald-600 transition-colors">
+            <button
+              onClick={handleConfirm}
+              disabled={submitting}
+              className="px-6 py-3 bg-emerald-500 text-white rounded-lg font-medium text-sm hover:bg-emerald-600 transition-colors flex items-center gap-2 mx-auto"
+            >
+              {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Confirm Enrollment
             </button>
           </div>
         )}
       </div>
 
-      {/* Navigation */}
       <div className="flex items-center justify-between">
         <button
           onClick={goPrev}

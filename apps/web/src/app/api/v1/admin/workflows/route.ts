@@ -1,110 +1,89 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@/lib/database';
 
-export async function GET(request: NextRequest) {
-  const workflows = [
-    {
-      id: 'wf-001',
-      name: 'Employee Onboarding',
-      description: 'Automated onboarding workflow for new hires',
-      status: 'active',
-      trigger: 'new_hire_created',
-      steps: 12,
-      avgCompletionTime: '5 days',
-      executionsThisMonth: 18,
-      successRate: 96.5,
-      createdAt: '2025-04-10T10:00:00Z',
-      updatedAt: '2025-12-15T14:00:00Z',
-      createdBy: 'admin-001',
-    },
-    {
-      id: 'wf-002',
-      name: 'Leave Approval',
-      description: 'Multi-level leave request approval chain',
-      status: 'active',
-      trigger: 'leave_request_submitted',
-      steps: 5,
-      avgCompletionTime: '1.2 days',
-      executionsThisMonth: 47,
-      successRate: 99.1,
-      createdAt: '2025-03-01T08:00:00Z',
-      updatedAt: '2025-11-20T09:30:00Z',
-      createdBy: 'admin-001',
-    },
-    {
-      id: 'wf-003',
-      name: 'Performance Review Cycle',
-      description: 'Annual performance review process automation',
-      status: 'inactive',
-      trigger: 'scheduled',
-      steps: 8,
-      avgCompletionTime: '14 days',
-      executionsThisMonth: 0,
-      successRate: 92.0,
-      createdAt: '2025-05-20T12:00:00Z',
-      updatedAt: '2025-10-30T16:00:00Z',
-      createdBy: 'hr-admin-001',
-    },
-    {
-      id: 'wf-004',
-      name: 'Employee Offboarding',
-      description: 'Systematic offboarding with asset recovery and access revocation',
-      status: 'active',
-      trigger: 'termination_initiated',
-      steps: 15,
-      avgCompletionTime: '3 days',
-      executionsThisMonth: 11,
-      successRate: 98.2,
-      createdAt: '2025-04-15T14:00:00Z',
-      updatedAt: '2025-12-01T11:00:00Z',
-      createdBy: 'admin-001',
-    },
-    {
-      id: 'wf-005',
-      name: 'Expense Approval',
-      description: 'Tiered expense approval based on amount thresholds',
-      status: 'active',
-      trigger: 'expense_submitted',
-      steps: 4,
-      avgCompletionTime: '0.8 days',
-      executionsThisMonth: 89,
-      successRate: 99.5,
-      createdAt: '2025-06-01T09:00:00Z',
-      updatedAt: '2025-11-10T10:15:00Z',
-      createdBy: 'finance-admin-001',
-    },
-  ];
+export const GET = withEnhancedAuth(async (request, context) => {
+  try {
+    const { user } = context;
+    const tenantId = user.tenantId;
+    const { searchParams } = new URL(request.url);
 
-  return NextResponse.json({
-    success: true,
-    data: workflows,
-    meta: { total: workflows.length, active: 4, inactive: 1 },
-  });
-}
+    const isActive = searchParams.get('isActive');
+    const trigger = searchParams.get('trigger');
+    const search = searchParams.get('search');
 
-export async function POST(request: NextRequest) {
-  const body = await request.json();
+    const where: any = { tenantId };
+    if (isActive !== null) where.isActive = isActive === 'true';
+    if (trigger) where.trigger = trigger;
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
+    }
 
-  const newWorkflow = {
-    id: 'wf-006',
-    name: body.name || 'New Workflow',
-    description: body.description || 'A new automated workflow',
-    status: 'draft',
-    trigger: body.trigger || 'manual',
-    steps: body.steps?.length || 0,
-    stepDefinitions: body.steps || [],
-    conditions: body.conditions || [],
-    notifications: body.notifications || { email: true, inApp: true, slack: false },
-    avgCompletionTime: null,
-    executionsThisMonth: 0,
-    successRate: null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    createdBy: 'admin-001',
-    version: 1,
-  };
+    const workflows = await prisma.workflowDefinition.findMany({
+      where,
+      include: {
+        _count: { select: { instances: true } },
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
 
-  return NextResponse.json(
-    { success: true, data: newWorkflow, message: 'Workflow created successfully' },
-    { status: 201 }
-  );
-}
+    const total = workflows.length;
+    const active = workflows.filter(w => w.isActive).length;
+    const inactive = total - active;
+
+    return NextResponse.json({
+      success: true,
+      data: workflows,
+      meta: { total, active, inactive },
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to fetch workflows' },
+      { status: 500 }
+    );
+  }
+});
+
+export const POST = withEnhancedAuth(async (request, context) => {
+  try {
+    const { user } = context;
+    const tenantId = user.tenantId;
+    const body = await request.json();
+
+    if (!body.name) {
+      return NextResponse.json(
+        { error: 'Workflow name is required' },
+        { status: 400 }
+      );
+    }
+
+    const workflow = await prisma.workflowDefinition.create({
+      data: {
+        tenantId,
+        name: body.name,
+        description: body.description || null,
+        trigger: body.trigger || 'MANUAL',
+        triggerEvent: body.triggerEvent || null,
+        nodes: body.nodes || [],
+        edges: body.edges || [],
+        isActive: body.isActive ?? false,
+        version: 1,
+        createdBy: user.userId,
+      },
+    });
+
+    return NextResponse.json(
+      { success: true, data: workflow, message: 'Workflow created successfully' },
+      { status: 201 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to create workflow' },
+      { status: 500 }
+    );
+  }
+});

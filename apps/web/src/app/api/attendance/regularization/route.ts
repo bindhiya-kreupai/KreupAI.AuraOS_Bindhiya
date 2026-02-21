@@ -1,156 +1,140 @@
-/**
- * Regularization API Routes
- * Phase 2: Core Enhancement - Attendance Enhancement
- */
-
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { AttendanceService } from '@/lib/services/attendance';
+import { prisma } from '@/lib/database';
+import { withEnhancedAuth } from '@/lib/auth';
 
-/**
- * GET /api/attendance/regularization
- * Get regularization requests
- */
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
+    const { user } = context;
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId');
     const employeeId = searchParams.get('employeeId');
     const status = searchParams.get('status');
-    const pending = searchParams.get('pending') === 'true';
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '10', 10);
 
-    if (!tenantId) {
-      return NextResponse.json(
-        { error: 'tenantId is required', errorAr: 'معرف المستأجر مطلوب' },
-        { status: 400 }
-      );
-    }
+    const where: Record<string, unknown> = { tenantId: user.tenantId };
+    if (employeeId) where.employeeId = employeeId;
+    if (status) where.status = status;
 
-    // Fetch regularization requests
+    const [regularizations, total] = await Promise.all([
+      prisma.attendanceRegularization.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.attendanceRegularization.count({ where }),
+    ]);
+
     return NextResponse.json({
       success: true,
       data: {
-        regularizations: [],
-        pagination: {
-          page: 1,
-          limit: 10,
-          total: 0,
-        },
+        regularizations,
+        pagination: { page, limit, total },
       },
     });
   } catch (error) {
-        return NextResponse.json(
-      { error: 'Failed to fetch regularization requests', errorAr: 'فشل في جلب طلبات التصحيح' },
+    return NextResponse.json(
+      { error: 'Failed to fetch regularization requests' },
       { status: 500 }
     );
   }
-}
+});
 
-/**
- * POST /api/attendance/regularization
- * Submit or process regularization request
- */
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
+    const { user } = context;
     const body = await request.json();
     const action = body.action || 'submit';
 
     switch (action) {
-      case 'submit':
-        // Submit regularization request
-        const required = ['tenantId', 'employeeId', 'date', 'reason', 'category'];
+      case 'submit': {
+        const required = ['employeeId', 'date', 'reason', 'category'];
         for (const field of required) {
           if (!body[field]) {
             return NextResponse.json(
-              { error: `${field} is required`, errorAr: `${field} مطلوب` },
+              { error: `${field} is required` },
               { status: 400 }
             );
           }
         }
 
-        const regularization = await AttendanceService.submitRegularization({
-          tenantId: body.tenantId,
-          employeeId: body.employeeId,
-          employeeName: body.employeeName || '',
-          date: body.date,
-          attendanceRecordId: body.attendanceRecordId,
-          originalCheckIn: body.originalCheckIn,
-          originalCheckOut: body.originalCheckOut,
-          originalStatus: body.originalStatus || 'ABSENT',
-          requestedCheckIn: body.requestedCheckIn,
-          requestedCheckOut: body.requestedCheckOut,
-          requestedStatus: body.requestedStatus || 'PRESENT',
-          reason: body.reason,
-          category: body.category,
-          supportingDocument: body.supportingDocument,
+        const regularization = await prisma.attendanceRegularization.create({
+          data: {
+            tenantId: user.tenantId,
+            employeeId: body.employeeId,
+            date: new Date(body.date),
+            regularizationType: body.category,
+            requestedClockIn: body.requestedCheckIn ? new Date(body.requestedCheckIn) : null,
+            requestedClockOut: body.requestedCheckOut ? new Date(body.requestedCheckOut) : null,
+            reason: body.reason,
+            attachments: body.supportingDocument ? [body.supportingDocument] : [],
+            status: 'PENDING',
+          },
         });
 
         return NextResponse.json({
           success: true,
           data: regularization,
         });
+      }
 
-      case 'approve':
-        // Approve regularization
+      case 'approve': {
         if (!body.regularizationId || !body.approverId) {
           return NextResponse.json(
-            {
-              error: 'regularizationId and approverId are required',
-              errorAr: 'معرف التصحيح ومعرف الموافق مطلوبان',
-            },
+            { error: 'regularizationId and approverId are required' },
             { status: 400 }
           );
         }
 
-        const approvedReg = await AttendanceService.processRegularization(
-          body.regularizationId,
-          body.approverId,
-          'APPROVED',
-          body.comments
-        );
+        const approved = await prisma.attendanceRegularization.update({
+          where: { id: body.regularizationId },
+          data: {
+            status: 'APPROVED',
+            approvedBy: body.approverId,
+            approvedAt: new Date(),
+          },
+        });
 
         return NextResponse.json({
           success: true,
-          data: approvedReg,
+          data: approved,
         });
+      }
 
-      case 'reject':
-        // Reject regularization
+      case 'reject': {
         if (!body.regularizationId || !body.approverId) {
           return NextResponse.json(
-            {
-              error: 'regularizationId and approverId are required',
-              errorAr: 'معرف التصحيح ومعرف الموافق مطلوبان',
-            },
+            { error: 'regularizationId and approverId are required' },
             { status: 400 }
           );
         }
 
-        const rejectedReg = await AttendanceService.processRegularization(
-          body.regularizationId,
-          body.approverId,
-          'REJECTED',
-          body.comments
-        );
+        const rejected = await prisma.attendanceRegularization.update({
+          where: { id: body.regularizationId },
+          data: {
+            status: 'REJECTED',
+            approvedBy: body.approverId,
+            rejectionReason: body.comments || '',
+          },
+        });
 
         return NextResponse.json({
           success: true,
-          data: rejectedReg,
+          data: rejected,
         });
+      }
 
       default:
         return NextResponse.json(
-          { error: 'Invalid action', errorAr: 'إجراء غير صالح' },
+          { error: 'Invalid action' },
           { status: 400 }
         );
     }
   } catch (error) {
-        return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to process regularization',
-        errorAr: 'فشل في معالجة طلب التصحيح',
-      },
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to process regularization' },
       { status: 500 }
     );
   }
-}
+});

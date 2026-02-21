@@ -1,6 +1,6 @@
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
-import { prisma } from '@aura/database';
+import { prisma } from '@/lib/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
@@ -12,7 +12,7 @@ const ReimbursementSchema = z.object({
   amount: z.number().positive(),
   description: z.string().optional(),
   date: z.string().optional(),
-  status: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional().default('PENDING'),
+  payrollMonth: z.string().optional(),
 });
 
 // GET - Fetch reimbursement claims
@@ -22,74 +22,54 @@ export const GET = withEnhancedAuth(
       const permissionError = requirePermission(Resource.PAYROLL, Action.READ, permissions);
       if (permissionError) return permissionError;
 
+      const tenantId = user.tenantId;
       const { searchParams } = new URL(request.url);
       const status = searchParams.get('status');
       const employeeId = searchParams.get('employeeId');
+      const page = parseInt(searchParams.get('page') || '1', 10);
+      const limit = parseInt(searchParams.get('limit') || '50', 10);
 
-      const where: any = {};
-      if (status) where.status = status;
+      const where: Record<string, unknown> = {
+        tenantId,
+        category: 'REIMBURSEMENT',
+        adjustmentType: 'EARNING',
+      };
       if (employeeId) where.employeeId = employeeId;
+      if (status) where.approvalStatus = status;
 
-      // Mock data for now - replace with actual database query
-      const mockData = [
-        {
-          id: '1',
-          employeeId: 'emp-1',
-          employeeName: 'Sarah Connor',
-          type: 'Travel',
-          amount: 450,
-          description: 'Flight to NYC for client meeting',
-          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          status: 'PENDING',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          employeeId: 'emp-2',
-          employeeName: 'Mike Ross',
-          type: 'Internet',
-          amount: 50,
-          description: 'Monthly reimbursement',
-          date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          status: 'PENDING',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: '3',
-          employeeId: 'emp-3',
-          employeeName: 'Jessica Pearson',
-          type: 'Team Lunch',
-          amount: 200,
-          description: 'Q3 Team Lunch',
-          date: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-          status: 'PENDING',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: '4',
-          employeeId: 'emp-4',
-          employeeName: 'Harvey Specter',
-          type: 'Software',
-          amount: 120,
-          description: 'Adobe Creative Cloud License',
-          date: new Date().toISOString(),
-          status: 'PENDING',
-          createdAt: new Date().toISOString(),
-        },
-      ];
+      const [total, adjustments] = await Promise.all([
+        prisma.payrollAdjustment.count({ where }),
+        prisma.payrollAdjustment.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+      ]);
 
-      let filteredData = mockData;
-      if (status) {
-        filteredData = mockData.filter(item => item.status === status);
-      }
-      if (employeeId) {
-        filteredData = filteredData.filter(item => item.employeeId === employeeId);
-      }
+      // Map to frontend-expected shape
+      const claims = adjustments.map((adj) => ({
+        id: adj.id,
+        employeeId: adj.employeeId,
+        type: adj.name,
+        code: adj.code,
+        amount: Number(adj.amount),
+        description: adj.reason,
+        date: adj.createdAt?.toISOString(),
+        payrollMonth: adj.payrollMonth,
+        status: adj.approvalStatus,
+        isProcessed: adj.isProcessed,
+        createdAt: adj.createdAt?.toISOString(),
+        createdBy: adj.createdBy,
+        approvedBy: adj.approvedBy,
+        approvedAt: adj.approvedAt?.toISOString(),
+      }));
 
       return NextResponse.json({
         success: true,
-        data: filteredData,
-        meta: { total: filteredData.length },
+        data: claims,
+        claims,
+        meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
     } catch (error) {
       logger.error('Error fetching reimbursements:', error);
@@ -108,16 +88,27 @@ export const POST = withEnhancedAuth(
       const permissionError = requirePermission(Resource.PAYROLL, Action.CREATE, permissions);
       if (permissionError) return permissionError;
 
+      const tenantId = user.tenantId;
       const body = await request.json();
       const data = ReimbursementSchema.parse(body);
 
-      // Mock creation - replace with actual database insert
-      const newClaim = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      const currentMonth = data.payrollMonth || new Date().toISOString().slice(0, 7);
+
+      const adjustment = await prisma.payrollAdjustment.create({
+        data: {
+          tenantId,
+          employeeId: data.employeeId,
+          payrollMonth: currentMonth,
+          adjustmentType: 'EARNING',
+          code: `REIMB-${data.type.toUpperCase().replace(/\s+/g, '-')}`,
+          name: data.type,
+          amount: data.amount,
+          reason: data.description || `Reimbursement: ${data.type}`,
+          category: 'REIMBURSEMENT',
+          approvalStatus: 'PENDING',
+          createdBy: user.userId,
+        },
+      });
 
       await prisma.auditLog.create({
         data: {
@@ -129,7 +120,11 @@ export const POST = withEnhancedAuth(
         },
       });
 
-      return NextResponse.json({ success: true, data: newClaim }, { status: 201 });
+      return NextResponse.json({
+        success: true,
+        data: adjustment,
+        claim: adjustment,
+      }, { status: 201 });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
@@ -153,6 +148,7 @@ export const PUT = withEnhancedAuth(
       const permissionError = requirePermission(Resource.PAYROLL, Action.UPDATE, permissions);
       if (permissionError) return permissionError;
 
+      const tenantId = user.tenantId;
       const body = await request.json();
       const { id, status } = body;
 
@@ -163,13 +159,30 @@ export const PUT = withEnhancedAuth(
         );
       }
 
-      // Mock update - replace with actual database update
-      const updated = {
-        id,
-        status,
-        updatedAt: new Date().toISOString(),
-        updatedBy: user.userId,
+      // Verify ownership
+      const existing = await prisma.payrollAdjustment.findFirst({
+        where: { id, tenantId, category: 'REIMBURSEMENT' },
+      });
+
+      if (!existing) {
+        return NextResponse.json(
+          { success: false, error: 'Reimbursement not found' },
+          { status: 404 }
+        );
+      }
+
+      const updateData: Record<string, unknown> = {
+        approvalStatus: status,
       };
+      if (status === 'APPROVED') {
+        updateData.approvedBy = user.userId;
+        updateData.approvedAt = new Date();
+      }
+
+      const updated = await prisma.payrollAdjustment.update({
+        where: { id },
+        data: updateData,
+      });
 
       await prisma.auditLog.create({
         data: {
@@ -181,7 +194,7 @@ export const PUT = withEnhancedAuth(
         },
       });
 
-      return NextResponse.json({ success: true, data: updated });
+      return NextResponse.json({ success: true, data: updated, claim: updated });
     } catch (error) {
       logger.error('Error updating reimbursement:', error);
       return NextResponse.json(

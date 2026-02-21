@@ -23,18 +23,25 @@ export default function ConfirmationLettersPage() {
             setConfirmationLetters(data);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
 
-    const [pending, setPending] = useState([
-        { id: 1, name: 'Michael Chen', date: 'Confirmed on Dec 01', status: 'Pending Issue' }
-    ]);
+    const pendingLetters = confirmationLetters.filter(l => l.status !== 'issued');
+    const issuedLetters = confirmationLetters.filter(l => l.status === 'issued');
 
-    const handleIssue = (id: number) => {
+    const handleIssue = (id: string) => {
         alert("Letter generated and sent to employee via email.");
-        setPending(prev => prev.filter(p => p.id !== id));
+        setConfirmationLetters(prev => prev.map(l =>
+            l.letterId === id ? { ...l, status: 'issued', issuedDate: new Date() } : l
+        ));
+    };
+
+    const formatDate = (date: Date | string | undefined) => {
+        if (!date) return '-';
+        const d = new Date(date);
+        return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
     };
 
     return (
@@ -49,66 +56,82 @@ export default function ConfirmationLettersPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Pending Issue */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-                    <h3 className="font-bold text-lg mb-4">Ready for Issuance</h3>
-                    {pending.length > 0 ? (
-                        <div className="space-y-4">
-                            {pending.map((item) => (
-                                <div key={item.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                                    <div>
-                                        <div className="font-bold">{item.name}</div>
-                                        <div className="text-xs text-slate-500">{item.date}</div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-500" title="Preview">
-                                            <Eye className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleIssue(item.id)}
-                                            className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold shadow-sm hover:bg-emerald-700 active:scale-95 transition-all flex items-center gap-1"
-                                        >
-                                            <Send className="w-3 h-3" /> Issue Letter
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-8 text-slate-400">
-                            <CheckCircle2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                            <p>No pending letters to issue.</p>
-                        </div>
-                    )}
+            {loading && (
+                <div className="flex items-center justify-center h-64">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
                 </div>
+            )}
 
-                {/* History */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-                    <h3 className="font-bold text-lg mb-4">Recently Issued</h3>
-                    <div className="space-y-3">
-                        {[
-                            { name: 'Sarah Williams', date: 'Issued Nov 15, 2023' },
-                            { name: 'David Miller', date: 'Issued Oct 30, 2023' },
-                        ].map((row, i) => (
-                            <div key={i} className="flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors rounded-lg">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
-                                        <FileCheck className="w-4 h-4" />
+            {!loading && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Pending Issue */}
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                        <h3 className="font-bold text-lg mb-4">Ready for Issuance</h3>
+                        {pendingLetters.length > 0 ? (
+                            <div className="space-y-4">
+                                {pendingLetters.map((item) => (
+                                    <div key={item.letterId} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                                        <div>
+                                            <div className="font-bold">{item.employeeName}</div>
+                                            <div className="text-xs text-slate-500">
+                                                Confirmed on {formatDate(item.confirmationDate)} {item.status === 'draft' ? '(Draft)' : item.status === 'approved' ? '(Approved)' : ''}
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-500" title="Preview">
+                                                <Eye className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleIssue(item.letterId)}
+                                                className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold shadow-sm hover:bg-emerald-700 active:scale-95 transition-all flex items-center gap-1"
+                                            >
+                                                <Send className="w-3 h-3" /> Issue Letter
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div className="font-bold text-sm">{row.name}</div>
-                                        <div className="text-xs text-slate-500">{row.date}</div>
-                                    </div>
-                                </div>
-                                <button className="text-indigo-600 text-xs font-bold hover:underline flex items-center gap-1">
-                                    <Download className="w-3 h-3" /> PDF
-                                </button>
+                                ))}
                             </div>
-                        ))}
+                        ) : (
+                            <div className="text-center py-8 text-slate-400">
+                                <CheckCircle2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                <p>No pending letters to issue.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* History */}
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                        <h3 className="font-bold text-lg mb-4">Recently Issued</h3>
+                        {issuedLetters.length === 0 && (
+                            <div className="flex flex-col items-center justify-center h-64 text-slate-400">
+                                <FileCheck className="w-12 h-12 mb-4 opacity-50" />
+                                <p className="text-lg font-medium">No issued letters</p>
+                                <p className="text-sm">Issued letters will appear here.</p>
+                            </div>
+                        )}
+                        {issuedLetters.length > 0 && (
+                            <div className="space-y-3">
+                                {issuedLetters.map((row) => (
+                                    <div key={row.letterId} className="flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors rounded-lg">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
+                                                <FileCheck className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <div className="font-bold text-sm">{row.employeeName}</div>
+                                                <div className="text-xs text-slate-500">Issued {formatDate(row.issuedDate || row.generatedDate)}</div>
+                                            </div>
+                                        </div>
+                                        <button className="text-indigo-600 text-xs font-bold hover:underline flex items-center gap-1">
+                                            <Download className="w-3 h-3" /> PDF
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

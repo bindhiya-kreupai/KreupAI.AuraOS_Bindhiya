@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Receipt,
     CheckCircle2,
@@ -11,11 +11,30 @@ import {
     Search,
     ChevronRight,
     MoreHorizontal,
-    FileText
+    FileText,
+    Loader2
 } from 'lucide-react';
+import { MobileApprovalsService } from '../services';
 
 export default function ExpenseClaimsPage() {
     const [statusFilter, setStatusFilter] = useState('All');
+    const [approvals, setApprovals] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await MobileApprovalsService.getAllApprovals();
+                setApprovals(data as any[]);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     const claims = [
         { id: 1, employee: 'Alice Johnson', avatar: 'AJ', category: 'travel', description: 'Flight to NYC Conference', amount: 450.00, date: '2024-03-15', status: 'Pending', attachment: true },
@@ -49,6 +68,14 @@ export default function ExpenseClaimsPage() {
         // Simple mapping, could be more elaborate
         return <Receipt className="w-4 h-4 text-slate-500" />;
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">

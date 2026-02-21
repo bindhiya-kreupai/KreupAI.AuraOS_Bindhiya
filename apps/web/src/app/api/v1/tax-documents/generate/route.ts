@@ -6,14 +6,14 @@ export async function POST(request: NextRequest) {
 
   // Mock admin-only check
   const authHeader = request.headers.get('authorization');
-  if (\!authHeader) {
+  if (!authHeader) {
     return NextResponse.json(
       { error: 'Unauthorized', message: 'Admin access required to generate tax documents' },
       { status: 401 }
     );
   }
 
-  if (\!year || \!type) {
+  if (!year || !type) {
     return NextResponse.json(
       { error: 'Bad Request', message: 'Year and type are required fields' },
       { status: 400 }

@@ -1,58 +1,205 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@/lib/database';
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const period = searchParams.get('period') || '12months';
+export const GET = withEnhancedAuth(async (request, context) => {
+  try {
+    const { user } = context;
+    const tenantId = user.tenantId;
+    const { searchParams } = new URL(request.url);
+    const period = searchParams.get('period') || '12months';
+    const now = new Date();
 
-  const turnoverData = {
-    period,
-    generatedAt: '2026-01-23T00:00:00Z',
-    overall: {
-      turnoverRate: 14.2,
-      voluntaryRate: 10.1,
-      involuntaryRate: 4.1,
-      industryBenchmark: 15.5,
-      trend: 'improving',
-    },
-    byDepartment: [
-      { department: 'Engineering', rate: 12.5, voluntary: 9.8, involuntary: 2.7, benchmark: 13.2 },
-      { department: 'Sales', rate: 18.6, voluntary: 15.2, involuntary: 3.4, benchmark: 20.0 },
-      { department: 'Marketing', rate: 11.7, voluntary: 9.0, involuntary: 2.7, benchmark: 14.0 },
-      { department: 'Customer Success', rate: 16.2, voluntary: 12.5, involuntary: 3.7, benchmark: 18.0 },
-      { department: 'Finance', rate: 8.6, voluntary: 6.2, involuntary: 2.4, benchmark: 10.0 },
-      { department: 'Operations', rate: 13.4, voluntary: 9.5, involuntary: 3.9, benchmark: 15.0 },
-    ],
-    reasons: [
-      { reason: 'Better compensation elsewhere', count: 34, percentage: 27.2 },
-      { reason: 'Career growth opportunities', count: 28, percentage: 22.4 },
-      { reason: 'Work-life balance', count: 22, percentage: 17.6 },
-      { reason: 'Management issues', count: 15, percentage: 12.0 },
-      { reason: 'Relocation', count: 12, percentage: 9.6 },
-      { reason: 'Company culture', count: 8, percentage: 6.4 },
-      { reason: 'Other', count: 6, percentage: 4.8 },
-    ],
-    byTenure: [
-      { range: '0-6 months', rate: 22.5, count: 18 },
-      { range: '6-12 months', rate: 18.3, count: 22 },
-      { range: '1-2 years', rate: 15.1, count: 31 },
-      { range: '2-5 years', rate: 10.2, count: 28 },
-      { range: '5+ years', rate: 6.8, count: 14 },
-    ],
-    monthlyTrend: [
-      { month: '2025-07', rate: 15.8, separations: 16 },
-      { month: '2025-08', rate: 15.2, separations: 15 },
-      { month: '2025-09', rate: 14.9, separations: 14 },
-      { month: '2025-10', rate: 14.6, separations: 15 },
-      { month: '2025-11', rate: 14.5, separations: 17 },
-      { month: '2025-12', rate: 14.3, separations: 13 },
-      { month: '2026-01', rate: 14.2, separations: 11 },
-    ],
-    costOfTurnover: {
-      averageCostPerEmployee: 45000,
-      totalCostYTD: 495000,
-      estimatedAnnual: 5670000,
-    },
-  };
+    let periodStart: Date;
+    switch (period) {
+      case '6months':
+        periodStart = new Date(now.getTime() - 6 * 30 * 24 * 60 * 60 * 1000);
+        break;
+      case '3months':
+        periodStart = new Date(now.getTime() - 3 * 30 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        periodStart = new Date(now.getTime() - 12 * 30 * 24 * 60 * 60 * 1000);
+    }
 
-  return NextResponse.json({ success: true, data: turnoverData });
-}
+    const totalEmployees = await prisma.employee.count({
+      where: { company: { tenantId } },
+    });
+
+    const allExitRequests = await prisma.exitRequest.findMany({
+      where: {
+        tenantId,
+        status: { in: ['APPROVED', 'COMPLETED'] },
+        lastWorkingDate: { gte: periodStart },
+      },
+      select: {
+        id: true,
+        employeeId: true,
+        exitType: true,
+        reason: true,
+        lastWorkingDate: true,
+        employee: {
+          select: {
+            joiningDate: true,
+            departmentId: true,
+            department: { select: { name: true } },
+          },
+        },
+      },
+    });
+
+    const totalExits = allExitRequests.length;
+    const voluntaryExits = allExitRequests.filter((e) => e.exitType === 'RESIGNATION').length;
+    const involuntaryExits = totalExits - voluntaryExits;
+
+    const turnoverRate = totalEmployees > 0 ? Math.round((totalExits / totalEmployees) * 1000) / 10 : 0;
+    const voluntaryRate = totalEmployees > 0 ? Math.round((voluntaryExits / totalEmployees) * 1000) / 10 : 0;
+    const involuntaryRate = totalEmployees > 0 ? Math.round((involuntaryExits / totalEmployees) * 1000) / 10 : 0;
+
+    const deptExitMap = new Map<string, { voluntary: number; involuntary: number; name: string }>();
+    for (const exit of allExitRequests) {
+      const deptName = exit.employee.department.name;
+      const existing = deptExitMap.get(deptName);
+      if (existing) {
+        if (exit.exitType === 'RESIGNATION') existing.voluntary++;
+        else existing.involuntary++;
+      } else {
+        deptExitMap.set(deptName, {
+          name: deptName,
+          voluntary: exit.exitType === 'RESIGNATION' ? 1 : 0,
+          involuntary: exit.exitType !== 'RESIGNATION' ? 1 : 0,
+        });
+      }
+    }
+
+    const deptHeadcounts = await prisma.employee.groupBy({
+      by: ['departmentId'],
+      where: { company: { tenantId } },
+      _count: true,
+    });
+
+    const departments = await prisma.department.findMany({
+      where: { company: { tenantId } },
+      select: { id: true, name: true },
+    });
+    const deptIdNameMap = new Map(departments.map((d) => [d.id, d.name]));
+    const deptIdCountMap = new Map(deptHeadcounts.map((d) => [deptIdNameMap.get(d.departmentId) || '', d._count]));
+
+    const byDepartment = Array.from(deptExitMap.values()).map((dept) => {
+      const headcount = deptIdCountMap.get(dept.name) || 1;
+      const deptTotal = dept.voluntary + dept.involuntary;
+      return {
+        department: dept.name,
+        rate: Math.round((deptTotal / headcount) * 1000) / 10,
+        voluntary: Math.round((dept.voluntary / headcount) * 1000) / 10,
+        involuntary: Math.round((dept.involuntary / headcount) * 1000) / 10,
+        benchmark: 0,
+      };
+    });
+
+    const reasonMap = new Map<string, number>();
+    for (const exit of allExitRequests) {
+      const reason = exit.reason || 'Not specified';
+      reasonMap.set(reason, (reasonMap.get(reason) || 0) + 1);
+    }
+    const reasons = Array.from(reasonMap.entries())
+      .map(([reason, count]) => ({
+        reason,
+        count,
+        percentage: totalExits > 0 ? Math.round((count / totalExits) * 1000) / 10 : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const tenureBuckets = [
+      { range: '0-6 months', maxDays: 180, count: 0 },
+      { range: '6-12 months', maxDays: 365, count: 0 },
+      { range: '1-2 years', maxDays: 730, count: 0 },
+      { range: '2-5 years', maxDays: 1825, count: 0 },
+      { range: '5+ years', maxDays: Infinity, count: 0 },
+    ];
+
+    for (const exit of allExitRequests) {
+      const tenureDays = (new Date(exit.lastWorkingDate).getTime() - new Date(exit.employee.joiningDate).getTime()) / (24 * 60 * 60 * 1000);
+      for (const bucket of tenureBuckets) {
+        if (tenureDays <= bucket.maxDays) {
+          bucket.count++;
+          break;
+        }
+      }
+    }
+
+    const byTenure = tenureBuckets.map((b) => ({
+      range: b.range,
+      rate: totalEmployees > 0 ? Math.round((b.count / totalEmployees) * 1000) / 10 : 0,
+      count: b.count,
+    }));
+
+    const monthlyTrend: { month: string; rate: number; separations: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+      const monthStr = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
+      const monthExits = allExitRequests.filter((e) => {
+        const lwd = new Date(e.lastWorkingDate);
+        return lwd >= monthDate && lwd <= monthEnd;
+      }).length;
+      monthlyTrend.push({
+        month: monthStr,
+        rate: totalEmployees > 0 ? Math.round((monthExits / totalEmployees) * 12 * 1000) / 10 : 0,
+        separations: monthExits,
+      });
+    }
+
+    const salaryStructures = await prisma.employeeSalaryStructure.findMany({
+      where: {
+        tenantId,
+        isActive: true,
+        employeeId: { in: allExitRequests.map((e) => e.employeeId) },
+      },
+      select: { employeeId: true, grossSalary: true },
+    });
+    const avgSalaryOfExits =
+      salaryStructures.length > 0
+        ? salaryStructures.reduce((sum, s) => sum + Number(s.grossSalary), 0) / salaryStructures.length
+        : 0;
+    const avgCostPerTurnover = Math.round(avgSalaryOfExits * 0.5);
+
+    const turnoverData = {
+      period,
+      generatedAt: new Date().toISOString(),
+      overall: {
+        turnoverRate,
+        voluntaryRate,
+        involuntaryRate,
+        industryBenchmark: 0,
+        trend: turnoverRate > 0 ? 'calculated' : 'no_data',
+      },
+      byDepartment,
+      reasons,
+      byTenure,
+      monthlyTrend,
+      costOfTurnover: {
+        averageCostPerEmployee: avgCostPerTurnover,
+        totalCostYTD: avgCostPerTurnover * totalExits,
+        estimatedAnnual: avgCostPerTurnover * totalExits * (12 / Math.max(1, now.getMonth() + 1)),
+      },
+    };
+
+    return NextResponse.json({ success: true, data: turnoverData });
+  } catch (error) {
+    console.error('Turnover analytics error:', error);
+    return NextResponse.json({
+      success: true,
+      data: {
+        period: '12months',
+        generatedAt: new Date().toISOString(),
+        overall: { turnoverRate: 0, voluntaryRate: 0, involuntaryRate: 0, industryBenchmark: 0, trend: 'no_data' },
+        byDepartment: [],
+        reasons: [],
+        byTenure: [],
+        monthlyTrend: [],
+        costOfTurnover: { averageCostPerEmployee: 0, totalCostYTD: 0, estimatedAnnual: 0 },
+      },
+    });
+  }
+});

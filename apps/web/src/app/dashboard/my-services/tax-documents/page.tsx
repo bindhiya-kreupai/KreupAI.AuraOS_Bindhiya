@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
-import { FileText, Download, Eye, Calendar, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { FileText, Download, Eye, Calendar, ChevronDown, Loader2 } from 'lucide-react';
+import { TaxService } from '../services';
 
 interface TaxDocument {
   id: string;
@@ -12,25 +13,49 @@ interface TaxDocument {
   size: string;
 }
 
-const mockTaxDocs: TaxDocument[] = [
-  { id: '1', name: 'W-2 Wage and Tax Statement', type: 'W-2', year: 2024, generatedAt: 'Jan 15, 2025', size: '156 KB' },
-  { id: '2', name: 'W-2 Wage and Tax Statement', type: 'W-2', year: 2023, generatedAt: 'Jan 20, 2024', size: '148 KB' },
-  { id: '3', name: '1099-INT Interest Income', type: '1099', year: 2024, generatedAt: 'Jan 30, 2025', size: '89 KB' },
-  { id: '4', name: 'Form 16 - Part A', type: 'Form 16', year: 2024, generatedAt: 'Jun 15, 2024', size: '234 KB' },
-  { id: '5', name: 'Form 16 - Part B', type: 'Form 16', year: 2024, generatedAt: 'Jun 15, 2024', size: '198 KB' },
-  { id: '6', name: 'W-2 Wage and Tax Statement', type: 'W-2', year: 2022, generatedAt: 'Jan 18, 2023', size: '142 KB' },
-];
-
-const years = [2024, 2023, 2022, 2021];
+const years = [2025, 2024, 2023, 2022, 2021];
 
 export default function TaxDocumentsPage() {
-  const [selectedYear, setSelectedYear] = useState(2024);
+  const [selectedYear, setSelectedYear] = useState(2025);
+  const [fetching, setFetching] = useState(true);
+  const [taxDocs, setTaxDocs] = useState<TaxDocument[]>([]);
 
-  const filteredDocs = mockTaxDocs.filter((doc) => doc.year === selectedYear);
+  useEffect(() => {
+    const fetchDocs = async () => {
+      try {
+        const res = await TaxService.getTaxDocuments({ category: 'TAX_DOCUMENT' });
+        if (res?.success && Array.isArray(res.data)) {
+          const mapped = res.data.map((doc: any) => ({
+            id: doc.id,
+            name: doc.name || doc.fileName || doc.title || 'Tax Document',
+            type: doc.documentType || doc.type || 'W-2',
+            year: doc.year || (doc.createdAt ? new Date(doc.createdAt).getFullYear() : 2025),
+            generatedAt: doc.generatedAt || doc.createdAt ? new Date(doc.generatedAt || doc.createdAt).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' }) : '',
+            size: doc.size || doc.fileSize || 'N/A',
+          }));
+          setTaxDocs(mapped);
+        }
+      } catch (err) {
+        console.error('Failed to fetch tax documents:', err);
+      } finally {
+        setFetching(false);
+      }
+    };
+    fetchDocs();
+  }, []);
+
+  const filteredDocs = taxDocs.filter((doc) => doc.year === selectedYear);
+
+  if (fetching) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-10">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Tax Documents</h1>
@@ -50,7 +75,6 @@ export default function TaxDocumentsPage() {
         </div>
       </div>
 
-      {/* Documents */}
       <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 overflow-hidden">
         {filteredDocs.length > 0 ? (
           <div className="divide-y divide-cloud dark:divide-nebula-purple/50">
@@ -86,7 +110,6 @@ export default function TaxDocumentsPage() {
         )}
       </div>
 
-      {/* Info Banner */}
       <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex items-start gap-3">
         <FileText className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
         <div>

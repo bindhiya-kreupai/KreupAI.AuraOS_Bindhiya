@@ -1,5 +1,6 @@
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
@@ -13,108 +14,87 @@ export const GET = withEnhancedAuth(
 
       const { searchParams } = new URL(request.url);
       const status = searchParams.get('status');
-      const department = searchParams.get('department');
+      const employeeId = searchParams.get('employeeId');
       const startDate = searchParams.get('startDate');
       const endDate = searchParams.get('endDate');
 
-      const mockRequests = [
-        {
-          id: '1',
-          employeeId: 'emp-1',
-          employeeName: 'John Doe',
-          department: 'Engineering',
-          designation: 'Senior Developer',
-          date: '2024-08-20',
-          type: 'MISSING_PUNCH',
-          missingPunch: 'CHECK_OUT',
-          checkIn: '09:00',
-          checkOut: '18:00',
-          reason: 'Forgot to punch out',
-          status: 'PENDING',
-          requestedAt: '2024-08-21T08:00:00',
-          priority: 'MEDIUM',
-        },
-        {
-          id: '2',
-          employeeId: 'emp-2',
-          employeeName: 'Jane Smith',
-          department: 'Engineering',
-          designation: 'Team Lead',
-          date: '2024-08-22',
-          type: 'LATE_ARRIVAL',
-          checkIn: '09:45',
-          expectedCheckIn: '09:00',
-          deviation: 45,
-          reason: 'Traffic jam due to heavy rain',
-          attachments: ['proof.jpg'],
-          status: 'APPROVED',
-          requestedAt: '2024-08-22T10:00:00',
-          approvedAt: '2024-08-23T09:00:00',
-          approvedBy: 'manager-1',
-          approverName: 'Mike Manager',
-          priority: 'LOW',
-        },
-        {
-          id: '3',
-          employeeId: 'emp-3',
-          employeeName: 'Mike Ross',
-          department: 'Operations',
-          designation: 'Operator',
-          date: '2024-08-23',
-          type: 'EARLY_DEPARTURE',
-          checkOut: '16:00',
-          expectedCheckOut: '18:00',
-          deviation: 120,
-          reason: 'Medical emergency',
-          attachments: ['medical-cert.pdf'],
-          status: 'PENDING',
-          requestedAt: '2024-08-23T16:05:00',
-          priority: 'HIGH',
-        },
-        {
-          id: '4',
-          employeeId: 'emp-4',
-          employeeName: 'Alice Brown',
-          department: 'Support',
-          designation: 'Support Executive',
-          date: '2024-08-24',
-          type: 'MANUAL_ENTRY',
-          checkIn: '09:00',
-          checkOut: '18:00',
-          reason: 'Biometric system was down',
-          status: 'REJECTED',
-          requestedAt: '2024-08-24T18:30:00',
-          rejectedAt: '2024-08-25T09:00:00',
-          rejectedBy: 'manager-3',
-          rejectionReason: 'No supporting documentation',
-          priority: 'MEDIUM',
-        },
-      ];
+      const where: Record<string, unknown> = { tenantId: user.tenantId };
 
-      let filteredData = mockRequests;
-      if (status) filteredData = filteredData.filter(r => r.status === status);
-      if (department) filteredData = filteredData.filter(r => r.department === department);
-      if (startDate) filteredData = filteredData.filter(r => r.date >= startDate);
-      if (endDate) filteredData = filteredData.filter(r => r.date <= endDate);
+      if (status) {
+        where.status = status;
+      }
+
+      if (employeeId) {
+        where.employeeId = employeeId;
+      }
+
+      if (startDate || endDate) {
+        const dateFilter: Record<string, Date> = {};
+        if (startDate) dateFilter.gte = new Date(startDate);
+        if (endDate) dateFilter.lte = new Date(endDate);
+        where.date = dateFilter;
+      }
+
+      const regularizations = await prisma.attendanceRegularization.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+      });
+
+      // Look up employee names and departments
+      const employeeIds = [...new Set(regularizations.map(r => r.employeeId))];
+      const employees = employeeIds.length > 0
+        ? await prisma.employee.findMany({
+            where: { id: { in: employeeIds } },
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              department: { select: { name: true } },
+              jobProfile: { select: { title: true } },
+            },
+          })
+        : [];
+      const employeeMap = new Map(employees.map(e => [e.id, {
+        name: `${e.firstName} ${e.lastName}`,
+        department: e.department?.name || 'Unknown',
+        designation: e.jobProfile?.title || 'Unknown',
+      }]));
+
+      const data = regularizations.map((r) => {
+        const emp = employeeMap.get(r.employeeId);
+        return {
+          id: r.id,
+          employeeId: r.employeeId,
+          employeeName: emp?.name || 'Unknown Employee',
+          department: emp?.department || 'Unknown',
+          designation: emp?.designation || 'Unknown',
+          date: r.date.toISOString().split('T')[0],
+          type: r.regularizationType,
+          requestedClockIn: r.requestedClockIn ? r.requestedClockIn.toISOString() : null,
+          requestedClockOut: r.requestedClockOut ? r.requestedClockOut.toISOString() : null,
+          reason: r.reason,
+          attachments: r.attachments,
+          status: r.status,
+          approvedBy: r.approvedBy,
+          approvedAt: r.approvedAt ? r.approvedAt.toISOString() : null,
+          rejectionReason: r.rejectionReason,
+          createdAt: r.createdAt.toISOString(),
+        };
+      });
 
       const summary = {
-        total: filteredData.length,
-        pending: filteredData.filter(r => r.status === 'PENDING').length,
-        approved: filteredData.filter(r => r.status === 'APPROVED').length,
-        rejected: filteredData.filter(r => r.status === 'REJECTED').length,
+        total: data.length,
+        pending: data.filter(r => r.status === 'PENDING').length,
+        approved: data.filter(r => r.status === 'APPROVED').length,
+        rejected: data.filter(r => r.status === 'REJECTED').length,
         byType: {
-          missingPunch: filteredData.filter(r => r.type === 'MISSING_PUNCH').length,
-          lateArrival: filteredData.filter(r => r.type === 'LATE_ARRIVAL').length,
-          earlyDeparture: filteredData.filter(r => r.type === 'EARLY_DEPARTURE').length,
-          manualEntry: filteredData.filter(r => r.type === 'MANUAL_ENTRY').length,
-        },
-        byPriority: {
-          high: filteredData.filter(r => r.priority === 'HIGH').length,
-          medium: filteredData.filter(r => r.priority === 'MEDIUM').length,
-          low: filteredData.filter(r => r.priority === 'LOW').length,
+          missedPunch: data.filter(r => r.type === 'MISSED_PUNCH').length,
+          lateIn: data.filter(r => r.type === 'LATE_IN').length,
+          earlyOut: data.filter(r => r.type === 'EARLY_OUT').length,
+          wrongPunch: data.filter(r => r.type === 'WRONG_PUNCH').length,
         },
         byDepartment: Object.entries(
-          filteredData.reduce((acc, r) => {
+          data.reduce((acc, r) => {
             acc[r.department] = (acc[r.department] || 0) + 1;
             return acc;
           }, {} as Record<string, number>)
@@ -123,8 +103,8 @@ export const GET = withEnhancedAuth(
 
       return NextResponse.json({
         success: true,
-        data: { requests: filteredData, summary },
-        meta: { total: filteredData.length },
+        data: { requests: data, summary },
+        meta: { total: data.length },
       });
     } catch (error) {
       logger.error('Error fetching regularization requests:', error);

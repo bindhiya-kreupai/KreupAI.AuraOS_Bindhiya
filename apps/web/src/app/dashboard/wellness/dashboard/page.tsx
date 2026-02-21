@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Activity,
     Heart,
@@ -14,8 +14,10 @@ import {
     Frown,
     Sun,
     Moon,
-    Play
+    Play,
+    Loader2
 } from 'lucide-react';
+import { WellnessAnalyticsService } from '../services';
 import {
     RadialBarChart,
     RadialBar,
@@ -55,6 +57,31 @@ const MOODS = [
 
 export default function WellnessDashboardPage() {
     const [selectedMood, setSelectedMood] = useState<number | null>(null);
+    const [metrics, setMetrics] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await WellnessAnalyticsService.getMetrics();
+                setMetrics(data as any);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10">

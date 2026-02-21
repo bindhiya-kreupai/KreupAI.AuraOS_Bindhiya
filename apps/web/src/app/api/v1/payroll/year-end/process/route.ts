@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   try {
     const body: YearEndProcessRequest = await request.json();
 
-    if (\!body.taxYear) {
+    if (!body.taxYear) {
       return NextResponse.json(
         { error: "taxYear is required" },
         { status: 400 }

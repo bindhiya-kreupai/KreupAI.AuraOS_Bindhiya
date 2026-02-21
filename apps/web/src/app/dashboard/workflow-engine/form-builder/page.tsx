@@ -1,19 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FileText, GripVertical, Plus, BoxSelect } from 'lucide-react';
+import { FileText, GripVertical, Plus, Loader2 } from 'lucide-react';
 import { FormBuilderService } from '../services';
-
-const FORM_FIELDS = [
-    { id: 1, label: 'Employee Name', type: 'Text Input', required: true },
-    { id: 2, label: 'Department', type: 'Dropdown', required: true },
-    { id: 3, label: 'Start Date', type: 'Date Picker', required: true },
-    { id: 4, label: 'Justification', type: 'Text Area', required: false },
-];
 
 export default function FormBuilderPage() {
     const [forms, setForms] = useState<any[]>([]);
-    const [formFields, setFormFields] = useState<any[]>(FORM_FIELDS);
+    const [formFields, setFormFields] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -25,12 +18,32 @@ export default function FormBuilderPage() {
             setLoading(true);
             const data = await FormBuilderService.getForms();
             setForms(data);
+            if (data.length > 0) {
+                const firstForm = data[0];
+                const nodes = Array.isArray(firstForm.nodes) ? firstForm.nodes : [];
+                if (nodes.length > 0) {
+                    setFormFields(nodes.map((n: any, i: number) => ({
+                        id: n.id || i,
+                        label: n.label || n.name || `Field ${i + 1}`,
+                        type: n.type || 'Text Input',
+                        required: n.required ?? true,
+                    })));
+                }
+            }
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-pink-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
@@ -53,7 +66,6 @@ export default function FormBuilderPage() {
             </div>
 
             <div className="flex gap-6 h-[600px]">
-                {/* Field Library */}
                 <div className="w-64 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
                     <h3 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-4">Fields</h3>
                     <div className="grid grid-cols-2 gap-2">
@@ -65,31 +77,42 @@ export default function FormBuilderPage() {
                     </div>
                 </div>
 
-                {/* Canvas */}
                 <div className="flex-1 bg-slate-50 dark:bg-slate-950 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 p-8 flex flex-col gap-4 overflow-y-auto">
                     <div className="bg-white dark:bg-slate-900 p-8 rounded-xl shadow-lg w-full max-w-2xl mx-auto min-h-[500px]">
                         <div className="border-b border-slate-100 dark:border-slate-800 pb-4 mb-6">
-                            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Travel Request Form</h2>
-                            <p className="text-slate-400">Please fill out details for business travel.</p>
+                            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                                {forms.length > 0 ? forms[0].name : 'Dynamic Form'}
+                            </h2>
+                            <p className="text-slate-400">
+                                {forms.length > 0 ? (forms[0].description || 'Fill out the form below.') : 'No forms loaded yet.'}
+                            </p>
                         </div>
 
-                        <div className="space-y-4">
-                            {FORM_FIELDS.map(field => (
-                                <div key={field.id} className="group relative p-4 border border-transparent hover:border-pink-200 dark:hover:border-pink-900 rounded-lg transition-colors cursor-move">
-                                    <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 cursor-grab text-slate-400">
-                                        <GripVertical className="w-4 h-4" />
-                                    </div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        {field.label} {field.required && <span className="text-red-500">*</span>}
-                                    </label>
-                                    <div className="w-full h-10 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 pointer-events-none" />
-                                </div>
-                            ))}
-
-                            <div className="h-20 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-center text-slate-400 gap-2">
-                                <Plus className="w-5 h-5" /> Drop fields here
+                        {formFields.length === 0 ? (
+                            <div className="text-center py-12">
+                                <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                                <h3 className="text-lg font-bold text-slate-500 mb-2">No Form Fields</h3>
+                                <p className="text-sm text-slate-400">Drag fields from the left panel to build your form.</p>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {formFields.map(field => (
+                                    <div key={field.id} className="group relative p-4 border border-transparent hover:border-pink-200 dark:hover:border-pink-900 rounded-lg transition-colors cursor-move">
+                                        <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 cursor-grab text-slate-400">
+                                            <GripVertical className="w-4 h-4" />
+                                        </div>
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                            {field.label} {field.required && <span className="text-red-500">*</span>}
+                                        </label>
+                                        <div className="w-full h-10 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 pointer-events-none" />
+                                    </div>
+                                ))}
+
+                                <div className="h-20 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-center text-slate-400 gap-2">
+                                    <Plus className="w-5 h-5" /> Drop fields here
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

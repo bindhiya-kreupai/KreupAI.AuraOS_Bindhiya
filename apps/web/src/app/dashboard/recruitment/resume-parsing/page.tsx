@@ -8,7 +8,7 @@ import {
     ScanLine,
     CheckCircle,
     BrainCircuit,
-    AlertCircle
+    Loader2
 } from 'lucide-react';
 
 export default function ResumeParsingPage() {
@@ -22,11 +22,14 @@ export default function ResumeParsingPage() {
 
     const fetchParsedResumes = async () => {
         try {
+            setLoading(true);
             const data = await CandidateApplicationService.getApplications();
-            setParsedResumes(data);
+            // Filter applications that have resume data
+            const withResumes = data.filter((app: any) => app.resumeUrl);
+            setParsedResumes(withResumes);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -38,10 +41,21 @@ export default function ResumeParsingPage() {
             await fetchParsedResumes();
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setIsParsing(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                    <p className="text-sm text-silver-mist font-medium">Loading resume data...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
@@ -71,60 +85,57 @@ export default function ResumeParsingPage() {
                     </button>
                 </div>
 
-                {/* Parsing Status / Demo */}
+                {/* Parsed Resume Results */}
                 <div className="space-y-6">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><BrainCircuit className="w-5 h-5 text-emerald-500" /> Extraction Preview</h3>
+                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><BrainCircuit className="w-5 h-5 text-emerald-500" /> Parsed Resumes</h3>
 
                         <div className="space-y-4">
-                            <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800 relative overflow-hidden">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-lg flex items-center justify-center shadow-sm">
-                                            <FileText className="w-5 h-5 text-red-500" />
-                                        </div>
-                                        <div>
-                                            <div className="font-bold text-sm">john_doe_cv.pdf</div>
-                                            <div className="text-xs text-slate-500">Uploaded just now</div>
-                                        </div>
-                                    </div>
-                                    <span className="text-emerald-500 font-bold text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Success</span>
+                            {parsedResumes.length === 0 && (
+                                <div className="text-center py-8 text-slate-400">
+                                    <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                                    <p className="text-sm">No parsed resumes yet. Upload a resume to get started.</p>
                                 </div>
+                            )}
+                            {parsedResumes.map((resume: any, i: number) => {
+                                const name = resume.candidateName || resume.candidate?.firstName
+                                    ? `${resume.candidate?.firstName || ''} ${resume.candidate?.lastName || ''}`.trim()
+                                    : `Candidate ${i + 1}`;
+                                const email = resume.candidate?.email || '';
+                                const skills = resume.candidate?.skills || [];
 
-                                <div className="grid grid-cols-2 gap-4 text-xs">
-                                    <div>
-                                        <span className="block text-slate-400 font-bold uppercase mb-1">Name</span>
-                                        <span className="font-mono bg-emerald-100 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 px-1 py-0.5 rounded">Johnathan Doe</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-slate-400 font-bold uppercase mb-1">Email</span>
-                                        <span className="font-mono bg-emerald-100 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 px-1 py-0.5 rounded">j.doe@example.com</span>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <span className="block text-slate-400 font-bold uppercase mb-1">Skills</span>
-                                        <div className="flex flex-wrap gap-1">
-                                            {['React', 'Node.js', 'PostgreSQL', 'AWS'].map(s => (
-                                                <span key={s} className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded font-bold">{s}</span>
-                                            ))}
+                                return (
+                                    <div key={resume.id || i} className="p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800 relative overflow-hidden">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-lg flex items-center justify-center shadow-sm">
+                                                    <FileText className="w-5 h-5 text-red-500" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-bold text-sm">{name}</div>
+                                                    <div className="text-xs text-slate-500">{email || 'No email'}</div>
+                                                </div>
+                                            </div>
+                                            {resume.resumeUrl && (
+                                                <span className="text-emerald-500 font-bold text-xs flex items-center gap-1">
+                                                    <CheckCircle className="w-3 h-3" /> Resume on file
+                                                </span>
+                                            )}
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800 opacity-60">
-                                <div className="flex justify-between items-start">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-lg flex items-center justify-center shadow-sm">
-                                            <FileText className="w-5 h-5 text-blue-500" />
-                                        </div>
-                                        <div>
-                                            <div className="font-bold text-sm">sarah_smith_resume.docx</div>
-                                            <div className="text-xs text-slate-500">Processing...</div>
-                                        </div>
+                                        {skills.length > 0 && (
+                                            <div>
+                                                <span className="block text-slate-400 font-bold uppercase mb-1 text-xs">Skills</span>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {skills.slice(0, 6).map((s: string) => (
+                                                        <span key={s} className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded font-bold text-xs">{s}</span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                    <span className="animate-spin w-4 h-4 border-2 border-slate-300 border-t-indigo-500 rounded-full"></span>
-                                </div>
-                            </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

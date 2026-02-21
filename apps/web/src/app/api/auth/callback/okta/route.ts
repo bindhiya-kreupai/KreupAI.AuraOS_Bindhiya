@@ -3,6 +3,8 @@
  * Handles callback from Okta OAuth2 using @aura/auth
  */
 
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { createOktaProvider } from '@aura/auth';
 import { oauth2StateService } from '@/lib/auth/oauth-state.service';

@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
-import { Award, Gift, Clock, CreditCard, ShoppingBag, ArrowUpRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Award, Gift, Clock, CreditCard, ShoppingBag, ArrowUpRight, Loader2 } from 'lucide-react';
+import { WellnessPointsService } from '../services';
 
 const REWARDS = [
     { id: 1, title: '$50 Adidas Voucher', points: 5000, category: 'Apparel', image: 'bg-slate-900' },
@@ -17,6 +18,32 @@ const HISTORY = [
 ];
 
 export default function WellnessPointsPage() {
+    const [transactions, setTransactions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await WellnessPointsService.getTransactions();
+                setTransactions(Array.isArray(data) ? data : []);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

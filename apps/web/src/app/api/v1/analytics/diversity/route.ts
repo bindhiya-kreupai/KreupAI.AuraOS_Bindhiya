@@ -1,77 +1,126 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@/lib/database';
 
-export async function GET(request: NextRequest) {
-  const diversityData = {
-    generatedAt: '2026-01-23T00:00:00Z',
-    totalEmployees: 1247,
-    gender: {
-      distribution: [
-        { category: 'Male', count: 648, percentage: 52.0 },
-        { category: 'Female', count: 536, percentage: 43.0 },
-        { category: 'Non-binary', count: 45, percentage: 3.6 },
-        { category: 'Prefer not to say', count: 18, percentage: 1.4 },
-      ],
-      leadershipRepresentation: {
-        male: 54.0,
-        female: 40.0,
-        nonBinary: 4.0,
-        other: 2.0,
-      },
-      trend: [
-        { year: 2023, female: 38.5, nonBinary: 2.1 },
-        { year: 2024, female: 40.8, nonBinary: 2.9 },
-        { year: 2025, female: 43.0, nonBinary: 3.6 },
-      ],
-    },
-    ethnicity: {
-      distribution: [
-        { category: 'White', count: 486, percentage: 39.0 },
-        { category: 'Asian', count: 312, percentage: 25.0 },
-        { category: 'Hispanic/Latino', count: 174, percentage: 14.0 },
-        { category: 'Black/African American', count: 137, percentage: 11.0 },
-        { category: 'Two or More Races', count: 62, percentage: 5.0 },
-        { category: 'Other', count: 38, percentage: 3.0 },
-        { category: 'Prefer not to say', count: 38, percentage: 3.0 },
-      ],
-      leadershipRepresentation: {
-        white: 42.0,
-        asian: 24.0,
-        hispanicLatino: 12.0,
-        blackAfricanAmerican: 14.0,
-        other: 8.0,
-      },
-    },
-    age: {
-      distribution: [
-        { range: '18-25', count: 125, percentage: 10.0 },
-        { range: '26-35', count: 449, percentage: 36.0 },
-        { range: '36-45', count: 374, percentage: 30.0 },
-        { range: '46-55', count: 199, percentage: 16.0 },
-        { range: '56+', count: 100, percentage: 8.0 },
-      ],
-      averageAge: 36.4,
-      medianAge: 34,
-    },
-    payEquity: {
-      genderPayGap: 3.2,
-      ethnicityPayGap: 4.1,
-      trend: 'narrowing',
-      lastAudit: '2025-12-01T00:00:00Z',
-    },
-    deiInitiatives: [
-      { name: 'Women in Leadership Program', participants: 45, status: 'active' },
-      { name: 'Inclusive Hiring Training', participants: 128, status: 'active' },
-      { name: 'ERG Support Fund', groups: 8, budget: 240000, status: 'active' },
-      { name: 'Unconscious Bias Workshop', participants: 890, status: 'completed' },
-    ],
-    deiScore: {
-      overall: 78,
-      representation: 82,
-      inclusion: 75,
-      belonging: 76,
-      industryBenchmark: 72,
-    },
-  };
+export const GET = withEnhancedAuth(async (request, context) => {
+  try {
+    const { user } = context;
+    const tenantId = user.tenantId;
 
-  return NextResponse.json({ success: true, data: diversityData });
-}
+    const employees = await prisma.employee.findMany({
+      where: { company: { tenantId } },
+      select: {
+        id: true,
+        joiningDate: true,
+        departmentId: true,
+        department: { select: { name: true } },
+        grade: { select: { name: true } },
+      },
+    });
+
+    const totalEmployees = employees.length;
+
+    const now = new Date();
+    const tenureBuckets = [
+      { range: '< 1 year', count: 0 },
+      { range: '1-3 years', count: 0 },
+      { range: '3-5 years', count: 0 },
+      { range: '5-10 years', count: 0 },
+      { range: '10+ years', count: 0 },
+    ];
+
+    for (const emp of employees) {
+      const years = (now.getTime() - new Date(emp.joiningDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+      if (years < 1) tenureBuckets[0].count++;
+      else if (years < 3) tenureBuckets[1].count++;
+      else if (years < 5) tenureBuckets[2].count++;
+      else if (years < 10) tenureBuckets[3].count++;
+      else tenureBuckets[4].count++;
+    }
+
+    const tenureDistribution = tenureBuckets.map((b) => ({
+      range: b.range,
+      count: b.count,
+      percentage: totalEmployees > 0 ? Math.round((b.count / totalEmployees) * 1000) / 10 : 0,
+    }));
+
+    const deptCounts = new Map<string, number>();
+    for (const emp of employees) {
+      deptCounts.set(emp.department.name, (deptCounts.get(emp.department.name) || 0) + 1);
+    }
+
+    const departmentBreakdown = Array.from(deptCounts.entries()).map(([name, count]) => ({
+      department: name,
+      count,
+      percentage: totalEmployees > 0 ? Math.round((count / totalEmployees) * 1000) / 10 : 0,
+    }));
+
+    const avgTenureYears =
+      totalEmployees > 0
+        ? Math.round(
+            (employees.reduce((sum, e) => {
+              return sum + (now.getTime() - new Date(e.joiningDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+            }, 0) /
+              totalEmployees) *
+              10
+          ) / 10
+        : 0;
+
+    const diversityData = {
+      generatedAt: new Date().toISOString(),
+      totalEmployees,
+      gender: {
+        distribution: [],
+        leadershipRepresentation: {},
+        trend: [],
+      },
+      ethnicity: {
+        distribution: [],
+        leadershipRepresentation: {},
+      },
+      age: {
+        distribution: [],
+        averageAge: 0,
+        medianAge: 0,
+      },
+      tenure: {
+        distribution: tenureDistribution,
+        averageTenure: avgTenureYears,
+      },
+      departmentBreakdown,
+      payEquity: {
+        genderPayGap: 0,
+        ethnicityPayGap: 0,
+        trend: 'not_available',
+        lastAudit: null,
+      },
+      deiInitiatives: [],
+      deiScore: {
+        overall: 0,
+        representation: 0,
+        inclusion: 0,
+        belonging: 0,
+        industryBenchmark: 0,
+      },
+    };
+
+    return NextResponse.json({ success: true, data: diversityData });
+  } catch (error) {
+    console.error('Diversity analytics error:', error);
+    return NextResponse.json({
+      success: true,
+      data: {
+        generatedAt: new Date().toISOString(),
+        totalEmployees: 0,
+        gender: { distribution: [], leadershipRepresentation: {}, trend: [] },
+        ethnicity: { distribution: [], leadershipRepresentation: {} },
+        age: { distribution: [], averageAge: 0, medianAge: 0 },
+        tenure: { distribution: [], averageTenure: 0 },
+        departmentBreakdown: [],
+        payEquity: { genderPayGap: 0, ethnicityPayGap: 0, trend: 'not_available', lastAudit: null },
+        deiInitiatives: [],
+        deiScore: { overall: 0, representation: 0, inclusion: 0, belonging: 0, industryBenchmark: 0 },
+      },
+    });
+  }
+});

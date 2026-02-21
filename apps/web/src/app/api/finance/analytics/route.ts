@@ -1,17 +1,38 @@
-/**
- * Finance Analytics API Routes
- * Finance Module - Analytics & Metrics
- */
-
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/database';
+import { withEnhancedAuth } from '@/lib/auth';
 
-/**
- * GET /api/finance/analytics
- * Get finance metrics and analytics
- */
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
+    const { user } = context;
+
+    const [totalAssets, assets] = await Promise.all([
+      prisma.asset.count({ where: { tenantId: user.tenantId } }),
+      prisma.asset.findMany({
+        where: { tenantId: user.tenantId },
+        select: {
+          purchasePrice: true,
+          currentValue: true,
+          status: true,
+        },
+      }),
+    ]);
+
+    const totalAssetValue = assets.reduce(
+      (sum, a) => sum + (typeof a.purchasePrice === 'number' ? a.purchasePrice : Number(a.purchasePrice || 0)),
+      0
+    );
+    const totalDepreciation = assets.reduce(
+      (sum, a) => {
+        const purchase = typeof a.purchasePrice === 'number' ? a.purchasePrice : Number(a.purchasePrice || 0);
+        const current = typeof a.currentValue === 'number' ? a.currentValue : Number(a.currentValue || 0);
+        return sum + (purchase - current);
+      },
+      0
+    );
+    const assetsUnderMaintenance = assets.filter(a => a.status === 'IN_REPAIR').length;
+
     return NextResponse.json({
       success: true,
       metrics: {
@@ -43,21 +64,22 @@ export async function GET(request: NextRequest) {
         pendingReconciliations: 0,
         pettyCashUtilization: 0,
 
-        totalAssets: 0,
-        totalAssetValue: 0,
-        totalDepreciation: 0,
-        assetsUnderMaintenance: 0,
+        totalAssets,
+        totalAssetValue,
+        totalDepreciation,
+        assetsUnderMaintenance,
 
         budgetTrends: [],
         spendingTrends: [],
 
+        tenantId: user.tenantId,
         lastUpdated: new Date().toISOString(),
       },
     });
   } catch (error) {
-        return NextResponse.json(
+    return NextResponse.json(
       { error: 'Failed to fetch analytics' },
       { status: 500 }
     );
   }
-}
+});

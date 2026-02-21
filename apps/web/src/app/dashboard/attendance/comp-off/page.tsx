@@ -47,9 +47,7 @@ export default function CompOffPage() {
         try {
             setLoading(true);
             const result = await CompOffService.getCompOffs();
-            if (result && result.length > 0) {
-                setCompOffs(result as any);
-            }
+            setCompOffs((result || []) as any);
             const summaryData = await CompOffService.getCompOffSummary('current-user-id');
             if (summaryData) {
                 setSummary({
@@ -62,7 +60,7 @@ export default function CompOffPage() {
             }
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };

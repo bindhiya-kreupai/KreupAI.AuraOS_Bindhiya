@@ -1,16 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Banknote, Plus, Clock, CheckCircle } from 'lucide-react';
+import { Banknote, Plus, Clock, CheckCircle, Loader2 } from 'lucide-react';
 import { TravelRequestService } from '../services';
 
-const ADVANCES = [
-    { id: 1, trip: 'London Client Visit', amount: '$500.00', date: 'Nov 10, 2024', status: 'Approved', type: 'Cash' },
-    { id: 2, trip: 'Singapore Conference', amount: '$1,000.00', date: 'Dec 01, 2024', status: 'Pending', type: 'Forex Card' },
-];
-
 export default function AdvanceRequestPage() {
-    const [data, setData] = useState<any[]>([]);
+    const [advances, setAdvances] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -21,13 +16,22 @@ export default function AdvanceRequestPage() {
         try {
             setLoading(true);
             const requests = await TravelRequestService.getRequests({ status: 'approved' });
-            setData(requests);
+            setAdvances(Array.isArray(requests) ? requests : []);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+                <span className="ml-2 text-sm text-slate-500">Loading advance requests...</span>
+            </div>
+        );
+    }
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
@@ -45,7 +49,6 @@ export default function AdvanceRequestPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Form */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm h-fit">
                     <h3 className="font-bold text-lg mb-6 text-slate-900 dark:text-slate-100">Quick Request</h3>
                     <div className="space-y-4">
@@ -53,7 +56,9 @@ export default function AdvanceRequestPage() {
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Select Trip</label>
                             <select className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 text-sm">
                                 <option>Select approved trip...</option>
-                                <option>Dubai Sales Kickoff (Jan 10-14)</option>
+                                {advances.map((adv: any) => (
+                                    <option key={adv.id} value={adv.id}>{adv.destination || adv.title || 'Trip'} ({new Date(adv.departureDate || adv.createdAt).toLocaleDateString()})</option>
+                                ))}
                             </select>
                         </div>
                         <div>
@@ -77,32 +82,38 @@ export default function AdvanceRequestPage() {
                     </div>
                 </div>
 
-                {/* History */}
                 <div className="lg:col-span-2 space-y-6">
                     <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">Recent Advances</h3>
-                    <div className="space-y-4">
-                        {ADVANCES.map((adv) => (
-                            <div key={adv.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/10 rounded-xl flex items-center justify-center text-indigo-600">
-                                        <Banknote className="w-6 h-6" />
+                    {advances.length === 0 ? (
+                        <div className="text-center py-12 text-slate-400">
+                            <Banknote className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                            <p className="text-lg font-medium">No advance requests found</p>
+                            <p className="text-sm mt-1">Submit a request for your next approved trip.</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {advances.map((adv: any) => (
+                                <div key={adv.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/10 rounded-xl flex items-center justify-center text-indigo-600">
+                                            <Banknote className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-slate-900 dark:text-slate-100">{adv.destination || adv.title || 'Travel Advance'}</div>
+                                            <div className="text-sm text-slate-500">{new Date(adv.createdAt).toLocaleDateString()} {adv.currency || 'USD'}</div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div className="font-bold text-slate-900 dark:text-slate-100">{adv.trip}</div>
-                                        <div className="text-sm text-slate-500">{adv.date} • {adv.type}</div>
+                                    <div className="text-right">
+                                        <div className="text-xl font-bold text-slate-900 dark:text-slate-100">${adv.estimatedCost || adv.amount || 0}</div>
+                                        <div className={`flex items-center justify-end gap-1 text-xs font-bold mt-1 ${adv.status === 'approved' ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                            {adv.status === 'approved' ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                                            {adv.status}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{adv.amount}</div>
-                                    <div className={`flex items-center justify-end gap-1 text-xs font-bold mt-1 ${adv.status === 'Approved' ? 'text-emerald-500' : 'text-amber-500'
-                                        }`}>
-                                        {adv.status === 'Approved' ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                                        {adv.status}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

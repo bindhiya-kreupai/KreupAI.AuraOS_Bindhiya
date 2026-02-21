@@ -1,15 +1,42 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FilePlus,
     Save,
     Eye,
     Upload,
-    Type
+    Type,
+    Loader2
 } from 'lucide-react';
+import { PolicySettingsService } from '../services';
+import type { PolicySettings } from '../types';
 
 export default function PolicyCreationPage() {
+    const [settings, setSettings] = useState<PolicySettings | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await PolicySettingsService.get();
+                setSettings(data);
+            } catch {
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -89,6 +116,13 @@ export default function PolicyCreationPage() {
                                     </label>
                                 </div>
                             </div>
+
+                            {settings && (
+                                <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                                    <div className="text-xs text-slate-400 mb-2">Approval Levels Required: <span className="font-bold text-slate-600 dark:text-slate-300">{settings.approvalSettings?.levelsRequired || 2}</span></div>
+                                    <div className="text-xs text-slate-400">Auto Distribute: <span className="font-bold text-slate-600 dark:text-slate-300">{settings.distributionSettings?.autoDistribute ? 'Yes' : 'No'}</span></div>
+                                </div>
+                            )}
                         </div>
                     </div>
 

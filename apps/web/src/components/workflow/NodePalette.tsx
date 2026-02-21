@@ -3,7 +3,7 @@
 import React from "react";
 import {
   Play,
-  CircleStop,
+  StopCircle,
   UserCheck,
   GitBranch,
   Mail,
@@ -34,7 +34,7 @@ const paletteNodes: PaletteNode[] = [
     type: "end",
     label: "End",
     description: "Workflow termination",
-    icon: <CircleStop className="w-4 h-4" />,
+    icon: <StopCircle className="w-4 h-4" />,
     color: "text-coral-alert",
     bgColor: "bg-coral-alert/10",
   },

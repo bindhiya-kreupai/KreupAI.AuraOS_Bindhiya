@@ -44,12 +44,22 @@ export default function ShiftManagementPage() {
     const fetchShifts = async () => {
         try {
             const result = await ShiftService.getShifts();
-            if (result.length > 0) {
-                setShiftList(result as any);
-            }
+            // Map API fields to UI interface
+            const mapped: Shift[] = (result as any[]).map((s: any) => ({
+                id: s.id,
+                name: s.name || '',
+                start: s.startTime || s.start || '',
+                end: s.endTime || s.end || '',
+                break_duration: s.breakDuration || s.break_duration || '0 min',
+                type: s.isFlexible ? 'Flexible' : (s.type || 'Fixed'),
+                color: s.color || 'bg-blue-500',
+                icon: s.icon || 'Sun',
+                employees: s.employees || s._count?.employees || 0,
+            }));
+            setShiftList(mapped);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };

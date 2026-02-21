@@ -220,6 +220,6 @@ export class BenefitSettingsService {
 
 export class BenefitAnalyticsService {
     static async getStats(): Promise<BenefitStats> {
-        return APIClient.get<BenefitStats>('/benefits/analytics/stats');
+        return APIClient.get<BenefitStats>('/benefits/analytics');
     }
 }

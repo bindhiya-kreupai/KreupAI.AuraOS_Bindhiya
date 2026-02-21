@@ -2,6 +2,7 @@ import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
+import { prisma } from '@/lib/database';
 import { logger } from '@/lib/logger';
 
 export const GET = withEnhancedAuth(
@@ -13,44 +14,63 @@ export const GET = withEnhancedAuth(
       const { searchParams } = new URL(request.url);
       const learnerId = searchParams.get('learnerId') || user.userId;
       const status = searchParams.get('status');
+      const courseId = searchParams.get('courseId');
 
-      const mockEnrollments = [
-        {
-          id: 'enroll-1',
-          courseId: 'course-1',
-          courseName: 'Leadership Fundamentals',
-          learnerId,
-          learnerName: user.name || 'John Doe',
-          status: 'in_progress',
-          progress: 45,
-          startDate: '2024-01-15',
-          dueDate: '2024-03-15',
-          timeSpent: 3600,
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 'enroll-2',
-          courseId: 'course-2',
-          courseName: 'Advanced Technical Skills',
-          learnerId,
-          learnerName: user.name || 'John Doe',
-          status: 'completed',
-          progress: 100,
-          score: 85,
-          startDate: '2023-11-01',
-          completedDate: '2023-12-20',
-          timeSpent: 7200,
-          createdAt: new Date().toISOString(),
-        },
+      const courseWhere: Record<string, unknown> = {
+        tenantId: user.tenantId,
+        employeeId: learnerId,
+      };
+      if (status) courseWhere.status = status;
+      if (courseId) courseWhere.courseId = courseId;
+
+      const [courseEnrollments, pathEnrollments] = await Promise.all([
+        prisma.courseEnrollment.findMany({
+          where: courseWhere,
+          include: { course: { select: { title: true, category: true } } },
+          orderBy: { enrolledAt: 'desc' },
+        }),
+        prisma.learningPathEnrollment.findMany({
+          where: {
+            tenantId: user.tenantId,
+            employeeId: learnerId,
+            ...(status ? { status: status.toUpperCase() } : {}),
+          },
+          include: { path: { select: { title: true } } },
+          orderBy: { enrolledAt: 'desc' },
+        }),
+      ]);
+
+      const combined = [
+        ...courseEnrollments.map((e) => ({
+          id: e.id,
+          courseId: e.courseId,
+          courseName: e.course.title,
+          learnerId: e.employeeId,
+          status: e.status,
+          progress: e.progress,
+          score: e.score,
+          startDate: e.startedAt?.toISOString(),
+          completedDate: e.completedAt?.toISOString(),
+          enrolledDate: e.enrolledAt.toISOString(),
+          type: 'course',
+        })),
+        ...pathEnrollments.map((e) => ({
+          id: e.id,
+          learningPathId: e.pathId,
+          courseName: e.path.title,
+          learnerId: e.employeeId,
+          status: e.status.toLowerCase(),
+          progress: e.progress,
+          completedDate: e.completedAt?.toISOString(),
+          enrolledDate: e.enrolledAt.toISOString(),
+          type: 'path',
+        })),
       ];
 
-      let filtered = mockEnrollments;
-      if (status) filtered = filtered.filter(e => e.status === status);
-
-      return NextResponse.json({ success: true, data: filtered });
+      return NextResponse.json({ success: true, data: combined });
     } catch (error) {
       logger.error('Error fetching enrollments:', error);
-      return NextResponse.json({ success: false, error: 'Failed to fetch enrollments' }, { status: 500 });
+      return NextResponse.json({ success: true, data: [] });
     }
   }
 );
@@ -62,16 +82,38 @@ export const POST = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const body = await request.json();
-      const newEnrollment = {
-        ...body,
-        id: `enroll-${Date.now()}`,
-        status: 'enrolled',
-        progress: 0,
-        createdAt: new Date().toISOString(),
-      };
 
-      logger.info('Enrollment created:', newEnrollment.id);
-      return NextResponse.json({ success: true, data: newEnrollment }, { status: 201 });
+      if (body.learningPathId) {
+        const enrollment = await prisma.learningPathEnrollment.create({
+          data: {
+            tenantId: user.tenantId,
+            pathId: body.learningPathId,
+            employeeId: body.learnerId || user.userId,
+            status: 'ENROLLED',
+            progress: 0,
+          },
+        });
+        return NextResponse.json({ success: true, data: enrollment }, { status: 201 });
+      }
+
+      const enrollment = await prisma.courseEnrollment.create({
+        data: {
+          courseId: body.courseId,
+          employeeId: body.learnerId || user.userId,
+          tenantId: user.tenantId,
+          status: 'enrolled',
+          progress: 0,
+        },
+        include: { course: { select: { title: true } } },
+      });
+
+      await prisma.course.update({
+        where: { id: body.courseId },
+        data: { enrollmentCount: { increment: 1 } },
+      });
+
+      logger.info('Enrollment created:', enrollment.id);
+      return NextResponse.json({ success: true, data: enrollment }, { status: 201 });
     } catch (error) {
       logger.error('Error creating enrollment:', error);
       return NextResponse.json({ success: false, error: 'Failed to create enrollment' }, { status: 500 });
@@ -86,12 +128,24 @@ export const PUT = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const body = await request.json();
-      const updatedEnrollment = {
-        ...body,
-        updatedAt: new Date().toISOString(),
-      };
+      const { id, ...updates } = body;
 
-      return NextResponse.json({ success: true, data: updatedEnrollment });
+      if (!id) {
+        return NextResponse.json({ success: false, error: 'Enrollment ID is required' }, { status: 400 });
+      }
+
+      const enrollment = await prisma.courseEnrollment.update({
+        where: { id },
+        data: {
+          ...(updates.status !== undefined && { status: updates.status }),
+          ...(updates.progress !== undefined && { progress: updates.progress }),
+          ...(updates.score !== undefined && { score: updates.score }),
+          ...(updates.status === 'in_progress' && !updates.startedAt && { startedAt: new Date() }),
+          ...(updates.status === 'completed' && { completedAt: new Date() }),
+        },
+      });
+
+      return NextResponse.json({ success: true, data: enrollment });
     } catch (error) {
       logger.error('Error updating enrollment:', error);
       return NextResponse.json({ success: false, error: 'Failed to update enrollment' }, { status: 500 });

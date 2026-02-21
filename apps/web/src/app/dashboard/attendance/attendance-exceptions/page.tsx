@@ -46,22 +46,21 @@ export default function AttendanceExceptionsPage() {
     const fetchExceptions = async () => {
         try {
             const exceptions = await AttendanceAnalyticsService.getExceptions();
-            if (exceptions.length > 0) {
-                setExceptionList(exceptions as any);
-                // Calculate stats from exceptions
-                const lateIn = exceptions.filter((e: any) => e.type?.includes('Late')).length;
-                const earlyOut = exceptions.filter((e: any) => e.type?.includes('Early')).length;
-                const absent = exceptions.filter((e: any) => e.type?.includes('Absent')).length;
-                setStats({
-                    total: exceptions.length,
-                    lateIn,
-                    earlyOut,
-                    absent,
-                });
-            }
+            const exceptionsArr = (exceptions || []) as any[];
+            setExceptionList(exceptionsArr as any);
+            // Calculate stats from exceptions
+            const lateIn = exceptionsArr.filter((e: any) => e.type?.includes('Late')).length;
+            const earlyOut = exceptionsArr.filter((e: any) => e.type?.includes('Early')).length;
+            const absent = exceptionsArr.filter((e: any) => e.type?.includes('Absent')).length;
+            setStats({
+                total: exceptionsArr.length,
+                lateIn,
+                earlyOut,
+                absent,
+            });
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };

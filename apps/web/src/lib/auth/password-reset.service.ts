@@ -4,7 +4,7 @@
  */
 
 import { prisma } from '@aura/database';
-import { redisClient } from '@/lib/cache/redis';
+import { redis as redisClient } from '@/lib/cache/redis';
 import { logger } from '@/lib/logger';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';

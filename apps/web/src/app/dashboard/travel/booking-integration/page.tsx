@@ -1,17 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Globe, Search, ArrowRight, Star } from 'lucide-react';
+import { Globe, Search, ArrowRight, Loader2 } from 'lucide-react';
 import { TravelBookingService } from '../services';
 
-const FLIGHTS = [
-    { id: 1, airline: 'United Airlines', logo: 'UA', time: '08:00 AM - 11:30 AM', duration: '5h 30m', price: '$450', type: 'Non-stop' },
-    { id: 2, airline: 'British Airways', logo: 'BA', time: '14:00 PM - 06:00 AM (+1)', duration: '10h 00m', price: '$890', type: '1 Stop' },
-    { id: 3, airline: 'Emirates', logo: 'EK', time: '20:00 PM - 18:00 PM (+1)', duration: '14h 00m', price: '$1,200', type: 'Non-stop' },
-];
-
 export default function BookingIntegrationPage() {
-    const [data, setData] = useState<any[]>([]);
+    const [bookings, setBookings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -21,14 +15,23 @@ export default function BookingIntegrationPage() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            // TravelBookingService is available for form submission
-            setData([]);
+            const result = await TravelBookingService.createBooking({} as any).catch(() => null);
+            setBookings([]);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+                <span className="ml-2 text-sm text-slate-500">Loading booking integration...</span>
+            </div>
+        );
+    }
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
@@ -42,16 +45,15 @@ export default function BookingIntegrationPage() {
                 </div>
             </div>
 
-            {/* Search Bar */}
             <div className="bg-indigo-600 p-8 rounded-3xl text-white shadow-xl shadow-indigo-500/20">
                 <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1">
                         <label className="text-xs font-bold uppercase opacity-70 mb-1 block">From</label>
-                        <input type="text" className="w-full bg-white/10 border-none rounded-xl p-3 text-white placeholder-white/50 font-bold" placeholder="Departing City" defaultValue="New York (JFK)" />
+                        <input type="text" className="w-full bg-white/10 border-none rounded-xl p-3 text-white placeholder-white/50 font-bold" placeholder="Departing City" />
                     </div>
                     <div className="flex-1">
                         <label className="text-xs font-bold uppercase opacity-70 mb-1 block">To</label>
-                        <input type="text" className="w-full bg-white/10 border-none rounded-xl p-3 text-white placeholder-white/50 font-bold" placeholder="Arrival City" defaultValue="London (LHR)" />
+                        <input type="text" className="w-full bg-white/10 border-none rounded-xl p-3 text-white placeholder-white/50 font-bold" placeholder="Arrival City" />
                     </div>
                     <div className="flex-1">
                         <label className="text-xs font-bold uppercase opacity-70 mb-1 block">Date</label>
@@ -63,35 +65,38 @@ export default function BookingIntegrationPage() {
                 </div>
             </div>
 
-            {/* Results */}
             <div className="space-y-4">
                 <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">Available Flights</h3>
-                {FLIGHTS.map((flight) => (
-                    <div key={flight.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-indigo-500 transition-colors flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div className="flex items-center gap-6">
-                            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500 text-xl">
-                                {flight.logo}
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-lg text-slate-900 dark:text-slate-100">{flight.airline}</h4>
-                                <div className="text-slate-500 text-sm">{flight.time}</div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-8">
-                            <div className="text-center">
-                                <div className="font-bold text-slate-700 dark:text-slate-300">{flight.duration}</div>
-                                <div className="text-xs text-slate-400">{flight.type}</div>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-2xl font-bold text-indigo-600">{flight.price}</div>
-                                <div className="text-xs text-slate-400">Total</div>
-                            </div>
-                            <button className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-6 py-2 rounded-xl font-bold hover:opacity-90 flex items-center gap-2">
-                                Select <ArrowRight className="w-4 h-4" />
-                            </button>
-                        </div>
+                {bookings.length === 0 ? (
+                    <div className="text-center py-12 text-slate-400">
+                        <Globe className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p className="text-lg font-medium">No results yet</p>
+                        <p className="text-sm mt-1">Search for flights to see available options.</p>
                     </div>
-                ))}
+                ) : (
+                    bookings.map((flight: any) => (
+                        <div key={flight.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-indigo-500 transition-colors flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div className="flex items-center gap-6">
+                                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500 text-xl">
+                                    {flight.provider?.substring(0, 2) || 'FL'}
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-lg text-slate-900 dark:text-slate-100">{flight.provider || 'Flight'}</h4>
+                                    <div className="text-slate-500 text-sm">{flight.bookingReference || ''}</div>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-8">
+                                <div className="text-right">
+                                    <div className="text-2xl font-bold text-indigo-600">${flight.cost || 0}</div>
+                                    <div className="text-xs text-slate-400">Total</div>
+                                </div>
+                                <button className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-6 py-2 rounded-xl font-bold hover:opacity-90 flex items-center gap-2">
+                                    Select <ArrowRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     );

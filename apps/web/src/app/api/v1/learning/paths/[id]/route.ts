@@ -1,115 +1,85 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@/lib/database';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { id } = params;
+export const GET = withEnhancedAuth(
+  async (request: NextRequest, context) => {
+    try {
+      const { user, params } = context;
+      const { id } = params;
 
-  const pathDetails = {
-    id,
-    title: 'Leadership Essentials',
-    description: 'Develop core leadership competencies for emerging managers',
-    category: 'leadership',
-    level: 'intermediate',
-    duration: '40 hours',
-    enrolledCount: 245,
-    completionRate: 72,
-    rating: 4.7,
-    reviewsCount: 89,
-    skills: ['communication', 'decision-making', 'team-management'],
-    prerequisites: ['Basic management experience', 'At least 1 year in current role'],
-    instructor: {
-      id: 'inst-001',
-      name: 'Dr. Sarah Chen',
-      title: 'Leadership Development Director',
-      avatar: '/images/instructors/sarah-chen.jpg',
-    },
-    modules: [
-      {
-        id: 'mod-001',
-        title: 'Introduction to Leadership',
-        description: 'Understanding leadership styles and self-assessment',
-        duration: '4 hours',
-        order: 1,
-        type: 'video',
-        lessonsCount: 6,
-        status: 'published',
-      },
-      {
-        id: 'mod-002',
-        title: 'Effective Communication',
-        description: 'Master verbal and written communication in leadership contexts',
-        duration: '6 hours',
-        order: 2,
-        type: 'mixed',
-        lessonsCount: 8,
-        status: 'published',
-      },
-      {
-        id: 'mod-003',
-        title: 'Decision Making Frameworks',
-        description: 'Learn structured approaches to complex decisions',
-        duration: '5 hours',
-        order: 3,
-        type: 'interactive',
-        lessonsCount: 5,
-        status: 'published',
-      },
-      {
-        id: 'mod-004',
-        title: 'Team Building & Motivation',
-        description: 'Strategies for building high-performing teams',
-        duration: '6 hours',
-        order: 4,
-        type: 'mixed',
-        lessonsCount: 7,
-        status: 'published',
-      },
-      {
-        id: 'mod-005',
-        title: 'Conflict Resolution',
-        description: 'Navigate and resolve workplace conflicts effectively',
-        duration: '5 hours',
-        order: 5,
-        type: 'case-study',
-        lessonsCount: 5,
-        status: 'published',
-      },
-      {
-        id: 'mod-006',
-        title: 'Strategic Thinking',
-        description: 'Develop long-term strategic planning skills',
-        duration: '5 hours',
-        order: 6,
-        type: 'video',
-        lessonsCount: 6,
-        status: 'published',
-      },
-      {
-        id: 'mod-007',
-        title: 'Change Management',
-        description: 'Lead organizational change initiatives',
-        duration: '5 hours',
-        order: 7,
-        type: 'interactive',
-        lessonsCount: 5,
-        status: 'published',
-      },
-      {
-        id: 'mod-008',
-        title: 'Capstone Project',
-        description: 'Apply all learned concepts in a real-world scenario',
-        duration: '4 hours',
-        order: 8,
-        type: 'project',
-        lessonsCount: 3,
-        status: 'published',
-      },
-    ],
-    createdAt: '2025-06-15T10:00:00Z',
-    updatedAt: '2025-12-01T14:30:00Z',
-  };
+      const path = await prisma.learningPath.findFirst({
+        where: { id, tenantId: user.tenantId },
+        include: {
+          enrollments: {
+            select: { id: true, status: true, progress: true },
+          },
+        },
+      });
 
-  return NextResponse.json({ success: true, data: pathDetails });
-}
+      if (!path) {
+        return NextResponse.json({ success: false, error: 'Learning path not found' }, { status: 404 });
+      }
+
+      const enrolledCount = path.enrollments.length;
+      const completedCount = path.enrollments.filter((e) => e.status === 'COMPLETED').length;
+      const completionRate = enrolledCount > 0 ? Math.round((completedCount / enrolledCount) * 100) : 0;
+
+      const result = {
+        id: path.id,
+        title: path.title,
+        description: path.description,
+        category: path.difficulty,
+        level: path.difficulty?.toLowerCase(),
+        duration: path.duration ? `${path.duration} hours` : null,
+        enrolledCount,
+        completionRate,
+        skills: path.skills,
+        modules: path.modules,
+        isPublished: path.isPublished,
+        createdAt: path.createdAt.toISOString(),
+        updatedAt: path.updatedAt.toISOString(),
+      };
+
+      return NextResponse.json({ success: true, data: result });
+    } catch (error) {
+      return NextResponse.json({ success: true, data: null });
+    }
+  }
+);
+
+export const PUT = withEnhancedAuth(
+  async (request: NextRequest, context) => {
+    try {
+      const { user, params } = context;
+      const { id } = params;
+      const body = await request.json();
+
+      const existing = await prisma.learningPath.findFirst({
+        where: { id, tenantId: user.tenantId },
+      });
+
+      if (!existing) {
+        return NextResponse.json({ success: false, error: 'Learning path not found' }, { status: 404 });
+      }
+
+      const updated = await prisma.learningPath.update({
+        where: { id },
+        data: {
+          ...(body.title !== undefined && { title: body.title }),
+          ...(body.description !== undefined && { description: body.description }),
+          ...(body.difficulty !== undefined && { difficulty: body.difficulty }),
+          ...(body.duration !== undefined && { duration: body.duration }),
+          ...(body.modules !== undefined && { modules: body.modules }),
+          ...(body.skills !== undefined && { skills: body.skills }),
+          ...(body.isPublished !== undefined && { isPublished: body.isPublished }),
+        },
+      });
+
+      return NextResponse.json({ success: true, data: updated });
+    } catch (error) {
+      return NextResponse.json({ success: false, error: 'Failed to update learning path' }, { status: 500 });
+    }
+  }
+);

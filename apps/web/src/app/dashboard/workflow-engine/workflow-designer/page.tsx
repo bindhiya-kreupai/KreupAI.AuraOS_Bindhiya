@@ -1,20 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { GitBranch, Plus, Box, ArrowRight, Settings, Play } from 'lucide-react';
+import { GitBranch, Plus, Box, Settings, Play, Loader2 } from 'lucide-react';
 import { WorkflowService } from '../services';
-
-const WORKFLOW_NODES = [
-    { id: 'start', type: 'trigger', label: 'Form Submitted', x: 50, y: 150, color: 'bg-emerald-500' },
-    { id: 'step1', type: 'action', label: 'Manager Approval', x: 250, y: 150, color: 'bg-blue-500' },
-    { id: 'step2', type: 'condition', label: 'Amount > $1000', x: 450, y: 150, color: 'bg-amber-500' },
-    { id: 'step3a', type: 'action', label: 'Finance Review', x: 650, y: 80, color: 'bg-indigo-500' },
-    { id: 'step3b', type: 'action', label: 'Auto-Approve', x: 650, y: 220, color: 'bg-indigo-500' },
-    { id: 'end', type: 'end', label: 'End Process', x: 850, y: 150, color: 'bg-slate-500' },
-];
 
 export default function WorkflowDesignerPage() {
     const [workflows, setWorkflows] = useState<any[]>([]);
+    const [workflowNodes, setWorkflowNodes] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -26,12 +18,41 @@ export default function WorkflowDesignerPage() {
             setLoading(true);
             const data = await WorkflowService.getWorkflows();
             setWorkflows(data);
+            if (data.length > 0) {
+                const wf = data[0];
+                const nodes = Array.isArray(wf.nodes) ? wf.nodes : [];
+                if (nodes.length > 0) {
+                    const mapped = nodes.map((n: any, i: number) => ({
+                        id: n.id || `node-${i}`,
+                        type: n.type || 'action',
+                        label: n.label || n.name || `Step ${i + 1}`,
+                        x: n.x || n.position?.x || 50 + i * 200,
+                        y: n.y || n.position?.y || 150,
+                        color: n.type === 'start' || n.type === 'trigger'
+                            ? 'bg-emerald-500'
+                            : n.type === 'condition'
+                                ? 'bg-amber-500'
+                                : n.type === 'end'
+                                    ? 'bg-slate-500'
+                                    : 'bg-blue-500',
+                    }));
+                    setWorkflowNodes(mapped);
+                }
+            }
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
@@ -54,7 +75,6 @@ export default function WorkflowDesignerPage() {
             </div>
 
             <div className="flex gap-6 h-[600px]">
-                {/* Toolbox */}
                 <div className="w-64 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col gap-4">
                     <h3 className="font-bold text-sm text-slate-500 uppercase tracking-wider">Components</h3>
 
@@ -72,32 +92,52 @@ export default function WorkflowDesignerPage() {
                             <span className="text-sm font-medium">Condition</span>
                         </div>
                     </div>
+
+                    {workflows.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                            <h3 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-2">Workflows</h3>
+                            <div className="space-y-1 max-h-40 overflow-y-auto">
+                                {workflows.map((wf: any) => (
+                                    <div key={wf.id} className="text-xs p-2 bg-slate-50 dark:bg-slate-800 rounded cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
+                                        {wf.name}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
-                {/* Canvas Area (Mock) */}
                 <div className="flex-1 bg-slate-50 dark:bg-slate-950 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 relative overflow-hidden">
                     <div className="absolute inset-0 pattern-grid-lg text-slate-200 dark:text-slate-800 opacity-20" />
 
-                    {/* Mock Nodes */}
-                    {WORKFLOW_NODES.map((node) => (
-                        <div
-                            key={node.id}
-                            style={{ left: node.x, top: node.y }}
-                            className="absolute flex flex-col items-center group cursor-pointer"
-                        >
-                            <div className={`w-12 h-12 rounded-xl text-white shadow-lg flex items-center justify-center mb-2 ${node.color} group-hover:scale-110 transition-transform`}>
-                                <Settings className="w-5 h-5" />
+                    {workflowNodes.length === 0 ? (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="text-center">
+                                <GitBranch className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                                <h3 className="text-lg font-bold text-slate-500 mb-2">No Workflow Nodes</h3>
+                                <p className="text-sm text-slate-400">Drag components from the sidebar to start designing.</p>
                             </div>
-                            <div className="bg-white dark:bg-slate-800 px-3 py-1 rounded-full shadow-sm border border-slate-100 dark:border-slate-700 text-xs font-bold whitespace-nowrap">
-                                {node.label}
-                            </div>
-
-                            {/* Connection Lines (Simulated) */}
-                            {node.type !== 'end' && (
-                                <div className="absolute left-full top-6 w-32 h-0.5 bg-slate-300 dark:bg-slate-700 -z-10" />
-                            )}
                         </div>
-                    ))}
+                    ) : (
+                        workflowNodes.map((node) => (
+                            <div
+                                key={node.id}
+                                style={{ left: node.x, top: node.y }}
+                                className="absolute flex flex-col items-center group cursor-pointer"
+                            >
+                                <div className={`w-12 h-12 rounded-xl text-white shadow-lg flex items-center justify-center mb-2 ${node.color} group-hover:scale-110 transition-transform`}>
+                                    <Settings className="w-5 h-5" />
+                                </div>
+                                <div className="bg-white dark:bg-slate-800 px-3 py-1 rounded-full shadow-sm border border-slate-100 dark:border-slate-700 text-xs font-bold whitespace-nowrap">
+                                    {node.label}
+                                </div>
+
+                                {node.type !== 'end' && (
+                                    <div className="absolute left-full top-6 w-32 h-0.5 bg-slate-300 dark:bg-slate-700 -z-10" />
+                                )}
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

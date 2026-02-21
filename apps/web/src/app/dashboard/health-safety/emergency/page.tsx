@@ -11,32 +11,33 @@ import {
     CheckCircle2,
     AlertTriangle,
     X,
-    BellRing
+    BellRing,
+    Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// --- MOCK DATA ---
-
-const EMERGENCY_CONTACTS = [
-    { id: 1, name: 'Ambulance', number: '102', icon: '🚑', color: 'bg-rose-500' },
-    { id: 2, name: 'Fire Department', number: '101', icon: '🚒', color: 'bg-orange-500' },
-    { id: 3, name: 'Police', number: '100', icon: '🚓', color: 'bg-indigo-500' },
-    { id: 4, name: 'Security Control', number: '+1 (555) 0199', icon: '👮', color: 'bg-slate-700' },
-    { id: 5, name: 'Medical Room', number: 'Ext: 3333', icon: '⚕️', color: 'bg-emerald-500' },
-    { id: 6, name: 'Facility Manager', number: 'Ext: 4444', icon: '👷', color: 'bg-amber-500' },
-];
-
-const WARDENS = [
-    { id: 1, name: 'John Doe', role: 'Floor Warden', floor: '12th Floor', ext: '1234', status: 'On Site', image: 'JD' },
-    { id: 2, name: 'Sarah Smith', role: 'First Aider', floor: '12th Floor', ext: '5678', status: 'On Site', image: 'SS' },
-    { id: 3, name: 'Mike Ross', role: 'Evacuation Marshal', floor: '12th Floor', ext: '9012', status: 'Away', image: 'MR' },
-];
+import { EmergencyService } from '../services';
+import type { EmergencyContact } from '../services';
 
 export default function EmergencyPage() {
+    const [contacts, setContacts] = useState<EmergencyContact[]>([]);
+    const [loading, setLoading] = useState(true);
     const [sosActive, setSosActive] = useState(false);
     const [countdown, setCountdown] = useState(5);
     const [drillMode, setDrillMode] = useState(false);
     const [alertSent, setAlertSent] = useState(false);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await EmergencyService.getContacts();
+                setContacts(data);
+            } catch {
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
 
     useEffect(() => {
         let timer: NodeJS.Timeout;
@@ -59,6 +60,16 @@ export default function EmergencyPage() {
         setCountdown(5);
         setAlertSent(false);
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
+    const contactColors = ['bg-rose-500', 'bg-orange-500', 'bg-indigo-500', 'bg-slate-700', 'bg-emerald-500', 'bg-amber-500'];
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative overflow-hidden">
@@ -168,13 +179,13 @@ export default function EmergencyPage() {
                         </div>
                         <div>
                             <div className="text-xs font-bold text-silver-mist uppercase">Your Current Location</div>
-                            <div className="text-lg font-bold text-ink-black dark:text-pearl">Koramangala Office, Floor 12, Wing A</div>
+                            <div className="text-lg font-bold text-ink-black dark:text-pearl">Office Location</div>
                             <div className="text-xs text-indigo-500 font-bold mt-1">Updated 1 min ago</div>
                         </div>
                     </div>
                 </div>
 
-                {/* Right: Directory & Wardens */}
+                {/* Right: Directory */}
                 <div className="space-y-6">
                     {/* Emergency Contacts */}
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
@@ -182,47 +193,25 @@ export default function EmergencyPage() {
                             <Phone className="w-5 h-5 text-rose-500" /> Quick Dial
                         </h3>
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                            {EMERGENCY_CONTACTS.map(contact => (
-                                <button key={contact.id} className="p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-cloud dark:border-slate-800 hover:border-indigo-300 transition-all text-left group">
-                                    <div className={`w-8 h-8 rounded-lg ${contact.color} text-white flex items-center justify-center text-sm mb-2 shadow-md group-hover:scale-110 transition-transform`}>
-                                        {contact.icon}
-                                    </div>
-                                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{contact.name}</div>
-                                    <div className="text-xs text-silver-mist font-mono mt-1">{contact.number}</div>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Floor Wardens */}
-                    <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
-                        <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
-                            <ShieldAlert className="w-5 h-5 text-indigo-500" /> Floor Wardens
-                        </h3>
-                        <div className="space-y-3">
-                            {WARDENS.map(warden => (
-                                <div key={warden.id} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-cloud dark:border-slate-800">
-                                    <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-500">
-                                        {warden.image}
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="font-bold text-ink-black dark:text-pearl text-sm">{warden.name}</div>
-                                        <div className="text-xs text-silver-mist">{warden.role}</div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-xs font-bold text-indigo-500">Ext: {warden.ext}</div>
-                                        <div className={`text-[10px] font-bold ${warden.status === 'On Site' ? 'text-emerald-500' : 'text-amber-500'}`}>
-                                            {warden.status}
+                            {contacts.length === 0 ? (
+                                <div className="col-span-full text-center py-4 text-slate-400 text-sm">No emergency contacts configured.</div>
+                            ) : (
+                                contacts.map((contact, i) => (
+                                    <button key={contact.id || i} className="p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-cloud dark:border-slate-800 hover:border-indigo-300 transition-all text-left group">
+                                        <div className={`w-8 h-8 rounded-lg ${contactColors[i % contactColors.length]} text-white flex items-center justify-center text-sm mb-2 shadow-md group-hover:scale-110 transition-transform`}>
+                                            <Phone className="w-4 h-4" />
                                         </div>
-                                    </div>
-                                </div>
-                            ))}
+                                        <div className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{contact.name}</div>
+                                        <div className="text-xs text-silver-mist font-mono mt-1">{contact.number}</div>
+                                    </button>
+                                ))
+                            )}
                         </div>
                     </div>
 
                     {/* Assembly Point */}
                     <div className="bg-emerald-50 dark:bg-emerald-500/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-500/20 flex items-start gap-3">
-                        <Flag className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                        <FlagIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                         <div>
                             <div className="text-sm font-bold text-emerald-800 dark:text-emerald-300">Assembly Point: North Lawn</div>
                             <p className="text-xs text-emerald-600 dark:text-emerald-500/80 mt-1">
@@ -236,7 +225,7 @@ export default function EmergencyPage() {
     );
 }
 
-function Flag({ className }: { className?: string }) {
+function FlagIcon({ className }: { className?: string }) {
     return (
         <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>

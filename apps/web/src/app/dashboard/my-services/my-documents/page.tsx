@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Folder,
     FileText,
@@ -8,19 +8,50 @@ import {
     Upload,
     Search,
     Grid,
-    List
+    List,
+    Loader2
 } from 'lucide-react';
+import { DocumentService } from '../services';
 
 export default function MyDocumentsPage() {
     const [viewMode, setViewMode] = useState('grid');
+    const [fetching, setFetching] = useState(true);
+    const [docs, setDocs] = useState<any[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    const docs = [
-        { name: 'Offer Letter.pdf', type: 'PDF', size: '1.2 MB', date: 'Jun 15, 2022' },
-        { name: 'Employment Agmt.pdf', type: 'PDF', size: '2.5 MB', date: 'Jun 15, 2022' },
-        { name: 'Latest Payslip.pdf', type: 'PDF', size: '0.8 MB', date: 'Nov 30, 2023' },
-        { name: 'Passport Copy.jpg', type: 'Image', size: '3.1 MB', date: 'Jul 01, 2022' },
-        { name: 'Resume_v4.docx', type: 'Doc', size: '0.5 MB', date: 'Sep 10, 2023' },
-    ];
+    useEffect(() => {
+        const fetchDocs = async () => {
+            try {
+                const res = await DocumentService.getDocuments();
+                if (res?.success && Array.isArray(res.data)) {
+                    setDocs(res.data.map((d: any) => ({
+                        id: d.id,
+                        name: d.name || d.fileName || d.title || 'Document',
+                        type: d.fileType || d.mimeType || d.type || 'PDF',
+                        size: d.fileSize || d.size || 'N/A',
+                        date: d.updatedAt || d.createdAt ? new Date(d.updatedAt || d.createdAt).toLocaleDateString('en', { month: 'short', day: '2-digit', year: 'numeric' }) : '',
+                    })));
+                }
+            } catch (err) {
+                console.error('Failed to fetch documents:', err);
+            } finally {
+                setFetching(false);
+            }
+        };
+        fetchDocs();
+    }, []);
+
+    const filteredDocs = searchQuery
+        ? docs.filter(d => d.name.toLowerCase().includes(searchQuery.toLowerCase()))
+        : docs;
+
+    if (fetching) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
@@ -35,7 +66,13 @@ export default function MyDocumentsPage() {
                 <div className="flex gap-2">
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 flex items-center gap-2">
                         <Search className="w-4 h-4 text-slate-400" />
-                        <input type="text" placeholder="Search files..." className="bg-transparent outline-none text-sm py-2 w-32 md:w-48" />
+                        <input
+                            type="text"
+                            placeholder="Search files..."
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            className="bg-transparent outline-none text-sm py-2 w-32 md:w-48"
+                        />
                     </div>
                     <button className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 active:scale-95 transition-all flex items-center gap-2">
                         <Upload className="w-4 h-4" /> Upload
@@ -43,7 +80,6 @@ export default function MyDocumentsPage() {
                 </div>
             </div>
 
-            {/* View Toggle */}
             <div className="flex items-center justify-between">
                 <h3 className="font-bold text-lg">All Files</h3>
                 <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
@@ -62,11 +98,15 @@ export default function MyDocumentsPage() {
                 </div>
             </div>
 
-            {/* Grid View */}
-            {viewMode === 'grid' ? (
+            {filteredDocs.length === 0 ? (
+                <div className="text-center py-12 text-slate-400">
+                    <Folder className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p className="text-sm">No documents found</p>
+                </div>
+            ) : viewMode === 'grid' ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                    {docs.map((doc, i) => (
-                        <div key={i} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all group cursor-pointer flex flex-col items-center text-center relative">
+                    {filteredDocs.map((doc, i) => (
+                        <div key={doc.id || i} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all group cursor-pointer flex flex-col items-center text-center relative">
                             <button className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 hover:bg-slate-100 dark:hover:bg-slate-800 p-1 rounded">
                                 <MoreVertical className="w-4 h-4 text-slate-400" />
                             </button>
@@ -74,10 +114,9 @@ export default function MyDocumentsPage() {
                                 <FileText className="w-8 h-8" />
                             </div>
                             <h4 className="font-bold text-sm truncate w-full" title={doc.name}>{doc.name}</h4>
-                            <div className="text-xs text-slate-400 mt-1">{doc.size} • {doc.date}</div>
+                            <div className="text-xs text-slate-400 mt-1">{doc.size} {doc.date ? `\u2022 ${doc.date}` : ''}</div>
                         </div>
                     ))}
-                    {/* Add New Placeholder */}
                     <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl flex flex-col items-center justify-center p-4 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
                         <Upload className="w-8 h-8 mb-2 opacity-50" />
                         <span className="text-xs font-bold">Upload New</span>
@@ -95,8 +134,8 @@ export default function MyDocumentsPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                            {docs.map((doc, i) => (
-                                <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            {filteredDocs.map((doc, i) => (
+                                <tr key={doc.id || i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                     <td className="px-6 py-4 font-bold flex items-center gap-3">
                                         <FileText className="w-4 h-4 text-indigo-500" />
                                         {doc.name}

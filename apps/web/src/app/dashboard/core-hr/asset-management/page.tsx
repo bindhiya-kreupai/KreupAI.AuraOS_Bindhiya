@@ -5,18 +5,61 @@ import {
     Monitor,
     Smartphone,
     Plus,
-    Filter,
     MoreVertical,
-    Check,
     X,
     Laptop,
-    Mouse
+    Mouse,
+    Keyboard,
+    Tablet,
+    Package
 } from 'lucide-react';
 import { AssetService } from '../services';
+import type { Asset } from '../types';
+
+const getAssetIcon = (assetType: string) => {
+    switch (assetType) {
+        case 'laptop': return Laptop;
+        case 'desktop': return Monitor;
+        case 'phone': return Smartphone;
+        case 'tablet': return Tablet;
+        case 'monitor': return Monitor;
+        case 'keyboard': return Keyboard;
+        case 'mouse': return Mouse;
+        default: return Package;
+    }
+};
+
+const getAssetIconColor = (assetType: string) => {
+    switch (assetType) {
+        case 'laptop': return 'bg-indigo-100 text-indigo-600';
+        case 'desktop': return 'bg-blue-100 text-blue-600';
+        case 'phone': return 'bg-rose-100 text-rose-600';
+        case 'tablet': return 'bg-purple-100 text-purple-600';
+        case 'monitor': return 'bg-blue-100 text-blue-600';
+        case 'keyboard': return 'bg-amber-100 text-amber-600';
+        case 'mouse': return 'bg-slate-100 text-slate-600';
+        default: return 'bg-slate-100 text-slate-600';
+    }
+};
+
+const getStatusStyle = (status: string) => {
+    switch (status) {
+        case 'assigned': return 'bg-emerald-100 text-emerald-600';
+        case 'available': return 'bg-indigo-100 text-indigo-600';
+        case 'in_repair': return 'bg-amber-100 text-amber-600';
+        case 'retired': return 'bg-slate-100 text-slate-600';
+        case 'lost': return 'bg-red-100 text-red-600';
+        default: return 'bg-slate-100 text-slate-600';
+    }
+};
+
+const formatStatus = (status: string) => {
+    return status.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+};
 
 export default function AssetManagementPage() {
     const [showModal, setShowModal] = useState(false);
-    const [assetsData, setAssetsData] = useState<any[]>([]);
+    const [assetsData, setAssetsData] = useState<Asset[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -29,18 +72,10 @@ export default function AssetManagementPage() {
             setAssetsData(data);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
-
-    // Mock Data
-    const assets = [
-        { id: 'AST-001', name: 'MacBook Pro 16"', type: 'Laptop', user: 'Alice Cooper', status: 'Assigned', icon: Laptop },
-        { id: 'AST-002', name: 'Dell UltraSharp 27"', type: 'Monitor', user: 'Bob Marley', status: 'Assigned', icon: Monitor },
-        { id: 'AST-003', name: 'iPhone 14 Pro', type: 'Mobile', user: 'Charlie Puth', status: 'In Repair', icon: Smartphone },
-        { id: 'AST-004', name: 'Logitech MX Master', type: 'Peripheral', user: 'Unassigned', status: 'Available', icon: Mouse },
-    ];
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
@@ -60,41 +95,53 @@ export default function AssetManagementPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {assets.map((asset) => (
-                    <div key={asset.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col hover:shadow-xl transition-all duration-300 relative group hover:-translate-y-1">
-                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">
-                                <MoreVertical className="w-4 h-4 text-slate-400" />
-                            </button>
-                        </div>
+            {loading && (
+                <div className="flex items-center justify-center h-64">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+                </div>
+            )}
 
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4
-                            ${asset.type === 'Laptop' ? 'bg-indigo-100 text-indigo-600' :
-                                asset.type === 'Monitor' ? 'bg-blue-100 text-blue-600' :
-                                    asset.type === 'Mobile' ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-600'}
-                         `}>
-                            <asset.icon className="w-6 h-6" />
-                        </div>
+            {!loading && assetsData.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-64 text-slate-400">
+                    <Monitor className="w-12 h-12 mb-4 opacity-50" />
+                    <p className="text-lg font-medium">No assets found</p>
+                    <p className="text-sm">Assets will appear here once records are added.</p>
+                </div>
+            )}
 
-                        <h3 className="font-bold text-lg truncate w-full" title={asset.name}>{asset.name}</h3>
-                        <div className="text-xs text-slate-400 font-mono mb-4">{asset.id}</div>
+            {!loading && assetsData.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {assetsData.map((asset) => {
+                        const IconComponent = getAssetIcon(asset.assetType);
+                        return (
+                            <div key={asset.assetId} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col hover:shadow-xl transition-all duration-300 relative group hover:-translate-y-1">
+                                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">
+                                        <MoreVertical className="w-4 h-4 text-slate-400" />
+                                    </button>
+                                </div>
 
-                        <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase">Assigned To</span>
-                                <span className="text-sm font-bold">{asset.user}</span>
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${getAssetIconColor(asset.assetType)}`}>
+                                    <IconComponent className="w-6 h-6" />
+                                </div>
+
+                                <h3 className="font-bold text-lg truncate w-full" title={asset.assetName}>{asset.assetName}</h3>
+                                <div className="text-xs text-slate-400 font-mono mb-4">{asset.assetTag || asset.serialNumber}</div>
+
+                                <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase">Assigned To</span>
+                                        <span className="text-sm font-bold">{asset.assignedToName || 'Unassigned'}</span>
+                                    </div>
+                                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${getStatusStyle(asset.status)}`}>
+                                        {formatStatus(asset.status)}
+                                    </span>
+                                </div>
                             </div>
-                            <span className={`px-2 py-1 rounded-full text-xs font-bold
-                                ${asset.status === 'Assigned' ? 'bg-emerald-100 text-emerald-600' :
-                                    asset.status === 'Available' ? 'bg-indigo-100 text-indigo-600' : 'bg-amber-100 text-amber-600'}
-                             `}>
-                                {asset.status}
-                            </span>
-                        </div>
-                    </div>
-                ))}
-            </div>
+                        );
+                    })}
+                </div>
+            )}
 
             {/* Add Asset Modal */}
             {showModal && (

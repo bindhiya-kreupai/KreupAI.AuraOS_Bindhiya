@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Shield,
     Building2,
@@ -21,8 +21,10 @@ import {
     BarChart3,
     UserCheck,
     BookOpen,
-    RefreshCw
+    RefreshCw,
+    Loader2
 } from 'lucide-react';
+import { VendorService } from '../../services';
 
 type ComplianceStatus = 'all' | 'compliant' | 'expiring-soon' | 'non-compliant' | 'pending-review';
 type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
@@ -74,269 +76,24 @@ interface VendorCompliance {
 
 export default function VendorCompliancePage() {
     const [filter, setFilter] = useState<ComplianceStatus>('all');
+    const [loading, setLoading] = useState(true);
 
-    const vendors: VendorCompliance[] = [
-        {
-            id: 'VC-001',
-            vendorName: 'Tech Solutions Inc',
-            category: 'IT Services',
-            overallStatus: 'compliant',
-            riskLevel: 'low',
-            complianceScore: 95,
-            certifications: {
-                iso9001: { status: true, expiryDate: '2025-06-30' },
-                iso27001: { status: true, expiryDate: '2025-08-15' },
-                soc2: { status: true, expiryDate: '2025-12-31' },
-                gdpr: { status: true, expiryDate: '2026-01-01' }
-            },
-            insurance: {
-                generalLiability: { status: true, expiryDate: '2025-03-15', coverage: 2000000 },
-                professionalLiability: { status: true, expiryDate: '2025-03-15', coverage: 1000000 },
-                cybersecurity: { status: true, expiryDate: '2025-03-15', coverage: 5000000 }
-            },
-            audits: {
-                lastAuditDate: '2024-09-01',
-                nextAuditDate: '2025-09-01',
-                auditScore: 92,
-                findings: 2
-            },
-            documents: {
-                taxCertificate: true,
-                businessLicense: true,
-                esgReport: true,
-                codeOfConduct: true
-            },
-            backgroundCheck: {
-                completed: true,
-                date: '2024-01-15',
-                result: 'pass'
-            },
-            financialHealth: {
-                creditRating: 'A+',
-                lastReviewDate: '2024-11-01'
-            },
-            lastReviewedBy: 'Compliance Team',
-            lastReviewDate: '2024-12-01',
-            nextReviewDate: '2025-03-01'
-        },
-        {
-            id: 'VC-002',
-            vendorName: 'Cloud Services Pro',
-            category: 'Cloud Services',
-            overallStatus: 'expiring-soon',
-            riskLevel: 'medium',
-            complianceScore: 78,
-            certifications: {
-                iso9001: { status: true, expiryDate: '2025-01-15' },
-                iso27001: { status: true, expiryDate: '2025-01-20' },
-                soc2: { status: true, expiryDate: '2025-02-28' },
-                gdpr: { status: false }
-            },
-            insurance: {
-                generalLiability: { status: true, expiryDate: '2025-01-10', coverage: 1500000 },
-                professionalLiability: { status: true, expiryDate: '2025-01-10', coverage: 750000 },
-                cybersecurity: { status: false }
-            },
-            audits: {
-                lastAuditDate: '2024-06-15',
-                nextAuditDate: '2025-06-15',
-                auditScore: 85,
-                findings: 5
-            },
-            documents: {
-                taxCertificate: true,
-                businessLicense: true,
-                esgReport: false,
-                codeOfConduct: true
-            },
-            backgroundCheck: {
-                completed: true,
-                date: '2024-03-01',
-                result: 'pass'
-            },
-            financialHealth: {
-                creditRating: 'B+',
-                lastReviewDate: '2024-10-15'
-            },
-            lastReviewedBy: 'Risk Team',
-            lastReviewDate: '2024-11-15',
-            nextReviewDate: '2025-01-15',
-            notes: 'Multiple certifications expiring soon - renewal in progress'
-        },
-        {
-            id: 'VC-003',
-            vendorName: 'Marketing Solutions LLC',
-            category: 'Marketing Services',
-            overallStatus: 'non-compliant',
-            riskLevel: 'high',
-            complianceScore: 45,
-            certifications: {
-                iso9001: { status: false },
-                iso27001: { status: false },
-                soc2: { status: false },
-                gdpr: { status: true, expiryDate: '2025-05-01' }
-            },
-            insurance: {
-                generalLiability: { status: true, expiryDate: '2023-12-31', coverage: 500000 },
-                professionalLiability: { status: false },
-                cybersecurity: { status: false }
-            },
-            audits: {
-                lastAuditDate: '2023-08-01',
-                auditScore: 65,
-                findings: 12
-            },
-            documents: {
-                taxCertificate: true,
-                businessLicense: true,
-                esgReport: false,
-                codeOfConduct: false
-            },
-            backgroundCheck: {
-                completed: true,
-                date: '2023-05-01',
-                result: 'conditional'
-            },
-            financialHealth: {
-                creditRating: 'C',
-                lastReviewDate: '2024-08-01'
-            },
-            lastReviewedBy: 'Compliance Team',
-            lastReviewDate: '2024-11-20',
-            nextReviewDate: '2024-12-20',
-            notes: 'CRITICAL: Insurance expired, missing key certifications. Remediation plan required.'
-        },
-        {
-            id: 'VC-004',
-            vendorName: 'Legal Advisory Partners',
-            category: 'Legal Services',
-            overallStatus: 'compliant',
-            riskLevel: 'low',
-            complianceScore: 98,
-            certifications: {
-                iso9001: { status: true, expiryDate: '2025-09-30' },
-                iso27001: { status: true, expiryDate: '2025-09-30' },
-                soc2: { status: true, expiryDate: '2025-11-30' },
-                gdpr: { status: true, expiryDate: '2026-06-30' }
-            },
-            insurance: {
-                generalLiability: { status: true, expiryDate: '2025-06-30', coverage: 5000000 },
-                professionalLiability: { status: true, expiryDate: '2025-06-30', coverage: 10000000 },
-                cybersecurity: { status: true, expiryDate: '2025-06-30', coverage: 3000000 }
-            },
-            audits: {
-                lastAuditDate: '2024-10-01',
-                nextAuditDate: '2025-10-01',
-                auditScore: 98,
-                findings: 0
-            },
-            documents: {
-                taxCertificate: true,
-                businessLicense: true,
-                esgReport: true,
-                codeOfConduct: true
-            },
-            backgroundCheck: {
-                completed: true,
-                date: '2024-02-01',
-                result: 'pass'
-            },
-            financialHealth: {
-                creditRating: 'AA',
-                lastReviewDate: '2024-12-01'
-            },
-            lastReviewedBy: 'Legal Team',
-            lastReviewDate: '2024-12-05',
-            nextReviewDate: '2025-06-01'
-        },
-        {
-            id: 'VC-005',
-            vendorName: 'Global Office Supplies',
-            category: 'Office Supplies',
-            overallStatus: 'pending-review',
-            riskLevel: 'low',
-            complianceScore: 70,
-            certifications: {
-                iso9001: { status: true, expiryDate: '2025-04-30' },
-                iso27001: { status: false },
-                soc2: { status: false },
-                gdpr: { status: false }
-            },
-            insurance: {
-                generalLiability: { status: true, expiryDate: '2025-05-15', coverage: 1000000 },
-                professionalLiability: { status: false },
-                cybersecurity: { status: false }
-            },
-            audits: {
-                lastAuditDate: '2024-11-01',
-                auditScore: 78,
-                findings: 3
-            },
-            documents: {
-                taxCertificate: true,
-                businessLicense: true,
-                esgReport: false,
-                codeOfConduct: true
-            },
-            backgroundCheck: {
-                completed: true,
-                date: '2024-05-01',
-                result: 'pass'
-            },
-            financialHealth: {
-                creditRating: 'B',
-                lastReviewDate: '2024-11-01'
-            },
-            lastReviewedBy: 'Operations',
-            lastReviewDate: '2024-11-25',
-            nextReviewDate: '2025-02-01',
-            notes: 'Annual review scheduled for January 2025'
-        },
-        {
-            id: 'VC-006',
-            vendorName: 'Facilities Maintenance Corp',
-            category: 'Facilities',
-            overallStatus: 'expiring-soon',
-            riskLevel: 'medium',
-            complianceScore: 82,
-            certifications: {
-                iso9001: { status: true, expiryDate: '2025-02-15' },
-                iso27001: { status: false },
-                soc2: { status: false },
-                gdpr: { status: false }
-            },
-            insurance: {
-                generalLiability: { status: true, expiryDate: '2025-01-31', coverage: 2000000 },
-                professionalLiability: { status: true, expiryDate: '2025-01-31', coverage: 500000 },
-                cybersecurity: { status: false }
-            },
-            audits: {
-                lastAuditDate: '2024-07-01',
-                nextAuditDate: '2025-07-01',
-                auditScore: 88,
-                findings: 4
-            },
-            documents: {
-                taxCertificate: true,
-                businessLicense: true,
-                esgReport: true,
-                codeOfConduct: true
-            },
-            backgroundCheck: {
-                completed: true,
-                date: '2024-04-01',
-                result: 'pass'
-            },
-            financialHealth: {
-                creditRating: 'B+',
-                lastReviewDate: '2024-10-01'
-            },
-            lastReviewedBy: 'Facilities Manager',
-            lastReviewDate: '2024-11-30',
-            nextReviewDate: '2025-01-30',
-            notes: 'Insurance renewal reminder sent'
-        }
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await VendorService.getVendors();
+                setVendors(data as any[]);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const [vendors, setVendors] = useState<any[]>([]);
 
     const filteredVendors = filter === 'all'
         ? vendors
@@ -435,6 +192,14 @@ export default function VendorCompliancePage() {
             subtext: 'Enhanced monitoring'
         }
     ];
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">

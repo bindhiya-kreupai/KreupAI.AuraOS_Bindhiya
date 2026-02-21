@@ -10,9 +10,41 @@ import {
     ArrowRight
 } from 'lucide-react';
 import { LifeEventService } from '../services';
+import type { LifeEvent } from '../types';
+
+const formatEventType = (eventType: string): string => {
+    return eventType.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+};
+
+const formatEventDate = (date: Date | string): string => {
+    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+};
+
+const getStatusLabel = (status: string): string => {
+    switch (status) {
+        case 'reported': return 'Pending Review';
+        case 'in_progress': return 'In Progress';
+        case 'completed': return 'Completed';
+        default: return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
+    }
+};
+
+const getStatusStyle = (status: string): string => {
+    switch (status) {
+        case 'reported': return 'text-amber-500 bg-amber-50 dark:bg-amber-900/20';
+        case 'in_progress': return 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20';
+        case 'completed': return 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20';
+        default: return 'text-slate-500 bg-slate-50 dark:bg-slate-800';
+    }
+};
+
+const getInitials = (name: string): string => {
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+};
 
 export default function LifeEventsPage() {
-    const [lifeEvents, setLifeEvents] = useState<any[]>([]);
+    const [lifeEvents, setLifeEvents] = useState<LifeEvent[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -25,10 +57,13 @@ export default function LifeEventsPage() {
             setLifeEvents(data);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
+
+    const activeRequestsCount = lifeEvents.filter(e => e.status !== 'completed').length;
+    const pendingEvents = lifeEvents.filter(e => e.status !== 'completed');
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
@@ -42,7 +77,7 @@ export default function LifeEventsPage() {
                     <p className="text-slate-500 text-sm">Manage major milestones: Marriage, Childbirth, Relocation, and Education.</p>
                 </div>
                 <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-4 py-2 rounded-xl text-sm font-bold border border-slate-200 dark:border-slate-700">
-                    <CalendarCheck className="w-4 h-4" /> 8 Active Requests
+                    <CalendarCheck className="w-4 h-4" /> {loading ? '...' : `${activeRequestsCount} Active Request${activeRequestsCount !== 1 ? 's' : ''}`}
                 </div>
             </div>
 
@@ -75,30 +110,43 @@ export default function LifeEventsPage() {
 
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4">Pending Approvals</h3>
-                        <div className="space-y-4">
-                            {[
-                                { name: 'Sarah Connor', event: 'Childbirth', date: 'Dec 02', status: 'Pending Insurance' },
-                                { name: 'Kyle Reese', event: 'Marriage', date: 'Dec 01', status: 'Pending Name Change' },
-                                { name: 'T-800', event: 'Relocation', date: 'Nov 28', status: 'Pending Address Proof' },
-                            ].map((row, i) => (
-                                <div key={i} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center font-bold text-slate-500 text-xs shadow-sm">
-                                            {row.name ? row.name.split(' ').map(n => n[0]).join('') : '?'}
+
+                        {loading && (
+                            <div className="flex items-center justify-center h-48">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+                            </div>
+                        )}
+
+                        {!loading && pendingEvents.length === 0 && (
+                            <div className="flex flex-col items-center justify-center h-48 text-slate-400">
+                                <Heart className="w-12 h-12 mb-4 opacity-50" />
+                                <p className="text-lg font-medium">No pending approvals</p>
+                                <p className="text-sm">Life event requests will appear here once submitted.</p>
+                            </div>
+                        )}
+
+                        {!loading && pendingEvents.length > 0 && (
+                            <div className="space-y-4">
+                                {pendingEvents.map((row) => (
+                                    <div key={row.eventId} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center font-bold text-slate-500 text-xs shadow-sm">
+                                                {getInitials(row.employeeName)}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">{row.employeeName}</h4>
+                                                <div className="text-[10px] text-slate-500 font-bold uppercase">{formatEventType(row.eventType)} {'\u2022'} {formatEventDate(row.eventDate)}</div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">{row.name}</h4>
-                                            <div className="text-[10px] text-slate-500 font-bold uppercase">{row.event} • {row.date}</div>
+                                        <div className="text-right">
+                                            <div className={`text-xs font-bold px-2 py-1 rounded ${getStatusStyle(row.status)}`}>
+                                                {getStatusLabel(row.status)}
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <div className="text-xs font-bold text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded">
-                                            {row.status}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 

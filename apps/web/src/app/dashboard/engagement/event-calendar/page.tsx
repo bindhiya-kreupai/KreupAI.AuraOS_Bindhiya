@@ -8,12 +8,13 @@ import {
     Users,
     ChevronLeft,
     ChevronRight,
-    Plus
+    Plus,
+    Loader2
 } from 'lucide-react';
 import { EventService } from '../services';
 
 export default function EventCalendarPage() {
-    const [data, setData] = useState<any[]>([]);
+    const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -24,20 +25,20 @@ export default function EventCalendarPage() {
         try {
             setLoading(true);
             const eventsData = await EventService.getEvents();
-            setData(eventsData);
-        } catch (error) {
-            console.error('Error:', error);
-                    } finally {
+            setEvents(Array.isArray(eventsData) ? eventsData : []);
+        } catch {
+        } finally {
             setLoading(false);
         }
     };
 
-    // Fallback mock data
-    const events = data.length > 0 ? data : [
-        { title: 'Town Hall Meeting', date: 'Dec 15', time: '10:00 AM', location: 'Auditorium A', attendees: 142, type: 'Company Wide', color: 'bg-indigo-500' },
-        { title: 'Design Sprint Workshop', date: 'Dec 18', time: '02:00 PM', location: 'Conference Room B', attendees: 12, type: 'Workshop', color: 'bg-emerald-500' },
-        { title: 'Holiday Party', date: 'Dec 22', time: '06:00 PM', location: 'Rooftop Lounge', attendees: 200, type: 'Social', color: 'bg-rose-500' },
-    ];
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
@@ -55,10 +56,9 @@ export default function EventCalendarPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Calendar Grid (Simplified Visual) */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                     <div className="flex justify-between items-center mb-6">
-                        <h3 className="font-bold text-lg">December 2023</h3>
+                        <h3 className="font-bold text-lg">Calendar</h3>
                         <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
                             <button className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors"><ChevronLeft className="w-4 h-4" /></button>
                             <button className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors"><ChevronRight className="w-4 h-4" /></button>
@@ -72,52 +72,60 @@ export default function EventCalendarPage() {
                     <div className="grid grid-cols-7 gap-2">
                         {Array.from({ length: 31 }).map((_, i) => {
                             const day = i + 1;
-                            const hasEvent = [15, 18, 22].includes(day);
                             return (
-                                <div key={i} className={`h-24 rounded-xl border border-slate-100 dark:border-slate-800 p-2 flex flex-col justify-between hover:border-indigo-500 transition-colors cursor-pointer group ${hasEvent ? 'bg-slate-50 dark:bg-slate-800/50' : ''}`}>
-                                    <span className={`text-sm font-bold ${hasEvent ? 'text-indigo-600' : 'text-slate-500'}`}>{day}</span>
-                                    {hasEvent && (
-                                        <div className="w-full h-1.5 rounded-full bg-indigo-500 group-hover:h-2 transition-all"></div>
-                                    )}
+                                <div key={i} className="h-24 rounded-xl border border-slate-100 dark:border-slate-800 p-2 flex flex-col justify-between hover:border-indigo-500 transition-colors cursor-pointer group">
+                                    <span className="text-sm font-bold text-slate-500">{day}</span>
                                 </div>
                             );
                         })}
                     </div>
                 </div>
 
-                {/* Upcoming List */}
                 <div className="space-y-4">
                     <h3 className="font-bold text-lg">Upcoming Events</h3>
-                    {events.map((event, i) => (
-                        <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all group">
-                            <div className="flex items-center gap-3 mb-3">
-                                <div className={`w-10 h-12 rounded-lg ${event.color} text-white flex flex-col items-center justify-center font-bold text-xs leading-none shadow-lg shadow-indigo-500/20`}>
-                                    <span>{event.date.split(' ')[0]}</span>
-                                    <span className="text-lg">{event.date.split(' ')[1]}</span>
-                                </div>
-                                <div>
-                                    <h4 className="font-bold group-hover:text-indigo-600 transition-colors">{event.title}</h4>
-                                    <span className="text-xs font-bold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500">{event.type}</span>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2 text-xs text-slate-500 mb-4">
-                                <div className="flex items-center gap-2">
-                                    <Clock className="w-3 h-3" /> {event.time}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <MapPin className="w-3 h-3" /> {event.location}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Users className="w-3 h-3" /> {event.attendees} Attending
-                                </div>
-                            </div>
-
-                            <button className="w-full py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                RSVP Now
-                            </button>
+                    {events.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                            <CalendarDays className="w-10 h-10 mb-3 opacity-50" />
+                            <p className="text-sm font-medium">No upcoming events.</p>
                         </div>
-                    ))}
+                    ) : (
+                        events.map((event: any, i: number) => (
+                            <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all group">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-12 rounded-lg bg-indigo-500 text-white flex flex-col items-center justify-center font-bold text-xs leading-none shadow-lg shadow-indigo-500/20">
+                                        <span>{(event.date || '').split(' ')[0]}</span>
+                                        <span className="text-lg">{(event.date || '').split(' ')[1]}</span>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold group-hover:text-indigo-600 transition-colors">{event.title}</h4>
+                                        <span className="text-xs font-bold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500">{event.type || 'Event'}</span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2 text-xs text-slate-500 mb-4">
+                                    {event.time && (
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="w-3 h-3" /> {event.time}
+                                        </div>
+                                    )}
+                                    {event.location && (
+                                        <div className="flex items-center gap-2">
+                                            <MapPin className="w-3 h-3" /> {event.location}
+                                        </div>
+                                    )}
+                                    {event.attendees !== undefined && (
+                                        <div className="flex items-center gap-2">
+                                            <Users className="w-3 h-3" /> {event.attendees} Attending
+                                        </div>
+                                    )}
+                                </div>
+
+                                <button className="w-full py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                    RSVP Now
+                                </button>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

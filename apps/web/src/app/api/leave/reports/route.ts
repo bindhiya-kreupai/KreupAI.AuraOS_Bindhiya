@@ -1,10 +1,11 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
-// GET - Generate leave reports
+// GET - Generate leave reports from database
 export const GET = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
@@ -17,29 +18,115 @@ export const GET = withEnhancedAuth(
       const endDate = searchParams.get('endDate') || new Date().toISOString().split('T')[0];
       const format = searchParams.get('format') || 'json';
 
-      const reports: Record<string, any> = {
+      const tenantId = user.tenantId;
+
+      if (format === 'pdf' || format === 'excel') {
+        return NextResponse.json({
+          success: true,
+          message: `${format.toUpperCase()} generation not implemented yet`,
+          downloadUrl: `/api/leave/reports/download/${reportType}?format=${format}&startDate=${startDate}&endDate=${endDate}`,
+        });
+      }
+
+      // Build real report data from database
+      const dateRange = {
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+      };
+
+      // Get leave requests in date range
+      const leaveRequests = await prisma.leaveRequest.findMany({
+        where: {
+          tenantId,
+          appliedAt: {
+            gte: dateRange.startDate,
+            lte: dateRange.endDate,
+          },
+        },
+      });
+
+      // Get leave types for grouping
+      const leaveTypes = await prisma.leaveType.findMany();
+      const leaveTypeMap = new Map(leaveTypes.map(lt => [lt.id, lt]));
+
+      // Get leave balances
+      const leaveYear = new Date().getFullYear();
+      const balances = await prisma.leaveBalance.findMany({
+        where: {
+          tenantId,
+          leaveYear,
+        },
+        include: { policy: true },
+      });
+
+      // Calculate statistics
+      const uniqueEmployees = new Set(leaveRequests.map(r => r.employeeId));
+      const approvedRequests = leaveRequests.filter(r => r.status === 'APPROVED');
+      const totalDays = approvedRequests.reduce((sum, r) => sum + Number(r.totalDays), 0);
+
+      // Group by leave type
+      const byTypeMap = new Map<string, { count: number; days: number; name: string }>();
+      for (const req of approvedRequests) {
+        const lt = leaveTypeMap.get(req.leaveTypeId);
+        const name = lt?.name || 'Unknown';
+        const existing = byTypeMap.get(req.leaveTypeId) || { count: 0, days: 0, name };
+        existing.count++;
+        existing.days += Number(req.totalDays);
+        byTypeMap.set(req.leaveTypeId, existing);
+      }
+
+      const byType = Array.from(byTypeMap.values()).map(item => ({
+        leaveType: item.name,
+        count: item.count,
+        days: item.days,
+        percentage: totalDays > 0 ? Math.round((item.days / totalDays) * 1000) / 10 : 0,
+      }));
+
+      // Count pending requests (useful for stats)
+      const pendingCount = leaveRequests.filter(r => r.status === 'PENDING').length;
+
+      // Find employees on leave today
+      const today = new Date();
+      const onLeaveToday = await prisma.leaveRequest.count({
+        where: {
+          tenantId,
+          status: 'APPROVED',
+          startDate: { lte: today },
+          endDate: { gte: today },
+        },
+      });
+
+      // Upcoming leaves
+      const upcomingLeaves = await prisma.leaveRequest.count({
+        where: {
+          tenantId,
+          status: 'APPROVED',
+          startDate: { gt: today },
+        },
+      });
+
+      // Balance summaries
+      const totalAccrued = balances.reduce((sum, b) => sum + Number(b.accrued), 0);
+      const totalTaken = balances.reduce((sum, b) => sum + Number(b.taken), 0);
+      const totalLapsed = balances.reduce((sum, b) => sum + Number(b.lapsed), 0);
+      const totalAvailable = balances.reduce((sum, b) => sum + Number(b.currentBalance), 0);
+      const uniqueBalanceEmployees = new Set(balances.map(b => b.employeeId));
+
+      const reports: Record<string, unknown> = {
         'leave-summary': {
           name: 'Leave Summary Report',
           description: 'Overall leave statistics and trends',
           data: {
             period: { startDate, endDate },
             totals: {
-              totalEmployees: 50,
-              totalLeavesTaken: 245,
-              totalDays: 980,
-              averageDaysPerEmployee: 19.6,
+              totalEmployees: uniqueEmployees.size,
+              totalLeavesTaken: approvedRequests.length,
+              totalDays,
+              averageDaysPerEmployee: uniqueEmployees.size > 0
+                ? Math.round((totalDays / uniqueEmployees.size) * 10) / 10
+                : 0,
             },
-            byType: [
-              { leaveType: 'Annual Leave', count: 150, days: 600, percentage: 61.2 },
-              { leaveType: 'Sick Leave', count: 50, days: 150, percentage: 20.4 },
-              { leaveType: 'Casual Leave', count: 35, days: 140, percentage: 14.3 },
-              { leaveType: 'Comp-off', count: 10, days: 90, percentage: 4.1 },
-            ],
-            byDepartment: [
-              { department: 'Engineering', employees: 20, leaveDays: 420, avgPerEmployee: 21 },
-              { department: 'Sales', employees: 15, leaveDays: 285, avgPerEmployee: 19 },
-              { department: 'Marketing', employees: 15, leaveDays: 275, avgPerEmployee: 18.3 },
-            ],
+            byType,
           },
         },
         'leave-balance': {
@@ -47,61 +134,33 @@ export const GET = withEnhancedAuth(
           description: 'Current leave balances for all employees',
           data: {
             asOfDate: endDate,
-            employees: [
-              {
-                employeeId: 'emp-1',
-                employeeName: 'John Doe',
-                department: 'Engineering',
-                annualLeave: { allocated: 20, used: 8, available: 12 },
-                sickLeave: { allocated: 10, used: 3, available: 7 },
-                casualLeave: { allocated: 7, used: 4, available: 3 },
-              },
-              {
-                employeeId: 'emp-2',
-                employeeName: 'Jane Smith',
-                department: 'Sales',
-                annualLeave: { allocated: 20, used: 12, available: 8 },
-                sickLeave: { allocated: 10, used: 2, available: 8 },
-                casualLeave: { allocated: 7, used: 5, available: 2 },
-              },
-            ],
+            balances,
+            summary: {
+              totalEmployees: uniqueBalanceEmployees.size,
+              totalAccrued,
+              totalTaken,
+              totalAvailable,
+              totalLapsed,
+            },
           },
         },
-        'leave-trends': {
-          name: 'Leave Trends Report',
-          description: 'Month-wise leave patterns and analysis',
-          data: {
-            period: { startDate, endDate },
-            monthlyData: [
-              { month: 'Jan', leaves: 45, days: 180, avgDuration: 4.0 },
-              { month: 'Feb', leaves: 38, days: 152, avgDuration: 4.0 },
-              { month: 'Mar', leaves: 42, days: 168, avgDuration: 4.0 },
-              { month: 'Apr', leaves: 35, days: 140, avgDuration: 4.0 },
-              { month: 'May', leaves: 50, days: 200, avgDuration: 4.0 },
-              { month: 'Jun', leaves: 35, days: 140, avgDuration: 4.0 },
-            ],
-            peakMonths: ['May', 'December'],
-            leastBusyMonths: ['February', 'September'],
-          },
-        },
-        'absence-analysis': {
-          name: 'Absence Analysis Report',
-          description: 'Detailed absence patterns and insights',
-          data: {
-            period: { startDate, endDate },
-            absenceRate: 4.2,
-            industryAverage: 3.8,
-            departmentAnalysis: [
-              { department: 'Engineering', absenceRate: 4.5, trend: 'INCREASING' },
-              { department: 'Sales', absenceRate: 3.8, trend: 'STABLE' },
-              { department: 'Marketing', absenceRate: 4.1, trend: 'DECREASING' },
-            ],
-            frequentAbsentees: [
-              { employeeId: 'emp-5', name: 'Alice Brown', absences: 12, days: 48 },
-              { employeeId: 'emp-8', name: 'Bob Wilson', absences: 10, days: 40 },
-            ],
-          },
-        },
+      };
+
+      // Build the stats response that the frontend LeaveAnalyticsService expects
+      const stats = {
+        totalEmployees: uniqueBalanceEmployees.size,
+        onLeaveToday,
+        pendingRequests: pendingCount,
+        upcomingLeaves,
+        leaveTypeUsage: byType,
+        departmentLeaveUsage: [],
+        monthlyLeaveTrend: [],
+        averageLeaveBalance: uniqueBalanceEmployees.size > 0
+          ? Math.round((totalAvailable / uniqueBalanceEmployees.size) * 10) / 10
+          : 0,
+        totalAccruedDays: totalAccrued,
+        totalAvailedDays: totalTaken,
+        totalLapsedDays: totalLapsed,
       };
 
       const report = reportType ? reports[reportType] : null;
@@ -113,16 +172,10 @@ export const GET = withEnhancedAuth(
         );
       }
 
-      if (format === 'pdf' || format === 'excel') {
-        return NextResponse.json({
-          success: true,
-          message: `${format.toUpperCase()} generation not implemented yet`,
-          downloadUrl: `/api/leave/reports/download/${reportType}?format=${format}&startDate=${startDate}&endDate=${endDate}`,
-        });
-      }
-
       return NextResponse.json({
         success: true,
+        stats,
+        analytics: stats,
         data: reportType ? report : reports,
         meta: { startDate, endDate, format },
       });

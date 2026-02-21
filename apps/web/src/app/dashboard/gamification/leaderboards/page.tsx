@@ -1,22 +1,44 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Trophy,
     Medal,
     Crown,
     TrendingUp,
-    Users
+    Users,
+    Loader2
 } from 'lucide-react';
+import { LeaderboardsService } from '../services';
 
 export default function LeaderboardsPage() {
-    const leaderboard = [
-        { rank: 1, name: 'Sarah Connor', points: 3450, avatar: 'https://i.pravatar.cc/150?u=sarah', change: 'up' },
-        { rank: 2, name: 'Kyle Reese', points: 3200, avatar: 'https://i.pravatar.cc/150?u=kyle', change: 'same' },
-        { rank: 3, name: 'John Connor', points: 3150, avatar: 'https://i.pravatar.cc/150?u=john', change: 'down' },
-        { rank: 4, name: 'T-800', points: 2900, avatar: 'https://i.pravatar.cc/150?u=t800', change: 'up' },
-        { rank: 5, name: 'Dr. Silberman', points: 2450, avatar: 'https://i.pravatar.cc/150?u=dr', change: 'same' },
-    ];
+    const [leaderboards, setLeaderboards] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await LeaderboardsService.getLeaderboards();
+                setLeaderboards(data as any);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const leaderboard = leaderboards;
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">

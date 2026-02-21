@@ -1,6 +1,6 @@
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
-import { prisma } from '@aura/database';
+import { prisma } from '@/lib/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
@@ -13,6 +13,7 @@ const OffCyclePaymentSchema = z.object({
   paymentDate: z.string(),
   reason: z.string().min(1),
   description: z.string().optional(),
+  payrollMonth: z.string().optional(),
 });
 
 // GET - Fetch off-cycle payments
@@ -22,46 +23,64 @@ export const GET = withEnhancedAuth(
       const permissionError = requirePermission(Resource.PAYROLL, Action.READ, permissions);
       if (permissionError) return permissionError;
 
+      const tenantId = user.tenantId;
       const { searchParams } = new URL(request.url);
       const employeeId = searchParams.get('employeeId');
       const status = searchParams.get('status');
       const type = searchParams.get('type');
+      const page = parseInt(searchParams.get('page') || '1', 10);
+      const limit = parseInt(searchParams.get('limit') || '50', 10);
 
-      const mockPayments = [
-        {
-          id: '1',
-          employeeId: 'emp-1',
-          employeeName: 'Sarah Jenkins',
-          type: 'BONUS',
-          amount: 5000,
-          paymentDate: '2024-08-15',
-          reason: 'Project completion bonus',
-          status: 'APPROVED',
-          createdAt: new Date('2024-08-10').toISOString(),
-          approvedBy: 'manager-1',
-        },
-        {
-          id: '2',
-          employeeId: 'emp-2',
-          employeeName: 'Mike Chen',
-          type: 'ADVANCE',
-          amount: 2000,
-          paymentDate: '2024-08-20',
-          reason: 'Salary advance request',
-          status: 'PENDING',
-          createdAt: new Date('2024-08-18').toISOString(),
-        },
-      ];
+      // Off-cycle payments are PayrollAdjustments that are not part of the regular cycle
+      // We use category 'OTHER' or look for specific off-cycle markers
+      const where: Record<string, unknown> = { tenantId };
+      if (employeeId) where.employeeId = employeeId;
+      if (status) where.approvalStatus = status;
+      if (type) {
+        // Map off-cycle type to category
+        const categoryMap: Record<string, string> = {
+          BONUS: 'BONUS',
+          COMMISSION: 'OTHER',
+          REIMBURSEMENT: 'REIMBURSEMENT',
+          ADVANCE: 'RECOVERY',
+          OTHER: 'OTHER',
+        };
+        where.category = categoryMap[type] || 'OTHER';
+      }
+      // Off-cycle payments are those not yet processed
+      where.isProcessed = false;
 
-      let filteredData = mockPayments;
-      if (employeeId) filteredData = filteredData.filter(p => p.employeeId === employeeId);
-      if (status) filteredData = filteredData.filter(p => p.status === status);
-      if (type) filteredData = filteredData.filter(p => p.type === type);
+      const [total, adjustments] = await Promise.all([
+        prisma.payrollAdjustment.count({ where }),
+        prisma.payrollAdjustment.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+      ]);
+
+      const payments = adjustments.map((adj) => ({
+        id: adj.id,
+        employeeId: adj.employeeId,
+        type: adj.category,
+        name: adj.name,
+        amount: Number(adj.amount),
+        reason: adj.reason,
+        payrollMonth: adj.payrollMonth,
+        status: adj.approvalStatus,
+        adjustmentType: adj.adjustmentType,
+        isProcessed: adj.isProcessed,
+        createdAt: adj.createdAt?.toISOString(),
+        createdBy: adj.createdBy,
+        approvedBy: adj.approvedBy,
+        approvedAt: adj.approvedAt?.toISOString(),
+      }));
 
       return NextResponse.json({
         success: true,
-        data: filteredData,
-        meta: { total: filteredData.length },
+        data: payments,
+        meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
     } catch (error) {
       logger.error('Error fetching off-cycle payments:', error);
@@ -80,16 +99,41 @@ export const POST = withEnhancedAuth(
       const permissionError = requirePermission(Resource.PAYROLL, Action.CREATE, permissions);
       if (permissionError) return permissionError;
 
+      const tenantId = user.tenantId;
       const body = await request.json();
       const data = OffCyclePaymentSchema.parse(body);
 
-      const newPayment = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data,
-        status: 'PENDING',
-        createdAt: new Date().toISOString(),
-        createdBy: user.userId,
+      const currentMonth = data.payrollMonth || new Date().toISOString().slice(0, 7);
+      const categoryMap: Record<string, string> = {
+        BONUS: 'BONUS',
+        COMMISSION: 'OTHER',
+        REIMBURSEMENT: 'REIMBURSEMENT',
+        ADVANCE: 'RECOVERY',
+        OTHER: 'OTHER',
       };
+      const adjustmentTypeMap: Record<string, 'EARNING' | 'DEDUCTION'> = {
+        BONUS: 'EARNING',
+        COMMISSION: 'EARNING',
+        REIMBURSEMENT: 'EARNING',
+        ADVANCE: 'DEDUCTION',
+        OTHER: 'EARNING',
+      };
+
+      const adjustment = await prisma.payrollAdjustment.create({
+        data: {
+          tenantId,
+          employeeId: data.employeeId,
+          payrollMonth: currentMonth,
+          adjustmentType: adjustmentTypeMap[data.type] || 'EARNING',
+          code: `OFFCYCLE-${data.type}`,
+          name: data.reason,
+          amount: data.amount,
+          reason: data.description || `Off-cycle payment: ${data.type} - ${data.reason}`,
+          category: categoryMap[data.type] || 'OTHER',
+          approvalStatus: 'PENDING',
+          createdBy: user.userId,
+        },
+      });
 
       await prisma.auditLog.create({
         data: {
@@ -101,7 +145,7 @@ export const POST = withEnhancedAuth(
         },
       });
 
-      return NextResponse.json({ success: true, data: newPayment }, { status: 201 });
+      return NextResponse.json({ success: true, data: adjustment }, { status: 201 });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
@@ -125,6 +169,7 @@ export const PUT = withEnhancedAuth(
       const permissionError = requirePermission(Resource.PAYROLL, Action.UPDATE, permissions);
       if (permissionError) return permissionError;
 
+      const tenantId = user.tenantId;
       const body = await request.json();
       const { id, status } = body;
 
@@ -135,12 +180,30 @@ export const PUT = withEnhancedAuth(
         );
       }
 
-      const updated = {
-        id,
-        status,
-        updatedAt: new Date().toISOString(),
-        updatedBy: user.userId,
+      // Verify ownership
+      const existing = await prisma.payrollAdjustment.findFirst({
+        where: { id, tenantId },
+      });
+
+      if (!existing) {
+        return NextResponse.json(
+          { success: false, error: 'Off-cycle payment not found' },
+          { status: 404 }
+        );
+      }
+
+      const updateData: Record<string, unknown> = {
+        approvalStatus: status,
       };
+      if (status === 'APPROVED') {
+        updateData.approvedBy = user.userId;
+        updateData.approvedAt = new Date();
+      }
+
+      const updated = await prisma.payrollAdjustment.update({
+        where: { id },
+        data: updateData,
+      });
 
       await prisma.auditLog.create({
         data: {

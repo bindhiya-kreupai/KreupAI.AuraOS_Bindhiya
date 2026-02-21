@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import { DollarSign, Plus } from 'lucide-react';
-import CompensationPlanner from '@/components/compensation/CompensationPlanner';
-import SalaryReview from '@/components/compensation/SalaryReview';
-import BudgetAllocation from '@/components/compensation/BudgetAllocation';
-import BenchmarkComparison from '@/components/compensation/BenchmarkComparison';
-import CompReviewHistory from '@/components/compensation/CompReviewHistory';
+import { CompensationPlanner } from '@/components/compensation/CompensationPlanner';
+import { SalaryReview } from '@/components/compensation/SalaryReview';
+import { BudgetAllocation } from '@/components/compensation/BudgetAllocation';
+import { BenchmarkComparison } from '@/components/compensation/BenchmarkComparison';
+import { CompReviewHistory } from '@/components/compensation/CompReviewHistory';
 import MeritIncreaseCalculator from '@/components/compensation/MeritIncreaseCalculator';
 
 type Tab = 'planner' | 'salary' | 'budget' | 'benchmark' | 'history' | 'merit';

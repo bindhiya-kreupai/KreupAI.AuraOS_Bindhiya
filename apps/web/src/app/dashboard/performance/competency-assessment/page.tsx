@@ -1,5 +1,4 @@
 "use client";
-// Force rebuild
 
 import React, { useState, useEffect } from 'react';
 import { CompetencyService } from '../core/services';
@@ -14,19 +13,20 @@ import {
     Users,
     Briefcase,
     Star,
-    LayoutGrid
+    LayoutGrid,
+    Loader2
 } from 'lucide-react';
 
-// --- MOCK DATA ---
+type Category = 'Technical' | 'Behavioral' | 'Leadership' | string;
 
-type Category = 'Technical' | 'Behavioral' | 'Leadership';
-
-interface Competency {
+interface CompetencyItem {
     id: string;
-    title: string;
-    category: Category;
-    description: string;
-    levels: {
+    code?: string;
+    name: string;
+    description?: string;
+    status?: string;
+    category?: Category;
+    levels?: {
         beginner: string;
         intermediate: string;
         advanced: string;
@@ -34,48 +34,25 @@ interface Competency {
     };
 }
 
-const COMPETENCIES: Competency[] = [
-    {
-        id: 'COMP-001',
-        title: 'Strategic Thinking',
-        category: 'Leadership',
-        description: 'The ability to understand the organization\'s goals and align strategies to achieve them.',
-        levels: {
-            beginner: 'Understands basic organizational goals and how own role contributes.',
-            intermediate: 'Aligns daily tasks with strategic objectives; identifies opportunities for improvement.',
-            advanced: 'Develops departmental strategies; anticipates market trends and business shifts.',
-            expert: 'Shapes organization-wide vision; drives innovation and long-term sustainability.'
-        }
-    },
-    {
-        id: 'COMP-002',
-        title: 'Effective Communication',
-        category: 'Behavioral',
-        description: 'The ability to convey information clearly and effectively to diverse audiences.',
-        levels: {
-            beginner: 'Communicates clearly in routine situations; listens actively.',
-            intermediate: 'Adapts style to different audiences; handles difficult conversations constructively.',
-            advanced: 'Facilitates complex discussions; influences stakeholders through persuasion.',
-            expert: 'Inspires and motivates through storytelling; handles crisis communication masterfully.'
-        }
-    },
-    {
-        id: 'COMP-003',
-        title: 'Cloud Architecture (AWS)',
-        category: 'Technical',
-        description: 'Proficiency in designing and deploying scalable applications on Amazon Web Services.',
-        levels: {
-            beginner: 'Understands core services (EC2, S3); can deploy simple apps.',
-            intermediate: 'Designs fault-tolerant systems; optimizes for cost and performance.',
-            advanced: 'Architects multi-region serverless solutions; handles advanced networking.',
-            expert: 'Defines enterprise cloud strategy; contributes to open source tools.'
-        }
-    }
-];
-
 export default function CompetencyLibraryPage() {
     const [expandedIds, setExpandedIds] = useState<string[]>([]);
     const [filter, setFilter] = useState<Category | 'All'>('All');
+    const [loading, setLoading] = useState(true);
+    const [competencies, setCompetencies] = useState<CompetencyItem[]>([]);
+
+    useEffect(() => {
+        async function loadCompetencies() {
+            try {
+                const data = await CompetencyService.getCompetencies();
+                setCompetencies(data as CompetencyItem[]);
+            } catch (error) {
+                console.error('Failed to load competencies:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadCompetencies();
+    }, []);
 
     const toggleExpand = (id: string) => {
         setExpandedIds(prev =>
@@ -86,8 +63,20 @@ export default function CompetencyLibraryPage() {
     const categories = ['All', 'Technical', 'Behavioral', 'Leadership'];
 
     const filteredCompetencies = filter === 'All'
-        ? COMPETENCIES
-        : COMPETENCIES.filter(c => c.category === filter);
+        ? competencies
+        : competencies.filter(c => c.category === filter || c.status === filter);
+
+    const getCategoryForComp = (comp: CompetencyItem): Category => {
+        return comp.category || 'Technical';
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <Loader2 className="w-8 h-8 animate-spin text-celestial-indigo" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10">
@@ -112,7 +101,7 @@ export default function CompetencyLibraryPage() {
                         <BrainCircuit className="w-5 h-5" />
                     </div>
                     <div>
-                        <div className="text-2xl font-bold text-ink-black dark:text-pearl">142</div>
+                        <div className="text-2xl font-bold text-ink-black dark:text-pearl">{competencies.length}</div>
                         <div className="text-xs text-silver-mist uppercase font-bold">Total Skills</div>
                     </div>
                 </div>
@@ -144,71 +133,84 @@ export default function CompetencyLibraryPage() {
             </div>
 
             {/* Competency List */}
-            <div className="space-y-4">
-                {filteredCompetencies.map(comp => {
-                    const isExpanded = expandedIds.includes(comp.id);
-                    return (
-                        <div key={comp.id} className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden transition-all duration-300">
-                            <div
-                                className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-deep-cosmos/50"
-                                onClick={() => toggleExpand(comp.id)}
-                            >
-                                <div className="flex items-start gap-4">
-                                    <div className={`mt-1 p-2 rounded-lg shrink-0 ${comp.category === 'Leadership' ? 'bg-amber-100 text-amber-600' :
-                                        comp.category === 'Technical' ? 'bg-blue-100 text-blue-600' :
-                                            'bg-emerald-100 text-emerald-600'
-                                        }`}>
-                                        {comp.category === 'Leadership' && <Users className="w-5 h-5" />}
-                                        {comp.category === 'Technical' && <LayoutGrid className="w-5 h-5" />}
-                                        {comp.category === 'Behavioral' && <Briefcase className="w-5 h-5" />}
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-3 mb-1">
-                                            <h3 className="text-lg font-bold text-ink-black dark:text-pearl">{comp.title}</h3>
-                                            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">
-                                                {comp.category}
-                                            </span>
+            {filteredCompetencies.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+                    <BrainCircuit className="w-12 h-12 mb-3 opacity-30" />
+                    <p className="font-bold text-lg">No competencies found</p>
+                    <p className="text-sm mt-1">Add competencies to build your skills framework</p>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {filteredCompetencies.map(comp => {
+                        const isExpanded = expandedIds.includes(comp.id);
+                        const category = getCategoryForComp(comp);
+                        return (
+                            <div key={comp.id} className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden transition-all duration-300">
+                                <div
+                                    className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-deep-cosmos/50"
+                                    onClick={() => toggleExpand(comp.id)}
+                                >
+                                    <div className="flex items-start gap-4">
+                                        <div className={`mt-1 p-2 rounded-lg shrink-0 ${category === 'Leadership' ? 'bg-amber-100 text-amber-600' :
+                                            category === 'Technical' ? 'bg-blue-100 text-blue-600' :
+                                                'bg-emerald-100 text-emerald-600'
+                                            }`}>
+                                            {category === 'Leadership' && <Users className="w-5 h-5" />}
+                                            {category === 'Technical' && <LayoutGrid className="w-5 h-5" />}
+                                            {category !== 'Leadership' && category !== 'Technical' && <Briefcase className="w-5 h-5" />}
                                         </div>
-                                        <p className="text-sm text-silver-mist">{comp.description}</p>
+                                        <div>
+                                            <div className="flex items-center gap-3 mb-1">
+                                                <h3 className="text-lg font-bold text-ink-black dark:text-pearl">{comp.name}</h3>
+                                                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">
+                                                    {category}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-silver-mist">{comp.description || 'No description available'}</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-slate-400">
+                                        {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                                     </div>
                                 </div>
-                                <div className="text-slate-400">
-                                    {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                                </div>
-                            </div>
 
-                            {/* Expanded Proficiency Matrix */}
-                            {isExpanded && (
-                                <div className="border-t border-cloud dark:border-nebula-purple/20 bg-slate-50 dark:bg-deep-cosmos/30 p-6 animate-in slide-in-from-top-2 duration-200">
-                                    <h4 className="font-bold text-sm text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
-                                        <Star className="w-4 h-4 text-amber-500" />
-                                        Proficiency Levels
-                                    </h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                        <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
-                                            <div className="text-xs font-bold text-slate-400 uppercase mb-2">Level 1: Beginner</div>
-                                            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{comp.levels.beginner}</p>
-                                        </div>
-                                        <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
-                                            <div className="text-xs font-bold text-celestial-indigo uppercase mb-2">Level 2: Intermediate</div>
-                                            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{comp.levels.intermediate}</p>
-                                        </div>
-                                        <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
-                                            <div className="text-xs font-bold text-purple-500 uppercase mb-2">Level 3: Advanced</div>
-                                            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{comp.levels.advanced}</p>
-                                        </div>
-                                        <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 border-emerald-200 dark:border-emerald-900/50 relative overflow-hidden">
-                                            <div className="absolute top-0 right-0 w-8 h-8 bg-emerald-500/10 rounded-bl-xl"></div>
-                                            <div className="text-xs font-bold text-emerald-600 uppercase mb-2">Level 4: Expert</div>
-                                            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{comp.levels.expert}</p>
-                                        </div>
+                                {/* Expanded Proficiency Matrix */}
+                                {isExpanded && (
+                                    <div className="border-t border-cloud dark:border-nebula-purple/20 bg-slate-50 dark:bg-deep-cosmos/30 p-6 animate-in slide-in-from-top-2 duration-200">
+                                        <h4 className="font-bold text-sm text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
+                                            <Star className="w-4 h-4 text-amber-500" />
+                                            Proficiency Levels
+                                        </h4>
+                                        {comp.levels ? (
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                                <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
+                                                    <div className="text-xs font-bold text-slate-400 uppercase mb-2">Level 1: Beginner</div>
+                                                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{comp.levels.beginner}</p>
+                                                </div>
+                                                <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
+                                                    <div className="text-xs font-bold text-celestial-indigo uppercase mb-2">Level 2: Intermediate</div>
+                                                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{comp.levels.intermediate}</p>
+                                                </div>
+                                                <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
+                                                    <div className="text-xs font-bold text-purple-500 uppercase mb-2">Level 3: Advanced</div>
+                                                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{comp.levels.advanced}</p>
+                                                </div>
+                                                <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 border-emerald-200 dark:border-emerald-900/50 relative overflow-hidden">
+                                                    <div className="absolute top-0 right-0 w-8 h-8 bg-emerald-500/10 rounded-bl-xl"></div>
+                                                    <div className="text-xs font-bold text-emerald-600 uppercase mb-2">Level 4: Expert</div>
+                                                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{comp.levels.expert}</p>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-slate-400">No proficiency levels defined for this competency.</p>
+                                        )}
                                     </div>
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 }

@@ -40,25 +40,26 @@ export default function TimesheetsPage() {
     const fetchTimesheets = async () => {
         try {
             const records = await AttendanceRecordService.getRecords({ type: 'summary' });
-            if (records.length > 0) {
-                // Transform attendance records to timesheet entries
-                const entries: TimesheetEntry[] = records.map((record: any) => ({
-                    project: record.project || 'Default Project',
-                    task: record.task || 'Daily Work',
-                    hours: [8, 8, 8, 8, 8, 0, 0], // Mock weekly hours
-                    total: record.workingHours || 40,
-                }));
-                setTimesheetData(entries);
-                setSummary({
-                    status: 'Draft',
-                    totalHours: 40,
-                    billableHours: 35,
-                    nonBillableHours: 5,
-                });
-            }
+            // Transform attendance records to timesheet entries
+            const entries: TimesheetEntry[] = (records as any[]).map((record: any) => ({
+                project: record.project || 'Default Project',
+                task: record.task || 'Daily Work',
+                hours: record.dailyHours || [0, 0, 0, 0, 0, 0, 0],
+                total: record.workingHours || 0,
+            }));
+            setTimesheetData(entries);
+            // Calculate summary from actual data
+            const totalHours = entries.reduce((sum, e) => sum + e.total, 0);
+            const billableHours = entries.reduce((sum, e) => sum + (e.total * 0.875), 0); // Estimate billable
+            setSummary({
+                status: 'Draft',
+                totalHours,
+                billableHours: Math.round(billableHours * 10) / 10,
+                nonBillableHours: Math.round((totalHours - billableHours) * 10) / 10,
+            });
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -168,18 +169,23 @@ export default function TimesheetsPage() {
                             </tr>
                         )))}
                         {/* Total Row */}
+                        {!loading && timesheetData.length > 0 && (
                         <tr className="bg-slate-100 dark:bg-slate-800 font-bold">
                             <td className="p-4 text-right text-slate-600 dark:text-slate-300">Daily Total</td>
-                            <td className="p-4 text-center">9.0</td>
-                            <td className="p-4 text-center">9.0</td>
-                            <td className="p-4 text-center">9.0</td>
-                            <td className="p-4 text-center">9.0</td>
-                            <td className="p-4 text-center">9.0</td>
-                            <td className="p-4 text-center text-slate-400">0.0</td>
-                            <td className="p-4 text-center text-slate-400">0.0</td>
-                            <td className="p-4 text-center text-indigo-600 text-lg">45.0</td>
+                            {WEEK_DAYS.map((_, dayIdx) => {
+                                const dayTotal = timesheetData.reduce((sum, row) => sum + (row.hours[dayIdx] || 0), 0);
+                                return (
+                                    <td key={dayIdx} className={`p-4 text-center ${dayTotal === 0 ? 'text-slate-400' : ''}`}>
+                                        {dayTotal.toFixed(1)}
+                                    </td>
+                                );
+                            })}
+                            <td className="p-4 text-center text-indigo-600 text-lg">
+                                {timesheetData.reduce((sum, row) => sum + row.total, 0).toFixed(1)}
+                            </td>
                             <td></td>
                         </tr>
+                        )}
                     </tbody>
                 </table>
                 <div className="p-4 border-t border-cloud dark:border-nebula-purple/20">
@@ -192,11 +198,11 @@ export default function TimesheetsPage() {
             <div className="flex justify-end gap-6 text-sm">
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                    <span className="text-slate-600">Billable (43.0h)</span>
+                    <span className="text-slate-600">Billable ({summary?.billableHours || 0}h)</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-slate-300"></div>
-                    <span className="text-slate-600">Non-Billable (2.0h)</span>
+                    <span className="text-slate-600">Non-Billable ({summary?.nonBillableHours || 0}h)</span>
                 </div>
             </div>
 

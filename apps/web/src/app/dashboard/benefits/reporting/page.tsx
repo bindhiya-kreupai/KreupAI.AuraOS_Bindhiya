@@ -5,7 +5,8 @@ import {
     BarChart3,
     TrendingUp,
     Users,
-    DollarSign
+    DollarSign,
+    Loader2
 } from 'lucide-react';
 import { BenefitAnalyticsService } from '../services';
 
@@ -20,14 +21,46 @@ export default function ReportingPage() {
     const fetchStats = async () => {
         try {
             setLoading(true);
-            const data = await BenefitAnalyticsService.getStats();
+            const response = await BenefitAnalyticsService.getStats();
+            const data = response?.data || response || null;
             setStats(data);
         } catch (error) {
-            console.error('Error:', error);
-                    } finally {
+            console.error('Error fetching analytics:', error);
+            setStats(null);
+        } finally {
             setLoading(false);
         }
     };
+
+    const formatCurrency = (value: number) => {
+        if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+        if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+        return `$${value.toLocaleString()}`;
+    };
+
+    const kpiCards = stats ? [
+        {
+            label: 'Total Benefit Cost',
+            value: formatCurrency((stats.employeeContributions || 0) + (stats.employerContributions || 0)),
+            trend: stats.costTrend === 'increasing' ? '+' : stats.costTrend === 'decreasing' ? '-' : '',
+            icon: DollarSign,
+            color: 'text-indigo-500',
+        },
+        {
+            label: 'Enrollment Rate',
+            value: `${stats.enrollmentRate || 0}%`,
+            trend: stats.enrollmentTrend === 'increasing' ? '+' : '',
+            icon: Users,
+            color: 'text-emerald-500',
+        },
+        {
+            label: 'Avg Premium Per Employee',
+            value: stats.averagePremiumPerEmployee ? `$${Math.round(stats.averagePremiumPerEmployee)}/mo` : 'N/A',
+            trend: '',
+            icon: TrendingUp,
+            color: 'text-rose-500',
+        },
+    ] : [];
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
@@ -40,83 +73,92 @@ export default function ReportingPage() {
                     </h1>
                     <p className="text-slate-500 text-sm">Cost analysis and enrollment insights.</p>
                 </div>
-                <div className="flex gap-2">
-                    <select className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-sm font-bold">
-                        <option>Current Year (2025)</option>
-                        <option>Last Year (2024)</option>
-                    </select>
+            </div>
+
+            {loading ? (
+                <div className="flex justify-center items-center py-20">
+                    <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
                 </div>
-            </div>
-
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
-                    { label: 'Total Benefit Cost', value: '$1.2M', trend: '+12%', icon: DollarSign, color: 'text-indigo-500' },
-                    { label: 'Enrollment Rate', value: '94%', trend: '+2%', icon: Users, color: 'text-emerald-500' },
-                    { label: 'Avg Cost Per Employee', value: '$850/mo', trend: '+5%', icon: TrendingUp, color: 'text-rose-500' },
-                ].map((stat, i) => (
-                    <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className={`p-3 rounded-xl bg-slate-50 dark:bg-slate-800 ${stat.color}`}>
-                                <stat.icon className="w-6 h-6" />
-                            </div>
-                            <span className="text-emerald-500 text-xs font-bold bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded">
-                                {stat.trend}
-                            </span>
-                        </div>
-                        <div className="text-3xl font-bold mb-1">{stat.value}</div>
-                        <div className="text-sm text-slate-500">{stat.label}</div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Charts Placeholder */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-20">
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 h-[300px] flex flex-col">
-                    <h3 className="font-bold text-lg mb-6">Cost Distribution by Plan</h3>
-                    <div className="flex-1 flex items-end justify-between px-4 gap-4">
-                        {[65, 40, 25, 15].map((h, i) => (
-                            <div key={i} className="w-full bg-indigo-50 dark:bg-indigo-900/10 rounded-t-xl relative group">
-                                <div
-                                    style={{ height: `${h}%` }}
-                                    className="absolute bottom-0 w-full bg-indigo-500 rounded-t-xl opacity-80 group-hover:opacity-100 transition-opacity"
-                                ></div>
+            ) : !stats ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <BarChart3 className="w-12 h-12 text-slate-300 mb-4" />
+                    <h3 className="font-bold text-lg text-slate-600 dark:text-slate-300">No Analytics Data Available</h3>
+                    <p className="text-sm text-slate-500 max-w-sm mt-1">Analytics data will populate as benefit plans and enrollments are configured.</p>
+                </div>
+            ) : (
+                <>
+                    {/* KPI Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {kpiCards.map((stat, i) => (
+                            <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className={`p-3 rounded-xl bg-slate-50 dark:bg-slate-800 ${stat.color}`}>
+                                        <stat.icon className="w-6 h-6" />
+                                    </div>
+                                    {stat.trend && (
+                                        <span className="text-emerald-500 text-xs font-bold bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded">
+                                            {stat.trend}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="text-3xl font-bold mb-1">{stat.value}</div>
+                                <div className="text-sm text-slate-500">{stat.label}</div>
                             </div>
                         ))}
                     </div>
-                    <div className="flex justify-between mt-4 text-xs font-bold text-slate-400 px-2">
-                        <span>Health</span>
-                        <span>Dental</span>
-                        <span>Vision</span>
-                        <span>Other</span>
-                    </div>
-                </div>
 
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 h-[300px] flex flex-col">
-                    <h3 className="font-bold text-lg mb-6">Enrollment Trends</h3>
-                    <div className="flex-1 border-l border-b border-slate-100 dark:border-slate-700 relative">
-                        <svg className="absolute inset-0 w-full h-full overflow-visible">
-                            <path
-                                d="M0 150 C 50 140, 100 100, 150 80 S 250 120, 300 60 S 400 20, 500 10"
-                                fill="none"
-                                stroke="#6366f1"
-                                strokeWidth="3"
-                            />
-                            <path
-                                d="M0 150 C 50 140, 100 100, 150 80 S 250 120, 300 60 S 400 20, 500 10 V 200 H 0 Z"
-                                fill="url(#gradient)"
-                                opacity="0.1"
-                            />
-                            <defs>
-                                <linearGradient id="gradient" x1="0" x2="0" y1="0" y2="1">
-                                    <stop offset="0%" stopColor="#6366f1" />
-                                    <stop offset="100%" stopColor="transparent" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
+                    {/* Stats Details */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                            <p className="text-xs text-slate-500 uppercase font-medium">Total Enrollments</p>
+                            <p className="text-2xl font-bold mt-1">{stats.totalEnrollments || 0}</p>
+                            <p className="text-xs text-slate-400">Active: {stats.activeEnrollments || 0}</p>
+                        </div>
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                            <p className="text-xs text-slate-500 uppercase font-medium">Total Claims</p>
+                            <p className="text-2xl font-bold mt-1">{stats.totalClaims || 0}</p>
+                            <p className="text-xs text-slate-400">Approved: {stats.approvedClaims || 0}</p>
+                        </div>
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                            <p className="text-xs text-slate-500 uppercase font-medium">Claim Approval Rate</p>
+                            <p className="text-2xl font-bold mt-1">{stats.claimApprovalRate || 0}%</p>
+                            <p className="text-xs text-slate-400">Denied: {stats.deniedClaims || 0}</p>
+                        </div>
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                            <p className="text-xs text-slate-500 uppercase font-medium">Total Dependents</p>
+                            <p className="text-2xl font-bold mt-1">{stats.totalDependents || 0}</p>
+                            <p className="text-xs text-slate-400">Avg: {stats.averageDependentsPerEmployee || 0}/employee</p>
+                        </div>
                     </div>
-                </div>
-            </div>
+
+                    {/* Charts Placeholder */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-20">
+                        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 h-[300px] flex flex-col">
+                            <h3 className="font-bold text-lg mb-6">Cost Distribution</h3>
+                            <div className="flex-1 flex items-center justify-center">
+                                <div className="text-center">
+                                    <p className="text-sm text-slate-500 mb-2">Employee Contributions</p>
+                                    <p className="text-3xl font-bold text-indigo-600">{formatCurrency(stats.employeeContributions || 0)}</p>
+                                    <p className="text-sm text-slate-500 mt-4 mb-2">Employer Contributions</p>
+                                    <p className="text-3xl font-bold text-emerald-600">{formatCurrency(stats.employerContributions || 0)}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 h-[300px] flex flex-col">
+                            <h3 className="font-bold text-lg mb-6">Claims Summary</h3>
+                            <div className="flex-1 flex items-center justify-center">
+                                <div className="text-center">
+                                    <p className="text-sm text-slate-500 mb-2">Total Claimed</p>
+                                    <p className="text-3xl font-bold text-ink-black dark:text-pearl">{formatCurrency(stats.totalClaimAmount || 0)}</p>
+                                    <p className="text-sm text-slate-500 mt-4 mb-2">Total Paid</p>
+                                    <p className="text-3xl font-bold text-emerald-600">{formatCurrency(stats.totalPaidAmount || 0)}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

@@ -50,12 +50,10 @@ export default function RegularizationRequestPage() {
             setLoading(true);
             // Using RegularizationService.getPendingRequests() for regularization requests
             const result = await RegularizationService.getPendingRequests();
-            if (result && result.length > 0) {
-                setRequests(result as any);
-            }
+            setRequests((result || []) as any);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -168,7 +166,14 @@ export default function RegularizationRequestPage() {
                 {/* History List */}
                 <div className="col-span-1 lg:col-span-2 space-y-4">
                     <h3 className="font-bold text-lg text-ink-black dark:text-pearl px-1">Recent Requests</h3>
-                    {requests.map((req) => (
+                    {loading ? (
+                        <div className="p-8 text-center">
+                            <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                            <p className="mt-2 text-slate-500">Loading requests...</p>
+                        </div>
+                    ) : requests.length === 0 ? (
+                        <div className="p-8 text-center text-slate-400 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50">No regularization requests found</div>
+                    ) : requests.map((req) => (
                         <div key={req.id} className="p-4 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                             <div className="flex items-center gap-4">
                                 <div className={`w-12 h-12 rounded-full flex items-center justify-center ${req.status === 'Approved' ? 'bg-emerald-100 text-emerald-600' :

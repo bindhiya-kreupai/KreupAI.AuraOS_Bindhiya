@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Users,
     TrendingUp,
     Globe,
     PieChart,
     Download,
-    Filter
+    Filter,
+    Loader2
 } from 'lucide-react';
+import { DiversityMetricsService } from '../services';
 import {
     Pie,
     ResponsiveContainer,
@@ -24,6 +26,24 @@ import {
 } from 'recharts';
 
 export default function DiversityMetricsPage() {
+    const [metrics, setMetrics] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await DiversityMetricsService.getAllMetrics();
+                setMetrics(data as any);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
     // Mock Data for Charts
     const genderData = [
         { name: 'Male', value: 55, color: '#6366f1' },
@@ -45,6 +65,14 @@ export default function DiversityMetricsPage() {
         { level: 'Manager', male: 50, female: 50 },
         { level: 'Individual', male: 48, female: 52 },
     ];
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">

@@ -7,7 +7,7 @@ import {
   Maximize2,
   Move,
   Play,
-  CircleStop,
+  StopCircle,
   UserCheck,
   GitBranch,
   Mail,
@@ -46,7 +46,7 @@ const nodeTypeConfig: Record<
     bgClass: "bg-aurora-green",
   },
   end: {
-    icon: <CircleStop className="w-4 h-4" />,
+    icon: <StopCircle className="w-4 h-4" />,
     color: "#ef4444",
     bgClass: "bg-coral-alert",
   },

@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    if (\!body.employeeId || \!body.type || \!body.amount || \!body.caseNumber) {
+    if (!body.employeeId || !body.type || !body.amount || !body.caseNumber) {
       return NextResponse.json(
         { error: "employeeId, type, amount, and caseNumber are required" },
         { status: 400 }

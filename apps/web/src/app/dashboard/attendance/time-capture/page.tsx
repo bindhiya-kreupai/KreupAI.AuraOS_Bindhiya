@@ -46,12 +46,12 @@ export default function TimeCapturePage() {
     const fetchCaptures = async () => {
         try {
             const today = new Date().toISOString().split('T')[0];
-            const captures = await AttendanceCheckService.getChecks({ date: today });
-
-            if (captures.length > 0) {
-                setCaptures(captures as any);
-                // Determine current status from latest check
-                const latestCheck = captures[captures.length - 1];
+            const result = await AttendanceCheckService.getChecks({ date: today });
+            const capturesArr = (result || []) as any[];
+            setCaptures(capturesArr as any);
+            // Determine current status from latest check
+            if (capturesArr.length > 0) {
+                const latestCheck = capturesArr[capturesArr.length - 1];
                 if (latestCheck.type === 'CHECK_IN' || latestCheck.type === 'BREAK_END') {
                     setStatus('IN');
                 } else if (latestCheck.type === 'BREAK_START') {
@@ -62,7 +62,7 @@ export default function TimeCapturePage() {
             }
         } catch (error) {
             console.error('Error:', error);
-                    }
+        }
     };
 
     const handleCapture = async (type: 'CHECK_IN' | 'CHECK_OUT' | 'BREAK_START' | 'BREAK_END') => {

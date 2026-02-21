@@ -1,173 +1,139 @@
-/**
- * Overtime API Routes
- * Phase 2: Core Enhancement - Attendance Enhancement
- */
-
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { AttendanceService } from '@/lib/services/attendance';
-import { LabourLawService } from '@/lib/services/compliance';
-import type { SupportedCountryCode } from '@/lib/services/compliance/types';
+import { prisma } from '@/lib/database';
+import { withEnhancedAuth } from '@/lib/auth';
 
-/**
- * GET /api/attendance/overtime
- * Get overtime records
- */
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
+    const { user } = context;
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId');
     const employeeId = searchParams.get('employeeId');
-    const month = searchParams.get('month');
     const status = searchParams.get('status');
 
-    if (!tenantId) {
-      return NextResponse.json(
-        { error: 'tenantId is required', errorAr: 'معرف المستأجر مطلوب' },
-        { status: 400 }
-      );
-    }
+    const where: Record<string, unknown> = { tenantId: user.tenantId };
+    if (employeeId) where.employeeId = employeeId;
+    if (status) where.status = status;
 
-    // Fetch overtime records
+    const overtime = await prisma.overtimeRequest.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const summary = {
+      totalHours: overtime.reduce((sum, r) => sum + r.totalHours, 0),
+      totalAmount: 0,
+      pendingApproval: overtime.filter(r => r.status === 'PENDING').length,
+      approved: overtime.filter(r => r.status === 'APPROVED').length,
+      rejected: overtime.filter(r => r.status === 'REJECTED').length,
+    };
+
     return NextResponse.json({
       success: true,
-      data: {
-        overtime: [],
-        summary: {
-          totalHours: 0,
-          totalAmount: 0,
-          pendingApproval: 0,
-          approved: 0,
-          rejected: 0,
-        },
-      },
+      data: { overtime, summary },
     });
   } catch (error) {
-        return NextResponse.json(
-      { error: 'Failed to fetch overtime records', errorAr: 'فشل في جلب سجلات العمل الإضافي' },
+    return NextResponse.json(
+      { error: 'Failed to fetch overtime records' },
       { status: 500 }
     );
   }
-}
+});
 
-/**
- * POST /api/attendance/overtime
- * Submit or approve overtime
- */
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
+    const { user } = context;
     const body = await request.json();
     const action = body.action || 'submit';
 
     switch (action) {
-      case 'submit':
-        // Submit overtime request
+      case 'submit': {
         if (!body.employeeId || !body.date || !body.overtimeMinutes) {
           return NextResponse.json(
-            {
-              error: 'employeeId, date, and overtimeMinutes are required',
-              errorAr: 'معرف الموظف والتاريخ ودقائق العمل الإضافي مطلوبة',
-            },
+            { error: 'employeeId, date, and overtimeMinutes are required' },
             { status: 400 }
           );
         }
 
-        return NextResponse.json({
-          success: true,
+        const record = await prisma.overtimeRequest.create({
           data: {
-            id: `ot_${Date.now()}`,
-            ...body,
+            tenantId: user.tenantId,
+            employeeId: body.employeeId,
+            overtimeDate: new Date(body.date),
+            startTime: body.startTime ? new Date(body.startTime) : new Date(body.date),
+            endTime: body.endTime ? new Date(body.endTime) : new Date(body.date),
+            totalHours: body.overtimeMinutes / 60,
+            overtimeType: body.overtimeType || 'REGULAR',
+            reason: body.reason || '',
+            workDescription: body.workDescription,
+            project: body.project,
             status: 'PENDING',
-            createdAt: new Date().toISOString(),
+            compensationType: body.compensationType,
           },
         });
 
-      case 'approve':
-        // Approve overtime
+        return NextResponse.json({
+          success: true,
+          data: record,
+        });
+      }
+
+      case 'approve': {
         if (!body.overtimeId || !body.approverId) {
           return NextResponse.json(
-            {
-              error: 'overtimeId and approverId are required',
-              errorAr: 'معرف العمل الإضافي ومعرف الموافق مطلوبان',
-            },
+            { error: 'overtimeId and approverId are required' },
             { status: 400 }
           );
         }
 
-        return NextResponse.json({
-          success: true,
+        const approved = await prisma.overtimeRequest.update({
+          where: { id: body.overtimeId },
           data: {
-            id: body.overtimeId,
             status: 'APPROVED',
             approvedBy: body.approverId,
-            approvedAt: new Date().toISOString(),
-            approvedMinutes: body.approvedMinutes,
+            approvedAt: new Date(),
+            actualHours: body.approvedMinutes ? body.approvedMinutes / 60 : undefined,
           },
         });
 
-      case 'reject':
-        // Reject overtime
+        return NextResponse.json({
+          success: true,
+          data: approved,
+        });
+      }
+
+      case 'reject': {
         if (!body.overtimeId || !body.approverId || !body.rejectionReason) {
           return NextResponse.json(
-            {
-              error: 'overtimeId, approverId, and rejectionReason are required',
-              errorAr: 'معرف العمل الإضافي ومعرف الموافق وسبب الرفض مطلوبة',
-            },
+            { error: 'overtimeId, approverId, and rejectionReason are required' },
             { status: 400 }
           );
         }
 
-        return NextResponse.json({
-          success: true,
+        const rejected = await prisma.overtimeRequest.update({
+          where: { id: body.overtimeId },
           data: {
-            id: body.overtimeId,
             status: 'REJECTED',
-            rejectedBy: body.approverId,
-            rejectedAt: new Date().toISOString(),
+            approvedBy: body.approverId,
             rejectionReason: body.rejectionReason,
           },
         });
 
-      case 'calculate':
-        // Calculate overtime for an attendance record
-        if (!body.attendanceRecordId || !body.countryCode || !body.hourlyRate) {
-          return NextResponse.json(
-            {
-              error: 'attendanceRecordId, countryCode, and hourlyRate are required',
-              errorAr: 'معرف سجل الحضور ورمز البلد وأجر الساعة مطلوبة',
-            },
-            { status: 400 }
-          );
-        }
-
-        // Get overtime rates from labour law
-        const labourLaw = LabourLawService.getConfig(body.countryCode as SupportedCountryCode);
-
         return NextResponse.json({
           success: true,
-          data: {
-            rates: labourLaw.overtimeRates,
-            calculated: {
-              normal: body.hourlyRate * labourLaw.overtimeRates.normal,
-              night: body.hourlyRate * labourLaw.overtimeRates.night,
-              holiday: body.hourlyRate * labourLaw.overtimeRates.holiday,
-            },
-          },
+          data: rejected,
         });
+      }
 
       default:
         return NextResponse.json(
-          { error: 'Invalid action', errorAr: 'إجراء غير صالح' },
+          { error: 'Invalid action' },
           { status: 400 }
         );
     }
   } catch (error) {
-        return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to process overtime',
-        errorAr: 'فشل في معالجة العمل الإضافي',
-      },
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to process overtime' },
       { status: 500 }
     );
   }
-}
+});

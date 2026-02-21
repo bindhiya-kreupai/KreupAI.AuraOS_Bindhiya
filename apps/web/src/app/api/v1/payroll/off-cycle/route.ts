@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
   try {
     const body: OffCyclePayrollRequest = await request.json();
 
-    if (\!body.employeeIds || \!body.reason || \!body.payDate || \!body.amounts) {
+    if (!body.employeeIds || !body.reason || !body.payDate || !body.amounts) {
       return NextResponse.json(
         { error: "employeeIds, reason, payDate, and amounts are required" },
         { status: 400 }

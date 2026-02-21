@@ -1,32 +1,51 @@
 "use client";
 
-import React from 'react';
-import { TrendingUp, Calendar, DollarSign, BarChart3, Clock, ArrowUpRight, AlertCircle } from 'lucide-react';
-
-interface Grant {
-  id: string;
-  type: string;
-  grantDate: string;
-  vestingStart: string;
-  totalShares: number;
-  vestedShares: number;
-  exercisePrice: number;
-  currentPrice: number;
-  nextVestDate: string;
-  nextVestShares: number;
-}
-
-const grants: Grant[] = [
-  { id: '1', type: 'ISO', grantDate: 'Jan 15, 2022', vestingStart: 'Jan 15, 2022', totalShares: 10000, vestedShares: 6250, exercisePrice: 12.50, currentPrice: 28.75, nextVestDate: 'Apr 15, 2025', nextVestShares: 625 },
-  { id: '2', type: 'RSU', grantDate: 'Jul 1, 2023', vestingStart: 'Jul 1, 2023', totalShares: 5000, vestedShares: 1875, exercisePrice: 0, currentPrice: 28.75, nextVestDate: 'Apr 1, 2025', nextVestShares: 312 },
-  { id: '3', type: 'ISO', grantDate: 'Mar 1, 2024', vestingStart: 'Mar 1, 2024', totalShares: 8000, vestedShares: 1500, exercisePrice: 22.00, currentPrice: 28.75, nextVestDate: 'Jun 1, 2025', nextVestShares: 500 },
-];
+import React, { useState, useEffect } from 'react';
+import { TrendingUp, Calendar, DollarSign, BarChart3, Clock, ArrowUpRight, AlertCircle, Loader2 } from 'lucide-react';
+import { StockGrantService } from '../services';
 
 export default function EquityManagementPage() {
-  const totalVested = grants.reduce((sum, g) => sum + g.vestedShares, 0);
-  const totalUnvested = grants.reduce((sum, g) => sum + (g.totalShares - g.vestedShares), 0);
-  const totalValue = grants.reduce((sum, g) => sum + (g.vestedShares * g.currentPrice), 0);
-  const totalGain = grants.reduce((sum, g) => sum + (g.vestedShares * (g.currentPrice - g.exercisePrice)), 0);
+  const [grants, setGrants] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const data = await StockGrantService.getGrants();
+      setGrants(data);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const totalVested = grants.reduce((sum: number, g: any) => sum + (g.vestedShares || g.vestedUnits || g.sharesVested || 0), 0);
+  const totalUnvested = grants.reduce((sum: number, g: any) => {
+    const total = g.totalShares || g.numberOfUnits || g.grantedShares || 0;
+    const vested = g.vestedShares || g.vestedUnits || g.sharesVested || 0;
+    return sum + (total - vested);
+  }, 0);
+  const currentPrice = grants.length > 0 ? (grants[0].currentPrice || grants[0].fairMarketValue || 0) : 0;
+  const totalValue = totalVested * currentPrice;
+  const totalGain = grants.reduce((sum: number, g: any) => {
+    const vested = g.vestedShares || g.vestedUnits || g.sharesVested || 0;
+    const price = g.currentPrice || g.fairMarketValue || 0;
+    const exercise = g.exercisePrice || g.grantPrice || g.strikePrice || 0;
+    return sum + (vested * (price - exercise));
+  }, 0);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-10">
@@ -40,23 +59,27 @@ export default function EquityManagementPage() {
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Total Vested Value</p>
-          <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">${(totalValue / 1000).toFixed(0)}K</p>
-          <p className="text-[10px] text-emerald-600 flex items-center gap-0.5 mt-0.5"><ArrowUpRight className="w-3 h-3" /> +12% this quarter</p>
+          <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">
+            {totalValue > 0 ? `$${(totalValue / 1000).toFixed(0)}K` : '--'}
+          </p>
         </div>
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Unrealized Gain</p>
-          <p className="text-2xl font-bold text-emerald-600 mt-1">${(totalGain / 1000).toFixed(0)}K</p>
+          <p className="text-2xl font-bold text-emerald-600 mt-1">
+            {totalGain > 0 ? `$${(totalGain / 1000).toFixed(0)}K` : '--'}
+          </p>
           <p className="text-[10px] text-silver-mist">On vested shares</p>
         </div>
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Vested Shares</p>
-          <p className="text-2xl font-bold text-celestial-indigo mt-1">{totalVested.toLocaleString()}</p>
-          <p className="text-[10px] text-silver-mist">{totalUnvested.toLocaleString()} unvested</p>
+          <p className="text-2xl font-bold text-celestial-indigo mt-1">{totalVested > 0 ? totalVested.toLocaleString() : '--'}</p>
+          <p className="text-[10px] text-silver-mist">{totalUnvested > 0 ? totalUnvested.toLocaleString() : '0'} unvested</p>
         </div>
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Current Share Price</p>
-          <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">${grants[0].currentPrice}</p>
-          <p className="text-[10px] text-emerald-600">+$2.50 (30d)</p>
+          <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">
+            {currentPrice > 0 ? `$${currentPrice.toFixed(2)}` : '--'}
+          </p>
         </div>
       </div>
 
@@ -65,75 +88,95 @@ export default function EquityManagementPage() {
         <div className="px-5 py-3 border-b border-cloud dark:border-nebula-purple/50">
           <h3 className="font-bold text-sm text-ink-black dark:text-pearl">Equity Grants</h3>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="text-xs text-silver-mist uppercase border-b border-cloud dark:border-nebula-purple/50">
-                <th className="text-left px-5 py-3 font-medium">Type</th>
-                <th className="text-left px-5 py-3 font-medium">Grant Date</th>
-                <th className="text-right px-5 py-3 font-medium">Total</th>
-                <th className="text-right px-5 py-3 font-medium">Vested</th>
-                <th className="text-right px-5 py-3 font-medium">Exercise Price</th>
-                <th className="text-right px-5 py-3 font-medium">Value</th>
-                <th className="text-left px-5 py-3 font-medium">Next Vest</th>
-              </tr>
-            </thead>
-            <tbody>
-              {grants.map((grant) => {
-                const vestPercent = Math.round((grant.vestedShares / grant.totalShares) * 100);
-                return (
-                  <tr key={grant.id} className="border-b border-cloud dark:border-nebula-purple/50 last:border-0">
-                    <td className="px-5 py-3">
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${grant.type === 'RSU' ? 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' : 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'}`}>
-                        {grant.type}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 text-xs text-silver-mist">{grant.grantDate}</td>
-                    <td className="px-5 py-3 text-sm text-right font-mono text-ink-black dark:text-pearl">{grant.totalShares.toLocaleString()}</td>
-                    <td className="px-5 py-3 text-right">
-                      <div className="flex items-center gap-2 justify-end">
-                        <span className="text-sm font-mono text-ink-black dark:text-pearl">{grant.vestedShares.toLocaleString()}</span>
-                        <span className="text-[10px] text-silver-mist">({vestPercent}%)</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3 text-sm text-right font-mono text-ink-black dark:text-pearl">
-                      {grant.exercisePrice > 0 ? `$${grant.exercisePrice.toFixed(2)}` : 'N/A'}
-                    </td>
-                    <td className="px-5 py-3 text-sm text-right font-mono font-medium text-emerald-600">
-                      ${(grant.vestedShares * (grant.currentPrice - grant.exercisePrice)).toLocaleString()}
-                    </td>
-                    <td className="px-5 py-3">
-                      <div className="text-xs">
-                        <p className="text-ink-black dark:text-pearl">{grant.nextVestDate}</p>
-                        <p className="text-silver-mist">{grant.nextVestShares} shares</p>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        {grants.length === 0 ? (
+          <div className="p-8 text-center text-sm text-slate-400">No equity grants found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-xs text-silver-mist uppercase border-b border-cloud dark:border-nebula-purple/50">
+                  <th className="text-left px-5 py-3 font-medium">Type</th>
+                  <th className="text-left px-5 py-3 font-medium">Grant Date</th>
+                  <th className="text-right px-5 py-3 font-medium">Total</th>
+                  <th className="text-right px-5 py-3 font-medium">Vested</th>
+                  <th className="text-right px-5 py-3 font-medium">Exercise Price</th>
+                  <th className="text-right px-5 py-3 font-medium">Value</th>
+                  <th className="text-left px-5 py-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {grants.map((grant: any) => {
+                  const total = grant.totalShares || grant.numberOfUnits || grant.grantedShares || 0;
+                  const vested = grant.vestedShares || grant.vestedUnits || grant.sharesVested || 0;
+                  const vestPercent = total > 0 ? Math.round((vested / total) * 100) : 0;
+                  const exercisePrice = grant.exercisePrice || grant.grantPrice || grant.strikePrice || 0;
+                  const fmv = grant.currentPrice || grant.fairMarketValue || 0;
+                  const type = grant.stockType || grant.type || 'Stock';
+                  return (
+                    <tr key={grant.id} className="border-b border-cloud dark:border-nebula-purple/50 last:border-0">
+                      <td className="px-5 py-3">
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded ${type === 'RSU' ? 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' : 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'}`}>
+                          {type}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-xs text-silver-mist">{grant.grantDate || '--'}</td>
+                      <td className="px-5 py-3 text-sm text-right font-mono text-ink-black dark:text-pearl">{total.toLocaleString()}</td>
+                      <td className="px-5 py-3 text-right">
+                        <div className="flex items-center gap-2 justify-end">
+                          <span className="text-sm font-mono text-ink-black dark:text-pearl">{vested.toLocaleString()}</span>
+                          <span className="text-[10px] text-silver-mist">({vestPercent}%)</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3 text-sm text-right font-mono text-ink-black dark:text-pearl">
+                        {exercisePrice > 0 ? `$${exercisePrice.toFixed(2)}` : 'N/A'}
+                      </td>
+                      <td className="px-5 py-3 text-sm text-right font-mono font-medium text-emerald-600">
+                        ${(vested * (fmv - exercisePrice)).toLocaleString()}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                          grant.status === 'vested' || grant.status === 'exercised' ? 'bg-emerald-100 text-emerald-700' :
+                          grant.status === 'vesting' || grant.status === 'active' ? 'bg-indigo-100 text-indigo-700' :
+                          'bg-slate-100 text-slate-600'
+                        }`}>
+                          {grant.status || 'Active'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Vesting Timeline */}
-      <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-5">
-        <h3 className="font-bold text-sm text-ink-black dark:text-pearl mb-3">Upcoming Vesting Events</h3>
-        <div className="space-y-3">
-          {grants.map((grant) => (
-            <div key={grant.id} className="flex items-center gap-4 p-3 bg-slate-50 dark:bg-deep-cosmos rounded-lg">
-              <Clock className="w-4 h-4 text-celestial-indigo flex-shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-ink-black dark:text-pearl">{grant.nextVestShares} {grant.type} shares vest</p>
-                <p className="text-xs text-silver-mist">{grant.nextVestDate}</p>
-              </div>
-              <span className="text-sm font-bold text-celestial-indigo">
-                ~${(grant.nextVestShares * (grant.currentPrice - grant.exercisePrice)).toLocaleString()}
-              </span>
-            </div>
-          ))}
+      {grants.length > 0 && (
+        <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-5">
+          <h3 className="font-bold text-sm text-ink-black dark:text-pearl mb-3">Active Grants</h3>
+          <div className="space-y-3">
+            {grants.filter((g: any) => g.status !== 'exercised' && g.status !== 'forfeited').map((grant: any) => {
+              const total = grant.totalShares || grant.numberOfUnits || grant.grantedShares || 0;
+              const vested = grant.vestedShares || grant.vestedUnits || grant.sharesVested || 0;
+              return (
+                <div key={grant.id} className="flex items-center gap-4 p-3 bg-slate-50 dark:bg-deep-cosmos rounded-lg">
+                  <Clock className="w-4 h-4 text-celestial-indigo flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-ink-black dark:text-pearl">
+                      {total - vested} {grant.stockType || 'shares'} unvested
+                    </p>
+                    <p className="text-xs text-silver-mist">{grant.grantCode || grant.grantDate || '--'}</p>
+                  </div>
+                  <span className="text-sm font-bold text-celestial-indigo">
+                    {grant.totalValue ? `$${Number(grant.totalValue).toLocaleString()}` : '--'}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

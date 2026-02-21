@@ -6,7 +6,8 @@ import {
     Calendar,
     AlertCircle,
     CheckCircle2,
-    Calculator
+    Calculator,
+    Loader2
 } from 'lucide-react';
 import { ArrearsService } from '../services';
 
@@ -25,10 +26,22 @@ export default function ArrearsPage() {
             setRequests(data);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+            </div>
+        );
+    }
+
+    const pendingRequests = requests.filter((r: any) => r.status === 'pending' || r.status === 'submitted' || r.status === 'Pending');
+    const totalPendingAmount = pendingRequests.reduce((sum: number, r: any) => sum + (Number(r.totalArrears) || Number(r.arrearsAmount) || Number(r.amount) || 0), 0);
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
@@ -46,45 +59,64 @@ export default function ArrearsPage() {
             </div>
 
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-amber-50 dark:bg-amber-900/10">
-                    <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold text-sm">
-                        <AlertCircle className="w-4 h-4" />
-                        <span>Pending Arrears: $12,450 to be paid in Jan 2025 Payroll</span>
+                {pendingRequests.length > 0 && (
+                    <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-amber-50 dark:bg-amber-900/10">
+                        <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold text-sm">
+                            <AlertCircle className="w-4 h-4" />
+                            <span>Pending Arrears: ${totalPendingAmount.toLocaleString()} ({pendingRequests.length} request{pendingRequests.length !== 1 ? 's' : ''})</span>
+                        </div>
                     </div>
-                </div>
+                )}
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500">
-                            <tr>
-                                <th className="px-6 py-4">Employee</th>
-                                <th className="px-6 py-4">Effective Date</th>
-                                <th className="px-6 py-4">Reason</th>
-                                <th className="px-6 py-4 text-right">Arrear Amount</th>
-                                <th className="px-6 py-4 text-center">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                            {[
-                                { name: 'Alice Cooper', date: 'Oct 01, 2024', reason: 'Late Promotion Entry', amt: '$1,200', status: 'Pending' },
-                                { name: 'Bob Marley', date: 'Nov 15, 2024', reason: 'Retroactive Hike', amt: '$4,500', status: 'Pending' },
-                                { name: 'Charlie Puth', date: 'Sep 01, 2024', reason: 'Unpaid Leave Reversal', amt: '$850', status: 'Approved' },
-                            ].map((row, i) => (
-                                <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 group">
-                                    <td className="px-6 py-4 font-bold text-slate-700 dark:text-slate-300">{row.name}</td>
-                                    <td className="px-6 py-4 text-slate-500 font-mono">{row.date}</td>
-                                    <td className="px-6 py-4 text-slate-600">{row.reason}</td>
-                                    <td className="px-6 py-4 text-right font-bold text-indigo-600">{row.amt}</td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span className={`px-2 py-1 rounded text-xs font-bold ${row.status === 'Approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                                            {row.status}
-                                        </span>
-                                    </td>
+                {requests.length === 0 ? (
+                    <div className="p-8 text-center text-sm text-slate-400">
+                        No arrears requests found. Use "Run Calculation" to detect and process arrears.
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500">
+                                <tr>
+                                    <th className="px-6 py-4">Employee</th>
+                                    <th className="px-6 py-4">Effective Date</th>
+                                    <th className="px-6 py-4">Reason</th>
+                                    <th className="px-6 py-4 text-right">Arrear Amount</th>
+                                    <th className="px-6 py-4 text-center">Status</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                {requests.map((row: any) => {
+                                    const amount = Number(row.totalArrears) || Number(row.arrearsAmount) || Number(row.amount) || 0;
+                                    return (
+                                        <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 group">
+                                            <td className="px-6 py-4 font-bold text-slate-700 dark:text-slate-300">
+                                                {row.employeeName || row.employeeId || '--'}
+                                            </td>
+                                            <td className="px-6 py-4 text-slate-500 font-mono">
+                                                {row.effectiveFrom || row.periodStart || '--'}
+                                            </td>
+                                            <td className="px-6 py-4 text-slate-600">
+                                                {row.reason || row.arrearsType || '--'}
+                                            </td>
+                                            <td className="px-6 py-4 text-right font-bold text-indigo-600">
+                                                ${amount.toLocaleString()}
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                                    row.status === 'approved' || row.status === 'Approved' ? 'bg-emerald-100 text-emerald-700' :
+                                                    row.status === 'processed' ? 'bg-blue-100 text-blue-700' :
+                                                    'bg-amber-100 text-amber-700'
+                                                }`}>
+                                                    {row.status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
         </div>
     );

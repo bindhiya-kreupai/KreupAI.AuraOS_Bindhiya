@@ -1,15 +1,45 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Activity,
     Thermometer,
     Syringe,
     FileCheck,
-    AlertCircle
+    AlertCircle,
+    Loader2
 } from 'lucide-react';
+import { HealthCheckupService } from '../services';
+import type { HealthCheckup } from '../services';
 
 export default function COVIDTrackerPage() {
+    const [checkups, setCheckups] = useState<HealthCheckup[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await HealthCheckupService.getAll();
+                setCheckups(data);
+            } catch {
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
+    // Filter for vaccination-related checkups
+    const vaccinationRecords = checkups.filter(c => c.type?.toLowerCase().includes('vaccin') || c.type?.toLowerCase().includes('covid'));
+
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
@@ -36,14 +66,16 @@ export default function COVIDTrackerPage() {
                     </div>
 
                     <div className="space-y-2">
-                        <div className="flex justify-between text-xs py-2 border-b border-slate-100 dark:border-slate-800">
-                            <span className="text-slate-500">Yesterday</span>
-                            <span className="font-bold text-emerald-600">Healthy (36.6°C)</span>
-                        </div>
-                        <div className="flex justify-between text-xs py-2 border-b border-slate-100 dark:border-slate-800">
-                            <span className="text-slate-500">Dec 04</span>
-                            <span className="font-bold text-emerald-600">Healthy (36.5°C)</span>
-                        </div>
+                        {checkups.length === 0 ? (
+                            <div className="text-center py-4 text-sm text-slate-400">No health check history available.</div>
+                        ) : (
+                            checkups.slice(0, 3).map((c, i) => (
+                                <div key={c.id || i} className="flex justify-between text-xs py-2 border-b border-slate-100 dark:border-slate-800">
+                                    <span className="text-slate-500">{c.date}</span>
+                                    <span className="font-bold text-emerald-600">{c.status === 'Completed' ? 'Healthy' : c.status}</span>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
 
@@ -54,28 +86,31 @@ export default function COVIDTrackerPage() {
                             <Syringe className="w-5 h-5 text-emerald-500" /> Vaccination Record
                         </h3>
                         <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
-                            <FileCheck className="w-3 h-3" /> VERIFIED
+                            <FileCheck className="w-3 h-3" /> {vaccinationRecords.length > 0 ? 'VERIFIED' : 'NO RECORDS'}
                         </span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {[
-                            { dose: '1st Dose', date: 'Jan 15, 2021', vaccine: 'Pfizer-BioNTech', batch: 'ER8901' },
-                            { dose: '2nd Dose', date: 'Feb 15, 2021', vaccine: 'Pfizer-BioNTech', batch: 'EW3321' },
-                            { dose: 'Booster', date: 'Oct 10, 2021', vaccine: 'Pfizer-BioNTech', batch: 'FC1244' },
-                        ].map((vax, i) => (
-                            <div key={i} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 relative overflow-hidden">
-                                <span className="absolute top-0 right-0 bg-slate-100 dark:bg-slate-800 text-[10px] font-bold px-2 py-1 rounded-bl-xl text-slate-500">{vax.dose}</span>
-                                <div className="font-bold text-lg mb-1">{vax.vaccine}</div>
-                                <div className="text-xs text-slate-500">Date: {vax.date}</div>
-                                <div className="text-xs text-slate-500">Batch: {vax.batch}</div>
-                            </div>
-                        ))}
-                    </div>
+                    {vaccinationRecords.length === 0 ? (
+                        <div className="text-center py-8 text-slate-400">
+                            <Syringe className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                            <p>No vaccination records found. Please upload your vaccination certificate.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {vaccinationRecords.map((vax, i) => (
+                                <div key={vax.id || i} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 relative overflow-hidden">
+                                    <span className="absolute top-0 right-0 bg-slate-100 dark:bg-slate-800 text-[10px] font-bold px-2 py-1 rounded-bl-xl text-slate-500">{vax.type}</span>
+                                    <div className="font-bold text-lg mb-1">{vax.doctor || 'Vaccine'}</div>
+                                    <div className="text-xs text-slate-500">Date: {vax.date}</div>
+                                    <div className="text-xs text-slate-500">Clinic: {vax.clinic}</div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                     <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex gap-3 text-sm text-amber-800 dark:text-amber-200 border border-amber-100 dark:border-amber-800/50">
                         <AlertCircle className="w-5 h-5 shrink-0" />
-                        <p>New booster shots are available for eligible employees. Check the 'Health Checkups' page to schedule an appointment.</p>
+                        <p>New booster shots are available for eligible employees. Check the &apos;Health Checkups&apos; page to schedule an appointment.</p>
                     </div>
                 </div>
             </div>

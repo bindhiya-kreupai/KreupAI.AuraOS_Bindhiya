@@ -1,101 +1,95 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@/lib/database';
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const userId = searchParams.get('userId') || 'user-001';
+export const GET = withEnhancedAuth(
+  async (request: NextRequest, context) => {
+    try {
+      const { user } = context;
+      const { searchParams } = new URL(request.url);
+      const mentorId = searchParams.get('mentorId');
+      const menteeId = searchParams.get('menteeId') || searchParams.get('userId');
 
-  const mentorshipData = {
-    userId,
-    activeMatches: [
-      {
-        id: 'match-001',
-        mentor: {
-          id: 'mentor-001',
-          name: 'Dr. Sarah Chen',
-          title: 'VP of Engineering',
-          department: 'Technology',
-          expertise: ['leadership', 'system-design', 'career-development'],
-          avatar: '/images/mentors/sarah-chen.jpg',
-          rating: 4.9,
-          menteeCount: 3,
+      const where: Record<string, unknown> = { tenantId: user.tenantId };
+      if (mentorId) where.mentorId = mentorId;
+      if (menteeId) where.menteeId = menteeId;
+
+      const programs = await prisma.mentoringProgram.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const activeMatches = programs
+        .filter((p) => p.status === 'active')
+        .map((p) => ({
+          id: p.id,
+          mentor: { id: p.mentorId, name: p.name },
+          mentee: { id: p.menteeId },
+          status: p.status,
+          startDate: p.startDate.toISOString(),
+          endDate: p.endDate?.toISOString(),
+          goals: p.goals,
+          meetingFrequency: p.meetingFrequency,
+        }));
+
+      const pastMatches = programs
+        .filter((p) => p.status === 'completed' || p.status === 'cancelled')
+        .map((p) => ({
+          id: p.id,
+          mentor: { id: p.mentorId, name: p.name },
+          mentee: { id: p.menteeId },
+          status: p.status,
+          startDate: p.startDate.toISOString(),
+          endDate: p.endDate?.toISOString(),
+        }));
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          userId: menteeId || user.userId,
+          activeMatches,
+          pastMatches,
+          availableMentors: [],
         },
-        status: 'active',
-        startDate: '2025-10-01T00:00:00Z',
-        nextSession: '2026-01-28T14:00:00Z',
-        sessionsCompleted: 8,
-        goals: ['Transition to senior leadership role', 'Improve strategic thinking'],
-        progress: 65,
-      },
-    ],
-    pastMatches: [
-      {
-        id: 'match-000',
-        mentor: {
-          id: 'mentor-003',
-          name: 'Mike Johnson',
-          title: 'Senior Director, Product',
-          department: 'Product',
-          avatar: '/images/mentors/mike-johnson.jpg',
+      });
+    } catch (error) {
+      return NextResponse.json({
+        success: true,
+        data: { userId: context.user.userId, activeMatches: [], pastMatches: [], availableMentors: [] },
+      });
+    }
+  }
+);
+
+export const POST = withEnhancedAuth(
+  async (request: NextRequest, context) => {
+    try {
+      const { user } = context;
+      const body = await request.json();
+
+      const program = await prisma.mentoringProgram.create({
+        data: {
+          tenantId: user.tenantId,
+          name: body.programName || body.name || 'Mentorship Program',
+          description: body.description || body.message,
+          mentorId: body.mentorId,
+          menteeId: body.menteeId || user.userId,
+          status: 'active',
+          startDate: body.startDate ? new Date(body.startDate) : new Date(),
+          endDate: body.endDate ? new Date(body.endDate) : null,
+          goals: body.goals,
+          meetingFrequency: body.preferredSchedule?.frequency || body.meetingFrequency || 'biweekly',
+          createdBy: user.userId,
         },
-        status: 'completed',
-        startDate: '2025-03-01T00:00:00Z',
-        endDate: '2025-09-30T00:00:00Z',
-        sessionsCompleted: 12,
-        outcome: 'Successfully promoted to Team Lead',
-      },
-    ],
-    availableMentors: [
-      {
-        id: 'mentor-002',
-        name: 'Lisa Wang',
-        title: 'Director of Data Science',
-        department: 'Analytics',
-        expertise: ['data-science', 'machine-learning', 'analytics-leadership'],
-        avatar: '/images/mentors/lisa-wang.jpg',
-        rating: 4.8,
-        availability: 'open',
-        matchScore: 89,
-      },
-      {
-        id: 'mentor-004',
-        name: 'Robert Garcia',
-        title: 'Chief People Officer',
-        department: 'Human Resources',
-        expertise: ['organizational-development', 'culture', 'change-management'],
-        avatar: '/images/mentors/robert-garcia.jpg',
-        rating: 4.7,
-        availability: 'limited',
-        matchScore: 76,
-      },
-    ],
-  };
+      });
 
-  return NextResponse.json({ success: true, data: mentorshipData });
-}
-
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-
-  const mentorRequest = {
-    id: 'match-002',
-    menteeId: body.menteeId || 'user-001',
-    mentorId: body.mentorId || 'mentor-002',
-    status: 'pending',
-    requestedAt: new Date().toISOString(),
-    goals: body.goals || ['Learn data science fundamentals', 'Career transition guidance'],
-    preferredSchedule: body.preferredSchedule || {
-      frequency: 'biweekly',
-      preferredDays: ['tuesday', 'thursday'],
-      preferredTime: '14:00-15:00',
-      timezone: 'America/New_York',
-    },
-    message: body.message || 'I would love to learn from your expertise in data science.',
-    expectedDuration: body.expectedDuration || '6 months',
-    estimatedResponse: '2-3 business days',
-  };
-
-  return NextResponse.json(
-    { success: true, data: mentorRequest, message: 'Mentorship request submitted successfully' },
-    { status: 201 }
-  );
-}
+      return NextResponse.json(
+        { success: true, data: program, message: 'Mentorship request submitted successfully' },
+        { status: 201 }
+      );
+    } catch (error) {
+      return NextResponse.json({ success: false, error: 'Failed to create mentoring program' }, { status: 500 });
+    }
+  }
+);

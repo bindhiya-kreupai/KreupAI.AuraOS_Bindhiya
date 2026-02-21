@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import {
   Play,
-  CircleStop,
+  StopCircle,
   UserCheck,
   GitBranch,
   Mail,
@@ -44,7 +44,7 @@ interface NodeType {
 
 const nodeTypes: NodeType[] = [
   { type: "start", label: "Start", icon: <Play className="w-4 h-4" />, color: "bg-aurora-green" },
-  { type: "end", label: "End", icon: <CircleStop className="w-4 h-4" />, color: "bg-coral-alert" },
+  { type: "end", label: "End", icon: <StopCircle className="w-4 h-4" />, color: "bg-coral-alert" },
   { type: "approval", label: "Approval", icon: <UserCheck className="w-4 h-4" />, color: "bg-celestial-indigo" },
   { type: "condition", label: "Condition", icon: <GitBranch className="w-4 h-4" />, color: "bg-sunset-amber" },
   { type: "email", label: "Email", icon: <Mail className="w-4 h-4" />, color: "bg-sky-500" },

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ClipboardList, Activity, Heart, Brain, ChevronRight, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ClipboardList, Activity, Heart, Brain, ChevronRight, Check, Loader2 } from 'lucide-react';
+import { HRAService } from '../services';
 
 const SECTIONS = [
     { title: 'General Health', status: 'Completed', score: 85, icon: Activity, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' },
@@ -11,6 +12,31 @@ const SECTIONS = [
 
 export default function HRAPage() {
     const [started, setStarted] = useState(false);
+    const [assessments, setAssessments] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await HRAService.getAssessments();
+                setAssessments(data as any[]);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">

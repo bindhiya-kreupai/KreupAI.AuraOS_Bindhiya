@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Plane, Calendar, MapPin, Briefcase, ChevronRight, CheckCircle } from 'lucide-react';
+import { Plane, Calendar, MapPin, Briefcase, ChevronRight, CheckCircle, Loader2 } from 'lucide-react';
 import { TravelRequestService } from '../services';
 
 export default function TravelRequestPage() {
@@ -20,10 +20,19 @@ export default function TravelRequestPage() {
             setData(requests);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+                <span className="ml-2 text-sm text-slate-500">Loading travel request...</span>
+            </div>
+        );
+    }
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
@@ -37,7 +46,6 @@ export default function TravelRequestPage() {
                 </div>
             </div>
 
-            {/* Stepper */}
             <div className="flex items-center gap-4 max-w-2xl">
                 {[1, 2, 3].map((s) => (
                     <div key={s} className="flex items-center gap-2 flex-1">

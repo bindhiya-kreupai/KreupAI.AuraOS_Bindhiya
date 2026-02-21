@@ -32,20 +32,22 @@ import {
 export class TeamDashboardService {
   // Team Members
   static async getTeamMembers(managerId?: string): Promise<TeamMember[]> {
-    return APIClient.get<TeamMember[]>('/manager/team/members', managerId ? { managerId } : undefined);
+    const response = await APIClient.get<{ members: TeamMember[]; metrics: TeamMetrics }>('/manager/team', managerId ? { managerId } : undefined);
+    return response.members;
   }
 
   static async getTeamMemberById(memberId: string): Promise<TeamMember> {
-    return APIClient.get<TeamMember>(`/manager/team/members/${memberId}`);
+    const response = await APIClient.get<{ members: TeamMember[] }>('/manager/team', { managerId: memberId });
+    return response.members[0];
   }
 
   static async updateTeamMember(memberId: string, updates: Partial<TeamMember>): Promise<TeamMember> {
-    return APIClient.put<TeamMember>(`/manager/team/members/${memberId}`, updates);
+    return APIClient.put<TeamMember>(`/manager/team`, { memberId, ...updates });
   }
 
-  // Team Metrics
   static async getTeamMetrics(managerId: string, period?: string): Promise<TeamMetrics> {
-    return APIClient.get<TeamMetrics>('/manager/team/metrics', { managerId, period });
+    const response = await APIClient.get<{ members: TeamMember[]; metrics: TeamMetrics }>('/manager/team', { managerId, period });
+    return response.metrics;
   }
 
   static async calculateTeamMetrics(managerId: string): Promise<TeamMetrics> {
@@ -97,28 +99,28 @@ export class TeamDashboardService {
       pendingReviews: 0,
     };
 
-    return APIClient.post<TeamMetrics>('/manager/team/metrics/calculate', { managerId, metrics });
+    return APIClient.post<TeamMetrics>('/manager/team', { managerId, metrics });
   }
 
   // Team Goals
   static async getTeamGoals(managerId?: string): Promise<TeamGoal[]> {
-    return APIClient.get<TeamGoal[]>('/manager/team/goals', managerId ? { managerId } : undefined);
+    return APIClient.get<TeamGoal[]>('/manager/team', managerId ? { managerId } : undefined);
   }
 
   static async getTeamGoalById(goalId: string): Promise<TeamGoal> {
-    return APIClient.get<TeamGoal>(`/manager/team/goals/${goalId}`);
+    return APIClient.get<TeamGoal>('/manager/team', { goalId });
   }
 
   static async createTeamGoal(goal: TeamGoal): Promise<TeamGoal> {
-    return APIClient.post<TeamGoal>('/manager/team/goals', goal);
+    return APIClient.post<TeamGoal>('/manager/team', goal);
   }
 
   static async updateTeamGoal(goalId: string, updates: Partial<TeamGoal>): Promise<TeamGoal> {
-    return APIClient.put<TeamGoal>(`/manager/team/goals/${goalId}`, updates);
+    return APIClient.put<TeamGoal>('/manager/team', { goalId, ...updates });
   }
 
   static async deleteTeamGoal(goalId: string): Promise<void> {
-    return APIClient.delete<void>(`/manager/team/goals/${goalId}`);
+    return APIClient.delete<void>('/manager/team', { goalId });
   }
 
   static async updateGoalProgress(goalId: string, progress: number, remarks: string): Promise<TeamGoal> {
@@ -159,15 +161,15 @@ export class ApprovalCenterService {
   }
 
   static async getApprovalRequestById(requestId: string): Promise<ApprovalRequest> {
-    return APIClient.get<ApprovalRequest>(`/manager/approvals/${requestId}`);
+    return APIClient.get<ApprovalRequest>('/manager/approvals', { requestId });
   }
 
   static async getPendingApprovals(managerId: string): Promise<ApprovalRequest[]> {
-    return APIClient.get<ApprovalRequest[]>('/manager/approvals/pending', { managerId });
+    return APIClient.get<ApprovalRequest[]>('/manager/approvals', { managerId, status: 'pending' });
   }
 
   static async getApprovalSummary(managerId: string): Promise<ApprovalSummary> {
-    return APIClient.get<ApprovalSummary>('/manager/approvals/summary', { managerId });
+    return APIClient.get<ApprovalSummary>('/manager/approvals', { managerId });
   }
 
   static async approveRequest(requestId: string, approverId: string, remarks?: string): Promise<ApprovalRequest> {
@@ -270,7 +272,7 @@ export class ApprovalCenterService {
   }
 
   static async addComment(requestId: string, comment: ApprovalComment): Promise<ApprovalRequest> {
-    return APIClient.post<ApprovalRequest>(`/manager/approvals/${requestId}/comments`, comment);
+    return APIClient.post<ApprovalRequest>('/manager/approvals', { requestId, comment });
   }
 
   static async bulkApprove(requestIds: string[], approverId: string, remarks?: string): Promise<ApprovalRequest[]> {
@@ -290,7 +292,7 @@ export class ApprovalCenterService {
     requestId: string,
     updates: Partial<ApprovalRequest>
   ): Promise<ApprovalRequest> {
-    return APIClient.put<ApprovalRequest>(`/manager/approvals/${requestId}`, updates);
+    return APIClient.put<ApprovalRequest>('/manager/approvals', { requestId, ...updates });
   }
 }
 
@@ -304,7 +306,7 @@ export class TeamReportsService {
   }
 
   static async getReportById(reportId: string): Promise<TeamReport> {
-    return APIClient.get<TeamReport>(`/manager/reports/${reportId}`);
+    return APIClient.get<TeamReport>('/manager/reports', { reportId });
   }
 
   static async generateReport(
@@ -365,7 +367,7 @@ export class TeamReportsService {
       },
     };
 
-    return APIClient.post<TeamReport>('/manager/reports/generate', report);
+    return APIClient.post<TeamReport>('/manager/reports', report);
   }
 
   private static async generatePerformanceReportData(
@@ -543,11 +545,11 @@ export class TeamReportsService {
   }
 
   static async shareReport(reportId: string, shareWith: string[]): Promise<TeamReport> {
-    return APIClient.post<TeamReport>(`/manager/reports/${reportId}/share`, { shareWith });
+    return APIClient.post<TeamReport>('/manager/reports', { reportId, shareWith });
   }
 
   private static async updateReport(reportId: string, updates: Partial<TeamReport>): Promise<TeamReport> {
-    return APIClient.put<TeamReport>(`/manager/reports/${reportId}`, updates);
+    return APIClient.put<TeamReport>('/manager/reports', { reportId, ...updates });
   }
 }
 
@@ -557,23 +559,23 @@ export class TeamReportsService {
 
 export class DelegationService {
   static async getDelegationRules(managerId?: string): Promise<DelegationRule[]> {
-    return APIClient.get<DelegationRule[]>('/manager/delegations', managerId ? { managerId } : undefined);
+    return APIClient.get<DelegationRule[]>('/manager/delegation', managerId ? { managerId } : undefined);
   }
 
   static async getDelegationRuleById(delegationId: string): Promise<DelegationRule> {
-    return APIClient.get<DelegationRule>(`/manager/delegations/${delegationId}`);
+    return APIClient.get<DelegationRule>(`/manager/delegation?id=${delegationId}`);
   }
 
   static async createDelegationRule(rule: DelegationRule): Promise<DelegationRule> {
-    return APIClient.post<DelegationRule>('/manager/delegations', rule);
+    return APIClient.post<DelegationRule>('/manager/delegation', rule);
   }
 
   static async updateDelegationRule(delegationId: string, updates: Partial<DelegationRule>): Promise<DelegationRule> {
-    return APIClient.put<DelegationRule>(`/manager/delegations/${delegationId}`, updates);
+    return APIClient.put<DelegationRule>('/manager/delegation', { id: delegationId, ...updates });
   }
 
   static async deleteDelegationRule(delegationId: string): Promise<void> {
-    return APIClient.delete<void>(`/manager/delegations/${delegationId}`);
+    return APIClient.delete<void>(`/manager/delegation?id=${delegationId}`);
   }
 
   static async activateDelegation(delegationId: string, reason: string): Promise<DelegationRule> {
@@ -622,23 +624,23 @@ export class DelegationService {
   }
 
   static async getDelegationSummary(managerId: string): Promise<DelegationSummary> {
-    return APIClient.get<DelegationSummary>('/manager/delegations/summary', { managerId });
+    return APIClient.get<DelegationSummary>('/manager/delegation', { managerId });
   }
 
   static async recordDelegationAction(delegationId: string, action: DelegationAction): Promise<DelegationRule> {
-    return APIClient.post<DelegationRule>(`/manager/delegations/${delegationId}/actions`, action);
+    return APIClient.post<DelegationRule>('/manager/delegation', { id: delegationId, ...action });
   }
 
   // Delegation Settings
   static async getDelegationSettings(managerId: string): Promise<DelegationSettings> {
-    return APIClient.get<DelegationSettings>('/manager/delegations/settings', { managerId });
+    return APIClient.get<DelegationSettings>('/manager/settings', { managerId });
   }
 
   static async updateDelegationSettings(
     managerId: string,
     updates: Partial<DelegationSettings>
   ): Promise<DelegationSettings> {
-    return APIClient.put<DelegationSettings>('/manager/delegations/settings', { managerId, ...updates });
+    return APIClient.put<DelegationSettings>('/manager/settings', { managerId, ...updates });
   }
 
   private static getDefaultSettings(managerId: string): DelegationSettings {

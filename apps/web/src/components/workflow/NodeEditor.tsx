@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import {
   Settings,
   Play,
-  CircleStop,
+  StopCircle,
   UserCheck,
   GitBranch,
   Mail,
@@ -45,7 +45,7 @@ const mockSelectedNode: WorkflowNodeConfig = {
 
 const nodeTypeConfig: Record<NodeType, { icon: React.ReactNode; color: string; label: string }> = {
   start: { icon: <Play className="w-4 h-4" />, color: "text-aurora-green", label: "Start" },
-  end: { icon: <CircleStop className="w-4 h-4" />, color: "text-coral-alert", label: "End" },
+  end: { icon: <StopCircle className="w-4 h-4" />, color: "text-coral-alert", label: "End" },
   approval: { icon: <UserCheck className="w-4 h-4" />, color: "text-celestial-indigo", label: "Approval" },
   condition: { icon: <GitBranch className="w-4 h-4" />, color: "text-sunset-amber", label: "Condition" },
   email: { icon: <Mail className="w-4 h-4" />, color: "text-sky-500", label: "Email" },
