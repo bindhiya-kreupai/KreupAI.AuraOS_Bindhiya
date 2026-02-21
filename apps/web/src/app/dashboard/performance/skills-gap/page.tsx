@@ -32,18 +32,64 @@ import {
     CartesianGrid
 } from 'recharts';
 
+interface SkillEntry {
+    name: string;
+    currentLevel: number;
+    requiredLevel: number;
+    gap: number;
+}
+
+interface SkillCategory {
+    category: string;
+    skills: SkillEntry[];
+}
+
+interface Recommendation {
+    skill: string;
+    type: string;
+    title: string;
+    provider: string | null;
+    estimatedHours: string | null;
+}
+
+interface SkillsGapApiData {
+    assessments: any[];
+    skillCategories: SkillCategory[];
+    recommendations: Recommendation[];
+    teamAnalysis: any;
+}
+
 export default function SkillsGapPage() {
     const [selectedMember, setSelectedMember] = useState('My Profile');
     const [loading, setLoading] = useState(true);
     const [competencies, setCompetencies] = useState<any[]>([]);
+    const [skillsData, setSkillsData] = useState<SkillsGapApiData | null>(null);
+    const [hasAssessments, setHasAssessments] = useState(true);
 
     useEffect(() => {
         async function loadData() {
             try {
-                const data = await CompetencyService.getCompetencies();
-                setCompetencies(data);
+                // Fetch both competencies and skills-gap assessment data in parallel
+                const [compData, skillsResponse] = await Promise.all([
+                    CompetencyService.getCompetencies(),
+                    fetch('/api/v1/performance/skills-gap').then(r => r.json()),
+                ]);
+
+                setCompetencies(compData);
+
+                if (skillsResponse.success && skillsResponse.data) {
+                    setSkillsData(skillsResponse.data);
+                    // Check if there are any real assessments with data
+                    const hasRealData =
+                        skillsResponse.data.assessments?.length > 0 &&
+                        skillsResponse.data.skillCategories?.length > 0;
+                    setHasAssessments(hasRealData);
+                } else {
+                    setHasAssessments(false);
+                }
             } catch (error) {
                 console.error('Failed to load skills data:', error);
+                setHasAssessments(false);
             } finally {
                 setLoading(false);
             }
@@ -51,20 +97,39 @@ export default function SkillsGapPage() {
         loadData();
     }, []);
 
-    // Build radar data from competencies
-    const skillGapData = competencies.slice(0, 6).map(c => ({
-        subject: c.name || c.code || 'Skill',
-        A: 3, // Current skill (placeholder - would come from employee assessment)
-        B: 4, // Required level (placeholder - would come from job competency map)
-        fullMark: 5,
-    }));
+    // Build radar data using real assessment levels when available,
+    // falling back to competency names only when no assessments exist
+    const skillGapData = (() => {
+        if (skillsData?.skillCategories && skillsData.skillCategories.length > 0) {
+            // Flatten all skills from all categories and take the top 6
+            const allSkills = skillsData.skillCategories.flatMap(cat => cat.skills);
+            return allSkills.slice(0, 6).map(s => ({
+                subject: s.name,
+                A: s.currentLevel,
+                B: s.requiredLevel,
+                fullMark: 5,
+            }));
+        }
 
-    // Default data if no competencies
+        // Fallback: use competency names but show zeros since no assessments
+        return competencies.slice(0, 6).map(c => ({
+            subject: c.name || c.code || 'Skill',
+            A: 0,
+            B: 0,
+            fullMark: 5,
+        }));
+    })();
+
+    // Default data if nothing at all
     const displayData = skillGapData.length > 0 ? skillGapData : [
         { subject: 'No data', A: 0, B: 0, fullMark: 5 },
     ];
 
     const criticalGaps = displayData.filter(s => s.B - s.A >= 2);
+    const hasAnyData = competencies.length > 0 || (skillsData?.skillCategories?.length ?? 0) > 0;
+
+    // Recommendations from the API
+    const recommendations = skillsData?.recommendations || [];
 
     if (loading) {
         return (
@@ -99,6 +164,19 @@ export default function SkillsGapPage() {
                 </div>
             </div>
 
+            {/* No assessments banner */}
+            {!hasAssessments && hasAnyData && (
+                <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl p-4 flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
+                    <div>
+                        <p className="text-sm font-medium text-amber-800 dark:text-amber-300">No skill assessments completed</p>
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                            Complete a skill assessment to see your actual proficiency levels compared against role requirements. Until then, the radar chart will show competency names without level data.
+                        </p>
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left: Radar Chart */}
                 <div className="lg:col-span-1 bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-col">
@@ -108,7 +186,7 @@ export default function SkillsGapPage() {
                     <p className="text-xs text-silver-mist mb-6">Comparing your current skill levels vs role expectations.</p>
 
                     <div className="flex-1 min-h-[300px] w-full relative">
-                        {competencies.length === 0 ? (
+                        {!hasAnyData ? (
                             <div className="flex flex-col items-center justify-center h-full text-slate-400">
                                 <Target className="w-10 h-10 mb-2 opacity-30" />
                                 <p className="text-sm">No competency data available</p>
@@ -166,9 +244,11 @@ export default function SkillsGapPage() {
                             <span className="text-sm font-bold uppercase">AI Insight</span>
                         </div>
                         <p className="text-sm font-medium leading-relaxed">
-                            {competencies.length > 0
-                                ? `Analyzing ${competencies.length} competencies in your framework. Complete skill assessments to receive personalized recommendations.`
-                                : 'Add competencies and complete assessments to receive AI-powered skill development recommendations.'}
+                            {hasAssessments && skillsData
+                                ? `Analyzing ${skillsData.skillCategories.flatMap(c => c.skills).length} skills across ${skillsData.skillCategories.length} categories. ${criticalGaps.length > 0 ? `${criticalGaps.length} critical gap${criticalGaps.length > 1 ? 's' : ''} require${criticalGaps.length === 1 ? 's' : ''} attention.` : 'No critical gaps detected.'}`
+                                : competencies.length > 0
+                                    ? `${competencies.length} competencies found in your framework. Complete skill assessments to receive personalized gap analysis.`
+                                    : 'Add competencies and complete assessments to receive AI-powered skill development recommendations.'}
                         </p>
                     </div>
                 </div>
@@ -179,11 +259,29 @@ export default function SkillsGapPage() {
                         <BookOpen className="w-5 h-5 text-emerald-500" /> Learning Path
                     </h3>
 
-                    <div className="flex flex-col items-center justify-center flex-1 py-8 text-slate-400">
-                        <BookOpen className="w-10 h-10 mb-2 opacity-30" />
-                        <p className="text-sm font-medium">No training recommendations yet</p>
-                        <p className="text-xs mt-1 text-center">Complete skill assessments to get personalized learning paths</p>
-                    </div>
+                    {recommendations.length > 0 ? (
+                        <div className="space-y-3 flex-1">
+                            {recommendations.slice(0, 5).map((rec, idx) => (
+                                <div key={idx} className="flex items-start gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{rec.title}</p>
+                                        <p className="text-xs text-slate-400 mt-0.5">
+                                            {rec.skill} {rec.provider ? `- ${rec.provider}` : ''} {rec.estimatedHours ? `(${rec.estimatedHours})` : ''}
+                                        </p>
+                                    </div>
+                                    <span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded capitalize shrink-0">
+                                        {rec.type}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center flex-1 py-8 text-slate-400">
+                            <BookOpen className="w-10 h-10 mb-2 opacity-30" />
+                            <p className="text-sm font-medium">No training recommendations yet</p>
+                            <p className="text-xs mt-1 text-center">Complete skill assessments to get personalized learning paths</p>
+                        </div>
+                    )}
 
                     <button className="w-full mt-4 py-2 border border-cloud dark:border-slate-700 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                         View Full Catalog
