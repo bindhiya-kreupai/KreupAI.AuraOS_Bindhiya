@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ShieldCheck,
   Plus,
@@ -31,6 +31,30 @@ interface FormFieldOption {
   id: string;
   label: string;
   type: string;
+}
+
+interface ApiFormDefinition {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  status: string;
+  fields?: Array<{
+    id: string;
+    name: string;
+    label: string;
+    type: string;
+    required: boolean;
+    order: number;
+    options?: Array<{ value: string; label: string }>;
+    validation?: Record<string, unknown>;
+    placeholder?: string;
+  }>;
+  [key: string]: unknown;
+}
+
+interface ValidationRulesProps {
+  formDefinition?: ApiFormDefinition | null;
 }
 
 const ruleTypeConfig: Record<
@@ -74,7 +98,68 @@ const ruleTypeConfig: Record<
   },
 };
 
-const mockFields: FormFieldOption[] = [
+function deriveRulesFromApiFields(fields: NonNullable<ApiFormDefinition["fields"]>): { fieldOptions: FormFieldOption[]; rules: ValidationRule[] } {
+  const fieldOptions: FormFieldOption[] = fields.map((f) => ({
+    id: f.id,
+    label: f.label,
+    type: f.type,
+  }));
+
+  const rules: ValidationRule[] = [];
+  fields.forEach((f) => {
+    if (f.required) {
+      rules.push({
+        id: `rule-${f.id}-required`,
+        type: "required",
+        fieldId: f.id,
+        fieldLabel: f.label,
+        errorMessage: `${f.label} is required`,
+        isActive: true,
+      });
+    }
+
+    if (f.validation) {
+      const v = f.validation;
+      if (v.minLength) {
+        rules.push({
+          id: `rule-${f.id}-minLength`,
+          type: "minLength",
+          fieldId: f.id,
+          fieldLabel: f.label,
+          value: v.minLength as number,
+          errorMessage: `${f.label} must be at least ${v.minLength} characters`,
+          isActive: true,
+        });
+      }
+      if (v.maxLength) {
+        rules.push({
+          id: `rule-${f.id}-maxLength`,
+          type: "maxLength",
+          fieldId: f.id,
+          fieldLabel: f.label,
+          value: v.maxLength as number,
+          errorMessage: `${f.label} cannot exceed ${v.maxLength} characters`,
+          isActive: true,
+        });
+      }
+      if (v.pattern) {
+        rules.push({
+          id: `rule-${f.id}-pattern`,
+          type: "pattern",
+          fieldId: f.id,
+          fieldLabel: f.label,
+          value: v.pattern as string,
+          errorMessage: `${f.label} format is invalid`,
+          isActive: true,
+        });
+      }
+    }
+  });
+
+  return { fieldOptions, rules };
+}
+
+const defaultFieldOptions: FormFieldOption[] = [
   { id: "field-001", label: "Full Name", type: "text" },
   { id: "field-002", label: "Email Address", type: "email" },
   { id: "field-003", label: "Phone Number", type: "text" },
@@ -84,81 +169,53 @@ const mockFields: FormFieldOption[] = [
   { id: "field-007", label: "Comments", type: "textarea" },
 ];
 
-const mockRules: ValidationRule[] = [
-  {
-    id: "rule-001",
-    type: "required",
-    fieldId: "field-001",
-    fieldLabel: "Full Name",
-    errorMessage: "Full name is required",
-    isActive: true,
-  },
-  {
-    id: "rule-002",
-    type: "minLength",
-    fieldId: "field-001",
-    fieldLabel: "Full Name",
-    value: 2,
-    errorMessage: "Name must be at least 2 characters",
-    isActive: true,
-  },
-  {
-    id: "rule-003",
-    type: "pattern",
-    fieldId: "field-002",
-    fieldLabel: "Email Address",
-    value: "^[\\w.-]+@[\\w.-]+\\.\\w+$",
-    errorMessage: "Please enter a valid email address",
-    isActive: true,
-  },
-  {
-    id: "rule-004",
-    type: "required",
-    fieldId: "field-002",
-    fieldLabel: "Email Address",
-    errorMessage: "Email address is required",
-    isActive: true,
-  },
-  {
-    id: "rule-005",
-    type: "pattern",
-    fieldId: "field-003",
-    fieldLabel: "Phone Number",
-    value: "^\\+?[0-9\\s-]{7,15}$",
-    errorMessage: "Please enter a valid phone number",
-    isActive: false,
-  },
-  {
-    id: "rule-006",
-    type: "maxLength",
-    fieldId: "field-007",
-    fieldLabel: "Comments",
-    value: 500,
-    errorMessage: "Comments cannot exceed 500 characters",
-    isActive: true,
-  },
-  {
-    id: "rule-007",
-    type: "custom",
-    fieldId: "field-005",
-    fieldLabel: "Employee ID",
-    value: "value.startsWith('EMP-')",
-    errorMessage: "Employee ID must start with 'EMP-'",
-    isActive: true,
-  },
-];
-
-export function ValidationRules() {
-  const [rules, setRules] = useState<ValidationRule[]>(mockRules);
+export function ValidationRules({ formDefinition }: ValidationRulesProps) {
+  const [fieldOptions, setFieldOptions] = useState<FormFieldOption[]>(defaultFieldOptions);
+  const [rules, setRules] = useState<ValidationRule[]>([]);
+  const [loading, setLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newRuleType, setNewRuleType] = useState<RuleType>("required");
-  const [newRuleField, setNewRuleField] = useState<string>(mockFields[0].id);
+  const [newRuleField, setNewRuleField] = useState<string>("");
   const [newRuleValue, setNewRuleValue] = useState<string>("");
   const [newRuleError, setNewRuleError] = useState<string>("");
   const [filterField, setFilterField] = useState<string>("all");
 
+  useEffect(() => {
+    if (formDefinition?.fields && formDefinition.fields.length > 0) {
+      const { fieldOptions: opts, rules: derivedRules } = deriveRulesFromApiFields(formDefinition.fields);
+      setFieldOptions(opts);
+      setRules(derivedRules);
+      if (opts.length > 0) setNewRuleField(opts[0].id);
+      return;
+    }
+
+    // Fallback: fetch from API
+    if (!formDefinition) {
+      setLoading(true);
+      fetch("/api/v1/admin/forms")
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.success && result.data && result.data.length > 0) {
+            return fetch(`/api/v1/admin/forms/${result.data[0].id}`);
+          }
+          return null;
+        })
+        .then((res) => res?.json())
+        .then((result) => {
+          if (result?.success && result.data?.fields) {
+            const { fieldOptions: opts, rules: derivedRules } = deriveRulesFromApiFields(result.data.fields);
+            setFieldOptions(opts);
+            setRules(derivedRules);
+            if (opts.length > 0) setNewRuleField(opts[0].id);
+          }
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }
+  }, [formDefinition]);
+
   const handleAddRule = () => {
-    const selectedField = mockFields.find((f) => f.id === newRuleField);
+    const selectedField = fieldOptions.find((f) => f.id === newRuleField);
     if (!selectedField) return;
 
     const config = ruleTypeConfig[newRuleType];
@@ -222,6 +279,19 @@ export function ValidationRules() {
     {} as Record<string, ValidationRule[]>
   );
 
+  if (loading) {
+    return (
+      <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-6 animate-pulse">
+        <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-48 mb-6" />
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800 rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-6">
       {/* Header */}
@@ -235,7 +305,7 @@ export function ValidationRules() {
               Validation Rules
             </h2>
             <p className="text-sm text-silver-mist">
-              Configure validation rules for form fields
+              {formDefinition ? `Rules for: ${formDefinition.name}` : "Configure validation rules for form fields"}
             </p>
           </div>
         </div>
@@ -287,7 +357,7 @@ export function ValidationRules() {
                   onChange={(e) => setNewRuleField(e.target.value)}
                   className="w-full px-3 py-2 text-sm rounded-lg border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-ink-black dark:text-pearl appearance-none"
                 >
-                  {mockFields.map((field) => (
+                  {fieldOptions.map((field) => (
                     <option key={field.id} value={field.id}>
                       {field.label} ({field.type})
                     </option>
@@ -372,7 +442,7 @@ export function ValidationRules() {
             className="px-3 py-1.5 text-xs rounded-lg border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-ink-black dark:text-pearl appearance-none pr-8"
           >
             <option value="all">All Fields</option>
-            {mockFields.map((field) => (
+            {fieldOptions.map((field) => (
               <option key={field.id} value={field.id}>
                 {field.label}
               </option>
@@ -388,7 +458,7 @@ export function ValidationRules() {
       {/* Rules List Grouped by Field */}
       <div className="space-y-4">
         {Object.entries(rulesByField).map(([fieldId, fieldRules]) => {
-          const field = mockFields.find((f) => f.id === fieldId);
+          const field = fieldOptions.find((f) => f.id === fieldId);
           return (
             <div
               key={fieldId}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Type,
   Hash,
@@ -16,15 +16,42 @@ import {
   Trash2,
   Settings,
   Eye,
+  Save,
 } from "lucide-react";
 
 interface FormField {
   id: string;
-  type: "text" | "number" | "date" | "email" | "dropdown" | "radio" | "checkbox" | "file" | "signature";
+  type: "text" | "number" | "date" | "email" | "dropdown" | "radio" | "checkbox" | "file" | "signature" | "select" | "textarea";
   label: string;
   placeholder?: string;
   required: boolean;
-  options?: string[];
+  options?: string[] | Array<{ value: string; label: string }>;
+}
+
+interface ApiFormDefinition {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  status: string;
+  fields?: Array<{
+    id: string;
+    name: string;
+    label: string;
+    type: string;
+    required: boolean;
+    order: number;
+    options?: Array<{ value: string; label: string }>;
+    validation?: Record<string, unknown>;
+    placeholder?: string;
+  }>;
+  [key: string]: unknown;
+}
+
+interface FormBuilderProps {
+  formDefinition?: ApiFormDefinition | null;
+  onSave?: (data: { name: string; description: string; fields: unknown[] }) => Promise<void>;
+  saving?: boolean;
 }
 
 interface FieldTypeInfo {
@@ -46,19 +73,47 @@ const fieldTypes: FieldTypeInfo[] = [
   { type: "signature", label: "Signature", icon: <PenTool className="w-4 h-4" />, category: "Advanced" },
 ];
 
-const mockFields: FormField[] = [
-  { id: "f-001", type: "text", label: "Full Name", placeholder: "Enter your full name", required: true },
-  { id: "f-002", type: "email", label: "Email Address", placeholder: "you@example.com", required: true },
-  { id: "f-003", type: "dropdown", label: "Department", required: true, options: ["Engineering", "Sales", "HR", "Marketing"] },
-  { id: "f-004", type: "date", label: "Start Date", required: false },
-  { id: "f-005", type: "checkbox", label: "Skills", required: false, options: ["JavaScript", "Python", "React", "Node.js"] },
-  { id: "f-006", type: "file", label: "Resume Upload", required: false },
-];
+function mapApiFieldType(type: string): FormField["type"] {
+  const typeMap: Record<string, FormField["type"]> = {
+    "select": "dropdown",
+    "textarea": "text",
+  };
+  return (typeMap[type] || type) as FormField["type"];
+}
 
-export default function FormBuilder() {
-  const [fields, setFields] = useState<FormField[]>(mockFields);
-  const [selectedField, setSelectedField] = useState<string | null>("f-001");
+function mapApiFields(apiFields: NonNullable<ApiFormDefinition["fields"]>): FormField[] {
+  return apiFields
+    .sort((a, b) => a.order - b.order)
+    .map((f) => ({
+      id: f.id,
+      type: mapApiFieldType(f.type),
+      label: f.label,
+      placeholder: f.placeholder,
+      required: f.required,
+      options: f.options?.map((o) => (typeof o === "string" ? o : o.label)),
+    }));
+}
+
+export default function FormBuilder({ formDefinition, onSave, saving }: FormBuilderProps) {
+  const [fields, setFields] = useState<FormField[]>([]);
+  const [selectedField, setSelectedField] = useState<string | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [formName, setFormName] = useState("");
+
+  // Load fields from formDefinition when it changes
+  useEffect(() => {
+    if (formDefinition?.fields && formDefinition.fields.length > 0) {
+      const mapped = mapApiFields(formDefinition.fields);
+      setFields(mapped);
+      setFormName(formDefinition.name || "");
+      if (mapped.length > 0) setSelectedField(mapped[0].id);
+    } else if (formDefinition) {
+      // Form exists but has no fields yet
+      setFields([]);
+      setFormName(formDefinition.name || "");
+      setSelectedField(null);
+    }
+  }, [formDefinition]);
 
   const addField = (type: FormField["type"]) => {
     const newField: FormField = {
@@ -83,6 +138,25 @@ export default function FormBuilder() {
 
   const categories = [...new Set(fieldTypes.map((ft) => ft.category))];
 
+  const handleSave = () => {
+    if (onSave) {
+      onSave({
+        name: formName || "Untitled Form",
+        description: formDefinition?.description || "",
+        fields: fields.map((f, idx) => ({
+          id: f.id,
+          name: f.label.toLowerCase().replace(/\s+/g, "_"),
+          label: f.label,
+          type: f.type === "dropdown" ? "select" : f.type,
+          required: f.required,
+          order: idx + 1,
+          options: f.options?.map((o) => (typeof o === "string" ? { value: o.toLowerCase().replace(/\s+/g, "_"), label: o } : o)),
+          placeholder: f.placeholder,
+        })),
+      });
+    }
+  };
+
   return (
     <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-6">
       <div className="flex items-center justify-between mb-6">
@@ -95,14 +169,26 @@ export default function FormBuilder() {
               Form Builder
             </h2>
             <p className="text-sm text-silver-mist">
-              Design custom forms with drag-and-drop fields
+              {formDefinition ? `Editing: ${formDefinition.name}` : "Design custom forms with drag-and-drop fields"}
             </p>
           </div>
         </div>
-        <button className="flex items-center gap-2 px-3 py-2 text-sm border border-cloud dark:border-nebula-purple/50 rounded-lg text-ink-black dark:text-pearl hover:border-celestial-indigo/30 transition-colors">
-          <Eye className="w-4 h-4" />
-          Preview
-        </button>
+        <div className="flex items-center gap-2">
+          <button className="flex items-center gap-2 px-3 py-2 text-sm border border-cloud dark:border-nebula-purple/50 rounded-lg text-ink-black dark:text-pearl hover:border-celestial-indigo/30 transition-colors">
+            <Eye className="w-4 h-4" />
+            Preview
+          </button>
+          {onSave && (
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-celestial-indigo text-white rounded-lg hover:bg-celestial-indigo/90 transition-colors disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              {saving ? "Saving..." : "Save Form"}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex gap-6">
@@ -174,7 +260,7 @@ export default function FormBuilder() {
                     {field.label}
                   </p>
                   <p className="text-xs text-silver-mist capitalize">
-                    {field.type} {field.required && "· Required"}
+                    {field.type} {field.required && "\u00B7 Required"}
                   </p>
                 </div>
                 <button

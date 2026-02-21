@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Calendar,
   Clock,
@@ -26,14 +26,23 @@ interface ScheduleFormData {
   notes: string;
 }
 
-const mockEmployees: Employee[] = [
-  { id: "1", name: "Sarah Chen", role: "Senior Developer" },
-  { id: "2", name: "James Wilson", role: "Product Designer" },
-  { id: "3", name: "Maria Rodriguez", role: "QA Engineer" },
-  { id: "4", name: "Alex Thompson", role: "Frontend Developer" },
-  { id: "5", name: "Priya Patel", role: "DevOps Engineer" },
-  { id: "6", name: "David Kim", role: "Backend Developer" },
-];
+interface ApiOneOnOne {
+  id: string;
+  managerId: string;
+  managerName: string;
+  reportId: string;
+  reportName: string;
+  frequency: string;
+  nextMeeting: string;
+  duration: number;
+  status: string;
+  agendaItems: string[];
+  lastMeetingNotes?: string;
+}
+
+interface MeetingSchedulerProps {
+  oneOnOnes?: ApiOneOnOne[];
+}
 
 const agendaTemplates = [
   { id: "weekly", name: "Weekly Check-in" },
@@ -43,7 +52,10 @@ const agendaTemplates = [
   { id: "custom", name: "Custom Agenda" },
 ];
 
-export default function MeetingScheduler() {
+export default function MeetingScheduler({ oneOnOnes }: MeetingSchedulerProps) {
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
   const [formData, setFormData] = useState<ScheduleFormData>({
     employeeId: "",
     date: "",
@@ -55,6 +67,44 @@ export default function MeetingScheduler() {
 
   const [errors, setErrors] = useState<Partial<Record<keyof ScheduleFormData, string>>>({});
 
+  // Derive employees from oneOnOnes data or fetch separately
+  useEffect(() => {
+    if (oneOnOnes && oneOnOnes.length > 0) {
+      const uniqueReports = new Map<string, Employee>();
+      oneOnOnes.forEach((o) => {
+        if (!uniqueReports.has(o.reportId)) {
+          uniqueReports.set(o.reportId, {
+            id: o.reportId,
+            name: o.reportName,
+            role: `${o.frequency} meeting`,
+          });
+        }
+      });
+      setEmployees(Array.from(uniqueReports.values()));
+      return;
+    }
+
+    // Fallback: fetch from API
+    fetch("/api/v1/performance/one-on-ones")
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.success && result.data?.oneOnOnes) {
+          const uniqueReports = new Map<string, Employee>();
+          result.data.oneOnOnes.forEach((o: ApiOneOnOne) => {
+            if (!uniqueReports.has(o.reportId)) {
+              uniqueReports.set(o.reportId, {
+                id: o.reportId,
+                name: o.reportName,
+                role: `${o.frequency} meeting`,
+              });
+            }
+          });
+          setEmployees(Array.from(uniqueReports.values()));
+        }
+      })
+      .catch(console.error);
+  }, [oneOnOnes]);
+
   const validate = (): boolean => {
     const newErrors: Partial<Record<keyof ScheduleFormData, string>> = {};
     if (!formData.employeeId) newErrors.employeeId = "Please select an employee";
@@ -64,19 +114,46 @@ export default function MeetingScheduler() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validate()) {
-      console.log("Scheduling meeting:", formData);
-      setFormData({
-        employeeId: "",
-        date: "",
-        time: "",
-        recurring: "none",
-        agendaTemplate: "",
-        notes: "",
+    if (!validate()) return;
+
+    setSubmitting(true);
+    try {
+      const selectedEmployee = employees.find((emp) => emp.id === formData.employeeId);
+      const nextMeeting = new Date(`${formData.date}T${formData.time}:00`).toISOString();
+
+      const res = await fetch("/api/v1/performance/one-on-ones", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reportId: formData.employeeId,
+          reportName: selectedEmployee?.name || "",
+          frequency: formData.recurring === "none" ? "one-time" : formData.recurring,
+          nextMeeting,
+          duration: 30,
+          agendaItems: formData.notes ? [formData.notes] : [],
+        }),
       });
-      setErrors({});
+
+      const result = await res.json();
+      if (result.success) {
+        setSubmitSuccess(true);
+        setFormData({
+          employeeId: "",
+          date: "",
+          time: "",
+          recurring: "none",
+          agendaTemplate: "",
+          notes: "",
+        });
+        setErrors({});
+        setTimeout(() => setSubmitSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error("Failed to schedule meeting:", err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -101,6 +178,12 @@ export default function MeetingScheduler() {
         </h2>
       </div>
 
+      {submitSuccess && (
+        <div className="mb-4 p-3 bg-aurora-green/10 border border-aurora-green/30 rounded-lg text-sm text-aurora-green font-medium">
+          Meeting scheduled successfully!
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
           <label className="flex items-center gap-2 text-sm font-medium text-ink-black dark:text-pearl mb-2">
@@ -113,7 +196,7 @@ export default function MeetingScheduler() {
             className="w-full px-4 py-2.5 text-sm border border-cloud dark:border-nebula-purple/50 rounded-lg bg-white dark:bg-stellar-blue text-ink-black dark:text-pearl focus:outline-none focus:ring-2 focus:ring-celestial-indigo/50"
           >
             <option value="">Choose an employee...</option>
-            {mockEmployees.map((emp) => (
+            {employees.map((emp) => (
               <option key={emp.id} value={emp.id}>
                 {emp.name} - {emp.role}
               </option>
@@ -219,10 +302,11 @@ export default function MeetingScheduler() {
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-celestial-indigo rounded-lg hover:opacity-90 transition-opacity"
+            disabled={submitting}
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-celestial-indigo rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
-            Schedule Meeting
+            {submitting ? "Scheduling..." : "Schedule Meeting"}
           </button>
           <button
             type="button"

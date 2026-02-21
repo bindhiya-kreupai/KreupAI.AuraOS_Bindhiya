@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Play,
   StopCircle,
@@ -42,6 +42,25 @@ interface NodeType {
   color: string;
 }
 
+interface WorkflowDefinition {
+  id: string;
+  name: string;
+  description: string | null;
+  trigger: string;
+  triggerEvent: string | null;
+  nodes: unknown[];
+  edges: unknown[];
+  isActive: boolean;
+  version: number;
+  [key: string]: unknown;
+}
+
+interface WorkflowDesignerProps {
+  workflowDefinition?: WorkflowDefinition | null;
+  onSave?: (data: { nodes: unknown[]; edges: unknown[] }) => Promise<void>;
+  saving?: boolean;
+}
+
 const nodeTypes: NodeType[] = [
   { type: "start", label: "Start", icon: <Play className="w-4 h-4" />, color: "bg-aurora-green" },
   { type: "end", label: "End", icon: <StopCircle className="w-4 h-4" />, color: "bg-coral-alert" },
@@ -52,7 +71,7 @@ const nodeTypes: NodeType[] = [
   { type: "wait", label: "Wait", icon: <Timer className="w-4 h-4" />, color: "bg-gray-500" },
 ];
 
-const mockNodes: WorkflowNode[] = [
+const defaultNodes: WorkflowNode[] = [
   { id: "n-001", type: "start", label: "Request Submitted", x: 100, y: 200 },
   { id: "n-002", type: "approval", label: "Manager Approval", x: 300, y: 200 },
   { id: "n-003", type: "condition", label: "Amount > $5000?", x: 500, y: 200 },
@@ -61,7 +80,7 @@ const mockNodes: WorkflowNode[] = [
   { id: "n-006", type: "end", label: "Complete", x: 900, y: 200 },
 ];
 
-const mockConnections: WorkflowConnection[] = [
+const defaultConnections: WorkflowConnection[] = [
   { id: "c-001", fromNode: "n-001", toNode: "n-002" },
   { id: "c-002", fromNode: "n-002", toNode: "n-003" },
   { id: "c-003", fromNode: "n-003", toNode: "n-004", label: "Yes" },
@@ -70,17 +89,97 @@ const mockConnections: WorkflowConnection[] = [
   { id: "c-006", fromNode: "n-005", toNode: "n-006" },
 ];
 
-export default function WorkflowDesigner() {
-  const [nodes] = useState<WorkflowNode[]>(mockNodes);
-  const [connections] = useState<WorkflowConnection[]>(mockConnections);
-  const [selectedNode, setSelectedNode] = useState<string | null>("n-002");
+function parseApiNodes(apiNodes: unknown[]): WorkflowNode[] {
+  if (!apiNodes || apiNodes.length === 0) return defaultNodes;
+  try {
+    return (apiNodes as WorkflowNode[]).map((n, idx) => ({
+      id: n.id || `n-${idx}`,
+      type: (n.type || "start") as WorkflowNode["type"],
+      label: n.label || `Node ${idx + 1}`,
+      x: n.x || 100 + idx * 200,
+      y: n.y || 200,
+      config: n.config,
+    }));
+  } catch {
+    return defaultNodes;
+  }
+}
+
+function parseApiEdges(apiEdges: unknown[]): WorkflowConnection[] {
+  if (!apiEdges || apiEdges.length === 0) return [];
+  try {
+    return (apiEdges as WorkflowConnection[]).map((e, idx) => ({
+      id: e.id || `c-${idx}`,
+      fromNode: e.fromNode || "",
+      toNode: e.toNode || "",
+      label: e.label,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export default function WorkflowDesigner({ workflowDefinition, onSave, saving }: WorkflowDesignerProps) {
+  const [nodes, setNodes] = useState<WorkflowNode[]>(defaultNodes);
+  const [connections, setConnections] = useState<WorkflowConnection[]>(defaultConnections);
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [zoom] = useState(100);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (workflowDefinition) {
+      const parsedNodes = parseApiNodes(workflowDefinition.nodes);
+      const parsedEdges = parseApiEdges(workflowDefinition.edges);
+      setNodes(parsedNodes);
+      setConnections(parsedEdges.length > 0 ? parsedEdges : defaultConnections);
+      if (parsedNodes.length > 1) setSelectedNode(parsedNodes[1].id);
+      return;
+    }
+
+    // Fallback: fetch from API
+    if (!workflowDefinition) {
+      setLoading(true);
+      fetch("/api/v1/admin/workflows")
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.success && result.data && result.data.length > 0) {
+            const wf = result.data[0];
+            const parsedNodes = parseApiNodes(wf.nodes);
+            const parsedEdges = parseApiEdges(wf.edges);
+            setNodes(parsedNodes);
+            setConnections(parsedEdges.length > 0 ? parsedEdges : defaultConnections);
+            if (parsedNodes.length > 1) setSelectedNode(parsedNodes[1].id);
+          }
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }
+  }, [workflowDefinition]);
+
+  const handleSave = () => {
+    if (onSave) {
+      onSave({ nodes, edges: connections });
+    }
+  };
 
   const getNodeConfig = (type: WorkflowNode["type"]) => {
     return nodeTypes.find((n) => n.type === type);
   };
 
   const selectedNodeData = nodes.find((n) => n.id === selectedNode);
+
+  if (loading) {
+    return (
+      <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-6 h-[560px] animate-pulse">
+        <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-48 mb-4" />
+        <div className="flex gap-4 h-[500px]">
+          <div className="w-48 bg-slate-100 dark:bg-slate-800 rounded-lg" />
+          <div className="flex-1 bg-slate-50 dark:bg-slate-900 rounded-lg" />
+          <div className="w-56 bg-slate-100 dark:bg-slate-800 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-6">
@@ -94,7 +193,9 @@ export default function WorkflowDesigner() {
               Workflow Designer
             </h2>
             <p className="text-sm text-silver-mist">
-              Visual workflow builder with drag-and-drop nodes
+              {workflowDefinition
+                ? `Editing: ${workflowDefinition.name} (v${workflowDefinition.version})`
+                : "Visual workflow builder with drag-and-drop nodes"}
             </p>
           </div>
         </div>
@@ -106,9 +207,13 @@ export default function WorkflowDesigner() {
             <Redo2 className="w-4 h-4" />
           </button>
           <div className="w-px h-6 bg-cloud dark:bg-nebula-purple/50 mx-1" />
-          <button className="flex items-center gap-2 px-3 py-2 text-sm bg-celestial-indigo text-white rounded-lg hover:bg-celestial-indigo/90 transition-colors">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-celestial-indigo text-white rounded-lg hover:bg-celestial-indigo/90 transition-colors disabled:opacity-50"
+          >
             <Save className="w-4 h-4" />
-            Save
+            {saving ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
@@ -251,7 +356,12 @@ export default function WorkflowDesigner() {
                 <label className="text-xs text-silver-mist block mb-1">Label</label>
                 <input
                   type="text"
-                  defaultValue={selectedNodeData.label}
+                  value={selectedNodeData.label}
+                  onChange={(e) => {
+                    setNodes(nodes.map((n) =>
+                      n.id === selectedNodeData.id ? { ...n, label: e.target.value } : n
+                    ));
+                  }}
                   className="w-full px-2.5 py-1.5 text-xs rounded border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-ink-black dark:text-pearl"
                 />
               </div>
@@ -280,13 +390,23 @@ export default function WorkflowDesigner() {
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="number"
-                    defaultValue={selectedNodeData.x}
+                    value={selectedNodeData.x}
+                    onChange={(e) => {
+                      setNodes(nodes.map((n) =>
+                        n.id === selectedNodeData.id ? { ...n, x: parseInt(e.target.value) || 0 } : n
+                      ));
+                    }}
                     className="px-2.5 py-1.5 text-xs rounded border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-ink-black dark:text-pearl"
                     placeholder="X"
                   />
                   <input
                     type="number"
-                    defaultValue={selectedNodeData.y}
+                    value={selectedNodeData.y}
+                    onChange={(e) => {
+                      setNodes(nodes.map((n) =>
+                        n.id === selectedNodeData.id ? { ...n, y: parseInt(e.target.value) || 0 } : n
+                      ));
+                    }}
                     className="px-2.5 py-1.5 text-xs rounded border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-ink-black dark:text-pearl"
                     placeholder="Y"
                   />

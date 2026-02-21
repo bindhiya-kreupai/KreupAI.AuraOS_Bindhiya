@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BookOpen,
   Clock,
@@ -19,102 +19,18 @@ interface PathEnrollmentData {
   description: string;
   modulesCount: number;
   estimatedDuration: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
+  difficulty: string;
   category: string;
   enrolledCount: number;
-  startDate: string;
-  endDate: string;
-  instructors: string[];
   enrollmentStatus: "not-enrolled" | "enrolled" | "in-progress" | "completed";
   progress?: number;
-  certificateAvailable: boolean;
+  skills: string[];
 }
 
-const mockEnrollments: PathEnrollmentData[] = [
-  {
-    id: "pe-001",
-    title: "Leadership Fundamentals",
-    description: "Build essential leadership skills including communication, delegation, and team management for new and aspiring managers.",
-    modulesCount: 8,
-    estimatedDuration: "12 hours",
-    difficulty: "Beginner",
-    category: "Leadership",
-    enrolledCount: 342,
-    startDate: "2025-02-01",
-    endDate: "2025-04-30",
-    instructors: ["Dr. James Wilson", "Maria Santos"],
-    enrollmentStatus: "not-enrolled",
-    certificateAvailable: true,
-  },
-  {
-    id: "pe-002",
-    title: "Advanced Data Analytics",
-    description: "Master data visualization, statistical analysis, and predictive modeling techniques using modern tools and frameworks.",
-    modulesCount: 14,
-    estimatedDuration: "24 hours",
-    difficulty: "Advanced",
-    category: "Technical",
-    enrolledCount: 189,
-    startDate: "2025-01-15",
-    endDate: "2025-05-15",
-    instructors: ["Prof. Alan Park"],
-    enrollmentStatus: "in-progress",
-    progress: 45,
-    certificateAvailable: true,
-  },
-  {
-    id: "pe-003",
-    title: "Effective Communication",
-    description: "Enhance your verbal and written communication skills for professional settings, presentations, and stakeholder management.",
-    modulesCount: 6,
-    estimatedDuration: "8 hours",
-    difficulty: "Beginner",
-    category: "Soft Skills",
-    enrolledCount: 723,
-    startDate: "2025-01-10",
-    endDate: "2025-03-10",
-    instructors: ["Lisa Chang", "Robert Kim"],
-    enrollmentStatus: "completed",
-    progress: 100,
-    certificateAvailable: true,
-  },
-  {
-    id: "pe-004",
-    title: "Project Management Professional",
-    description: "Comprehensive preparation for PMP certification covering all knowledge areas and process groups.",
-    modulesCount: 20,
-    estimatedDuration: "36 hours",
-    difficulty: "Intermediate",
-    category: "Management",
-    enrolledCount: 567,
-    startDate: "2025-03-01",
-    endDate: "2025-07-31",
-    instructors: ["Michael Torres"],
-    enrollmentStatus: "enrolled",
-    progress: 0,
-    certificateAvailable: true,
-  },
-  {
-    id: "pe-005",
-    title: "Cloud Architecture Mastery",
-    description: "Design and implement scalable cloud solutions using AWS, Azure, and GCP with best practices for security and cost optimization.",
-    modulesCount: 18,
-    estimatedDuration: "40 hours",
-    difficulty: "Advanced",
-    category: "Technical",
-    enrolledCount: 156,
-    startDate: "2025-04-01",
-    endDate: "2025-08-30",
-    instructors: ["Dr. Sarah Chen", "David Nguyen"],
-    enrollmentStatus: "not-enrolled",
-    certificateAvailable: true,
-  },
-];
-
 const difficultyColors: Record<string, string> = {
-  Beginner: "text-aurora-green bg-aurora-green/10",
-  Intermediate: "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20",
-  Advanced: "text-red-500 bg-red-50 dark:bg-red-900/20",
+  beginner: "text-aurora-green bg-aurora-green/10",
+  intermediate: "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20",
+  advanced: "text-red-500 bg-red-50 dark:bg-red-900/20",
 };
 
 const statusConfig: Record<string, { label: string; color: string; bgColor: string }> = {
@@ -125,20 +41,87 @@ const statusConfig: Record<string, { label: string; color: string; bgColor: stri
 };
 
 export function PathEnrollment() {
-  const [enrollments, setEnrollments] = useState<PathEnrollmentData[]>(mockEnrollments);
+  const [enrollments, setEnrollments] = useState<PathEnrollmentData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [enrollingId, setEnrollingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/v1/learning/paths')
+      .then(res => res.json())
+      .then(result => {
+        if (result.success && result.data) {
+          const mapped: PathEnrollmentData[] = result.data.map((p: Record<string, unknown>) => ({
+            id: p.id as string,
+            title: p.title as string,
+            description: p.description as string,
+            modulesCount: (p.modulesCount as number) || 0,
+            estimatedDuration: (p.duration as string) || 'N/A',
+            difficulty: ((p.level || p.difficulty || 'beginner') as string).toLowerCase(),
+            category: (p.category as string) || 'General',
+            enrolledCount: (p.enrolledCount as number) || 0,
+            enrollmentStatus: "not-enrolled" as const,
+            progress: 0,
+            skills: (p.skills as string[]) || [],
+          }));
+          setEnrollments(mapped);
+        } else {
+          setError('Failed to load enrollment data');
+        }
+      })
+      .catch((err) => {
+        console.error('PathEnrollment fetch error:', err);
+        setError('Failed to load enrollment data');
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleEnroll = (id: string) => {
     setEnrollingId(id);
-    setTimeout(() => {
-      setEnrollments((prev) =>
-        prev.map((path) =>
-          path.id === id ? { ...path, enrollmentStatus: "enrolled" as const, progress: 0 } : path
-        )
-      );
-      setEnrollingId(null);
-    }, 1500);
+    fetch(`/api/v1/learning/paths/${id}/enroll`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hoursPerWeek: 5 }),
+    })
+      .then(res => res.json())
+      .then(result => {
+        if (result.success) {
+          setEnrollments((prev) =>
+            prev.map((path) =>
+              path.id === id ? { ...path, enrollmentStatus: "enrolled" as const, progress: 0 } : path
+            )
+          );
+        }
+      })
+      .catch(console.error)
+      .finally(() => setEnrollingId(null));
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-white dark:bg-stellar-blue min-h-screen animate-pulse">
+        <div className="max-w-4xl mx-auto">
+          <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-56 mb-2" />
+          <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-72 mb-6" />
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="rounded-xl border border-cloud dark:border-nebula-purple/50 p-5 h-32" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 text-sm text-red-700 dark:text-red-300">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-white dark:bg-stellar-blue min-h-screen">
@@ -158,6 +141,7 @@ export function PathEnrollment() {
           {enrollments.map((path) => {
             const status = statusConfig[path.enrollmentStatus];
             const isEnrolling = enrollingId === path.id;
+            const diffColor = difficultyColors[path.difficulty] || difficultyColors.beginner;
 
             return (
               <div
@@ -177,8 +161,8 @@ export function PathEnrollment() {
                         <h3 className="text-lg font-semibold text-ink-black dark:text-pearl">
                           {path.title}
                         </h3>
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${difficultyColors[path.difficulty]}`}>
-                          {path.difficulty}
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${diffColor}`}>
+                          {path.difficulty.charAt(0).toUpperCase() + path.difficulty.slice(1)}
                         </span>
                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${status.bgColor} ${status.color}`}>
                           {status.label}
@@ -203,16 +187,6 @@ export function PathEnrollment() {
                           <Users className="w-3.5 h-3.5" />
                           {path.enrolledCount} enrolled
                         </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5" />
-                          {new Date(path.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })} - {new Date(path.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                        </span>
-                        {path.certificateAvailable && (
-                          <span className="flex items-center gap-1 text-celestial-indigo">
-                            <Award className="w-3.5 h-3.5" />
-                            Certificate
-                          </span>
-                        )}
                       </div>
 
                       {/* Progress bar for in-progress/enrolled */}
@@ -279,6 +253,11 @@ export function PathEnrollment() {
               </div>
             );
           })}
+          {enrollments.length === 0 && (
+            <div className="rounded-xl border border-cloud dark:border-nebula-purple/50 p-8 text-center text-sm text-silver-mist">
+              No learning paths available for enrollment
+            </div>
+          )}
         </div>
       </div>
     </div>

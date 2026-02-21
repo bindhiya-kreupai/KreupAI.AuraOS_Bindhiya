@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   CheckSquare,
   Square,
@@ -22,60 +22,6 @@ interface BulkApprovalItem {
   amount?: string;
 }
 
-const mockItems: BulkApprovalItem[] = [
-  {
-    id: "1",
-    type: "leave",
-    title: "Annual Leave - 5 days",
-    requester: "Sarah Chen",
-    submittedDate: "2026-01-21",
-  },
-  {
-    id: "2",
-    type: "expense",
-    title: "Conference Travel Expenses",
-    requester: "James Wilson",
-    submittedDate: "2026-01-20",
-    amount: "$2,450.00",
-  },
-  {
-    id: "3",
-    type: "timesheet",
-    title: "Weekly Timesheet - W3",
-    requester: "Maria Rodriguez",
-    submittedDate: "2026-01-19",
-  },
-  {
-    id: "4",
-    type: "requisition",
-    title: "Senior Backend Developer",
-    requester: "Alex Thompson",
-    submittedDate: "2026-01-18",
-  },
-  {
-    id: "5",
-    type: "document",
-    title: "SOW - Client Project Alpha",
-    requester: "Priya Patel",
-    submittedDate: "2026-01-22",
-  },
-  {
-    id: "6",
-    type: "expense",
-    title: "Software License - Figma",
-    requester: "David Kim",
-    submittedDate: "2026-01-22",
-    amount: "$144.00",
-  },
-  {
-    id: "7",
-    type: "leave",
-    title: "Sick Leave - 2 days",
-    requester: "Priya Patel",
-    submittedDate: "2026-01-23",
-  },
-];
-
 const typeBadgeColors: Record<ApprovalType, string> = {
   leave: "bg-aurora-green/10 text-aurora-green",
   expense: "bg-celestial-indigo/10 text-celestial-indigo",
@@ -85,11 +31,89 @@ const typeBadgeColors: Record<ApprovalType, string> = {
 };
 
 export default function BulkApproval() {
-  const [items, setItems] = useState<BulkApprovalItem[]>(mockItems);
+  const [items, setItems] = useState<BulkApprovalItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkComment, setBulkComment] = useState("");
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [actionType, setActionType] = useState<"approve" | "reject" | null>(null);
+
+  useEffect(() => {
+    async function fetchPendingItems() {
+      setLoading(true);
+      setError(null);
+      try {
+        const [leaveRes, expenseRes, timesheetRes, requisitionRes] = await Promise.allSettled([
+          fetch('/api/v1/leave/apply').then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch('/api/compensation/expense-claims?status=PENDING').then(r => r.json()).catch(() => null),
+          fetch('/api/attendance/timesheets?status=PENDING').then(r => r.json()).catch(() => null),
+          fetch('/api/recruitment/requisitions?status=Pending').then(r => r.json()).catch(() => null),
+        ]);
+
+        const bulkItems: BulkApprovalItem[] = [];
+
+        if (leaveRes.status === 'fulfilled' && leaveRes.value?.success) {
+          const pendingLeaves = (leaveRes.value.data || []).filter(
+            (r: Record<string, unknown>) => r.status === 'PENDING'
+          );
+          bulkItems.push(...pendingLeaves.map((l: Record<string, unknown>) => ({
+            id: `leave-${l.id}`,
+            type: 'leave' as ApprovalType,
+            title: `Leave Request - ${l.totalDays || '?'} day(s)`,
+            requester: (l.employeeName as string) || (l.employeeId as string) || 'Employee',
+            submittedDate: (l.startDate as string) || (l.createdAt as string) || '',
+          })));
+        }
+
+        if (expenseRes.status === 'fulfilled' && expenseRes.value?.success) {
+          bulkItems.push(...(expenseRes.value.data || []).map((e: Record<string, unknown>) => ({
+            id: `expense-${e.id}`,
+            type: 'expense' as ApprovalType,
+            title: (e.title as string) || 'Expense Claim',
+            requester: (e.employeeName as string) || (e.employeeId as string) || 'Employee',
+            submittedDate: (e.date as string) || (e.createdAt as string) || '',
+            amount: e.amount ? `${e.currency || '$'}${Number(e.amount).toLocaleString()}` : undefined,
+          })));
+        }
+
+        if (timesheetRes.status === 'fulfilled' && timesheetRes.value?.success) {
+          const pendingTs = (timesheetRes.value.data || []).filter(
+            (t: Record<string, unknown>) => t.status === 'PENDING'
+          );
+          bulkItems.push(...pendingTs.map((t: Record<string, unknown>) => ({
+            id: `timesheet-${t.id}`,
+            type: 'timesheet' as ApprovalType,
+            title: `Weekly Timesheet - ${t.weekEnding || ''}`,
+            requester: (t.employeeName as string) || (t.employeeId as string) || 'Employee',
+            submittedDate: (t.weekEnding as string) || '',
+          })));
+        }
+
+        if (requisitionRes.status === 'fulfilled' && requisitionRes.value?.success) {
+          const pendingReqs = (requisitionRes.value.data || []).filter(
+            (r: Record<string, unknown>) => r.approvalStatus === 'Pending'
+          );
+          bulkItems.push(...pendingReqs.map((r: Record<string, unknown>) => ({
+            id: `requisition-${r.id}`,
+            type: 'requisition' as ApprovalType,
+            title: (r.jobTitle as string) || 'Job Requisition',
+            requester: (r.requestedBy as string) || 'Manager',
+            submittedDate: (r.requestedDate as string) || (r.createdAt as string) || '',
+          })));
+        }
+
+        setItems(bulkItems);
+      } catch (err) {
+        console.error('Failed to fetch bulk approval items:', err);
+        setError('Failed to load pending items for bulk approval.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPendingItems();
+  }, []);
 
   const allSelected = selectedIds.size === items.length && items.length > 0;
   const someSelected = selectedIds.size > 0 && selectedIds.size < items.length;
@@ -133,6 +157,30 @@ export default function BulkApproval() {
     setBulkComment("");
     setActionType(null);
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-white dark:bg-stellar-blue rounded-lg border border-cloud dark:border-nebula-purple/50">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-40" />
+          <div className="h-12 bg-slate-200 dark:bg-slate-700 rounded" />
+          <div className="space-y-2">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-16 bg-slate-200 dark:bg-slate-700 rounded-lg" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800/30 text-center">
+        <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-white dark:bg-stellar-blue rounded-lg border border-cloud dark:border-nebula-purple/50">
@@ -263,12 +311,14 @@ export default function BulkApproval() {
                 </p>
                 <div className="flex items-center gap-3 mt-0.5">
                   <span className="text-xs text-silver-mist">{item.requester}</span>
-                  <span className="text-xs text-silver-mist">
-                    {new Date(item.submittedDate).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </span>
+                  {item.submittedDate && (
+                    <span className="text-xs text-silver-mist">
+                      {new Date(item.submittedDate).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  )}
                 </div>
               </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Users,
   Calendar,
@@ -23,76 +23,73 @@ interface OneOnOneMeeting {
   status: "upcoming" | "overdue" | "completed";
 }
 
-const mockMeetings: OneOnOneMeeting[] = [
-  {
-    id: "1",
-    employeeName: "Sarah Chen",
-    employeeRole: "Senior Developer",
-    lastMeeting: "2026-01-20",
-    nextScheduled: "2026-01-27",
-    actionItemsCount: 3,
-    completedItems: 1,
-    status: "upcoming",
-  },
-  {
-    id: "2",
-    employeeName: "James Wilson",
-    employeeRole: "Product Designer",
-    lastMeeting: "2026-01-18",
-    nextScheduled: "2026-01-25",
-    actionItemsCount: 5,
-    completedItems: 3,
-    status: "upcoming",
-  },
-  {
-    id: "3",
-    employeeName: "Maria Rodriguez",
-    employeeRole: "QA Engineer",
-    lastMeeting: "2026-01-15",
-    nextScheduled: "2026-01-22",
-    actionItemsCount: 2,
+interface ApiOneOnOne {
+  id: string;
+  managerId: string;
+  managerName: string;
+  reportId: string;
+  reportName: string;
+  frequency: string;
+  nextMeeting: string;
+  duration: number;
+  status: string;
+  agendaItems: string[];
+  lastMeetingNotes?: string;
+}
+
+interface OneOnOneTrackerProps {
+  oneOnOnes?: ApiOneOnOne[];
+}
+
+function mapApiToMeeting(item: ApiOneOnOne): OneOnOneMeeting {
+  const now = new Date();
+  const nextDate = new Date(item.nextMeeting);
+  let status: OneOnOneMeeting["status"] = "upcoming";
+  if (item.status === "completed") status = "completed";
+  else if (nextDate < now) status = "overdue";
+
+  return {
+    id: item.id,
+    employeeName: item.reportName,
+    employeeRole: `${item.frequency} meeting`,
+    lastMeeting: new Date(
+      nextDate.getTime() - (item.frequency === "weekly" ? 7 : 14) * 24 * 60 * 60 * 1000
+    ).toISOString().split("T")[0],
+    nextScheduled: nextDate.toISOString().split("T")[0],
+    actionItemsCount: item.agendaItems?.length || 0,
     completedItems: 0,
-    status: "overdue",
-  },
-  {
-    id: "4",
-    employeeName: "Alex Thompson",
-    employeeRole: "Frontend Developer",
-    lastMeeting: "2026-01-19",
-    nextScheduled: "2026-01-26",
-    actionItemsCount: 4,
-    completedItems: 4,
-    status: "upcoming",
-  },
-  {
-    id: "5",
-    employeeName: "Priya Patel",
-    employeeRole: "DevOps Engineer",
-    lastMeeting: "2026-01-10",
-    nextScheduled: "2026-01-24",
-    actionItemsCount: 6,
-    completedItems: 5,
-    status: "upcoming",
-  },
-  {
-    id: "6",
-    employeeName: "David Kim",
-    employeeRole: "Backend Developer",
-    lastMeeting: "2026-01-13",
-    nextScheduled: "2026-01-20",
-    actionItemsCount: 3,
-    completedItems: 3,
-    status: "completed",
-  },
-];
+    status,
+  };
+}
 
 type SortField = "employeeName" | "lastMeeting" | "nextScheduled" | "actionItemsCount";
 
-export default function OneOnOneTracker() {
+export default function OneOnOneTracker({ oneOnOnes }: OneOnOneTrackerProps) {
+  const [meetings, setMeetings] = useState<OneOnOneMeeting[]>([]);
+  const [loading, setLoading] = useState(!oneOnOnes);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("nextScheduled");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filterStatus, setFilterStatus] = useState<"all" | "upcoming" | "overdue" | "completed">("all");
+
+  useEffect(() => {
+    if (oneOnOnes) {
+      setMeetings(oneOnOnes.map(mapApiToMeeting));
+      setLoading(false);
+      return;
+    }
+
+    // Fallback: fetch data directly if no props provided
+    fetch("/api/v1/performance/one-on-ones")
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.success && result.data?.oneOnOnes) {
+          setMeetings(result.data.oneOnOnes.map(mapApiToMeeting));
+        }
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [oneOnOnes]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -103,7 +100,7 @@ export default function OneOnOneTracker() {
     }
   };
 
-  const filteredMeetings = mockMeetings
+  const filteredMeetings = meetings
     .filter((meeting) => {
       const matchesSearch =
         meeting.employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -153,6 +150,19 @@ export default function OneOnOneTracker() {
         );
     }
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-white dark:bg-stellar-blue rounded-lg border border-cloud dark:border-nebula-purple/50 animate-pulse">
+        <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-48 mb-6" />
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800 rounded" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-white dark:bg-stellar-blue rounded-lg border border-cloud dark:border-nebula-purple/50">

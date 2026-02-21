@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ClipboardCheck,
   Calendar,
@@ -29,81 +29,6 @@ interface ApprovalRequest {
   amount?: string;
 }
 
-const mockApprovals: ApprovalRequest[] = [
-  {
-    id: "1",
-    type: "leave",
-    title: "Annual Leave - 5 days",
-    requester: "Sarah Chen",
-    requesterRole: "Senior Developer",
-    submittedDate: "2026-01-21",
-    priority: "medium",
-    details: "Feb 10-14, 2026 - Family vacation",
-  },
-  {
-    id: "2",
-    type: "expense",
-    title: "Conference Travel Expenses",
-    requester: "James Wilson",
-    requesterRole: "Product Designer",
-    submittedDate: "2026-01-20",
-    priority: "high",
-    details: "React Summit 2026 - Flights, hotel, meals",
-    amount: "$2,450.00",
-  },
-  {
-    id: "3",
-    type: "timesheet",
-    title: "Weekly Timesheet - W3",
-    requester: "Maria Rodriguez",
-    requesterRole: "QA Engineer",
-    submittedDate: "2026-01-19",
-    priority: "low",
-    details: "Week of Jan 13-17, 2026 - 44 hours logged",
-  },
-  {
-    id: "4",
-    type: "requisition",
-    title: "Senior Backend Developer",
-    requester: "Alex Thompson",
-    requesterRole: "Tech Lead",
-    submittedDate: "2026-01-18",
-    priority: "urgent",
-    details: "New hire for API team - Budget approved",
-  },
-  {
-    id: "5",
-    type: "document",
-    title: "SOW - Client Project Alpha",
-    requester: "Priya Patel",
-    requesterRole: "Project Manager",
-    submittedDate: "2026-01-22",
-    priority: "high",
-    details: "Statement of Work for new client engagement",
-  },
-  {
-    id: "6",
-    type: "expense",
-    title: "Software License - Figma",
-    requester: "David Kim",
-    requesterRole: "UI Designer",
-    submittedDate: "2026-01-22",
-    priority: "medium",
-    details: "Annual Figma professional license renewal",
-    amount: "$144.00",
-  },
-  {
-    id: "7",
-    type: "leave",
-    title: "Sick Leave - 2 days",
-    requester: "Priya Patel",
-    requesterRole: "DevOps Engineer",
-    submittedDate: "2026-01-23",
-    priority: "high",
-    details: "Jan 27-28, 2026 - Medical appointment",
-  },
-];
-
 const typeIcons: Record<ApprovalType, React.ReactNode> = {
   leave: <Calendar className="w-4 h-4" />,
   expense: <DollarSign className="w-4 h-4" />,
@@ -127,10 +52,116 @@ const priorityColors: Record<ApprovalPriority, string> = {
   urgent: "text-coral-alert font-bold",
 };
 
+function mapLeaveToApproval(leave: Record<string, unknown>): ApprovalRequest {
+  return {
+    id: `leave-${leave.id}`,
+    type: "leave",
+    title: `Leave Request - ${leave.totalDays || '?'} day(s)`,
+    requester: (leave.employeeName as string) || (leave.employeeId as string) || "Employee",
+    requesterRole: "",
+    submittedDate: (leave.startDate as string) || (leave.createdAt as string) || "",
+    priority: "medium",
+    details: (leave.reason as string) || "Leave request pending approval",
+  };
+}
+
+function mapExpenseToApproval(expense: Record<string, unknown>): ApprovalRequest {
+  return {
+    id: `expense-${expense.id}`,
+    type: "expense",
+    title: (expense.title as string) || "Expense Claim",
+    requester: (expense.employeeName as string) || (expense.employeeId as string) || "Employee",
+    requesterRole: "",
+    submittedDate: (expense.date as string) || (expense.createdAt as string) || "",
+    priority: "medium",
+    details: (expense.description as string) || (expense.category as string) || "Expense claim pending",
+    amount: expense.amount ? `${expense.currency || '$'}${Number(expense.amount).toLocaleString()}` : undefined,
+  };
+}
+
+function mapTimesheetToApproval(ts: Record<string, unknown>): ApprovalRequest {
+  return {
+    id: `timesheet-${ts.id}`,
+    type: "timesheet",
+    title: `Weekly Timesheet - ${ts.weekEnding || ''}`,
+    requester: (ts.employeeName as string) || (ts.employeeId as string) || "Employee",
+    requesterRole: "",
+    submittedDate: (ts.weekEnding as string) || "",
+    priority: "low",
+    details: `${ts.totalHours || 0} hours logged (${ts.regularHours || 0} regular, ${ts.overtimeHours || 0} overtime)`,
+  };
+}
+
+function mapRequisitionToApproval(req: Record<string, unknown>): ApprovalRequest {
+  return {
+    id: `requisition-${req.id}`,
+    type: "requisition",
+    title: (req.jobTitle as string) || "Job Requisition",
+    requester: (req.requestedBy as string) || "Manager",
+    requesterRole: "",
+    submittedDate: (req.requestedDate as string) || (req.createdAt as string) || "",
+    priority: (req.priority as string)?.toLowerCase() === "high" ? "urgent" : "medium",
+    details: `${req.department || ''} - ${req.numberOfPositions || 1} position(s)`,
+  };
+}
+
 export default function UnifiedApprovalCenter() {
-  const [approvals, setApprovals] = useState<ApprovalRequest[]>(mockApprovals);
+  const [approvals, setApprovals] = useState<ApprovalRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<"all" | ApprovalType>("all");
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    async function fetchApprovals() {
+      setLoading(true);
+      setError(null);
+      try {
+        const [leaveRes, expenseRes, timesheetRes, requisitionRes] = await Promise.allSettled([
+          fetch('/api/v1/leave/apply').then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch('/api/compensation/expense-claims?status=PENDING').then(r => r.json()).catch(() => null),
+          fetch('/api/attendance/timesheets?status=PENDING').then(r => r.json()).catch(() => null),
+          fetch('/api/recruitment/requisitions?status=Pending').then(r => r.json()).catch(() => null),
+        ]);
+
+        const items: ApprovalRequest[] = [];
+
+        if (leaveRes.status === 'fulfilled' && leaveRes.value?.success) {
+          const pendingLeaves = (leaveRes.value.data || []).filter(
+            (r: Record<string, unknown>) => r.status === 'PENDING'
+          );
+          items.push(...pendingLeaves.map(mapLeaveToApproval));
+        }
+
+        if (expenseRes.status === 'fulfilled' && expenseRes.value?.success) {
+          items.push(...(expenseRes.value.data || []).map(mapExpenseToApproval));
+        }
+
+        if (timesheetRes.status === 'fulfilled' && timesheetRes.value?.success) {
+          const pendingTs = (timesheetRes.value.data || []).filter(
+            (t: Record<string, unknown>) => t.status === 'PENDING'
+          );
+          items.push(...pendingTs.map(mapTimesheetToApproval));
+        }
+
+        if (requisitionRes.status === 'fulfilled' && requisitionRes.value?.success) {
+          const pendingReqs = (requisitionRes.value.data || []).filter(
+            (r: Record<string, unknown>) => r.approvalStatus === 'Pending'
+          );
+          items.push(...pendingReqs.map(mapRequisitionToApproval));
+        }
+
+        setApprovals(items);
+      } catch (err) {
+        console.error('Failed to fetch approvals:', err);
+        setError('Failed to load pending approvals.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchApprovals();
+  }, []);
 
   const handleApprove = (id: string) => {
     setApprovals((prev) => prev.filter((a) => a.id !== id));
@@ -156,6 +187,30 @@ export default function UnifiedApprovalCenter() {
     requisition: approvals.filter((a) => a.type === "requisition").length,
     document: approvals.filter((a) => a.type === "document").length,
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-white dark:bg-stellar-blue rounded-lg border border-cloud dark:border-nebula-purple/50">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-48" />
+          <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded" />
+          <div className="space-y-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-20 bg-slate-200 dark:bg-slate-700 rounded-lg" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800/30 text-center">
+        <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-white dark:bg-stellar-blue rounded-lg border border-cloud dark:border-nebula-purple/50">
@@ -236,12 +291,14 @@ export default function UnifiedApprovalCenter() {
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-xs text-silver-mist">{approval.requester}</span>
-                <span className="text-xs text-silver-mist">
-                  {new Date(approval.submittedDate).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </span>
+                {approval.submittedDate && (
+                  <span className="text-xs text-silver-mist">
+                    {new Date(approval.submittedDate).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
+                )}
                 {approval.amount && (
                   <span className="text-xs font-medium text-celestial-indigo">
                     {approval.amount}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, Play, PenTool, Sparkles } from 'lucide-react';
 import LearningPaths from '@/components/learning/LearningPaths';
 import PathProgress from '@/components/learning/PathProgress';
@@ -12,8 +12,53 @@ import AILearningRecommendations from '@/components/learning/AILearningRecommend
 
 type Tab = 'catalog' | 'my-paths' | 'builder' | 'video' | 'quizzes' | 'ai-recommendations';
 
+interface ProgressStats {
+  totalPathsEnrolled: number;
+  pathsCompleted: number;
+  pathsInProgress: number;
+  totalHoursSpent: number;
+  averageScore: number;
+}
+
+interface AssessmentMeta {
+  total: number;
+}
+
 export default function LearningPathsModulePage() {
   const [activeTab, setActiveTab] = useState<Tab>('catalog');
+  const [stats, setStats] = useState<ProgressStats | null>(null);
+  const [assessmentCount, setAssessmentCount] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [progressRes, assessmentRes] = await Promise.all([
+          fetch('/api/v1/learning/progress').then(r => r.json()),
+          fetch('/api/v1/learning/assessments').then(r => r.json()),
+        ]);
+
+        if (progressRes.success && progressRes.data?.overallStats) {
+          setStats(progressRes.data.overallStats);
+        }
+
+        if (assessmentRes.success) {
+          const completedAssessments = (assessmentRes.data || []).filter(
+            (a: { status: string }) => a.status === 'completed'
+          );
+          setAssessmentCount(completedAssessments.length);
+        }
+      } catch (err) {
+        console.error('Learning stats fetch error:', err);
+        setError('Failed to load learning stats');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'catalog', label: 'Catalog' },
@@ -38,35 +83,54 @@ export default function LearningPathsModulePage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+          <button
+            onClick={() => setActiveTab('ai-recommendations')}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+          >
             <Sparkles className="w-4 h-4" /> Get Recommendations
           </button>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-          <p className="text-xs text-slate-500 uppercase font-medium">Enrolled Paths</p>
-          <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">4</p>
-          <p className="text-[10px] text-slate-400">2 in progress</p>
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 animate-pulse">
+              <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-20 mb-3" />
+              <div className="h-7 bg-slate-200 dark:bg-slate-700 rounded w-12 mb-2" />
+              <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded w-16" />
+            </div>
+          ))}
         </div>
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-          <p className="text-xs text-slate-500 uppercase font-medium">Hours Completed</p>
-          <p className="text-2xl font-bold text-indigo-600 mt-1">38</p>
-          <p className="text-[10px] text-slate-400">This quarter</p>
+      ) : error ? (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-3 text-sm text-yellow-700 dark:text-yellow-300">
+          {error}
         </div>
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-          <p className="text-xs text-slate-500 uppercase font-medium">Quizzes Passed</p>
-          <p className="text-2xl font-bold text-green-600 mt-1">12</p>
-          <p className="text-[10px] text-slate-400">Avg score: 84%</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+            <p className="text-xs text-slate-500 uppercase font-medium">Enrolled Paths</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{stats?.totalPathsEnrolled ?? 0}</p>
+            <p className="text-[10px] text-slate-400">{stats?.pathsInProgress ?? 0} in progress</p>
+          </div>
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+            <p className="text-xs text-slate-500 uppercase font-medium">Hours Completed</p>
+            <p className="text-2xl font-bold text-indigo-600 mt-1">{stats?.totalHoursSpent ?? 0}</p>
+            <p className="text-[10px] text-slate-400">This quarter</p>
+          </div>
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+            <p className="text-xs text-slate-500 uppercase font-medium">Assessments Passed</p>
+            <p className="text-2xl font-bold text-green-600 mt-1">{assessmentCount}</p>
+            <p className="text-[10px] text-slate-400">Avg score: {stats?.averageScore ?? 0}%</p>
+          </div>
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+            <p className="text-xs text-slate-500 uppercase font-medium">Paths Completed</p>
+            <p className="text-2xl font-bold text-amber-600 mt-1">{stats?.pathsCompleted ?? 0}</p>
+            <p className="text-[10px] text-slate-400">Total completions</p>
+          </div>
         </div>
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-          <p className="text-xs text-slate-500 uppercase font-medium">Certifications</p>
-          <p className="text-2xl font-bold text-amber-600 mt-1">3</p>
-          <p className="text-[10px] text-slate-400">1 expiring soon</p>
-        </div>
-      </div>
+      )}
 
       {/* Tab Navigation */}
       <div className="flex items-center gap-1 border-b border-slate-200 dark:border-slate-800 overflow-x-auto">

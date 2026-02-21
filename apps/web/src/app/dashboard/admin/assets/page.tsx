@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Laptop,
     Monitor,
@@ -21,64 +21,171 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- MOCK DATA ---
+// --- TYPES ---
 
-const MY_ASSETS = [
-    {
-        id: 'AST-001',
-        name: 'MacBook Pro 16"',
-        type: 'Laptop',
-        serial: 'C02YW123ABCD',
-        assigned: 'Jan 15, 2024',
-        warranty: 'Active (Expires Jan 2027)',
-        status: 'Good',
-        specs: 'M3 Pro, 32GB RAM, 1TB SSD',
-        image: '💻',
-        color: 'bg-slate-100'
-    },
-    {
-        id: 'AST-002',
-        name: 'Dell UltraSharp 27"',
-        type: 'Monitor',
-        serial: 'DL-CN-0X123',
-        assigned: 'Feb 01, 2024',
-        warranty: 'Active (Expires Feb 2026)',
-        status: 'Good',
-        specs: '4K USB-C Hub Monitor',
-        image: '🖥️',
-        color: 'bg-slate-100'
-    },
-    {
-        id: 'AST-003',
-        name: 'Magic Keyboard & Mouse',
-        type: 'Accessories',
-        serial: 'N/A',
-        assigned: 'Feb 01, 2024',
-        warranty: 'N/A',
-        status: 'Good',
-        specs: 'Wireless, Space Grey',
-        image: '⌨️',
-        color: 'bg-slate-100'
+interface Asset {
+    id: string;
+    assetCode: string;
+    assetName: string;
+    assetType: string;
+    category: string;
+    serialNumber?: string;
+    status: string;
+    condition?: string;
+    warrantyStartDate?: string;
+    warrantyEndDate?: string;
+    warrantyProvider?: string;
+    description?: string;
+    manufacturer?: string;
+    brand?: string;
+    modelNumber?: string;
+    purchaseDate?: string;
+    purchasePrice?: number;
+    currentValue?: number;
+    imageUrl?: string;
+    tags?: string;
+    notes?: string;
+    assignments?: Array<{
+        id: string;
+        employeeId: string;
+        assignedDate: string;
+        status: string;
+    }>;
+    maintenances?: Array<{
+        id: string;
+        maintenanceType: string;
+        scheduledDate: string;
+        status: string;
+    }>;
+    location?: {
+        id: string;
+        name: string;
+    } | null;
+}
+
+interface DashboardStats {
+    total: number;
+    available: number;
+    assigned: number;
+    inRepair: number;
+    retired: number;
+    categoryBreakdown: Array<{ category: string; _count: number }>;
+    upcomingMaintenance: number;
+    expiringWarranty: number;
+}
+
+// Catalog items are also assets from the API, but we show available ones
+// Tickets don't have a dedicated API yet, so we fetch from assets with IN_REPAIR status
+
+function getAssetEmoji(category: string): string {
+    switch (category) {
+        case 'COMPUTER': return '\u{1F4BB}';
+        case 'MOBILE': return '\u{1F4F1}';
+        case 'FURNITURE': return '\u{1FA91}';
+        case 'VEHICLE': return '\u{1F697}';
+        case 'EQUIPMENT': return '\u{1F527}';
+        default: return '\u{1F4E6}';
     }
-];
+}
 
-const CATALOG = [
-    { id: 1, name: 'iPad Pro 12.9"', category: 'Tablet', type: 'Hardware', image: '📱' },
-    { id: 2, name: 'JetBrains All Products', category: 'License', type: 'Software', image: '🛠️' },
-    { id: 3, name: 'Ergonomic Chair', category: 'Furniture', type: 'Furniture', image: '🪑' },
-    { id: 4, name: 'Adobe Creative Cloud', category: 'License', type: 'Software', image: '🎨' },
-    { id: 5, name: 'Testing Device (Android)', category: 'Mobile', type: 'Hardware', image: '🤖' },
-];
+function formatWarranty(startDate?: string, endDate?: string): string {
+    if (!endDate) return 'N/A';
+    const end = new Date(endDate);
+    const now = new Date();
+    if (end < now) return 'Expired';
+    return `Active (Expires ${end.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})`;
+}
 
-const TICKETS = [
-    { id: 'TKT-1029', title: 'VPN Access Issue', status: 'In Progress', date: 'Today', priority: 'High' },
-    { id: 'TKT-0992', title: 'Monitor Flicker', status: 'Resolved', date: 'Last Week', priority: 'Medium' }
-];
+function formatDate(dateStr?: string): string {
+    if (!dateStr) return 'N/A';
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
 export default function AssetsPage() {
-    const [activeTab, setActiveTab] = useState<'My Assets' | 'Catalog' | 'Tickets'>('My Assets');
+    const [activeTab, setActiveTab] = useState<'My Assets' | 'Catalog'>('My Assets');
     const [showRequestModal, setShowRequestModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState<any>(null);
+
+    // Data state
+    const [myAssets, setMyAssets] = useState<Asset[]>([]);
+    const [catalog, setCatalog] = useState<Asset[]>([]);
+    const [tickets, setTickets] = useState<Asset[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const [assignedRes, availableRes, repairRes] = await Promise.all([
+                    fetch('/api/v1/assets?status=ASSIGNED'),
+                    fetch('/api/v1/assets?status=AVAILABLE'),
+                    fetch('/api/v1/assets?status=IN_REPAIR'),
+                ]);
+
+                const [assignedJson, availableJson, repairJson] = await Promise.all([
+                    assignedRes.json(),
+                    availableRes.json(),
+                    repairRes.json(),
+                ]);
+
+                if (assignedJson.success) setMyAssets(assignedJson.data || []);
+                if (availableJson.success) setCatalog(availableJson.data || []);
+                if (repairJson.success) setTickets(repairJson.data || []);
+            } catch (err) {
+                console.error('Failed to fetch assets:', err);
+                setError('Failed to load asset data. Please try again later.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+                    <div>
+                        <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
+                            <Laptop className="w-6 h-6 text-indigo-500" />
+                            IT Asset Management
+                        </h1>
+                        <p className="text-silver-mist text-sm">Manage your devices, software licenses, and support requests.</p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 animate-pulse">
+                    <div className="lg:col-span-2 space-y-4">
+                        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-48" />
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="bg-white dark:bg-stellar-blue p-5 rounded-2xl border border-cloud dark:border-nebula-purple/50 h-32" />
+                        ))}
+                    </div>
+                    <div className="space-y-4">
+                        <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 h-48" />
+                        <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl h-32" />
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col items-center justify-center">
+                <AlertCircle className="w-12 h-12 text-rose-500" />
+                <p className="text-lg font-bold text-ink-black dark:text-pearl">{error}</p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="px-4 py-2 bg-indigo-500 text-white rounded-xl font-bold text-sm"
+                >
+                    Retry
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
@@ -129,68 +236,83 @@ export default function AssetsPage() {
                     <div className="flex-1 overflow-y-auto pr-2 pb-20">
                         {activeTab === 'My Assets' ? (
                             <div className="space-y-4">
-                                {MY_ASSETS.map(asset => (
-                                    <div key={asset.id} className="bg-white dark:bg-stellar-blue p-5 rounded-2xl border border-cloud dark:border-nebula-purple/50 flex flex-col sm:flex-row gap-5 items-start">
-                                        <div className={`w-20 h-20 rounded-xl ${asset.color} flex items-center justify-center text-4xl shadow-inner shrink-0`}>
-                                            {asset.image}
-                                        </div>
-                                        <div className="flex-1 w-full">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h3 className="font-bold text-ink-black dark:text-pearl text-lg">{asset.name}</h3>
-                                                    <div className="flex items-center gap-2 text-xs text-silver-mist mt-1 font-mono">
-                                                        <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">{asset.id}</span>
-                                                        <span>•</span>
-                                                        <span>{asset.serial}</span>
+                                {myAssets.length === 0 ? (
+                                    <div className="text-center py-12 text-silver-mist">
+                                        <Laptop className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                                        <p className="font-bold">No assets assigned to you</p>
+                                        <p className="text-sm mt-1">Request a device from the catalog</p>
+                                    </div>
+                                ) : (
+                                    myAssets.map(asset => (
+                                        <div key={asset.id} className="bg-white dark:bg-stellar-blue p-5 rounded-2xl border border-cloud dark:border-nebula-purple/50 flex flex-col sm:flex-row gap-5 items-start">
+                                            <div className="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center text-4xl shadow-inner shrink-0">
+                                                {getAssetEmoji(asset.category)}
+                                            </div>
+                                            <div className="flex-1 w-full">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <h3 className="font-bold text-ink-black dark:text-pearl text-lg">{asset.assetName}</h3>
+                                                        <div className="flex items-center gap-2 text-xs text-silver-mist mt-1 font-mono">
+                                                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">{asset.assetCode}</span>
+                                                            <span>•</span>
+                                                            <span>{asset.serialNumber || 'N/A'}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-[10px] font-bold px-2 py-1 rounded bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+                                                        {asset.condition || asset.status}
                                                     </div>
                                                 </div>
-                                                <div className="text-[10px] font-bold px-2 py-1 rounded bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-                                                    {asset.status}
-                                                </div>
-                                            </div>
 
-                                            <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
-                                                <div>
-                                                    <span className="block text-xs font-bold text-slate-500 mb-0.5">Specifications</span>
-                                                    <span className="text-slate-700 dark:text-slate-300">{asset.specs}</span>
+                                                <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
+                                                    <div>
+                                                        <span className="block text-xs font-bold text-slate-500 mb-0.5">Specifications</span>
+                                                        <span className="text-slate-700 dark:text-slate-300">{asset.description || `${asset.manufacturer || ''} ${asset.modelNumber || ''} ${asset.assetType}`.trim()}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="block text-xs font-bold text-slate-500 mb-0.5">Warranty Status</span>
+                                                        <span className="text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                                                            <CheckCircle2 className="w-3 h-3 text-emerald-500" /> {formatWarranty(asset.warrantyStartDate, asset.warrantyEndDate)}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <span className="block text-xs font-bold text-slate-500 mb-0.5">Warranty Status</span>
-                                                    <span className="text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                                                        <CheckCircle2 className="w-3 h-3 text-emerald-500" /> {asset.warranty}
-                                                    </span>
-                                                </div>
-                                            </div>
 
-                                            <div className="mt-4 pt-4 border-t border-cloud dark:border-slate-800 flex gap-3">
-                                                <button className="text-xs font-bold text-indigo-500 hover:text-indigo-600 flex items-center gap-1">
-                                                    <Wrench className="w-3 h-3" /> Report Issue
-                                                </button>
-                                                <button className="text-xs font-bold text-slate-500 hover:text-slate-700 flex items-center gap-1">
-                                                    <FileText className="w-3 h-3" /> View History
-                                                </button>
+                                                <div className="mt-4 pt-4 border-t border-cloud dark:border-slate-800 flex gap-3">
+                                                    <button className="text-xs font-bold text-indigo-500 hover:text-indigo-600 flex items-center gap-1">
+                                                        <Wrench className="w-3 h-3" /> Report Issue
+                                                    </button>
+                                                    <button className="text-xs font-bold text-slate-500 hover:text-slate-700 flex items-center gap-1">
+                                                        <FileText className="w-3 h-3" /> View History
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {CATALOG.map(item => (
-                                    <button
-                                        key={item.id}
-                                        onClick={() => { setSelectedItem(item); setShowRequestModal(true); }}
-                                        className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 hover:bg-slate-50 dark:hover:bg-slate-900/40 text-left transition-all group flex items-start gap-4"
-                                    >
-                                        <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                                            {item.image}
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-ink-black dark:text-pearl group-hover:text-indigo-500 transition-colors">{item.name}</h3>
-                                            <div className="text-xs text-silver-mist mt-1">{item.category} • {item.type}</div>
-                                        </div>
-                                    </button>
-                                ))}
+                                {catalog.length === 0 ? (
+                                    <div className="col-span-2 text-center py-12 text-silver-mist">
+                                        <Search className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                                        <p className="font-bold">No items available in the catalog</p>
+                                    </div>
+                                ) : (
+                                    catalog.map(item => (
+                                        <button
+                                            key={item.id}
+                                            onClick={() => { setSelectedItem(item); setShowRequestModal(true); }}
+                                            className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 hover:bg-slate-50 dark:hover:bg-slate-900/40 text-left transition-all group flex items-start gap-4"
+                                        >
+                                            <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                                                {getAssetEmoji(item.category)}
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-ink-black dark:text-pearl group-hover:text-indigo-500 transition-colors">{item.assetName}</h3>
+                                                <div className="text-xs text-silver-mist mt-1">{item.category} • {item.assetType}</div>
+                                            </div>
+                                        </button>
+                                    ))
+                                )}
                             </div>
                         )}
                     </div>
@@ -198,30 +320,32 @@ export default function AssetsPage() {
 
                 {/* Right: Status & Info */}
                 <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
-                    {/* Tickets */}
+                    {/* Tickets (Assets in Repair) */}
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm shrink-0">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
                             <Wrench className="w-5 h-5 text-indigo-500" /> Recent Tickets
                         </h3>
 
                         <div className="space-y-4">
-                            {TICKETS.map(ticket => (
-                                <div key={ticket.id} className="p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-cloud dark:border-slate-800">
-                                    <div className="flex justify-between items-start mb-1">
-                                        <span className="text-[10px] font-mono font-bold text-slate-400">{ticket.id}</span>
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded
-                                            ${ticket.status === 'Resolved' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}
-                                        `}>
-                                            {ticket.status}
-                                        </span>
+                            {tickets.length === 0 ? (
+                                <p className="text-sm text-silver-mist text-center py-4">No open tickets</p>
+                            ) : (
+                                tickets.slice(0, 5).map(ticket => (
+                                    <div key={ticket.id} className="p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-cloud dark:border-slate-800">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <span className="text-[10px] font-mono font-bold text-slate-400">{ticket.assetCode}</span>
+                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-600">
+                                                In Repair
+                                            </span>
+                                        </div>
+                                        <h4 className="font-bold text-sm text-ink-black dark:text-pearl mb-1">{ticket.assetName}</h4>
+                                        <div className="flex justify-between items-center text-xs text-silver-mist">
+                                            <span>{formatDate(ticket.purchaseDate)}</span>
+                                            <span className="font-bold text-rose-500">Needs Attention</span>
+                                        </div>
                                     </div>
-                                    <h4 className="font-bold text-sm text-ink-black dark:text-pearl mb-1">{ticket.title}</h4>
-                                    <div className="flex justify-between items-center text-xs text-silver-mist">
-                                        <span>{ticket.date}</span>
-                                        <span className={`font-bold ${ticket.priority === 'High' ? 'text-rose-500' : 'text-indigo-500'}`}>{ticket.priority} Priority</span>
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
 
                         <button className="w-full mt-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
@@ -267,7 +391,7 @@ export default function AssetsPage() {
                             </button>
 
                             <h2 className="text-xl font-bold text-ink-black dark:text-pearl mb-1">
-                                {selectedItem ? `Request ${selectedItem.name}` : 'New IT Request'}
+                                {selectedItem ? `Request ${selectedItem.assetName || selectedItem.name}` : 'New IT Request'}
                             </h2>
                             <p className="text-sm text-silver-mist mb-6">Submit a request for hardware, software, or peripherals.</p>
 

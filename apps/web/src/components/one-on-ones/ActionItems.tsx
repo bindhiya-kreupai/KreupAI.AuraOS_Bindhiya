@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   CheckCircle2,
   Circle,
@@ -23,66 +23,67 @@ interface ActionItem {
   priority: "low" | "medium" | "high";
 }
 
-const mockActionItems: ActionItem[] = [
-  {
-    id: "1",
-    title: "Complete tech debt analysis document",
-    assignee: "Sarah Chen",
-    dueDate: "2026-01-28",
-    status: "in-progress",
-    meetingDate: "2026-01-20",
-    priority: "high",
-  },
-  {
-    id: "2",
-    title: "Set up mentoring sessions with junior devs",
-    assignee: "You (Manager)",
-    dueDate: "2026-01-30",
-    status: "pending",
-    meetingDate: "2026-01-20",
-    priority: "medium",
-  },
-  {
-    id: "3",
-    title: "Review and update sprint velocity targets",
-    assignee: "Sarah Chen",
-    dueDate: "2026-01-25",
-    status: "done",
-    meetingDate: "2026-01-13",
-    priority: "medium",
-  },
-  {
-    id: "4",
-    title: "Prepare presentation for architecture review",
-    assignee: "Sarah Chen",
-    dueDate: "2026-02-01",
-    status: "pending",
-    meetingDate: "2026-01-20",
-    priority: "high",
-  },
-  {
-    id: "5",
-    title: "Schedule team building activity for Q1",
-    assignee: "You (Manager)",
-    dueDate: "2026-01-31",
-    status: "in-progress",
-    meetingDate: "2026-01-13",
-    priority: "low",
-  },
-  {
-    id: "6",
-    title: "Update career development plan",
-    assignee: "Sarah Chen",
-    dueDate: "2026-01-22",
-    status: "done",
-    meetingDate: "2026-01-06",
-    priority: "medium",
-  },
-];
+interface ApiOneOnOne {
+  id: string;
+  managerId: string;
+  managerName: string;
+  reportId: string;
+  reportName: string;
+  frequency: string;
+  nextMeeting: string;
+  duration: number;
+  status: string;
+  agendaItems: string[];
+  lastMeetingNotes?: string;
+}
 
-export default function ActionItems() {
-  const [items, setItems] = useState<ActionItem[]>(mockActionItems);
+interface ActionItemsProps {
+  oneOnOnes?: ApiOneOnOne[];
+}
+
+function deriveActionItems(oneOnOnes: ApiOneOnOne[]): ActionItem[] {
+  const items: ActionItem[] = [];
+  oneOnOnes.forEach((oo) => {
+    (oo.agendaItems || []).forEach((agenda, idx) => {
+      items.push({
+        id: `${oo.id}-${idx}`,
+        title: agenda,
+        assignee: oo.reportName,
+        dueDate: new Date(
+          new Date(oo.nextMeeting).getTime() + 7 * 24 * 60 * 60 * 1000
+        ).toISOString().split("T")[0],
+        status: "pending",
+        meetingDate: oo.nextMeeting.split("T")[0],
+        priority: idx === 0 ? "high" : idx === 1 ? "medium" : "low",
+      });
+    });
+  });
+  return items;
+}
+
+export default function ActionItems({ oneOnOnes }: ActionItemsProps) {
+  const [items, setItems] = useState<ActionItem[]>([]);
+  const [loading, setLoading] = useState(!oneOnOnes);
   const [filterStatus, setFilterStatus] = useState<"all" | ActionItemStatus>("all");
+
+  useEffect(() => {
+    if (oneOnOnes) {
+      setItems(deriveActionItems(oneOnOnes));
+      setLoading(false);
+      return;
+    }
+
+    // Fallback
+    fetch("/api/v1/performance/one-on-ones")
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.success && result.data?.oneOnOnes) {
+          setItems(deriveActionItems(result.data.oneOnOnes));
+        }
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [oneOnOnes]);
 
   const statusCycle: ActionItemStatus[] = ["pending", "in-progress", "done"];
 
@@ -155,6 +156,24 @@ export default function ActionItems() {
     inProgress: items.filter((i) => i.status === "in-progress").length,
     done: items.filter((i) => i.status === "done").length,
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-white dark:bg-stellar-blue rounded-lg border border-cloud dark:border-nebula-purple/50 animate-pulse">
+        <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-48 mb-6" />
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-16 bg-slate-100 dark:bg-slate-800 rounded-lg" />
+          ))}
+        </div>
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-16 bg-slate-100 dark:bg-slate-800 rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-white dark:bg-stellar-blue rounded-lg border border-cloud dark:border-nebula-purple/50">

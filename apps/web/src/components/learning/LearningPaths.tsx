@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BookOpen,
   Clock,
@@ -17,113 +17,119 @@ interface LearningPath {
   description: string;
   duration: string;
   modulesCount: number;
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
+  difficulty: string;
   category: string;
   enrolled: boolean;
   enrolledCount: number;
+  rating: number;
   thumbnail: string;
 }
 
-const mockPaths: LearningPath[] = [
-  {
-    id: "lp-001",
-    title: "Leadership Fundamentals",
-    description: "Build essential leadership skills including communication, delegation, and team management for new and aspiring managers.",
-    duration: "12 hours",
-    modulesCount: 8,
-    difficulty: "Beginner",
-    category: "Leadership",
-    enrolled: false,
-    enrolledCount: 342,
-    thumbnail: "/images/leadership.jpg",
-  },
-  {
-    id: "lp-002",
-    title: "Advanced Data Analytics",
-    description: "Master data visualization, statistical analysis, and predictive modeling techniques using modern tools and frameworks.",
-    duration: "24 hours",
-    modulesCount: 14,
-    difficulty: "Advanced",
-    category: "Technical",
-    enrolled: true,
-    enrolledCount: 189,
-    thumbnail: "/images/analytics.jpg",
-  },
-  {
-    id: "lp-003",
-    title: "Project Management Professional",
-    description: "Comprehensive preparation for PMP certification covering all knowledge areas and process groups.",
-    duration: "36 hours",
-    modulesCount: 20,
-    difficulty: "Intermediate",
-    category: "Management",
-    enrolled: false,
-    enrolledCount: 567,
-    thumbnail: "/images/pm.jpg",
-  },
-  {
-    id: "lp-004",
-    title: "Effective Communication",
-    description: "Enhance your verbal and written communication skills for professional settings, presentations, and stakeholder management.",
-    duration: "8 hours",
-    modulesCount: 6,
-    difficulty: "Beginner",
-    category: "Soft Skills",
-    enrolled: false,
-    enrolledCount: 723,
-    thumbnail: "/images/communication.jpg",
-  },
-  {
-    id: "lp-005",
-    title: "Cloud Architecture Mastery",
-    description: "Design and implement scalable cloud solutions using AWS, Azure, and GCP with best practices for security and cost optimization.",
-    duration: "40 hours",
-    modulesCount: 18,
-    difficulty: "Advanced",
-    category: "Technical",
-    enrolled: false,
-    enrolledCount: 156,
-    thumbnail: "/images/cloud.jpg",
-  },
-  {
-    id: "lp-006",
-    title: "Agile & Scrum Essentials",
-    description: "Learn agile methodologies, scrum framework, sprint planning, and retrospective facilitation techniques.",
-    duration: "16 hours",
-    modulesCount: 10,
-    difficulty: "Intermediate",
-    category: "Management",
-    enrolled: true,
-    enrolledCount: 412,
-    thumbnail: "/images/agile.jpg",
-  },
-];
-
 const difficultyColor: Record<string, string> = {
+  beginner: "text-aurora-green",
   Beginner: "text-aurora-green",
+  intermediate: "text-yellow-500",
   Intermediate: "text-yellow-500",
+  advanced: "text-red-500",
   Advanced: "text-red-500",
 };
 
 export default function LearningPaths() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterDifficulty, setFilterDifficulty] = useState<string>("All");
-  const [paths, setPaths] = useState<LearningPath[]>(mockPaths);
+  const [paths, setPaths] = useState<LearningPath[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/v1/learning/paths')
+      .then(res => res.json())
+      .then(result => {
+        if (result.success && result.data) {
+          const mappedPaths: LearningPath[] = result.data.map((p: Record<string, unknown>) => ({
+            id: p.id as string,
+            title: p.title as string,
+            description: p.description as string,
+            duration: (p.duration as string) || 'N/A',
+            modulesCount: (p.modulesCount as number) || 0,
+            difficulty: ((p.level || p.difficulty || 'beginner') as string),
+            category: (p.category as string) || 'General',
+            enrolled: false,
+            enrolledCount: (p.enrolledCount as number) || 0,
+            rating: (p.rating as number) || 0,
+            thumbnail: (p.thumbnail as string) || '',
+          }));
+          setPaths(mappedPaths);
+        } else {
+          setError('Failed to load learning paths');
+        }
+      })
+      .catch((err) => {
+        console.error('LearningPaths fetch error:', err);
+        setError('Failed to load learning paths');
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const filteredPaths = paths.filter((path) => {
     const matchesSearch =
       path.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       path.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesDifficulty =
-      filterDifficulty === "All" || path.difficulty === filterDifficulty;
+      filterDifficulty === "All" || path.difficulty.toLowerCase() === filterDifficulty.toLowerCase();
     return matchesSearch && matchesDifficulty;
   });
 
   const handleEnroll = (id: string) => {
-    setPaths((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, enrolled: true } : p))
-    );
+    fetch(`/api/v1/learning/paths/${id}/enroll`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hoursPerWeek: 5 }),
+    })
+      .then(res => res.json())
+      .then(result => {
+        if (result.success) {
+          setPaths((prev) =>
+            prev.map((p) => (p.id === id ? { ...p, enrolled: true } : p))
+          );
+        }
+      })
+      .catch(console.error);
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-white dark:bg-stellar-blue min-h-screen">
+        <div className="mb-6">
+          <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-48 mb-2 animate-pulse" />
+          <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-72 animate-pulse" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="rounded-xl border border-cloud dark:border-nebula-purple/50 overflow-hidden animate-pulse">
+              <div className="h-32 bg-slate-200 dark:bg-slate-700" />
+              <div className="p-5 space-y-3">
+                <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-32" />
+                <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-48" />
+                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-full" />
+                <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 text-sm text-red-700 dark:text-red-300">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-white dark:bg-stellar-blue min-h-screen">
@@ -155,9 +161,9 @@ export default function LearningPaths() {
             className="px-3 py-2 rounded-lg border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-ink-black dark:text-pearl focus:outline-none focus:ring-2 focus:ring-celestial-indigo"
           >
             <option value="All">All Levels</option>
-            <option value="Beginner">Beginner</option>
-            <option value="Intermediate">Intermediate</option>
-            <option value="Advanced">Advanced</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
           </select>
         </div>
       </div>
@@ -176,8 +182,8 @@ export default function LearningPaths() {
                 <span className="text-xs font-medium px-2 py-1 rounded-full bg-celestial-indigo/10 text-celestial-indigo">
                   {path.category}
                 </span>
-                <span className={`text-xs font-medium ${difficultyColor[path.difficulty]}`}>
-                  {path.difficulty}
+                <span className={`text-xs font-medium ${difficultyColor[path.difficulty] || 'text-silver-mist'}`}>
+                  {path.difficulty.charAt(0).toUpperCase() + path.difficulty.slice(1)}
                 </span>
               </div>
 
@@ -223,6 +229,11 @@ export default function LearningPaths() {
             </div>
           </div>
         ))}
+        {filteredPaths.length === 0 && (
+          <div className="col-span-full text-center py-12 text-sm text-silver-mist">
+            No learning paths found matching your criteria
+          </div>
+        )}
       </div>
     </div>
   );

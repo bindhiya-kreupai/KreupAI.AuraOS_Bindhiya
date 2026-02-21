@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Eye,
   Type,
@@ -14,41 +14,114 @@ import {
 
 interface FormField {
   id: string;
-  type: "text" | "number" | "date" | "email" | "dropdown" | "radio" | "checkbox" | "file" | "signature";
+  type: "text" | "number" | "date" | "email" | "dropdown" | "radio" | "checkbox" | "file" | "signature" | "select" | "textarea";
   label: string;
   placeholder?: string;
   required: boolean;
   options?: string[];
 }
 
+interface ApiFormDefinition {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  status: string;
+  fields?: Array<{
+    id: string;
+    name: string;
+    label: string;
+    type: string;
+    required: boolean;
+    order: number;
+    options?: Array<{ value: string; label: string }>;
+    validation?: Record<string, unknown>;
+    placeholder?: string;
+  }>;
+  [key: string]: unknown;
+}
+
 interface FormPreviewProps {
   fields?: FormField[];
   formTitle?: string;
+  formDefinition?: ApiFormDefinition | null;
 }
 
-const mockFields: FormField[] = [
-  { id: "f-001", type: "text", label: "Full Name", placeholder: "Enter your full name", required: true },
-  { id: "f-002", type: "email", label: "Email Address", placeholder: "you@example.com", required: true },
-  { id: "f-003", type: "number", label: "Phone Number", placeholder: "+1 (555) 000-0000", required: false },
-  { id: "f-004", type: "dropdown", label: "Department", required: true, options: ["Engineering", "Sales", "HR", "Marketing"] },
-  { id: "f-005", type: "date", label: "Start Date", required: true },
-  { id: "f-006", type: "radio", label: "Employment Type", required: true, options: ["Full-time", "Part-time", "Contract"] },
-  { id: "f-007", type: "checkbox", label: "Skills", required: false, options: ["JavaScript", "Python", "React", "Node.js", "SQL"] },
-  { id: "f-008", type: "file", label: "Resume Upload", required: false },
-  { id: "f-009", type: "signature", label: "Applicant Signature", required: true },
-];
+function mapApiFieldType(type: string): FormField["type"] {
+  const typeMap: Record<string, FormField["type"]> = {
+    "select": "dropdown",
+    "textarea": "text",
+  };
+  return (typeMap[type] || type) as FormField["type"];
+}
 
-export default function FormPreview({ fields: propFields, formTitle }: FormPreviewProps) {
-  const [fields] = useState<FormField[]>(propFields || mockFields);
+export default function FormPreview({ fields: propFields, formTitle, formDefinition }: FormPreviewProps) {
+  const [fields, setFields] = useState<FormField[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (propFields) {
+      setFields(propFields);
+      return;
+    }
+
+    if (formDefinition?.fields && formDefinition.fields.length > 0) {
+      const mapped = formDefinition.fields
+        .sort((a, b) => a.order - b.order)
+        .map((f) => ({
+          id: f.id,
+          type: mapApiFieldType(f.type),
+          label: f.label,
+          placeholder: f.placeholder,
+          required: f.required,
+          options: f.options?.map((o) => (typeof o === "string" ? o : o.label)),
+        }));
+      setFields(mapped);
+      return;
+    }
+
+    // Fallback: fetch from API if nothing provided
+    if (!formDefinition) {
+      setLoading(true);
+      fetch("/api/v1/admin/forms")
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.success && result.data && result.data.length > 0) {
+            // Fetch the first form's details
+            return fetch(`/api/v1/admin/forms/${result.data[0].id}`);
+          }
+          return null;
+        })
+        .then((res) => res?.json())
+        .then((result) => {
+          if (result?.success && result.data?.fields) {
+            const mapped = result.data.fields
+              .sort((a: { order: number }, b: { order: number }) => a.order - b.order)
+              .map((f: { id: string; name: string; label: string; type: string; required: boolean; placeholder?: string; options?: Array<{ value: string; label: string }> }) => ({
+                id: f.id,
+                type: mapApiFieldType(f.type),
+                label: f.label,
+                placeholder: f.placeholder,
+                required: f.required,
+                options: f.options?.map((o: { label: string }) => o.label),
+              }));
+            setFields(mapped);
+          }
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }
+  }, [propFields, formDefinition]);
 
   const renderField = (field: FormField) => {
     switch (field.type) {
       case "text":
       case "email":
       case "number":
+      case "textarea":
         return (
           <input
-            type={field.type}
+            type={field.type === "textarea" ? "text" : field.type}
             placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
             className="w-full px-3 py-2 text-sm rounded-lg border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-ink-black dark:text-pearl placeholder:text-silver-mist"
             readOnly
@@ -63,6 +136,7 @@ export default function FormPreview({ fields: propFields, formTitle }: FormPrevi
           />
         );
       case "dropdown":
+      case "select":
         return (
           <div className="relative">
             <select className="w-full px-3 py-2 text-sm rounded-lg border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-ink-black dark:text-pearl appearance-none">
@@ -129,6 +203,22 @@ export default function FormPreview({ fields: propFields, formTitle }: FormPrevi
     }
   };
 
+  if (loading) {
+    return (
+      <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-6 animate-pulse">
+        <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-48 mb-6" />
+        <div className="max-w-lg mx-auto space-y-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800 rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const displayTitle = formTitle || formDefinition?.name || "Form Preview";
+  const displayDescription = formDefinition?.description || "Please fill in all required fields marked with *";
+
   return (
     <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-6">
       <div className="flex items-center gap-3 mb-6">
@@ -137,7 +227,7 @@ export default function FormPreview({ fields: propFields, formTitle }: FormPrevi
         </div>
         <div>
           <h2 className="text-lg font-semibold text-ink-black dark:text-pearl">
-            {formTitle || "Form Preview"}
+            {displayTitle}
           </h2>
           <p className="text-sm text-silver-mist">
             Live preview of the form as end users will see it
@@ -148,25 +238,31 @@ export default function FormPreview({ fields: propFields, formTitle }: FormPrevi
       {/* Preview Container */}
       <div className="max-w-lg mx-auto border border-cloud dark:border-nebula-purple/50 rounded-xl p-6 bg-gray-50 dark:bg-stellar-blue/30">
         <h3 className="text-lg font-semibold text-ink-black dark:text-pearl mb-1">
-          Employee Onboarding Form
+          {formDefinition?.name || "Employee Onboarding Form"}
         </h3>
         <p className="text-sm text-silver-mist mb-6">
-          Please fill in all required fields marked with *
+          {displayDescription}
         </p>
 
-        <div className="space-y-5">
-          {fields.map((field) => (
-            <div key={field.id}>
-              <label className="block text-sm font-medium text-ink-black dark:text-pearl mb-1.5">
-                {field.label}
-                {field.required && (
-                  <span className="text-coral-alert ml-0.5">*</span>
-                )}
-              </label>
-              {renderField(field)}
-            </div>
-          ))}
-        </div>
+        {fields.length === 0 ? (
+          <div className="text-center py-8 text-silver-mist">
+            <p>No fields to preview. Add fields in the Form Builder.</p>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {fields.map((field) => (
+              <div key={field.id}>
+                <label className="block text-sm font-medium text-ink-black dark:text-pearl mb-1.5">
+                  {field.label}
+                  {field.required && (
+                    <span className="text-coral-alert ml-0.5">*</span>
+                  )}
+                </label>
+                {renderField(field)}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Submit Button Preview */}
         <div className="mt-8 flex gap-3">
