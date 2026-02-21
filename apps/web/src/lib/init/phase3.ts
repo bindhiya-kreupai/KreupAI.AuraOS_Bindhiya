@@ -5,6 +5,7 @@
 
 import { initializeMessaging, shutdownMessaging } from './messaging';
 import { initializeSearch, shutdownSearch } from './search';
+import { initializeScheduler, shutdownScheduler } from './scheduler';
 import { eventBusService } from '@/lib/events/event-bus.service';
 import { logger } from '@/lib/logger';
 
@@ -35,6 +36,14 @@ export async function initializePhase3Services(): Promise<void> {
     // Initialize Event Bus (in-memory, always succeeds)
     eventBusService.initialize();
 
+    // Initialize Background Job Scheduler
+    // This starts cron tasks for all enabled jobs. It runs after messaging
+    // so that the queue is available for job dispatch.
+    await initializeScheduler().catch((error) => {
+      logger.error({ error }, 'Failed to initialize scheduler');
+      // Don't fail startup
+    });
+
     const duration = Math.round(performance.now() - startTime);
 
     logger.info(
@@ -55,6 +64,7 @@ export async function shutdownPhase3Services(): Promise<void> {
 
   try {
     await Promise.allSettled([
+      shutdownScheduler(),
       shutdownMessaging(),
       shutdownSearch(),
     ]);
@@ -72,19 +82,22 @@ export async function checkPhase3Health(): Promise<{
   messaging: boolean;
   search: boolean;
   events: boolean;
+  scheduler: boolean;
   overall: boolean;
 }> {
   const { messagingService } = await import('@/lib/queue/messaging.service');
   const { employeeSearchService } = await import('@/lib/search/employee-search.service');
+  const { jobScheduler } = await import('@/lib/queue/scheduler');
 
   const health = {
     messaging: messagingService.isReady(),
     search: employeeSearchService.isReady(),
     events: true, // Event bus is in-memory, always ready
+    scheduler: jobScheduler.isRunning,
     overall: false,
   };
 
-  health.overall = health.messaging && health.search && health.events;
+  health.overall = health.messaging && health.search && health.events && health.scheduler;
 
   return health;
 }
