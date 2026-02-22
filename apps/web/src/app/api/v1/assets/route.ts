@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { AssetService } from '@/lib/services/asset.service';
+import { ServiceProxy } from '@/lib/services/service-proxy';
 import { z } from 'zod';
 
 // API Response Standard
@@ -53,7 +53,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc',
     };
 
-    const result = await AssetService.findAll(filter);
+    // Fetch assets from microservice
+    const result = await ServiceProxy.get('employee', '/assets', filter);
 
     const response: ApiResponse = {
       success: true,
@@ -100,7 +101,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     // Add tenant context
     body.tenantId = user.tenantId;
 
-    const asset = await AssetService.create(body);
+    // Create asset via microservice
+    const asset = await ServiceProxy.post('employee', '/assets', body);
 
     const response: ApiResponse = {
       success: true,

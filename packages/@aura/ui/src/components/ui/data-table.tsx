@@ -9,9 +9,11 @@ function cn(...inputs: ClassValue[]) {
 
 export interface Column<T> {
     key: string;
-    header: string;
+    header?: string;
+    label?: string; // Alias for header
     render?: (row: T) => React.ReactNode;
     width?: string;
+    sortable?: boolean;
 }
 
 interface DataTableProps<T> {
@@ -87,7 +89,7 @@ export function DataTable<T extends { id: string | number }>({
                             {columns.map((col) => (
                                 <th key={col.key} className="px-4 py-3 font-semibold whitespace-nowrap" style={{ width: col.width }}>
                                     <div className="flex items-center gap-1 cursor-pointer hover:text-celestial-indigo transition-colors group">
-                                        {col.header}
+                                        {col.header || col.label}
                                         <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-50" />
                                     </div>
                                 </th>

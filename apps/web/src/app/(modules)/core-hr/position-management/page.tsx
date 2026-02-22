@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DataPage, FormField } from '@aura/ui';
+import { DataPage, FormField, type RowAction } from '@aura/ui';
 import {
   Building2, Users, DollarSign, TrendingUp,
   CheckCircle2, XCircle, Pause, FileText,
@@ -331,7 +331,7 @@ export default function PositionManagementPage() {
       label: 'FTE (Full-Time Equivalent)',
       type: 'number',
       placeholder: '1.0',
-      step: '0.01',
+      step: 0.01,
       required: true,
       defaultValue: 1.0,
       helpText: 'e.g., 0.5 for part-time, 1.0 for full-time',
@@ -341,14 +341,14 @@ export default function PositionManagementPage() {
       label: 'Minimum Salary',
       type: 'number',
       placeholder: '50000',
-      step: '1000',
+      step: 1000,
     },
     {
       name: 'salaryMax',
       label: 'Maximum Salary',
       type: 'number',
       placeholder: '80000',
-      step: '1000',
+      step: 1000,
     },
     {
       name: 'salaryCurrency',
@@ -367,7 +367,7 @@ export default function PositionManagementPage() {
       label: 'Annual Budget',
       type: 'number',
       placeholder: '100000',
-      step: '1000',
+      step: 1000,
       helpText: 'Total annual budget for this position',
     },
     {
@@ -398,8 +398,8 @@ export default function PositionManagementPage() {
     },
   ];
 
-  const getRowActions = (row: Position) => {
-    const actions = [
+  const getRowActions = (row: Position): RowAction<Position>[] => {
+    const actions: RowAction<Position>[] = [
       {
         label: 'View Details',
         icon: Briefcase,
@@ -419,8 +419,7 @@ export default function PositionManagementPage() {
         label: 'Approve',
         icon: ThumbsUp,
         variant: 'success' as const,
-        confirmTitle: 'Approve Position?',
-        confirmMessage: `Are you sure you want to approve position "${row.title}"? This will change its status to OPEN.`,
+        confirmTitle: `Are you sure you want to approve position "${row.title}"? This will change its status to OPEN.`,
         apiEndpoint: `/api/v1/positions/${row.id}/approve`,
         method: 'POST' as const,
         onSuccess: handleActionSuccess,
@@ -560,11 +559,10 @@ export default function PositionManagementPage() {
             <button
               key={status.value}
               onClick={() => handleStatusFilter(status.value)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
-                isActive
-                  ? status.color + ' ring-2 ring-offset-2 ring-current'
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${isActive
+                ? status.color + ' ring-2 ring-offset-2 ring-current'
+                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
             >
               <Icon className="h-3.5 w-3.5" />
               {status.label}

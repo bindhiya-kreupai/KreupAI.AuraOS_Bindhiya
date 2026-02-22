@@ -262,7 +262,7 @@ export default function DocumentManagementPage() {
             <FileText className="w-4 h-4 text-celestial-indigo dark:text-sky-400" />
             <span className="font-semibold text-ink-black dark:text-pearl">{row.documentName}</span>
             {row.isVerified && (
-              <CheckCircle className="w-4 h-4 text-emerald-500" title="Verified" />
+              <CheckCircle className="w-4 h-4 text-emerald-500" />
             )}
             {row.isConfidential && (
               <span className="text-xs bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full">
@@ -502,11 +502,10 @@ export default function DocumentManagementPage() {
             Upload File <span className="text-red-500">*</span>
           </label>
           <div
-            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-              uploadedFile
+            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${uploadedFile
                 ? 'border-green-500 bg-green-50 dark:bg-green-900/10'
                 : 'border-silver-mist/30 hover:border-celestial-indigo'
-            }`}
+              }`}
             onClick={() => fileInputRef.current?.click()}
           >
             <input
@@ -775,11 +774,10 @@ export default function DocumentManagementPage() {
             <button
               key={cat.value}
               onClick={() => setSelectedCategory(cat.value)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium text-sm ${
-                isSelected
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium text-sm ${isSelected
                   ? 'bg-celestial-indigo text-white'
                   : 'bg-white dark:bg-midnight-gray text-ink-black dark:text-pearl border border-silver-mist/30 hover:border-celestial-indigo'
-              }`}
+                }`}
             >
               <Icon className="w-4 h-4" />
               {cat.label}

@@ -64,7 +64,7 @@ export const GET = withEnhancedAuth(
         meta: { total: filteredData.length },
       });
     } catch (error) {
-      logger.error('Error fetching shift swaps:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch shift swaps' },
         { status: 500 }
@@ -92,9 +92,10 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Attendance - Shift Swapping',
+          entityType: 'Attendance - Shift Swapping',
           details: `Requested shift swap for ${data.requestorDate}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -108,7 +109,7 @@ export const POST = withEnhancedAuth(
           { status: 400 }
         );
       }
-      logger.error('Error creating shift swap:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to create shift swap' },
         { status: 500 }
@@ -136,9 +137,10 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Attendance - Shift Swapping',
+          entityType: 'Attendance - Shift Swapping',
           details: `${status} shift swap request: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -146,7 +148,7 @@ export const PUT = withEnhancedAuth(
 
       return NextResponse.json({ success: true, data: updated });
     } catch (error) {
-      logger.error('Error updating shift swap:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to update shift swap' },
         { status: 500 }

@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
@@ -14,13 +14,15 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
 
     // Fetch all active roles
     const roles = await prisma.role.findMany({
-      where: { status: 'Active' },
+      where: { isActive: true },
       select: {
         id: true,
         name: true,
         description: true,
-        status: true,
-        usersCount: true,
+        isActive: true,
+        _count: {
+          select: { userRoles: true }
+        },
         createdAt: true,
         updatedAt: true,
       },
@@ -39,8 +41,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
         description: role.description || '',
         permissions: rolePermissions,
         permissionCount: rolePermissions.length,
-        usersCount: role.usersCount,
-        status: role.status,
+        usersCount: (role as any)._count?.userRoles || 0,
+        status: role.isActive ? 'Active' : 'Inactive',
         createdAt: role.createdAt,
         updatedAt: role.updatedAt,
       };
@@ -54,7 +56,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       },
     });
   } catch (error) {
-    logger.error('Error fetching access control data:', error);
+    logger.error('Error fetching access control data:', error as any);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch access control data' },
       { status: 500 }
@@ -85,8 +87,10 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         id: true,
         name: true,
         description: true,
-        status: true,
-        usersCount: true,
+        isActive: true,
+        _count: {
+          select: { userRoles: true }
+        },
         createdAt: true,
         updatedAt: true,
       },
@@ -120,8 +124,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
           id: role.id,
           name: role.name,
           description: role.description,
-          status: role.status,
-          usersCount: role.usersCount,
+          status: role.isActive ? 'Active' : 'Inactive',
+          usersCount: (role as any)._count?.userRoles || 0,
         },
         permissions: rolePermissions,
         permissionsByResource,
@@ -129,7 +133,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       },
     });
   } catch (error) {
-    logger.error('Error fetching role permissions:', error);
+    logger.error('Error fetching role permissions:', error as any);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch role permissions' },
       { status: 500 }

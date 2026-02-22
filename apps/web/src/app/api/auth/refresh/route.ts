@@ -157,7 +157,7 @@ export const POST = authRateLimit(async function (request: NextRequest) {
       data: {
         userId: user.id,
         action: 'TOKEN_REFRESH',
-        module: 'Authentication',
+        entityType: 'Authentication',
         details: `Access token refreshed from ${ipAddress}`,
         ipAddress,
       },

@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
         data: {
           userId: matchingToken!.userId,
           action: 'PASSWORD_RESET_COMPLETED',
-          module: 'Authentication',
+          entityType: 'Authentication',
           details: `Password reset completed for ${matchingToken!.user.email}. All active sessions revoked.`,
           ipAddress,
         },

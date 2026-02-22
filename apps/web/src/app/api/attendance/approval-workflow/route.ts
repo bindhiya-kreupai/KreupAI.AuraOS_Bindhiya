@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -219,7 +219,7 @@ export const GET = withEnhancedAuth(
         meta: { total: workflows.length },
       });
     } catch (error) {
-      logger.error('Error fetching approval workflows:', error);
+      logger.error({ error }, 'Error fetching approval workflows:');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch approval workflows' },
         { status: 500 }
@@ -254,9 +254,10 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Attendance - Approval Workflow',
+          entityType: 'Attendance - Approval Workflow',
           details: `Created approval workflow: ${data.name} for ${data.requestType}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -270,7 +271,7 @@ export const POST = withEnhancedAuth(
           { status: 400 }
         );
       }
-      logger.error('Error creating approval workflow:', error);
+      logger.error({ error }, 'Error creating approval workflow:');
       return NextResponse.json(
         { success: false, error: 'Failed to create approval workflow' },
         { status: 500 }
@@ -316,9 +317,10 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Attendance - Approval Workflow',
+          entityType: 'Attendance - Approval Workflow',
           details: `Updated approval workflow: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -326,7 +328,7 @@ export const PUT = withEnhancedAuth(
 
       return NextResponse.json({ success: true, data: updated });
     } catch (error) {
-      logger.error('Error updating approval workflow:', error);
+      logger.error({ error }, 'Error updating approval workflow:');
       return NextResponse.json(
         { success: false, error: 'Failed to update approval workflow' },
         { status: 500 }
@@ -367,9 +369,10 @@ export const DELETE = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
-          module: 'Attendance - Approval Workflow',
+          entityType: 'Attendance - Approval Workflow',
           details: `Deleted approval workflow: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -377,7 +380,7 @@ export const DELETE = withEnhancedAuth(
 
       return NextResponse.json({ success: true, message: 'Approval workflow deleted successfully' });
     } catch (error) {
-      logger.error('Error deleting approval workflow:', error);
+      logger.error({ error }, 'Error deleting approval workflow:');
       return NextResponse.json(
         { success: false, error: 'Failed to delete approval workflow' },
         { status: 500 }

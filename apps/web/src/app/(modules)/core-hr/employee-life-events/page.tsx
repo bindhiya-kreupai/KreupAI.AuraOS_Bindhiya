@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DataPage, FormField } from '@aura/ui';
+import { DataPage, FormField, type RowAction } from '@aura/ui';
 import { Heart, Baby, Users, Home, AlertCircle, CheckCircle, Clock, XCircle, FileText, Calendar } from 'lucide-react';
 
 const EVENT_TYPES = [
@@ -198,8 +198,8 @@ export default function EmployeeLifeEventsPage() {
     },
   ];
 
-  const getRowActions = (row: any) => {
-    const actions = [
+  const getRowActions = (row: any): RowAction<any>[] => {
+    const actions: RowAction<any>[] = [
       { label: 'View', icon: FileText },
       { label: 'Edit', icon: FileText },
     ];

@@ -9,6 +9,7 @@ function cn(...inputs: ClassValue[]) {
 
 interface PageHeaderProps {
     title: string;
+    description?: string;
     breadcrumbs?: { label: string; href?: string }[];
     action?: {
         label: string;
@@ -18,7 +19,7 @@ interface PageHeaderProps {
     className?: string;
 }
 
-export function PageHeader({ title, breadcrumbs, action, className }: PageHeaderProps) {
+export function PageHeader({ title, description, breadcrumbs, action, className }: PageHeaderProps) {
     return (
         <div className={cn("flex items-center justify-between mb-6", className)}>
             <div>
@@ -38,6 +39,7 @@ export function PageHeader({ title, breadcrumbs, action, className }: PageHeader
                     </nav>
                 )}
                 <h1 className="text-2xl font-bold text-ink-black dark:text-pearl tracking-tight">{title}</h1>
+                {description && <p className="text-sm text-silver-mist mt-1">{description}</p>}
             </div>
 
             {/* Action Button */}

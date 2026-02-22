@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
@@ -41,17 +41,17 @@ export const GET = withEnhancedAuth(
       });
 
       // Look up employee names and departments
-      const employeeIds = [...new Set(compOffs.map(c => c.employeeId))];
+      const employeeIds = Array.from(new Set(compOffs.map(c => c.employeeId)));
       const employees = employeeIds.length > 0
         ? await prisma.employee.findMany({
-            where: { id: { in: employeeIds } },
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              department: { select: { name: true } },
-            },
-          })
+          where: { id: { in: employeeIds } },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            department: { select: { name: true } },
+          },
+        })
         : [];
       const employeeMap = new Map(employees.map(e => [e.id, {
         name: `${e.firstName} ${e.lastName}`,
@@ -99,7 +99,7 @@ export const GET = withEnhancedAuth(
         meta: { total: data.length },
       });
     } catch (error) {
-      logger.error('Error fetching comp-off management data:', error);
+      logger.error({ error }, 'Error fetching comp-off management data:');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch comp-off management data' },
         { status: 500 }

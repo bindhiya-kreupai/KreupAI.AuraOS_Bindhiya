@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -124,7 +124,7 @@ export const GET = withEnhancedAuth(
         meta: { total: filteredData.length },
       });
     } catch (error) {
-      logger.error('Error fetching geo-fences:', error);
+      logger.error({ error }, 'Error fetching geo-fences:');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch geo-fences' },
         { status: 500 }
@@ -203,9 +203,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
+          tenantId: user.tenantId,
           action: 'CREATE',
-          module: 'Attendance - Geo-Fencing',
+          entityType: 'Attendance - Geo-Fencing',
           details: `Created geo-fence: ${data.name}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -219,7 +221,7 @@ export const POST = withEnhancedAuth(
           { status: 400 }
         );
       }
-      logger.error('Error creating geo-fence:', error);
+      logger.error({ error }, 'Error creating geo-fence:');
       return NextResponse.json(
         { success: false, error: 'Failed to create geo-fence' },
         { status: 500 }
@@ -254,9 +256,11 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
+          tenantId: user.tenantId,
           action: 'UPDATE',
-          module: 'Attendance - Geo-Fencing',
+          entityType: 'Attendance - Geo-Fencing',
           details: `Updated geo-fence: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -264,7 +268,7 @@ export const PUT = withEnhancedAuth(
 
       return NextResponse.json({ success: true, data: updated });
     } catch (error) {
-      logger.error('Error updating geo-fence:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to update geo-fence' },
         { status: 500 }
@@ -292,9 +296,11 @@ export const DELETE = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
+          tenantId: user.tenantId,
           action: 'DELETE',
-          module: 'Attendance - Geo-Fencing',
+          entityType: 'Attendance - Geo-Fencing',
           details: `Deleted geo-fence: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -302,7 +308,7 @@ export const DELETE = withEnhancedAuth(
 
       return NextResponse.json({ success: true, message: 'Geo-fence deleted successfully' });
     } catch (error) {
-      logger.error('Error deleting geo-fence:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to delete geo-fence' },
         { status: 500 }

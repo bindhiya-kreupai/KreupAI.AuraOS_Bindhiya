@@ -2,10 +2,44 @@ import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../layout/page-header';
 import { DataTable, type Column } from './data-table';
 import { Sheet } from './sheet';
-import { Trash2, Save } from 'lucide-react';
+import { Trash2, Save, Download, Upload, Filter, Plus, Search } from 'lucide-react';
+import { cn } from '../../utils';
 
-interface DataPageProps<T> {
+export interface RowAction<T> {
+    label: string;
+    icon?: any;
+    variant?: 'default' | 'success' | 'danger' | 'warning' | 'ghost' | 'secondary' | 'outline' | 'link';
+    onClick?: (row: T) => void;
+    apiEndpoint?: string;
+    method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+    onSuccess?: () => void;
+    successMessage?: string;
+    requiresInput?: boolean;
+    inputFields?: FormField[];
+    className?: string;
+    confirmTitle?: string;
+}
+
+export interface FormField {
+    name: string;
+    label: string;
+    type: 'text' | 'number' | 'email' | 'password' | 'select' | 'date' | 'datetime-local' | 'textarea' | 'checkbox';
+    required?: boolean;
+    placeholder?: string;
+    options?: { value: string; label: string }[];
+    rows?: number;
+    apiEndpoint?: string;
+    valueKey?: string;
+    labelKey?: string;
+    labelFormat?: (item: any) => string;
+    helpText?: string;
+    defaultValue?: any;
+    step?: number;
+}
+
+export interface DataPageProps<T> {
     title: string;
+    description?: string;
     breadcrumbs?: { label: string; href?: string }[];
     data?: T[];
     apiEndpoint?: string;
@@ -16,14 +50,36 @@ interface DataPageProps<T> {
     onImport?: () => void;
     onFilter?: () => void;
     renderForm?: (data: Partial<T>, onChange: (field: keyof T, value: any) => void) => React.ReactNode;
-    formFields?: any[];
-    rowActions?: (row: T) => any[];
+    formFields?: FormField[];
+    rowActions?: (row: T) => RowAction<T>[];
     onDataChange?: () => void;
     defaultValues?: Partial<T>;
+    searchKeys?: string[];
+    searchPlaceholder?: string;
+    pageSize?: number;
+    enableCreate?: boolean;
+    enableEdit?: boolean;
+    enableDelete?: boolean;
+    enableExport?: boolean;
+    enableImport?: boolean;
+    enableFilter?: boolean;
+    enableColumnVisibility?: boolean;
+    emptyState?: {
+        title: string;
+        description: string;
+        icon?: any;
+    };
+    addButtonText?: string;
+    filterParams?: Record<string, any>;
+    filterOptions?: {
+        label: string;
+        value: string;
+    }[];
 }
 
 export function DataPage<T extends { id: string | number }>({
     title,
+    description,
     breadcrumbs,
     data,
     apiEndpoint,
@@ -37,7 +93,19 @@ export function DataPage<T extends { id: string | number }>({
     formFields,
     rowActions,
     onDataChange,
-    defaultValues = {} as Partial<T>
+    defaultValues = {} as Partial<T>,
+    searchKeys,
+    searchPlaceholder,
+    pageSize,
+    enableCreate,
+    enableEdit,
+    enableDelete,
+    enableExport,
+    enableImport,
+    enableFilter,
+    enableColumnVisibility,
+    addButtonText,
+    filterParams,
 }: DataPageProps<T>) {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [currentRecord, setCurrentRecord] = useState<Partial<T>>(defaultValues);
@@ -134,24 +202,62 @@ export function DataPage<T extends { id: string | number }>({
         )
     );
 
-    // Add actions column if not present
+    // Add actions column
     const displayColumns = [
         ...columns,
         {
             key: 'actions',
             header: '',
-            width: '80px',
-            render: (row: T) => (
-                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onDelete?.(row); }}
-                        className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-md transition-colors"
-                        title="Delete"
-                    >
-                        <Trash2 className="w-4 h-4" />
-                    </button>
-                </div>
-            )
+            width: '120px',
+            render: (row: T) => {
+                const actions = rowActions ? rowActions(row) : [];
+                return (
+                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {actions.map((action, idx) => {
+                            const Icon = action.icon;
+                            return (
+                                <button
+                                    key={idx}
+                                    onClick={async (e) => {
+                                        e.stopPropagation();
+                                        if (action.onClick) {
+                                            action.onClick(row);
+                                        } else if (action.apiEndpoint) {
+                                            try {
+                                                const res = await fetch(action.apiEndpoint, {
+                                                    method: action.method || 'GET',
+                                                });
+                                                if (res.ok) action.onSuccess?.();
+                                            } catch (err) {
+                                                console.error(err);
+                                            }
+                                        }
+                                    }}
+                                    className={cn(
+                                        "p-1.5 rounded-md transition-colors",
+                                        action.variant === 'danger' ? "text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20" :
+                                            action.variant === 'success' ? "text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20" :
+                                                action.variant === 'warning' ? "text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20" :
+                                                    "text-silver-mist hover:text-celestial-indigo hover:bg-celestial-indigo/10"
+                                    )}
+                                    title={action.label}
+                                >
+                                    <Icon className="w-4 h-4" />
+                                </button>
+                            );
+                        })}
+                        {onDelete && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onDelete(row); }}
+                                className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-md transition-colors"
+                                title="Delete"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+                );
+            }
         }
     ];
 
@@ -159,11 +265,12 @@ export function DataPage<T extends { id: string | number }>({
         <div className="p-6 space-y-6 h-full flex flex-col relative overflow-hidden">
             <PageHeader
                 title={title}
+                description={description}
                 breadcrumbs={breadcrumbs}
-                action={{
-                    label: `Add ${title.slice(0, -1)}`, // Simple plural to singular
+                action={enableCreate !== false ? {
+                    label: addButtonText || `Add ${title.slice(0, -1)}`,
                     onClick: handleAdd
-                }}
+                } : undefined}
             />
 
             <div className="flex-1 min-h-0">

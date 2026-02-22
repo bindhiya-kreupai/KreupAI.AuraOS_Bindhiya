@@ -1,0 +1,63 @@
+# Multi-stage build for Notification Service
+FROM node:20-alpine AS deps
+RUN apk add --no-cache libc6-compat openssl
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy workspace files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/@aura/database/package.json ./packages/@aura/database/
+COPY services/notification-service/package.json ./services/notification-service/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile --filter @auraos/notification-service...
+
+FROM node:20-alpine AS builder
+WORKDIR /app
+RUN apk add --no-cache openssl
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages ./packages
+COPY --from=deps /app/services ./services
+
+# Copy source code and config
+COPY packages/@aura/database ./packages/@aura/database
+COPY services/notification-service ./services/notification-service
+COPY tsconfig.base.json tsconfig.json ./
+
+# Generate Prisma client
+RUN pnpm --filter @aura/database prisma generate
+
+# Build the service
+RUN pnpm --filter @auraos/notification-service build
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+RUN apk add --no-cache openssl curl
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 notificationservice
+
+ENV NODE_ENV=production
+
+# Copy built files and dependencies
+COPY --from=builder /app/services/notification-service/dist ./services/notification-service/dist
+COPY --from=builder /app/services/notification-service/package.json ./services/notification-service/
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages/@aura/database/package.json ./packages/@aura/database/
+
+WORKDIR /app/services/notification-service
+
+USER notificationservice
+
+EXPOSE 3003
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:3003 || exit 1
+
+CMD ["node", "dist/index.js"]

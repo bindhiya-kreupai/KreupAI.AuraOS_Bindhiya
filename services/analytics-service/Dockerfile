@@ -1,27 +1,63 @@
-# Build stage
+# Multi-stage build for Analytics Service
+FROM node:20-alpine AS deps
+RUN apk add --no-cache libc6-compat openssl
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy workspace files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/@aura/database/package.json ./packages/@aura/database/
+COPY services/analytics-service/package.json ./services/analytics-service/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile --filter @auraos/analytics-service...
+
 FROM node:20-alpine AS builder
-
 WORKDIR /app
+RUN apk add --no-cache openssl
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-COPY package.json package-lock.json* ./
-RUN npm ci
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages ./packages
+COPY --from=deps /app/services ./services
 
-COPY tsconfig.json ./
-COPY src ./src
-RUN npm run build
+# Copy source code and config
+COPY packages/@aura/database ./packages/@aura/database
+COPY services/analytics-service ./services/analytics-service
+COPY tsconfig.base.json tsconfig.json ./
 
-# Production stage
-FROM node:20-alpine
+# Generate Prisma client
+RUN pnpm --filter @aura/database prisma generate
 
+# Build the service
+RUN pnpm --filter @auraos/analytics-service build
+
+FROM node:20-alpine AS runner
 WORKDIR /app
+RUN apk add --no-cache openssl curl
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 analyticsservice
 
 ENV NODE_ENV=production
 
-COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev
+# Copy built files and dependencies
+COPY --from=builder /app/services/analytics-service/dist ./services/analytics-service/dist
+COPY --from=builder /app/services/analytics-service/package.json ./services/analytics-service/
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages/@aura/database/package.json ./packages/@aura/database/
 
-COPY --from=builder /app/dist ./dist
+WORKDIR /app/services/analytics-service
 
-EXPOSE 3000
+USER analyticsservice
+
+EXPOSE 3007
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:3007/health || exit 1
 
 CMD ["node", "dist/index.js"]

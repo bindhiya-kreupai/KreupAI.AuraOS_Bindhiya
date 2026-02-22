@@ -34,7 +34,7 @@ app.post('/api/v1/shifts/:id/swap', async (request, reply) => {
 });
 
 const start = async () => {
-  const port = parseInt(process.env.PORT || '3003', 10);
+  const port = parseInt(process.env.PORT || '3009', 10);
   const host = process.env.HOST || '0.0.0.0';
 
   try {

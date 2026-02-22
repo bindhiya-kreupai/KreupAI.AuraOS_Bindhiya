@@ -21,7 +21,7 @@ import {
   Settings,
   LogOut,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '../../utils';
 import { getMenuIcon } from './menu-icons';
 import { superAdminMenu } from '@aura/config';
 import type { MenuIconName } from '@aura/types';
@@ -70,12 +70,12 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
   // Filter modules
   const filteredModules = searchQuery
     ? superAdminMenu.items.filter(
-        (m) =>
-          m.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          m.features.some((f) =>
-            f.toLowerCase().includes(searchQuery.toLowerCase())
-          )
-      )
+      (m) =>
+        m.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.features.some((f) =>
+          f.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+    )
     : superAdminMenu.items;
 
   // Get selected module data

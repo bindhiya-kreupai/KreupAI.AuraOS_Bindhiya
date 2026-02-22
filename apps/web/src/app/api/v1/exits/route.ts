@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ExitService } from '@/lib/services/exit.service';
+import { ServiceProxy } from '@/lib/services/service-proxy';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
@@ -18,7 +18,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       sortOrder: (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc',
     };
 
-    const result = await ExitService.findAll(filter);
+    // Fetch exits from microservice
+    const result = await ServiceProxy.get('employee', '/exits', filter);
 
     return NextResponse.json({
       success: true,
@@ -43,7 +44,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     const body = await request.json();
     body.tenantId = user.tenantId;
 
-    const exitRequest = await ExitService.create(body);
+    // Create exit request via microservice
+    const exitRequest = await ServiceProxy.post('employee', '/exits', body);
 
     return NextResponse.json({ success: true, data: exitRequest }, { status: 201 });
   } catch (error: any) {

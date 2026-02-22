@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { authenticator } from 'otplib';
@@ -48,13 +48,13 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { id: validatedData.userId },
       include: {
-        mfaSettings: true,
+        mfaSecret: true,
         tenant: { select: { id: true, name: true } },
         employee: { select: { id: true } },
       },
     });
 
-    if (!user || !user.mfaSettings) {
+    if (!user || !user.mfaSecret) {
       logger.warn({
         userId: validatedData.userId,
         ipAddress,
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!user.mfaSettings.verifiedAt) {
+    if (!user.mfaSecret.verifiedAt) {
       return NextResponse.json(
         { success: false, error: 'MFA not verified. Please complete setup first.' },
         { status: 400 }
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
 
     if (validatedData.useBackupCode) {
       // Validate backup code
-      const backupCodes = (user.mfaSettings.backupCodes as string[]) || [];
+      const backupCodes = (user.mfaSecret.backupCodes as string[]) || [];
 
       for (let i = 0; i < backupCodes.length; i++) {
         const match = await bcrypt.compare(validatedData.code, backupCodes[i]);
@@ -88,8 +88,8 @@ export async function POST(request: NextRequest) {
 
           // Remove used backup code
           backupCodes.splice(i, 1);
-          await prisma.userMFA.update({
-            where: { id: user.mfaSettings.id },
+          await prisma.mFASecret.update({
+            where: { id: user.mfaSecret.id },
             data: { backupCodes },
           });
 
@@ -103,14 +103,14 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Validate TOTP code
-      if (!user.mfaSettings.totpSecret) {
+      if (!user.mfaSecret.secret) {
         return NextResponse.json(
           { success: false, error: 'TOTP not configured' },
           { status: 400 }
         );
       }
 
-      const secret = decryptSecret(user.mfaSettings.totpSecret);
+      const secret = decryptSecret(user.mfaSecret.secret);
       isValid = authenticator.verify({
         token: validatedData.code,
         secret,
@@ -127,9 +127,10 @@ export async function POST(request: NextRequest) {
       // Create audit log for failed attempt
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.id,
           action: 'MFA_VALIDATION_FAILED',
-          module: 'Authentication',
+          entityType: 'Authentication',
           details: `Invalid MFA code attempt${validatedData.useBackupCode ? ' (backup code)' : ''}`,
           ipAddress,
         },
@@ -152,8 +153,6 @@ export async function POST(request: NextRequest) {
     const session = await prisma.userSession.create({
       data: {
         userId: user.id,
-        refreshToken,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
         ipAddress,
         device: request.headers.get('user-agent') || 'Unknown',
         status: 'Active',
@@ -169,9 +168,10 @@ export async function POST(request: NextRequest) {
     // Create audit log
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.id,
         action: 'LOGIN_SUCCESS',
-        module: 'Authentication',
+        entityType: 'Authentication',
         details: `Login successful with MFA${usedBackupCode ? ' (backup code used)' : ''}`,
         ipAddress,
       },

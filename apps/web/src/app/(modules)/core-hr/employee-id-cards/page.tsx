@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DataPage, FormField } from '@aura/ui';
+import { DataPage, FormField, type RowAction } from '@aura/ui';
 import { CreditCard, CheckCircle, Clock, XCircle, Printer, AlertTriangle, User, Calendar } from 'lucide-react';
 
 const CARD_TYPES = [
@@ -177,8 +177,8 @@ export default function EmployeeIDCardsPage() {
     },
   ];
 
-  const getRowActions = (row: any) => {
-    const actions = [
+  const getRowActions = (row: any): RowAction<any>[] => {
+    const actions: RowAction<any>[] = [
       { label: 'View', icon: CreditCard },
       { label: 'Edit', icon: User },
     ];

@@ -139,11 +139,10 @@ export default function AssetManagementPage() {
     <div className="flex flex-wrap gap-2 mb-6">
       <button
         onClick={() => setSelectedCategory(null)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-          selectedCategory === null
-            ? 'bg-indigo-600 text-white shadow-md'
-            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-        }`}
+        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedCategory === null
+          ? 'bg-indigo-600 text-white shadow-md'
+          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+          }`}
       >
         <Package className="w-4 h-4" />
         All Assets
@@ -156,11 +155,10 @@ export default function AssetManagementPage() {
           <button
             key={category.value}
             onClick={() => setSelectedCategory(category.value)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              selectedCategory === category.value
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedCategory === category.value
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+              }`}
           >
             <Icon className="w-4 h-4" />
             {category.label}
@@ -282,9 +280,8 @@ export default function AssetManagementPage() {
       sortable: true,
       render: (row: Asset) => (
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-            ASSET_CATEGORIES.find((c) => c.value === row.category)?.color || 'bg-gray-100 text-gray-600'
-          }`}>
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${ASSET_CATEGORIES.find((c) => c.value === row.category)?.color || 'bg-gray-100 text-gray-600'
+            }`}>
             {React.createElement(
               ASSET_CATEGORIES.find((c) => c.value === row.category)?.icon || Package,
               { className: 'w-5 h-5' }
@@ -431,7 +428,7 @@ export default function AssetManagementPage() {
   // FORM RENDERER
   // ========================================
 
-  const renderForm = (data: Partial<Asset>, onChange: (field: string, value: any) => void) => {
+  const renderForm = (data: Partial<Asset>, onChange: (field: keyof Asset, value: any) => void) => {
     return (
       <div className="space-y-4">
         {/* Basic Information */}
@@ -753,27 +750,27 @@ export default function AssetManagementPage() {
     },
     ...(row.status === 'AVAILABLE'
       ? [
-          {
-            label: 'Assign to Employee',
-            icon: UserPlus,
-            onClick: () => {
-              setSelectedAsset(row);
-              setAssignModalOpen(true);
-            },
+        {
+          label: 'Assign to Employee',
+          icon: UserPlus,
+          onClick: () => {
+            setSelectedAsset(row);
+            setAssignModalOpen(true);
           },
-        ]
+        },
+      ]
       : []),
     ...(row.status === 'ASSIGNED'
       ? [
-          {
-            label: 'Return Asset',
-            icon: RotateCcw,
-            onClick: () => {
-              setSelectedAsset(row);
-              setReturnModalOpen(true);
-            },
+        {
+          label: 'Return Asset',
+          icon: RotateCcw,
+          onClick: () => {
+            setSelectedAsset(row);
+            setReturnModalOpen(true);
           },
-        ]
+        },
+      ]
       : []),
     {
       label: 'Schedule Maintenance',
@@ -833,7 +830,7 @@ export default function AssetManagementPage() {
         renderForm={renderForm}
         rowActions={rowActions}
         searchPlaceholder="Search by asset code, name, serial number..."
-        filterOptions={{
+        filterParams={{
           category: selectedCategory || undefined,
         }}
         onDataChange={fetchDashboardStats}

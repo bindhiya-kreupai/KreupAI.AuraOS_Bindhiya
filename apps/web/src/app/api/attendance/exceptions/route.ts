@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
@@ -73,12 +73,12 @@ export const GET = withEnhancedAuth(
       });
 
       // Look up employee names
-      const employeeIds = [...new Set(records.map(r => r.employeeId))];
+      const employeeIds = Array.from(new Set(records.map(r => r.employeeId)));
       const employees = employeeIds.length > 0
         ? await prisma.employee.findMany({
-            where: { id: { in: employeeIds } },
-            select: { id: true, firstName: true, lastName: true },
-          })
+          where: { id: { in: employeeIds } },
+          select: { id: true, firstName: true, lastName: true },
+        })
         : [];
       const employeeMap = new Map(employees.map(e => [e.id, `${e.firstName} ${e.lastName}`]));
 
@@ -128,7 +128,7 @@ export const GET = withEnhancedAuth(
         data: { exceptions, summary },
       });
     } catch (error) {
-      logger.error('Error fetching exceptions:', error);
+      logger.error({ error }, 'Error fetching exceptions:');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch exceptions' },
         { status: 500 }

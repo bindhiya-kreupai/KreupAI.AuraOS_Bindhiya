@@ -16,7 +16,7 @@ app.register(webhookRoutes, { prefix: '/api/v1/webhooks' });
 app.register(integrationRoutes, { prefix: '/api/v1/integrations' });
 
 const start = async () => {
-  const port = parseInt(process.env.PORT || '3000', 10);
+  const port = parseInt(process.env.PORT || '3008', 10);
   const host = process.env.HOST || '0.0.0.0';
 
   try {

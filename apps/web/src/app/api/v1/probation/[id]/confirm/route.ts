@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ProbationService } from '@/lib/services/probation.service';
+import { ServiceProxy } from '@/lib/services/service-proxy';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
@@ -9,7 +9,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     const body = await request.json();
     const { hrRecommendation } = body;
 
-    const probation = await ProbationService.confirm(id, user.tenantId, hrRecommendation);
+    // Confirm probation via microservice
+    const probation = await ServiceProxy.post('employee', `/probation/${id}/confirm`, {
+      hrRecommendation,
+      tenantId: user.tenantId
+    });
     return NextResponse.json({ success: true, data: probation });
   } catch (error: any) {
     return NextResponse.json(

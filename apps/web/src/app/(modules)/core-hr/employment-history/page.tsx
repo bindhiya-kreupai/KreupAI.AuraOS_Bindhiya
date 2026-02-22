@@ -172,11 +172,10 @@ export default function EmploymentHistoryPage() {
     <div className="flex flex-wrap gap-2 mb-6">
       <button
         onClick={() => setSelectedChangeType(null)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-          selectedChangeType === null
-            ? 'bg-indigo-600 text-white shadow-md'
-            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-        }`}
+        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedChangeType === null
+          ? 'bg-indigo-600 text-white shadow-md'
+          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+          }`}
       >
         <History className="w-4 h-4" />
         All Changes
@@ -187,11 +186,10 @@ export default function EmploymentHistoryPage() {
           <button
             key={type.value}
             onClick={() => setSelectedChangeType(type.value)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              selectedChangeType === type.value
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedChangeType === type.value
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+              }`}
           >
             <Icon className="w-4 h-4" />
             {type.label}
@@ -342,7 +340,7 @@ export default function EmploymentHistoryPage() {
   // FORM RENDERER
   // ========================================
 
-  const renderForm = (data: Partial<EmploymentHistory>, onChange: (field: string, value: any) => void) => {
+  const renderForm = (data: Partial<EmploymentHistory>, onChange: (field: keyof EmploymentHistory, value: any) => void) => {
     return (
       <div className="space-y-4">
         {/* Change Details */}
@@ -443,8 +441,8 @@ export default function EmploymentHistoryPage() {
   // ROW ACTIONS
   // ========================================
 
-  const rowActions = (row: EmploymentHistory) => {
-    const actions = [
+  const rowActions = (row: EmploymentHistory): any[] => {
+    const actions: any[] = [
       {
         label: 'View Details',
         icon: Eye,
@@ -559,13 +557,12 @@ export default function EmploymentHistoryPage() {
       <DataPage<EmploymentHistory>
         title="Employment History"
         description="Track employee career progression, promotions, transfers, and organizational changes"
-        icon={History}
         apiEndpoint="/api/v1/employment-history"
         columns={columns}
         renderForm={renderForm}
         rowActions={rowActions}
         searchPlaceholder="Search by reason or notes..."
-        filterOptions={{
+        filterParams={{
           changeType: selectedChangeType || undefined,
           employeeId: selectedEmployee || undefined,
         }}

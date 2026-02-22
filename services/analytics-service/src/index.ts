@@ -30,7 +30,7 @@ app.get('/api/v1/reports/:id', async (request, reply) => {
 });
 
 const start = async () => {
-  const port = parseInt(process.env.PORT || '3001', 10);
+  const port = parseInt(process.env.PORT || '3007', 10);
   const host = process.env.HOST || '0.0.0.0';
 
   try {

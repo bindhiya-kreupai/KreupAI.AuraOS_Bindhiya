@@ -77,7 +77,7 @@ export const GET = withEnhancedAuth(
         meta: { total: data.length },
       });
     } catch (error) {
-      logger.error('Error fetching shifts:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch shifts' },
         { status: 500 }
@@ -118,9 +118,10 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Attendance - Shift Management',
+          entityType: 'Attendance - Shift Management',
           details: `Created shift: ${data.name} (${data.code})`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -149,7 +150,7 @@ export const POST = withEnhancedAuth(
           { status: 400 }
         );
       }
-      logger.error('Error creating shift:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to create shift' },
         { status: 500 }

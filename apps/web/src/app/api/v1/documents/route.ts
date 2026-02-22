@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { DocumentService } from '@/lib/services/document.service';
+import { ServiceProxy } from '@/lib/services/service-proxy';
 import { z } from 'zod';
 
 // API Response Standard
@@ -53,7 +53,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc',
     };
 
-    const result = await DocumentService.findAll(filter);
+    // Fetch documents from microservice
+    const result = await ServiceProxy.get('document', '/documents', filter);
 
     const response: ApiResponse = {
       success: true,
@@ -101,7 +102,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     body.tenantId = user.tenantId;
     body.uploadedBy = user.userId;
 
-    const document = await DocumentService.create(body);
+    // Create document via microservice
+    const document = await ServiceProxy.post('document', '/documents', body);
 
     const response: ApiResponse = {
       success: true,

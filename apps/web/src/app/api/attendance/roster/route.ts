@@ -67,7 +67,7 @@ export const GET = withEnhancedAuth(
         meta: { total: filteredData.length },
       });
     } catch (error) {
-      logger.error('Error fetching rosters:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch rosters' },
         { status: 500 }
@@ -96,9 +96,10 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Attendance - Roster Assignment',
+          entityType: 'Attendance - Roster Assignment',
           details: `Assigned roster for employee ${data.employeeId}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -112,7 +113,7 @@ export const POST = withEnhancedAuth(
           { status: 400 }
         );
       }
-      logger.error('Error creating roster:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to create roster' },
         { status: 500 }

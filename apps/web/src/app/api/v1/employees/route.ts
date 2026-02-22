@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { employeeService } from '@/lib/services/employee';
+import { ServiceProxy } from '@/lib/services/service-proxy';
 import { z } from 'zod';
 
 // API Response Standard
@@ -80,8 +80,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc',
     };
 
-    // Fetch employees
-    const result = await employeeService.findAll(filter);
+    // Fetch employees from microservice
+    const result = await ServiceProxy.get('employee', '/employees', filter);
 
     const response: ApiResponse = {
       success: true,
@@ -145,8 +145,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       return NextResponse.json(response, { status: 400 });
     }
 
-    // Create employee
-    const employee = await employeeService.create({
+    // Create employee via microservice
+    const employee = await ServiceProxy.post('employee', '/employees', {
       ...validationResult.data,
       joiningDate: new Date(validationResult.data.joiningDate),
     });

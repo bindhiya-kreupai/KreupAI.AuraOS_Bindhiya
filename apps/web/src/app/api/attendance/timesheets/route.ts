@@ -122,7 +122,7 @@ export const GET = withEnhancedAuth(
         meta: { total: timesheets.length },
       });
     } catch (error) {
-      logger.error('Error fetching timesheets:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch timesheets' },
         { status: 500 }
@@ -202,7 +202,7 @@ export const POST = withEnhancedAuth(
 
       return NextResponse.json({ success: true, data: newTimesheet }, { status: 201 });
     } catch (error) {
-      logger.error('Error submitting timesheet:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to submit timesheet' },
         { status: 500 }

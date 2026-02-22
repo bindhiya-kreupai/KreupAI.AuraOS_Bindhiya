@@ -35,7 +35,7 @@ app.post('/api/v1/approvals/:id/resolve', async (request, reply) => {
 });
 
 const start = async () => {
-  const port = parseInt(process.env.PORT || '3002', 10);
+  const port = parseInt(process.env.PORT || '3010', 10);
   const host = process.env.HOST || '0.0.0.0';
 
   try {
