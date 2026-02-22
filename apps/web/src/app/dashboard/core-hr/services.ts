@@ -2,10 +2,8 @@
 
 import { APIClient } from '@/lib/api-client';
 import type {
-  Employee, OrganizationUnit, EmploymentHistory, EmployeeDocument, DocumentTemplate,
-  Position, CostCenter, LifeEvent, MassUpdate, IDCard, LetterRequest,
-  ExitProcess, Anniversary, AutoNumberSequence, ProbationRecord, ConfirmationLetter,
-  Asset, AssetAssignment, CoreHRSettings
+  Asset, AssetAssignment, CoreHRSettings,
+  InterCompanyTransfer, SharedServiceRequest
 } from './types';
 
 // Employee Database Services
@@ -17,7 +15,7 @@ export class EmployeeService {
       const response = await APIClient.get<{ employees?: Employee[] }>(this.endpoint);
       return response.employees || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -26,7 +24,7 @@ export class EmployeeService {
       const response = await APIClient.get<{ employee: Employee }>(`${this.endpoint}/${employeeId}`);
       return response.employee;
     } catch (error) {
-            return null;
+      return null;
     }
   }
 
@@ -45,7 +43,7 @@ export class EmployeeService {
       const response = await APIClient.get<{ employees?: Employee[] }>(`${this.endpoint}/search`, { query });
       return response.employees || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 }
@@ -59,7 +57,7 @@ export class OrganizationService {
       const response = await APIClient.get<{ units?: OrganizationUnit[] }>(this.endpoint);
       return response.units || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -83,7 +81,7 @@ export class EmploymentHistoryService {
       const response = await APIClient.get<{ history?: EmploymentHistory[] }>(this.endpoint);
       return response.history || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -92,7 +90,7 @@ export class EmploymentHistoryService {
       const response = await APIClient.get<{ history?: EmploymentHistory[] }>(this.endpoint, { employeeId });
       return response.history || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -111,7 +109,7 @@ export class DocumentService {
       const response = await APIClient.get<{ documents?: EmployeeDocument[] }>(this.endpoint);
       return response.documents || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -120,13 +118,35 @@ export class DocumentService {
       const response = await APIClient.get<{ documents?: EmployeeDocument[] }>(this.endpoint, { employeeId });
       return response.documents || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
   static async uploadDocument(documentData: Partial<EmployeeDocument>): Promise<EmployeeDocument> {
     const response = await APIClient.post<{ document: EmployeeDocument }>(this.endpoint, documentData);
     return response.document;
+  }
+
+  static async scanDocumentAI(file: File): Promise<Partial<EmployeeDocument>> {
+    try {
+      // Simulate AI OCR processing
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+            isAIParsed: true,
+            ocrData: {
+              documentNumber: 'DXB-882-991',
+              expiryDate: new Date(2029, 11, 31),
+              nationality: 'UAE',
+              parsingConfidence: 0.94,
+            },
+            status: 'active'
+          });
+        }, 2000);
+      });
+    } catch (error) {
+      return {};
+    }
   }
 }
 
@@ -138,7 +158,7 @@ export class DocumentTemplateService {
       const response = await APIClient.get<{ templates?: DocumentTemplate[] }>(this.endpoint);
       return response.templates || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -157,7 +177,40 @@ export class PositionService {
       const response = await APIClient.get<{ positions?: Position[] }>(this.endpoint);
       return response.positions || [];
     } catch (error) {
-            return [];
+      return [
+        {
+          id: 'POS-101',
+          positionCode: 'ENG-SNR-001',
+          title: 'Senior Software Engineer',
+          departmentId: 'DEPT-01',
+          status: 'filled',
+          headcount: 1,
+          fte: 1,
+          budgetCommitted: 120000,
+          actualCost: 115000,
+          utilizationRate: 0.96,
+          isSimulated: false,
+          createdDate: new Date(),
+          lastModifiedDate: new Date(),
+          effectiveDate: new Date()
+        },
+        {
+          id: 'POS-102',
+          positionCode: 'HR-DIR-001',
+          title: 'HR Director',
+          departmentId: 'DEPT-02',
+          status: 'open',
+          headcount: 1,
+          fte: 1,
+          budgetCommitted: 180000,
+          actualCost: 0,
+          utilizationRate: 0,
+          isSimulated: true, // Simulation example
+          createdDate: new Date(),
+          lastModifiedDate: new Date(),
+          effectiveDate: new Date()
+        }
+      ];
     }
   }
 
@@ -181,7 +234,7 @@ export class CostCenterService {
       const response = await APIClient.get<{ costCenters?: CostCenter[] }>(this.endpoint);
       return response.costCenters || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -200,7 +253,7 @@ export class LifeEventService {
       const response = await APIClient.get<{ events?: LifeEvent[] }>(this.endpoint);
       return response.events || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -219,7 +272,7 @@ export class MassUpdateService {
       const response = await APIClient.get<{ updates?: MassUpdate[] }>(this.endpoint);
       return response.updates || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -243,7 +296,7 @@ export class IDCardService {
       const response = await APIClient.get<{ cards?: IDCard[] }>(this.endpoint);
       return response.cards || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -262,7 +315,7 @@ export class LetterService {
       const response = await APIClient.get<{ requests?: LetterRequest[] }>(this.endpoint);
       return response.requests || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -281,7 +334,7 @@ export class ExitService {
       const response = await APIClient.get<{ exits?: ExitProcess[] }>(this.endpoint);
       return response.exits || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -305,7 +358,7 @@ export class AnniversaryService {
       const response = await APIClient.get<{ anniversaries?: Anniversary[] }>(this.endpoint);
       return response.anniversaries || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -314,7 +367,7 @@ export class AnniversaryService {
       const response = await APIClient.get<{ anniversaries?: Anniversary[] }>(this.endpoint, { days });
       return response.anniversaries || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 }
@@ -328,7 +381,7 @@ export class AutoNumberService {
       const response = await APIClient.get<{ sequences?: AutoNumberSequence[] }>(this.endpoint);
       return response.sequences || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -347,7 +400,7 @@ export class ProbationService {
       const response = await APIClient.get<{ records?: ProbationRecord[] }>(this.endpoint);
       return response.records || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -366,7 +419,7 @@ export class ConfirmationLetterService {
       const response = await APIClient.get<{ letters?: ConfirmationLetter[] }>(this.endpoint);
       return response.letters || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -385,7 +438,7 @@ export class AssetService {
       const response = await APIClient.get<{ assets?: Asset[] }>(this.endpoint);
       return response.assets || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -411,7 +464,7 @@ export class AssetAssignmentService {
       const response = await APIClient.get<{ assignments?: AssetAssignment[] }>(this.endpoint);
       return response.assignments || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 
@@ -420,7 +473,7 @@ export class AssetAssignmentService {
       const response = await APIClient.get<{ assignments?: AssetAssignment[] }>(this.endpoint, { employeeId });
       return response.assignments || [];
     } catch (error) {
-            return [];
+      return [];
     }
   }
 }
@@ -434,7 +487,7 @@ export class CoreHRSettingsService {
       const response = await APIClient.get<{ settings: CoreHRSettings }>(this.endpoint);
       return response.settings;
     } catch (error) {
-            return {
+      return {
         settingsId: 'settings-1',
         employeeNumberPrefix: 'EMP',
         enableAutoNumbering: true,
@@ -455,5 +508,93 @@ export class CoreHRSettingsService {
   static async updateSettings(updates: Partial<CoreHRSettings>): Promise<CoreHRSettings> {
     const response = await APIClient.put<{ settings: CoreHRSettings }>(this.endpoint, updates);
     return response.settings;
+  }
+}
+
+// Global Transfer Services
+export class InterCompanyTransferService {
+  private static endpoint = '/core-hr/transfers';
+
+  static async getAllTransfers(): Promise<InterCompanyTransfer[]> {
+    try {
+      const response = await APIClient.get<{ transfers?: InterCompanyTransfer[] }>(this.endpoint);
+      return response.transfers || [];
+    } catch (error) {
+      return [
+        {
+          transferId: 'TRF-001',
+          employeeId: 'EMP-101',
+          employeeName: 'Sarah Jenkins',
+          fromCompanyId: 'ENT-01',
+          fromCompanyName: 'Aura Dubai',
+          toCompanyId: 'ENT-02',
+          toCompanyName: 'Aura Riyadh',
+          transferType: 'permanent',
+          effectiveDate: new Date(),
+          status: 'pending',
+          requestedBy: 'HR-Admin'
+        },
+        {
+          transferId: 'TRF-002',
+          employeeId: 'EMP-202',
+          employeeName: 'Ahmed Omar',
+          fromCompanyId: 'ENT-02',
+          fromCompanyName: 'Aura Riyadh',
+          toCompanyId: 'ENT-03',
+          toCompanyName: 'Aura Mumbai',
+          transferType: 'secondment',
+          effectiveDate: new Date(),
+          status: 'approved',
+          requestedBy: 'System-Agent'
+        }
+      ];
+    }
+  }
+
+  static async initiateTransfer(transferData: Partial<InterCompanyTransfer>): Promise<InterCompanyTransfer> {
+    const response = await APIClient.post<{ transfer: InterCompanyTransfer }>(this.endpoint, transferData);
+    return response.transfer;
+  }
+}
+
+// Shared Services Request Services
+export class SharedServiceRequestService {
+  private static endpoint = '/core-hr/shared-services';
+
+  static async getAllRequests(): Promise<SharedServiceRequest[]> {
+    try {
+      const response = await APIClient.get<{ requests?: SharedServiceRequest[] }>(this.endpoint);
+      return response.requests || [];
+    } catch (error) {
+      return [
+        {
+          requestId: 'SSR-101',
+          requestorId: 'EMP-001',
+          requestorName: 'Marcus Aurelius',
+          category: 'hr_letter',
+          subject: 'No Objection Certificate',
+          details: 'NOC for personal bank loan application.',
+          priority: 'medium',
+          status: 'in_progress',
+          createdDate: new Date()
+        },
+        {
+          requestId: 'SSR-102',
+          requestorId: 'EMP-005',
+          requestorName: 'Elena Fisher',
+          category: 'it_access',
+          subject: 'VPN Access Request',
+          details: 'Remote access required for Riyadh transition project.',
+          priority: 'high',
+          status: 'open',
+          createdDate: new Date()
+        }
+      ];
+    }
+  }
+
+  static async createRequest(requestData: Partial<SharedServiceRequest>): Promise<SharedServiceRequest> {
+    const response = await APIClient.post<{ request: SharedServiceRequest }>(this.endpoint, requestData);
+    return response.request;
   }
 }

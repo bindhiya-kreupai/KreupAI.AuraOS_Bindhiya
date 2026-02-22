@@ -8,6 +8,9 @@ import {
   ThumbsUp, Snowflake, Lock, Briefcase,
   MapPin, BarChart3, Network
 } from 'lucide-react';
+import { cn } from '@aura/ui/src/lib/utils';
+import { BudgetHealth } from './BudgetHealth';
+import { VacancyOrchestration } from './VacancyOrchestration';
 
 interface Position {
   id: string;
@@ -81,6 +84,7 @@ export default function PositionManagementPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isSimulationMode, setIsSimulationMode] = useState(false);
 
   useEffect(() => {
     fetchStats();
@@ -243,13 +247,38 @@ export default function PositionManagementPage() {
       render: (row: Position) => {
         const StatusIcon = STATUS_ICONS[row.status as keyof typeof STATUS_ICONS] || FileText;
         return (
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[row.status as keyof typeof STATUS_COLORS]}`}>
-            <StatusIcon className="h-3 w-3" />
-            {row.status}
-          </span>
+          <div className="flex flex-col gap-1">
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[row.status as keyof typeof STATUS_COLORS]}`}>
+              <StatusIcon className="h-3 w-3" />
+              {row.status}
+            </span>
+            {(row as any).isSimulated && (
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black bg-indigo-100 text-indigo-700 border border-indigo-200 tracking-widest uppercase">
+                <BarChart3 className="h-2.5 w-2.5" /> Simulated
+              </span>
+            )}
+          </div>
         );
       },
     },
+    {
+      key: 'budget',
+      label: 'Budget Utilization',
+      render: (row: any) => (
+        <div className="w-32 space-y-1">
+          <div className="flex justify-between text-[10px] font-bold text-silver-mist">
+            <span>{Math.round((row.utilizationRate || 0) * 100)}%</span>
+            <span>{formatCurrency(row.budgetCommitted)}</span>
+          </div>
+          <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div
+              className={cn("h-full rounded-full transition-all", (row.utilizationRate || 0) > 0.9 ? "bg-rose-500" : "bg-indigo-500")}
+              style={{ width: `${(row.utilizationRate || 0) * 100}%` }}
+            />
+          </div>
+        </div>
+      )
+    }
   ];
 
   const formFields: FormField[] = [
@@ -462,90 +491,145 @@ export default function PositionManagementPage() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className={cn("p-6 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500", isSimulationMode && "bg-indigo-50/30 dark:bg-indigo-900/5 min-h-screen rounded-3xl transition-colors duration-700")}>
+      {/* Refined Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-cloud dark:border-nebula-purple/20">
+        <div>
+          <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm mb-1 uppercase tracking-widest">
+            <Network className="w-4 h-4" /> Position Architecture
+          </div>
+          <h1 className="text-3xl font-extrabold text-ink-black dark:text-pearl tracking-tight">
+            Position <span className="text-indigo-600 dark:text-indigo-400">& Headcount</span>
+          </h1>
+          <p className="text-silver-mist text-sm max-w-xl leading-relaxed mt-1">
+            Orchestrate workforce structures, manage headcount budgeting, and simulate organizational growth models.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-4 bg-white dark:bg-stellar-blue p-2 rounded-2xl border border-cloud dark:border-nebula-purple/30 shadow-sm">
+          <div className="px-3 border-r border-cloud dark:border-nebula-purple/20">
+            <p className="text-[10px] font-bold text-silver-mist uppercase">Simulation Mode</p>
+            <p className="text-xs font-bold text-ink-black dark:text-pearl">{isSimulationMode ? 'Active (Planning)' : 'Inactive (Live)'}</p>
+          </div>
+          <button
+            onClick={() => setIsSimulationMode(!isSimulationMode)}
+            className={cn(
+              "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none",
+              isSimulationMode ? 'bg-indigo-600' : 'bg-slate-200'
+            )}
+          >
+            <span className={cn(
+              "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+              isSimulationMode ? 'translate-x-6' : 'translate-x-1'
+            )} />
+          </button>
+        </div>
+      </div>
+
+      {isSimulationMode && (
+        <div className="bg-indigo-600 p-4 rounded-2xl text-white flex items-center justify-between animate-in slide-in-from-top-4 duration-500 shadow-xl shadow-indigo-600/30">
+          <div className="flex items-center gap-3">
+            <BarChart3 className="w-5 h-5 text-indigo-200" />
+            <div className="text-sm">
+              <span className="font-bold">What-If Mode Enabled:</span> You are currently simulating changes. These will not affect live payroll or budget until committed.
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => setIsSimulationMode(false)} className="px-4 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold transition-all">Cancel Simulation</button>
+            <button className="px-4 py-1.5 bg-white text-indigo-600 rounded-lg text-xs font-bold shadow-lg transition-all">Commit Changes</button>
+          </div>
+        </div>
+      )}
+
+      {/* Advanced Orchestration Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <BudgetHealth />
+        <VacancyOrchestration />
+      </div>
+
       {/* Statistics Dashboard */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 pt-4">
         {/* Total Positions */}
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+        <div className="bg-white dark:bg-stellar-blue rounded-2xl p-4 border border-cloud dark:border-nebula-purple/30 shadow-sm group hover:border-indigo-400 transition-all">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Total Positions</p>
-              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">
+              <p className="text-[10px] font-bold text-silver-mist uppercase tracking-widest">Total Positions</p>
+              <p className="text-2xl font-extrabold text-ink-black dark:text-pearl mt-1">
                 {stats?.total || 0}
               </p>
             </div>
-            <Briefcase className="h-8 w-8 text-blue-500 dark:text-blue-400" />
+            <Briefcase className="h-6 w-6 text-indigo-500 group-hover:scale-110 transition-transform" />
           </div>
         </div>
 
         {/* Open Positions */}
-        <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 rounded-lg p-4 border border-green-200 dark:border-green-800">
+        <div className="bg-white dark:bg-stellar-blue rounded-2xl p-4 border border-cloud dark:border-nebula-purple/30 shadow-sm group hover:border-emerald-400 transition-all">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-green-600 dark:text-green-400">Open</p>
-              <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">
+              <p className="text-[10px] font-bold text-silver-mist uppercase tracking-widest">Open</p>
+              <p className="text-2xl font-extrabold text-ink-black dark:text-pearl mt-1">
                 {getStatusCount('OPEN')}
               </p>
             </div>
-            <TrendingUp className="h-8 w-8 text-green-500 dark:text-green-400" />
+            <TrendingUp className="h-6 w-6 text-emerald-500 group-hover:scale-110 transition-transform" />
           </div>
         </div>
 
         {/* Filled Positions */}
-        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900 rounded-lg p-4 border border-emerald-200 dark:border-emerald-800">
+        <div className="bg-white dark:bg-stellar-blue rounded-2xl p-4 border border-cloud dark:border-nebula-purple/30 shadow-sm group hover:border-emerald-400 transition-all">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Filled</p>
-              <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100 mt-1">
+              <p className="text-[10px] font-bold text-silver-mist uppercase tracking-widest">Filled</p>
+              <p className="text-2xl font-extrabold text-ink-black dark:text-pearl mt-1">
                 {getStatusCount('FILLED')}
               </p>
             </div>
-            <CheckCircle2 className="h-8 w-8 text-emerald-500 dark:text-emerald-400" />
+            <CheckCircle2 className="h-6 w-6 text-emerald-500 group-hover:scale-110 transition-transform" />
           </div>
         </div>
 
         {/* Frozen Positions */}
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
+        <div className="bg-white dark:bg-stellar-blue rounded-2xl p-4 border border-cloud dark:border-nebula-purple/30 shadow-sm group hover:border-amber-400 transition-all">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-orange-600 dark:text-orange-400">Frozen</p>
-              <p className="text-2xl font-bold text-orange-900 dark:text-orange-100 mt-1">
+              <p className="text-[10px] font-bold text-silver-mist uppercase tracking-widest">Frozen</p>
+              <p className="text-2xl font-extrabold text-ink-black dark:text-pearl mt-1">
                 {getStatusCount('FROZEN')}
               </p>
             </div>
-            <Snowflake className="h-8 w-8 text-orange-500 dark:text-orange-400" />
+            <Snowflake className="h-6 w-6 text-amber-500 group-hover:scale-110 transition-transform" />
           </div>
         </div>
 
         {/* Headcount Stats */}
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+        <div className="bg-white dark:bg-stellar-blue rounded-2xl p-4 border border-cloud dark:border-nebula-purple/30 shadow-sm group hover:border-purple-400 transition-all">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-purple-600 dark:text-purple-400">Total Headcount</p>
-              <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 mt-1">
+              <p className="text-[10px] font-bold text-silver-mist uppercase tracking-widest">Total Headcount</p>
+              <p className="text-2xl font-extrabold text-ink-black dark:text-pearl mt-1">
                 {stats?.totalHeadcount || 0}
               </p>
-              <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">
+              <p className="text-[10px] text-purple-600 font-bold mt-1 uppercase">
                 {stats?.totalFilled || 0} filled
               </p>
             </div>
-            <Users className="h-8 w-8 text-purple-500 dark:text-purple-400" />
+            <Users className="h-6 w-6 text-purple-500 group-hover:scale-110 transition-transform" />
           </div>
         </div>
 
         {/* Fill Rate */}
-        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 rounded-lg p-4 border border-indigo-200 dark:border-indigo-800">
+        <div className="bg-white dark:bg-stellar-blue rounded-2xl p-4 border border-cloud dark:border-nebula-purple/30 shadow-sm group hover:border-indigo-400 transition-all">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-indigo-600 dark:text-indigo-400">Fill Rate</p>
-              <p className="text-2xl font-bold text-indigo-900 dark:text-indigo-100 mt-1">
+              <p className="text-[10px] font-bold text-silver-mist uppercase tracking-widest">Fill Rate</p>
+              <p className="text-2xl font-extrabold text-ink-black dark:text-pearl mt-1">
                 {stats?.fillRate ? `${stats.fillRate.toFixed(1)}%` : '0%'}
               </p>
-              <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-0.5">
+              <p className="text-[10px] text-indigo-600 font-bold mt-1 uppercase">
                 {stats?.totalVacant || 0} vacant
               </p>
             </div>
-            <BarChart3 className="h-8 w-8 text-indigo-500 dark:text-indigo-400" />
+            <BarChart3 className="h-6 w-6 text-indigo-500 group-hover:scale-110 transition-transform" />
           </div>
         </div>
       </div>

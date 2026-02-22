@@ -45,6 +45,10 @@ model Company {
   departments Department[]
   employees   Employee[]
 
+  // Transfers
+  transfersFrom InterCompanyTransfer[] @relation("TransferFrom")
+  transfersTo   InterCompanyTransfer[] @relation("TransferTo")
+
   @@unique([tenantId, code])
   @@index([tenantId])
 }
@@ -287,6 +291,11 @@ model Employee {
   garnishments         Garnishment[]
   hsaFsaAccounts       HSAFSAAccount[]
   taxDocuments         TaxDocument[]
+
+  // Leadership Upgrades
+  transfers            InterCompanyTransfer[]
+  sharedServiceRequests SharedServiceRequest[] @relation("ServiceRequestor")
+  assignedServices     SharedServiceRequest[] @relation("ServiceAssignee")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3399,6 +3408,11 @@ model EmployeeDocument {
   // Status
   status String @default("ACTIVE")
 
+  // AI OCR Metadata
+  ocrData       Json?    // Parsed fields from AI scanning
+  isAIParsed    Boolean  @default(false)
+  confidence    Float?   // AI confidence score
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -3679,6 +3693,12 @@ model Position {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Advanced Budgeting & Simulations
+  budgetCommitted Decimal? @db.Decimal(15, 2)
+  actualCost      Decimal? @db.Decimal(15, 2)
+  utilizationRate Float?   @default(0)
+  isSimulated     Boolean  @default(false)
+
   // Relations
   employees        Employee[]      @relation("CurrentPosition")
   Address          Address?        @relation(fields: [addressId], references: [id])
@@ -3693,6 +3713,69 @@ model Position {
   @@index([departmentId])
   @@index([status])
   @@index([reportsToPositionId])
+}
+
+// ========================================
+// INTER-COMPANY TRANSFERS
+// ========================================
+
+model InterCompanyTransfer {
+  id       String @id @default(uuid())
+  tenantId String
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  // Transfer Route
+  fromCompanyId String
+  fromCompany   Company @relation("TransferFrom", fields: [fromCompanyId], references: [id])
+  toCompanyId   String
+  toCompany     Company @relation("TransferTo", fields: [toCompanyId], references: [id])
+
+  transferType String // PERMANENT, SECONDMENT, PROJECT_BASED
+  effectiveDate DateTime
+  
+  status String @default("PENDING") // PENDING, APPROVED, IN_PROGRESS, COMPLETED, CANCELLED
+  
+  requestedBy String
+  approvedBy  String?
+  approvedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+// ========================================
+// SHARED SERVICES CENTER
+// ========================================
+
+model SharedServiceRequest {
+  id       String @id @default(uuid())
+  tenantId String
+
+  requestorId String
+  requestor   Employee @relation("ServiceRequestor", fields: [requestorId], references: [id])
+
+  category String // HR_LETTER, IT_ACCESS, EQUIPMENT, TRAVEL, OTHER
+  subject  String
+  details  String?
+  priority String @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+
+  status String @default("OPEN") // OPEN, IN_REVIEW, IN_PROGRESS, COMPLETED, REJECTED
+  
+  assignedToId String?
+  assignedTo   Employee? @relation("ServiceAssignee", fields: [assignedToId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([category])
 }
 
 // Life Events Schema Addition
