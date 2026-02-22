@@ -65,7 +65,7 @@ export default function PricingPage() {
               alt="AuraOS Logo"
               width={120}
               height={120}
-              className="w-24 h-24 md:w-28 md:h-28"
+              className="w-24 h-24 md:w-28 md:h-28 mix-blend-multiply dark:mix-blend-screen"
             />
           </div>
           <h1 className="text-4xl md:text-5xl font-display font-bold text-ink-black dark:text-pearl mb-6">

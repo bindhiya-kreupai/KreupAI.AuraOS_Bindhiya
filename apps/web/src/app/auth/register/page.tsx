@@ -33,7 +33,7 @@ export default function RegisterPage() {
               alt="AuraOS"
               width={60}
               height={60}
-              className="w-[60px] h-[60px] object-contain rounded-xl bg-white/10 p-1"
+              className="w-[60px] h-[60px] object-contain rounded-xl bg-white/10 p-1 mix-blend-screen"
             />
             <span className="font-display font-bold text-3xl">AuraOS</span>
           </div>

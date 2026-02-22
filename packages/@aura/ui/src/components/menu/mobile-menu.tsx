@@ -98,7 +98,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-cloud dark:border-nebula-purple">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-celestial-indigo to-quantum-rose flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-blue to-brand-light-blue flex items-center justify-center">
               <span className="text-white font-bold">A</span>
             </div>
             <div>
@@ -120,21 +120,21 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
         <div className="flex items-center gap-2 p-4 border-b border-cloud dark:border-nebula-purple">
           <Link
             href="/"
-            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-pearl dark:bg-stellar-blue text-twilight dark:text-silver-mist hover:text-celestial-indigo transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-pearl dark:bg-stellar-blue text-twilight dark:text-silver-mist hover:text-brand-blue transition-colors"
           >
             <Home className="w-4 h-4" />
             <span className="text-sm">Home</span>
           </Link>
           <Link
             href="/notifications"
-            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-pearl dark:bg-stellar-blue text-twilight dark:text-silver-mist hover:text-celestial-indigo transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-pearl dark:bg-stellar-blue text-twilight dark:text-silver-mist hover:text-brand-blue transition-colors"
           >
             <Bell className="w-4 h-4" />
             <span className="text-sm">Alerts</span>
           </Link>
           <Link
             href="/profile"
-            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-pearl dark:bg-stellar-blue text-twilight dark:text-silver-mist hover:text-celestial-indigo transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-pearl dark:bg-stellar-blue text-twilight dark:text-silver-mist hover:text-brand-blue transition-colors"
           >
             <User className="w-4 h-4" />
             <span className="text-sm">Profile</span>
@@ -150,7 +150,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
               placeholder="Search modules & features..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-pearl dark:bg-stellar-blue rounded-xl text-sm text-ink-black dark:text-pearl placeholder:text-silver-mist border-2 border-transparent focus:border-celestial-indigo focus:outline-none transition-colors"
+              className="w-full pl-10 pr-4 py-3 bg-pearl dark:bg-stellar-blue rounded-xl text-sm text-ink-black dark:text-pearl placeholder:text-silver-mist border-2 border-transparent focus:border-brand-blue focus:outline-none transition-colors"
             />
           </div>
         </div>
@@ -162,7 +162,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             <div className="p-2">
               <button
                 onClick={() => setSelectedModule(null)}
-                className="flex items-center gap-2 px-4 py-2 mb-2 text-sm text-celestial-indigo dark:text-quantum-rose"
+                className="flex items-center gap-2 px-4 py-2 mb-2 text-sm text-brand-blue dark:text-brand-light-blue"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
                 Back to Modules
@@ -192,7 +192,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                       className={cn(
                         'flex items-center gap-3 px-4 py-3 rounded-xl transition-colors',
                         isActive
-                          ? 'bg-gradient-to-r from-celestial-indigo/10 to-quantum-rose/10 text-celestial-indigo dark:text-quantum-rose'
+                          ? 'bg-brand-blue/10 text-brand-blue dark:text-brand-light-blue'
                           : 'text-twilight dark:text-silver-mist hover:bg-pearl dark:hover:bg-stellar-blue'
                       )}
                     >
@@ -218,7 +218,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                     className={cn(
                       'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left',
                       isActive
-                        ? 'bg-gradient-to-r from-celestial-indigo/10 to-quantum-rose/10 text-celestial-indigo dark:text-quantum-rose'
+                        ? 'bg-brand-blue/10 text-brand-blue dark:text-brand-light-blue'
                         : 'text-twilight dark:text-silver-mist hover:bg-pearl dark:hover:bg-stellar-blue'
                     )}
                   >
@@ -226,7 +226,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                       className={cn(
                         'p-2 rounded-lg',
                         isActive
-                          ? 'bg-celestial-indigo/10 dark:bg-quantum-rose/10'
+                          ? 'bg-brand-blue/10 dark:bg-brand-light-blue/10'
                           : 'bg-pearl dark:bg-stellar-blue'
                       )}
                     >

@@ -120,7 +120,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
               alt="AuraOS"
               width={48}
               height={48}
-              className="w-12 h-12 object-contain"
+              className="w-12 h-12 object-contain mix-blend-multiply dark:mix-blend-screen"
             />
             <span className="font-display font-semibold text-ink-black dark:text-pearl">
               AuraOS
@@ -150,7 +150,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
               placeholder="Search modules..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-10 py-2 bg-pearl dark:bg-stellar-blue rounded-xl text-sm text-ink-black dark:text-pearl placeholder:text-silver-mist border-2 border-transparent focus:border-celestial-indigo focus:outline-none transition-colors"
+              className="w-full pl-10 pr-10 py-2 bg-pearl dark:bg-stellar-blue rounded-xl text-sm text-ink-black dark:text-pearl placeholder:text-silver-mist border-2 border-transparent focus:border-brand-blue focus:outline-none transition-colors"
             />
             {searchQuery && (
               <button
@@ -190,7 +190,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                 className={cn(
                   'group flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-all duration-200',
                   isActive
-                    ? 'bg-gradient-to-r from-celestial-indigo/10 to-quantum-rose/10 text-celestial-indigo dark:text-quantum-rose'
+                    ? 'bg-brand-blue/10 text-brand-blue dark:text-brand-light-blue'
                     : 'text-twilight dark:text-silver-mist hover:bg-pearl dark:hover:bg-stellar-blue'
                 )}
                 onClick={() => !collapsed && toggleModule(module.code)}
@@ -199,8 +199,8 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                   className={cn(
                     'flex-shrink-0 p-1.5 rounded-lg transition-colors',
                     isActive
-                      ? 'bg-celestial-indigo/10 dark:bg-quantum-rose/10'
-                      : 'group-hover:bg-celestial-indigo/5'
+                      ? 'bg-brand-blue/10 dark:bg-brand-light-blue/10'
+                      : 'group-hover:bg-brand-blue/5'
                   )}
                 >
                   <Icon className="w-5 h-5" />
@@ -239,7 +239,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                             className={cn(
                               "flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors text-sm",
                               isSubActive
-                                ? "text-celestial-indigo dark:text-quantum-rose font-medium"
+                                ? "text-brand-blue dark:text-brand-light-blue font-medium"
                                 : "text-twilight dark:text-silver-mist hover:text-ink-black dark:hover:text-pearl"
                             )}
                             onClick={() => toggleSubModule(subModule.code)}
@@ -262,7 +262,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                                     className={cn(
                                       'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-colors group',
                                       isFeatureActive
-                                        ? 'bg-celestial-indigo/10 text-celestial-indigo dark:text-quantum-rose font-medium'
+                                        ? 'bg-brand-blue/10 text-brand-blue dark:text-brand-light-blue font-medium'
                                         : 'text-silver-mist hover:text-ink-black dark:hover:text-pearl'
                                     )}
                                   >
@@ -312,7 +312,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                           className={cn(
                             'flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors group',
                             isFeatureActive
-                              ? 'bg-celestial-indigo/10 text-celestial-indigo dark:text-quantum-rose font-medium'
+                              ? 'bg-brand-blue/10 text-brand-blue dark:text-brand-light-blue font-medium'
                               : 'text-twilight dark:text-silver-mist hover:bg-pearl dark:hover:bg-stellar-blue hover:text-ink-black dark:hover:text-pearl'
                           )}
                         >

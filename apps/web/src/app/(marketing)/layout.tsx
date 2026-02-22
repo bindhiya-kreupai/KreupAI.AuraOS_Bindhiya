@@ -15,7 +15,7 @@ const MarketingNavbar = () => (
             alt="AuraOS"
             width={60}
             height={60}
-            className="w-[60px] h-[60px] object-contain"
+            className="w-[60px] h-[60px] object-contain mix-blend-multiply dark:mix-blend-screen"
             priority
           />
           <span className="font-display font-bold text-xl text-ink-black dark:text-pearl">

@@ -59,7 +59,7 @@ function DashboardPreview() {
             alt="AuraOS"
             width={36}
             height={36}
-            className="w-9 h-9 object-contain"
+            className="w-9 h-9 object-contain mix-blend-multiply dark:mix-blend-screen"
           />
           <span className="font-semibold text-slate-800 dark:text-white text-sm">AuraOS</span>
         </div>
@@ -374,7 +374,7 @@ function LiveChatWidget() {
                 alt="AuraOS"
                 width={32}
                 height={32}
-                className="w-8 h-8 rounded-full bg-white/10 p-1"
+                className="w-8 h-8 rounded-full bg-white/10 p-1 mix-blend-screen"
               />
               <div>
                 <h3 className="font-semibold">Chat with us</h3>
@@ -659,7 +659,7 @@ function ExitIntentPopup() {
               alt="AuraOS Logo"
               width={80}
               height={80}
-              className="w-16 h-16 md:w-20 md:h-20"
+              className="w-16 h-16 md:w-20 md:h-20 mix-blend-multiply dark:mix-blend-screen"
             />
           </div>
 
@@ -736,7 +736,7 @@ export default function LandingPage() {
               alt="AuraOS Logo"
               width={200}
               height={200}
-              className="w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48"
+              className="w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 mix-blend-multiply dark:mix-blend-screen"
               priority
             />
           </div>

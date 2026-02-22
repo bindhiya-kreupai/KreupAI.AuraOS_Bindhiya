@@ -3,7 +3,7 @@
  * Standardizes communication between Next.js API routes and microservices
  */
 
-import { servicesConfig } from './config/env';
+import { servicesConfig } from '../config/env';
 
 export class ServiceProxy {
     /**
@@ -36,7 +36,7 @@ export class ServiceProxy {
 
             if (!response.ok) {
                 const error = isJSON ? await response.json() : { message: response.statusText };
-                throw new Error(error.message || `Service ${service} request failed with status ${response.status}`);
+                throw new Error(error.message || `Service ${String(service)} request failed with status ${response.status}`);
             }
 
             if (response.status === 204) {
@@ -45,7 +45,7 @@ export class ServiceProxy {
 
             return isJSON ? await response.json() : ({} as T);
         } catch (error) {
-            console.error(`[ServiceProxy] Error calling ${service}:`, error);
+            console.error(`[ServiceProxy] Error calling ${String(service)}:`, error);
             throw error;
         }
     }

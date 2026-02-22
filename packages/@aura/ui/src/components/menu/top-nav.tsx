@@ -60,7 +60,7 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, className }) => {
             alt="AuraOS"
             width={48}
             height={48}
-            className="w-12 h-12 object-contain"
+            className="w-12 h-12 object-contain mix-blend-multiply dark:mix-blend-screen"
           />
           <span className="hidden sm:block font-display font-semibold text-ink-black dark:text-pearl">
             AuraOS
@@ -74,7 +74,7 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, className }) => {
             <input
               type="text"
               placeholder="Search..."
-              className="w-64 lg:w-80 pl-10 pr-4 py-2 bg-pearl dark:bg-stellar-blue rounded-xl text-sm text-ink-black dark:text-pearl placeholder:text-silver-mist border-2 border-transparent focus:border-celestial-indigo focus:outline-none transition-colors"
+              className="w-64 lg:w-80 pl-10 pr-4 py-2 bg-pearl dark:bg-stellar-blue rounded-xl text-sm text-ink-black dark:text-pearl placeholder:text-silver-mist border-2 border-transparent focus:border-brand-blue focus:outline-none transition-colors"
             />
             <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden lg:inline-flex items-center gap-1 px-2 py-0.5 text-xs text-silver-mist bg-cloud dark:bg-nebula-purple rounded">
               ⌘K
@@ -86,7 +86,7 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, className }) => {
       {/* Right Section */}
       <div className="flex items-center gap-2">
         {/* AI Assistant */}
-        <button className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-celestial-indigo to-quantum-rose text-white text-sm font-medium hover:opacity-90 transition-opacity">
+        <button className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-brand-blue to-brand-light-blue text-white text-sm font-medium hover:opacity-90 transition-opacity">
           <MessageSquare className="w-4 h-4" />
           <span>AI</span>
         </button>
@@ -115,7 +115,7 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, className }) => {
             className="p-2 rounded-lg hover:bg-pearl dark:hover:bg-stellar-blue transition-colors relative"
           >
             <Bell className="w-5 h-5 text-twilight dark:text-silver-mist" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-quantum-rose rounded-full" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-brand-red rounded-full" />
           </button>
 
           {isNotificationsOpen && (
@@ -146,7 +146,7 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, className }) => {
             onClick={() => setIsProfileOpen(!isProfileOpen)}
             className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-pearl dark:hover:bg-stellar-blue transition-colors"
           >
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-neural-mint to-celestial-indigo flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-light-blue to-brand-blue flex items-center justify-center">
               <User className="w-4 h-4 text-white" />
             </div>
             <ChevronDown className="hidden sm:block w-4 h-4 text-twilight dark:text-silver-mist" />
