@@ -413,7 +413,7 @@ const CompetencyRatingRow: React.FC<{ rating: CompetencyRating }> = ({ rating })
 
     return (
         <div className="p-3 bg-white dark:bg-stellar-blue rounded-xl border border-slate-200 dark:border-slate-700 hover:border-celestial-indigo/30 transition-colors">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className={`p-2 rounded-lg shrink-0 ${catStyle.bgColor} ${catStyle.color}`}>
                         {catStyle.icon}
@@ -430,7 +430,7 @@ const CompetencyRatingRow: React.FC<{ rating: CompetencyRating }> = ({ rating })
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-4 shrink-0">
+                <div className="flex items-center gap-3 shrink-0">
                     {/* Self Rating */}
                     <div className="text-center">
                         <div className="text-lg font-bold text-ink-black dark:text-pearl">
@@ -771,9 +771,9 @@ export default function SkillAssessmentPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <ClipboardCheck className="w-6 h-6 text-celestial-indigo" />
@@ -798,7 +798,7 @@ export default function SkillAssessmentPage() {
 
             {/* Active Cycles Banner */}
             <div className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 dark:from-indigo-500/20 dark:via-purple-500/20 dark:to-pink-500/20 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800">
-                <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center justify-between flex-wrap gap-3">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 rounded-lg">
                             <Calendar className="w-5 h-5" />
@@ -808,7 +808,7 @@ export default function SkillAssessmentPage() {
                             <p className="text-xs text-slate-500">{ASSESSMENT_CYCLES.filter(c => c.status === 'Active').length} active cycles in progress</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                         {ASSESSMENT_CYCLES.filter(c => c.status === 'Active').map(cycle => (
                             <div key={cycle.id} className="bg-white dark:bg-stellar-blue px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
                                 <div className="text-sm font-bold text-ink-black dark:text-pearl">{cycle.name}</div>
@@ -828,7 +828,7 @@ export default function SkillAssessmentPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-lg">
@@ -899,7 +899,7 @@ export default function SkillAssessmentPage() {
 
             {/* Filters Bar */}
             <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
-                <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex flex-col md:flex-row gap-3">
                     {/* Search */}
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
@@ -977,8 +977,8 @@ export default function SkillAssessmentPage() {
                                 className="p-6 cursor-pointer hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors"
                                 onClick={() => toggleAssessment(assessment.id)}
                             >
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                    <div className="flex items-center gap-4">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                    <div className="flex items-center gap-3">
                                         {/* Avatar */}
                                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-celestial-indigo to-purple-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
                                             {assessment.employeeName.split(' ').map(n => n[0]).join('')}
@@ -998,7 +998,7 @@ export default function SkillAssessmentPage() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-6">
+                                    <div className="flex items-center gap-3">
                                         {/* Progress Ring */}
                                         <ProgressRing progress={assessment.progress} />
 
@@ -1120,7 +1120,7 @@ export default function SkillAssessmentPage() {
                                     {/* Summary Stats */}
                                     {assessment.ratings.length > 0 && (
                                         <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-                                            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                                                 <div className="text-center">
                                                     <div className="text-lg font-bold text-emerald-600">
                                                         {assessment.ratings.filter(r => r.selfRating >= r.targetLevel).length}
@@ -1157,7 +1157,7 @@ export default function SkillAssessmentPage() {
 
                                     {/* Meta Info */}
                                     {(assessment.startedDate || assessment.completedDate) && (
-                                        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 text-xs text-slate-500">
+                                        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-3 text-xs text-slate-500">
                                             {assessment.startedDate && (
                                                 <span>Started: {new Date(assessment.startedDate).toLocaleDateString()}</span>
                                             )}
@@ -1199,7 +1199,7 @@ export default function SkillAssessmentPage() {
 
             {/* AI Insight Card */}
             <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-6 rounded-2xl shadow-lg border border-indigo-500/30 text-white">
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3">
                     <div className="p-3 bg-white/10 rounded-xl">
                         <BrainCircuit className="w-6 h-6" />
                     </div>
@@ -1250,7 +1250,7 @@ export default function SkillAssessmentPage() {
                     </div>
                 }
             >
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {/* Description */}
                     <p className="text-sm text-silver-mist">
                         {editingAssessment 
@@ -1265,7 +1265,7 @@ export default function SkillAssessmentPage() {
                             Employee & Assessment Details
                         </h3>
                         
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3">
                             {/* Employee Select */}
                             <div className="col-span-2">
                                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
@@ -1528,3 +1528,4 @@ export default function SkillAssessmentPage() {
         </div>
     );
 }
+

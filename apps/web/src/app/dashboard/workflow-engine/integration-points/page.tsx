@@ -40,8 +40,8 @@ export default function IntegrationPointsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Plug className="w-6 h-6 text-cyan-500" />
@@ -61,7 +61,7 @@ export default function IntegrationPointsPage() {
                     <p className="text-sm text-slate-400">Create workflow definitions to see integration points.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {apps.map(app => (
                         <div key={app.id} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between h-[180px]">
                             <div className="flex justify-between items-start">
@@ -95,3 +95,4 @@ export default function IntegrationPointsPage() {
         </div>
     );
 }
+

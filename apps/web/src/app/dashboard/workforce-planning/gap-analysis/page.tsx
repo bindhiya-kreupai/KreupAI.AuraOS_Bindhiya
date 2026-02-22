@@ -56,8 +56,8 @@ export default function GapAnalysisPage() {
     }, []);
 
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Layers className="w-6 h-6 text-rose-500" />
@@ -129,3 +129,4 @@ export default function GapAnalysisPage() {
         </div>
     );
 }
+

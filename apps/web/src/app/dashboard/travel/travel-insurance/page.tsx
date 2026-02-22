@@ -35,7 +35,7 @@ export default function TravelInsurancePage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <ShieldCheck className="w-8 h-8 text-indigo-500" />
@@ -48,7 +48,7 @@ export default function TravelInsurancePage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div className="lg:col-span-2 bg-gradient-to-br from-indigo-600 to-indigo-800 p-8 rounded-2xl text-white shadow-xl relative overflow-hidden">
                     <div className="relative z-10">
                         <div className="text-indigo-200 text-sm font-bold uppercase mb-2">Corporate Policy #{data?.tenantId?.substring(0, 4) || '0000'}-XJ-2024</div>
@@ -90,7 +90,7 @@ export default function TravelInsurancePage() {
                 </div>
             </div>
 
-            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 p-6 rounded-2xl flex items-start gap-4">
+            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 p-6 rounded-2xl flex items-start gap-3">
                 <AlertTriangle className="w-6 h-6 text-amber-600 mt-1" />
                 <div>
                     <h3 className="text-lg font-bold text-amber-700 dark:text-amber-400 mb-2">Before you travel</h3>
@@ -103,3 +103,4 @@ export default function TravelInsurancePage() {
         </div>
     );
 }
+

@@ -91,8 +91,8 @@ export default function LeaveCalendarPage() {
     }, [holidays, leaves, currentMonth, currentYear, daysInMonth]);
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <CalendarIcon className="w-6 h-6 text-indigo-500" />
@@ -128,12 +128,12 @@ export default function LeaveCalendarPage() {
                 </div>
             ) : (
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                    <div className="grid grid-cols-7 gap-4 mb-4 text-center">
+                    <div className="grid grid-cols-7 gap-3 mb-4 text-center">
                         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                             <div key={day} className="text-xs font-bold text-slate-400 uppercase">{day}</div>
                         ))}
                     </div>
-                    <div className="grid grid-cols-7 gap-4">
+                    <div className="grid grid-cols-7 gap-3">
                         {Array.from({ length: totalCells }).map((_, i) => {
                             const day = i - firstDayOfMonth + 1;
                             const isValidDay = day > 0 && day <= daysInMonth;
@@ -170,7 +170,7 @@ export default function LeaveCalendarPage() {
                 </div>
             )}
 
-            <div className="flex gap-4 text-sm font-medium text-slate-500">
+            <div className="flex gap-3 text-sm font-medium text-slate-500">
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded bg-indigo-500"></div> Annual Leave
                 </div>
@@ -184,3 +184,4 @@ export default function LeaveCalendarPage() {
         </div>
     );
 }
+

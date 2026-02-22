@@ -107,7 +107,7 @@ export default function ComplianceReportsPage() {
                 <p className="text-slate-500 mt-2 text-lg">Regulatory adherence tracking and audit readiness.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="bg-emerald-50 dark:bg-emerald-500/10 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-500/20">
                     <div className="text-emerald-600 dark:text-emerald-400 font-bold mb-1">Overall Score</div>
                     <div className="text-4xl font-bold text-slate-900 dark:text-slate-100">{overallScore}%</div>
@@ -182,3 +182,4 @@ export default function ComplianceReportsPage() {
         </div>
     );
 }
+

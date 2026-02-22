@@ -39,8 +39,8 @@ export default function HRAPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <ClipboardList className="w-6 h-6 text-blue-500" />
@@ -53,9 +53,9 @@ export default function HRAPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Left Panel: Status */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                         <div className="radial-progress text-blue-500 mx-auto mb-4" style={{ "--value": "33", "--size": "8rem" } as any}>
                             <span className="text-2xl font-bold text-slate-800 dark:text-white">33%</span>
@@ -107,3 +107,4 @@ export default function HRAPage() {
         </div>
     );
 }
+

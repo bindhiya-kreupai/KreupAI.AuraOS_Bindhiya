@@ -166,7 +166,7 @@ export default function OrgHealthPredictorPage() {
     const drivers = recommendations.length > 0 ? recommendations : DRIVERS;
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -183,14 +183,14 @@ export default function OrgHealthPredictorPage() {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 {[
                     { label: 'Health Score', value: '88/100', sub: '+2% vs last month', icon: HeartPulse, color: 'text-rose-500', bg: 'bg-rose-50' },
                     { label: 'Burnout Risk', value: '12%', sub: '-3% improvement', icon: Zap, color: 'text-amber-500', bg: 'bg-amber-50' },
                     { label: 'Sentiment', value: 'Positive', sub: '87% approval rating', icon: BrainCircuit, color: 'text-emerald-500', bg: 'bg-emerald-50' },
                     { label: 'Attrition Risk', value: 'Low', sub: 'Predicted < 5%', icon: AlertTriangle, color: 'text-indigo-500', bg: 'bg-indigo-50' },
                 ].map((stat, i) => (
-                    <div key={i} className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-4">
+                    <div key={i} className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-3">
                         <div className={`p-3 rounded-lg ${stat.bg} dark:bg-opacity-20`}>
                             <stat.icon className={`w-6 h-6 ${stat.color}`} />
                         </div>
@@ -206,7 +206,7 @@ export default function OrgHealthPredictorPage() {
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
 
                 {/* 1. Health Trends Chart */}
                 <div className="lg:col-span-2 bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
@@ -272,7 +272,7 @@ export default function OrgHealthPredictorPage() {
                             </h2>
                             <p className="text-xs text-silver-mist mt-1">Size = Employee Count, Color = Burnout Risk Level</p>
                         </div>
-                        <div className="flex gap-4 text-xs font-bold text-silver-mist">
+                        <div className="flex gap-3 text-xs font-bold text-silver-mist">
                             <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-emerald-500" /> Low Risk</div>
                             <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-amber-500" /> Medium Risk</div>
                             <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-rose-500" /> High Risk</div>
@@ -313,3 +313,4 @@ export default function OrgHealthPredictorPage() {
         </div>
     );
 }
+

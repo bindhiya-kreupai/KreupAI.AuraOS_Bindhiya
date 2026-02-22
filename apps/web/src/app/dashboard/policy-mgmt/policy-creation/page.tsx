@@ -38,9 +38,9 @@ export default function PolicyCreationPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <FilePlus className="w-6 h-6 text-indigo-500" />
@@ -60,7 +60,7 @@ export default function PolicyCreationPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Editor */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Policy Title</label>
                         <input type="text" className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-lg" placeholder="e.g. Remote Work Policy 2025" />
@@ -82,7 +82,7 @@ export default function PolicyCreationPage() {
                 </div>
 
                 {/* Sidebar Settings */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <h3 className="font-bold text-sm uppercase text-slate-500 mb-4">Configuration</h3>
 
@@ -138,3 +138,4 @@ export default function PolicyCreationPage() {
         </div>
     );
 }
+

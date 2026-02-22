@@ -32,7 +32,7 @@ export default function SuccessorIdentificationPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <UserPlus className="w-8 h-8 text-indigo-500" />
@@ -45,7 +45,7 @@ export default function SuccessorIdentificationPage() {
             {/* Search Bar */}
             <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
                 <div className="text-sm font-bold text-slate-500 uppercase">Target Role</div>
-                <div className="flex gap-4">
+                <div className="flex gap-3">
                     <div className="flex-1 relative">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                         <input
@@ -72,10 +72,10 @@ export default function SuccessorIdentificationPage() {
                         No succession candidates available.
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-1 gap-3">
                         {candidates.map((candidate, i) => (
                             <div key={candidate.candidateId || i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-indigo-500 transition-colors group">
-                                <div className="flex flex-col md:flex-row md:items-center gap-6">
+                                <div className="flex flex-col md:flex-row md:items-center gap-3">
                                     {/* Rank */}
                                     <div className="hidden md:flex flex-col items-center justify-center w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-2xl text-slate-400">
                                         #{i + 1}
@@ -131,3 +131,4 @@ export default function SuccessorIdentificationPage() {
         </div>
     );
 }
+

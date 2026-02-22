@@ -52,16 +52,16 @@ export default function SmartWorkflowsPage() {
 
     if (loading) {
         return (
-            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
                 <div className="animate-pulse">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 mb-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0 mb-6">
                         <div>
                             <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-56 mb-2" />
                             <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-80" />
                         </div>
                         <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded w-36" />
                     </div>
-                    <div className="grid grid-cols-1 gap-6">
+                    <div className="grid grid-cols-1 gap-3">
                         {[...Array(4)].map((_, i) => (
                             <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 h-28" />
                         ))}
@@ -73,8 +73,8 @@ export default function SmartWorkflowsPage() {
 
     if (error) {
         return (
-            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                     <div>
                         <h1 className="text-2xl font-bold flex items-center gap-2">
                             <GitBranch className="w-6 h-6 text-indigo-500" />
@@ -96,9 +96,9 @@ export default function SmartWorkflowsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <GitBranch className="w-6 h-6 text-indigo-500" />
@@ -120,7 +120,7 @@ export default function SmartWorkflowsPage() {
                     </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-3">
                     {workflows.map((flow) => {
                         const totalRuns = flow._count?.instances ?? 0;
                         const stepsCount = Array.isArray(flow.nodes) ? flow.nodes.length : 0;
@@ -128,8 +128,8 @@ export default function SmartWorkflowsPage() {
 
                         return (
                             <div key={flow.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 hover:shadow-md transition-all">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                    <div className="flex items-start gap-4">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                    <div className="flex items-start gap-3">
                                         <div className={`p-4 rounded-xl ${flow.isActive ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20' : 'bg-slate-100 text-slate-400'}`}>
                                             <GitBranch className="w-6 h-6" />
                                         </div>
@@ -183,3 +183,4 @@ export default function SmartWorkflowsPage() {
         </div>
     );
 }
+

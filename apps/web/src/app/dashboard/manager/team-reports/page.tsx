@@ -58,8 +58,8 @@ export default function TeamReportsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <BarChart2 className="w-6 h-6 text-indigo-500" />
@@ -97,7 +97,7 @@ export default function TeamReportsPage() {
                 </div>
             ) : (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
                             <div className="flex justify-between items-start mb-2">
                                 <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-indigo-500">
@@ -153,11 +153,11 @@ export default function TeamReportsPage() {
                         )}
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                         {reportData.performanceDistribution && reportData.performanceDistribution.length > 0 && (
                             <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col">
                                 <h3 className="font-bold text-lg mb-6">Performance Distribution</h3>
-                                <div className="flex-1 flex items-end gap-4 px-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+                                <div className="flex-1 flex items-end gap-3 px-4 pb-4 border-b border-slate-100 dark:border-slate-800">
                                     {reportData.performanceDistribution.map((item, i) => (
                                         <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
                                             <div className="w-full relative h-[200px] bg-slate-50 dark:bg-slate-800 rounded-t-xl overflow-hidden flex items-end">
@@ -218,3 +218,4 @@ export default function TeamReportsPage() {
         </div>
     );
 }
+

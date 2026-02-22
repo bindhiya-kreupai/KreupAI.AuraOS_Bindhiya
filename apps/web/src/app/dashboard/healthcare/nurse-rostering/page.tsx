@@ -43,8 +43,8 @@ export default function NurseRosteringPage() {
   const nurses = Object.values(nurseMap);
 
   return (
-    <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+    <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <CalendarDays className="w-6 h-6 text-indigo-500" />
@@ -67,7 +67,7 @@ export default function NurseRosteringPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-3">
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-500 uppercase">
@@ -126,7 +126,7 @@ export default function NurseRosteringPage() {
           </table>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="bg-indigo-50 dark:bg-indigo-900/10 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Clock className="w-8 h-8 text-indigo-500" />
@@ -160,3 +160,4 @@ export default function NurseRosteringPage() {
     </div>
   );
 }
+

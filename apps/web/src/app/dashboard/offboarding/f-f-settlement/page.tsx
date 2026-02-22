@@ -104,9 +104,9 @@ export default function FnFSettlementPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Calculator className="w-6 h-6 text-indigo-500" />
@@ -121,7 +121,7 @@ export default function FnFSettlementPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left: Settlement Details or Empty State */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         {activeSettlement ? (
                             <>
@@ -133,7 +133,7 @@ export default function FnFSettlementPage() {
                                 </div>
 
                                 {/* Employee Info */}
-                                <div className="flex items-center gap-4 mb-6 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                                <div className="flex items-center gap-3 mb-6 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
                                     <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 font-bold">
                                         {activeSettlement.employeeName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                                     </div>
@@ -191,7 +191,7 @@ export default function FnFSettlementPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-4 mt-6">
+                                <div className="flex gap-3 mt-6">
                                     <button className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors">
                                         Generate Statement
                                     </button>
@@ -211,7 +211,7 @@ export default function FnFSettlementPage() {
                 </div>
 
                 {/* Right: History & Info */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                             <FileText className="w-5 h-5 text-slate-400" /> Recent Settlements
@@ -258,3 +258,4 @@ export default function FnFSettlementPage() {
         </div>
     );
 }
+

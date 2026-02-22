@@ -118,7 +118,7 @@ export default function EmploymentHistoryPage() {
     if (!stats) return null;
 
     return (
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
         {/* Total Changes */}
         <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl p-4 text-white shadow-lg">
           <div className="text-xs font-medium opacity-90 mb-1">Total Changes</div>
@@ -349,7 +349,7 @@ export default function EmploymentHistoryPage() {
             <History className="w-4 h-4" />
             Change Details
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Change Type <span className="text-red-500">*</span>
@@ -550,7 +550,7 @@ export default function EmploymentHistoryPage() {
   // ========================================
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <StatsCards />
       <ChangeTypeFilters />
 
@@ -573,3 +573,4 @@ export default function EmploymentHistoryPage() {
     </div>
   );
 }
+

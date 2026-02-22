@@ -35,7 +35,7 @@ export default function BookingIntegrationPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <Globe className="w-8 h-8 text-indigo-500" />
@@ -46,7 +46,7 @@ export default function BookingIntegrationPage() {
             </div>
 
             <div className="bg-indigo-600 p-8 rounded-3xl text-white shadow-xl shadow-indigo-500/20">
-                <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex flex-col md:flex-row gap-3">
                     <div className="flex-1">
                         <label className="text-xs font-bold uppercase opacity-70 mb-1 block">From</label>
                         <input type="text" className="w-full bg-white/10 border-none rounded-xl p-3 text-white placeholder-white/50 font-bold" placeholder="Departing City" />
@@ -75,8 +75,8 @@ export default function BookingIntegrationPage() {
                     </div>
                 ) : (
                     bookings.map((flight: any) => (
-                        <div key={flight.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-indigo-500 transition-colors flex flex-col md:flex-row items-center justify-between gap-6">
-                            <div className="flex items-center gap-6">
+                        <div key={flight.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-indigo-500 transition-colors flex flex-col md:flex-row items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
                                 <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500 text-xl">
                                     {flight.provider?.substring(0, 2) || 'FL'}
                                 </div>
@@ -101,3 +101,4 @@ export default function BookingIntegrationPage() {
         </div>
     );
 }
+

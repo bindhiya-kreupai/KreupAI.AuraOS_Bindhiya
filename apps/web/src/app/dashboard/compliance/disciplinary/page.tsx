@@ -41,9 +41,9 @@ export default function DisciplinaryPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Gavel className="w-6 h-6 text-indigo-500" />
@@ -57,8 +57,8 @@ export default function DisciplinaryPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 shrink-0">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
                     <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/20 rounded-full flex items-center justify-center text-rose-600">
                         <AlertTriangle className="w-6 h-6" />
                     </div>
@@ -67,7 +67,7 @@ export default function DisciplinaryPage() {
                         <div className="text-xs text-slate-500">Open Cases</div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-4">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
                     <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/20 rounded-full flex items-center justify-center text-amber-600">
                         <Gavel className="w-6 h-6" />
                     </div>
@@ -76,7 +76,7 @@ export default function DisciplinaryPage() {
                         <div className="text-xs text-slate-500">Pending Hearings</div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-4">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
                     <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/20 rounded-full flex items-center justify-center text-emerald-600">
                         <CheckCircle2 className="w-6 h-6" />
                     </div>
@@ -146,3 +146,4 @@ export default function DisciplinaryPage() {
         </div>
     );
 }
+

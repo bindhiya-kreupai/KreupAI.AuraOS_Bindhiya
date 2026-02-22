@@ -79,7 +79,7 @@ export default function OvertimeManagementPage() {
         setPolicy({ ...policy, [field]: value });
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -102,14 +102,14 @@ export default function OvertimeManagementPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
                 {/* OT Policy Card */}
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <h3 className="font-bold text-lg text-ink-black dark:text-pearl mb-6 border-b border-cloud dark:border-nebula-purple/20 pb-4">
                         General Policy
                     </h3>
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h4 className="font-bold text-slate-700 dark:text-slate-200 text-sm">OT Calculation Base</h4>
@@ -211,7 +211,7 @@ export default function OvertimeManagementPage() {
                     </p>
                 </div>
 
-                <div className="flex items-center gap-4 bg-indigo-800 p-1.5 rounded-lg relative z-10">
+                <div className="flex items-center gap-3 bg-indigo-800 p-1.5 rounded-lg relative z-10">
                     <button className="px-6 py-2 bg-white text-indigo-900 font-bold rounded shadow-sm">Paid Out</button>
                     <button className="px-6 py-2 text-indigo-200 hover:text-white font-bold transition-colors">Banked (Comp-off)</button>
                 </div>
@@ -223,3 +223,4 @@ export default function OvertimeManagementPage() {
         </div>
     );
 }
+

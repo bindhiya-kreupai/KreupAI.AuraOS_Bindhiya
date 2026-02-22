@@ -87,9 +87,9 @@ export default function BuddyAssignmentPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <UserPlus className="w-6 h-6 text-indigo-500" />
@@ -105,7 +105,7 @@ export default function BuddyAssignmentPage() {
             </div>
 
             {/* Current Assignment Status */}
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6">
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-3">
                 <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
                     <Shield className="w-8 h-8" />
                 </div>
@@ -123,7 +123,7 @@ export default function BuddyAssignmentPage() {
                 <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                     <Star className="w-5 h-5 text-indigo-500" /> Assigned Buddies
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {buddies.map(buddy => (
                         <div key={buddy.id}
                             onClick={() => setSelectedBuddy(buddy.id)}
@@ -135,7 +135,7 @@ export default function BuddyAssignmentPage() {
                                 </div>
                             )}
 
-                            <div className="flex items-center gap-4 mb-4">
+                            <div className="flex items-center gap-3 mb-4">
                                 <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xl group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
                                     {buddy.avatar}
                                 </div>
@@ -185,7 +185,7 @@ export default function BuddyAssignmentPage() {
             </div>
 
             {/* Info Section */}
-            <div className="bg-indigo-50 dark:bg-indigo-900/10 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-900/30 flex items-start gap-4">
+            <div className="bg-indigo-50 dark:bg-indigo-900/10 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-900/30 flex items-start gap-3">
                 <Award className="w-6 h-6 text-indigo-500 shrink-0" />
                 <div>
                     <h4 className="font-bold text-indigo-900 dark:text-indigo-100 mb-2">Why Assign a Buddy?</h4>
@@ -199,3 +199,4 @@ export default function BuddyAssignmentPage() {
         </div>
     );
 }
+

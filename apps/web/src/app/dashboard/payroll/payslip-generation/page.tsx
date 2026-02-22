@@ -45,9 +45,9 @@ export default function PayslipGenerationPage() {
     );
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <FileText className="w-6 h-6 text-indigo-500" />
@@ -63,8 +63,8 @@ export default function PayslipGenerationPage() {
             </div>
 
             {/* Controls */}
-            <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-3 items-center justify-between">
+                <div className="flex items-center gap-3 w-full md:w-auto">
                     <select className="bg-slate-50 dark:bg-slate-800 border-none rounded-lg px-4 py-2 text-sm font-bold">
                         {payrollRuns.length > 0 ? payrollRuns.map(run => (
                             <option key={run.id} value={run.id}>{run.monthName}</option>
@@ -161,3 +161,4 @@ export default function PayslipGenerationPage() {
         </div>
     );
 }
+

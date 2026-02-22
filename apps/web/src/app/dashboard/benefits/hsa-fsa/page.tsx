@@ -87,7 +87,7 @@ export default function HsaFsaPage() {
 
   if (accounts.length === 0 && transactions.length === 0) {
     return (
-      <div className="space-y-6 pb-10">
+      <div className="space-y-4 pb-6">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">HSA & FSA Accounts</h1>
           <p className="text-sm text-silver-mist mt-1">Manage your Health Savings and Flexible Spending Accounts</p>
@@ -102,7 +102,7 @@ export default function HsaFsaPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">HSA & FSA Accounts</h1>
@@ -111,7 +111,7 @@ export default function HsaFsaPage() {
 
       {/* Account Cards */}
       {accounts.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {accounts.map((account, idx) => (
             <div key={idx} className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-5">
               <div className="flex items-center justify-between mb-4">
@@ -174,7 +174,7 @@ export default function HsaFsaPage() {
           </div>
           <div className="divide-y divide-cloud dark:divide-nebula-purple/50">
             {transactions.map((tx) => (
-              <div key={tx.id} className="flex items-center gap-4 px-5 py-3">
+              <div key={tx.id} className="flex items-center gap-3 px-5 py-3">
                 <div className={`p-2 rounded-lg ${tx.type === 'contribution' ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20'}`}>
                   {tx.type === 'contribution' ? (
                     <ArrowDownRight className="w-4 h-4 text-emerald-500" />
@@ -219,3 +219,4 @@ export default function HsaFsaPage() {
     </div>
   );
 }
+

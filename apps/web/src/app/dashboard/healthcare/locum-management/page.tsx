@@ -30,8 +30,8 @@ export default function LocumManagementPage() {
       : 0;
 
   return (
-    <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+    <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Briefcase className="w-6 h-6 text-indigo-500" />
@@ -46,7 +46,7 @@ export default function LocumManagementPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
           <h3 className="font-bold text-lg mb-4">Current Assignments</h3>
           <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
@@ -89,7 +89,7 @@ export default function LocumManagementPage() {
 
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
           <h3 className="font-bold text-lg mb-4">Agency Stats</h3>
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
               <div className="flex justify-between items-end mb-2">
                 <span className="text-sm font-bold text-slate-500">Total Compensation Commit</span>
@@ -127,3 +127,4 @@ export default function LocumManagementPage() {
     </div>
   );
 }
+

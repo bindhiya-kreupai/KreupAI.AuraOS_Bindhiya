@@ -88,7 +88,7 @@ export default function KnowledgeBasePage() {
     );
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-10">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-6">
             {/* Hero Section */}
             <div className="bg-celestial-indigo relative overflow-hidden rounded-b-3xl">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
@@ -116,7 +116,7 @@ export default function KnowledgeBasePage() {
 
             <div className="max-w-6xl mx-auto px-6 -mt-10 relative z-20">
                 {/* Categories Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
                     {CATEGORIES.map(category => (
                         <div key={category.id} className="bg-white dark:bg-stellar-blue p-6 rounded-2xl shadow-lg border border-cloud dark:border-nebula-purple/20 hover:-translate-y-1 transition-transform cursor-pointer group">
                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${category.color}`}>
@@ -141,7 +141,7 @@ export default function KnowledgeBasePage() {
 
                         <div className="bg-white dark:bg-stellar-blue rounded-2xl shadow-sm border border-cloud dark:border-nebula-purple/50 divide-y divide-cloud dark:divide-nebula-purple/20 overflow-hidden">
                             {filteredArticles.map(article => (
-                                <div key={article.id} className="p-5 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors cursor-pointer group flex items-start gap-4">
+                                <div key={article.id} className="p-5 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors cursor-pointer group flex items-start gap-3">
                                     <div className="mt-1 p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500">
                                         <FileText className="w-4 h-4" />
                                     </div>
@@ -162,7 +162,7 @@ export default function KnowledgeBasePage() {
                     </div>
 
                     {/* Sidebar Support */}
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl shadow-sm border border-cloud dark:border-nebula-purple/50">
                             <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 rounded-full flex items-center justify-center mb-4">
                                 <HelpCircle className="w-6 h-6" />
@@ -190,3 +190,4 @@ export default function KnowledgeBasePage() {
         </div>
     );
 }
+

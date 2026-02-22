@@ -11,9 +11,9 @@ import {
 
 export default function PositionHistoryPage() {
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <History className="w-6 h-6 text-indigo-500" />
@@ -48,7 +48,7 @@ export default function PositionHistoryPage() {
                                 </div>
                                 <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">{item.title}</h3>
                                 {item.details && <p className="text-sm text-slate-500 mt-2 italic">"{item.details}"</p>}
-                                <div className="flex gap-4 mt-4 text-xs font-bold text-slate-500">
+                                <div className="flex gap-3 mt-4 text-xs font-bold text-slate-500">
                                     <span>Dept: {item.dept}</span>
                                     <span>By: {item.user}</span>
                                 </div>
@@ -60,3 +60,4 @@ export default function PositionHistoryPage() {
         </div>
     );
 }
+

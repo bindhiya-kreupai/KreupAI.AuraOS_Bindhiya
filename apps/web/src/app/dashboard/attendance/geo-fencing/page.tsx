@@ -52,7 +52,7 @@ export default function GeoFencingPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -67,7 +67,7 @@ export default function GeoFencingPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
 
                 {/* Location List */}
                 <div className="col-span-1 space-y-4">
@@ -140,3 +140,4 @@ export default function GeoFencingPage() {
         </div>
     );
 }
+

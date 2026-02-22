@@ -116,8 +116,8 @@ export default function TeamManagerPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Users className="w-6 h-6 text-indigo-500" />
@@ -133,9 +133,9 @@ export default function TeamManagerPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-y-auto lg:overflow-visible">
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-y-auto lg:overflow-visible">
+                <div className="lg:col-span-2 space-y-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div className="p-4 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                             <div className="flex items-center gap-2 text-silver-mist text-xs font-bold uppercase mb-1">
                                 <Clock className="w-3 h-3" /> Attendance
@@ -187,7 +187,7 @@ export default function TeamManagerPage() {
                                 </p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 {filteredMembers.map(member => (
                                     <div key={member.id} className="p-4 border border-cloud dark:border-slate-800 rounded-xl hover:border-indigo-300 transition-all hover:shadow-md bg-white dark:bg-slate-900/40 group">
                                         <div className="flex justify-between items-start mb-3">
@@ -208,7 +208,7 @@ export default function TeamManagerPage() {
                                             </button>
                                         </div>
 
-                                        <div className="flex items-center gap-4 text-xs text-slate-500 mb-4">
+                                        <div className="flex items-center gap-3 text-xs text-slate-500 mb-4">
                                             <span className="flex items-center gap-1">
                                                 <TrendingUp className="w-3 h-3 text-emerald-500" /> {member.performanceRating}/5
                                             </span>
@@ -285,3 +285,4 @@ export default function TeamManagerPage() {
         </div>
     );
 }
+

@@ -100,7 +100,7 @@ export default function CustomReportsPage() {
                 <p className="text-slate-500 mt-2 text-lg">Create bespoke reports by selecting data sources, columns, and filters.</p>
             </div>
 
-            <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+            <div className="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-6">
                 {[1, 2, 3].map((s) => (
                     <div key={s} className="flex items-center gap-2">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= s ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
@@ -115,7 +115,7 @@ export default function CustomReportsPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     {step === 1 && (
                         <div className="space-y-4 animate-in slide-in-from-left duration-300">
                             <h2 className="text-xl font-bold flex items-center gap-2">
@@ -240,3 +240,4 @@ export default function CustomReportsPage() {
         </div>
     );
 }
+

@@ -30,8 +30,8 @@ export default function HolidayManagementPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Palmtree className="w-6 h-6 text-indigo-500" />
@@ -44,7 +44,7 @@ export default function HolidayManagementPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                     <h3 className="font-bold text-lg mb-4">Locations</h3>
                     <div className="space-y-2">
@@ -80,7 +80,7 @@ export default function HolidayManagementPage() {
 
                             return (
                                 <div key={h.id || i} className="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
                                         <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-lg flex flex-col items-center justify-center border border-slate-200 dark:border-slate-700 shadow-sm">
                                             <span className="text-xs text-slate-500 uppercase font-bold">{month}</span>
                                             <span className="text-lg font-bold text-slate-800 dark:text-slate-200">{day}</span>
@@ -105,3 +105,4 @@ export default function HolidayManagementPage() {
         </div>
     );
 }
+

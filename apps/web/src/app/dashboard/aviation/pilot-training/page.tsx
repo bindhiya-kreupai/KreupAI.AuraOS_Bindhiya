@@ -36,8 +36,8 @@ export default function PilotTrainingPage() {
   ).length;
 
   return (
-    <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+    <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Award className="w-6 h-6 text-indigo-500" />
@@ -49,7 +49,7 @@ export default function PilotTrainingPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           { label: 'A380 Type Rating', count: a380Count || 102, status: 'Active' },
           { label: 'B787 Type Rating', count: b787Count || 85, status: 'Active' },
@@ -142,3 +142,4 @@ export default function PilotTrainingPage() {
     </div>
   );
 }
+

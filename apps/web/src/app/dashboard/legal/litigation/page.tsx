@@ -18,9 +18,9 @@ const CASES = [
 
 export default function LitigationPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Scale className="w-6 h-6 text-indigo-500" />
@@ -33,7 +33,7 @@ export default function LitigationPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Case List */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden">
                     <div className="p-4 border-b border-slate-200 dark:border-slate-800">
@@ -41,7 +41,7 @@ export default function LitigationPage() {
                     </div>
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
                         {CASES.map(c => (
-                            <div key={c.id} className="p-4 border border-slate-200 dark:border-slate-800 rounded-xl hover:shadow-md transition-all flex flex-col md:flex-row gap-4 items-start md:items-center">
+                            <div key={c.id} className="p-4 border border-slate-200 dark:border-slate-800 rounded-xl hover:shadow-md transition-all flex flex-col md:flex-row gap-3 items-start md:items-center">
                                 <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center shrink-0 text-slate-500">
                                     <Scale className="w-6 h-6" />
                                 </div>
@@ -50,13 +50,13 @@ export default function LitigationPage() {
                                         <h4 className="font-bold text-slate-800 dark:text-slate-200">{c.title}</h4>
                                         <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded font-mono uppercase">{c.id}</span>
                                     </div>
-                                    <div className="flex flex-wrap gap-4 text-xs text-slate-500">
+                                    <div className="flex flex-wrap gap-3 text-xs text-slate-500">
                                         <span className="flex items-center gap-1"><Gavel className="w-3 h-3" /> {c.court}</span>
                                         <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> {c.type}</span>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
+                                <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
                                     <div className="text-right">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase">Next Hearing</div>
                                         <div className="font-bold text-sm text-indigo-600">{c.nextDate}</div>
@@ -110,3 +110,4 @@ export default function LitigationPage() {
         </div>
     );
 }
+

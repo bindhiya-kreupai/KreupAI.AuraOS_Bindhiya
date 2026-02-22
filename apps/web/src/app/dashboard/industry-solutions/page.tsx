@@ -24,8 +24,8 @@ const verticals = [
 
 export default function IndustrySolutionsPage() {
   return (
-    <div className="space-y-8 pb-10 text-slate-900 dark:text-slate-100">
-      <div className="flex flex-col gap-4">
+    <div className="space-y-8 pb-6 text-slate-900 dark:text-slate-100">
+      <div className="flex flex-col gap-3">
         <p className="text-sm font-semibold text-indigo-500">Industry Solutions</p>
         <h1 className="text-3xl font-bold">Sector Playbooks</h1>
         <p className="text-slate-500 max-w-3xl">
@@ -34,7 +34,7 @@ export default function IndustrySolutionsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {verticals.map((v) => (
           <Link
             key={v.slug}
@@ -56,3 +56,4 @@ export default function IndustrySolutionsPage() {
     </div>
   );
 }
+

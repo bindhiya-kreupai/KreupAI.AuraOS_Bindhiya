@@ -155,12 +155,12 @@ export default function AppDirectoryPage() {
 
     if (loading) {
         return (
-            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
                 <div className="flex items-center gap-2 p-6">
                     <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
                     <span className="text-slate-500">Loading app directory...</span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 px-6">
                     {[...Array(6)].map((_, i) => (
                         <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 animate-pulse">
                             <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-xl mb-4" />
@@ -186,9 +186,9 @@ export default function AppDirectoryPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <LayoutGrid className="w-6 h-6 text-indigo-500" />
@@ -226,7 +226,7 @@ export default function AppDirectoryPage() {
             </div>
 
             {/* Apps Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 h-full min-h-0 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 h-full min-h-0 overflow-y-auto pb-20">
                 {apps.length === 0 ? (
                     <div className="col-span-full flex flex-col items-center justify-center py-20 text-slate-400">
                         <LayoutGrid className="w-12 h-12 mb-3 text-slate-300" />
@@ -257,7 +257,7 @@ export default function AppDirectoryPage() {
                                     <p className="text-xs text-slate-400 mb-3 line-clamp-2">{app.description}</p>
                                 )}
 
-                                <div className="flex items-center gap-4 text-xs text-slate-400 mb-6">
+                                <div className="flex items-center gap-3 text-xs text-slate-400 mb-6">
                                     {app.rating != null && (
                                         <span className="flex items-center gap-1">
                                             <Star className="w-3 h-3 text-amber-500 fill-amber-500" /> {app.rating}
@@ -289,3 +289,4 @@ export default function AppDirectoryPage() {
         </div>
     );
 }
+

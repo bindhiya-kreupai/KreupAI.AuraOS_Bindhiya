@@ -39,8 +39,8 @@ export default function ChallengesPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Swords className="w-6 h-6 text-indigo-500" />
@@ -50,7 +50,7 @@ export default function ChallengesPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {/* Hero Challenge */}
                 <div className="lg:col-span-2 bg-[url('https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=1200')] bg-cover bg-center rounded-3xl overflow-hidden relative min-h-[300px] flex items-end shadow-2xl">
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
@@ -60,7 +60,7 @@ export default function ChallengesPage() {
                                 <span className="text-amber-400 font-bold tracking-widest text-xs uppercase mb-2 block animate-pulse">Ending Soon</span>
                                 <h2 className="text-4xl font-bold text-white mb-2">The Code Quality Sprint</h2>
                                 <p className="text-slate-300 max-w-xl mb-6">Reduce technical debt by refactoring legacy modules. Top contributors get the exclusive 'Cleaner' badge.</p>
-                                <div className="flex gap-6 text-white text-sm font-bold">
+                                <div className="flex gap-3 text-white text-sm font-bold">
                                     <span className="flex items-center gap-2"><Clock className="w-4 h-4 text-amber-400" /> 2 Days Left</span>
                                     <span className="flex items-center gap-2"><Users className="w-4 h-4 text-emerald-400" /> 42 Participants</span>
                                 </div>
@@ -101,3 +101,4 @@ export default function ChallengesPage() {
         </div>
     );
 }
+

@@ -39,8 +39,8 @@ export default function SuggestionBoxPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Lightbulb className="w-6 h-6 text-amber-500" />
@@ -50,7 +50,7 @@ export default function SuggestionBoxPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm h-fit">
                     <h3 className="font-bold text-lg mb-4">Submit a New Idea</h3>
                     <div className="space-y-4">
@@ -103,7 +103,7 @@ export default function SuggestionBoxPage() {
                                 <h3 className="font-bold text-lg mb-2">{idea.title}</h3>
                                 <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">{idea.description || ''}</p>
 
-                                <div className="flex items-center gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+                                <div className="flex items-center gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
                                     <button className="flex items-center gap-2 text-sm font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors">
                                         <ThumbsUp className="w-4 h-4" /> {idea.votes || 0}
                                     </button>
@@ -119,3 +119,4 @@ export default function SuggestionBoxPage() {
         </div>
     );
 }
+

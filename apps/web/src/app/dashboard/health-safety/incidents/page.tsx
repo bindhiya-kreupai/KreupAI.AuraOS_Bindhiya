@@ -70,9 +70,9 @@ export default function HealthSafetyPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Siren className="w-6 h-6 text-rose-500" />
@@ -86,7 +86,7 @@ export default function HealthSafetyPage() {
             </div>
 
             {/* Safety Scorecard */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl text-white shadow-lg relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10"></div>
                     <div className="relative z-10">
@@ -162,12 +162,12 @@ export default function HealthSafetyPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-4">
+                                    <div className="flex gap-3">
                                         <div className="flex-1">
                                             <h4 className="font-bold text-ink-black dark:text-pearl mb-1 group-hover:text-rose-600 transition-colors cursor-pointer">{incident.type}</h4>
                                             <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">{incident.description}</p>
 
-                                            <div className="flex items-center gap-4 text-xs text-silver-mist">
+                                            <div className="flex items-center gap-3 text-xs text-silver-mist">
                                                 <div className="flex items-center gap-1">
                                                     <Calendar className="w-3 h-3" /> {incident.date}
                                                 </div>
@@ -190,7 +190,7 @@ export default function HealthSafetyPage() {
                 </div>
 
                 {/* Quick Actions / Guidelines */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4">Emergency Contacts</h3>
                         <div className="space-y-3">
@@ -226,3 +226,4 @@ export default function HealthSafetyPage() {
         </div>
     );
 }
+

@@ -12,9 +12,9 @@ import {
 
 export default function ServicePage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Wrench className="w-6 h-6 text-slate-600 dark:text-slate-400" />
@@ -27,7 +27,7 @@ export default function ServicePage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 h-full min-h-0">
                 {/* Bay Status */}
                 <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col h-full">
                     <h3 className="font-bold mb-4">Service Bays</h3>
@@ -56,7 +56,7 @@ export default function ServicePage() {
                 {/* Technician Roster */}
                 <div className="lg:col-span-3 overflow-y-auto pb-20">
                     <h3 className="font-bold text-lg mb-4">Technician Efficiency</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {[
                             { name: 'Mike Ross', level: 'Master Tech', efficiency: '115%', hours: '38.5', status: 'Working' },
                             { name: 'Sarah Lance', level: 'Senior Tech', efficiency: '98%', hours: '35.0', status: 'Working' },
@@ -66,7 +66,7 @@ export default function ServicePage() {
                             { name: 'Roy Harper', level: 'Senior Tech', efficiency: '105%', hours: '37.5', status: 'Off' },
                         ].map((t, i) => (
                             <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 hover:shadow-lg transition-all relative overflow-hidden group">
-                                <div className="flex items-center gap-4 mb-4">
+                                <div className="flex items-center gap-3 mb-4">
                                     <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500">
                                         {t.name.split(' ').map(n => n[0]).join('')}
                                     </div>
@@ -76,7 +76,7 @@ export default function ServicePage() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div className="grid grid-cols-2 gap-3 mb-4">
                                     <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-center">
                                         <div className="text-xs text-slate-400 uppercase font-bold">Efficiency</div>
                                         <div className={`text-lg font-bold ${parseInt(t.efficiency) >= 100 ? 'text-emerald-500' : 'text-amber-500'}`}>{t.efficiency}</div>
@@ -102,7 +102,7 @@ export default function ServicePage() {
                         ))}
                     </div>
 
-                    <div className="mt-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 p-6 flex items-start gap-4">
+                    <div className="mt-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 p-6 flex items-start gap-3">
                         <Settings className="w-6 h-6 text-indigo-600 dark:text-indigo-400 shrink-0" />
                         <div>
                             <h3 className="font-bold text-indigo-900 dark:text-indigo-300 text-sm">Tool Calibration Due</h3>
@@ -117,3 +117,4 @@ export default function ServicePage() {
         </div>
     );
 }
+

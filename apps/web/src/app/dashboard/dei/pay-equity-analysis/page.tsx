@@ -51,8 +51,8 @@ export default function PayEquityPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Scale className="w-6 h-6 text-pink-500" />
@@ -63,7 +63,7 @@ export default function PayEquityPage() {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <div className="text-xs font-bold text-slate-500 uppercase mb-2">Overall Pay Gap</div>
                     <div className="text-3xl font-bold text-rose-500">2.4%</div>
@@ -109,13 +109,13 @@ export default function PayEquityPage() {
                     <AlertTriangle className="w-5 h-5 text-indigo-600" /> Recommended Actions
                 </h3>
                 <div className="space-y-3">
-                    <div className="flex gap-4 items-start">
+                    <div className="flex gap-3 items-start">
                         <div className="p-1 bg-white dark:bg-indigo-900/30 rounded text-indigo-600 font-bold text-sm min-w-[24px] text-center">1</div>
                         <p className="text-sm text-indigo-800 dark:text-indigo-300">
                             Conduct a market adjustment for <strong>3 Manager Level</strong> roles in the Sales department to align with industry standards.
                         </p>
                     </div>
-                    <div className="flex gap-4 items-start">
+                    <div className="flex gap-3 items-start">
                         <div className="p-1 bg-white dark:bg-indigo-900/30 rounded text-indigo-600 font-bold text-sm min-w-[24px] text-center">2</div>
                         <p className="text-sm text-indigo-800 dark:text-indigo-300">
                             Review starting salary policies for new hires in Engineering to ensure equitable offers.
@@ -126,3 +126,4 @@ export default function PayEquityPage() {
         </div>
     );
 }
+

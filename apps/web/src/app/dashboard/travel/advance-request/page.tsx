@@ -35,7 +35,7 @@ export default function AdvanceRequestPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <Banknote className="w-8 h-8 text-indigo-500" />
@@ -67,7 +67,7 @@ export default function AdvanceRequestPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Payment Mode</label>
-                            <div className="flex gap-4">
+                            <div className="flex gap-3">
                                 <label className="flex items-center gap-2 text-sm">
                                     <input type="radio" name="mode" className="text-indigo-600 focus:ring-indigo-500" /> Cash
                                 </label>
@@ -82,7 +82,7 @@ export default function AdvanceRequestPage() {
                     </div>
                 </div>
 
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">Recent Advances</h3>
                     {advances.length === 0 ? (
                         <div className="text-center py-12 text-slate-400">
@@ -94,7 +94,7 @@ export default function AdvanceRequestPage() {
                         <div className="space-y-4">
                             {advances.map((adv: any) => (
                                 <div key={adv.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
                                         <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/10 rounded-xl flex items-center justify-center text-indigo-600">
                                             <Banknote className="w-6 h-6" />
                                         </div>
@@ -119,3 +119,4 @@ export default function AdvanceRequestPage() {
         </div>
     );
 }
+

@@ -69,9 +69,9 @@ export default function CandidateScreeningPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Filter className="w-6 h-6 text-indigo-500" />
@@ -81,7 +81,7 @@ export default function CandidateScreeningPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {/* Queue Stats */}
                 <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-900/50">
                     <div className="text-3xl font-black text-indigo-600">{stats.pending}</div>
@@ -118,8 +118,8 @@ export default function CandidateScreeningPage() {
                         const matchScore = candidate.overallRating ? Math.round(candidate.overallRating * 20) : 0;
 
                         return (
-                            <div key={candidate.id || i} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <div className="flex items-center gap-4">
+                            <div key={candidate.id || i} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                <div className="flex items-center gap-3">
                                     <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500">
                                         {name.charAt(0)}
                                     </div>
@@ -137,7 +137,7 @@ export default function CandidateScreeningPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-3">
                                     <div className="text-center">
                                         <div className={`text-xl font-black ${matchScore > 80 ? 'text-emerald-500' :
                                                 matchScore > 50 ? 'text-amber-500' : 'text-rose-500'
@@ -171,3 +171,4 @@ export default function CandidateScreeningPage() {
         </div>
     );
 }
+

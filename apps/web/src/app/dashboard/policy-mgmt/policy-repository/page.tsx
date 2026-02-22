@@ -76,9 +76,9 @@ export default function PolicyRepositoryPage() {
     });
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <FileText className="w-6 h-6 text-celestial-indigo" />
@@ -112,7 +112,7 @@ export default function PolicyRepositoryPage() {
             {folders.length > 0 && (
                 <div>
                     <h3 className="text-xs font-bold text-silver-mist uppercase mb-3">Categories</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {folders.map(folder => (
                             <button
                                 key={folder.id}
@@ -140,7 +140,7 @@ export default function PolicyRepositoryPage() {
 
                 <div className="divide-y divide-cloud dark:divide-nebula-purple/20">
                     {filteredDocs.map((doc, i) => (
-                        <div key={doc.policyId || i} className="p-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors flex items-center gap-4 group cursor-pointer">
+                        <div key={doc.policyId || i} className="p-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors flex items-center gap-3 group cursor-pointer">
                             <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 shrink-0">
                                 <File className="w-5 h-5" />
                             </div>
@@ -189,3 +189,4 @@ export default function PolicyRepositoryPage() {
         </div>
     );
 }
+

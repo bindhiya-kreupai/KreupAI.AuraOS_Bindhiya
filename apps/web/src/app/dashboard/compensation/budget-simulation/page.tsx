@@ -71,9 +71,9 @@ export default function CostModelingPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <DollarSign className="w-6 h-6 text-celestial-indigo" />
@@ -88,7 +88,7 @@ export default function CostModelingPage() {
             </div>
 
             {/* Overview Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm relative overflow-hidden group">
                     <div className="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                         <DollarSign className="w-24 h-24 text-celestial-indigo" />
@@ -130,13 +130,13 @@ export default function CostModelingPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left: Scenario Controls */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     <div className="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-6 rounded-2xl shadow-lg border border-indigo-500/30">
                         <h3 className="font-bold mb-6 flex items-center gap-2">
                             <Sliders className="w-5 h-5 text-indigo-400" /> Scenario Planner
                         </h3>
 
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             <div>
                                 <div className="flex justify-between text-sm font-bold mb-2">
                                     <span>Merit Increase</span>
@@ -209,7 +209,7 @@ export default function CostModelingPage() {
                         <p className="text-xs text-silver-mist">Current compensation distribution and projected changes.</p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="grid grid-cols-2 gap-3 mb-6">
                         <div className="p-4 bg-slate-50 dark:bg-deep-cosmos rounded-xl">
                             <div className="text-xs text-slate-400 uppercase font-bold">Average Compensation</div>
                             <div className="text-xl font-bold text-ink-black dark:text-pearl mt-1">
@@ -239,7 +239,7 @@ export default function CostModelingPage() {
                     {metrics?.bonusMetrics && (
                         <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
                             <div className="text-sm font-bold text-indigo-800 dark:text-indigo-200 mb-2">Bonus Metrics</div>
-                            <div className="grid grid-cols-3 gap-4 text-xs">
+                            <div className="grid grid-cols-3 gap-3 text-xs">
                                 <div>
                                     <div className="text-slate-500">Total Bonuses</div>
                                     <div className="font-bold text-ink-black dark:text-pearl">{metrics.bonusMetrics.totalBonuses}</div>
@@ -260,3 +260,4 @@ export default function CostModelingPage() {
         </div>
     );
 }
+

@@ -59,8 +59,8 @@ export default function InnovationBoxPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Lightbulb className="w-6 h-6 text-amber-500" />
@@ -79,7 +79,7 @@ export default function InnovationBoxPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
                 <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
                     <div className="flex gap-2 overflow-x-auto pb-2 shrink-0">
                         {['Trending', 'Newest', 'Top All Time', 'Implemented'].map(f => (
@@ -106,7 +106,7 @@ export default function InnovationBoxPage() {
                             </div>
                         ) : (
                             ideas.map((idea: any) => (
-                                <div key={idea.id} className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 hover:shadow-md transition-all flex gap-4">
+                                <div key={idea.id} className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 hover:shadow-md transition-all flex gap-3">
                                     <div className="flex flex-col items-center gap-1">
                                         <button
                                             onClick={() => handleVote(idea.id)}
@@ -138,7 +138,7 @@ export default function InnovationBoxPage() {
                                         </p>
 
                                         <div className="flex items-center justify-between text-xs text-silver-mist">
-                                            <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-3">
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center font-bold text-indigo-600 dark:text-indigo-400">
                                                         {(idea.author || 'A').charAt(0)}
@@ -165,8 +165,8 @@ export default function InnovationBoxPage() {
                     </div>
                 </div>
 
-                <div className="lg:col-span-1 space-y-6 flex flex-col h-full">
-                    <div className="grid grid-cols-2 gap-4 shrink-0">
+                <div className="lg:col-span-1 space-y-4 flex flex-col h-full">
+                    <div className="grid grid-cols-2 gap-3 shrink-0">
                         <div className="bg-gradient-to-br from-amber-400 to-orange-500 p-4 rounded-2xl text-white shadow-lg">
                             <div className="flex items-center gap-2 mb-2 opacity-90">
                                 <Lightbulb className="w-4 h-4" /> Total Ideas
@@ -221,7 +221,7 @@ export default function InnovationBoxPage() {
                                     <label className="text-xs font-bold text-slate-500 mb-1 block">Title</label>
                                     <input type="text" placeholder="e.g., Automated Coffee Machine" className="w-full p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20" />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="text-xs font-bold text-slate-500 mb-1 block">Category</label>
                                         <select className="w-full p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none">
@@ -262,3 +262,4 @@ export default function InnovationBoxPage() {
         </div>
     );
 }
+

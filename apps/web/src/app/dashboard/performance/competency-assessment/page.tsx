@@ -79,9 +79,9 @@ export default function CompetencyLibraryPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Book className="w-6 h-6 text-celestial-indigo" />
@@ -95,8 +95,8 @@ export default function CompetencyLibraryPage() {
             </div>
 
             {/* Filters & Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-3">
                     <div className="p-2 bg-purple-100 dark:bg-purple-900/20 text-purple-600 rounded-lg">
                         <BrainCircuit className="w-5 h-5" />
                     </div>
@@ -147,10 +147,10 @@ export default function CompetencyLibraryPage() {
                         return (
                             <div key={comp.id} className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden transition-all duration-300">
                                 <div
-                                    className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-deep-cosmos/50"
+                                    className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-deep-cosmos/50"
                                     onClick={() => toggleExpand(comp.id)}
                                 >
-                                    <div className="flex items-start gap-4">
+                                    <div className="flex items-start gap-3">
                                         <div className={`mt-1 p-2 rounded-lg shrink-0 ${category === 'Leadership' ? 'bg-amber-100 text-amber-600' :
                                             category === 'Technical' ? 'bg-blue-100 text-blue-600' :
                                                 'bg-emerald-100 text-emerald-600'
@@ -182,7 +182,7 @@ export default function CompetencyLibraryPage() {
                                             Proficiency Levels
                                         </h4>
                                         {comp.levels ? (
-                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                                                 <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
                                                     <div className="text-xs font-bold text-slate-400 uppercase mb-2">Level 1: Beginner</div>
                                                     <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{comp.levels.beginner}</p>
@@ -214,3 +214,4 @@ export default function CompetencyLibraryPage() {
         </div>
     );
 }
+

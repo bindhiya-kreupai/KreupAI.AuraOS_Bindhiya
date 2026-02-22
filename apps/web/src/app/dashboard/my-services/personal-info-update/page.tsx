@@ -92,8 +92,8 @@ export default function PersonalInfoPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <User className="w-6 h-6 text-indigo-500" />
@@ -114,8 +114,8 @@ export default function PersonalInfoPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col items-center text-center shadow-sm">
                         <div className="mb-4">
                             <ProfilePhotoUpload currentPhoto={profile?.photoUrl || "https://i.pravatar.cc/300"} />
@@ -136,12 +136,12 @@ export default function PersonalInfoPage() {
                     <ProfileCompletenessIndicator />
                 </div>
 
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                         <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
                             <Phone className="w-5 h-5 text-indigo-500" /> Contact Details
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 mb-1">Personal Email</label>
                                 <div className="relative">
@@ -170,7 +170,7 @@ export default function PersonalInfoPage() {
                         <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
                             <Shield className="w-5 h-5 text-rose-500" /> Emergency Contact
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 mb-1">Contact Name</label>
                                 <input type="text" value={form.emergencyContactName} onChange={e => updateField('emergencyContactName', e.target.value)} className="w-full p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 border border-transparent focus:border-indigo-500 transition-all" />
@@ -195,7 +195,7 @@ export default function PersonalInfoPage() {
                         <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
                             <Building2 className="w-5 h-5 text-emerald-500" /> Bank Details
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 mb-1">Bank Name</label>
                                 <div className="relative">
@@ -236,3 +236,4 @@ export default function PersonalInfoPage() {
         </div>
     );
 }
+

@@ -61,9 +61,9 @@ export default function ArrearsPage() {
     const latestRun = payrollRuns[0];
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <History className="w-6 h-6 text-indigo-500" />
@@ -76,9 +76,9 @@ export default function ArrearsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Pending Arrears */}
-                <div className="lg:col-span-2 space-y-6 overflow-y-auto pb-20">
+                <div className="lg:col-span-2 space-y-4 overflow-y-auto pb-20">
                     <div className="flex justify-between items-center">
                         <h3 className="font-bold text-lg">Pending Adjustments</h3>
                         <button className="text-xs font-bold text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 px-3 py-1.5 rounded-lg transition-colors">
@@ -95,7 +95,7 @@ export default function ArrearsPage() {
                     ) : (
                         <div className="space-y-4">
                             {arrears.map((item) => (
-                                <div key={item.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row gap-4 hover:shadow-md transition-all">
+                                <div key={item.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row gap-3 hover:shadow-md transition-all">
                                     <div className="flex-1">
                                         <div className="flex justify-between items-start mb-2">
                                             <h4 className="font-bold text-slate-800 dark:text-slate-200">{item.name}</h4>
@@ -122,7 +122,7 @@ export default function ArrearsPage() {
                 </div>
 
                 {/* Calculator Widget */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                             <Calculator className="w-5 h-5 text-indigo-500" /> Manual Entry
@@ -141,7 +141,7 @@ export default function ArrearsPage() {
                                     <option>Bonus</option>
                                 </select>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 mb-1">Due Amount</label>
                                     <input type="number" className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-lg p-2 text-sm font-bold" placeholder="0.00" />
@@ -177,3 +177,4 @@ export default function ArrearsPage() {
         </div>
     );
 }
+

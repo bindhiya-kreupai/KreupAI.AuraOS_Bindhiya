@@ -86,9 +86,9 @@ export default function CalibrationPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Scale className="w-6 h-6 text-celestial-indigo" />
@@ -105,14 +105,14 @@ export default function CalibrationPage() {
             </div>
 
             {/* Alerts & Bell Curve */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 <div className="lg:col-span-2 bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                             <TrendingUp className="w-5 h-5 text-slate-500" />
                             Distribution Curve
                         </h3>
-                        <div className="flex items-center gap-4 text-xs font-bold">
+                        <div className="flex items-center gap-3 text-xs font-bold">
                             <div className="flex items-center gap-1.5">
                                 <div className="w-3 h-3 bg-slate-200 rounded-sm"></div> Ideal
                             </div>
@@ -168,7 +168,7 @@ export default function CalibrationPage() {
                     <p className="text-xs mt-1">Reviews with ratings will appear here for calibration</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 overflow-x-auto pb-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 overflow-x-auto pb-4">
                     {[5, 4, 3, 2, 1].map(bucketRating => {
                         const bucketEmployees = employees.filter(e => e.rating === bucketRating);
                         const bucketLabel =
@@ -229,3 +229,4 @@ export default function CalibrationPage() {
         </div>
     );
 }
+

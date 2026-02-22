@@ -56,9 +56,9 @@ export default function ExceptionHandlingPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Gavel className="w-6 h-6 text-indigo-500" />
@@ -68,7 +68,7 @@ export default function ExceptionHandlingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 gap-3 overflow-y-auto pb-20">
                 {loading ? (
                     <div className="col-span-full flex justify-center items-center py-20">
                         <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
@@ -83,8 +83,8 @@ export default function ExceptionHandlingPage() {
                     const status = getStatus(req);
 
                     return (
-                        <div key={req.id || i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row gap-6">
-                            <div className="flex items-start gap-4 flex-1">
+                        <div key={req.id || i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row gap-3">
+                            <div className="flex items-start gap-3 flex-1">
                                 <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500">
                                     {getUser(req).charAt(0)}
                                 </div>
@@ -131,3 +131,4 @@ export default function ExceptionHandlingPage() {
         </div>
     );
 }
+

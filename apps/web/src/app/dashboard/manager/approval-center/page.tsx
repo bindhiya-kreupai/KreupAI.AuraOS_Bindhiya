@@ -135,8 +135,8 @@ export default function ApprovalCenterPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <CheckCircle2 className="w-6 h-6 text-indigo-500" />
@@ -151,7 +151,7 @@ export default function ApprovalCenterPage() {
                 </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800">
+            <div className="flex flex-col md:flex-row gap-3 justify-between items-center bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800">
                 <div className="flex gap-1 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto text-sm">
                     {['All', 'Leave', 'Overtime', 'Exit'].map(f => (
                         <button
@@ -189,7 +189,7 @@ export default function ApprovalCenterPage() {
                     <div className="divide-y divide-slate-100 dark:divide-slate-800">
                         {filteredApprovals.map((item) => (
                             <div key={item.requestId} className="p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                                <div className="flex flex-col md:flex-row md:items-center gap-4">
+                                <div className="flex flex-col md:flex-row md:items-center gap-3">
                                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${getTypeStyle(item.requestType)}`}>
                                         {getTypeIcon(item.requestType)}
                                     </div>
@@ -203,7 +203,7 @@ export default function ApprovalCenterPage() {
                                             <span className="text-xs text-slate-400 whitespace-nowrap">{new Date(item.requestDate).toLocaleDateString()}</span>
                                         </div>
 
-                                        <div className="flex flex-wrap gap-4 text-sm text-slate-500 items-center">
+                                        <div className="flex flex-wrap gap-3 text-sm text-slate-500 items-center">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-600 dark:text-slate-300">
                                                     {item.requestedByName.split(' ').map(n => n[0]).join('').substring(0, 2)}
@@ -249,3 +249,4 @@ export default function ApprovalCenterPage() {
         </div>
     );
 }
+

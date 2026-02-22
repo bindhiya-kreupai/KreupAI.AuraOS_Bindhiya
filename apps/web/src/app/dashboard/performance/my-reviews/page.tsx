@@ -100,9 +100,9 @@ export default function PerformanceReviewsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Award className="w-6 h-6 text-celestial-indigo" />
@@ -146,7 +146,7 @@ export default function PerformanceReviewsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {/* Radar Chart */}
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm h-96 flex flex-col">
                     <div className="flex items-center justify-between mb-4">
@@ -154,7 +154,7 @@ export default function PerformanceReviewsPage() {
                             <Target className="w-5 h-5 text-quantum-rose" />
                             Competency Assessment
                         </h3>
-                        <div className="flex gap-4 text-xs">
+                        <div className="flex gap-3 text-xs">
                             <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-celestial-indigo" /> Self</div>
                             <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-quantum-rose" /> Manager</div>
                         </div>
@@ -223,7 +223,7 @@ export default function PerformanceReviewsPage() {
                     <MessageSquare className="w-5 h-5 text-amber-500" />
                     Recent Feedback
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {reviews.length > 0 && reviews[0]?.managerComments ? (
                         <div className="p-4 rounded-xl bg-slate-50 dark:bg-deep-cosmos/50 border border-cloud dark:border-nebula-purple/20">
                             <div className="flex items-center gap-3 mb-3">
@@ -249,3 +249,4 @@ export default function PerformanceReviewsPage() {
         </div>
     );
 }
+

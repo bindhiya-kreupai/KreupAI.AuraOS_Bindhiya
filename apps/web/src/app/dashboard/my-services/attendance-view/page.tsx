@@ -72,8 +72,8 @@ export default function AttendanceViewPage() {
     const todayStatus = todayRecord?.status || 'Present';
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Clock className="w-6 h-6 text-indigo-500" />
@@ -142,7 +142,7 @@ export default function AttendanceViewPage() {
 
                             return (
                                 <div key={log.id || i} className="flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0 border-dashed">
-                                    <div className="flex items-center gap-4 w-32">
+                                    <div className="flex items-center gap-3 w-32">
                                         <CalendarCheck className={`w-4 h-4 ${getStatusColor(logStatus)}`} />
                                         <span className="font-bold">{logDate ? new Date(logDate).toLocaleDateString('en', { month: 'short', day: '2-digit' }) : `Day ${i + 1}`}</span>
                                     </div>
@@ -181,3 +181,4 @@ export default function AttendanceViewPage() {
         </div>
     );
 }
+

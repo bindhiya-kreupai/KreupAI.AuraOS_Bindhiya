@@ -205,7 +205,7 @@ export default function InductionProgramPage() {
     const progress = allTasks.length > 0 ? Math.round((completedTasks.length / allTasks.length) * 100) : 0;
 
     return (
-        <div className="max-w-4xl mx-auto pb-10">
+        <div className="max-w-4xl mx-auto pb-6">
             {/* Header */}
             <div className="mb-8 text-center">
                 <h1 className="text-3xl font-bold text-ink-black dark:text-pearl mb-2">Induction Program</h1>
@@ -272,7 +272,7 @@ export default function InductionProgramPage() {
                                             <h3 className="text-xl font-bold text-ink-black dark:text-pearl">{phase.title}</h3>
                                             <p className="text-silver-mist">{phase.subtitle}</p>
                                         </div>
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-3">
                                             <div className="text-sm font-medium text-silver-mist">
                                                 {phase.tasks.filter(t => t.completed).length}/{phase.tasks.length} Tasks
                                             </div>
@@ -328,3 +328,4 @@ export default function InductionProgramPage() {
         </div>
     );
 }
+

@@ -10,8 +10,8 @@ import {
 
 export default function ContentRightsPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Copyright className="w-6 h-6 text-indigo-500" />
@@ -24,7 +24,7 @@ export default function ContentRightsPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <h3 className="font-bold text-lg mb-4">Expiring Licenses</h3>
                     <div className="space-y-4">
@@ -33,7 +33,7 @@ export default function ContentRightsPage() {
                             { title: 'Nature Docu-Series', region: 'Asia-Pacific', expires: '30 Days', type: 'Video' },
                             { title: 'Sports Highlights', region: 'Global', expires: '5 Days', type: 'Clip' },
                         ].map((lic, i) => (
-                            <div key={i} className="flex items-start gap-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                            <div key={i} className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
                                 <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-1" />
                                 <div>
                                     <div className="font-bold">{lic.title}</div>
@@ -87,3 +87,4 @@ export default function ContentRightsPage() {
         </div>
     );
 }
+

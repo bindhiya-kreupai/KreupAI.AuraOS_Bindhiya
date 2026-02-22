@@ -206,9 +206,9 @@ export default function GOSIPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <Link href="/dashboard/payroll-compliance" className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2">
             <ArrowLeft className="w-4 h-4" /> Back to Compliance
@@ -241,7 +241,7 @@ export default function GOSIPage() {
       )}
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
           <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
             <Users className="w-4 h-4" />
@@ -304,7 +304,7 @@ export default function GOSIPage() {
 
       {/* Tab Content */}
       {activeTab === 'calculate' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {/* Calculator Input */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
@@ -317,7 +317,7 @@ export default function GOSIPage() {
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Employee Type | <span dir="rtl">نوع الموظف</span>
                 </label>
-                <div className="flex gap-4">
+                <div className="flex gap-3">
                   <label className="flex items-center gap-2">
                     <input
                       type="radio"
@@ -394,7 +394,7 @@ export default function GOSIPage() {
                   <div className="text-xs text-blue-500" dir="rtl">الراتب الخاضع للاشتراك</div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
                     <div className="text-sm text-green-600 dark:text-green-400 mb-1">Employee Share</div>
                     <div className="text-xl font-bold text-green-700 dark:text-green-300">
@@ -461,7 +461,7 @@ export default function GOSIPage() {
       )}
 
       {activeTab === 'records' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Configuration */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <div className="flex items-center justify-between mb-4">
@@ -469,7 +469,7 @@ export default function GOSIPage() {
                 GOSI Configuration
                 <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">إعدادات التأمينات</span>
               </h2>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <div>
                   <label className="block text-xs text-slate-500 mb-1">Contribution Month</label>
                   <input
@@ -481,7 +481,7 @@ export default function GOSIPage() {
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <div className="text-xs text-slate-500 mb-1">Establishment Number</div>
                 <div className="font-mono text-sm">{gosiConfig.establishmentNumber}</div>
@@ -640,7 +640,7 @@ export default function GOSIPage() {
       )}
 
       {activeTab === 'rates' && gosiRates && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Saudi Rates */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <div className="flex items-center gap-3 mb-4">
@@ -790,3 +790,4 @@ export default function GOSIPage() {
     </div>
   );
 }
+

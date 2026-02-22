@@ -108,9 +108,9 @@ export default function PayrollRunPage() {
     const lopCount = payrollData.filter(e => e.lop > 0).length;
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <DollarSign className="w-6 h-6 text-emerald-500" />
@@ -118,7 +118,7 @@ export default function PayrollRunPage() {
                     </h1>
                     <p className="text-silver-mist text-sm">Process monthly salaries, review attendance, and finalize disbursements.</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     <div className="text-right hidden md:block">
                         <div className="text-[10px] font-bold text-silver-mist uppercase">Estimated Cost</div>
                         <div className="text-xl font-bold text-ink-black dark:text-pearl">${totalCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
@@ -245,7 +245,7 @@ export default function PayrollRunPage() {
                                             <div className="font-bold text-ink-black dark:text-pearl">{emp.name}</div>
                                             <div className="text-xs text-silver-mist">{emp.role}</div>
                                         </div>
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-3">
                                             <div className="text-right">
                                                 <div className="text-[10px] uppercase font-bold text-silver-mist mb-1">Performance Bonus</div>
                                                 <div className="relative">
@@ -317,7 +317,7 @@ export default function PayrollRunPage() {
                                 </h2>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-6 mb-8">
+                            <div className="grid grid-cols-3 gap-3 mb-8">
                                 <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-cloud dark:border-slate-800">
                                     <div className="text-sm text-silver-mist font-bold uppercase mb-1">Total Payroll</div>
                                     <div className="text-3xl font-bold text-ink-black dark:text-pearl">${totalCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
@@ -348,7 +348,7 @@ export default function PayrollRunPage() {
 
                             <div className="border-t border-cloud dark:border-slate-800 pt-6">
                                 <h3 className="font-bold mb-4">Payout Disbursal</h3>
-                                <div className="flex items-center gap-4 p-4 border border-cloud dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900">
+                                <div className="flex items-center gap-3 p-4 border border-cloud dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900">
                                     <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-lg flex items-center justify-center shadow-sm">
                                         <DollarSign className="w-8 h-8 text-emerald-500" />
                                     </div>
@@ -384,3 +384,4 @@ export default function PayrollRunPage() {
         </div>
     );
 }
+

@@ -93,9 +93,9 @@ export default function InterviewSchedulingPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <CalendarIcon className="w-6 h-6 text-celestial-indigo" />
@@ -124,7 +124,7 @@ export default function InterviewSchedulingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
                 {/* Left: Upcoming List */}
                 <div className="lg:col-span-1 space-y-4">
                     <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
@@ -184,7 +184,7 @@ export default function InterviewSchedulingPage() {
                 <div className="lg:col-span-3 bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden flex flex-col h-[600px]">
                     {/* Calendar Toolbar */}
                     <div className="p-4 border-b border-cloud dark:border-nebula-purple/20 flex justify-between items-center">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             <h2 className="text-lg font-bold text-ink-black dark:text-pearl">
                                 {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
                             </h2>
@@ -253,3 +253,4 @@ export default function InterviewSchedulingPage() {
         </div>
     );
 }
+

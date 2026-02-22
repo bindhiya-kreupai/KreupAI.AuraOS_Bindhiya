@@ -135,9 +135,9 @@ export default function PlansPage() {
         : 0;
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Target className="w-6 h-6 text-indigo-500" />
@@ -203,7 +203,7 @@ export default function PlansPage() {
                                 currentPhase.goals.map(goal => (
                                     <div key={goal.id} className="p-5 border border-slate-200 dark:border-slate-800 rounded-xl hover:shadow-md transition-shadow group">
                                         <div className="flex justify-between items-start mb-4">
-                                            <div className="flex items-start gap-4">
+                                            <div className="flex items-start gap-3">
                                                 <div className={`mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center ${goal.status === 'Completed' ? 'bg-emerald-500 border-emerald-500 text-white' :
                                                         goal.status === 'Locked' || goal.status === 'Pending' ? 'bg-slate-100 border-slate-200 text-slate-300' :
                                                             'border-slate-300 dark:border-slate-600'
@@ -254,3 +254,4 @@ export default function PlansPage() {
         </div>
     );
 }
+

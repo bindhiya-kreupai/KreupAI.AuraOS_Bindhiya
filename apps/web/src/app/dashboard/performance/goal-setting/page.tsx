@@ -56,9 +56,9 @@ export default function GoalSettingPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Target className="w-6 h-6 text-indigo-500" />
@@ -72,7 +72,7 @@ export default function GoalSettingPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex gap-3 border-b border-slate-200 dark:border-slate-800">
                 <button
                     onClick={() => setActiveTab('active')}
                     className={`pb-3 px-2 font-bold text-sm transition-colors ${activeTab === 'active' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-700'
@@ -136,7 +136,7 @@ export default function GoalSettingPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4 text-xs text-slate-500 font-medium">
+                                    <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
                                         <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> Due: {dueDate}</span>
                                         <span className="flex items-center gap-1"><TrendingUp className="w-3 h-3" /> {goal.type || 'Individual'}</span>
                                     </div>
@@ -154,3 +154,4 @@ export default function GoalSettingPage() {
         </div>
     );
 }
+

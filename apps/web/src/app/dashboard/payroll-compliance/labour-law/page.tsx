@@ -171,9 +171,9 @@ export default function LabourLawPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <Link href="/dashboard/payroll-compliance" className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2">
             <ArrowLeft className="w-4 h-4" /> Back to Compliance
@@ -240,7 +240,7 @@ export default function LabourLawPage() {
         <>
           {/* Selected Country Header */}
           <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <div className="text-5xl">{country.flag}</div>
               <div>
                 <h2 className="text-2xl font-bold">{law.countryName} Labour Law</h2>
@@ -277,7 +277,7 @@ export default function LabourLawPage() {
               </button>
               {expandedSection === 'working-hours' && (
                 <div className="px-6 pb-6 border-t border-slate-200 dark:border-slate-700 pt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                       <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-2">
                         <Sun className="w-4 h-4" />
@@ -317,7 +317,7 @@ export default function LabourLawPage() {
                   <h4 className="font-medium text-slate-700 dark:text-slate-300 mt-6 mb-3">
                     Overtime Rates | <span dir="rtl">معدلات العمل الإضافي</span>
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                       <div className="text-sm text-slate-500">Normal Overtime</div>
                       <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{Math.round(law.overtimeRates.normal * 100)}%</div>
@@ -358,7 +358,7 @@ export default function LabourLawPage() {
               </button>
               {expandedSection === 'leave' && (
                 <div className="px-6 pb-6 border-t border-slate-200 dark:border-slate-700 pt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {/* Annual Leave */}
                     <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
                       <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-2">
@@ -486,7 +486,7 @@ export default function LabourLawPage() {
               </button>
               {expandedSection === 'probation' && (
                 <div className="px-6 pb-6 border-t border-slate-200 dark:border-slate-700 pt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
                       <div className="text-sm text-amber-600 dark:text-amber-400 mb-1">Maximum Probation Period</div>
                       <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{law.probation.maxDays} days</div>
@@ -529,7 +529,7 @@ export default function LabourLawPage() {
               </button>
               {expandedSection === 'eosb' && (
                 <div className="px-6 pb-6 border-t border-slate-200 dark:border-slate-700 pt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
                     <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
                       <div className="text-sm text-purple-600 dark:text-purple-400 mb-1">
                         {law.eosb.firstPeriodYears > 0 ? `First ${law.eosb.firstPeriodYears} Years` : 'Rate per Year'}
@@ -595,7 +595,7 @@ export default function LabourLawPage() {
               </button>
               {expandedSection === 'weekend' && (
                 <div className="px-6 pb-6 border-t border-slate-200 dark:border-slate-700 pt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="p-4 bg-cyan-50 dark:bg-cyan-900/20 rounded-xl">
                       <div className="text-sm text-cyan-600 dark:text-cyan-400 mb-2">Official Weekend</div>
                       <div className="text-xl font-bold text-slate-900 dark:text-slate-100">
@@ -660,3 +660,4 @@ export default function LabourLawPage() {
     </div>
   );
 }
+

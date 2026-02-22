@@ -200,11 +200,11 @@ export default function TimeTrackingPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Quick Clock Actions */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
         <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <button
             onClick={() => handleClockAction('CLOCK_IN')}
             className="p-4 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition"
@@ -254,7 +254,7 @@ export default function TimeTrackingPage() {
 
       {/* Statistics */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 p-6 rounded-lg shadow">
             <div className="flex items-center justify-between">
               <div>
@@ -309,3 +309,4 @@ export default function TimeTrackingPage() {
     </div>
   );
 }
+

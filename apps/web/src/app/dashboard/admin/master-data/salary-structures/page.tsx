@@ -84,9 +84,9 @@ export default function SalaryStructuresPage() {
     const breakdown = simulateBreakdown(ctcInput);
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <LayoutTemplate className="w-6 h-6 text-indigo-500" />
@@ -105,9 +105,9 @@ export default function SalaryStructuresPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
                 {/* Left: Main Content */}
-                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-6">
+                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
                     {/* Tabs */}
                     <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0 w-fit">
                         {['Templates', 'Simulator'].map(tab => (
@@ -155,7 +155,7 @@ export default function SalaryStructuresPage() {
                                             </div>
                                         </div>
 
-                                        <div className="flex gap-6 mt-4 pt-4 border-t border-cloud dark:border-slate-800 text-xs font-bold text-slate-500">
+                                        <div className="flex gap-3 mt-4 pt-4 border-t border-cloud dark:border-slate-800 text-xs font-bold text-slate-500">
                                             <div className="flex items-center gap-2">
                                                 <LayoutTemplate className="w-4 h-4 text-indigo-500" />
                                                 {str.components} Components
@@ -170,7 +170,7 @@ export default function SalaryStructuresPage() {
                             </div>
                         ) : (
                             <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50">
-                                <div className="flex items-center gap-4 mb-8">
+                                <div className="flex items-center gap-3 mb-8">
                                     <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
                                         <Calculator className="w-6 h-6 text-indigo-500" />
                                     </div>
@@ -210,7 +210,7 @@ export default function SalaryStructuresPage() {
                                         ))}
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         {breakdown.map((item, idx) => (
                                             <div key={idx} className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-cloud dark:border-slate-800">
                                                 <div className="flex items-center gap-2">
@@ -230,7 +230,7 @@ export default function SalaryStructuresPage() {
                 </div>
 
                 {/* Right: Info / Builder */}
-                <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
+                <div className="lg:col-span-1 space-y-4 flex flex-col h-full overflow-hidden">
                     {/* Stats Widget */}
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm shrink-0">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
@@ -282,7 +282,7 @@ export default function SalaryStructuresPage() {
                             <h2 className="text-xl font-bold text-ink-black dark:text-pearl mb-1">Structure Builder</h2>
                             <p className="text-sm text-silver-mist mb-6">Drag and drop components to define the pay structure.</p>
 
-                            <div className="flex-1 grid grid-cols-2 gap-6 min-h-0">
+                            <div className="flex-1 grid grid-cols-2 gap-3 min-h-0">
                                 {/* Left: Available Components */}
                                 <div className="border-r border-cloud dark:border-slate-800 pr-6 overflow-y-auto">
                                     <h3 className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wide">Available Components</h3>
@@ -336,3 +336,4 @@ export default function SalaryStructuresPage() {
         </div>
     );
 }
+

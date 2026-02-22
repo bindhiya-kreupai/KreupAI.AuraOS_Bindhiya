@@ -104,9 +104,9 @@ export default function ClearanceChecklistPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <CheckSquare className="w-6 h-6 text-indigo-500" />
@@ -122,8 +122,8 @@ export default function ClearanceChecklistPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center text-amber-600">
                         <Clock className="w-6 h-6" />
                     </div>
@@ -132,7 +132,7 @@ export default function ClearanceChecklistPage() {
                         <div className="text-sm text-slate-500">Pending Clearances</div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-4">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600">
                         <CheckCircle2 className="w-6 h-6" />
                     </div>
@@ -141,7 +141,7 @@ export default function ClearanceChecklistPage() {
                         <div className="text-sm text-slate-500">Completed</div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-4">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-900/20 flex items-center justify-center text-rose-600">
                         <AlertCircle className="w-6 h-6" />
                     </div>
@@ -176,7 +176,7 @@ export default function ClearanceChecklistPage() {
                     <div className="divide-y divide-slate-100 dark:divide-slate-800">
                         {clearanceItems.map(task => (
                             <div key={task.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3">
                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-500`}>
                                         {getDeptIcon(task.dept)}
                                     </div>
@@ -192,7 +192,7 @@ export default function ClearanceChecklistPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
                                         <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${getStatusColor(task.status)}`}>
                                             {task.status}
                                         </span>
@@ -217,3 +217,4 @@ export default function ClearanceChecklistPage() {
         </div>
     );
 }
+

@@ -33,8 +33,8 @@ export default function CourseCatalogPage() {
     }, []);
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <BookOpen className="w-6 h-6 text-indigo-500" />
@@ -68,7 +68,7 @@ export default function CourseCatalogPage() {
                     <p className="text-sm">Courses will appear here once they are published.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {data.map((course, i) => (
                         <div key={course.id || i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-lg transition-shadow group cursor-pointer">
                             <div className="h-40 bg-indigo-100 dark:bg-indigo-900/20 flex items-center justify-center">
@@ -106,3 +106,4 @@ export default function CourseCatalogPage() {
         </div>
     );
 }
+

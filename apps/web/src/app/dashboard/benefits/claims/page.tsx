@@ -56,9 +56,9 @@ export default function ClaimsPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <FileText className="w-6 h-6 text-indigo-500" />
@@ -76,7 +76,7 @@ export default function ClaimsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 container mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 container mx-auto">
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
                     <div className="p-4 border-b border-slate-100 dark:border-slate-800 font-bold text-sm bg-slate-50 dark:bg-slate-900/50">
                         Recent Claims
@@ -97,7 +97,7 @@ export default function ClaimsPage() {
                             const status = getStatus(claim);
                             return (
                                 <div key={claim.id || i} className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl cursor-pointer group transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
                                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold
                                             ${type.includes('Health') || type.includes('Medical') ? 'bg-rose-50 text-rose-500' :
                                                 type.includes('Dental') ? 'bg-indigo-50 text-indigo-500' :
@@ -114,7 +114,7 @@ export default function ClaimsPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-6">
+                                    <div className="flex items-center gap-3">
                                         <span className="font-mono font-bold">{getAmount(claim)}</span>
                                         <span className={`text-xs font-bold px-2 py-1 rounded uppercase min-w-[80px] text-center
                                             ${status === 'Approved' || status === 'Paid' ? 'bg-emerald-100 text-emerald-600' :
@@ -130,7 +130,7 @@ export default function ClaimsPage() {
                     </div>
                 </div>
 
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <h3 className="font-bold text-sm mb-4 text-slate-500 uppercase tracking-wider">Utilization Stats</h3>
                         <div className="space-y-4">
@@ -159,3 +159,4 @@ export default function ClaimsPage() {
         </div>
     );
 }
+

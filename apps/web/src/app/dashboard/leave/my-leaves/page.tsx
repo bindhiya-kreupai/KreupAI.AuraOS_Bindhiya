@@ -112,9 +112,9 @@ export default function MyLeavesPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Calendar className="w-6 h-6 text-celestial-indigo" />
@@ -129,7 +129,7 @@ export default function MyLeavesPage() {
 
             {/* Leave Balances */}
             {BALANCES.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {BALANCES.map((bal, idx) => {
                         const data = [
                             { name: 'Balance', value: bal.balance, color: bal.color },
@@ -195,7 +195,7 @@ export default function MyLeavesPage() {
                             {HISTORY.length > 0 ? (
                                 <div className="divide-y divide-cloud dark:divide-nebula-purple/20">
                                     {HISTORY.map(req => (
-                                        <div key={req.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors">
+                                        <div key={req.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors">
                                             <div className="flex items-start gap-3">
                                                 <div className="mt-1">
                                                     {req.status === 'Approved' && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
@@ -207,7 +207,7 @@ export default function MyLeavesPage() {
                                                     <div className="text-xs text-silver-mist mt-0.5">{req.startDate} - {req.endDate} &bull; {req.days} Days</div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center justify-between sm:justify-end gap-6">
+                                            <div className="flex items-center justify-between sm:justify-end gap-3">
                                                 <div className="text-right hidden sm:block">
                                                     <div className="text-xs font-bold text-ink-black dark:text-pearl">{req.status}</div>
                                                     <div className="text-[10px] text-silver-mist">By {req.approver}</div>
@@ -233,13 +233,13 @@ export default function MyLeavesPage() {
                     {/* Upcoming Public Holidays */}
                     <div>
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4">Upcoming Holidays</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-4 rounded-xl text-white shadow-lg shadow-emerald-500/20">
                                 <div className="text-xs font-medium opacity-80 mb-1">Dec 25, 2024</div>
                                 <div className="font-bold text-lg">Christmas Day</div>
                                 <div className="mt-4 text-xs bg-white/20 inline-block px-2 py-1 rounded">Wednesday</div>
                             </div>
-                            <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-4">
+                            <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-3">
                                 <div className="bg-slate-100 dark:bg-slate-800 h-12 w-12 rounded-lg flex flex-col items-center justify-center text-ink-black dark:text-pearl border border-slate-200 dark:border-slate-700">
                                     <span className="text-[10px] uppercase font-bold text-slate-500">Jan</span>
                                     <span className="text-lg font-bold">01</span>
@@ -254,7 +254,7 @@ export default function MyLeavesPage() {
                 </div>
 
                 {/* Sidebar */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     {/* Team Availability */}
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                         <div className="flex justify-between items-center mb-4">
@@ -307,3 +307,4 @@ export default function MyLeavesPage() {
         </div>
     );
 }
+

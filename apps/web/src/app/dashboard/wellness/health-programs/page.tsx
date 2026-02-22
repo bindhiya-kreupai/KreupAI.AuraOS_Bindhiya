@@ -75,8 +75,8 @@ export default function HealthProgramsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Activity className="w-6 h-6 text-emerald-500" />
@@ -101,7 +101,7 @@ export default function HealthProgramsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {PROGRAMS.map(program => (
                     <div key={program.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 hover:shadow-lg transition-all group cursor-pointer">
                         <div className="flex justify-between items-start mb-4">
@@ -117,7 +117,7 @@ export default function HealthProgramsPage() {
                         <p className="text-sm text-slate-500 mb-6 line-clamp-2">{program.description}</p>
 
                         <div className="flex items-center justify-between text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-4">
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3">
                                 <span className="flex items-center gap-1">
                                     <Calendar className="w-4 h-4" /> {program.duration}
                                 </span>
@@ -135,3 +135,4 @@ export default function HealthProgramsPage() {
         </div>
     );
 }
+

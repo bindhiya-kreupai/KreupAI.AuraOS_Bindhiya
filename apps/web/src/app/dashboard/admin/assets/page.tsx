@@ -146,8 +146,8 @@ export default function AssetsPage() {
 
     if (loading) {
         return (
-            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                     <div>
                         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                             <Laptop className="w-6 h-6 text-indigo-500" />
@@ -156,7 +156,7 @@ export default function AssetsPage() {
                         <p className="text-silver-mist text-sm">Manage your devices, software licenses, and support requests.</p>
                     </div>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 animate-pulse">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 animate-pulse">
                     <div className="lg:col-span-2 space-y-4">
                         <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-48" />
                         {[1, 2, 3].map(i => (
@@ -174,7 +174,7 @@ export default function AssetsPage() {
 
     if (error) {
         return (
-            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col items-center justify-center">
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col items-center justify-center">
                 <AlertCircle className="w-12 h-12 text-rose-500" />
                 <p className="text-lg font-bold text-ink-black dark:text-pearl">{error}</p>
                 <button
@@ -188,9 +188,9 @@ export default function AssetsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Laptop className="w-6 h-6 text-indigo-500" />
@@ -212,9 +212,9 @@ export default function AssetsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
                 {/* Left: Main Content (Assets/Catalog) */}
-                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-6">
+                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
                     {/* Tabs */}
                     <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0 w-fit">
                         {['My Assets', 'Catalog'].map(tab => (
@@ -263,7 +263,7 @@ export default function AssetsPage() {
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
+                                                <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
                                                     <div>
                                                         <span className="block text-xs font-bold text-slate-500 mb-0.5">Specifications</span>
                                                         <span className="text-slate-700 dark:text-slate-300">{asset.description || `${asset.manufacturer || ''} ${asset.modelNumber || ''} ${asset.assetType}`.trim()}</span>
@@ -290,7 +290,7 @@ export default function AssetsPage() {
                                 )}
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {catalog.length === 0 ? (
                                     <div className="col-span-2 text-center py-12 text-silver-mist">
                                         <Search className="w-10 h-10 mx-auto mb-3 opacity-40" />
@@ -301,7 +301,7 @@ export default function AssetsPage() {
                                         <button
                                             key={item.id}
                                             onClick={() => { setSelectedItem(item); setShowRequestModal(true); }}
-                                            className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 hover:bg-slate-50 dark:hover:bg-slate-900/40 text-left transition-all group flex items-start gap-4"
+                                            className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 hover:bg-slate-50 dark:hover:bg-slate-900/40 text-left transition-all group flex items-start gap-3"
                                         >
                                             <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                                                 {getAssetEmoji(item.category)}
@@ -319,7 +319,7 @@ export default function AssetsPage() {
                 </div>
 
                 {/* Right: Status & Info */}
-                <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
+                <div className="lg:col-span-1 space-y-4 flex flex-col h-full overflow-hidden">
                     {/* Tickets (Assets in Repair) */}
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm shrink-0">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
@@ -434,3 +434,4 @@ export default function AssetsPage() {
         </div>
     );
 }
+

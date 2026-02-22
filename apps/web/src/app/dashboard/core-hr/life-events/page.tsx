@@ -66,9 +66,9 @@ export default function LifeEventsPage() {
     const pendingEvents = lifeEvents.filter(e => e.status !== 'completed');
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Heart className="w-6 h-6 text-rose-500" />
@@ -81,11 +81,11 @@ export default function LifeEventsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Event Types */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <h3 className="font-bold text-lg">Report a Life Event</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {[
                             { title: 'Marriage', desc: 'Update name, add spouse to insurance, request leave.', icon: <Heart className="w-6 h-6 text-pink-500" />, color: 'bg-pink-50 dark:bg-pink-900/20' },
                             { title: 'Childbirth / Adoption', desc: 'Add dependent, apply for parental leave, update benefits.', icon: <Baby className="w-6 h-6 text-sky-500" />, color: 'bg-sky-50 dark:bg-sky-900/20' },
@@ -151,7 +151,7 @@ export default function LifeEventsPage() {
                 </div>
 
                 {/* Automation Rules */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-lg">
                         <h3 className="font-bold text-lg mb-4">Auto-Trigger Rules</h3>
                         <div className="space-y-4 text-sm">
@@ -183,3 +183,4 @@ export default function LifeEventsPage() {
         </div>
     );
 }
+

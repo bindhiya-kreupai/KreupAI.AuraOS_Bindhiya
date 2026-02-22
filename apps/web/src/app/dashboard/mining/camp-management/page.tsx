@@ -10,8 +10,8 @@ import {
 
 export default function CampManagementPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Tent className="w-6 h-6 text-indigo-500" />
@@ -21,7 +21,7 @@ export default function CampManagementPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {[
                     { label: 'Room Occupancy', value: '482/500', icon: Tent, color: 'text-indigo-500', bg: 'bg-indigo-500' },
                     { label: 'Meals Served (Today)', value: '1,240', icon: Utensils, color: 'text-amber-500', bg: 'bg-amber-500' },
@@ -40,7 +40,7 @@ export default function CampManagementPage() {
 
                 <div className="lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                     <h3 className="font-bold text-lg mb-4">Camp Services Request Queue</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                         {[
                             { req: 'Plumbing Repair', loc: 'Block C, Unit 12', time: '2h ago', status: 'Assigned' },
                             { req: 'HVAC Check', loc: 'Dining Hall', time: '4h ago', status: 'In Progress' },
@@ -65,3 +65,4 @@ export default function CampManagementPage() {
         </div>
     );
 }
+

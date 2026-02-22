@@ -72,8 +72,8 @@ export default function PasswordPolicyPage() {
                 <p className="text-silver-mist">Configure security requirements for user passwords.</p>
             </div>
 
-            <div className="bg-white dark:bg-stellar-blue/20 rounded-xl border border-cloud dark:border-nebula-purple/30 p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white dark:bg-stellar-blue/20 rounded-xl border border-cloud dark:border-nebula-purple/30 p-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <label className="block text-sm font-medium text-midnight-blue dark:text-white mb-2">Minimum Length</label>
                         <input
@@ -147,3 +147,4 @@ export default function PasswordPolicyPage() {
         </div>
     );
 }
+

@@ -104,7 +104,7 @@ export default function ApprovalsModulePage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 pb-10">
+      <div className="space-y-4 pb-6">
         <div className="animate-pulse">
           <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-64 mb-2" />
           <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-96 mb-6" />
@@ -136,7 +136,7 @@ export default function ApprovalsModulePage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -212,3 +212,4 @@ export default function ApprovalsModulePage() {
     </div>
   );
 }
+

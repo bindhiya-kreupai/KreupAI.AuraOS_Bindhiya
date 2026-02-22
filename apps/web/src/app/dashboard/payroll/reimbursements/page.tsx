@@ -67,9 +67,9 @@ export default function ReimbursementsPage() {
     const pendingCount = claims.filter(c => c.status === 'submitted' || c.status === 'under_review').length;
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Receipt className="w-6 h-6 text-indigo-500" />
@@ -85,7 +85,7 @@ export default function ReimbursementsPage() {
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex gap-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex gap-3 border-b border-slate-200 dark:border-slate-800">
                 <button
                     onClick={() => setActiveTab('submitted')}
                     className={`pb-3 px-2 text-sm transition-colors ${activeTab === 'submitted' ? 'text-indigo-600 font-bold border-b-2 border-indigo-600' : 'text-slate-500 font-medium hover:text-slate-700'}`}
@@ -123,8 +123,8 @@ export default function ReimbursementsPage() {
             ) : (
                 <div className="space-y-4">
                     {filteredClaims.map((claim) => (
-                        <div key={claim.id} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-start gap-4">
+                        <div key={claim.id} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-start gap-3">
                                 <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
                                     <Receipt className="w-5 h-5" />
                                 </div>
@@ -163,3 +163,4 @@ export default function ReimbursementsPage() {
         </div>
     );
 }
+

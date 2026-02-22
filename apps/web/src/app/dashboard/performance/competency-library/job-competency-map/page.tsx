@@ -619,9 +619,9 @@ export default function JobCompetencyMapPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Map className="w-6 h-6 text-celestial-indigo" />
@@ -648,7 +648,7 @@ export default function JobCompetencyMapPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-lg">
@@ -725,7 +725,7 @@ export default function JobCompetencyMapPage() {
 
             {/* Search & Filters Bar */}
             <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
-                <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex flex-col md:flex-row gap-3">
                     {/* Search */}
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
@@ -806,8 +806,8 @@ export default function JobCompetencyMapPage() {
                                     className="p-6 cursor-pointer hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors"
                                     onClick={() => toggleRole(role.id)}
                                 >
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                        <div className="flex items-start gap-4">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                        <div className="flex items-start gap-3">
                                             <div className={`p-3 rounded-xl shrink-0 ${deptStyle.bgColor} ${deptStyle.color}`}>
                                                 {deptStyle.icon}
                                             </div>
@@ -820,7 +820,7 @@ export default function JobCompetencyMapPage() {
                                                     <StatusBadge status={role.status} />
                                                 </div>
                                                 <p className="text-sm text-silver-mist line-clamp-2 mb-3">{role.description}</p>
-                                                <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500">
+                                                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                                                     <span className="flex items-center gap-1">
                                                         <Building2 className="w-3 h-3" />
                                                         {role.department}
@@ -840,7 +840,7 @@ export default function JobCompetencyMapPage() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-3">
                                             {/* Requirement Summary */}
                                             <div className="hidden md:flex items-center gap-2">
                                                 <div className="text-center px-2">
@@ -930,8 +930,8 @@ export default function JobCompetencyMapPage() {
                                         </div>
 
                                         {/* Meta Info */}
-                                        <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
-                                            <div className="flex items-center gap-4">
+                                        <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+                                            <div className="flex items-center gap-3">
                                                 <span>Owner: <span className="font-medium text-slate-600 dark:text-slate-300">{role.owner}</span></span>
                                                 <span>Job Family: <span className="font-medium text-slate-600 dark:text-slate-300">{role.family}</span></span>
                                             </div>
@@ -1005,7 +1005,7 @@ export default function JobCompetencyMapPage() {
                         </table>
                     </div>
                     <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-deep-cosmos/30">
-                        <div className="flex flex-wrap items-center gap-6 text-xs">
+                        <div className="flex flex-wrap items-center gap-3 text-xs">
                             <span className="font-bold text-slate-500">Legend:</span>
                             <span className="flex items-center gap-1"><span className="text-rose-500 font-bold">R</span> = Required</span>
                             <span className="flex items-center gap-1"><span className="text-amber-500 font-bold">P</span> = Preferred</span>
@@ -1046,7 +1046,7 @@ export default function JobCompetencyMapPage() {
 
             {/* Info Card */}
             <div className="bg-gradient-to-br from-purple-600 to-indigo-700 p-6 rounded-2xl shadow-lg border border-purple-500/30 text-white">
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3">
                     <div className="p-3 bg-white/10 rounded-xl">
                         <Sparkles className="w-6 h-6" />
                     </div>
@@ -1099,7 +1099,7 @@ export default function JobCompetencyMapPage() {
                     </div>
                 }
             >
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {/* Description */}
                     <p className="text-sm text-silver-mist">
                         {editingRole 
@@ -1114,7 +1114,7 @@ export default function JobCompetencyMapPage() {
                             Job Role Details
                         </h3>
                         
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3">
                             {/* Job Title */}
                             <div className="col-span-2">
                                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
@@ -1359,3 +1359,4 @@ export default function JobCompetencyMapPage() {
         </div>
     );
 }
+

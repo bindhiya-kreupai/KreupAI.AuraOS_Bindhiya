@@ -45,7 +45,7 @@ export default function PerDiemPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <Wallet className="w-8 h-8 text-indigo-500" />
@@ -55,7 +55,7 @@ export default function PerDiemPage() {
                 </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-3">
                 <div className="relative flex-1 max-w-lg">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
@@ -68,7 +68,7 @@ export default function PerDiemPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 {filtered.length === 0 ? (
                     <div className="col-span-full text-center py-12 text-slate-400">
                         <MapPin className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -107,3 +107,4 @@ export default function PerDiemPage() {
         </div>
     );
 }
+

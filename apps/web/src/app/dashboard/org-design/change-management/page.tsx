@@ -47,9 +47,9 @@ export default function ChangeManagementPage() {
     ];
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <GitPullRequest className="w-6 h-6 text-indigo-500" />
@@ -95,7 +95,7 @@ export default function ChangeManagementPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-6 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
+                            <div className="flex items-center gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
                                 <div className="flex items-center gap-2">
                                     <Users className="w-4 h-4" /> Owner: <span className="font-bold text-slate-700 dark:text-slate-300">{change.owner}</span>
                                 </div>
@@ -111,7 +111,7 @@ export default function ChangeManagementPage() {
                 </div>
 
                 {/* Sidebar */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-indigo-50 dark:bg-indigo-900/10 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-900/30">
                         <h4 className="font-bold text-indigo-900 dark:text-indigo-100 mb-4 flex items-center gap-2">
                             <CheckCircle2 className="w-5 h-5 text-indigo-500" /> Checklist
@@ -156,3 +156,4 @@ export default function ChangeManagementPage() {
         </div>
     );
 }
+

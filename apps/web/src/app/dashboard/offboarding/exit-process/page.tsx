@@ -146,9 +146,9 @@ export default function OffboardingPage() {
     const pendingClearances = selectedEmployee?.clearances.filter(c => c.status.toLowerCase() !== 'approved') || [];
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <DoorOpen className="w-6 h-6 text-rose-500" />
@@ -168,7 +168,7 @@ export default function OffboardingPage() {
                     <p className="text-sm text-silver-mist">There are no employees currently going through the offboarding process.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                     {/* List of Exiting Employees */}
                     <div className="lg:col-span-1 bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden flex flex-col h-[600px]">
                         <div className="p-4 border-b border-cloud dark:border-nebula-purple/20">
@@ -214,13 +214,13 @@ export default function OffboardingPage() {
 
                     {/* Details View */}
                     {selectedEmployee && (
-                        <div className="lg:col-span-2 space-y-6">
+                        <div className="lg:col-span-2 space-y-4">
                             {/* Employee Card */}
                             <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl -mr-10 -mt-10" />
 
                                 <div className="flex justify-between items-start relative z-10">
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
                                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-400 to-amber-400 flex items-center justify-center text-white font-bold text-xl shadow-sm">
                                             {selectedEmployee.employeeName.charAt(0)}
                                         </div>
@@ -277,7 +277,7 @@ export default function OffboardingPage() {
                                         {selectedEmployee.clearances.map(task => {
                                             const isCleared = task.status.toLowerCase() === 'approved';
                                             return (
-                                                <div key={task.id} className="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors group">
+                                                <div key={task.id} className="p-4 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors group">
                                                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isCleared
                                                             ? 'bg-emerald-100 text-emerald-600'
                                                             : 'bg-slate-100 text-slate-500'
@@ -336,3 +336,4 @@ export default function OffboardingPage() {
         </div>
     );
 }
+

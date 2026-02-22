@@ -83,8 +83,8 @@ export default function DocumentManagementPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <FileCheck className="w-6 h-6 text-indigo-500" />
@@ -115,7 +115,7 @@ export default function DocumentManagementPage() {
             )}
 
             {!loading && documents.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100%-100px)]">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 h-[calc(100%-100px)]">
                     {/* Folders */}
                     <div className="lg:col-span-1 space-y-3 overflow-y-auto">
                         <h3 className="font-bold text-slate-500 text-xs uppercase mb-2">Folders</h3>
@@ -154,7 +154,7 @@ export default function DocumentManagementPage() {
                                 <button onClick={() => setShowUploadModal(true)} className="mt-4 text-indigo-600 text-sm font-bold hover:underline">Upload a file</button>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                                 {currentFiles.map((file, i) => {
                                     const displayName = file.fileName || file.documentName || 'Unnamed Document';
                                     const displaySize = file.fileSize ? formatFileSize(file.fileSize) : 'N/A';
@@ -229,3 +229,4 @@ export default function DocumentManagementPage() {
         </div>
     );
 }
+

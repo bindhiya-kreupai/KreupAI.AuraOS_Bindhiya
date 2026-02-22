@@ -74,9 +74,9 @@ export default function NotificationTemplatesPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Mail className="w-6 h-6 text-indigo-500" />
@@ -92,7 +92,7 @@ export default function NotificationTemplatesPage() {
                 </div>
             </div>
 
-            <div className="flex h-full min-h-0 gap-6 overflow-hidden">
+            <div className="flex h-full min-h-0 gap-3 overflow-hidden">
                 {/* Left: Template List */}
                 <div className="w-72 lg:w-80 bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 flex flex-col shrink-0">
                     <div className="p-4 border-b border-cloud dark:border-slate-800">
@@ -228,7 +228,7 @@ export default function NotificationTemplatesPage() {
                         <p className="text-xs text-silver-mist">Click to copy/insert.</p>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
                         {VARIABLES.map((group, idx) => (
                             <div key={idx}>
                                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">{group.category}</h4>
@@ -252,3 +252,4 @@ export default function NotificationTemplatesPage() {
         </div>
     );
 }
+

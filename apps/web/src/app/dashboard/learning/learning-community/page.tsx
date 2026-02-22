@@ -37,8 +37,8 @@ export default function LearningCommunityPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Learning Community</h1>
           <p className="text-sm text-silver-mist mt-1">Share knowledge, ask questions, and learn together</p>
@@ -48,7 +48,7 @@ export default function LearningCommunityPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Articles</p>
           <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">{articles.length}</p>
@@ -67,7 +67,7 @@ export default function LearningCommunityPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center gap-2 overflow-x-auto pb-1">
             {topics.map((topic) => (
@@ -104,7 +104,7 @@ export default function LearningCommunityPage() {
                       </div>
                       <p className="text-sm text-ink-black dark:text-pearl mt-1.5 font-bold">{article.title}</p>
                       <p className="text-xs text-silver-mist mt-1 line-clamp-2">{article.content}</p>
-                      <div className="flex items-center gap-4 mt-3">
+                      <div className="flex items-center gap-3 mt-3">
                         <span className="text-[10px] px-2 py-0.5 bg-celestial-indigo/10 text-celestial-indigo rounded-full font-medium">{article.categoryName}</span>
                         <button className="flex items-center gap-1 text-xs text-silver-mist hover:text-celestial-indigo transition-colors">
                           <ThumbsUp className="w-3.5 h-3.5" /> {article.likeCount || 0}
@@ -144,3 +144,4 @@ export default function LearningCommunityPage() {
     </div>
   );
 }
+

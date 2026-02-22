@@ -11,9 +11,9 @@ import {
 
 export default function ExpatTaxPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Calculator className="w-6 h-6 text-indigo-500" />
@@ -23,7 +23,7 @@ export default function ExpatTaxPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-full min-h-0">
                 {/* Tax Equalization Calculator */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col">
                     <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
@@ -31,7 +31,7 @@ export default function ExpatTaxPage() {
                     </h3>
 
                     <div className="space-y-4 flex-1">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3">
                             <div>
                                 <label className="text-xs font-bold text-slate-500 uppercase">Home Country</label>
                                 <select className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none text-sm font-bold">
@@ -111,3 +111,4 @@ export default function ExpatTaxPage() {
         </div>
     );
 }
+

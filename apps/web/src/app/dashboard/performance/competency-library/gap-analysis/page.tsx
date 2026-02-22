@@ -301,7 +301,7 @@ const GapCard: React.FC<{ gap: CompetencyGap; showDetails?: boolean }> = ({ gap,
 
                     {expanded && (
                         <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 space-y-3 animate-in slide-in-from-top-2 duration-200">
-                            <div className="flex items-center gap-4 text-xs text-slate-500">
+                            <div className="flex items-center gap-3 text-xs text-slate-500">
                                 <span className="flex items-center gap-1">
                                     <Users className="w-3 h-3" /> {gap.impactedEmployees} employees impacted
                                 </span>
@@ -796,7 +796,7 @@ export default function GapAnalysisPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Error Banner */}
             {fetchError && (
                 <div className="flex items-center gap-3 p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl">
@@ -806,7 +806,7 @@ export default function GapAnalysisPage() {
             )}
 
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Target className="w-6 h-6 text-celestial-indigo" />
@@ -850,7 +850,7 @@ export default function GapAnalysisPage() {
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-lg">
@@ -920,7 +920,7 @@ export default function GapAnalysisPage() {
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Radar Chart */}
                 <div className="lg:col-span-1 bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <h3 className="font-bold text-ink-black dark:text-pearl mb-2 flex items-center gap-2">
@@ -1049,7 +1049,7 @@ export default function GapAnalysisPage() {
 
             {/* Filters Bar */}
             <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
-                <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex flex-col md:flex-row gap-3">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
                         <input
@@ -1122,7 +1122,7 @@ export default function GapAnalysisPage() {
                             <p className="text-xs mt-1">Adjust filters or check back after analyses are completed.</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                             {filteredGaps.map(gap => (
                                 <GapCard key={gap.competencyId} gap={gap} showDetails />
                             ))}
@@ -1152,7 +1152,7 @@ export default function GapAnalysisPage() {
                                 className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm p-6"
                             >
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
                                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-celestial-indigo to-purple-600 flex items-center justify-center text-white font-bold text-lg">
                                             {emp.employeeName.split(' ').map(n => n[0]).join('')}
                                         </div>
@@ -1162,7 +1162,7 @@ export default function GapAnalysisPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-6">
+                                    <div className="flex items-center gap-3">
                                         {/* Gap Summary */}
                                         <div className="flex items-center gap-3">
                                             {emp.criticalGaps > 0 && (
@@ -1219,7 +1219,7 @@ export default function GapAnalysisPage() {
 
             {/* AI Recommendations */}
             <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-6 rounded-2xl shadow-lg border border-indigo-500/30 text-white">
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3">
                     <div className="p-3 bg-white/10 rounded-xl">
                         <BrainCircuit className="w-6 h-6" />
                     </div>
@@ -1230,7 +1230,7 @@ export default function GapAnalysisPage() {
                         </div>
                         <h3 className="font-bold text-lg mb-3">Priority Actions to Close Gaps</h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
                             <div className="bg-white/10 backdrop-blur-sm p-4 rounded-xl">
                                 <div className="flex items-center gap-2 mb-2">
                                     <div className="w-8 h-8 bg-rose-500/20 rounded-lg flex items-center justify-center">
@@ -1300,7 +1300,7 @@ export default function GapAnalysisPage() {
                     </div>
                 }
             >
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {/* Description */}
                     <p className="text-sm text-silver-mist">
                         Create a targeted development plan to address competency gaps. Select gaps to address, define learning activities, and set timelines.
@@ -1313,7 +1313,7 @@ export default function GapAnalysisPage() {
                             Plan Details
                         </h3>
                         
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3">
                             {/* Plan Name */}
                             <div className="col-span-2">
                                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
@@ -1639,3 +1639,4 @@ export default function GapAnalysisPage() {
         </div>
     );
 }
+

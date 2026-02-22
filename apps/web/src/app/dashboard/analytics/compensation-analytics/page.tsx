@@ -56,13 +56,13 @@ export default function CompensationAnalyticsPage() {
   ];
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       <div>
         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Compensation Analytics</h1>
         <p className="text-sm text-silver-mist mt-1">Analyze compensation trends, pay equity, and benchmarking data</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
         {compMetrics.map((metric) => (
           <div key={metric.label} className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
             <p className="text-xs text-silver-mist uppercase font-medium">{metric.label}</p>
@@ -114,3 +114,4 @@ export default function CompensationAnalyticsPage() {
     </div>
   );
 }
+

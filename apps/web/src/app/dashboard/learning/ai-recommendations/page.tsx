@@ -38,8 +38,8 @@ export default function AIRecommendationsPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">AI Recommendations</h1>
           <p className="text-sm text-silver-mist mt-1">Personalized learning suggestions based on your goals and skills</p>
@@ -78,7 +78,7 @@ export default function AIRecommendationsPage() {
           <div className="divide-y divide-cloud dark:divide-nebula-purple/50">
             {courses.map((course) => (
               <div key={course.id} className="px-5 py-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos transition-colors cursor-pointer group">
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3">
                   <div className="p-2.5 rounded-lg bg-celestial-indigo/10 flex-shrink-0">
                     <BookOpen className="w-5 h-5 text-celestial-indigo" />
                   </div>
@@ -113,3 +113,4 @@ export default function AIRecommendationsPage() {
     </div>
   );
 }
+

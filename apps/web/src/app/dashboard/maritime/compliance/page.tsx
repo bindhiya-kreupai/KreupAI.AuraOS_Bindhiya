@@ -11,9 +11,9 @@ import {
 
 export default function CompliancePage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <ShieldCheck className="w-6 h-6 text-emerald-500" />
@@ -26,7 +26,7 @@ export default function CompliancePage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 h-full min-h-0">
                 {/* Expiry Sidebar */}
                 <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col h-full">
                     <h3 className="font-bold mb-4">Expiry Watchlist</h3>
@@ -50,7 +50,7 @@ export default function CompliancePage() {
 
                 {/* Crew Cert Grid */}
                 <div className="lg:col-span-3 overflow-y-auto pb-20">
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 mb-6 flex gap-4 items-center">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 mb-6 flex gap-3 items-center">
                         <Search className="w-5 h-5 text-slate-400" />
                         <input type="text" placeholder="Search seafarer..." className="bg-transparent outline-none flex-1 text-sm font-bold" />
                     </div>
@@ -96,3 +96,4 @@ export default function CompliancePage() {
         </div>
     );
 }
+

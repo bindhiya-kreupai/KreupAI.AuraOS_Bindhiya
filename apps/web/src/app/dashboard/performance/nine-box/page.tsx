@@ -76,9 +76,9 @@ export default function NineBoxGridPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Grid className="w-6 h-6 text-indigo-500" />
@@ -104,10 +104,10 @@ export default function NineBoxGridPage() {
                         Potential &rarr;
                     </div>
 
-                    <div className="flex-1 flex flex-col gap-4">
+                    <div className="flex-1 flex flex-col gap-3">
                         {/* Rows */}
                         {[0, 1, 2].map(row => (
-                            <div key={row} className="flex-1 flex gap-4">
+                            <div key={row} className="flex-1 flex gap-3">
                                 {[0, 1, 2].map(col => {
                                     const boxIndex = row * 3 + col;
                                     const box = BOXES[boxIndex];
@@ -154,3 +154,4 @@ export default function NineBoxGridPage() {
         </div>
     );
 }
+

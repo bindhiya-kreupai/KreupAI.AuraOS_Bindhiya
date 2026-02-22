@@ -481,7 +481,7 @@ export default function EmployeesPage() {
   ) => (
     <>
       {/* Row 1: Employee Code & Email */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             Employee Code <span className="text-red-500">*</span>
@@ -527,7 +527,7 @@ export default function EmployeesPage() {
       </div>
 
       {/* Row 2: First Name & Last Name */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             First Name <span className="text-red-500">*</span>
@@ -570,7 +570,7 @@ export default function EmployeesPage() {
       </div>
 
       {/* Row 3: Company & Department */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             Company <span className="text-red-500">*</span>
@@ -623,7 +623,7 @@ export default function EmployeesPage() {
       </div>
 
       {/* Row 4: Location & Job Profile */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             Location <span className="text-red-500">*</span>
@@ -676,7 +676,7 @@ export default function EmployeesPage() {
       </div>
 
       {/* Row 5: Grade & Status */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             Grade <span className="text-red-500">*</span>
@@ -729,7 +729,7 @@ export default function EmployeesPage() {
       </div>
 
       {/* Row 6: Employment Type & Joining Date */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             Employment Type <span className="text-red-500">*</span>
@@ -836,3 +836,4 @@ export default function EmployeesPage() {
     />
   );
 }
+

@@ -52,7 +52,7 @@ export default function CompOffManagementPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -67,7 +67,7 @@ export default function CompOffManagementPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
 
                 {/* Credit Bank */}
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-col justify-between h-48">
@@ -85,7 +85,7 @@ export default function CompOffManagementPage() {
                 </div>
 
                 {/* Info Card */}
-                <div className="col-span-1 lg:col-span-2 bg-slate-50 dark:bg-slate-900/40 p-6 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-6">
+                <div className="col-span-1 lg:col-span-2 bg-slate-50 dark:bg-slate-900/40 p-6 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
                     <div className="hidden md:block">
                         <Calendar className="w-20 h-20 text-slate-300" />
                     </div>
@@ -156,3 +156,4 @@ export default function CompOffManagementPage() {
         </div>
     );
 }
+

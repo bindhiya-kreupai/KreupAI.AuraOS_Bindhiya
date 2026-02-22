@@ -73,7 +73,7 @@ export default function WellnessTrackerPage() {
 
   if (metrics.length === 0) {
     return (
-      <div className="space-y-6 pb-10">
+      <div className="space-y-4 pb-6">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Wellness Tracker</h1>
           <p className="text-sm text-silver-mist mt-1">Track your health goals and join wellness challenges</p>
@@ -88,9 +88,9 @@ export default function WellnessTrackerPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Wellness Tracker</h1>
           <p className="text-sm text-silver-mist mt-1">Track your health goals and join wellness challenges</p>
@@ -102,7 +102,7 @@ export default function WellnessTrackerPage() {
       </div>
 
       {/* Daily Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {metrics.map((metric) => (
           <div key={metric.label} className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
             <div className="flex items-center gap-2 mb-3">
@@ -177,3 +177,4 @@ export default function WellnessTrackerPage() {
     </div>
   );
 }
+

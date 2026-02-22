@@ -38,8 +38,8 @@ export default function GymMembershipPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Dumbbell className="w-6 h-6 text-cyan-500" />
@@ -52,7 +52,7 @@ export default function GymMembershipPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Digital Card */}
                 <div className="lg:col-span-1">
                     <div className="rotate-1 hover:rotate-0 transition-transform duration-300">
@@ -93,13 +93,13 @@ export default function GymMembershipPage() {
                     <h3 className="font-bold text-lg">Partner Gyms Nearby</h3>
                     <div className="space-y-3">
                         {GYMS.map(gym => (
-                            <div key={gym.id} className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:shadow-md transition-shadow cursor-pointer">
+                            <div key={gym.id} className="flex items-center gap-3 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:shadow-md transition-shadow cursor-pointer">
                                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xs ${gym.image}`}>
                                     LOGO
                                 </div>
                                 <div className="flex-1">
                                     <h4 className="font-bold">{gym.name}</h4>
-                                    <div className="flex items-center gap-4 text-xs text-slate-500 mt-1">
+                                    <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
                                         <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {gym.distance}</span>
                                         <span className="flex items-center gap-1 text-amber-500 font-bold">★ {gym.rating}</span>
                                     </div>
@@ -118,3 +118,4 @@ export default function GymMembershipPage() {
         </div>
     );
 }
+

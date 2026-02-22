@@ -41,8 +41,8 @@ export default function SurveysPage() {
     const completedSurveys = data.filter((s: any) => s.status === 'closed' || s.status === 'completed');
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <ClipboardList className="w-6 h-6 text-indigo-500" />
@@ -61,12 +61,12 @@ export default function SurveysPage() {
             ) : (
                 <>
                     {activeSurveys.length > 0 && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {activeSurveys.map((survey: any, i: number) => (
                                 <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm hover:shadow-lg transition-all group border-l-4 border-l-slate-400 dark:border-l-slate-600 overflow-hidden relative">
                                     <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-600 opacity-10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-150 duration-700"></div>
                                     <h3 className="font-bold text-xl mb-2 pr-8">{survey.title}</h3>
-                                    <div className="flex gap-4 text-sm text-slate-500 mb-6">
+                                    <div className="flex gap-3 text-sm text-slate-500 mb-6">
                                         <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {survey.time || '~10 mins'}</span>
                                         {survey.deadline && <span className="font-bold text-rose-500">Due: {survey.deadline}</span>}
                                     </div>
@@ -104,3 +104,4 @@ export default function SurveysPage() {
         </div>
     );
 }
+

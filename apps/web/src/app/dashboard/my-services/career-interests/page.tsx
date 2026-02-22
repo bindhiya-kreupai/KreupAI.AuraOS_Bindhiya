@@ -91,7 +91,7 @@ export default function CareerInterestsPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       <div>
         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Career Interests</h1>
         <p className="text-sm text-silver-mist mt-1">Explore career paths and set professional development goals</p>
@@ -158,7 +158,7 @@ export default function CareerInterestsPage() {
         {openRoles.length > 0 ? (
           <div className="divide-y divide-cloud dark:divide-nebula-purple/50">
             {openRoles.map((role: any) => (
-              <div key={role.id} className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos transition-colors cursor-pointer group">
+              <div key={role.id} className="flex items-center gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos transition-colors cursor-pointer group">
                 <div className="p-2.5 rounded-lg bg-celestial-indigo/10">
                   <Briefcase className="w-5 h-5 text-celestial-indigo" />
                 </div>
@@ -195,3 +195,4 @@ export default function CareerInterestsPage() {
     </div>
   );
 }
+

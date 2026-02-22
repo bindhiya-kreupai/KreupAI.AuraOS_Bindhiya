@@ -52,8 +52,8 @@ export default function EventsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Calendar className="w-6 h-6 text-indigo-500" />
@@ -79,8 +79,8 @@ export default function EventsPage() {
                     <p className="text-sm">Events will appear here once created.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
-                    <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
+                    <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
                         <div className="flex gap-2 shrink-0">
                             {['All', 'Corporate', 'Social', 'Tech'].map(cat => (
                                 <button
@@ -97,7 +97,7 @@ export default function EventsPage() {
                             ))}
                         </div>
 
-                        <div className="overflow-y-auto space-y-6 pr-2 pb-20">
+                        <div className="overflow-y-auto space-y-4 pr-2 pb-20">
                             {filteredEvents.length === 0 ? (
                                 <div className="text-center py-12 text-slate-400 text-sm">No events in this category.</div>
                             ) : (
@@ -116,14 +116,14 @@ export default function EventsPage() {
                                         </div>
 
                                         <div className="p-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
                                                 <div className="md:col-span-2 space-y-4">
                                                     {event.description && (
                                                         <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                                                             {event.description}
                                                         </p>
                                                     )}
-                                                    <div className="flex flex-wrap gap-4 text-xs text-slate-500">
+                                                    <div className="flex flex-wrap gap-3 text-xs text-slate-500">
                                                         {event.date && (
                                                             <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/40 px-3 py-1.5 rounded-lg">
                                                                 <Calendar className="w-4 h-4 text-indigo-500" />
@@ -186,7 +186,7 @@ export default function EventsPage() {
                         </div>
                     </div>
 
-                    <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
+                    <div className="lg:col-span-1 space-y-4 flex flex-col h-full overflow-hidden">
                         <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm shrink-0">
                             <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
                                 <Calendar className="w-5 h-5 text-indigo-500" /> Calendar
@@ -219,3 +219,4 @@ export default function EventsPage() {
         </div>
     );
 }
+

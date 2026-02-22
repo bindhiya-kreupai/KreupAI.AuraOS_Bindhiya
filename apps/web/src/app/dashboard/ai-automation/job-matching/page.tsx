@@ -32,7 +32,7 @@ export default function JobMatchingPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -44,7 +44,7 @@ export default function JobMatchingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
 
                 {/* Profile Card */}
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
@@ -100,7 +100,7 @@ export default function JobMatchingPage() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div className="grid grid-cols-2 gap-3 mb-4">
                                 <div>
                                     <h4 className="text-xs font-bold text-emerald-600 mb-2 flex items-center gap-1"><Check className="w-3 h-3" /> Strengths</h4>
                                     <ul className="text-sm text-slate-600 dark:text-slate-300 list-disc list-inside">
@@ -128,3 +128,4 @@ export default function JobMatchingPage() {
         </div>
     );
 }
+

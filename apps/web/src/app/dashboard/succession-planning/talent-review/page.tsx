@@ -32,7 +32,7 @@ export default function TalentReviewPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <Users2 className="w-8 h-8 text-indigo-500" />
@@ -45,7 +45,7 @@ export default function TalentReviewPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-3">
                 {reviews.length === 0 ? (
                     <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-slate-400">
                         No talent reviews scheduled.
@@ -53,7 +53,7 @@ export default function TalentReviewPage() {
                 ) : (
                     reviews.map((review, i) => (
                         <div key={review.reviewId || i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm hover:shadow-md transition-all group">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-3 mb-2">
                                         <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">{review.reviewName || 'Talent Review'}</h3>
@@ -64,7 +64,7 @@ export default function TalentReviewPage() {
                                             {review.status || 'Pending'}
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-6 text-sm text-slate-500">
+                                    <div className="flex items-center gap-3 text-sm text-slate-500">
                                         <div className="flex items-center gap-2">
                                             <Calendar className="w-4 h-4" /> {review.scheduledDate || review.fiscalYear || 'TBD'}
                                         </div>
@@ -74,7 +74,7 @@ export default function TalentReviewPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-3">
                                     <div className="text-right min-w-[100px]">
                                         <div className="text-xs font-bold text-slate-400 uppercase mb-1">Participants</div>
                                         <div className="text-sm font-bold text-slate-600 dark:text-slate-300">{review.participants?.length || 0}</div>
@@ -86,7 +86,7 @@ export default function TalentReviewPage() {
                             </div>
 
                             {review.status === 'scheduled' && (
-                                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 flex gap-4">
+                                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 flex gap-3">
                                     <button className="flex-1 py-2 bg-indigo-50 dark:bg-indigo-900/10 text-indigo-600 font-bold rounded-xl text-sm hover:bg-indigo-100 dark:hover:bg-indigo-900/20 flex items-center justify-center gap-2">
                                         <CheckSquare className="w-4 h-4" /> Prepare Materials
                                     </button>
@@ -102,3 +102,4 @@ export default function TalentReviewPage() {
         </div>
     );
 }
+

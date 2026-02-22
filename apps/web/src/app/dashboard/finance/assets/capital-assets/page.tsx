@@ -233,9 +233,9 @@ export default function CapitalAssetsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Building2 className="w-6 h-6 text-indigo-500" />
@@ -263,7 +263,7 @@ export default function CapitalAssetsPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 shrink-0">
                 {stats.map((stat, i) => {
                     const Icon = stat.icon;
                     return (
@@ -467,7 +467,7 @@ export default function CapitalAssetsPage() {
                         </div>
 
                         {/* Modal Body */}
-                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             {/* Basic Information */}
                             <div className="space-y-4">
                                 <h3 className="font-bold text-lg flex items-center gap-2 text-indigo-600">
@@ -475,7 +475,7 @@ export default function CapitalAssetsPage() {
                                     Basic Information
                                 </h3>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                                             Asset Name *
@@ -550,7 +550,7 @@ export default function CapitalAssetsPage() {
                                     Financial Information
                                 </h3>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <div>
                                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                                             Purchase Date *
@@ -627,7 +627,7 @@ export default function CapitalAssetsPage() {
                                     Location & Assignment
                                 </h3>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                                             Location *
@@ -684,3 +684,4 @@ export default function CapitalAssetsPage() {
         </div>
     );
 }
+

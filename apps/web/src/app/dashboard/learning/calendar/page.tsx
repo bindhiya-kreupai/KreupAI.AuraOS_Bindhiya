@@ -41,8 +41,8 @@ export default function TrainingCalendarPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <CalIcon className="w-6 h-6 text-indigo-500" />
@@ -55,7 +55,7 @@ export default function TrainingCalendarPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 overflow-hidden flex flex-col">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="font-bold text-lg">Calendar View</h3>
@@ -93,7 +93,7 @@ export default function TrainingCalendarPage() {
                     </div>
                 </div>
 
-                <div className="space-y-6 overflow-y-auto pb-20">
+                <div className="space-y-4 overflow-y-auto pb-20">
                     <h3 className="font-bold text-lg">Upcoming Sessions ({data.length})</h3>
                     {data.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-40 text-slate-400">
@@ -141,3 +141,4 @@ export default function TrainingCalendarPage() {
         </div>
     );
 }
+

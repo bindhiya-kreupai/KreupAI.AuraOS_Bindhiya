@@ -13,9 +13,9 @@ import {
 
 export default function SpaceManagementPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <LayoutGrid className="w-6 h-6 text-indigo-500" />
@@ -32,11 +32,11 @@ export default function SpaceManagementPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Floor Plan Visualizer (Mock) */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden relative">
                     <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
-                        <div className="flex items-center gap-4 text-xs font-bold">
+                        <div className="flex items-center gap-3 text-xs font-bold">
                             <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-emerald-500"></div> Available</div>
                             <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-rose-500"></div> Occupied</div>
                             <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-amber-500"></div> Reserved</div>
@@ -59,7 +59,7 @@ export default function SpaceManagementPage() {
                             </div>
 
                             {/* Desks */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 grid grid-cols-4 gap-4">
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 grid grid-cols-4 gap-3">
                                 {Array.from({ length: 16 }).map((_, i) => (
                                     <div key={i} className={`
                                         w-12 h-12 rounded-lg border flex items-center justify-center text-[10px] font-bold cursor-pointer hover:scale-110 transition-transform shadow-sm
@@ -72,7 +72,7 @@ export default function SpaceManagementPage() {
                                 ))}
                             </div>
 
-                            <div className="absolute top-10 right-20 grid grid-cols-2 gap-4">
+                            <div className="absolute top-10 right-20 grid grid-cols-2 gap-3">
                                 {Array.from({ length: 6 }).map((_, i) => (
                                     <div key={i} className="w-12 h-12 bg-slate-200 border border-slate-300 rounded-lg flex items-center justify-center text-[10px] font-bold text-slate-500 cursor-not-allowed" title="Under Maintenance">
                                         M-{i}
@@ -90,7 +90,7 @@ export default function SpaceManagementPage() {
                     </h3>
 
                     <div className="mb-6">
-                        <div className="flex items-center gap-4 mb-4">
+                        <div className="flex items-center gap-3 mb-4">
                             <div className="w-16 h-16 bg-rose-100 rounded-2xl flex items-center justify-center text-xl font-bold text-rose-600">
                                 103
                             </div>
@@ -100,7 +100,7 @@ export default function SpaceManagementPage() {
                                 <div className="text-xs text-indigo-600">Product Design</div>
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div className="grid grid-cols-2 gap-3 mt-4">
                             <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
                                 <div className="text-[10px] font-bold text-slate-500 uppercase">Allocated</div>
                                 <div className="text-sm font-bold">Jan 12, 2024</div>
@@ -137,3 +137,4 @@ export default function SpaceManagementPage() {
         </div>
     );
 }
+

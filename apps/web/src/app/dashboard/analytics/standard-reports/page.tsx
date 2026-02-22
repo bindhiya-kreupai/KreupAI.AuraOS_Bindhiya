@@ -131,7 +131,7 @@ export default function StandardReportsPage() {
                 <p className="text-slate-500 mt-2 text-lg">Access pre-built reports for common HR metrics and exports.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {REPORT_TEMPLATES.map((report) => (
                     <div
                         key={report.id}
@@ -168,7 +168,7 @@ export default function StandardReportsPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
                         <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur z-10">
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3">
                                 <div className={`p-2 rounded-lg ${selectedReport.bg} ${selectedReport.color}`}>
                                     <selectedReport.icon className="w-6 h-6" />
                                 </div>
@@ -229,3 +229,4 @@ export default function StandardReportsPage() {
         </div>
     );
 }
+

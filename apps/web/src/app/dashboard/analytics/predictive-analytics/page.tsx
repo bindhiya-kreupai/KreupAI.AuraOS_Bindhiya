@@ -98,8 +98,8 @@ export default function AnalyticsPage() {
     }));
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 animate-in fade-in duration-500">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <BrainCircuit className="w-6 h-6 text-celestial-indigo" />
@@ -118,7 +118,7 @@ export default function AnalyticsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <KPICard
                     title="Org Health Score"
                     value={totalRisk > 0 ? `${healthScore}%` : '--'}
@@ -152,7 +152,7 @@ export default function AnalyticsPage() {
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <ChartCard title="Monthly Attrition Trend" subtitle="Exits per month">
                     {attritionData.length > 0 ? (
                         <ResponsiveContainer width="100%" height={300}>
@@ -304,3 +304,4 @@ function ChartCard({ children, title, subtitle }: { children: React.ReactNode, t
         </div>
     );
 }
+

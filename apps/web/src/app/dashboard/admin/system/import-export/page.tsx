@@ -57,9 +57,9 @@ export default function ImportExportPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Database className="w-6 h-6 text-indigo-500" />
@@ -86,9 +86,9 @@ export default function ImportExportPage() {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
                 {/* Left: Main Content */}
-                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-6">
+                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
                     {/* Tabs */}
                     <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0 w-fit">
                         {['Import', 'Export', 'History'].map(tab => (
@@ -143,7 +143,7 @@ export default function ImportExportPage() {
                                         <p className="text-sm text-silver-mist text-center max-w-sm">
                                             Supported formats: CSV, XLSX, XLS. Maximum file size: 10MB.
                                         </p>
-                                        <div className="mt-6 flex gap-4">
+                                        <div className="mt-6 flex gap-3">
                                             <button className="px-4 py-2 bg-slate-200 dark:bg-slate-800 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400">Download Template</button>
                                         </div>
                                     </div>
@@ -156,7 +156,7 @@ export default function ImportExportPage() {
                                             <div className="w-1/2">CSV Header</div>
                                         </div>
                                         {SYSTEM_FIELDS.map(field => (
-                                            <div key={field.id} className="flex items-center gap-4 py-2 border-b border-cloud dark:border-slate-800 last:border-0">
+                                            <div key={field.id} className="flex items-center gap-3 py-2 border-b border-cloud dark:border-slate-800 last:border-0">
                                                 <div className="w-1/2 flex items-center gap-2">
                                                     <span className="text-sm font-bold text-ink-black dark:text-pearl">{field.name}</span>
                                                     {field.required && <span className="text-[10px] text-rose-500 bg-rose-50 dark:bg-rose-900/20 px-1.5 rounded font-bold">REQ</span>}
@@ -219,7 +219,7 @@ export default function ImportExportPage() {
                         )}
 
                         {activeTab === 'Export' && (
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 {['Employee Master', 'Payroll Register', 'Attendance Logs', 'Leave Balances'].map(report => (
                                     <div key={report} className="bg-white dark:bg-stellar-blue p-5 rounded-2xl border border-cloud dark:border-nebula-purple/50 hover:shadow-lg transition-all cursor-pointer group">
                                         <div className="flex justify-between items-start mb-4">
@@ -240,7 +240,7 @@ export default function ImportExportPage() {
                 </div>
 
                 {/* Right: Job History */}
-                <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
+                <div className="lg:col-span-1 space-y-4 flex flex-col h-full overflow-hidden">
                     {/* Activity Feed */}
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm h-full flex flex-col">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2 shrink-0">
@@ -296,3 +296,4 @@ export default function ImportExportPage() {
         </div>
     );
 }
+

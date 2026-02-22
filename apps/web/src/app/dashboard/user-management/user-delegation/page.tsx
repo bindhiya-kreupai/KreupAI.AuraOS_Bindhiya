@@ -159,7 +159,7 @@ export default function UserDelegationPage() {
                             placeholder="e.g. Admin"
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-xs font-medium text-silver-mist mb-1">Start Date</label>
                             <input
@@ -193,3 +193,4 @@ export default function UserDelegationPage() {
         />
     );
 }
+

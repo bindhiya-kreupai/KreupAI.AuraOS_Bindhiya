@@ -57,9 +57,9 @@ export default function BankFileGenerationPage() {
     ];
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <FileSpreadsheet className="w-6 h-6 text-indigo-500" />
@@ -81,10 +81,10 @@ export default function BankFileGenerationPage() {
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Main Generator */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="lg:col-span-2 space-y-4">
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                             <h3 className="font-bold text-lg mb-4">Select Bank Format</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 {bankFormats.map(bank => (
                                     <div key={bank.id} className="p-4 rounded-xl border cursor-pointer transition-all bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-indigo-300 hover:ring-1 hover:ring-indigo-500/30">
                                         <div className="flex justify-between items-start mb-2">
@@ -99,7 +99,7 @@ export default function BankFileGenerationPage() {
                             </div>
                         </div>
 
-                        <div className="bg-indigo-50 dark:bg-indigo-900/10 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex items-start gap-4">
+                        <div className="bg-indigo-50 dark:bg-indigo-900/10 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex items-start gap-3">
                             <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
                                 <CreditCard className="w-6 h-6 text-indigo-500" />
                             </div>
@@ -143,3 +143,4 @@ export default function BankFileGenerationPage() {
         </div>
     );
 }
+

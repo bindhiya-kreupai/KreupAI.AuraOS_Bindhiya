@@ -103,7 +103,7 @@ export default function GrievancePage() {
     }
 
     return (
-        <div className="h-[calc(100vh-6rem)] flex flex-col gap-6">
+        <div className="h-[calc(100vh-6rem)] flex flex-col gap-3">
             <div className="flex justify-between items-center shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
@@ -120,7 +120,7 @@ export default function GrievancePage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 <div className="lg:col-span-1 bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 flex flex-col overflow-hidden">
                     <div className="p-4 border-b border-cloud dark:border-nebula-purple/20 flex gap-2">
                         <div className="relative flex-1">
@@ -188,7 +188,7 @@ export default function GrievancePage() {
                                 exit={{ opacity: 0, y: -20 }}
                                 className="flex-1 p-8 overflow-y-auto"
                             >
-                                <div className="max-w-xl mx-auto space-y-6">
+                                <div className="max-w-xl mx-auto space-y-4">
                                     <div className="flex items-center justify-between">
                                         <h2 className="text-xl font-bold flex items-center gap-2">
                                             <FileText className="w-5 h-5 text-rose-500" /> New Grievance
@@ -230,7 +230,7 @@ export default function GrievancePage() {
                                             />
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-2 gap-3">
                                             <div>
                                                 <label className="block text-sm font-medium mb-2">Severity Level</label>
                                                 <div className="flex gap-2">
@@ -324,7 +324,7 @@ export default function GrievancePage() {
                                 </div>
 
                                 <div className="p-4 border-t border-cloud dark:border-nebula-purple/20 bg-slate-50 dark:bg-slate-900">
-                                    <div className="flex gap-4">
+                                    <div className="flex gap-3">
                                         <div className="flex-1 relative">
                                             <textarea
                                                 rows={2}
@@ -353,3 +353,4 @@ export default function GrievancePage() {
         </div>
     );
 }
+

@@ -42,8 +42,8 @@ export default function KudosWallPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Heart className="w-6 h-6 text-rose-500" />
@@ -56,8 +56,8 @@ export default function KudosWallPage() {
                 </button>
             </div>
 
-            <div className="flex flex-col lg:flex-row gap-6 h-full min-h-0">
-                <div className="flex-1 overflow-y-auto space-y-6 pr-2">
+            <div className="flex flex-col lg:flex-row gap-3 h-full min-h-0">
+                <div className="flex-1 overflow-y-auto space-y-4 pr-2">
                     {posts.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 text-slate-400">
                             <Heart className="w-12 h-12 mb-4 opacity-50" />
@@ -67,7 +67,7 @@ export default function KudosWallPage() {
                     ) : (
                         posts.map((post: any) => (
                             <div key={post.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                                <div className="flex items-center gap-4 mb-4">
+                                <div className="flex items-center gap-3 mb-4">
                                     <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">
                                         {(post.authorName || post.from || 'U').charAt(0)}
                                     </div>
@@ -98,7 +98,7 @@ export default function KudosWallPage() {
                                     </div>
                                 )}
 
-                                <div className="flex items-center gap-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                <div className="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                                     <button className="flex items-center gap-2 text-slate-500 hover:text-rose-500 transition-colors text-sm font-bold">
                                         <ThumbsUp className="w-4 h-4" /> {post.points || (post.likes || []).length || 0}
                                     </button>
@@ -114,7 +114,7 @@ export default function KudosWallPage() {
                     )}
                 </div>
 
-                <div className="w-full lg:w-80 space-y-6 shrink-0">
+                <div className="w-full lg:w-80 space-y-4 shrink-0">
                     <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl p-6 text-white shadow-lg">
                         <div className="flex items-center gap-2 font-bold mb-4 opacity-90">
                             <Trophy className="w-5 h-5" /> Top Receivers
@@ -139,3 +139,4 @@ export default function KudosWallPage() {
         </div>
     );
 }
+

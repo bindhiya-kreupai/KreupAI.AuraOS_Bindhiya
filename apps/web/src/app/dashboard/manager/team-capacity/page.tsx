@@ -77,13 +77,13 @@ export default function TeamCapacityPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       <div>
         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Team Capacity</h1>
         <p className="text-sm text-silver-mist mt-1">Monitor workload distribution and team availability</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Team Size</p>
           <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">{teamMembers.length}</p>
@@ -117,7 +117,7 @@ export default function TeamCapacityPage() {
             {teamMembers.map((member) => {
               const derivedStatus = getStatusFromAttendance(member.attendanceRate, member.status);
               return (
-                <div key={member.id} className="flex items-center gap-4 px-4 py-3">
+                <div key={member.id} className="flex items-center gap-3 px-4 py-3">
                   <div className="w-8 h-8 rounded-full bg-celestial-indigo/10 flex items-center justify-center flex-shrink-0">
                     <span className="text-[10px] font-bold text-celestial-indigo">{getInitials(member.employeeName)}</span>
                   </div>
@@ -150,3 +150,4 @@ export default function TeamCapacityPage() {
     </div>
   );
 }
+

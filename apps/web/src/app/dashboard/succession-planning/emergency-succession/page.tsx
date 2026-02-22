@@ -33,7 +33,7 @@ export default function EmergencySuccessionPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <Siren className="w-8 h-8 text-rose-500" />
@@ -43,7 +43,7 @@ export default function EmergencySuccessionPage() {
                 </div>
             </div>
 
-            <div className="bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 p-6 rounded-2xl flex items-start gap-4">
+            <div className="bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 p-6 rounded-2xl flex items-start gap-3">
                 <ShieldAlert className="w-6 h-6 text-rose-600 shrink-0 mt-1" />
                 <div>
                     <h3 className="text-lg font-bold text-rose-700 dark:text-rose-400 mb-1">Confidential Operational Protocols</h3>
@@ -53,7 +53,7 @@ export default function EmergencySuccessionPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-3">
                 {plans.length === 0 ? (
                     <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-slate-400">
                         No emergency succession plans configured.
@@ -63,9 +63,9 @@ export default function EmergencySuccessionPage() {
                         <div key={protocol.emergencyPlanId} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                             <div
                                 onClick={() => setExpanded(expanded === protocol.emergencyPlanId ? null : protocol.emergencyPlanId)}
-                                className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                             >
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3">
                                     <div className={`p-3 rounded-full ${expanded === protocol.emergencyPlanId ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
                                         <FileText className="w-6 h-6" />
                                     </div>
@@ -76,7 +76,7 @@ export default function EmergencySuccessionPage() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-3">
                                     <div className="text-right hidden md:block">
                                         <div className="text-xs font-bold text-slate-400 uppercase">Last Review</div>
                                         <div className="font-mono text-sm">{protocol.lastReviewDate || 'N/A'}</div>
@@ -92,7 +92,7 @@ export default function EmergencySuccessionPage() {
                                     <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-4 mt-6 uppercase text-sm tracking-wider">Activation Checklist</h4>
                                     <div className="space-y-3">
                                         {(protocol.activationSteps || []).map((step: string, i: number) => (
-                                            <div key={i} className="flex items-start gap-4 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                                            <div key={i} className="flex items-start gap-3 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                                                 <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                                                     {i + 1}
                                                 </div>
@@ -118,3 +118,4 @@ export default function EmergencySuccessionPage() {
         </div>
     );
 }
+

@@ -66,7 +66,7 @@ export default function IPRestrictionPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -81,7 +81,7 @@ export default function IPRestrictionPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
 
                 {/* Whitelist Table */}
                 <div className="col-span-1 lg:col-span-2 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden">
@@ -167,3 +167,4 @@ export default function IPRestrictionPage() {
         </div>
     );
 }
+

@@ -10,8 +10,8 @@ import {
 
 export default function HousekeepingPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <BedDouble className="w-6 h-6 text-indigo-500" />
@@ -21,7 +21,7 @@ export default function HousekeepingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
                 {[
                     { label: 'Clean', count: 145, color: 'text-emerald-500', bg: 'bg-emerald-500' },
                     { label: 'Dirty', count: 42, color: 'text-rose-500', bg: 'bg-rose-500' },
@@ -46,7 +46,7 @@ export default function HousekeepingPage() {
                         { room: 'Room 512', type: 'King Deluxe', status: 'Dirty', assigned: 'Sarah L.', time: 'Vacated 2h ago' },
                     ].map((room, i) => (
                         <div key={i} className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center font-bold text-indigo-600">
                                     {room.room.split(' ')[1]}
                                 </div>
@@ -58,7 +58,7 @@ export default function HousekeepingPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-6 mt-4 md:mt-0">
+                            <div className="flex items-center gap-3 mt-4 md:mt-0">
                                 <div className="text-right">
                                     <div className="text-xs font-bold text-slate-400 uppercase">Assigned To</div>
                                     <div className="font-bold text-sm">{room.assigned}</div>
@@ -75,3 +75,4 @@ export default function HousekeepingPage() {
         </div>
     );
 }
+

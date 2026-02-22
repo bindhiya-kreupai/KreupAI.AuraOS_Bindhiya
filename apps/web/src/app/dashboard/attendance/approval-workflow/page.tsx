@@ -62,7 +62,7 @@ export default function ApprovalWorkflowPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -88,7 +88,7 @@ export default function ApprovalWorkflowPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
 
                 {/* Sidebar: Event Types */}
                 <div className="lg:col-span-1 space-y-2">
@@ -157,3 +157,4 @@ export default function ApprovalWorkflowPage() {
         </div>
     );
 }
+

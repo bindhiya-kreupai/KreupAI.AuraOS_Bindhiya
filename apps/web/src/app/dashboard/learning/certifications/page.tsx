@@ -31,8 +31,8 @@ export default function CertificationsPage() {
     }, []);
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Award className="w-6 h-6 text-indigo-500" />
@@ -61,7 +61,7 @@ export default function CertificationsPage() {
                     <p className="text-sm">Certifications will appear here once issued.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {data.map((cert, i) => {
                         const colors = ['text-emerald-500', 'text-indigo-500', 'text-cyan-500'];
                         const bgs = ['bg-emerald-50 dark:bg-emerald-900/10', 'bg-indigo-50 dark:bg-indigo-900/10', 'bg-cyan-50 dark:bg-cyan-900/10'];
@@ -98,3 +98,4 @@ export default function CertificationsPage() {
         </div>
     );
 }
+

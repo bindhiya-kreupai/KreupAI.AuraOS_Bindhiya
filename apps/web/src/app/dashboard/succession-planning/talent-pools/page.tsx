@@ -48,9 +48,9 @@ export default function TalentPoolsPage() {
     const readyNowCount = candidates.filter(c => c.readinessLevel === 'ready_now').length;
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Users className="w-6 h-6 text-amber-500" />
@@ -63,7 +63,7 @@ export default function TalentPoolsPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-full min-h-0">
                 {/* Pools List */}
                 <div className="space-y-4 overflow-y-auto pb-20">
                     {pools.length === 0 ? (
@@ -81,7 +81,7 @@ export default function TalentPoolsPage() {
                                     <ArrowRight className="w-5 h-5 text-slate-400 group-hover:translate-x-1 transition-transform" />
                                 </div>
 
-                                <div className="grid grid-cols-3 gap-4">
+                                <div className="grid grid-cols-3 gap-3">
                                     <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 text-center">
                                         <div className="text-xs text-slate-500 font-bold uppercase mb-1">Pool Size</div>
                                         <div className="font-bold text-slate-700 dark:text-slate-300">{p.members?.length || 0}</div>
@@ -143,3 +143,4 @@ export default function TalentPoolsPage() {
         </div>
     );
 }
+

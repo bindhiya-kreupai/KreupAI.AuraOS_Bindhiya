@@ -50,8 +50,8 @@ export default function QuizBuilderPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Quiz Builder</h1>
           <p className="text-sm text-silver-mist mt-1">Create and manage assessments for courses and certifications</p>
@@ -61,7 +61,7 @@ export default function QuizBuilderPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Total Quizzes</p>
           <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">{quizzes.length}</p>
@@ -109,7 +109,7 @@ export default function QuizBuilderPage() {
 
               return (
                 <div key={quiz.id} className="px-5 py-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos transition-colors group">
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-3">
                     <div className="p-2.5 rounded-lg bg-celestial-indigo/10 flex-shrink-0">
                       <FileQuestion className="w-5 h-5 text-celestial-indigo" />
                     </div>
@@ -121,7 +121,7 @@ export default function QuizBuilderPage() {
                         </span>
                       </div>
                       <p className="text-xs text-silver-mist mt-0.5">{quiz.description || ''}</p>
-                      <div className="flex items-center gap-4 mt-2 text-[10px] text-silver-mist">
+                      <div className="flex items-center gap-3 mt-2 text-[10px] text-silver-mist">
                         <span className="flex items-center gap-1"><FileQuestion className="w-3 h-3" /> {questionsCount} questions</span>
                         {quiz.timeLimit && <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {quiz.timeLimit} min</span>}
                         <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Pass: {quiz.passingScore}%</span>
@@ -151,3 +151,4 @@ export default function QuizBuilderPage() {
     </div>
   );
 }
+

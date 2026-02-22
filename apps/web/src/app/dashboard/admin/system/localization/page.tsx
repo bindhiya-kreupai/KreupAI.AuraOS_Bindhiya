@@ -18,9 +18,9 @@ export default function LocalizationPage() {
     const [logo, setLogo] = useState<string | null>(null);
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Globe className="w-6 h-6 text-indigo-500" />
@@ -33,9 +33,9 @@ export default function LocalizationPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full min-h-0 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-full min-h-0 overflow-y-auto pb-20">
                 {/* Branding Section */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-6">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
                     <h3 className="font-bold text-lg flex items-center gap-2">
                         <Palette className="w-5 h-5 text-indigo-500" /> Branding
                     </h3>
@@ -78,13 +78,13 @@ export default function LocalizationPage() {
                 </div>
 
                 {/* Regional Settings */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-6">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
                     <h3 className="font-bold text-lg flex items-center gap-2">
                         <Languages className="w-5 h-5 text-indigo-500" /> Regional
                     </h3>
 
                     <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3">
                             <div>
                                 <label className="text-xs font-bold text-slate-500 uppercase">Default Language</label>
                                 <select className="w-full mt-2 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm outline-none">
@@ -121,7 +121,7 @@ export default function LocalizationPage() {
 
                     <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/30">
                         <h4 className="font-bold text-sm text-indigo-800 dark:text-indigo-300 mb-1">Preview</h4>
-                        <div className="flex gap-4 items-center mt-3">
+                        <div className="flex gap-3 items-center mt-3">
                             <button className={`px-4 py-2 bg-${themeColor}-500 text-white rounded-lg text-sm font-bold shadow-md`}>Primary Button</button>
                             <div className={`text-${themeColor}-500 font-bold text-sm underline`}>Text Link</div>
                             <div className="text-sm text-slate-600 dark:text-slate-400">Regular body text.</div>
@@ -132,3 +132,4 @@ export default function LocalizationPage() {
         </div>
     );
 }
+

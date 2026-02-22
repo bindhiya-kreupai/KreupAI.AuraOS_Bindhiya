@@ -62,9 +62,9 @@ export default function CheckInTemplatesPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Check-in Templates</h1>
           <p className="text-sm text-silver-mist mt-1">Manage discussion templates for meetings and reviews</p>
@@ -108,7 +108,7 @@ export default function CheckInTemplatesPage() {
               className="px-5 py-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-deep-cosmos transition-colors"
               onClick={() => setExpandedTemplate(expandedTemplate === template.id ? null : template.id)}
             >
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3">
                 <div className="p-2.5 rounded-lg bg-celestial-indigo/10 flex-shrink-0">
                   <FileText className="w-5 h-5 text-celestial-indigo" />
                 </div>
@@ -120,7 +120,7 @@ export default function CheckInTemplatesPage() {
                     )}
                   </div>
                   <p className="text-xs text-silver-mist mt-0.5">{template.description}</p>
-                  <div className="flex items-center gap-4 mt-2 text-[10px] text-silver-mist">
+                  <div className="flex items-center gap-3 mt-2 text-[10px] text-silver-mist">
                     <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> {template.questions.length} questions</span>
                     <span className="flex items-center gap-1"><Users className="w-3 h-3" /> Used {template.usageCount} times</span>
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {template.lastUsed}</span>
@@ -158,3 +158,4 @@ export default function CheckInTemplatesPage() {
     </div>
   );
 }
+

@@ -10,9 +10,9 @@ import {
 
 export default function PositionTransferPage() {
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <ArrowRightLeft className="w-6 h-6 text-indigo-500" />
@@ -26,7 +26,7 @@ export default function PositionTransferPage() {
                 <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <h3 className="font-bold text-lg mb-6">Transfer Request</h3>
 
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
                             <label className="block text-xs font-bold text-slate-500 mb-2 uppercase">Source</label>
                             <select className="w-full p-2 bg-transparent border-b border-slate-200 dark:border-slate-800 outline-none font-bold">
@@ -83,3 +83,4 @@ export default function PositionTransferPage() {
         </div>
     );
 }
+

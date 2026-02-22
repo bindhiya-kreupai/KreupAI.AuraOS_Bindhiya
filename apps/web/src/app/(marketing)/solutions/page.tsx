@@ -76,7 +76,7 @@ export default function SolutionsPage() {
                             <h2 className="text-3xl font-bold text-ink-black dark:text-pearl mb-2">{section.category}</h2>
                             <p className="text-lg text-twilight dark:text-silver-mist">{section.description}</p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                             {section.items.map((item, i) => (
                                 <div key={i} className="bg-white dark:bg-stellar-blue/5 p-6 rounded-xl border border-cloud dark:border-nebula-purple hover:shadow-lg transition-shadow group">
                                     <div className="w-10 h-10 rounded-lg bg-celestial-indigo/10 dark:bg-quantum-rose/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -116,3 +116,4 @@ export default function SolutionsPage() {
         </div>
     );
 }
+

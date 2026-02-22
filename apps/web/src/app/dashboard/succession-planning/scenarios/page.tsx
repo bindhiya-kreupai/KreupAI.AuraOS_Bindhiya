@@ -71,9 +71,9 @@ export default function SuccessionScenariosPage() {
     const readinessScore = metrics?.benchStrength || (candidates.length > 0 ? Math.round((candidates.filter(c => c.readinessLevel === 'ready_now').length / candidates.length) * 100) : 0);
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <GitBranch className="w-6 h-6 text-celestial-indigo" />
@@ -174,7 +174,7 @@ export default function SuccessionScenariosPage() {
                                                     <div className="absolute left-6 top-12 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700 -mb-4 z-0"></div>
                                                 )}
 
-                                                <div className="relative z-10 bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 flex items-center gap-4 hover:border-celestial-indigo/30 hover:shadow-sm transition-all">
+                                                <div className="relative z-10 bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 flex items-center gap-3 hover:border-celestial-indigo/30 hover:shadow-sm transition-all">
                                                     <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-celestial-indigo flex items-center justify-center text-lg font-bold shadow-sm">
                                                         {(successor.employeeName || 'N').substring(0, 2)}
                                                     </div>
@@ -218,3 +218,4 @@ export default function SuccessionScenariosPage() {
         </div>
     );
 }
+

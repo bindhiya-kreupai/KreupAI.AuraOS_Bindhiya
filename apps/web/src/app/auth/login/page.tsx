@@ -46,7 +46,7 @@ export default function LoginPage() {
             &quot;AuraOS has completely transformed how we manage our global workforce. It&apos;s
             not just HR software; it&apos;s an intelligence platform.&quot;
           </p>
-          <div className="mt-8 flex items-center gap-4">
+          <div className="mt-8 flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-white/20" />
             <div>
               <div className="font-semibold">Sarah Chen</div>
@@ -102,7 +102,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <form className="space-y-6" onSubmit={handleLogin}>
+          <form className="space-y-4" onSubmit={handleLogin}>
             <div className="space-y-2">
               <label className="text-sm font-medium text-ink-black dark:text-pearl">
                 Email address
@@ -156,7 +156,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <button className="flex items-center justify-center px-4 py-2 border border-cloud dark:border-nebula-purple rounded-lg hover:bg-cloud/50 dark:hover:bg-stellar-blue/10 transition-colors">
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -194,3 +194,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

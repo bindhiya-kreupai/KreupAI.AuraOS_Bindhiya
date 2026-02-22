@@ -63,8 +63,8 @@ export default function InsuranceCoveragePage() {
 
     if (!activePlan) {
         return (
-            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                     <div>
                         <h1 className="text-2xl font-bold flex items-center gap-2">
                             <Heart className="w-6 h-6 text-rose-500" />
@@ -92,9 +92,9 @@ export default function InsuranceCoveragePage() {
     const coinsurance = activePlan.coinsurance ? `${activePlan.coinsurance}%` : 'N/A';
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Heart className="w-6 h-6 text-rose-500" />
@@ -107,7 +107,7 @@ export default function InsuranceCoveragePage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 overflow-y-auto pb-20">
                 {/* Digital ID Card */}
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden h-[220px]">
                     <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
@@ -166,8 +166,8 @@ export default function InsuranceCoveragePage() {
                 </div>
 
                 {/* Support Contacts */}
-                <div className="lg:col-span-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="flex items-center gap-4">
+                <div className="lg:col-span-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-sm text-indigo-500">
                             <Phone className="w-6 h-6" />
                         </div>
@@ -176,7 +176,7 @@ export default function InsuranceCoveragePage() {
                             <p className="text-sm text-slate-500">24/7 Member Support</p>
                         </div>
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex gap-3">
                         <button className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold shadow-sm">
                             Contact {carrierName}
                         </button>
@@ -189,3 +189,4 @@ export default function InsuranceCoveragePage() {
         </div>
     );
 }
+

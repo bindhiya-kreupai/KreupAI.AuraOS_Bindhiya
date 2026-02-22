@@ -199,7 +199,7 @@ export default function AIAgentsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -256,7 +256,7 @@ export default function AIAgentsPage() {
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -280,7 +280,7 @@ export default function AIAgentsPage() {
       </div>
 
       {/* Chat Interface */}
-      <div className="grid grid-cols-12 gap-4 h-[600px]">
+      <div className="grid grid-cols-12 gap-3 h-[600px]">
         {/* Conversations List */}
         <Card className="col-span-12 md:col-span-4 overflow-hidden">
           <CardHeader>
@@ -422,3 +422,4 @@ export default function AIAgentsPage() {
     </div>
   );
 }
+

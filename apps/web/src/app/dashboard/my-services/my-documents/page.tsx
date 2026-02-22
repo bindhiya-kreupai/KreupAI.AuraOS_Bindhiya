@@ -54,8 +54,8 @@ export default function MyDocumentsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Folder className="w-6 h-6 text-indigo-500" />
@@ -104,7 +104,7 @@ export default function MyDocumentsPage() {
                     <p className="text-sm">No documents found</p>
                 </div>
             ) : viewMode === 'grid' ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
                     {filteredDocs.map((doc, i) => (
                         <div key={doc.id || i} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all group cursor-pointer flex flex-col items-center text-center relative">
                             <button className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 hover:bg-slate-100 dark:hover:bg-slate-800 p-1 rounded">
@@ -156,3 +156,4 @@ export default function MyDocumentsPage() {
         </div>
     );
 }
+

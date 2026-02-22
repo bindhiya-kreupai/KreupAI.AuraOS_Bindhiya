@@ -32,9 +32,9 @@ export default function PlanEligibilityPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Users className="w-6 h-6 text-indigo-500" />
@@ -44,7 +44,7 @@ export default function PlanEligibilityPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 gap-3 overflow-y-auto pb-20">
                 {loading ? (
                     <div className="col-span-full flex justify-center items-center py-20">
                         <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
@@ -56,7 +56,7 @@ export default function PlanEligibilityPage() {
                         <p className="text-sm text-slate-500 max-w-sm mt-1">Create eligibility rules to define which employees qualify for benefit plans.</p>
                     </div>
                 ) : eligibilityRules.map((rule, i) => (
-                    <div key={rule.id || i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div key={rule.id || i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-3">
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600">
@@ -71,7 +71,7 @@ export default function PlanEligibilityPage() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-4 text-slate-500 md:px-8 md:border-l md:border-r border-slate-100 dark:border-slate-800 flex-1 justify-center">
+                        <div className="flex items-center gap-3 text-slate-500 md:px-8 md:border-l md:border-r border-slate-100 dark:border-slate-800 flex-1 justify-center">
                             <ArrowRight className="w-5 h-5 text-slate-300 hidden md:block" />
                             <div className="text-center md:text-left">
                                 <span className="text-xs uppercase font-bold text-slate-400 block mb-1">Status</span>
@@ -104,3 +104,4 @@ export default function PlanEligibilityPage() {
         </div>
     );
 }
+

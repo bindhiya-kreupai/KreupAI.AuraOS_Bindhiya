@@ -96,9 +96,9 @@ export default function ExpenseReimbursementPage() {
   };
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Expense Reimbursement</h1>
           <p className="text-sm text-silver-mist mt-1">Submit and track expense claims</p>
@@ -109,7 +109,7 @@ export default function ExpenseReimbursementPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Pending</p>
           <p className="text-2xl font-bold text-sunset-amber mt-1">${totalPending.toFixed(2)}</p>
@@ -156,7 +156,7 @@ export default function ExpenseReimbursementPage() {
         ) : (
           <div className="divide-y divide-cloud dark:divide-nebula-purple/50">
             {filteredExpenses.map((expense) => (
-              <div key={expense.id} className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos transition-colors">
+              <div key={expense.id} className="flex items-center gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos transition-colors">
                 <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-deep-cosmos">
                   <Receipt className="w-5 h-5 text-celestial-indigo" />
                 </div>
@@ -187,3 +187,4 @@ export default function ExpenseReimbursementPage() {
     </div>
   );
 }
+

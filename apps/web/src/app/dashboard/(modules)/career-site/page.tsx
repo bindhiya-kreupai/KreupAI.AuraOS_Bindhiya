@@ -119,12 +119,12 @@ export default function CareerSiteModulePage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 pb-10">
+      <div className="space-y-4 pb-6">
         <div className="flex items-center gap-2 p-6">
           <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
           <span className="text-slate-500">Loading career site data...</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 animate-pulse">
               <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-24 mb-2" />
@@ -154,9 +154,9 @@ export default function CareerSiteModulePage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Globe className="w-6 h-6 text-indigo-500" />
@@ -185,7 +185,7 @@ export default function CareerSiteModulePage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
           <p className="text-xs text-slate-500 uppercase font-medium">Active Listings</p>
           <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{activeListings}</p>
@@ -248,9 +248,9 @@ export default function CareerSiteModulePage() {
 
 function CareerSiteBuilderPanel({ config, onUpdate }: { config: SiteConfig; onUpdate: (c: SiteConfig) => void }) {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
       <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">Site Configuration</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 block">Company Name</label>
           <input
@@ -347,9 +347,9 @@ function JobListingEditorPanel({ jobs }: { jobs: JobPosting[] }) {
 
 function BrandingCustomizerPanel({ config, onUpdate }: { config: SiteConfig; onUpdate: (c: SiteConfig) => void }) {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
       <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">Brand Customization</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 block">Primary Color</label>
           <div className="flex items-center gap-3">
@@ -375,7 +375,7 @@ function BrandingCustomizerPanel({ config, onUpdate }: { config: SiteConfig; onU
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
           <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 block">LinkedIn</label>
           <input
@@ -455,3 +455,4 @@ function PreviewPanePanel({ config, jobs }: { config: SiteConfig; jobs: JobPosti
     </div>
   );
 }
+

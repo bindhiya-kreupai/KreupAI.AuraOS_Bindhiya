@@ -62,8 +62,8 @@ export default function DependentsPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Dependents</h1>
           <p className="text-sm text-silver-mist mt-1">Manage family members enrolled in your benefits</p>
@@ -73,7 +73,7 @@ export default function DependentsPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Total Dependents</p>
           <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">{dependents.length}</p>
@@ -96,7 +96,7 @@ export default function DependentsPage() {
           <div className="divide-y divide-cloud dark:divide-nebula-purple/50">
             {dependents.map((dep) => (
               <div key={dep.id} className="px-5 py-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos transition-colors group">
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-full bg-celestial-indigo/10 flex items-center justify-center flex-shrink-0">
                     <Users className="w-5 h-5 text-celestial-indigo" />
                   </div>
@@ -107,7 +107,7 @@ export default function DependentsPage() {
                         {dep.relationship}
                       </span>
                     </div>
-                    <div className="flex items-center gap-4 mt-1 text-xs text-silver-mist">
+                    <div className="flex items-center gap-3 mt-1 text-xs text-silver-mist">
                       <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> DOB: {dep.dob}</span>
                       <span>Age: {dep.age}</span>
                       <span>SSN: {dep.ssn}</span>
@@ -154,3 +154,4 @@ export default function DependentsPage() {
     </div>
   );
 }
+

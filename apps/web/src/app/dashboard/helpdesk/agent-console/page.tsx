@@ -46,8 +46,8 @@ export default function AgentConsolePage() {
     const currentTicket = tickets[0];
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Headphones className="w-6 h-6 text-purple-500" />
@@ -55,14 +55,14 @@ export default function AgentConsolePage() {
                     </h1>
                     <p className="text-slate-500 text-sm">Manage ticket queues, track SLAs, and resolve employee queries.</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     <span className="flex items-center gap-2 text-xs font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg border border-emerald-100 dark:border-emerald-800">
                         <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div> Online
                     </span>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 h-full min-h-0">
                 <div className="lg:col-span-1 space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
@@ -100,7 +100,7 @@ export default function AgentConsolePage() {
                                     <h2 className="font-bold text-lg flex items-center gap-2">
                                         #{currentTicket.ticketNumber} <span className="font-normal text-slate-400">|</span> {currentTicket.subject}
                                     </h2>
-                                    <div className="flex items-center gap-4 text-xs font-bold text-slate-500 mt-1">
+                                    <div className="flex items-center gap-3 text-xs font-bold text-slate-500 mt-1">
                                         <span className="flex items-center gap-1"><Users className="w-3 h-3" /> Raised by: {currentTicket.requester?.employeeName || 'Unknown'}</span>
                                         <span className="flex items-center gap-1 text-rose-500"><Clock className="w-3 h-3" /> SLA: {currentTicket.slaInfo?.timeRemaining || 0}min remaining</span>
                                     </div>
@@ -112,9 +112,9 @@ export default function AgentConsolePage() {
                             </div>
 
                             <div className="flex-1 flex flex-col md:flex-row min-h-0">
-                                <div className="flex-1 p-6 overflow-y-auto space-y-6">
+                                <div className="flex-1 p-6 overflow-y-auto space-y-4">
                                     {currentTicket.comments?.length ? currentTicket.comments.map((comment, idx) => (
-                                        <div key={comment.commentId || idx} className="flex gap-4">
+                                        <div key={comment.commentId || idx} className="flex gap-3">
                                             <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-xs text-slate-600">
                                                 {comment.author?.[0] || '?'}
                                             </div>
@@ -133,7 +133,7 @@ export default function AgentConsolePage() {
                                     )}
                                 </div>
 
-                                <div className="w-72 border-l border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 p-4 space-y-6 overflow-y-auto">
+                                <div className="w-72 border-l border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 p-4 space-y-4 overflow-y-auto">
                                     <div>
                                         <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Properties</h4>
                                         <div className="space-y-2 text-sm">
@@ -187,3 +187,4 @@ export default function AgentConsolePage() {
         </div>
     );
 }
+

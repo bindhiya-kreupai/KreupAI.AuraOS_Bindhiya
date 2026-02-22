@@ -35,7 +35,7 @@ export default function MileageTrackingPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <Gauge className="w-8 h-8 text-indigo-500" />
@@ -101,3 +101,4 @@ export default function MileageTrackingPage() {
         </div>
     );
 }
+

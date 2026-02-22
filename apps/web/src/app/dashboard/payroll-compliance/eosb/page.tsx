@@ -16,7 +16,7 @@ export default function EOSBPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         <Link
           href="/dashboard/payroll-compliance/eosb/end-of-service-benefits-calculator"
           className="group p-6 bg-white dark:bg-slate-800 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-celestial-indigo dark:hover:border-quantum-rose transition-all duration-200 hover:shadow-lg"
@@ -58,3 +58,4 @@ export default function EOSBPage() {
     </div>
   );
 }
+

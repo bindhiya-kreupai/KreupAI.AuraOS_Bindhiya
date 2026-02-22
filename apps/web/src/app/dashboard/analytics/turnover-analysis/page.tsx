@@ -78,13 +78,13 @@ export default function TurnoverAnalysisPage() {
   const maxSeparations = Math.max(...monthlyTrend.map((m) => m.separations), 1);
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       <div>
         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Turnover Analysis</h1>
         <p className="text-sm text-silver-mist mt-1">Understand attrition patterns and retention insights</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Overall Turnover</p>
           <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">{overallRate}%</p>
@@ -188,3 +188,4 @@ export default function TurnoverAnalysisPage() {
     </div>
   );
 }
+

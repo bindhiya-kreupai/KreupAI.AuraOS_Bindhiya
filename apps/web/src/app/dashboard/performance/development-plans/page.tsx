@@ -36,9 +36,9 @@ export default function DevelopmentPlansPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Rocket className="w-6 h-6 text-indigo-500" />
@@ -58,7 +58,7 @@ export default function DevelopmentPlansPage() {
                     <p className="text-sm mt-1">Create your first IDP to start tracking growth</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {plans.map((plan) => {
                         const completedActivities = plan.activities?.filter((a: any) => a.status === 'Completed').length || 0;
                         const totalActivities = plan.activities?.length || 0;
@@ -102,3 +102,4 @@ export default function DevelopmentPlansPage() {
         </div>
     );
 }
+

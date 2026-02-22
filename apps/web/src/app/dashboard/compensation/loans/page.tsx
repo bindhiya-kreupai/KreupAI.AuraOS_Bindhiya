@@ -70,9 +70,9 @@ export default function LoansPage() {
     ] : [{ name: 'No Data', value: 1, color: '#e2e8f0' }];
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <PiggyBank className="w-6 h-6 text-celestial-indigo" />
@@ -92,13 +92,13 @@ export default function LoansPage() {
                     <p className="text-xs text-slate-300 mt-1">Loan schemes will be available once configured by HR.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                     {/* Active Loan Details */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="lg:col-span-2 space-y-4">
                         {activeLoan && (
                             <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
-                                <div className="flex flex-col md:flex-row justify-between items-start gap-6 relative z-10">
+                                <div className="flex flex-col md:flex-row justify-between items-start gap-3 relative z-10">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-2">
                                             <h2 className="text-xl font-bold text-ink-black dark:text-pearl">
@@ -111,7 +111,7 @@ export default function LoansPage() {
                                         <div className="text-sm text-silver-mist mb-6">
                                             {activeLoan.loanCode || activeLoan.id?.substring(0, 12)}
                                         </div>
-                                        <div className="grid grid-cols-2 gap-6">
+                                        <div className="grid grid-cols-2 gap-3">
                                             <div>
                                                 <div className="text-xs text-silver-mist uppercase font-bold">Total Loan</div>
                                                 <div className="text-lg font-bold text-ink-black dark:text-pearl">${loanAmount.toLocaleString()}</div>
@@ -160,7 +160,7 @@ export default function LoansPage() {
                                 <div className="divide-y divide-cloud dark:divide-nebula-purple/20">
                                     {employeeLoans.map((loan: any) => (
                                         <div key={loan.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors">
-                                            <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-3">
                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                                                     loan.status === 'active' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'
                                                 }`}>
@@ -185,7 +185,7 @@ export default function LoansPage() {
                     </div>
 
                     {/* Sidebar */}
-                    <div className="lg:col-span-1 space-y-6">
+                    <div className="lg:col-span-1 space-y-4">
                         <div className="bg-gradient-to-br from-celestial-indigo to-purple-600 p-6 rounded-2xl text-white shadow-lg">
                             <h3 className="font-bold text-lg mb-1">Available Schemes</h3>
                             <p className="text-indigo-100 text-xs mb-4">Loan schemes you can apply for.</p>
@@ -229,3 +229,4 @@ export default function LoansPage() {
         </div>
     );
 }
+

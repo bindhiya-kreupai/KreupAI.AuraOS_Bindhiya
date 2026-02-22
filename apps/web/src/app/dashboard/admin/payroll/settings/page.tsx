@@ -72,9 +72,9 @@ export default function PayrollSettingsPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Settings className="w-6 h-6 text-indigo-500" />
@@ -90,9 +90,9 @@ export default function PayrollSettingsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
                 {/* Left: Main Configuration */}
-                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-6">
+                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
                     {/* Tabs */}
                     <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0 w-fit">
                         {['General', 'Payslip Design', 'Cutoff Rules'].map(tab => (
@@ -113,13 +113,13 @@ export default function PayrollSettingsPage() {
                     {/* Content Area */}
                     <div className="flex-1 overflow-y-auto pr-2 pb-20">
                         {activeTab === 'General' && (
-                            <div className="space-y-6">
+                            <div className="space-y-4">
                                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                                     <h3 className="font-bold text-ink-black dark:text-pearl mb-6 flex items-center gap-2">
                                         <Calendar className="w-5 h-5 text-indigo-500" /> Pay Cycle Definition
                                     </h3>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         <div>
                                             <label className="text-xs font-bold text-slate-500 mb-1 block">Pay Frequency</label>
                                             <select
@@ -169,7 +169,7 @@ export default function PayrollSettingsPage() {
                         )}
 
                         {activeTab === 'Payslip Design' && (
-                            <div className="space-y-6">
+                            <div className="space-y-4">
                                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                                     <div className="flex justify-between items-center mb-6">
                                         <h3 className="font-bold text-ink-black dark:text-pearl flex items-center gap-2">
@@ -192,7 +192,7 @@ export default function PayrollSettingsPage() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         {payslipConfig.map(field => (
                                             <div key={field.id} className="flex items-center justify-between p-3 rounded-xl border border-cloud dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
                                                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{field.label}</span>
@@ -210,7 +210,7 @@ export default function PayrollSettingsPage() {
                         )}
 
                         {activeTab === 'Cutoff Rules' && (
-                            <div className="space-y-6">
+                            <div className="space-y-4">
                                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                                     <h3 className="font-bold text-ink-black dark:text-pearl mb-6 flex items-center gap-2">
                                         <Clock className="w-5 h-5 text-indigo-500" /> Freeze Dates
@@ -259,7 +259,7 @@ export default function PayrollSettingsPage() {
                 </div>
 
                 {/* Right: Live Preview / Schedule */}
-                <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
+                <div className="lg:col-span-1 space-y-4 flex flex-col h-full overflow-hidden">
                     {/* Schedule Widget */}
                     <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-800/30 shrink-0">
                         <h3 className="font-bold text-indigo-800 dark:text-indigo-300 mb-2 flex items-center gap-2">
@@ -324,3 +324,4 @@ export default function PayrollSettingsPage() {
         </div>
     );
 }
+

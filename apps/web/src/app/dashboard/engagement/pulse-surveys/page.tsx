@@ -40,8 +40,8 @@ export default function PulseSurveysPage() {
     const pastSurveys = data.filter(s => s.status === 'closed');
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Activity className="w-6 h-6 text-indigo-500" />
@@ -58,7 +58,7 @@ export default function PulseSurveysPage() {
                     <p className="text-sm">Surveys will appear here once created.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-4">
                         <h3 className="font-bold text-lg flex items-center gap-2">
                             <Play className="w-4 h-4 text-emerald-500" /> Open for Response
@@ -76,7 +76,7 @@ export default function PulseSurveysPage() {
                                             {survey.type || 'Pulse'}
                                         </span>
                                         <h3 className="text-xl font-bold mb-2 group-hover:text-indigo-600 transition-colors">{survey.title}</h3>
-                                        <div className="flex items-center gap-4 text-sm text-slate-500 mb-6">
+                                        <div className="flex items-center gap-3 text-sm text-slate-500 mb-6">
                                             <span>{survey.questions || 0} Questions</span>
                                             <span>-</span>
                                             <span>~{survey.time || '5 mins'} to complete</span>
@@ -94,7 +94,7 @@ export default function PulseSurveysPage() {
                         <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
                             <BarChart2 className="w-5 h-5 text-indigo-500" /> Past Insights
                         </h3>
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             {pastSurveys.length === 0 ? (
                                 <p className="text-sm text-slate-400">No past survey results yet.</p>
                             ) : (
@@ -118,3 +118,4 @@ export default function PulseSurveysPage() {
         </div>
     );
 }
+

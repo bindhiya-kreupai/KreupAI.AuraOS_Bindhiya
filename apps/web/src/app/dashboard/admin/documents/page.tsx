@@ -174,8 +174,8 @@ export default function DocumentsPage() {
 
     if (loading) {
         return (
-            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                     <div>
                         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                             <Folder className="w-6 h-6 text-indigo-500" />
@@ -184,10 +184,10 @@ export default function DocumentsPage() {
                         <p className="text-silver-mist text-sm">Central repository for policies, templates, and contracts.</p>
                     </div>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 animate-pulse">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 animate-pulse">
                     <div className="lg:col-span-2 space-y-4">
                         <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl" />
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             {[1, 2, 3, 4].map(i => (
                                 <div key={i} className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 h-24" />
                             ))}
@@ -207,7 +207,7 @@ export default function DocumentsPage() {
 
     if (error) {
         return (
-            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col items-center justify-center">
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col items-center justify-center">
                 <AlertCircle className="w-12 h-12 text-rose-500" />
                 <p className="text-lg font-bold text-ink-black dark:text-pearl">{error}</p>
                 <button
@@ -221,9 +221,9 @@ export default function DocumentsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Folder className="w-6 h-6 text-indigo-500" />
@@ -239,9 +239,9 @@ export default function DocumentsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
                 {/* Left: Main Content */}
-                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-6">
+                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
                     {/* Search Bar */}
                     <div className="relative shrink-0">
                         <input
@@ -259,7 +259,7 @@ export default function DocumentsPage() {
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-3 text-sm flex items-center gap-2">
                             <Folder className="w-4 h-4 text-slate-400" /> Folders
                         </h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             {folders.length === 0 ? (
                                 <p className="col-span-4 text-sm text-silver-mist text-center py-4">No folders yet</p>
                             ) : (
@@ -289,7 +289,7 @@ export default function DocumentsPage() {
                             ) : (
                                 recentFiles.map(file => (
                                     <div key={file.id} className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors group">
-                                        <div className="flex items-center gap-4 overflow-hidden">
+                                        <div className="flex items-center gap-3 overflow-hidden">
                                             <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
                                                 <FileText className="w-5 h-5 text-slate-500" />
                                             </div>
@@ -324,7 +324,7 @@ export default function DocumentsPage() {
                 </div>
 
                 {/* Right: Actions & E-Signs */}
-                <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
+                <div className="lg:col-span-1 space-y-4 flex flex-col h-full overflow-hidden">
                     {/* E-Sign Widget */}
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm shrink-0">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
@@ -377,3 +377,4 @@ export default function DocumentsPage() {
         </div>
     );
 }
+

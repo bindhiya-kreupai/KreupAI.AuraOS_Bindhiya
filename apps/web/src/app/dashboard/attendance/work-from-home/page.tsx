@@ -57,7 +57,7 @@ export default function WorkFromHomePage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -72,7 +72,7 @@ export default function WorkFromHomePage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
                 {/* Balance Card */}
                 <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
@@ -82,7 +82,7 @@ export default function WorkFromHomePage() {
                     <div className="relative z-10">
                         <p className="text-indigo-100 font-medium mb-1">Available Balance</p>
                         <h2 className="text-4xl font-bold mb-4">{summary?.availableDays || 0} Days</h2>
-                        <div className="flex gap-4 text-sm text-indigo-100">
+                        <div className="flex gap-3 text-sm text-indigo-100">
                             <div>
                                 <span className="block font-bold text-white">{summary?.usedDaysThisMonth || 0}</span> used this month
                             </div>
@@ -94,7 +94,7 @@ export default function WorkFromHomePage() {
                 </div>
 
                 {/* Status Cards */}
-                <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-4">
+                <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
                         <Monitor className="w-6 h-6" />
                     </div>
@@ -104,7 +104,7 @@ export default function WorkFromHomePage() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-4">
+                <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
                         <Coffee className="w-6 h-6" />
                     </div>
@@ -156,3 +156,4 @@ export default function WorkFromHomePage() {
         </div>
     );
 }
+

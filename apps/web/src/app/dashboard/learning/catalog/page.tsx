@@ -48,9 +48,9 @@ export default function CourseCatalogPage() {
     const displayData = data.length > 0 ? data : mockCourses;
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <BookOpen className="w-6 h-6 text-sky-500" />
@@ -64,7 +64,7 @@ export default function CourseCatalogPage() {
             </div>
 
             {/* Filter Bar */}
-            <div className="flex flex-col md:flex-row gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row gap-3 shrink-0">
                 <div className="flex-1 bg-white dark:bg-slate-900 p-2 pl-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-2 shadow-sm">
                     <Search className="w-5 h-5 text-slate-400" />
                     <input type="text" placeholder="Search for Python, Leadership, Safety..." className="bg-transparent outline-none flex-1 text-sm font-bold" />
@@ -77,7 +77,7 @@ export default function CourseCatalogPage() {
             {/* Content Grid */}
             <div className="overflow-y-auto pb-20">
                 <h3 className="font-bold text-lg mb-4">Recommended for You</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                     {displayData.map((c, i) => (
                         <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl transition-all group cursor-pointer flex flex-col h-full">
                             <div className={`h-32 ${c.img} relative`}>
@@ -108,3 +108,4 @@ export default function CourseCatalogPage() {
         </div>
     );
 }
+

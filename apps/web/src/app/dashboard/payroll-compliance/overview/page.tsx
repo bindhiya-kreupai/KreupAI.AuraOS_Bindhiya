@@ -93,7 +93,7 @@ export default function PayrollComplianceOverviewPage() {
   };
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
@@ -110,7 +110,7 @@ export default function PayrollComplianceOverviewPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-5 text-white">
           <div className="text-4xl font-bold">{onlineCount}</div>
           <div className="text-sm opacity-90 mt-1">Services Online</div>
@@ -133,14 +133,14 @@ export default function PayrollComplianceOverviewPage() {
         <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
           Service Status | <span dir="rtl">حالة الخدمات</span>
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {services.map((service) => {
             const Icon = service.icon;
             return (
               <Link
                 key={service.endpoint}
                 href={service.href}
-                className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-sm transition-all group"
+                className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-sm transition-all group"
               >
                 <div className={`w-10 h-10 bg-${service.color}-100 dark:bg-${service.color}-900/30 rounded-xl flex items-center justify-center flex-shrink-0`}>
                   <Icon className={`w-5 h-5 text-${service.color}-600 dark:text-${service.color}-400`} />
@@ -197,3 +197,4 @@ export default function PayrollComplianceOverviewPage() {
     </div>
   );
 }
+

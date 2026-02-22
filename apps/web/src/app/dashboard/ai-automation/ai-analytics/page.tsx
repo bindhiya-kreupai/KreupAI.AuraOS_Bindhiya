@@ -210,9 +210,9 @@ export default function AIAnalyticsPage() {
   };
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
             <Brain className="w-7 h-7 text-indigo-500" />
@@ -251,7 +251,7 @@ export default function AIAnalyticsPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         <MetricCard
           title="Attrition Risk"
           value={`${ATTRITION_DATA.overallRisk}%`}
@@ -287,7 +287,7 @@ export default function AIAnalyticsPage() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Attrition Prediction */}
         <div className="lg:col-span-2 bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
           <div className="flex items-center justify-between mb-6">
@@ -298,7 +298,7 @@ export default function AIAnalyticsPage() {
             <span className="text-xs text-silver-mist">AI Confidence: 94%</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Risk Distribution */}
             <div>
               <h3 className="text-sm font-medium text-silver-mist mb-4">Risk Distribution</h3>
@@ -343,7 +343,7 @@ export default function AIAnalyticsPage() {
           {/* Department Risk */}
           <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-700">
             <h3 className="text-sm font-medium text-silver-mist mb-4">Risk by Department</h3>
-            <div className="flex items-end gap-4 h-32">
+            <div className="flex items-end gap-3 h-32">
               {ATTRITION_DATA.byDepartment.map((dept, idx) => (
                 <div key={idx} className="flex-1 flex flex-col items-center gap-2">
                   <div
@@ -402,7 +402,7 @@ export default function AIAnalyticsPage() {
       </div>
 
       {/* Second Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {/* Recruitment Pipeline */}
         <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
           <h2 className="text-lg font-bold text-ink-black dark:text-pearl flex items-center gap-2 mb-6">
@@ -410,7 +410,7 @@ export default function AIAnalyticsPage() {
             Recruitment Pipeline
           </h2>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-2 gap-3 mb-6">
             <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl text-center">
               <p className="text-2xl font-bold text-indigo-600">{RECRUITMENT_DATA.activeRequisitions}</p>
               <p className="text-xs text-silver-mist mt-1">Open Positions</p>
@@ -455,7 +455,7 @@ export default function AIAnalyticsPage() {
             Workforce Analytics
           </h2>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-2 gap-3 mb-6">
             {WORKFORCE_DATA.keyMetrics.map((metric, idx) => (
               <div key={idx} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
                 <div className="flex items-center justify-between">
@@ -469,7 +469,7 @@ export default function AIAnalyticsPage() {
             ))}
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-3">
             <div className="text-center">
               <div className="relative w-20 h-20 mx-auto">
                 <svg className="w-full h-full transform -rotate-90">
@@ -553,7 +553,7 @@ export default function AIAnalyticsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {SENTIMENT_DATA.categories.map((cat, idx) => (
             <div key={idx} className="text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
               <div
@@ -575,7 +575,7 @@ export default function AIAnalyticsPage() {
 
       {/* AI Insights */}
       <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 rounded-xl text-white">
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3">
           <div className="p-3 bg-white/20 rounded-xl">
             <Zap className="w-6 h-6" />
           </div>
@@ -605,3 +605,4 @@ export default function AIAnalyticsPage() {
     </div>
   );
 }
+

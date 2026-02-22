@@ -261,7 +261,7 @@ export default function IndiaStatutoryPage() {
   ];
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -329,7 +329,7 @@ export default function IndiaStatutoryPage() {
         <div className="p-6">
           {/* PF Tab */}
           {activeTab === 'pf' && (
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-3">
               <div className="space-y-4">
                 <h3 className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <Calculator className="w-5 h-5 text-blue-500" />
@@ -423,7 +423,7 @@ export default function IndiaStatutoryPage() {
 
           {/* ESI Tab */}
           {activeTab === 'esi' && (
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-3">
               <div className="space-y-4">
                 <h3 className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <Calculator className="w-5 h-5 text-green-500" />
@@ -499,13 +499,13 @@ export default function IndiaStatutoryPage() {
 
           {/* TDS Tab */}
           {activeTab === 'tds' && (
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-3">
               <div className="space-y-4">
                 <h3 className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <Calculator className="w-5 h-5 text-purple-500" />
                   TDS Calculator
                 </h3>
-                <div className="flex items-center gap-4 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                   <label className="flex items-center gap-2">
                     <input
                       type="radio"
@@ -641,7 +641,7 @@ export default function IndiaStatutoryPage() {
 
           {/* Professional Tax Tab */}
           {activeTab === 'pt' && (
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-3">
               <div className="space-y-4">
                 <h3 className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <Calculator className="w-5 h-5 text-orange-500" />
@@ -716,7 +716,7 @@ export default function IndiaStatutoryPage() {
           <FileText className="w-5 h-5 text-slate-500" />
           Compliance Due Dates
         </h3>
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-3 gap-3">
           <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <div className="text-blue-600 dark:text-blue-400 font-semibold">EPF Payment</div>
             <div className="text-sm text-slate-600 dark:text-slate-400">15th of following month</div>
@@ -737,3 +737,4 @@ export default function IndiaStatutoryPage() {
     </div>
   );
 }
+

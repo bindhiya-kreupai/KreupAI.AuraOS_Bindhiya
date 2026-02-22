@@ -91,9 +91,9 @@ export default function ShiftSwappingPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <ArrowRightLeft className="w-6 h-6 text-celestial-indigo" />
@@ -118,7 +118,7 @@ export default function ShiftSwappingPage() {
             </div>
 
             {activeTab === 'My Shifts' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-300">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 animate-in fade-in duration-300">
                     {loading ? (
                         <div className="col-span-full p-8 text-center">
                             <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
@@ -191,7 +191,7 @@ export default function ShiftSwappingPage() {
                         <button className="px-3 py-1.5 bg-white dark:bg-stellar-blue border border-cloud dark:border-nebula-purple/50 text-slate-600 dark:text-slate-300 rounded-full text-xs font-bold whitespace-nowrap hover:bg-slate-50">Evening Only</button>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-1 gap-3">
                         {loading ? (
                             <div className="p-8 text-center">
                                 <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
@@ -200,8 +200,8 @@ export default function ShiftSwappingPage() {
                         ) : marketplace.length === 0 ? (
                             <div className="p-8 text-center text-slate-400">No shifts available in the marketplace</div>
                         ) : marketplace.map(item => (
-                            <div key={item.id} className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-col md:flex-row items-center gap-6 group hover:border-celestial-indigo/30 transition-colors">
-                                <div className="flex items-center gap-4 flex-1">
+                            <div key={item.id} className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-col md:flex-row items-center gap-3 group hover:border-celestial-indigo/30 transition-colors">
+                                <div className="flex items-center gap-3 flex-1">
                                     <div className={`w-12 h-12 rounded-full ${item.offeredBy.avatar} flex items-center justify-center text-white font-bold text-lg shadow-md`}>
                                         {item.offeredBy.name.charAt(0)}
                                     </div>
@@ -242,3 +242,4 @@ export default function ShiftSwappingPage() {
         </div>
     );
 }
+

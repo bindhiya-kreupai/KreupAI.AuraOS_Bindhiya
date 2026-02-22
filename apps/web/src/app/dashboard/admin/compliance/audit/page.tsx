@@ -83,17 +83,17 @@ export default function ComplianceAuditPage() {
 
     if (loading) {
         return (
-            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col">
                 <div className="flex items-center gap-2 p-6">
                     <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
                     <span className="text-slate-500">Loading compliance audit data...</span>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-6">
-                    <div className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 px-6">
+                    <div className="space-y-4">
                         <div className="bg-emerald-600 p-6 rounded-2xl animate-pulse h-48" />
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 animate-pulse h-64" />
                     </div>
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="lg:col-span-2 space-y-4">
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 animate-pulse h-80" />
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 animate-pulse h-48" />
                     </div>
@@ -116,9 +116,9 @@ export default function ComplianceAuditPage() {
     const scoreLabel = data.complianceScore >= 90 ? 'Excellent' : data.complianceScore >= 70 ? 'Good' : data.complianceScore >= 50 ? 'Fair' : 'Needs Attention';
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Scale className="w-6 h-6 text-emerald-500" />
@@ -134,9 +134,9 @@ export default function ComplianceAuditPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-y-auto lg:overflow-visible">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-y-auto lg:overflow-visible">
                 {/* Left: Score & Calendar */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     {/* Compliance Score Card */}
                     <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-6 rounded-2xl text-white shadow-lg relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -198,7 +198,7 @@ export default function ComplianceAuditPage() {
                 </div>
 
                 {/* Middle: Violation Log */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-col h-full">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="font-bold text-ink-black dark:text-pearl flex items-center gap-2">
@@ -294,7 +294,7 @@ export default function ComplianceAuditPage() {
                                     </PieChart>
                                 </ResponsiveContainer>
 
-                                <div className="flex-1 grid grid-cols-2 gap-4">
+                                <div className="flex-1 grid grid-cols-2 gap-3">
                                     {data.riskDistribution.map((item, idx) => (
                                         <div key={idx} className="flex items-center gap-2">
                                             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
@@ -313,3 +313,4 @@ export default function ComplianceAuditPage() {
         </div>
     );
 }
+

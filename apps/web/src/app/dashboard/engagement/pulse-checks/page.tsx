@@ -69,8 +69,8 @@ export default function PulseChecksPage() {
     const participationRate = metrics?.surveyParticipationRate || 0;
 
     return (
-        <div className="space-y-6 pb-10">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Heart className="w-6 h-6 text-rose-500" />
@@ -89,7 +89,7 @@ export default function PulseChecksPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-5">
                         <Thermometer className="w-32 h-32" />
@@ -147,7 +147,7 @@ export default function PulseChecksPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <h3 className="font-bold text-ink-black dark:text-pearl mb-6 flex items-center gap-2">
                         <TrendingUp className="w-5 h-5 text-indigo-500" /> 30-Day Morale Trend
@@ -224,3 +224,4 @@ function CheckCircleIcon() {
         </svg>
     )
 }
+

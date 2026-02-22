@@ -53,9 +53,9 @@ export default function SalaryStructurePage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Calculator className="w-6 h-6 text-indigo-500" />
@@ -68,9 +68,9 @@ export default function SalaryStructurePage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Components List */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4">Earnings</h3>
                         {earnings.length === 0 ? (
@@ -79,7 +79,7 @@ export default function SalaryStructurePage() {
                             <div className="space-y-3">
                                 {earnings.map((comp: any, i: number) => (
                                     <div key={comp.id || i} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 group hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors">
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-3">
                                             <div className={`p-2 rounded-lg ${comp.isActive !== false ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-200 text-slate-400'}`}>
                                                 <DollarSign className="w-5 h-5" />
                                             </div>
@@ -91,7 +91,7 @@ export default function SalaryStructurePage() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-3">
                                             <span className={`text-xs font-bold px-2 py-1 rounded ${comp.isTaxable ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
                                                 {comp.isTaxable ? 'Taxable' : 'Exempt'}
                                             </span>
@@ -111,7 +111,7 @@ export default function SalaryStructurePage() {
                             <div className="space-y-3">
                                 {deductions.map((comp: any, i: number) => (
                                     <div key={comp.id || i} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-3">
                                             <div className="p-2 rounded-lg bg-rose-100 text-rose-600">
                                                 <MinusIcon />
                                             </div>
@@ -123,7 +123,7 @@ export default function SalaryStructurePage() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-3">
                                             <span className="text-xs font-bold px-2 py-1 rounded bg-rose-50 text-rose-700">{comp.isStatutory ? 'Mandatory' : 'Optional'}</span>
                                         </div>
                                     </div>
@@ -134,7 +134,7 @@ export default function SalaryStructurePage() {
                 </div>
 
                 {/* Sidebar Preview */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     <div className="bg-gradient-to-br from-indigo-600 to-violet-700 text-white p-6 rounded-2xl shadow-lg">
                         <h3 className="font-bold mb-6">Structure Preview</h3>
                         <div className="space-y-4 text-sm">
@@ -175,3 +175,4 @@ function MinusIcon() {
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /></svg>
     )
 }
+

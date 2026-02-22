@@ -96,7 +96,7 @@ export default function LeaveForecastingPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -109,7 +109,7 @@ export default function LeaveForecastingPage() {
             </div>
 
             {/* Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
 
                 {/* 1. Main Forecast Chart */}
                 <div className="lg:col-span-2 bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
@@ -174,7 +174,7 @@ export default function LeaveForecastingPage() {
             </div>
 
             {/* 3. Critical Shortage Alerts */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="bg-rose-50 dark:bg-rose-900/10 border border-rose-200 dark:border-rose-800 rounded-xl p-6">
                     <h3 className="text-lg font-bold text-rose-800 dark:text-rose-400 flex items-center gap-2 mb-4">
                         <AlertTriangle className="w-5 h-5" />
@@ -227,3 +227,4 @@ export default function LeaveForecastingPage() {
         </div>
     );
 }
+

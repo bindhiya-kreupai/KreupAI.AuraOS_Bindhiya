@@ -1008,9 +1008,9 @@ export default function CompetencyCatalogPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <BookMarked className="w-6 h-6 text-celestial-indigo" />
@@ -1043,7 +1043,7 @@ export default function CompetencyCatalogPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-lg">
@@ -1120,7 +1120,7 @@ export default function CompetencyCatalogPage() {
 
             {/* Search & Filters Bar */}
             <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
-                <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex flex-col md:flex-row gap-3">
                     {/* Search */}
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
@@ -1223,8 +1223,8 @@ export default function CompetencyCatalogPage() {
                                     className="p-6 cursor-pointer hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors"
                                     onClick={() => toggleExpand(comp.id)}
                                 >
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                        <div className="flex items-start gap-4">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                        <div className="flex items-start gap-3">
                                             <div className={`mt-1 p-2.5 rounded-xl shrink-0 ${catStyle.bgColor} ${catStyle.color}`}>
                                                 {catStyle.icon}
                                             </div>
@@ -1239,7 +1239,7 @@ export default function CompetencyCatalogPage() {
                                                     <StatusBadge status={comp.status} />
                                                 </div>
                                                 <p className="text-sm text-silver-mist line-clamp-2">{comp.description}</p>
-                                                <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-slate-500">
+                                                <div className="flex flex-wrap items-center gap-3 mt-3 text-xs text-slate-500">
                                                     <span className="flex items-center gap-1">
                                                         <Users className="w-3 h-3" />
                                                         {(comp.applicableRoles || []).length} roles
@@ -1296,7 +1296,7 @@ export default function CompetencyCatalogPage() {
                                                 <Star className="w-4 h-4 text-amber-500" />
                                                 Proficiency Framework
                                             </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                                                 {(comp.proficiencyLevels || []).map(level => (
                                                     <ProficiencyCard key={level.levelNumber} proficiency={level} />
                                                 ))}
@@ -1305,7 +1305,7 @@ export default function CompetencyCatalogPage() {
 
                                         {/* Additional Details */}
                                         <div className="border-t border-cloud dark:border-nebula-purple/20 p-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                                 {/* Applicable Roles */}
                                                 <div>
                                                     <h5 className="font-bold text-xs text-slate-500 uppercase mb-3 flex items-center gap-2">
@@ -1369,7 +1369,7 @@ export default function CompetencyCatalogPage() {
 
                                         {/* Related Competencies & Meta */}
                                         <div className="border-t border-cloud dark:border-nebula-purple/20 p-6">
-                                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-xs font-bold text-slate-500 uppercase">Related:</span>
                                                     <div className="flex flex-wrap gap-2">
@@ -1383,7 +1383,7 @@ export default function CompetencyCatalogPage() {
                                                         ))}
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-4 text-xs text-slate-400">
+                                                <div className="flex items-center gap-3 text-xs text-slate-400">
                                                     <span>Owner: <span className="font-medium text-slate-600 dark:text-slate-300">{comp.owner}</span></span>
                                                     <span>Updated: <span className="font-medium text-slate-600 dark:text-slate-300">{new Date(comp.lastUpdated).toLocaleDateString()}</span></span>
                                                 </div>
@@ -1397,7 +1397,7 @@ export default function CompetencyCatalogPage() {
                 </div>
             ) : !isLoading ? (
                 /* Grid View */
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {filteredCompetencies.map(comp => {
                         const catStyle = getCategoryStyle(comp.category);
 
@@ -1500,7 +1500,7 @@ export default function CompetencyCatalogPage() {
                                 Basic Information
                             </h4>
                             
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Code *</label>
                                     <input
@@ -1533,7 +1533,7 @@ export default function CompetencyCatalogPage() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Category *</label>
                                     <select
@@ -1569,7 +1569,7 @@ export default function CompetencyCatalogPage() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Status</label>
                                     <select
@@ -1654,3 +1654,4 @@ export default function CompetencyCatalogPage() {
         </div>
     );
 }
+

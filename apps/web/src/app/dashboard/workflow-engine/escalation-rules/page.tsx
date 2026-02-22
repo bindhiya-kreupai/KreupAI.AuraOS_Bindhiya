@@ -42,8 +42,8 @@ export default function EscalationRulesPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <AlertTriangle className="w-6 h-6 text-orange-500" />
@@ -63,7 +63,7 @@ export default function EscalationRulesPage() {
                     <p className="text-sm text-slate-400">No workflow instances require escalation at this time.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {escalations.map(rule => (
                         <div key={rule.id} className="bg-white dark:bg-slate-900 border-l-4 border-orange-500 p-6 rounded-r-xl shadow-sm border-t border-r border-b border-slate-200 dark:border-slate-800">
                             <div className="flex justify-between items-start mb-4">
@@ -90,3 +90,4 @@ export default function EscalationRulesPage() {
         </div>
     );
 }
+

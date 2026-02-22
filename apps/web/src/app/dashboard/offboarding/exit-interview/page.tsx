@@ -126,9 +126,9 @@ export default function ExitInterviewsPage() {
     const avgTenure = metrics?.avgTenure || 0;
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <DoorOpen className="w-6 h-6 text-rose-500" />
@@ -147,7 +147,7 @@ export default function ExitInterviewsPage() {
             </div>
 
             {/* Overview Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-5 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
                         <div className="text-xs font-bold text-silver-mist uppercase">Total Exits</div>
@@ -185,7 +185,7 @@ export default function ExitInterviewsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Left: Attrition Chart */}
                 <div className="lg:col-span-1 bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-col">
                     <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
@@ -280,7 +280,7 @@ export default function ExitInterviewsPage() {
                                                 <p className="text-xs text-slate-600 dark:text-slate-300 italic leading-relaxed">"{interview.notes}"</p>
                                             </div>
                                         )}
-                                        <div className="flex items-center gap-4 mt-3 text-[10px] text-silver-mist font-bold uppercase">
+                                        <div className="flex items-center gap-3 mt-3 text-[10px] text-silver-mist font-bold uppercase">
                                             <span className="flex items-center gap-1">
                                                 <UserX className="w-3 h-3" /> Reason: {interview.reason}
                                             </span>
@@ -302,3 +302,4 @@ export default function ExitInterviewsPage() {
         </div>
     );
 }
+

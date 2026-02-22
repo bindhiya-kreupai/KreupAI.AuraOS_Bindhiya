@@ -45,13 +45,13 @@ export default function TermsPage() {
 
             {/* Content Cards */}
             <section className="pb-24 px-4">
-                <div className="max-w-4xl mx-auto space-y-6">
+                <div className="max-w-4xl mx-auto space-y-4">
                     {sections.map((section, i) => (
                         <div
                             key={i}
                             className="bg-white dark:bg-stellar-blue/5 rounded-2xl border border-cloud dark:border-nebula-purple p-8 hover:shadow-lg transition-shadow"
                         >
-                            <div className="flex items-start gap-4">
+                            <div className="flex items-start gap-3">
                                 <div className="p-3 bg-celestial-indigo/10 rounded-xl shrink-0">
                                     <section.icon className="w-6 h-6 text-celestial-indigo" />
                                 </div>
@@ -85,3 +85,4 @@ export default function TermsPage() {
         </div>
     );
 }
+

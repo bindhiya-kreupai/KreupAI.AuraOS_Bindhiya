@@ -44,9 +44,9 @@ export default function SalaryBandsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Layers className="w-6 h-6 text-indigo-500" />
@@ -59,7 +59,7 @@ export default function SalaryBandsPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 h-full min-h-0">
                 {/* Grade List */}
                 <div className="lg:col-span-1 space-y-4 overflow-y-auto pb-20">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4">
@@ -88,9 +88,9 @@ export default function SalaryBandsPage() {
                 </div>
 
                 {/* Main Content */}
-                <div className="lg:col-span-3 space-y-6">
+                <div className="lg:col-span-3 space-y-4">
                     {/* Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
                             <div className="text-xs text-slate-500 font-bold uppercase mb-1">Selected Grade</div>
                             <div className="text-xl font-bold text-indigo-600">
@@ -185,3 +185,4 @@ export default function SalaryBandsPage() {
         </div>
     );
 }
+

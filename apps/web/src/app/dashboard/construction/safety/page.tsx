@@ -12,9 +12,9 @@ import {
 
 export default function SafetyPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <HardHat className="w-6 h-6 text-orange-500" />
@@ -27,28 +27,28 @@ export default function SafetyPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Stats */}
-                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-3">
                     <div className="bg-emerald-600 text-white p-4 rounded-xl shadow-lg flex flex-col justify-between">
                         <div className="text-4xl font-bold">142</div>
                         <div className="text-xs opacity-80 uppercase font-bold">Days Without Injury</div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-4">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
                         <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500"><ClipboardCheck className="w-6 h-6" /></div>
                         <div>
                             <div className="text-2xl font-bold">12/15</div>
                             <div className="text-xs text-slate-400 font-bold uppercase">Sites Audited</div>
                         </div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-4">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
                         <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-500"><FileText className="w-6 h-6" /></div>
                         <div>
                             <div className="text-2xl font-bold">98%</div>
                             <div className="text-xs text-slate-400 font-bold uppercase">Training Compliant</div>
                         </div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-4">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
                         <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-amber-500"><AlertTriangle className="w-6 h-6" /></div>
                         <div>
                             <div className="text-2xl font-bold">3</div>
@@ -66,7 +66,7 @@ export default function SafetyPage() {
                         { topic: 'PPE Inspection', site: 'River Bridge', foreman: 'Mario', date: 'Dec 04', attendees: 32, status: 'Missed' },
                     ].map((talk, i) => (
                         <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between hover:shadow-md transition-all">
-                            <div className="flex items-center gap-4 mb-4 md:mb-0">
+                            <div className="flex items-center gap-3 mb-4 md:mb-0">
                                 <div className="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center font-bold text-orange-600">
                                     <Hammer className="w-6 h-6" />
                                 </div>
@@ -120,3 +120,4 @@ export default function SafetyPage() {
         </div>
     );
 }
+

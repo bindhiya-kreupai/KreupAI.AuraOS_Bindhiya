@@ -43,8 +43,8 @@ export default function EmergencyContactsPage() {
     const personalContacts = contacts.filter(c => c.type === 'personal' || c.type === 'medical');
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Phone className="w-6 h-6 text-rose-500" />
@@ -58,7 +58,7 @@ export default function EmergencyContactsPage() {
             </div>
 
             {/* Quick Dial Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
                 {emergencyServices.length > 0 ? (
                     emergencyServices.slice(0, 3).map((item, i) => {
                         const colors = ['bg-rose-500', 'bg-orange-500', 'bg-blue-600'];
@@ -101,7 +101,7 @@ export default function EmergencyContactsPage() {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {/* Workplace Contacts */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                     <h3 className="font-bold text-lg mb-4">Workplace Safety Officers</h3>
@@ -149,3 +149,4 @@ export default function EmergencyContactsPage() {
         </div>
     );
 }
+

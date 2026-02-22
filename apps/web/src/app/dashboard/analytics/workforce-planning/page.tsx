@@ -69,8 +69,8 @@ export default function WorkforcePlanningPage() {
     const newHireCost = newHires * avgSalary;
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <TrendingUp className="w-6 h-6 text-indigo-500" />
@@ -80,13 +80,13 @@ export default function WorkforcePlanningPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full min-h-0 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-full min-h-0 overflow-y-auto pb-20">
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
                         <Users className="w-5 h-5 text-indigo-500" /> Headcount Overview
                     </h3>
 
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         <div className="flex items-end gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
                             <div className="w-1/4">
                                 <div className="text-xs text-slate-500 uppercase">Current HC</div>
@@ -138,7 +138,7 @@ export default function WorkforcePlanningPage() {
                         <DollarSign className="w-5 h-5 text-emerald-500" /> Cost Projection
                     </h3>
 
-                    <div className="flex items-center gap-4 mb-6">
+                    <div className="flex items-center gap-3 mb-6">
                         <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl flex-1 text-center">
                             <div className="text-xs font-bold text-slate-500 uppercase">Total Payroll</div>
                             <div className="text-xl font-bold text-slate-900 dark:text-white">
@@ -191,3 +191,4 @@ export default function WorkforcePlanningPage() {
         </div>
     );
 }
+

@@ -225,8 +225,8 @@ export default function ApplicationTrackingPage() {
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <div className="flex items-center gap-4 flex-1">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
+                <div className="flex items-center gap-3 flex-1">
                     <h1 className="text-xl font-bold text-ink-black dark:text-pearl whitespace-nowrap">Application Board</h1>
                     <div className="relative flex-1 max-w-sm ml-4">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
@@ -255,7 +255,7 @@ export default function ApplicationTrackingPage() {
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
             >
-                <div className="flex h-full gap-4 overflow-x-auto pb-4">
+                <div className="flex h-full gap-3 overflow-x-auto pb-4">
                     {COLUMNS.map((col) => (
                         <div key={col.id} className="w-80 flex-shrink-0 flex flex-col bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-cloud dark:border-nebula-purple/20">
                             {/* Column Header */}
@@ -363,3 +363,4 @@ function CandidateCard({ candidate, isOverlay }: { candidate: Candidate, isOverl
         </div>
     );
 }
+

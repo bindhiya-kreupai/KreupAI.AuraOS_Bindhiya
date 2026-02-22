@@ -61,8 +61,8 @@ export default function TaxDeclarationPage() {
     const uploadedDocs = declarations.filter(d => d.section === activeSection || d.category === 'TAX_DECLARATION');
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <FileText className="w-6 h-6 text-indigo-500" />
@@ -76,7 +76,7 @@ export default function TaxDeclarationPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
                 <div className="space-y-2">
                     {['80C Investments', 'HRA Exemption', 'LTA / Travel', 'Medical Insurance', 'Other Income'].map((item) => (
                         <button
@@ -95,8 +95,8 @@ export default function TaxDeclarationPage() {
                 <div className="lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
                     <h2 className="text-xl font-bold mb-6">Section 80C Declarations (Max Limit: 1.5L)</h2>
 
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 mb-1">Life Insurance Premium (LIC)</label>
                                 <div className="relative">
@@ -169,3 +169,4 @@ export default function TaxDeclarationPage() {
         </div>
     );
 }
+

@@ -42,9 +42,9 @@ export default function InterviewRatingsPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Star className="w-6 h-6 text-indigo-500" />
@@ -55,7 +55,7 @@ export default function InterviewRatingsPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 shrink-0">
                 <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center text-center">
                     <div className="text-3xl font-black text-indigo-500 mb-1">4.2</div>
                     <div className="text-xs font-bold text-slate-500">Avg. Candidate Score</div>
@@ -126,3 +126,4 @@ export default function InterviewRatingsPage() {
         </div>
     );
 }
+

@@ -80,8 +80,8 @@ export default function OneOnOnesPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">One-on-Ones</h1>
           <p className="text-sm text-silver-mist mt-1">Track meetings, notes, and action items with your direct reports</p>
@@ -91,7 +91,7 @@ export default function OneOnOnesPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Upcoming</p>
           <p className="text-2xl font-bold text-celestial-indigo mt-1">{upcomingMeetings.length}</p>
@@ -140,7 +140,7 @@ export default function OneOnOnesPage() {
         ) : (
           displayedMeetings.map((meeting) => (
             <div key={meeting.id} className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-4 hover:shadow-md transition-all cursor-pointer group">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-celestial-indigo/10 flex items-center justify-center flex-shrink-0">
                   <span className="text-sm font-bold text-celestial-indigo">{getInitials(meeting.employeeId)}</span>
                 </div>
@@ -163,7 +163,7 @@ export default function OneOnOnesPage() {
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {meeting.duration} min</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 text-xs text-silver-mist">
+                <div className="flex items-center gap-3 text-xs text-silver-mist">
                   <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
@@ -185,3 +185,4 @@ export default function OneOnOnesPage() {
     </div>
   );
 }
+

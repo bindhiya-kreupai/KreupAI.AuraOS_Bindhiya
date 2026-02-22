@@ -72,7 +72,7 @@ export default function EmergencyPage() {
     const contactColors = ['bg-rose-500', 'bg-orange-500', 'bg-indigo-500', 'bg-slate-700', 'bg-emerald-500', 'bg-amber-500'];
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative overflow-hidden">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative overflow-hidden">
             {/* Background Pulse Animation for SOS */}
             <AnimatePresence>
                 {(sosActive || drillMode) && (
@@ -86,7 +86,7 @@ export default function EmergencyPage() {
             </AnimatePresence>
 
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 relative z-10">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0 relative z-10">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Siren className={`w-6 h-6 ${drillMode ? 'text-amber-500' : sosActive ? 'text-rose-500 animate-bounce' : 'text-rose-500'}`} />
@@ -113,9 +113,9 @@ export default function EmergencyPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10 flex-1 min-h-0 overflow-y-auto lg:overflow-visible">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 relative z-10 flex-1 min-h-0 overflow-y-auto lg:overflow-visible">
                 {/* Left: SOS & Location */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {/* SOS Widget */}
                     <div className={`rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-2xl transition-all duration-500 relative overflow-hidden h-80
                         ${sosActive
@@ -173,7 +173,7 @@ export default function EmergencyPage() {
                     </div>
 
                     {/* Location Info */}
-                    <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-4">
+                    <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-500">
                             <MapPin className="w-6 h-6" />
                         </div>
@@ -186,7 +186,7 @@ export default function EmergencyPage() {
                 </div>
 
                 {/* Right: Directory */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {/* Emergency Contacts */}
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
@@ -233,3 +233,4 @@ function FlagIcon({ className }: { className?: string }) {
         </svg>
     )
 }
+

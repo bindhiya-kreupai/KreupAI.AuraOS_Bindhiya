@@ -35,7 +35,7 @@ export default function TravelHistoryPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <History className="w-8 h-8 text-indigo-500" />
@@ -58,13 +58,13 @@ export default function TravelHistoryPage() {
                             <div className="absolute -left-[9px] top-6 w-4 h-4 rounded-full bg-white dark:bg-slate-900 border-4 border-indigo-500" />
 
                             <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group cursor-pointer">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                                     <div>
                                         <div className="flex items-center gap-2 mb-2">
                                             <MapPin className="w-5 h-5 text-indigo-500" />
                                             <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">{trip.destination || trip.title || 'Trip'}</h3>
                                         </div>
-                                        <div className="flex items-center gap-6 text-sm text-slate-500">
+                                        <div className="flex items-center gap-3 text-sm text-slate-500">
                                             <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {new Date(trip.departureDate || trip.createdAt).toLocaleDateString()}</span>
                                             <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300 font-medium">{trip.purpose || 'Business'}</span>
                                         </div>
@@ -88,3 +88,4 @@ export default function TravelHistoryPage() {
         </div>
     );
 }
+

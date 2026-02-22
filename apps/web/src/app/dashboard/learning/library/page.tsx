@@ -54,8 +54,8 @@ export default function LibraryPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <BookOpen className="w-6 h-6 text-indigo-500" />
@@ -72,9 +72,9 @@ export default function LibraryPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
-                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-6">
-                    <div className="flex flex-col gap-4 shrink-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
+                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
+                    <div className="flex flex-col gap-3 shrink-0">
                         <div className="relative">
                             <input
                                 type="text"
@@ -108,7 +108,7 @@ export default function LibraryPage() {
                             <p className="text-sm">No resources found</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 overflow-y-auto pr-2 pb-20">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 overflow-y-auto pr-2 pb-20">
                             {filteredItems.map((item, idx) => (
                                 <div key={item.id || idx} className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 hover:shadow-lg transition-all group flex flex-col h-full">
                                     <div className={`aspect-[3/4] rounded-lg ${coverColors[idx % coverColors.length]} mb-4 relative overflow-hidden shadow-inner group-hover:scale-[1.02] transition-transform`}>
@@ -141,7 +141,7 @@ export default function LibraryPage() {
                     )}
                 </div>
 
-                <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
+                <div className="lg:col-span-1 space-y-4 flex flex-col h-full overflow-hidden">
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
                             <Book className="w-5 h-5 text-emerald-500" /> Quick Resources
@@ -166,3 +166,4 @@ export default function LibraryPage() {
         </div>
     );
 }
+

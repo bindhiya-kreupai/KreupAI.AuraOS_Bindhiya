@@ -83,8 +83,8 @@ export default function TeamAnalyticsPage() {
   ];
 
   return (
-    <div className="space-y-6 pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Team Analytics</h1>
           <p className="text-sm text-silver-mist mt-1">Key metrics and trends for your team</p>
@@ -114,7 +114,7 @@ export default function TeamAnalyticsPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {kpis.map((metric) => (
               <div key={metric.label} className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
                 <p className="text-xs text-silver-mist uppercase font-medium">{metric.label}</p>
@@ -130,7 +130,7 @@ export default function TeamAnalyticsPage() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {analytics.performanceDistribution && analytics.performanceDistribution.length > 0 && (
               <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-4">
                 <h3 className="font-bold text-sm text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
@@ -226,3 +226,4 @@ export default function TeamAnalyticsPage() {
     </div>
   );
 }
+

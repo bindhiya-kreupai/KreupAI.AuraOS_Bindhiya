@@ -55,8 +55,8 @@ export default function WorkflowDesignerPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <GitBranch className="w-6 h-6 text-indigo-500" />
@@ -74,8 +74,8 @@ export default function WorkflowDesignerPage() {
                 </div>
             </div>
 
-            <div className="flex gap-6 h-[600px]">
-                <div className="w-64 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col gap-4">
+            <div className="flex gap-3 h-[600px]">
+                <div className="w-64 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col gap-3">
                     <h3 className="font-bold text-sm text-slate-500 uppercase tracking-wider">Components</h3>
 
                     <div className="space-y-2">
@@ -143,3 +143,4 @@ export default function WorkflowDesignerPage() {
         </div>
     );
 }
+

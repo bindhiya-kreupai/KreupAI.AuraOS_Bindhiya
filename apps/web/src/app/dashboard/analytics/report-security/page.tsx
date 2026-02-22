@@ -65,7 +65,7 @@ export default function ReportSecurityPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
                     <h3 className="font-bold text-lg flex items-center gap-2">
                         <Lock className="w-5 h-5 text-indigo-500" /> Role-Based Access Control
                     </h3>
@@ -87,7 +87,7 @@ export default function ReportSecurityPage() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
                     <h3 className="font-bold text-lg flex items-center gap-2">
                         <EyeOff className="w-5 h-5 text-indigo-500" /> Data Masking & PII Protection
                     </h3>
@@ -114,3 +114,4 @@ export default function ReportSecurityPage() {
         </div>
     );
 }
+

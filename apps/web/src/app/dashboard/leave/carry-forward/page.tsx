@@ -29,8 +29,8 @@ export default function CarryForwardPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <ArrowRightCircle className="w-6 h-6 text-indigo-500" />
@@ -43,7 +43,7 @@ export default function CarryForwardPage() {
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                 <h3 className="font-bold text-lg mb-4">Year-End Processing</h3>
 
-                <div className="flex items-start gap-4 p-4 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-900/30 mb-6">
+                <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-900/30 mb-6">
                     <AlertCircle className="w-5 h-5 text-amber-500 mt-1" />
                     <div>
                         <h4 className="font-bold text-amber-900 dark:text-amber-200">Policy Limit</h4>
@@ -105,3 +105,4 @@ export default function CarryForwardPage() {
         </div>
     );
 }
+

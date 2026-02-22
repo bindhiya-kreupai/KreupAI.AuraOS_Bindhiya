@@ -44,8 +44,8 @@ export default function VersionControlPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <History className="w-6 h-6 text-slate-500" />
@@ -72,7 +72,7 @@ export default function VersionControlPage() {
 
                         <div className="space-y-8">
                             {history.map((commit) => (
-                                <div key={commit.id} className="relative flex items-start gap-6 group">
+                                <div key={commit.id} className="relative flex items-start gap-3 group">
                                     <div className={`z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 bg-white dark:bg-slate-900 ${commit.active ? 'border-emerald-500 text-emerald-500' : 'border-slate-300 dark:border-slate-600 text-slate-300'}`}>
                                         <GitCommit className="w-3 h-3 fill-current" />
                                     </div>
@@ -104,3 +104,4 @@ export default function VersionControlPage() {
         </div>
     );
 }
+

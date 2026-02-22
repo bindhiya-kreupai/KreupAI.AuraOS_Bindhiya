@@ -116,9 +116,9 @@ export default function FirstDayPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Gift className="w-6 h-6 text-indigo-500" />
@@ -141,7 +141,7 @@ export default function FirstDayPage() {
                             <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-slate-100 dark:bg-slate-800" />
 
                             {schedule.map((slot, i) => (
-                                <div key={i} className="relative pl-16 flex items-start gap-4 group">
+                                <div key={i} className="relative pl-16 flex items-start gap-3 group">
                                     <div className={`absolute left-0 top-0 w-12 h-12 rounded-xl flex items-center justify-center z-10 ${slot.bg} dark:bg-opacity-20`}>
                                         <slot.icon className={`w-5 h-5 ${slot.color}`} />
                                     </div>
@@ -161,7 +161,7 @@ export default function FirstDayPage() {
                 </div>
 
                 {/* Right: Quick Info */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {/* Welcome Kit Digital */}
                     <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl p-6 text-white text-center">
                         <Gift className="w-12 h-12 mx-auto mb-4 text-white opacity-90" />
@@ -197,3 +197,4 @@ export default function FirstDayPage() {
         </div>
     );
 }
+

@@ -33,8 +33,8 @@ export default function ApprovalChainsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <GitPullRequest className="w-6 h-6 text-blue-500" />
@@ -54,10 +54,10 @@ export default function ApprovalChainsPage() {
                     <p className="text-sm text-slate-400">Create your first approval chain to get started.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-3">
                     {chains.map((chain: any) => (
-                        <div key={chain.id} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 hover:shadow-md transition-all">
-                            <div className="flex items-center gap-4 flex-1">
+                        <div key={chain.id} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3 hover:shadow-md transition-all">
+                            <div className="flex items-center gap-3 flex-1">
                                 <div className="w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center shrink-0">
                                     <Shield className="w-6 h-6" />
                                 </div>
@@ -70,7 +70,7 @@ export default function ApprovalChainsPage() {
                                             <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px] font-bold uppercase rounded-full">Draft</span>
                                         )}
                                     </h3>
-                                    <div className="text-sm text-slate-500 mt-1 flex items-center gap-4">
+                                    <div className="text-sm text-slate-500 mt-1 flex items-center gap-3">
                                         <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {chain.version || 1} Version(s)</span>
                                         <span>Trigger: {chain.trigger || 'N/A'}</span>
                                     </div>
@@ -96,3 +96,4 @@ export default function ApprovalChainsPage() {
         </div>
     );
 }
+

@@ -10,9 +10,9 @@ import {
 
 export default function PositionCreationPage() {
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <PlusCircle className="w-6 h-6 text-indigo-500" />
@@ -29,10 +29,10 @@ export default function PositionCreationPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Form */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <h3 className="font-bold text-lg mb-6">Position Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div className="md:col-span-2">
                                 <label className="block text-xs font-bold text-slate-500 mb-1">Position Title</label>
                                 <input type="text" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Senior Product Manager" />
@@ -73,7 +73,7 @@ export default function PositionCreationPage() {
 
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <h3 className="font-bold text-lg mb-6">Budget Impact</h3>
-                        <div className="flex items-center gap-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
+                        <div className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
                             <div className="p-3 bg-white dark:bg-slate-800 rounded-full shadow-sm">
                                 <DollarSign className="w-6 h-6 text-emerald-600" />
                             </div>
@@ -87,10 +87,10 @@ export default function PositionCreationPage() {
                 </div>
 
                 {/* Sidebar */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <h3 className="font-bold text-sm uppercase text-slate-500 mb-4">Approval Chain</h3>
-                        <div className="relative pl-4 space-y-6 border-l-2 border-slate-100 dark:border-slate-800">
+                        <div className="relative pl-4 space-y-4 border-l-2 border-slate-100 dark:border-slate-800">
                             {[
                                 { role: 'Hiring Manager', status: 'Pending', time: '-' },
                                 { role: 'Department Head', status: 'Pending', time: '-' },
@@ -117,3 +117,4 @@ export default function PositionCreationPage() {
         </div>
     );
 }
+

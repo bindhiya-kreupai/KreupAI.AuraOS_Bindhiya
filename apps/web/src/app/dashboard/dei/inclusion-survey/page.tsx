@@ -40,8 +40,8 @@ export default function InclusionSurveyPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <MessageSquare className="w-6 h-6 text-indigo-500" />
@@ -56,7 +56,7 @@ export default function InclusionSurveyPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Active Surveys */}
                 <div className="lg:col-span-2 space-y-4">
                     <h3 className="font-bold text-lg mb-2">Active & Recent Surveys</h3>
@@ -98,7 +98,7 @@ export default function InclusionSurveyPage() {
                 </div>
 
                 {/* Key Insights */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                             <BarChart2 className="w-5 h-5 text-indigo-500" /> Sentiment Score
@@ -108,7 +108,7 @@ export default function InclusionSurveyPage() {
                             <div className="flex justify-center gap-1 text-slate-400 text-sm">
                                 <span>out of 5.0</span>
                             </div>
-                            <div className="mt-4 flex justify-center gap-4 text-sm font-bold">
+                            <div className="mt-4 flex justify-center gap-3 text-sm font-bold">
                                 <span className="text-emerald-600 flex items-center gap-1"><ThumbsUp className="w-4 h-4" /> 78% Positive</span>
                                 <span className="text-rose-600 flex items-center gap-1"><ThumbsDown className="w-4 h-4" /> 8% Negative</span>
                             </div>
@@ -126,3 +126,4 @@ export default function InclusionSurveyPage() {
         </div>
     );
 }
+

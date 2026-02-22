@@ -49,9 +49,9 @@ export default function BonusManagementPage() {
     const totalEligible = payouts.length;
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Gift className="w-6 h-6 text-indigo-500" />
@@ -64,9 +64,9 @@ export default function BonusManagementPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Left Panel: Campaigns */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4">Bonus Schemes & Payouts</h3>
                         {schemes.length === 0 && payouts.length === 0 ? (
@@ -78,7 +78,7 @@ export default function BonusManagementPage() {
                                     const schemeTotal = schemePayouts.reduce((sum: number, p: any) => sum + (Number(p.amount) || Number(p.payoutAmount) || 0), 0);
                                     return (
                                         <div key={scheme.id || i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 hover:shadow-md transition-shadow cursor-pointer">
-                                            <div className="flex items-start gap-4 mb-4 sm:mb-0">
+                                            <div className="flex items-start gap-3 mb-4 sm:mb-0">
                                                 <div className={`p-3 rounded-xl ${
                                                     scheme.status === 'processed' || scheme.status === 'Completed' ? 'bg-emerald-100 text-emerald-600' :
                                                     scheme.status === 'active' || scheme.status === 'Processing' ? 'bg-amber-100 text-amber-600' :
@@ -95,7 +95,7 @@ export default function BonusManagementPage() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
+                                            <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
                                                 <div className="text-right">
                                                     <div className="text-lg font-bold text-indigo-600">
                                                         ${schemeTotal > 0 ? schemeTotal.toLocaleString() : (scheme.budgetAmount ? Number(scheme.budgetAmount).toLocaleString() : '--')}
@@ -129,7 +129,7 @@ export default function BonusManagementPage() {
                 </div>
 
                 {/* Right Panel: Rules */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4">Summary</h3>
                         <div className="space-y-3">
@@ -161,3 +161,4 @@ export default function BonusManagementPage() {
         </div>
     );
 }
+

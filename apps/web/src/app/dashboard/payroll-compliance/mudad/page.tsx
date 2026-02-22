@@ -238,9 +238,9 @@ export default function MudadPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <Link href="/dashboard/payroll-compliance" className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2">
             <ArrowLeft className="w-4 h-4" /> Back to Compliance
@@ -273,7 +273,7 @@ export default function MudadPage() {
       )}
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
           <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
             <Users className="w-4 h-4" />
@@ -336,7 +336,7 @@ export default function MudadPage() {
 
       {/* Tab Content */}
       {activeTab === 'generate' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           {/* Configuration */}
           <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
@@ -433,7 +433,7 @@ export default function MudadPage() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-2 gap-3 mb-6">
                   <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
                     <div className="text-sm text-green-600 dark:text-green-400 mb-1">Saudi Employees</div>
                     <div className="text-2xl font-bold text-green-700 dark:text-green-300">{saudiCount}</div>
@@ -682,14 +682,14 @@ export default function MudadPage() {
       )}
 
       {activeTab === 'banks' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
               Saudi Banks for Mudad
               <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">البنوك السعودية لنظام مدد</span>
             </h2>
             {banks.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {banks.map((bank) => (
                   <div
                     key={bank.code}
@@ -722,7 +722,7 @@ export default function MudadPage() {
               <span className="text-sm font-normal" dir="rtl">| صيغة الآيبان السعودي</span>
             </h3>
             <div className="space-y-3">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <div className="font-mono text-lg bg-white dark:bg-slate-800 px-4 py-2 rounded-lg">
                   SA<span className="text-blue-600">XX</span><span className="text-green-600">XXXX</span><span className="text-amber-600">XXXXXXXXXXXXXXXXXXXX</span>
                 </div>
@@ -754,3 +754,4 @@ export default function MudadPage() {
     </div>
   );
 }
+

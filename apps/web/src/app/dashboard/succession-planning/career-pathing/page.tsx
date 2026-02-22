@@ -37,7 +37,7 @@ export default function CareerPathingPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <GitMerge className="w-8 h-8 text-indigo-500" />
@@ -62,7 +62,7 @@ export default function CareerPathingPage() {
                             <div className="absolute left-8 top-4 bottom-4 w-1 bg-slate-100 dark:bg-slate-800 z-0" />
 
                             {careerSteps.map((step: any, i: number) => (
-                                <div key={step.title || i} className="relative z-10 flex gap-6 pb-8 last:pb-0 group">
+                                <div key={step.title || i} className="relative z-10 flex gap-3 pb-8 last:pb-0 group">
                                     <div className={`w-16 h-16 rounded-full flex items-center justify-center font-bold text-lg shadow-sm border-4 transition-all ${step.isCurrent ? 'bg-indigo-600 text-white border-indigo-100 dark:border-indigo-900' :
                                             step.isCompleted ? 'bg-emerald-500 text-white border-emerald-100 dark:border-emerald-900' :
                                                 'bg-white dark:bg-slate-800 text-slate-400 border-slate-100 dark:border-slate-700 group-hover:border-indigo-200'
@@ -91,7 +91,7 @@ export default function CareerPathingPage() {
                 </div>
 
                 {/* Lateral Moves */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-gradient-to-br from-indigo-600 to-purple-600 p-6 rounded-2xl text-white shadow-lg">
                         <Milestone className="w-8 h-8 mb-4 opacity-80" />
                         <h3 className="font-bold text-xl mb-2">Lateral Opportunities</h3>
@@ -117,3 +117,4 @@ export default function CareerPathingPage() {
         </div>
     );
 }
+

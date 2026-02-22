@@ -134,7 +134,7 @@ export default function SystemSettingsPage() {
                     <p>Select the regions that should be active in the system. This will filter Master Data (Banks, Tax Regimes, etc.) to only show relevant records.</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
                     {REGIONS.map(region => (
                         <label
                             key={region.code}
@@ -180,3 +180,4 @@ export default function SystemSettingsPage() {
         </div>
     );
 }
+

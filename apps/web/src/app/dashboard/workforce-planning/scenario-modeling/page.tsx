@@ -8,8 +8,8 @@ export default function ScenarioModelingPage() {
     const [hiringFreeze, setHiringFreeze] = useState(false);
 
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <GitFork className="w-6 h-6 text-purple-500" />
@@ -27,7 +27,7 @@ export default function ScenarioModelingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Controls */}
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-8">
                     <h3 className="font-bold text-lg flex items-center gap-2">
@@ -75,8 +75,8 @@ export default function ScenarioModelingPage() {
                 </div>
 
                 {/* Results Preview */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="lg:col-span-2 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
                             <div className="text-slate-500 text-sm mb-1">Projected Headcount</div>
                             <div className="text-3xl font-bold text-slate-800 dark:text-white">1,342</div>
@@ -97,3 +97,4 @@ export default function ScenarioModelingPage() {
         </div>
     );
 }
+

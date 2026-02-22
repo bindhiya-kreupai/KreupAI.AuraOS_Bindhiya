@@ -35,7 +35,7 @@ export default function SuccessionAnalyticsPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <BarChart2 className="w-8 h-8 text-indigo-500" />
@@ -45,8 +45,8 @@ export default function SuccessionAnalyticsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3">
                     <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl text-emerald-600">
                         <TrendingUp className="w-8 h-8" />
                     </div>
@@ -55,7 +55,7 @@ export default function SuccessionAnalyticsPage() {
                         <div className="text-sm font-bold text-slate-500">Bench Strength</div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3">
                     <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl text-blue-600">
                         <Users className="w-8 h-8" />
                     </div>
@@ -64,7 +64,7 @@ export default function SuccessionAnalyticsPage() {
                         <div className="text-sm font-bold text-slate-500">Successors Ratio</div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3">
                     <div className="p-4 bg-rose-50 dark:bg-rose-900/10 rounded-xl text-rose-600">
                         <ShieldAlert className="w-8 h-8" />
                     </div>
@@ -86,7 +86,7 @@ export default function SuccessionAnalyticsPage() {
                     ]).map((level: any, i: number) => {
                         const total = (level.readyNow || 0) + (level.readySoon || 0) + (level.empty || 0);
                         return (
-                            <div key={i} className="flex items-center gap-4">
+                            <div key={i} className="flex items-center gap-3">
                                 <div className="w-24 text-sm font-bold text-slate-600 dark:text-slate-400">{level.name}</div>
                                 <div className="flex-1 flex h-6 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
                                     {total > 0 ? (
@@ -104,7 +104,7 @@ export default function SuccessionAnalyticsPage() {
                         );
                     })}
                 </div>
-                <div className="flex gap-6 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex gap-3 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-2 text-xs text-slate-500"><div className="w-3 h-3 rounded bg-emerald-500"></div> Ready Now</div>
                     <div className="flex items-center gap-2 text-xs text-slate-500"><div className="w-3 h-3 rounded bg-amber-400"></div> Ready in 1-2 Yrs</div>
                     <div className="flex items-center gap-2 text-xs text-slate-500"><div className="w-3 h-3 rounded bg-rose-400"></div> No Successor</div>
@@ -113,3 +113,4 @@ export default function SuccessionAnalyticsPage() {
         </div>
     );
 }
+

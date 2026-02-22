@@ -42,8 +42,8 @@ export default function SocialFeedPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Smile className="w-6 h-6 text-indigo-500" />
@@ -53,9 +53,9 @@ export default function SocialFeedPage() {
                 </div>
             </div>
 
-            <div className="max-w-2xl mx-auto w-full space-y-6">
+            <div className="max-w-2xl mx-auto w-full space-y-4">
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
-                    <div className="flex gap-4 mb-4">
+                    <div className="flex gap-3 mb-4">
                         <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-500">U</div>
                         <textarea placeholder="What's going on?" className="flex-1 bg-transparent outline-none resize-none pt-2" rows={2}></textarea>
                     </div>
@@ -74,7 +74,7 @@ export default function SocialFeedPage() {
                     </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {posts.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 text-slate-400">
                             <Smile className="w-12 h-12 mb-4 opacity-50" />
@@ -122,3 +122,4 @@ export default function SocialFeedPage() {
         </div>
     );
 }
+

@@ -44,9 +44,9 @@ export default function SuccessionPoolPage() {
     ];
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Target className="w-6 h-6 text-indigo-500" />
@@ -57,7 +57,7 @@ export default function SuccessionPoolPage() {
             </div>
 
             {/* Overview Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
                     <div>
                         <div className="text-xs font-bold text-slate-500 uppercase">Succession Coverage</div>
@@ -93,11 +93,11 @@ export default function SuccessionPoolPage() {
             </div>
 
             {/* Detailed Rows */}
-            <div className="grid gap-6">
+            <div className="grid gap-3">
                 {roles.map(role => (
                     <div key={role.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                            <div className="flex items-center gap-4">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-3">
+                            <div className="flex items-center gap-3">
                                 <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-500 text-lg">
                                     {role.incumbent.charAt(0)}
                                 </div>
@@ -106,7 +106,7 @@ export default function SuccessionPoolPage() {
                                     <div className="text-sm text-slate-500">Incumbent: <span className="font-medium text-slate-900 dark:text-slate-100">{role.incumbent}</span></div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-3">
                                 <div className="text-right">
                                     <div className="text-xs font-bold text-slate-500 uppercase">Retention Risk</div>
                                     <div className={`text-sm font-bold ${role.risk === 'High' ? 'text-rose-600' :
@@ -135,7 +135,7 @@ export default function SuccessionPoolPage() {
                                                     <div className="text-xs text-slate-500">Current: Director</div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-3">
                                                 <div className="text-right">
                                                     <div className="text-[10px] font-bold text-slate-400 uppercase">Readiness</div>
                                                     <div className={`text-xs font-bold ${succ.readiness === 'Ready Now' ? 'text-emerald-600' : 'text-amber-500'}`}>
@@ -163,3 +163,4 @@ export default function SuccessionPoolPage() {
         </div>
     );
 }
+

@@ -38,9 +38,9 @@ export default function ReviewCyclesPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <CalendarRange className="w-6 h-6 text-indigo-500" />
@@ -60,7 +60,7 @@ export default function ReviewCyclesPage() {
                     <p className="text-sm mt-1">Create your first review cycle to get started</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-3">
                     {cycles.map((cycle) => {
                         const reviewCount = cycle.reviews?.length || 0;
                         const completedCount = cycle.reviews?.filter((r: any) => r.status === 'completed').length || 0;
@@ -69,14 +69,14 @@ export default function ReviewCyclesPage() {
                         const dueDate = cycle.endDate ? new Date(cycle.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No end date';
 
                         return (
-                            <div key={cycle.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6 group hover:border-indigo-300 transition-colors cursor-pointer">
+                            <div key={cycle.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-3 group hover:border-indigo-300 transition-colors cursor-pointer">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-3 mb-2">
                                         <h3 className="text-xl font-bold">{cycle.cycleName}</h3>
                                         <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${cycle.isActive && cycle.status !== 'completed' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'
                                             }`}>{cycle.status}</span>
                                     </div>
-                                    <div className="flex items-center gap-6 text-sm text-slate-500">
+                                    <div className="flex items-center gap-3 text-sm text-slate-500">
                                         <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> Due: {dueDate}</span>
                                         <span className="flex items-center gap-1"><Users className="w-4 h-4" /> {reviewCount} Participants</span>
                                     </div>
@@ -106,3 +106,4 @@ export default function ReviewCyclesPage() {
         </div>
     );
 }
+

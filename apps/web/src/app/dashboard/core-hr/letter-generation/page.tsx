@@ -48,8 +48,8 @@ export default function LetterGenerationPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <FileText className="w-6 h-6 text-indigo-500" />
@@ -65,7 +65,7 @@ export default function LetterGenerationPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Templates */}
                 <div className="lg:col-span-1 space-y-4">
                     <h3 className="font-bold text-slate-500 text-xs uppercase">Templates</h3>
@@ -141,3 +141,4 @@ export default function LetterGenerationPage() {
         </div>
     );
 }
+

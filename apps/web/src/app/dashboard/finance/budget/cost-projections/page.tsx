@@ -44,8 +44,8 @@ export default function CostProjectionsPage() {
     const trends = metrics?.spendingTrends || [];
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <LineChart className="w-6 h-6 text-indigo-500" />
@@ -64,7 +64,7 @@ export default function CostProjectionsPage() {
                     </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4">Budget Projections</h3>
                         <div className="space-y-3">
@@ -75,7 +75,7 @@ export default function CostProjectionsPage() {
                                 return (
                                     <div key={row.id || i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
                                         <span className="font-bold text-sm w-1/3">{row.name || 'Budget Item'}</span>
-                                        <div className="flex items-center gap-4 text-sm">
+                                        <div className="flex items-center gap-3 text-sm">
                                             <span className="text-slate-500">${(current / 1000000).toFixed(1)}M</span>
                                             <ArrowRight className="w-4 h-4 text-slate-300" />
                                             <span className="font-bold text-slate-900 dark:text-slate-100">${(projected / 1000000).toFixed(1)}M</span>
@@ -101,3 +101,4 @@ export default function CostProjectionsPage() {
         </div>
     );
 }
+

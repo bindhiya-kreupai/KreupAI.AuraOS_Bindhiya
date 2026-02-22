@@ -56,7 +56,7 @@ export default function RetirementPage() {
 
   if (plans.length === 0) {
     return (
-      <div className="space-y-6 pb-10">
+      <div className="space-y-4 pb-6">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Retirement</h1>
           <p className="text-sm text-silver-mist mt-1">Track your 401(k) balance, contributions, and investment performance</p>
@@ -71,7 +71,7 @@ export default function RetirementPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Retirement</h1>
@@ -82,7 +82,7 @@ export default function RetirementPage() {
       <div className="bg-gradient-to-r from-celestial-indigo to-purple-600 rounded-xl p-6 text-white">
         <p className="text-sm opacity-80">Total Monthly Contributions</p>
         <p className="text-4xl font-bold mt-1">${totalContributions.toLocaleString()}</p>
-        <div className="flex items-center gap-4 mt-3">
+        <div className="flex items-center gap-3 mt-3">
           <div className="flex items-center gap-1 text-sm">
             <ArrowUpRight className="w-4 h-4" />
             <span>Employee: ${totalEmployeeContributions.toLocaleString()}/mo</span>
@@ -93,7 +93,7 @@ export default function RetirementPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Your Contribution</p>
           <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">${totalEmployeeContributions.toLocaleString()}</p>
@@ -118,7 +118,7 @@ export default function RetirementPage() {
         </div>
         <div className="divide-y divide-cloud dark:divide-nebula-purple/50">
           {plans.map((plan, idx) => (
-            <div key={idx} className="flex items-center gap-4 px-5 py-3">
+            <div key={idx} className="flex items-center gap-3 px-5 py-3">
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-ink-black dark:text-pearl">{plan.name}</p>
                 <p className="text-xs text-silver-mist mt-0.5">Employee: ${plan.employeePremium}/mo | Employer: ${plan.employerPremium}/mo</p>
@@ -133,3 +133,4 @@ export default function RetirementPage() {
     </div>
   );
 }
+

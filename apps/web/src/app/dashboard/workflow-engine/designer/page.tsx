@@ -224,11 +224,11 @@ export default function WorkflowDesignerPage() {
 
     return (
         <ReactFlowProvider>
-            <div className="h-[calc(100vh-6rem)] flex flex-col md:flex-row gap-4">
+            <div className="h-[calc(100vh-6rem)] flex flex-col md:flex-row gap-3">
                 <div className="w-full md:w-64 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-4 flex flex-col shadow-sm flex-shrink-0">
                     <h2 className="font-bold text-ink-black dark:text-pearl mb-4">Workflow Tools</h2>
 
-                    <div className="space-y-6 overflow-y-auto flex-1 pr-2">
+                    <div className="space-y-4 overflow-y-auto flex-1 pr-2">
                         <div>
                             <div className="text-xs font-bold text-silver-mist uppercase mb-3 px-1">Triggers</div>
                             <div className="space-y-2">
@@ -302,3 +302,4 @@ export default function WorkflowDesignerPage() {
         </ReactFlowProvider>
     );
 }
+

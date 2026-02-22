@@ -77,7 +77,7 @@ export default function RosterAssignmentPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -98,8 +98,8 @@ export default function RosterAssignmentPage() {
             </div>
 
             {/* Controls */}
-            <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-wrap justify-between items-center gap-4">
-                <div className="flex items-center gap-4">
+            <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-wrap justify-between items-center gap-3">
+                <div className="flex items-center gap-3">
                     <button className="p-1 hover:bg-slate-100 rounded-lg"><ChevronLeft className="w-5 h-5 text-slate-500" /></button>
                     <div className="text-center">
                         <span className="block text-sm font-bold text-ink-black dark:text-pearl">Apr 01 - Apr 07, 2025</span>
@@ -200,3 +200,4 @@ export default function RosterAssignmentPage() {
         </div>
     );
 }
+

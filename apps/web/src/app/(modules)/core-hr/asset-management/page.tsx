@@ -177,7 +177,7 @@ export default function AssetManagementPage() {
     if (!dashboardStats) return null;
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {/* Total Assets */}
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-2">
@@ -437,7 +437,7 @@ export default function AssetManagementPage() {
             <Package className="w-4 h-4" />
             Basic Information
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Asset Code <span className="text-red-500">*</span>
@@ -515,7 +515,7 @@ export default function AssetManagementPage() {
             <FileText className="w-4 h-4" />
             Identification
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Serial Number
@@ -573,7 +573,7 @@ export default function AssetManagementPage() {
             <DollarSign className="w-4 h-4" />
             Financial Details
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Purchase Date
@@ -635,7 +635,7 @@ export default function AssetManagementPage() {
             <CheckCircle className="w-4 h-4" />
             Warranty Information
           </h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Start Date
@@ -679,7 +679,7 @@ export default function AssetManagementPage() {
             <Activity className="w-4 h-4" />
             Status & Condition
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Condition
@@ -816,7 +816,7 @@ export default function AssetManagementPage() {
   // ========================================
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <DashboardStatsCards />
       <AlertBanners />
       <CategoryFilters />
@@ -840,3 +840,4 @@ export default function AssetManagementPage() {
     </div>
   );
 }
+

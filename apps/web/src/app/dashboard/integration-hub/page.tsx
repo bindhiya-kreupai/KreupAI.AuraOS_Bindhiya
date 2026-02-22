@@ -73,9 +73,9 @@ export default function IntegrationHubPage() {
     });
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-4 animate-in fade-in duration-500">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Plug className="w-6 h-6 text-celestial-indigo" />
@@ -94,7 +94,7 @@ export default function IntegrationHubPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 {STATS.map(stat => (
                     <div key={stat.label} className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/30 shadow-sm">
                         <div className="flex justify-between items-start mb-2">
@@ -136,7 +136,7 @@ export default function IntegrationHubPage() {
             {/* Connected Integrations Grid */}
             <div>
                 <h2 className="text-lg font-bold text-ink-black dark:text-pearl mb-4">Integrations</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                     {filteredIntegrations.map(integration => {
                         const badge = getStatusBadge(integration.status);
                         const BadgeIcon = badge.icon;
@@ -180,7 +180,7 @@ export default function IntegrationHubPage() {
             {/* Feature Links */}
             <div>
                 <h2 className="text-lg font-bold text-ink-black dark:text-pearl mb-4">Explore</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {SUB_PAGES.map(page => (
                         <a key={page.name} href={page.path} className="bg-white dark:bg-stellar-blue p-5 rounded-xl border border-cloud dark:border-nebula-purple/30 shadow-sm hover:shadow-md transition-all group">
                             <div className="flex items-center justify-between">
@@ -195,3 +195,4 @@ export default function IntegrationHubPage() {
         </div>
     );
 }
+

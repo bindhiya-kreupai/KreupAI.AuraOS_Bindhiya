@@ -37,8 +37,8 @@ export default function HealthCheckupsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <HeartPulse className="w-6 h-6 text-rose-500" />
@@ -51,7 +51,7 @@ export default function HealthCheckupsPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Upcoming */}
                 <div className="lg:col-span-1 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl p-6 text-white shadow-lg shadow-rose-500/20">
                     <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
@@ -89,7 +89,7 @@ export default function HealthCheckupsPage() {
                     ) : (
                         checkups.filter(c => c.status === 'Completed').map((app, i) => (
                             <div key={app.id || i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3">
                                     <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                                         <Stethoscope className="w-6 h-6 text-slate-500" />
                                     </div>
@@ -109,3 +109,4 @@ export default function HealthCheckupsPage() {
         </div>
     );
 }
+

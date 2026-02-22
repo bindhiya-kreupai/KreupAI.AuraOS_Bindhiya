@@ -68,9 +68,9 @@ export default function CompOffPage() {
     const availableCreditDays = summary?.total || 0;
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <CalendarPlus className="w-6 h-6 text-celestial-indigo" />
@@ -85,7 +85,7 @@ export default function CompOffPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left: Wallet & Policy */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     {/* Credit Wallet */}
                     <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10"></div>
@@ -132,7 +132,7 @@ export default function CompOffPage() {
                 </div>
 
                 {/* Right: History & Form */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden">
                         <div className="p-4 border-b border-cloud dark:border-nebula-purple/20 flex justify-between items-center">
                             <h3 className="font-bold text-ink-black dark:text-pearl flex items-center gap-2">
@@ -166,7 +166,7 @@ export default function CompOffPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col md:flex-row gap-4 text-xs text-slate-600 dark:text-slate-300 mb-2">
+                                    <div className="flex flex-col md:flex-row gap-3 text-xs text-slate-600 dark:text-slate-300 mb-2">
                                         <div className="flex items-center gap-1.5">
                                             <FileText className="w-3 h-3 text-silver-mist" />
                                             {claim.reason}
@@ -192,3 +192,4 @@ export default function CompOffPage() {
         </div>
     );
 }
+

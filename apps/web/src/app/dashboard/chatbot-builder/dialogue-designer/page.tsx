@@ -34,9 +34,9 @@ export default function DialogueDesignerPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <GitBranch className="w-6 h-6 text-indigo-500" />
@@ -57,7 +57,7 @@ export default function DialogueDesignerPage() {
             {/* Visual Editor Area */}
             <div className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl relative overflow-hidden">
                 {/* Tools Sidebar */}
-                <div className="absolute left-4 top-4 bottom-4 w-12 bg-white dark:bg-slate-800 shadow-lg rounded-xl flex flex-col items-center py-4 gap-4 z-10 border border-slate-200 dark:border-slate-700">
+                <div className="absolute left-4 top-4 bottom-4 w-12 bg-white dark:bg-slate-800 shadow-lg rounded-xl flex flex-col items-center py-4 gap-3 z-10 border border-slate-200 dark:border-slate-700">
                     <button className="p-2 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400" title="Add Message">
                         <MessageSquare className="w-5 h-5" />
                     </button>
@@ -119,3 +119,4 @@ export default function DialogueDesignerPage() {
         </div>
     );
 }
+

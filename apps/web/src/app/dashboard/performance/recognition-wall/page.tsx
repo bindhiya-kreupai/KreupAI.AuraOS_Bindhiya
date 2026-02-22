@@ -69,9 +69,9 @@ export default function RecognitionWallPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Recognition Wall</h1>
           <p className="text-sm text-silver-mist mt-1">Celebrate achievements and appreciate your colleagues</p>
@@ -82,7 +82,7 @@ export default function RecognitionWallPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Recognitions This Month</p>
           <p className="text-2xl font-bold text-celestial-indigo mt-1">{recognitions.length}</p>
@@ -123,7 +123,7 @@ export default function RecognitionWallPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Recognition Feed */}
         <div className="lg:col-span-2 space-y-4">
           {recognitions.length === 0 ? (
@@ -184,3 +184,4 @@ export default function RecognitionWallPage() {
     </div>
   );
 }
+

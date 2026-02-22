@@ -48,7 +48,7 @@ export default function EquityManagementPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Equity Management</h1>
@@ -56,7 +56,7 @@ export default function EquityManagementPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Total Vested Value</p>
           <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">
@@ -160,7 +160,7 @@ export default function EquityManagementPage() {
               const total = grant.totalShares || grant.numberOfUnits || grant.grantedShares || 0;
               const vested = grant.vestedShares || grant.vestedUnits || grant.sharesVested || 0;
               return (
-                <div key={grant.id} className="flex items-center gap-4 p-3 bg-slate-50 dark:bg-deep-cosmos rounded-lg">
+                <div key={grant.id} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-deep-cosmos rounded-lg">
                   <Clock className="w-4 h-4 text-celestial-indigo flex-shrink-0" />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-ink-black dark:text-pearl">
@@ -180,3 +180,4 @@ export default function EquityManagementPage() {
     </div>
   );
 }
+

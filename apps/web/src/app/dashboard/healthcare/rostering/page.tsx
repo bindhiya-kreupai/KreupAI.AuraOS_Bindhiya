@@ -5,9 +5,9 @@ import { CalendarDays, Users, UserPlus, AlertTriangle, UserCheck } from 'lucide-
 
 export default function RosteringPage() {
   return (
-    <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+    <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <CalendarDays className="w-6 h-6 text-sky-500" />
@@ -24,9 +24,9 @@ export default function RosteringPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 h-full min-h-0">
         {/* Units Grid */}
-        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pb-20">
+        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-3 overflow-y-auto pb-20">
           {[
             {
               unit: 'ICU (Intensive Care)',
@@ -82,7 +82,7 @@ export default function RosteringPage() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
                   <div className="text-xs text-slate-500 mb-1">Patients</div>
                   <div className="text-xl font-bold flex items-center gap-2">
@@ -154,3 +154,4 @@ export default function RosteringPage() {
     </div>
   );
 }
+

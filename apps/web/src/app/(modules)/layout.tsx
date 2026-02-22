@@ -13,3 +13,4 @@ export default function ModulesLayout({
 }) {
   return <AppLayout>{children}</AppLayout>;
 }
+

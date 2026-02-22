@@ -30,8 +30,8 @@ export default function AssessmentEnginePage() {
     }, []);
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <PenTool className="w-6 h-6 text-indigo-500" />
@@ -55,7 +55,7 @@ export default function AssessmentEnginePage() {
                     <p className="text-sm">Create your first assessment to get started.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {data.map((quiz, i) => {
                         const questionsCount = Array.isArray(quiz.questions) ? quiz.questions.length : 0;
                         const isActive = quiz.isPublished || quiz.isActive;
@@ -71,7 +71,7 @@ export default function AssessmentEnginePage() {
                                     </button>
                                 </div>
                                 <h3 className="font-bold text-lg mb-2">{quiz.title}</h3>
-                                <div className="grid grid-cols-2 gap-4 text-sm text-slate-500 mb-6">
+                                <div className="grid grid-cols-2 gap-3 text-sm text-slate-500 mb-6">
                                     <div>Questions: <b className="text-slate-900 dark:text-slate-100">{questionsCount}</b></div>
                                     <div>Time Limit: <b className="text-slate-900 dark:text-slate-100">{quiz.timeLimit || quiz.duration || '-'}m</b></div>
                                     <div>Max Attempts: <b className="text-slate-900 dark:text-slate-100">{quiz.maxAttempts || '-'}</b></div>
@@ -89,3 +89,4 @@ export default function AssessmentEnginePage() {
         </div>
     );
 }
+

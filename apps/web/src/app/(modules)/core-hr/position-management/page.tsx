@@ -462,9 +462,9 @@ export default function PositionManagementPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Statistics Dashboard */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Total Positions */}
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
           <div className="flex items-center justify-between">
@@ -607,3 +607,4 @@ export default function PositionManagementPage() {
     </div>
   );
 }
+

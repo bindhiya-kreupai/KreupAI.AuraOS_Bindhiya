@@ -11,9 +11,9 @@ import {
 
 export default function InternalMobilityPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Building2 className="w-6 h-6 text-indigo-500" />
@@ -33,7 +33,7 @@ export default function InternalMobilityPage() {
                 <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                     <Briefcase className="w-5 h-5" /> Recommended for You
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {[
                         { title: 'Tech Lead', dept: 'Platform Engineering', loc: 'Remote', match: '95%' },
                         { title: 'Product Manager', dept: 'Growth', loc: 'New York', match: '88%' },
@@ -54,7 +54,7 @@ export default function InternalMobilityPage() {
             </div>
 
             {/* Job Board */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-y-auto pb-20">
                 {[
                     { title: 'Senior UX Designer', dept: 'Design', loc: 'San Francisco', date: 'Posted 2d ago', type: 'Full-time' },
                     { title: 'Backend Engineer (Go)', dept: 'Infrastructure', loc: 'Remote', date: 'Posted 3d ago', type: 'Full-time' },
@@ -74,7 +74,7 @@ export default function InternalMobilityPage() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-4 text-sm text-slate-500 mb-6">
+                        <div className="flex items-center gap-3 text-sm text-slate-500 mb-6">
                             <span className="flex items-center gap-1">
                                 <MapPin className="w-4 h-4" /> {job.loc}
                             </span>
@@ -93,3 +93,4 @@ export default function InternalMobilityPage() {
         </div>
     );
 }
+

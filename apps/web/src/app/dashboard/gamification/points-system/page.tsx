@@ -40,8 +40,8 @@ export default function PointsSystemPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Coins className="w-6 h-6 text-amber-500" />
@@ -51,7 +51,7 @@ export default function PointsSystemPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {/* Balance Card */}
                 <div className="md:col-span-3 lg:col-span-1 bg-gradient-to-br from-amber-400 to-orange-600 rounded-2xl p-8 text-white shadow-lg shadow-amber-500/20 relative overflow-hidden flex flex-col justify-between h-64">
                     <div className="relative z-10">
@@ -71,8 +71,8 @@ export default function PointsSystemPage() {
                 </div>
 
                 {/* History & Stats */}
-                <div className="md:col-span-3 lg:col-span-2 space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
+                <div className="md:col-span-3 lg:col-span-2 space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                             <h4 className="text-slate-500 text-xs font-bold uppercase mb-2">Earned this Month</h4>
                             <div className="text-2xl font-bold text-emerald-600 flex items-center gap-2">
@@ -115,3 +115,4 @@ export default function PointsSystemPage() {
         </div>
     );
 }
+

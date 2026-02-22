@@ -44,9 +44,9 @@ export default function GovernancePage() {
     const governanceInitiatives = initiatives.filter(i => i.category === 'governance');
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100 overflow-y-auto pr-2">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100 overflow-y-auto pr-2">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Landmark className="w-6 h-6 text-indigo-500" />
@@ -54,7 +54,7 @@ export default function GovernancePage() {
                     </h1>
                     <p className="text-slate-500 text-sm">Board oversight, compliance scoring, and policy adherence.</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     <div className="text-right">
                         <div className="text-xs font-bold text-slate-500 uppercase">Diversity Score</div>
                         <div className="text-2xl font-black text-emerald-600">{metrics?.boardDiversity || '85'}%</div>
@@ -67,7 +67,7 @@ export default function GovernancePage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0 flex-1">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 min-h-0 flex-1">
                 {/* Governance Initiatives */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col">
                     <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
@@ -106,7 +106,7 @@ export default function GovernancePage() {
                         <FileCheck className="w-5 h-5 text-emerald-500" /> Compliance Framework
                     </h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 overflow-y-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1 overflow-y-auto">
                         {[
                             { area: 'Data Privacy (GDPR/CCPA)', status: 'Compliant', score: metrics?.dataPrivacyCompliance || 95 },
                             { area: 'Ethics Training', status: 'Compliant', score: metrics?.ethicsTraining || 100 },
@@ -154,4 +154,5 @@ export default function GovernancePage() {
         </div>
     );
 }
+
 

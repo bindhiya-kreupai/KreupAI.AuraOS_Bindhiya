@@ -145,7 +145,7 @@ export default function GoalAlignmentPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Goal Alignment</h1>
@@ -153,7 +153,7 @@ export default function GoalAlignmentPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">My Goals</p>
           <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">{myGoals.length}</p>
@@ -204,3 +204,4 @@ export default function GoalAlignmentPage() {
     </div>
   );
 }
+

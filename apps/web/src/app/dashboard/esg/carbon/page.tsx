@@ -34,9 +34,9 @@ export default function CarbonPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100 overflow-y-auto pr-2">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100 overflow-y-auto pr-2">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Leaf className="w-6 h-6 text-emerald-500" />
@@ -56,7 +56,7 @@ export default function CarbonPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 shrink-0">
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <div className="flex justify-between items-start mb-2">
                         <div className="text-xs font-bold text-slate-500 uppercase">Total Emissions (YTD)</div>
@@ -85,11 +85,11 @@ export default function CarbonPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0 flex-1">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 min-h-0 flex-1">
                 {/* Breakdown View */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col">
                     <h3 className="font-bold text-lg mb-6">Emissions by Source</h3>
-                    <div className="space-y-6 flex-1">
+                    <div className="space-y-4 flex-1">
                         {[
                             { source: 'Business Travel', icon: Plane, val: 45, color: 'rose' },
                             { source: 'Office Electricity', icon: Zap, val: 30, color: 'amber' },
@@ -119,7 +119,7 @@ export default function CarbonPage() {
                     <div className="space-y-4 flex-1 overflow-y-auto">
                         {initiatives.filter(i => i.category === 'environmental').map(initiative => (
                             <div key={initiative.id} className="p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800 rounded-xl">
-                                <div className="flex gap-4">
+                                <div className="flex gap-3">
                                     <div className="mt-1">
                                         <Zap className="w-5 h-5 text-emerald-600" />
                                     </div>
@@ -148,4 +148,5 @@ export default function CarbonPage() {
         </div>
     );
 }
+
 

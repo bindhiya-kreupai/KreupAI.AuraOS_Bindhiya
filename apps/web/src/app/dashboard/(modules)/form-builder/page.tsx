@@ -100,8 +100,8 @@ export default function FormBuilderPage() {
   if (loading) {
     return (
       <div className="p-6 bg-white dark:bg-stellar-blue min-h-screen">
-        <div className="max-w-7xl mx-auto space-y-6 animate-pulse">
-          <div className="flex gap-4 border-b border-cloud dark:border-nebula-purple/50 pb-3">
+        <div className="max-w-7xl mx-auto space-y-4 animate-pulse">
+          <div className="flex gap-3 border-b border-cloud dark:border-nebula-purple/50 pb-3">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-24" />
             ))}
@@ -130,10 +130,10 @@ export default function FormBuilderPage() {
 
   return (
     <div className="p-6 bg-white dark:bg-stellar-blue min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-4">
         {/* Form Selector */}
         {forms.length > 0 && (
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <label className="text-sm font-medium text-ink-black dark:text-pearl">Form:</label>
             <select
               value={selectedFormId}
@@ -153,7 +153,7 @@ export default function FormBuilderPage() {
         )}
 
         {/* View Tabs */}
-        <div className="flex gap-4 border-b border-cloud dark:border-nebula-purple/50">
+        <div className="flex gap-3 border-b border-cloud dark:border-nebula-purple/50">
           {[
             { key: "builder", label: "Form Builder" },
             { key: "palette", label: "Field Palette" },
@@ -193,3 +193,4 @@ export default function FormBuilderPage() {
     </div>
   );
 }
+

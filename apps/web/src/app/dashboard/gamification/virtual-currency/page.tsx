@@ -39,8 +39,8 @@ export default function VirtualCurrencyPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Wallet className="w-6 h-6 text-indigo-500" />
@@ -50,7 +50,7 @@ export default function VirtualCurrencyPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Visual Card */}
                 <div className="lg:col-span-1 bg-gradient-to-br from-indigo-900 to-slate-900 rounded-2xl p-8 text-white shadow-xl shadow-indigo-900/30 flex flex-col justify-between min-h-[240px] relative overflow-hidden">
                     <div className="relative z-10 flex justify-between items-start">
@@ -72,7 +72,7 @@ export default function VirtualCurrencyPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
                     <button className="h-full p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500 transition-colors flex flex-col items-center justify-center text-center group">
                         <div className="w-16 h-16 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                             <ArrowRightLeft className="w-8 h-8 text-indigo-600" />
@@ -94,7 +94,7 @@ export default function VirtualCurrencyPage() {
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                 <h3 className="font-bold text-lg mb-4">Currency Exchange</h3>
                 <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                         <div className="bg-white p-2 rounded shadow-sm"><DollarSign className="w-6 h-6 text-emerald-600" /></div>
                         <div>
                             <div className="font-bold">100 Aura Coins</div>
@@ -109,3 +109,4 @@ export default function VirtualCurrencyPage() {
         </div>
     );
 }
+

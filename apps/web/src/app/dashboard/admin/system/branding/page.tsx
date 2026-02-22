@@ -44,9 +44,9 @@ export default function BrandingPage() {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-4 animate-in fade-in duration-500">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Palette className="w-6 h-6 text-celestial-indigo" />
@@ -72,16 +72,16 @@ export default function BrandingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {/* Left Column: Settings */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {/* Logo Upload */}
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/30 shadow-sm">
                         <h2 className="text-lg font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
                             <Image className="w-5 h-5 text-celestial-indigo" />
                             Logo
                         </h2>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             <div className="w-24 h-24 bg-gray-100 dark:bg-deep-cosmos rounded-xl border-2 border-dashed border-cloud dark:border-nebula-purple/30 flex items-center justify-center">
                                 <FileImage className="w-10 h-10 text-silver-mist" />
                             </div>
@@ -136,7 +136,7 @@ export default function BrandingPage() {
                             <Monitor className="w-5 h-5 text-celestial-indigo" />
                             Favicon
                         </h2>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             <div className="w-16 h-16 bg-gray-100 dark:bg-deep-cosmos rounded-lg border-2 border-dashed border-cloud dark:border-nebula-purple/30 flex items-center justify-center">
                                 <FileImage className="w-6 h-6 text-silver-mist" />
                             </div>
@@ -202,3 +202,4 @@ export default function BrandingPage() {
         </div>
     );
 }
+

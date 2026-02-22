@@ -107,9 +107,9 @@ export default function JobRequisitionsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Briefcase className="w-6 h-6 text-celestial-indigo" />
@@ -123,7 +123,7 @@ export default function JobRequisitionsPage() {
             </div>
 
             {/* Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <div className="text-silver-mist text-xs font-bold uppercase">Total Open Roles</div>
                     <div className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">
@@ -149,7 +149,7 @@ export default function JobRequisitionsPage() {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center bg-white dark:bg-stellar-blue p-2 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-3 items-center bg-white dark:bg-stellar-blue p-2 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                 <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
                     <input
@@ -187,7 +187,7 @@ export default function JobRequisitionsPage() {
             )}
 
             {/* Requisition Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-3">
                 {filteredRequisitions.map(req => (
                     <div key={req.id} className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm hover:shadow-md transition-shadow group">
                         <div className="p-5">
@@ -259,3 +259,4 @@ export default function JobRequisitionsPage() {
         </div>
     );
 }
+

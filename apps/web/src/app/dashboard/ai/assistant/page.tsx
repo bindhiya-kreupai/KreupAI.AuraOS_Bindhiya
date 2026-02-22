@@ -154,7 +154,7 @@ export default function AssistantPage() {
     };
 
     return (
-        <div className="flex h-[calc(100vh-6rem)] gap-6">
+        <div className="flex h-[calc(100vh-6rem)] gap-3">
             {/* Main Chat Area */}
             <div className="flex-1 flex flex-col bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden relative">
 
@@ -178,7 +178,7 @@ export default function AssistantPage() {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-slate-50 dark:bg-slate-900/50">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-900/50">
                     {messages.map((msg) => (
                         <div key={msg.id} className={`flex gap-3 ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
                             {/* Avatar */}
@@ -265,7 +265,7 @@ export default function AssistantPage() {
             </div>
 
             {/* Quick Actions Sidebar */}
-            <div className="w-80 hidden lg:flex flex-col gap-6">
+            <div className="w-80 hidden lg:flex flex-col gap-3">
                 <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-2xl text-white shadow-lg relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
                     <Bot className="w-10 h-10 mb-4 text-white/90" />
@@ -297,3 +297,4 @@ export default function AssistantPage() {
         </div>
     );
 }
+

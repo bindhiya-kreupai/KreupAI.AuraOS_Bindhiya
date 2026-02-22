@@ -122,9 +122,9 @@ export default function PermissionsPage() {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-4 animate-in fade-in duration-500">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Shield className="w-6 h-6 text-celestial-indigo" />
@@ -221,7 +221,7 @@ export default function PermissionsPage() {
             </div>
 
             {/* Legend */}
-            <div className="flex items-center gap-4 text-xs text-silver-mist">
+            <div className="flex items-center gap-3 text-xs text-silver-mist">
                 <div className="flex items-center gap-1.5">
                     <div className="w-6 h-3 rounded-full bg-celestial-indigo" />
                     <span>Enabled</span>
@@ -234,3 +234,4 @@ export default function PermissionsPage() {
         </div>
     );
 }
+

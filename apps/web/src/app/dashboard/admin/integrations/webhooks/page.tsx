@@ -111,16 +111,16 @@ export default function WebhooksPage() {
 
     if (loading) {
         return (
-            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
                 <div className="animate-pulse">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 mb-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0 mb-6">
                         <div>
                             <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-40 mb-2" />
                             <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-80" />
                         </div>
                         <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded w-36" />
                     </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                         <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 h-64" />
                         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 h-64" />
                     </div>
@@ -131,8 +131,8 @@ export default function WebhooksPage() {
 
     if (error) {
         return (
-            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                     <div>
                         <h1 className="text-2xl font-bold flex items-center gap-2">
                             <Radio className="w-6 h-6 text-indigo-500" />
@@ -154,9 +154,9 @@ export default function WebhooksPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Radio className="w-6 h-6 text-indigo-500" />
@@ -169,7 +169,7 @@ export default function WebhooksPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Endpoints List */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
                     <div className="p-4 border-b border-slate-200 dark:border-slate-800">
@@ -206,7 +206,7 @@ export default function WebhooksPage() {
                                                 <span key={e} className="bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px] px-2 py-1 rounded border border-slate-200 dark:border-slate-700">{e}</span>
                                             ))}
                                         </div>
-                                        <div className="flex items-center gap-4 text-xs text-slate-400">
+                                        <div className="flex items-center gap-3 text-xs text-slate-400">
                                             <span>Status: <span className={health.healthy ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>{health.label}</span></span>
                                             {hook.lastDeliveryAt && (
                                                 <span>Last delivery: {formatTimeAgo(hook.lastDeliveryAt)}</span>
@@ -266,3 +266,4 @@ export default function WebhooksPage() {
         </div>
     );
 }
+

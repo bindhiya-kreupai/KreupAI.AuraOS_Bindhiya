@@ -12,9 +12,9 @@ import {
 
 export default function PortOpsPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Container className="w-6 h-6 text-teal-600 dark:text-teal-400" />
@@ -27,7 +27,7 @@ export default function PortOpsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Berth Plan */}
                 <div className="lg:col-span-2 space-y-4 overflow-y-auto pb-20">
                     <h3 className="font-bold text-lg mb-2">Berth Activity & Staffing</h3>
@@ -38,7 +38,7 @@ export default function PortOpsPage() {
                         { berth: 'Berth 4', vessel: 'MV Hapag (Inbound)', load: 'ETA 14:00', crane: 'Prep', staff: 'Gang C (Standby)', status: 'Planned' },
                     ].map((b, i) => (
                         <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between hover:shadow-md transition-all">
-                            <div className="flex items-center gap-4 mb-4 md:mb-0">
+                            <div className="flex items-center gap-3 mb-4 md:mb-0">
                                 <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500 text-xs">
                                     {b.berth}
                                 </div>
@@ -51,7 +51,7 @@ export default function PortOpsPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-3">
                                 <div className="text-right">
                                     <div className="text-lg font-bold text-slate-700 dark:text-slate-300">{b.staff === '-' ? 'No Gang' : b.staff.split('(')[0]}</div>
                                     <div className="text-xs text-slate-400">{b.staff.includes('Pax') ? b.staff.split('(')[1].replace(')', '') : 'Unassigned'}</div>
@@ -72,12 +72,12 @@ export default function PortOpsPage() {
                 </div>
 
                 {/* Labor Pool */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                             <UserCheck className="w-5 h-5 text-indigo-500" /> Labor Pool (Casuals)
                         </h3>
-                        <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="grid grid-cols-2 gap-3 mb-4">
                             <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-center">
                                 <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">42</div>
                                 <div className="text-xs text-slate-500 font-bold uppercase">On Site</div>
@@ -113,3 +113,4 @@ export default function PortOpsPage() {
         </div>
     );
 }
+

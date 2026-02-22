@@ -53,7 +53,7 @@ export default function TravelDashboardPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <Plane className="w-8 h-8 text-indigo-500" />
@@ -71,7 +71,7 @@ export default function TravelDashboardPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <StatCard title="Total Requests" value={String(metrics?.totalRequests || 0)} icon={Globe} color="text-indigo-500" bg="bg-indigo-50 dark:bg-indigo-500/10" />
                 <StatCard title="Pending Approvals" value={String(metrics?.pendingRequests || 0)} icon={Clock} color="text-amber-500" bg="bg-amber-50 dark:bg-amber-500/10" />
                 <StatCard title="YTD Spend" value={`$${((metrics?.totalTravelCost || 0) / 1000).toFixed(1)}k`} icon={CreditCard} color="text-emerald-500" bg="bg-emerald-50 dark:bg-emerald-500/10" />
@@ -92,8 +92,8 @@ export default function TravelDashboardPage() {
                     ) : (
                         <div className="space-y-4">
                             {trips.map((trip: any) => (
-                                <div key={trip.id} className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                                    <div className="flex items-center gap-4">
+                                <div key={trip.id} className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                                    <div className="flex items-center gap-3">
                                         <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-500 transition-colors">
                                             <Plane className="w-6 h-6" />
                                         </div>
@@ -102,7 +102,7 @@ export default function TravelDashboardPage() {
                                             <div className="text-sm text-slate-500">{new Date(trip.departureDate || trip.createdAt).toLocaleDateString()} {trip.purpose || ''}</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
                                         <div className="font-bold text-slate-700 dark:text-slate-300 text-right">
                                             ${trip.estimatedCost || trip.amount || 0}
                                             <div className={`text-xs ${trip.status === 'approved' ? 'text-emerald-500' : trip.status === 'pending' ? 'text-amber-500' : 'text-slate-400'}`}>{trip.status}</div>
@@ -147,7 +147,7 @@ export default function TravelDashboardPage() {
 
 function StatCard({ title, value, icon: Icon, color, bg }: any) {
     return (
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3">
             <div className={`p-4 rounded-xl ${bg} ${color}`}>
                 <Icon className="w-8 h-8" />
             </div>
@@ -158,3 +158,4 @@ function StatCard({ title, value, icon: Icon, color, bg }: any) {
         </div>
     );
 }
+

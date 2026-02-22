@@ -11,9 +11,9 @@ import {
 
 export default function CareerGoalsPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Target className="w-6 h-6 text-indigo-500" />
@@ -26,7 +26,7 @@ export default function CareerGoalsPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 pb-20">
                 {[
                     { title: 'Become a Team Lead', timeframe: 'Long Term (2-3 Years)', progress: 45, items: ['Complete Leadership Training', 'Mentor 2 Juniors', 'Lead a Feature Epics'] },
                     { title: 'Master React Server Components', timeframe: 'Short Term (Q1 2025)', progress: 80, items: ['Build a demo app', 'Read Documentation', 'Give a Tech Talk'] },
@@ -78,3 +78,4 @@ export default function CareerGoalsPage() {
         </div>
     );
 }
+

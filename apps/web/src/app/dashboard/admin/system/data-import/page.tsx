@@ -88,9 +88,9 @@ export default function DataImportPage() {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-4 animate-in fade-in duration-500">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <FileSpreadsheet className="w-6 h-6 text-celestial-indigo" />
@@ -205,7 +205,7 @@ export default function DataImportPage() {
                 {currentStep === 3 && (
                     <div className="space-y-4">
                         <h2 className="text-lg font-bold text-ink-black dark:text-pearl">Validation Results</h2>
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-3 gap-3">
                             <div className="bg-rose-50 dark:bg-rose-900/20 p-3 rounded-lg text-center">
                                 <AlertCircle className="w-5 h-5 text-rose-500 mx-auto mb-1" />
                                 <div className="text-lg font-bold text-rose-600">{VALIDATION_RESULTS.errors.length}</div>
@@ -333,3 +333,4 @@ export default function DataImportPage() {
         </div>
     );
 }
+

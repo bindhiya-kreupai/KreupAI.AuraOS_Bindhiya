@@ -118,7 +118,7 @@ export default function BenefitsEnrollmentPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10 max-w-4xl mx-auto">
+    <div className="space-y-4 pb-6 max-w-4xl mx-auto">
       <div>
         <div className="flex items-center gap-2 mb-1">
           <span className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 rounded-full font-medium">Open Enrollment</span>
@@ -152,7 +152,7 @@ export default function BenefitsEnrollmentPage() {
         {currentStep === 'plan' && (
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-ink-black dark:text-pearl">Select Your Plan</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {plans.map((plan) => (
                 <button
                   key={plan.id}
@@ -274,3 +274,4 @@ export default function BenefitsEnrollmentPage() {
     </div>
   );
 }
+

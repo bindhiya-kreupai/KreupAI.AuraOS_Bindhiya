@@ -55,8 +55,8 @@ export default function TaxDocumentsPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Tax Documents</h1>
           <p className="text-sm text-silver-mist mt-1">Access your W-2, 1099, and Form 16 documents</p>
@@ -79,7 +79,7 @@ export default function TaxDocumentsPage() {
         {filteredDocs.length > 0 ? (
           <div className="divide-y divide-cloud dark:divide-nebula-purple/50">
             {filteredDocs.map((doc) => (
-              <div key={doc.id} className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos transition-colors group">
+              <div key={doc.id} className="flex items-center gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos transition-colors group">
                 <div className="p-2.5 rounded-lg bg-red-50 dark:bg-red-900/20">
                   <FileText className="w-5 h-5 text-red-500" />
                 </div>
@@ -123,3 +123,4 @@ export default function TaxDocumentsPage() {
     </div>
   );
 }
+

@@ -154,9 +154,9 @@ export default function ProbationTrackingPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 p-6 rounded-lg shadow">
             <div className="flex items-center justify-between">
               <div>
@@ -212,3 +212,4 @@ export default function ProbationTrackingPage() {
     </div>
   );
 }
+

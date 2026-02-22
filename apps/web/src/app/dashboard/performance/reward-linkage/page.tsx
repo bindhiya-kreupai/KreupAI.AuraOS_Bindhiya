@@ -59,9 +59,9 @@ export default function RewardsMarketplacePage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Gift className="w-6 h-6 text-indigo-500" />
@@ -69,7 +69,7 @@ export default function RewardsMarketplacePage() {
                     </h1>
                     <p className="text-slate-500 text-sm">Redeem your hard-earned points for exciting perks.</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     <div className="bg-amber-100 dark:bg-amber-900/30 px-4 py-2 rounded-xl flex items-center gap-2 border border-amber-200 dark:border-amber-800">
                         <Coins className="w-5 h-5 text-amber-600" />
                         <div className="flex flex-col leading-none">
@@ -98,7 +98,7 @@ export default function RewardsMarketplacePage() {
             </div>
 
             {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 overflow-y-auto pb-20">
                 {filteredRewards.length === 0 ? (
                     <div className="col-span-full flex flex-col items-center justify-center py-16 text-slate-400">
                         <Gift className="w-12 h-12 mb-3 opacity-30" />
@@ -129,3 +129,4 @@ export default function RewardsMarketplacePage() {
         </div>
     );
 }
+

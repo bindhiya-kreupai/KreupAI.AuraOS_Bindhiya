@@ -141,7 +141,7 @@ export default function AboutPage() {
                     <p className="text-lg text-twilight dark:text-silver-mist mb-8">
                         We're hiring across engineering, product, design, and go-to-market. Come build the future of work with us.
                     </p>
-                    <div className="flex flex-col sm:flex-row justify-center gap-4">
+                    <div className="flex flex-col sm:flex-row justify-center gap-3">
                         <Link href="/contact">
                             <Button className="h-12 px-8 rounded-full bg-celestial-indigo hover:bg-celestial-indigo/90 text-white">
                                 Get in Touch
@@ -158,3 +158,4 @@ export default function AboutPage() {
         </div>
     );
 }
+

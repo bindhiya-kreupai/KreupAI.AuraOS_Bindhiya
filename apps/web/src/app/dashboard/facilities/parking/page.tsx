@@ -59,9 +59,9 @@ export default function ParkingPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Car className="w-6 h-6 text-indigo-500" />
@@ -80,11 +80,11 @@ export default function ParkingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
                 {/* Left: Interactive Map */}
                 <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
                     {/* Level Selector */}
-                    <div className="flex gap-4 overflow-x-auto pb-2 shrink-0">
+                    <div className="flex gap-3 overflow-x-auto pb-2 shrink-0">
                         {LEVELS.map(lvl => {
                             const stats = checkAvailability(lvl);
                             return (
@@ -156,7 +156,7 @@ export default function ParkingPage() {
                 </div>
 
                 {/* Right: Info & Vehicles */}
-                <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
+                <div className="lg:col-span-1 space-y-4 flex flex-col h-full overflow-hidden">
                     {/* My Slot Card */}
                     <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-6 rounded-2xl text-white shadow-lg relative overflow-hidden shrink-0">
                         <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -183,7 +183,7 @@ export default function ParkingPage() {
 
                         <div className="space-y-4">
                             {MY_VEHICLES.map(vehicle => (
-                                <div key={vehicle.id} className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-cloud dark:border-slate-800 flex items-center gap-4 relative group">
+                                <div key={vehicle.id} className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-cloud dark:border-slate-800 flex items-center gap-3 relative group">
                                     <div className="w-12 h-12 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center text-slate-400">
                                         {vehicle.type === 'Car' ? <Car className="w-6 h-6" /> : <Bike className="w-6 h-6" />}
                                     </div>
@@ -202,7 +202,7 @@ export default function ParkingPage() {
                     </div>
 
                     {/* Booking Pass */}
-                    <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-4">
+                    <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-3">
                         <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-200">
                             <QrCode className="w-16 h-16 text-slate-800" />
                         </div>
@@ -272,3 +272,4 @@ export default function ParkingPage() {
         </div>
     );
 }
+

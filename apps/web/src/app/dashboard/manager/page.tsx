@@ -64,7 +64,7 @@ export default function MssPage() {
   }, []);
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       <div>
         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
           <Settings className="w-6 h-6 text-indigo-500" />
@@ -81,7 +81,7 @@ export default function MssPage() {
       ) : (
         <>
           {data && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
                 <p className="text-xs text-silver-mist uppercase font-medium">Team Size</p>
                 <p className="text-2xl font-bold text-indigo-500 mt-1">{data.teamCount}</p>
@@ -101,7 +101,7 @@ export default function MssPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {features.map((feature) => (
               <Link
                 key={feature.name}
@@ -120,3 +120,4 @@ export default function MssPage() {
     </div>
   );
 }
+

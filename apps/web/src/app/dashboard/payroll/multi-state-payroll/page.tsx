@@ -62,9 +62,9 @@ export default function MultiStatePayrollPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Map className="w-6 h-6 text-indigo-500" />
@@ -84,7 +84,7 @@ export default function MultiStatePayrollPage() {
                     <p className="text-sm text-slate-500 mt-1">Configure employee salary structures to see department-wise state compliance.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                     {/* Visual Map (Placeholder) */}
                     <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl min-h-[300px] flex items-center justify-center border border-slate-200 dark:border-slate-700 relative overflow-hidden">
                         <div className="text-slate-400 text-sm font-bold">Interactive Map Visualization Component</div>
@@ -94,7 +94,7 @@ export default function MultiStatePayrollPage() {
                     <div className="space-y-4">
                         {stateConfigs.map((state, i) => (
                             <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-between items-center shadow-sm">
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3">
                                     <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600">
                                         <Building2 className="w-5 h-5" />
                                     </div>
@@ -121,3 +121,4 @@ export default function MultiStatePayrollPage() {
         </div>
     );
 }
+

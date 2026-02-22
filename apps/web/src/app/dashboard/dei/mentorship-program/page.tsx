@@ -69,8 +69,8 @@ export default function MentorshipProgramPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <UserPlus className="w-6 h-6 text-indigo-500" />
@@ -95,10 +95,10 @@ export default function MentorshipProgramPage() {
             </div>
 
             {activeTab === 'find' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {mentors.map((mentor, i) => (
                         <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 hover:shadow-xl transition-all group flex flex-col">
-                            <div className="flex items-center gap-4 mb-4">
+                            <div className="flex items-center gap-3 mb-4">
                                 <img src={mentor.image} alt={mentor.name} className="w-16 h-16 rounded-full object-cover" />
                                 <div>
                                     <h3 className="font-bold text-lg">{mentor.name}</h3>
@@ -137,7 +137,7 @@ export default function MentorshipProgramPage() {
                     <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
                     <h3 className="font-bold text-xl mb-2">Active Mentorship</h3>
                     <p className="text-slate-500 max-w-md mx-auto mb-6">You are current mentored by <span className="font-bold text-slate-900 dark:text-white">Sarah Connor</span>. Your next session is scheduled for Tuesday at 2:00 PM.</p>
-                    <div className="flex justify-center gap-4">
+                    <div className="flex justify-center gap-3">
                         <button className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2">
                             <MessageSquare className="w-4 h-4" /> Message
                         </button>
@@ -150,3 +150,4 @@ export default function MentorshipProgramPage() {
         </div>
     );
 }
+

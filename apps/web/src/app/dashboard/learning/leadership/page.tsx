@@ -48,8 +48,8 @@ export default function LeadershipPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Crown className="w-6 h-6 text-amber-500" />
@@ -65,8 +65,8 @@ export default function LeadershipPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-y-auto lg:overflow-visible">
-                <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-y-auto lg:overflow-visible">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="font-bold text-ink-black dark:text-pearl flex items-center gap-2">
@@ -87,7 +87,7 @@ export default function LeadershipPage() {
                                             <div className="font-bold text-ink-black dark:text-pearl">{path.title}</div>
                                             <div className="text-xs text-silver-mist">{path.description || `${path.difficulty || 'General'} level`}</div>
                                         </div>
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-3">
                                             <div className="text-right">
                                                 <div className="text-[10px] font-bold uppercase text-silver-mist">Completion</div>
                                                 <div className="font-bold text-indigo-500">{path.completionRate || path.enrollmentCount || 0}%</div>
@@ -159,3 +159,4 @@ export default function LeadershipPage() {
         </div>
     );
 }
+

@@ -87,12 +87,12 @@ export default function PredictiveAnalyticsPage() {
 
     if (loading) {
         return (
-            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
                 <div className="flex items-center gap-2 p-6">
                     <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
                     <span className="text-slate-500">Loading predictive analytics...</span>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 px-6">
                     <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 animate-pulse">
                         <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-56 mb-6" />
                         <div className="space-y-3">
@@ -101,7 +101,7 @@ export default function PredictiveAnalyticsPage() {
                             ))}
                         </div>
                     </div>
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         {[...Array(2)].map((_, i) => (
                             <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 animate-pulse">
                                 <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-40 mb-4" />
@@ -159,9 +159,9 @@ export default function PredictiveAnalyticsPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <BrainCircuit className="w-6 h-6 text-indigo-500" />
@@ -176,7 +176,7 @@ export default function PredictiveAnalyticsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Flight Risk Section */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col">
                     <div className="flex justify-between items-center mb-6">
@@ -258,7 +258,7 @@ export default function PredictiveAnalyticsPage() {
                 </div>
 
                 {/* Other Metrics */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {/* Hiring Forecast */}
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
@@ -324,3 +324,4 @@ export default function PredictiveAnalyticsPage() {
         </div>
     );
 }
+

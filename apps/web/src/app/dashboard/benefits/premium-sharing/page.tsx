@@ -55,9 +55,9 @@ export default function PremiumSharingPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Coins className="w-6 h-6 text-indigo-500" />
@@ -67,7 +67,7 @@ export default function PremiumSharingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto pb-20">
                 {loading ? (
                     <div className="col-span-full flex justify-center items-center py-20">
                         <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
@@ -100,7 +100,7 @@ export default function PremiumSharingPage() {
                             ></div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3">
                             <div>
                                 <span className="block text-xs text-slate-400 font-bold uppercase mb-1">Employer Pays</span>
                                 <div className="flex items-center gap-1.5">
@@ -122,3 +122,4 @@ export default function PremiumSharingPage() {
         </div>
     );
 }
+

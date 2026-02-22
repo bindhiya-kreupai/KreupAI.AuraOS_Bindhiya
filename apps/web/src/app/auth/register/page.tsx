@@ -39,20 +39,20 @@ export default function RegisterPage() {
           </div>
 
           <h2 className="text-4xl font-display font-bold mb-6">Join the workforce revolution.</h2>
-          <ul className="space-y-6 text-lg text-white/80 leading-relaxed">
-            <li className="flex items-center gap-4">
+          <ul className="space-y-4 text-lg text-white/80 leading-relaxed">
+            <li className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
                 <span className="text-white text-sm">✓</span>
               </div>
               <span>Free 14-day trial of Enterprise plan</span>
             </li>
-            <li className="flex items-center gap-4">
+            <li className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
                 <span className="text-white text-sm">✓</span>
               </div>
               <span>No credit card required</span>
             </li>
-            <li className="flex items-center gap-4">
+            <li className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
                 <span className="text-white text-sm">✓</span>
               </div>
@@ -87,7 +87,7 @@ export default function RegisterPage() {
           </div>
 
           <form className="space-y-4" onSubmit={handleRegister}>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-ink-black dark:text-pearl">
                   First name
@@ -167,3 +167,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

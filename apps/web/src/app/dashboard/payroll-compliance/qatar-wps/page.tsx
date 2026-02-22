@@ -84,9 +84,9 @@ export default function QatarWPSPage() {
   };
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-8 pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <Link href="/dashboard/payroll-compliance" className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2">
             <ArrowLeft className="w-4 h-4" /> Back to Compliance
@@ -137,7 +137,7 @@ export default function QatarWPSPage() {
 
       {/* Generate Tab */}
       {activeTab === 'generate' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
               Generate WPS SIF File
@@ -212,7 +212,7 @@ export default function QatarWPSPage() {
 
       {/* Banks Tab */}
       {activeTab === 'banks' && referenceData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {referenceData.banks.map((bank: any) => (
             <div key={bank.code} className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
               <h4 className="font-semibold text-slate-900 dark:text-white mb-1">
@@ -244,3 +244,4 @@ export default function QatarWPSPage() {
     </div>
   );
 }
+

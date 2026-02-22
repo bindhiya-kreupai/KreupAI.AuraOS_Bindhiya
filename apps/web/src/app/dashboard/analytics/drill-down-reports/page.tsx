@@ -87,7 +87,7 @@ export default function DrillDownReportsPage() {
             </div>
 
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-3 mb-6">
                     {level > 1 && (
                         <button onClick={handleReset} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
                             <ArrowLeft className="w-5 h-5 text-slate-500" />
@@ -135,3 +135,4 @@ export default function DrillDownReportsPage() {
         </div>
     );
 }
+

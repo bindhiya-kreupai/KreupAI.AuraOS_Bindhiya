@@ -79,8 +79,8 @@ export default function ExitManagementPage() {
     const activeSeparations = exitProcesses.filter(ep => ep.status !== 'completed');
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <DoorOpen className="w-6 h-6 text-rose-500" />
@@ -111,7 +111,7 @@ export default function ExitManagementPage() {
             )}
 
             {!loading && exitProcesses.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                     {/* Active Resignations */}
                     <div className="lg:col-span-2 space-y-4">
                         <h3 className="font-bold text-lg mb-2">Active Separations</h3>
@@ -130,10 +130,10 @@ export default function ExitManagementPage() {
                                 const clearancePending = ep.clearanceItems?.filter((c: any) => c.status !== 'completed').length || 0;
 
                                 return (
-                                    <div key={ep.exitId || i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden shadow-sm hover:shadow-md transition-all">
+                                    <div key={ep.exitId || i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-3 relative overflow-hidden shadow-sm hover:shadow-md transition-all">
                                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500"></div>
 
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-3">
                                             <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-100">
                                                 <img src={`https://i.pravatar.cc/150?u=${employeeName}`} alt={employeeName} />
                                             </div>
@@ -143,7 +143,7 @@ export default function ExitManagementPage() {
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-col md:flex-row gap-6 md:items-center">
+                                        <div className="flex flex-col md:flex-row gap-3 md:items-center">
                                             <div>
                                                 <div className="text-xs font-bold text-slate-400 uppercase">Last Working Day</div>
                                                 <div className="font-mono font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
@@ -170,7 +170,7 @@ export default function ExitManagementPage() {
                     </div>
 
                     {/* Attrition Stats - kept as-is since it requires analytics endpoint */}
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                             <h3 className="font-bold text-lg mb-4">Attrition Reasons</h3>
                             <div className="space-y-3">
@@ -269,3 +269,4 @@ export default function ExitManagementPage() {
         </div>
     );
 }
+

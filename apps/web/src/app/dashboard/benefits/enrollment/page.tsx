@@ -135,7 +135,7 @@ export default function BenefitsEnrollmentPage() {
     }
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 pb-10">
+        <div className="flex flex-col lg:flex-row gap-8 pb-6">
             {/* Main Content */}
             <div className="flex-1 space-y-8">
                 {/* Header */}
@@ -160,7 +160,7 @@ export default function BenefitsEnrollmentPage() {
                             {category.title}
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                             {category.plans.map(plan => {
                                 const isSelected = selections[category.id] === plan.id;
                                 return (
@@ -260,3 +260,4 @@ export default function BenefitsEnrollmentPage() {
         </div>
     );
 }
+

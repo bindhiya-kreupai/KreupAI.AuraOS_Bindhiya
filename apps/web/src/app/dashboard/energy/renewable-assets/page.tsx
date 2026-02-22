@@ -10,8 +10,8 @@ import {
 
 export default function RenewableAssetsPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Sun className="w-6 h-6 text-indigo-500" />
@@ -21,7 +21,7 @@ export default function RenewableAssetsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Solar */}
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
@@ -37,7 +37,7 @@ export default function RenewableAssetsPage() {
                     <div className="text-sm text-emerald-500 font-bold mb-6 flex items-center gap-1">
                         <ArrowUpRight className="w-4 h-4" /> Generating at 85% cap
                     </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="grid grid-cols-2 gap-3 text-sm">
                         <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg text-center">
                             <div className="text-slate-500 text-xs">Irradiance</div>
                             <div className="font-bold">850 W/m²</div>
@@ -64,7 +64,7 @@ export default function RenewableAssetsPage() {
                     <div className="text-sm text-slate-500 font-bold mb-6 flex items-center gap-1">
                         Low wind speeds detected
                     </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="grid grid-cols-2 gap-3 text-sm">
                         <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg text-center">
                             <div className="text-slate-500 text-xs">Wind Speed</div>
                             <div className="font-bold">4.2 m/s</div>
@@ -100,3 +100,4 @@ export default function RenewableAssetsPage() {
         </div>
     );
 }
+

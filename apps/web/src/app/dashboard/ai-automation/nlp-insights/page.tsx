@@ -95,7 +95,7 @@ export default function NLPInsightsPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -108,7 +108,7 @@ export default function NLPInsightsPage() {
             </div>
 
             {/* Overview Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-5 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center justify-between">
                     <div>
                         <p className="text-xs text-silver-mist font-bold uppercase">Overall Sentiment</p>
@@ -140,7 +140,7 @@ export default function NLPInsightsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
 
                 {/* 1. Review Source & Trend */}
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
@@ -196,7 +196,7 @@ export default function NLPInsightsPage() {
                             </ScatterChart>
                         </ResponsiveContainer>
                     </div>
-                    <div className="flex justify-center gap-4 text-xs font-bold text-silver-mist mt-2">
+                    <div className="flex justify-center gap-3 text-xs font-bold text-silver-mist mt-2">
                         <span className="flex items-center gap-1"><span className="w-2 h-2 bg-emerald-500 rounded-full" /> Positive</span>
                         <span className="flex items-center gap-1"><span className="w-2 h-2 bg-amber-500 rounded-full" /> Mixed</span>
                         <span className="flex items-center gap-1"><span className="w-2 h-2 bg-rose-500 rounded-full" /> Negative</span>
@@ -206,7 +206,7 @@ export default function NLPInsightsPage() {
                 {/* 3. Word Clouds (Simulated with text sizing) */}
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm relative overflow-hidden">
                     <h2 className="text-lg font-bold text-ink-black dark:text-pearl mb-4 text-emerald-600">Positive Keyword Cloud</h2>
-                    <div className="flex flex-wrap items-center justify-center gap-4 h-[200px]">
+                    <div className="flex flex-wrap items-center justify-center gap-3 h-[200px]">
                         {POSITIVE_WORDS.map((word, i) => (
                             <span
                                 key={i}
@@ -221,7 +221,7 @@ export default function NLPInsightsPage() {
 
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm relative overflow-hidden">
                     <h2 className="text-lg font-bold text-ink-black dark:text-pearl mb-4 text-rose-600">Negative Keyword Cloud</h2>
-                    <div className="flex flex-wrap items-center justify-center gap-4 h-[200px]">
+                    <div className="flex flex-wrap items-center justify-center gap-3 h-[200px]">
                         {NEGATIVE_WORDS.map((word, i) => (
                             <span
                                 key={i}
@@ -239,3 +239,4 @@ export default function NLPInsightsPage() {
         </div>
     );
 }
+

@@ -94,8 +94,8 @@ export default function PositionManagementPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Briefcase className="w-6 h-6 text-indigo-500" />
@@ -129,9 +129,9 @@ export default function PositionManagementPage() {
 
             {/* Content */}
             {!loading && positionsData.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
                     {/* Stats */}
-                    <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                             <div className="text-slate-500 text-xs font-bold uppercase mb-1">Total Positions</div>
                             <div className="text-2xl font-bold">{stats.total}</div>
@@ -237,7 +237,7 @@ export default function PositionManagementPage() {
                                 <label className="block text-xs font-bold text-slate-500 mb-1">Position Code</label>
                                 <input ref={codeRef} type="text" className="w-full p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. POS-ENG-010" />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 mb-1">Department</label>
                                     <input ref={departmentRef} type="text" className="w-full p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Engineering" />
@@ -264,3 +264,4 @@ export default function PositionManagementPage() {
         </div>
     );
 }
+

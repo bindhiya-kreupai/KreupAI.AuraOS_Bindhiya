@@ -59,8 +59,8 @@ export default function PushNotificationsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Bell className="w-6 h-6 text-indigo-500" />
@@ -98,10 +98,10 @@ export default function PushNotificationsPage() {
                     {activeTab === 'compose' ? (
                         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                             <h2 className="text-lg font-bold mb-6">New Notification</h2>
-                            <div className="space-y-6">
+                            <div className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Target Audience</label>
-                                    <div className="grid grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-3 gap-3">
                                         {['All Users', 'Department', 'Location', 'Specific Users'].map((opt) => (
                                             <button
                                                 key={opt}
@@ -163,7 +163,7 @@ export default function PushNotificationsPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-4 pt-4">
+                                <div className="flex gap-3 pt-4">
                                     <button className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 dark:shadow-none flex items-center justify-center gap-2">
                                         <Send className="w-4 h-4" /> Send Now
                                     </button>
@@ -264,3 +264,4 @@ export default function PushNotificationsPage() {
         </div>
     );
 }
+

@@ -65,8 +65,8 @@ export default function ClassifiedsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <ShoppingBag className="w-6 h-6 text-indigo-500" />
@@ -89,9 +89,9 @@ export default function ClassifiedsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full min-h-0 overflow-hidden">
-                <div className="lg:col-span-4 flex flex-col h-full overflow-hidden space-y-6">
-                    <div className="flex flex-col sm:flex-row gap-4 justify-between items-center shrink-0">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 h-full min-h-0 overflow-hidden">
+                <div className="lg:col-span-4 flex flex-col h-full overflow-hidden space-y-4">
+                    <div className="flex flex-col sm:flex-row gap-3 justify-between items-center shrink-0">
                         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none max-w-full">
                             {CATEGORIES.map(cat => (
                                 <button
@@ -127,7 +127,7 @@ export default function ClassifiedsPage() {
                             <p className="text-sm">Post an ad to get started!</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-2 pb-20">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 overflow-y-auto pr-2 pb-20">
                             {filteredItems.map((item: any) => (
                                 <div key={item.id} className="bg-white dark:bg-stellar-blue p-4 rounded-2xl border border-cloud dark:border-nebula-purple/50 hover:shadow-xl transition-all group flex flex-col h-full relative overflow-hidden">
                                     <div className={`w-full aspect-square ${item.color || 'bg-slate-100'} rounded-xl mb-4 flex items-center justify-center text-7xl shadow-inner relative`}>
@@ -215,7 +215,7 @@ export default function ClassifiedsPage() {
                             <p className="text-sm text-silver-mist mb-6">Create a listing to reach colleagues across the company.</p>
 
                             <div className="space-y-4">
-                                <div className="flex gap-4">
+                                <div className="flex gap-3">
                                     <div className="w-24 h-24 rounded-2xl bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center text-slate-400 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shrink-0">
                                         <ImageIcon className="w-6 h-6 mb-1" />
                                         <span className="text-[10px] font-bold">Add Photo</span>
@@ -225,7 +225,7 @@ export default function ClassifiedsPage() {
                                             <label className="text-xs font-bold text-slate-500 mb-1 block">Title</label>
                                             <input type="text" placeholder="e.g., Mechanical Keyboard" className="w-full p-2.5 rounded-lg border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20" />
                                         </div>
-                                        <div className="flex gap-4">
+                                        <div className="flex gap-3">
                                             <div className="flex-1">
                                                 <label className="text-xs font-bold text-slate-500 mb-1 block">Price ($)</label>
                                                 <input type="number" placeholder="0.00" className="w-full p-2.5 rounded-lg border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20" />
@@ -275,3 +275,4 @@ export default function ClassifiedsPage() {
         </div>
     );
 }
+

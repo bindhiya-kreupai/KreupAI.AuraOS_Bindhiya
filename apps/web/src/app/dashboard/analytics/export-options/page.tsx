@@ -45,7 +45,7 @@ export default function ExportOptionsPage() {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {[
                     { title: 'PDF Settings', icon: FileText, color: 'text-red-500', desc: 'Layout, Page Size, Branding' },
                     { title: 'Excel / CSV', icon: TableIcon, color: 'text-emerald-500', desc: 'Delimiter, Encoding, Headers' },
@@ -100,3 +100,4 @@ export default function ExportOptionsPage() {
         </div>
     );
 }
+

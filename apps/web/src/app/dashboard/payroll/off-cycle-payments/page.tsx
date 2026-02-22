@@ -46,9 +46,9 @@ export default function OffCyclePaymentsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Zap className="w-6 h-6 text-amber-500" />
@@ -73,7 +73,7 @@ export default function OffCyclePaymentsPage() {
                     <div className="space-y-4">
                         {completedRuns.map((run) => (
                             <div key={run.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer group">
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3">
                                     <div className="p-3 bg-amber-100 dark:bg-amber-900/20 text-amber-600 rounded-lg group-hover:bg-white transition-colors">
                                         <Zap className="w-5 h-5" />
                                     </div>
@@ -84,7 +84,7 @@ export default function OffCyclePaymentsPage() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-6 mt-4 md:mt-0">
+                                <div className="flex items-center gap-3 mt-4 md:mt-0">
                                     <div className="font-mono font-bold text-lg">${run.totalNetPay.toLocaleString()}</div>
                                     <div className="px-3 py-1 bg-emerald-100 text-emerald-600 rounded-full text-xs font-bold capitalize">
                                         {run.status}
@@ -99,3 +99,4 @@ export default function OffCyclePaymentsPage() {
         </div>
     );
 }
+

@@ -38,8 +38,8 @@ export default function TestingModePage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <PlayCircle className="w-6 h-6 text-emerald-500" />
@@ -49,7 +49,7 @@ export default function TestingModePage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[500px]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-[500px]">
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col">
                     <h3 className="font-bold mb-4 flex items-center gap-2">
                         <Cpu className="w-5 h-5 text-slate-500" /> Test Inputs
@@ -105,3 +105,4 @@ export default function TestingModePage() {
         </div>
     );
 }
+

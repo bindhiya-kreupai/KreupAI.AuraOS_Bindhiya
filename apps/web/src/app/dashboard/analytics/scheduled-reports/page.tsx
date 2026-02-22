@@ -86,7 +86,7 @@ export default function ScheduledReportsPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <CalendarClock className="w-8 h-8 text-indigo-500" />
@@ -172,7 +172,7 @@ export default function ScheduledReportsPage() {
 
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-6">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-4">
                         <h2 className="text-xl font-bold flex items-center gap-2">
                             <Plus className="w-5 h-5 text-indigo-500" /> Create New Schedule
                         </h2>
@@ -183,7 +183,7 @@ export default function ScheduledReportsPage() {
                                 <input type="text" className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 text-sm" placeholder="e.g. Weekly Executive Summary" />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Report Type</label>
                                     <select className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 text-sm">
@@ -217,3 +217,4 @@ export default function ScheduledReportsPage() {
         </div>
     );
 }
+

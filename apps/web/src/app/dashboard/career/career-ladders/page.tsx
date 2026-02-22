@@ -11,9 +11,9 @@ import {
 
 export default function CareerLaddersPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <TrendingUp className="w-6 h-6 text-indigo-500" />
@@ -37,7 +37,7 @@ export default function CareerLaddersPage() {
                             { title: 'Staff Engineer', level: 'L4', status: 'future', readiness: '0%' },
                             { title: 'Principal Engineer', level: 'L5', status: 'future', readiness: '0%' },
                         ].map((step, i) => (
-                            <div key={i} className="flex flex-col items-center gap-4 relative group cursor-pointer">
+                            <div key={i} className="flex flex-col items-center gap-3 relative group cursor-pointer">
                                 <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border-4 z-10 transition-all
                                     ${step.status === 'completed' ? 'bg-emerald-500 border-white dark:border-slate-900 text-white shadow-lg' :
                                         step.status === 'current' ? 'bg-indigo-600 border-white dark:border-slate-900 text-white shadow-xl scale-110' :
@@ -61,7 +61,7 @@ export default function CareerLaddersPage() {
             </div>
 
             {/* Requirements Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 pb-20">
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="font-bold text-lg">Requirements for L3 (Senior)</h3>
@@ -75,7 +75,7 @@ export default function CareerLaddersPage() {
                             { req: 'Lead 2 Major Projects', status: 'in-progress', note: '1/2 Completed' },
                             { req: 'Technical Interviewer', status: 'pending', note: 'Training Scheduled' }
                         ].map((item, i) => (
-                            <div key={i} className="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            <div key={i} className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                 <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0
                                     ${item.status === 'met' ? 'bg-emerald-100 text-emerald-600' :
                                         item.status === 'in-progress' ? 'bg-amber-100 text-amber-600' :
@@ -109,3 +109,4 @@ export default function CareerLaddersPage() {
         </div>
     );
 }
+

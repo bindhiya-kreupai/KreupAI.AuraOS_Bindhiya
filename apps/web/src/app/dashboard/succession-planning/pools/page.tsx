@@ -47,9 +47,9 @@ export default function SuccessionPoolsPage() {
     const selectedPool = pools.length > 0 ? pools[0] : null;
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Users className="w-6 h-6 text-indigo-500" />
@@ -59,7 +59,7 @@ export default function SuccessionPoolsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Left: Pools List */}
                 <div className="lg:col-span-1 flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                     <div className="p-4 border-b border-slate-200 dark:border-slate-800 font-bold text-sm bg-slate-50 dark:bg-slate-800/50">
@@ -110,7 +110,7 @@ export default function SuccessionPoolsPage() {
                             ) : (
                                 candidates.map((cand, i) => (
                                     <div key={cand.candidateId || i} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 font-bold flex items-center justify-center">
                                                 {(cand.employeeName || 'N').substring(0, 2)}
                                             </div>
@@ -120,7 +120,7 @@ export default function SuccessionPoolsPage() {
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-6">
+                                        <div className="flex items-center gap-3">
                                             <div className="text-right">
                                                 <div className="text-[10px] font-bold text-slate-400 uppercase">Readiness</div>
                                                 <div className={`text-sm font-bold ${cand.readinessLevel === 'ready_now' ? 'text-emerald-600' : 'text-amber-600'}`}>
@@ -158,3 +158,4 @@ export default function SuccessionPoolsPage() {
         </div>
     );
 }
+

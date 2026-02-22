@@ -543,7 +543,7 @@ export default function DocumentManagementPage() {
       )}
 
       {/* Row 1: Document Type & Category */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             Document Type <span className="text-red-500">*</span>
@@ -597,7 +597,7 @@ export default function DocumentManagementPage() {
       </div>
 
       {/* Row 2: Document Name & Number */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             Document Name <span className="text-red-500">*</span>
@@ -636,7 +636,7 @@ export default function DocumentManagementPage() {
       </div>
 
       {/* Row 3: Issue Date & Expiry Date */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             Issue Date
@@ -669,7 +669,7 @@ export default function DocumentManagementPage() {
       </div>
 
       {/* Row 4: Access Level & Confidential */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             Access Level
@@ -747,7 +747,7 @@ export default function DocumentManagementPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Alerts Section */}
       {expiringCount > 0 && (
         <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-lg p-4">
@@ -803,3 +803,4 @@ export default function DocumentManagementPage() {
     </div>
   );
 }
+

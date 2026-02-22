@@ -28,8 +28,8 @@ export default function GrievanceManagementPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Gavel className="w-6 h-6 text-indigo-500" />
@@ -39,7 +39,7 @@ export default function GrievanceManagementPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
                 {[
                     { label: 'Open Cases', val: '8', color: 'text-indigo-500' },
                     { label: 'Pending Review', val: '3', color: 'text-amber-500' },
@@ -65,7 +65,7 @@ export default function GrievanceManagementPage() {
                         { id: 'GRV-24-004', type: 'Harassment', employee: 'Confidential', date: 'Oct 18', status: 'Legal Review' },
                     ].map((caseItem, i) => (
                         <div key={i} className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                            <div className="flex items-start gap-4">
+                            <div className="flex items-start gap-3">
                                 <div className="mt-1">
                                     <AlertCircle className="w-5 h-5 text-slate-400" />
                                 </div>
@@ -78,7 +78,7 @@ export default function GrievanceManagementPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-6 mt-4 md:mt-0">
+                            <div className="flex items-center gap-3 mt-4 md:mt-0">
                                 <span className={`px-2 py-1 rounded-full text-xs font-bold ${caseItem.status.includes('Escalated') || caseItem.status.includes('Legal') ? 'bg-rose-100 text-rose-600' :
                                         caseItem.status.includes('Hearing') ? 'bg-amber-100 text-amber-600' :
                                             'bg-indigo-100 text-indigo-600'
@@ -92,3 +92,4 @@ export default function GrievanceManagementPage() {
         </div>
     );
 }
+

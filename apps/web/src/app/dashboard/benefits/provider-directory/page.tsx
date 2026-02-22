@@ -45,9 +45,9 @@ export default function ProviderDirectoryPage() {
     const isAccepting = (p: any) => p.accepting !== undefined ? p.accepting : (p.acceptingNewPatients !== undefined ? p.acceptingNewPatients : true);
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <MapPin className="w-6 h-6 text-indigo-500" />
@@ -58,7 +58,7 @@ export default function ProviderDirectoryPage() {
             </div>
 
             {/* Search Bar */}
-            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex gap-4 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex gap-3 shadow-sm">
                 <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
@@ -82,7 +82,7 @@ export default function ProviderDirectoryPage() {
             </div>
 
             {/* Results */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto pb-20">
                 {loading ? (
                     <div className="col-span-full flex justify-center items-center py-20">
                         <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
@@ -135,3 +135,4 @@ export default function ProviderDirectoryPage() {
         </div>
     );
 }
+

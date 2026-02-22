@@ -140,9 +140,9 @@ export default function SkillsGapPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Target className="w-6 h-6 text-rose-500" />
@@ -177,7 +177,7 @@ export default function SkillsGapPage() {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Left: Radar Chart */}
                 <div className="lg:col-span-1 bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-col">
                     <h3 className="font-bold text-ink-black dark:text-pearl mb-2 flex items-center gap-2">
@@ -209,7 +209,7 @@ export default function SkillsGapPage() {
                 </div>
 
                 {/* Middle: Critical Gaps */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
                             <AlertTriangle className="w-5 h-5 text-rose-500" /> Critical Gaps ({criticalGaps.length})
@@ -309,3 +309,4 @@ export default function SkillsGapPage() {
         </div>
     );
 }
+

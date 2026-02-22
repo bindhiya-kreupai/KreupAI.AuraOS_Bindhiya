@@ -53,8 +53,8 @@ const financeAreas = [
 
 export default function FinanceLandingPage() {
   return (
-    <div className="space-y-8 pb-10 text-slate-900 dark:text-slate-100">
-      <div className="flex flex-col gap-4">
+    <div className="space-y-8 pb-6 text-slate-900 dark:text-slate-100">
+      <div className="flex flex-col gap-3">
         <p className="text-sm font-semibold text-indigo-500">Finance</p>
         <h1 className="text-3xl font-bold">Finance & Budget Hub</h1>
         <p className="text-slate-500 max-w-3xl">
@@ -63,7 +63,7 @@ export default function FinanceLandingPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {financeAreas.map((item) => {
           const Icon = item.icon;
           return (
@@ -93,3 +93,4 @@ export default function FinanceLandingPage() {
     </div>
   );
 }
+

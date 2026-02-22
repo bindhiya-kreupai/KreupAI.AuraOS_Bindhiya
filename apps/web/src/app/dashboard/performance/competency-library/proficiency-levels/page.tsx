@@ -919,9 +919,9 @@ export default function ProficiencyLevelsPage() {
     });
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Gauge className="w-6 h-6 text-celestial-indigo" />
@@ -940,7 +940,7 @@ export default function ProficiencyLevelsPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-lg">
@@ -989,7 +989,7 @@ export default function ProficiencyLevelsPage() {
 
             {/* Filters Bar */}
             <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
-                <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex flex-col md:flex-row gap-3">
                     {/* Search */}
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
@@ -1035,7 +1035,7 @@ export default function ProficiencyLevelsPage() {
             </div>
 
             {/* Frameworks List */}
-            <div className="space-y-6">
+            <div className="space-y-4">
                 {filteredFrameworks.map(framework => {
                     const isExpanded = expandedFrameworks.includes(framework.id);
 
@@ -1049,7 +1049,7 @@ export default function ProficiencyLevelsPage() {
                                 className="p-6 cursor-pointer hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors"
                                 onClick={() => toggleFramework(framework.id)}
                             >
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                                     <div className="flex-1">
                                         <div className="flex flex-wrap items-center gap-2 mb-2">
                                             <h2 className="text-xl font-bold text-ink-black dark:text-pearl">{framework.name}</h2>
@@ -1061,7 +1061,7 @@ export default function ProficiencyLevelsPage() {
                                             )}
                                         </div>
                                         <p className="text-sm text-silver-mist">{framework.description}</p>
-                                        <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-slate-500">
+                                        <div className="flex flex-wrap items-center gap-3 mt-3 text-xs text-slate-500">
                                             <span className="flex items-center gap-1">
                                                 <Layers className="w-3 h-3" />
                                                 {framework.levels.length} levels
@@ -1191,7 +1191,7 @@ export default function ProficiencyLevelsPage() {
 
             {/* Info Card */}
             <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-6 rounded-2xl shadow-lg border border-indigo-500/30 text-white">
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3">
                     <div className="p-3 bg-white/10 rounded-xl">
                         <Info className="w-6 h-6" />
                     </div>
@@ -1239,7 +1239,7 @@ export default function ProficiencyLevelsPage() {
                 }
             >
                 {editingFramework && (
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         {/* Basic Information */}
                         <div className="space-y-4">
                             <h4 className="font-bold text-sm text-ink-black dark:text-pearl flex items-center gap-2 pb-2 border-b border-cloud dark:border-nebula-purple/30">
@@ -1269,7 +1269,7 @@ export default function ProficiencyLevelsPage() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Type *</label>
                                     <select
@@ -1404,3 +1404,4 @@ export default function ProficiencyLevelsPage() {
         </div>
     );
 }
+

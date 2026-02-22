@@ -85,8 +85,8 @@ export default function TaxDeclarationsPage() {
 
     if (declarations.length === 0) {
         return (
-            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                     <div>
                         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                             <FileText className="w-6 h-6 text-indigo-500" />
@@ -107,9 +107,9 @@ export default function TaxDeclarationsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <FileText className="w-6 h-6 text-indigo-500" />
@@ -134,9 +134,9 @@ export default function TaxDeclarationsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Left: Summary & Categories */}
-                <div className="lg:col-span-2 flex flex-col gap-6 overflow-hidden">
+                <div className="lg:col-span-2 flex flex-col gap-3 overflow-hidden">
                     {/* Tax Summary Card */}
                     <div className="bg-gradient-to-br from-slate-900 to-indigo-950 p-6 rounded-2xl shadow-lg border border-indigo-500/30 text-white shrink-0">
                         <div className="grid grid-cols-3 gap-8">
@@ -291,3 +291,4 @@ export default function TaxDeclarationsPage() {
         </div>
     );
 }
+

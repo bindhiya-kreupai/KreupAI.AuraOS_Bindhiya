@@ -45,9 +45,9 @@ export default function PolicyUpdatesPage() {
     }));
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <History className="w-6 h-6 text-indigo-500" />
@@ -89,3 +89,4 @@ export default function PolicyUpdatesPage() {
         </div>
     );
 }
+

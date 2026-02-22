@@ -39,8 +39,8 @@ export default function LevelsTiersPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Zap className="w-6 h-6 text-yellow-500" />
@@ -75,7 +75,7 @@ export default function LevelsTiersPage() {
 
             {/* Tiers Grid */}
             <h3 className="font-bold text-xl pt-4">Tier Progression</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 {[
                     { name: 'Bronze', icon: Shield, min: '0 XP', color: 'text-orange-700 bg-orange-100', perks: ['Basic Badges', 'Standard Profile'] },
                     { name: 'Silver', icon: Star, min: '1,000 XP', color: 'text-slate-500 bg-slate-100', perks: ['Custom Avatar', 'Voting Rights'] },
@@ -105,3 +105,4 @@ export default function LevelsTiersPage() {
         </div>
     );
 }
+

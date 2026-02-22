@@ -82,9 +82,9 @@ export default function CompensationPlanningModulePage() {
   const eligibleEmployees = analytics?.byDepartment?.reduce((sum, d) => sum + d.headcount, 0) ?? 0;
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <DollarSign className="w-6 h-6 text-indigo-500" />
@@ -104,7 +104,7 @@ export default function CompensationPlanningModulePage() {
 
       {/* Summary Stats */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 animate-pulse">
               <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-20 mb-3" />
@@ -118,7 +118,7 @@ export default function CompensationPlanningModulePage() {
           {error}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
             <p className="text-xs text-slate-500 uppercase font-medium">Total Budget</p>
             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{formatCurrency(totalBudget)}</p>
@@ -171,3 +171,4 @@ export default function CompensationPlanningModulePage() {
     </div>
   );
 }
+

@@ -129,7 +129,7 @@ export default function OverviewPage() {
     const formatNumber = (num: number) => num.toLocaleString();
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             <GlobalSearchCommand />
             <WidgetConfigPanel />
 
@@ -179,7 +179,7 @@ export default function OverviewPage() {
                 </div>
             </section>
 
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-3">
                 <div className="xl:col-span-3">
                     <DraggableWidgetGrid />
                 </div>
@@ -229,3 +229,4 @@ function KPICard({ label, value, change, icon: Icon, color, alert = false }: any
         </div>
     );
 }
+

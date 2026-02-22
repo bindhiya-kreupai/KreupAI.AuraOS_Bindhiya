@@ -39,9 +39,9 @@ export default function ManagerAssessmentPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Users className="w-6 h-6 text-indigo-500" />
@@ -56,7 +56,7 @@ export default function ManagerAssessmentPage() {
 
             {/* Team List */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-3">
                     <h3 className="font-bold text-sm">My Team ({completedCount}/{reviews.length} Completed)</h3>
                     <div className="relative w-full md:w-64">
                         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -77,8 +77,8 @@ export default function ManagerAssessmentPage() {
                             const score = review.managerRating ? review.managerRating.toFixed(1) : '-';
 
                             return (
-                                <div key={review.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 flex flex-col md:flex-row items-center justify-between gap-4 group cursor-pointer transition-colors">
-                                    <div className="flex items-center gap-4 w-full md:w-auto">
+                                <div key={review.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 flex flex-col md:flex-row items-center justify-between gap-3 group cursor-pointer transition-colors">
+                                    <div className="flex items-center gap-3 w-full md:w-auto">
                                         <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
                                             {review.employeeId?.charAt(0)?.toUpperCase() || 'E'}
                                         </div>
@@ -110,3 +110,4 @@ export default function ManagerAssessmentPage() {
         </div>
     );
 }
+

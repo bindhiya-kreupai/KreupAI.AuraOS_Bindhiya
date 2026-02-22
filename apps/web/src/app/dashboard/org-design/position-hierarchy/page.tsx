@@ -57,9 +57,9 @@ export default function PositionHierarchyPage() {
     ];
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Layers className="w-6 h-6 text-indigo-500" />
@@ -96,7 +96,7 @@ export default function PositionHierarchyPage() {
                     {levels.map(level => (
                         <div key={level.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 hover:border-indigo-300 transition-colors group">
                             <div className="flex items-start justify-between">
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3">
                                     <div className={`w-12 h-12 rounded-xl ${level.color} opacity-90 flex items-center justify-center text-white font-bold text-lg shadow-sm`}>
                                         {level.id}
                                     </div>
@@ -134,3 +134,4 @@ export default function PositionHierarchyPage() {
         </div>
     );
 }
+

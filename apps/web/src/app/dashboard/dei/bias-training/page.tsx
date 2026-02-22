@@ -39,8 +39,8 @@ export default function BiasTrainingPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <GraduationCap className="w-6 h-6 text-indigo-500" />
@@ -55,7 +55,7 @@ export default function BiasTrainingPage() {
                 <div>
                     <h2 className="text-2xl font-bold mb-2">My Learning Path</h2>
                     <p className="opacity-90 max-w-lg">You are on track! Complete the "Inclusive Leadership" module by Friday to maintain your streak.</p>
-                    <div className="mt-6 flex items-center gap-4">
+                    <div className="mt-6 flex items-center gap-3">
                         <div className="flex flex-col">
                             <span className="text-3xl font-bold">2/4</span>
                             <span className="text-xs opacity-75 uppercase font-bold">Modules Done</span>
@@ -75,9 +75,9 @@ export default function BiasTrainingPage() {
             </div>
 
             <h3 className="font-bold text-lg mt-8">Course Modules</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {modules.map((mod, i) => (
-                    <div key={i} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors group flex gap-4">
+                    <div key={i} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors group flex gap-3">
                         <div className={`w-20 h-20 rounded-lg ${mod.thumb} flex items-center justify-center shrink-0`}>
                             <BookOpen className="w-8 h-8 text-slate-700 opacity-50" />
                         </div>
@@ -93,7 +93,7 @@ export default function BiasTrainingPage() {
                                 )}
                             </div>
 
-                            <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
+                            <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
                                 <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {mod.duration}</span>
                                 <span className={`px-2 py-0.5 rounded font-bold ${mod.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
                                         mod.status === 'In Progress' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'
@@ -114,3 +114,4 @@ export default function BiasTrainingPage() {
         </div>
     );
 }
+

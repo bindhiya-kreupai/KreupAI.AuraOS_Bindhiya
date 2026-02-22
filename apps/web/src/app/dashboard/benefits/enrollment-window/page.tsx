@@ -30,9 +30,9 @@ export default function EnrollmentWindowPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <CalendarDays className="w-6 h-6 text-indigo-500" />
@@ -42,7 +42,7 @@ export default function EnrollmentWindowPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {/* Active Window */}
                 <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
@@ -58,7 +58,7 @@ export default function EnrollmentWindowPage() {
                             Employees created before Dec 1st are eligible to modify their Health, Dental, and Vision plans.
                         </p>
 
-                        <div className="grid grid-cols-2 gap-6 mb-8">
+                        <div className="grid grid-cols-2 gap-3 mb-8">
                             <div className="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/10">
                                 <span className="block text-indigo-200 text-xs font-bold uppercase mb-1">Start Date</span>
                                 <span className="text-xl font-bold">Nov 15, 2024</span>
@@ -102,7 +102,7 @@ export default function EnrollmentWindowPage() {
                         <p className="text-sm text-slate-500 mb-4">
                             Special window for life event adjustments only.
                         </p>
-                        <div className="flex items-center gap-4 text-xs font-bold text-slate-400">
+                        <div className="flex items-center gap-3 text-xs font-bold text-slate-400">
                             <span>Jun 01 - Jun 15</span>
                         </div>
                     </div>
@@ -111,3 +111,4 @@ export default function EnrollmentWindowPage() {
         </div>
     );
 }
+

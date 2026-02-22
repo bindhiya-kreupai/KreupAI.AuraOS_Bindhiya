@@ -40,9 +40,9 @@ export default function CandidatePortalPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Layout className="w-6 h-6 text-indigo-500" />
@@ -52,9 +52,9 @@ export default function CandidatePortalPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
                 {/* Left: Application List */}
-                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-6">
+                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
                     <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0 w-fit">
                         {['Applications', 'Documents', 'Offers'].map(tab => (
                             <button
@@ -76,7 +76,7 @@ export default function CandidatePortalPage() {
                             {[1, 2].map(i => (
                                 <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-all">
                                     <div className="flex justify-between items-start mb-4">
-                                        <div className="flex gap-4">
+                                        <div className="flex gap-3">
                                             <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center text-indigo-600">
                                                 <Briefcase className="w-6 h-6" />
                                             </div>
@@ -119,7 +119,7 @@ export default function CandidatePortalPage() {
                 </div>
 
                 {/* Right: Quick Actions */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-800/30">
                         <h3 className="font-bold text-indigo-800 dark:text-indigo-300 mb-2">Complete Profile</h3>
                         <p className="text-sm text-indigo-700 dark:text-indigo-400 mb-4">
@@ -160,3 +160,4 @@ export default function CandidatePortalPage() {
         </div>
     );
 }
+

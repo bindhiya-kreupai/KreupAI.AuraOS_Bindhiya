@@ -77,7 +77,7 @@ export default function AttendanceExceptionsPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -98,7 +98,7 @@ export default function AttendanceExceptionsPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div className="p-4 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <p className="text-xs font-bold text-silver-mist uppercase">Total Exceptions</p>
                     <h3 className="text-2xl font-bold text-ink-black dark:text-pearl">{stats.total}</h3>
@@ -192,3 +192,4 @@ export default function AttendanceExceptionsPage() {
         </div>
     );
 }
+

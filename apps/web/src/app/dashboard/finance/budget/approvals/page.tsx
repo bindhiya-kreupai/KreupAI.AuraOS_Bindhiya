@@ -88,8 +88,8 @@ export default function BudgetApprovalsPage() {
     ];
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <UserCheck className="w-6 h-6 text-indigo-500" />
@@ -105,7 +105,7 @@ export default function BudgetApprovalsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 shrink-0">
                 {stats.map((stat, i) => {
                     const Icon = stat.icon;
                     return (
@@ -150,8 +150,8 @@ export default function BudgetApprovalsPage() {
                                 const status = approval.approvalStatus || approval.status || 'pending';
                                 return (
                                     <div key={approval.id} className="p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                            <div className="flex items-start gap-4 flex-1">
+                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                            <div className="flex items-start gap-3 flex-1">
                                                 <div className={`p-3 rounded-xl ${getStatusColor(status)}`}>
                                                     {getStatusIcon(status)}
                                                 </div>
@@ -160,14 +160,14 @@ export default function BudgetApprovalsPage() {
                                                         <h3 className="font-bold text-lg">{approval.name || approval.title || 'Budget Request'}</h3>
                                                     </div>
                                                     <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">{approval.description || ''}</p>
-                                                    <div className="text-sm text-slate-500 flex flex-wrap gap-4">
+                                                    <div className="text-sm text-slate-500 flex flex-wrap gap-3">
                                                         <span><strong>Dept:</strong> {approval.department || '-'}</span>
                                                         <span>•</span>
                                                         <span><strong>Period:</strong> {approval.fiscalYear || '-'}</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-6">
+                                            <div className="flex items-center gap-3">
                                                 <div className="text-right">
                                                     <div className="font-bold text-2xl">${(approval.totalAmount || 0).toLocaleString()}</div>
                                                     <div className={`text-xs font-bold uppercase ${getStatusColor(status)} px-2 py-1 rounded-full inline-block mt-1`}>
@@ -192,3 +192,4 @@ export default function BudgetApprovalsPage() {
         </div>
     );
 }
+

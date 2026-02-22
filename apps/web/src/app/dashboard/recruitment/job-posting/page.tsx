@@ -100,9 +100,9 @@ export default function JobPostingsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Megaphone className="w-6 h-6 text-celestial-indigo" />
@@ -124,7 +124,7 @@ export default function JobPostingsPage() {
             />
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <div className="text-silver-mist text-xs font-bold uppercase">Active Campaigns</div>
                     <div className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">
@@ -152,10 +152,10 @@ export default function JobPostingsPage() {
             </div>
 
             {/* Postings Grid */}
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-3">
                 {jobs.map(job => (
                     <div key={job.id} className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm p-6 hover:shadow-md transition-all group">
-                        <div className="flex flex-col lg:flex-row gap-6">
+                        <div className="flex flex-col lg:flex-row gap-3">
                             {/* Job Info */}
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-3 mb-2">
@@ -241,3 +241,4 @@ export default function JobPostingsPage() {
         </div>
     );
 }
+

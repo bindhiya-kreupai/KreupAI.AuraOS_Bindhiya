@@ -52,7 +52,7 @@ export default function LDRecommendationsPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -89,7 +89,7 @@ export default function LDRecommendationsPage() {
                         <Award className="w-5 h-5 text-amber-500" />
                         Top Picks for You
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {courses.map((course) => (
                             <div key={course.id} className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden hover:shadow-md transition-shadow group cursor-pointer">
                                 <div className={`h-32 ${course.image} relative`}>
@@ -122,3 +122,4 @@ export default function LDRecommendationsPage() {
         </div>
     );
 }
+

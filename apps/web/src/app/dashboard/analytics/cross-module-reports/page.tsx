@@ -79,7 +79,7 @@ export default function CrossModuleReportsPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                             <ArrowRightLeft className="w-5 h-5 text-indigo-500" /> Correlation Config
@@ -141,3 +141,4 @@ export default function CrossModuleReportsPage() {
         </div>
     );
 }
+

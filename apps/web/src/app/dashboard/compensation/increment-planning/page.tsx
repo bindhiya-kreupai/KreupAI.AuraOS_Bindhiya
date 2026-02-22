@@ -52,9 +52,9 @@ export default function CompPlanningPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <TrendingUp className="w-6 h-6 text-emerald-500" />
@@ -63,7 +63,7 @@ export default function CompPlanningPage() {
                     <p className="text-slate-500 text-sm">Manage annual merit increases, bonus allocations, and budget distributions.</p>
                 </div>
                 {activeCycle && (
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                         <div className="text-right hidden md:block">
                             <div className="text-xs text-slate-500 font-bold uppercase">Budget Utilization</div>
                             <div className="text-sm font-bold text-emerald-600">{budgetUsedPct}% Used</div>
@@ -75,7 +75,7 @@ export default function CompPlanningPage() {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 h-full min-h-0">
                 {/* Sidebar Stats */}
                 <div className="lg:col-span-1 space-y-4">
                     <div className="bg-emerald-600 text-white p-6 rounded-2xl shadow-lg">
@@ -173,3 +173,4 @@ export default function CompPlanningPage() {
         </div>
     );
 }
+

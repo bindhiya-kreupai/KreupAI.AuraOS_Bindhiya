@@ -45,9 +45,9 @@ export default function InterviewFeedbackPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <MessageCircle className="w-6 h-6 text-indigo-500" />
@@ -59,7 +59,7 @@ export default function InterviewFeedbackPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Feedback Stream */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     {interviews.length === 0 && (
                         <div className="bg-white dark:bg-slate-900 p-12 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
                             <MessageCircle className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
@@ -83,7 +83,7 @@ export default function InterviewFeedbackPage() {
                         return (
                             <div key={interview.id || i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                                 <div className="flex justify-between items-start mb-4">
-                                    <div className="flex gap-4">
+                                    <div className="flex gap-3">
                                         <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500 text-lg">
                                             {candidateName.charAt(0)}
                                         </div>
@@ -129,7 +129,7 @@ export default function InterviewFeedbackPage() {
                 </div>
 
                 {/* Filters */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <h3 className="font-bold mb-4">Filter Feedback</h3>
                         <div className="space-y-3">
@@ -157,3 +157,4 @@ export default function InterviewFeedbackPage() {
         </div>
     );
 }
+

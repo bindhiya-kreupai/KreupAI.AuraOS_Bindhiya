@@ -166,9 +166,9 @@ export default function EOSBPage() {
   };
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <Link href="/dashboard/payroll-compliance" className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2">
             <ArrowLeft className="w-4 h-4" /> Back to Compliance
@@ -198,7 +198,7 @@ export default function EOSBPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {/* Calculator Form */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
           <h2 className="text-lg font-semibold mb-6 text-slate-900 dark:text-slate-100">
@@ -264,7 +264,7 @@ export default function EOSBPage() {
             </div>
 
             {/* Dates */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   <Calendar className="w-4 h-4 inline mr-1" />
@@ -334,7 +334,7 @@ export default function EOSBPage() {
           </h2>
 
           {result ? (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {/* Service Duration */}
               <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
                 <div className="text-sm text-indigo-600 dark:text-indigo-400 mb-1">Service Duration</div>
@@ -449,7 +449,7 @@ export default function EOSBPage() {
             Loading rules...
           </div>
         ) : countryRules?.eosb ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
               <div className="text-sm text-slate-500 mb-1">
                 {countryRules.eosb.firstPeriodYears > 0
@@ -478,7 +478,7 @@ export default function EOSBPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
               <div className="text-sm text-slate-500 mb-1">First 5 Years</div>
               <div className="text-lg font-semibold">21 days per year</div>
@@ -500,3 +500,4 @@ export default function EOSBPage() {
     </div>
   );
 }
+

@@ -74,9 +74,9 @@ export default function HiringAnalyticsPage() {
     const totalSourceApplications = sourcesByApplications.reduce((sum, s) => sum + s.count, 0) || 1;
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <BarChart3 className="w-6 h-6 text-indigo-500" />
@@ -95,7 +95,7 @@ export default function HiringAnalyticsPage() {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 shrink-0">
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <div className="flex justify-between items-start mb-2">
                         <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600">
@@ -138,7 +138,7 @@ export default function HiringAnalyticsPage() {
             </div>
 
             {/* Visualizations */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 flex-1 min-h-0">
                 {/* Funnel Chart */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col">
                     <h3 className="font-bold text-lg mb-6">Recruitment Funnel</h3>
@@ -147,7 +147,7 @@ export default function HiringAnalyticsPage() {
                         {funnelStages.map((stage, idx) => {
                             const widthPercent = maxCount > 0 ? Math.max((stage.count / maxCount) * 100, 5) : 5;
                             return (
-                                <div key={idx} className="flex items-center gap-4">
+                                <div key={idx} className="flex items-center gap-3">
                                     <div className="w-24 text-sm font-bold text-slate-500 text-right">{stage.label}</div>
                                     <div className="flex-1 h-10 bg-slate-50 dark:bg-slate-800 rounded-r-xl relative overflow-hidden group hover:shadow-md transition-all">
                                         <div
@@ -200,3 +200,4 @@ export default function HiringAnalyticsPage() {
         </div>
     );
 }
+

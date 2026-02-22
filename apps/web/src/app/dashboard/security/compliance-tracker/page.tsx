@@ -13,9 +13,9 @@ import {
 
 export default function ComplianceTrackerPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <CheckCircle className="w-6 h-6 text-emerald-500" />
@@ -32,12 +32,12 @@ export default function ComplianceTrackerPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full min-h-0 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-full min-h-0 overflow-y-auto pb-20">
 
                 {/* SOC2 Card */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col">
                     <div className="flex justify-between items-start mb-6">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold">
                                 S
                             </div>
@@ -57,7 +57,7 @@ export default function ComplianceTrackerPage() {
                         <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                             <div className="h-full bg-indigo-500 w-[90%] rounded-full"></div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div className="grid grid-cols-2 gap-3 mt-4">
                             <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg">
                                 <span className="text-xs text-slate-500 block">Next Audit</span>
                                 <span className="font-bold text-sm">Oct 15, 2025</span>
@@ -77,7 +77,7 @@ export default function ComplianceTrackerPage() {
                 {/* GDPR Card */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col">
                     <div className="flex justify-between items-start mb-6">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 text-purple-600 rounded-xl flex items-center justify-center text-xl font-bold">
                                 G
                             </div>
@@ -97,7 +97,7 @@ export default function ComplianceTrackerPage() {
                         <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                             <div className="h-full bg-amber-500 w-[80%] rounded-full"></div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div className="grid grid-cols-2 gap-3 mt-4">
                             <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg">
                                 <span className="text-xs text-slate-500 block">DPO Appointed</span>
                                 <span className="font-bold text-sm">Yes (External)</span>
@@ -120,7 +120,7 @@ export default function ComplianceTrackerPage() {
                 {/* ISO Card */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col">
                     <div className="flex justify-between items-start mb-6">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             <div className="w-12 h-12 bg-sky-100 dark:bg-sky-900/20 text-sky-600 rounded-xl flex items-center justify-center text-xl font-bold">
                                 I
                             </div>
@@ -155,3 +155,4 @@ export default function ComplianceTrackerPage() {
         </div>
     );
 }
+

@@ -59,9 +59,9 @@ export default function PayrollReconciliationPage() {
     })) || [];
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <GitCompare className="w-6 h-6 text-indigo-500" />
@@ -92,7 +92,7 @@ export default function PayrollReconciliationPage() {
             ) : (
                 <>
                     {/* Summary Variance */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                             <div className="text-xs font-bold text-slate-500 uppercase">Gross Pay Variance</div>
                             <div className="flex items-end gap-2 mt-2">
@@ -143,7 +143,7 @@ export default function PayrollReconciliationPage() {
                             <div className="divide-y divide-slate-100 dark:divide-slate-800">
                                 {discrepancies.map((item, i) => (
                                     <div key={i} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-center justify-between">
-                                        <div className="flex items-start gap-4">
+                                        <div className="flex items-start gap-3">
                                             <div className={`p-2 rounded-lg ${item.impact === 'High' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'}`}>
                                                 <AlertCircle className="w-5 h-5" />
                                             </div>
@@ -165,3 +165,4 @@ export default function PayrollReconciliationPage() {
         </div>
     );
 }
+

@@ -45,9 +45,9 @@ export default function BiometricLoginPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Fingerprint className="w-6 h-6 text-indigo-500" />
@@ -60,17 +60,17 @@ export default function BiometricLoginPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Main Settings */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     {/* Authentication Methods */}
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                             <ShieldAlert className="w-5 h-5 text-indigo-500" /> Authentication Methods
                         </h2>
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
                                         <ScanFace className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                                     </div>
@@ -85,7 +85,7 @@ export default function BiometricLoginPage() {
                             </div>
 
                             <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
                                         <Fingerprint className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                                     </div>
@@ -100,7 +100,7 @@ export default function BiometricLoginPage() {
                             </div>
 
                             <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
                                         <KeyRound className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                                     </div>
@@ -121,7 +121,7 @@ export default function BiometricLoginPage() {
                         <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                             <Lock className="w-5 h-5 text-amber-500" /> Session Security
                         </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-sm font-medium mb-2">Session Timeout (Inactivity)</label>
                                 <select
@@ -157,7 +157,7 @@ export default function BiometricLoginPage() {
                 </div>
 
                 {/* Sidebar Info */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-800">
                         <h3 className="font-bold text-indigo-900 dark:text-indigo-200 mb-2">Security Status</h3>
                         <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-lg mb-4">
@@ -199,3 +199,4 @@ export default function BiometricLoginPage() {
         </div>
     );
 }
+

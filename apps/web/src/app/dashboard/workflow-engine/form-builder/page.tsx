@@ -46,8 +46,8 @@ export default function FormBuilderPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <FileText className="w-6 h-6 text-pink-500" />
@@ -65,7 +65,7 @@ export default function FormBuilderPage() {
                 </div>
             </div>
 
-            <div className="flex gap-6 h-[600px]">
+            <div className="flex gap-3 h-[600px]">
                 <div className="w-64 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
                     <h3 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-4">Fields</h3>
                     <div className="grid grid-cols-2 gap-2">
@@ -77,7 +77,7 @@ export default function FormBuilderPage() {
                     </div>
                 </div>
 
-                <div className="flex-1 bg-slate-50 dark:bg-slate-950 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 p-8 flex flex-col gap-4 overflow-y-auto">
+                <div className="flex-1 bg-slate-50 dark:bg-slate-950 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 p-8 flex flex-col gap-3 overflow-y-auto">
                     <div className="bg-white dark:bg-slate-900 p-8 rounded-xl shadow-lg w-full max-w-2xl mx-auto min-h-[500px]">
                         <div className="border-b border-slate-100 dark:border-slate-800 pb-4 mb-6">
                             <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
@@ -119,3 +119,4 @@ export default function FormBuilderPage() {
         </div>
     );
 }
+

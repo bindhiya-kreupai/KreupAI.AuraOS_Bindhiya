@@ -116,7 +116,7 @@ function DashboardPreview() {
           </div>
 
           {/* Chart Mockup & Employee List */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {/* Chart */}
             <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
               <div className="flex justify-between items-center mb-4">
@@ -688,7 +688,7 @@ function ExitIntentPopup() {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/auth/register">
               <Button
                 size="lg"
@@ -761,7 +761,7 @@ export default function LandingPage() {
           </p>
 
           {/* Trust indicators */}
-          <div className="flex flex-wrap items-center justify-center gap-6 lg:gap-8 mb-12 text-sm text-twilight dark:text-silver-mist">
+          <div className="flex flex-wrap items-center justify-center gap-3 lg:gap-8 mb-12 text-sm text-twilight dark:text-silver-mist">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500" />
               <span>Free 14-day trial</span>
@@ -776,7 +776,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/auth/register">
               <Button
                 size="lg"
@@ -979,7 +979,7 @@ export default function LandingPage() {
                   &quot;{testimonial.quote}&quot;
                 </blockquote>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-celestial-indigo to-quantum-rose flex items-center justify-center text-white font-bold text-lg">
                     {testimonial.name
                       .split(' ')
@@ -1280,7 +1280,7 @@ export default function LandingPage() {
             Start your 14-day free trial. No credit card required. Full access to all features.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
             <Link href="/auth/register">
               <Button
                 size="lg"
@@ -1302,7 +1302,7 @@ export default function LandingPage() {
           </div>
 
           {/* Trust badges */}
-          <div className="flex flex-wrap items-center justify-center gap-6 lg:gap-8 text-sm text-white/80">
+          <div className="flex flex-wrap items-center justify-center gap-3 lg:gap-8 text-sm text-white/80">
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5" />
               <span>SOC 2 Certified</span>
@@ -1330,3 +1330,4 @@ export default function LandingPage() {
     </div>
   );
 }
+

@@ -10,9 +10,9 @@ import {
 
 export default function BudgetVsActualPage() {
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Calculator className="w-6 h-6 text-indigo-500" />
@@ -23,7 +23,7 @@ export default function BudgetVsActualPage() {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <div className="text-slate-500 text-xs font-bold uppercase mb-1">Total Planned (YTD)</div>
                     <div className="text-3xl font-black">$4,250,000</div>
@@ -81,3 +81,4 @@ export default function BudgetVsActualPage() {
         </div>
     );
 }
+

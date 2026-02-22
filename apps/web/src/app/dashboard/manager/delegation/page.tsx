@@ -77,8 +77,8 @@ export default function DelegationPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <UserPlus className="w-6 h-6 text-indigo-500" />
@@ -92,7 +92,7 @@ export default function DelegationPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <div>
                         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                             <Shield className="w-5 h-5 text-emerald-500" /> Active Delegations
@@ -123,7 +123,7 @@ export default function DelegationPage() {
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
                                             <div>
                                                 <div className="text-slate-500 text-xs mb-1 uppercase font-bold tracking-wider">Scope</div>
                                                 <div className="font-medium flex items-center gap-2">
@@ -185,9 +185,9 @@ export default function DelegationPage() {
                     </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-2xl p-6">
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-3">
                             <AlertCircle className="w-6 h-6 text-amber-600 shrink-0" />
                             <div>
                                 <h4 className="font-bold text-amber-800 dark:text-amber-200 mb-2">Important Policy</h4>
@@ -252,3 +252,4 @@ export default function DelegationPage() {
         </div>
     );
 }
+

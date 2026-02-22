@@ -38,8 +38,8 @@ export default function RewardsCatalogPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Gift className="w-6 h-6 text-indigo-500" />
@@ -68,7 +68,7 @@ export default function RewardsCatalogPage() {
                     <p className="text-sm">Reward items will appear here once configured.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                     {rewards.map((item: any, i: number) => (
                         <div key={item.id || i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl transition-all group flex flex-col">
                             <div className="h-40 bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-white font-bold text-lg opacity-80 group-hover:opacity-100 transition-opacity">
@@ -90,3 +90,4 @@ export default function RewardsCatalogPage() {
         </div>
     );
 }
+

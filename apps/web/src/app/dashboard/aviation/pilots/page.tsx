@@ -5,9 +5,9 @@ import { Award, BookOpen, Plane, Clock, UserCheck } from 'lucide-react';
 
 export default function PilotTrainingPage() {
   return (
-    <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+    <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Award className="w-6 h-6 text-amber-500" />
@@ -22,7 +22,7 @@ export default function PilotTrainingPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
         {/* Cert Tracking */}
         <div className="lg:col-span-2 space-y-4 overflow-y-auto pb-20">
           <h3 className="font-bold text-lg mb-2">Flight Crew Qualifications</h3>
@@ -61,7 +61,7 @@ export default function PilotTrainingPage() {
               key={i}
               className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between hover:shadow-md transition-all"
             >
-              <div className="flex items-center gap-4 mb-4 md:mb-0">
+              <div className="flex items-center gap-3 mb-4 md:mb-0">
                 <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500 border-2 border-amber-100 dark:border-amber-900/30">
                   {p.name.split(' ').length > 1 ? p.name.split(' ')[1][0] : p.name[0]}
                 </div>
@@ -74,7 +74,7 @@ export default function PilotTrainingPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
                 <div className="text-right">
                   <div
                     className={`text-xs font-bold ${p.warning ? 'text-amber-500' : 'text-emerald-500'}`}
@@ -96,7 +96,7 @@ export default function PilotTrainingPage() {
         </div>
 
         {/* Simulator Schedule */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
               <Clock className="w-5 h-5 text-indigo-500" /> Simulator Booking
@@ -138,3 +138,4 @@ export default function PilotTrainingPage() {
     </div>
   );
 }
+

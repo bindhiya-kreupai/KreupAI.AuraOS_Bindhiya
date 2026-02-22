@@ -209,9 +209,9 @@ export default function WPSPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <Link href="/dashboard/payroll-compliance" className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2">
             <ArrowLeft className="w-4 h-4" /> Back to Compliance
@@ -271,7 +271,7 @@ export default function WPSPage() {
 
       {/* Tab Content */}
       {activeTab === 'generate' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           {/* Configuration */}
           <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
@@ -506,7 +506,7 @@ export default function WPSPage() {
             <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">وكلاء نظام حماية الأجور</span>
           </h2>
           {wpsAgents.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               {wpsAgents.map((agent) => (
                 <div
                   key={agent.code}
@@ -529,3 +529,4 @@ export default function WPSPage() {
     </div>
   );
 }
+

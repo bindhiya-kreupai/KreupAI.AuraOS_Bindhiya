@@ -94,47 +94,47 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
       />
 
       {/* Drawer */}
-      <div className="absolute inset-y-0 left-0 w-full max-w-sm bg-white dark:bg-deep-cosmos shadow-xl flex flex-col animate-slide-in-left">
+      <div className="absolute inset-y-0 left-0 w-full max-w-sm bg-gradient-to-b from-[#001529] via-[#001529] to-white/20 shadow-xl flex flex-col animate-slide-in-left">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-cloud dark:border-nebula-purple">
+        <div className="flex items-center justify-between p-4 border-b border-white/10 shadow-md">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-blue to-brand-light-blue flex items-center justify-center">
-              <span className="text-white font-bold">A</span>
+            <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md shadow-inner border border-white/20 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">A</span>
             </div>
             <div>
-              <h1 className="font-display font-bold text-ink-black dark:text-pearl">
+              <h1 className="font-display font-bold text-white tracking-tight">
                 AURA
               </h1>
-              <p className="text-xs text-silver-mist">HCM Platform</p>
+              <p className="text-xs text-white/70">HCM Platform</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-pearl dark:hover:bg-stellar-blue transition-colors"
+            className="p-2 rounded-lg hover:bg-white/10 transition-all text-white hover:text-white"
           >
-            <X className="w-6 h-6 text-twilight dark:text-silver-mist" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Quick Actions */}
-        <div className="flex items-center gap-2 p-4 border-b border-cloud dark:border-nebula-purple">
+        <div className="flex items-center gap-2 p-4 border-b border-white/10">
           <Link
             href="/"
-            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-pearl dark:bg-stellar-blue text-twilight dark:text-silver-mist hover:text-brand-blue transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
           >
             <Home className="w-4 h-4" />
-            <span className="text-sm">Home</span>
+            <span className="text-sm font-medium">Home</span>
           </Link>
           <Link
             href="/notifications"
-            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-pearl dark:bg-stellar-blue text-twilight dark:text-silver-mist hover:text-brand-blue transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
           >
             <Bell className="w-4 h-4" />
             <span className="text-sm">Alerts</span>
           </Link>
           <Link
             href="/profile"
-            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-pearl dark:bg-stellar-blue text-twilight dark:text-silver-mist hover:text-brand-blue transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
           >
             <User className="w-4 h-4" />
             <span className="text-sm">Profile</span>
@@ -143,14 +143,14 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
 
         {/* Search */}
         <div className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70 group-focus-within:text-white transition-colors" />
             <input
               type="text"
               placeholder="Search modules & features..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-pearl dark:bg-stellar-blue rounded-xl text-sm text-ink-black dark:text-pearl placeholder:text-silver-mist border-2 border-transparent focus:border-brand-blue focus:outline-none transition-colors"
+              className="w-full pl-10 pr-4 py-3 bg-white/10 rounded-xl text-sm text-white placeholder:text-white/60 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
             />
           </div>
         </div>
@@ -190,10 +190,10 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                       key={feature}
                       href={featurePath}
                       className={cn(
-                        'flex items-center gap-3 px-4 py-3 rounded-xl transition-colors',
+                        'flex items-center gap-3 px-4 py-3 rounded-xl transition-all relative overflow-hidden',
                         isActive
-                          ? 'bg-brand-blue/10 text-brand-blue dark:text-brand-light-blue'
-                          : 'text-twilight dark:text-silver-mist hover:bg-pearl dark:hover:bg-stellar-blue'
+                          ? 'bg-brand-red text-white shadow-lg font-bold'
+                          : 'text-white hover:bg-white/10'
                       )}
                     >
                       <ChevronRight className="w-4 h-4" />
@@ -216,18 +216,18 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                     key={module.code}
                     onClick={() => setSelectedModule(module.code)}
                     className={cn(
-                      'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left',
+                      'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left relative overflow-hidden',
                       isActive
-                        ? 'bg-brand-blue/10 text-brand-blue dark:text-brand-light-blue'
-                        : 'text-twilight dark:text-silver-mist hover:bg-pearl dark:hover:bg-stellar-blue'
+                        ? 'bg-brand-red text-white shadow-lg font-bold'
+                        : 'text-white hover:bg-white/10'
                     )}
                   >
                     <div
                       className={cn(
-                        'p-2 rounded-lg',
+                        'p-2 rounded-lg transition-colors',
                         isActive
-                          ? 'bg-brand-blue/10 dark:bg-brand-light-blue/10'
-                          : 'bg-pearl dark:bg-stellar-blue'
+                          ? 'bg-white/20'
+                          : 'bg-white/10 text-white group-hover:bg-white/20'
                       )}
                     >
                       <Icon className="w-5 h-5" />
@@ -236,7 +236,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                       <span className="text-sm font-medium block truncate">
                         {module.label}
                       </span>
-                      <span className="text-xs text-silver-mist">
+                      <span className="text-xs text-white">
                         {module.features.length} features
                       </span>
                     </div>
@@ -249,15 +249,15 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-cloud dark:border-nebula-purple space-y-2">
+        <div className="p-4 border-t border-white/10 space-y-2">
           <Link
             href="/settings"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-twilight dark:text-silver-mist hover:bg-pearl dark:hover:bg-stellar-blue transition-colors"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-white hover:bg-white/10 transition-colors"
           >
             <Settings className="w-5 h-5" />
             <span className="text-sm">Settings</span>
           </Link>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-coral-alert hover:bg-coral-alert/10 transition-colors">
+          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-brand-red brightness-150 hover:bg-brand-red/10 transition-colors">
             <LogOut className="w-5 h-5" />
             <span className="text-sm">Sign Out</span>
           </button>

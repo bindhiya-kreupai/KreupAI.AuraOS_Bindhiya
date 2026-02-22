@@ -78,9 +78,9 @@ export default function StationeryPage() {
         : CATALOG_ITEMS.filter(item => item.category === selectedCategory);
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <PenTool className="w-6 h-6 text-indigo-500" />
@@ -102,11 +102,11 @@ export default function StationeryPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
                 {/* Left: Catalog */}
-                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-6">
+                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
                     {/* Search & Categories */}
-                    <div className="flex flex-col gap-4 shrink-0">
+                    <div className="flex flex-col gap-3 shrink-0">
                         <div className="relative">
                             <input
                                 type="text"
@@ -133,7 +133,7 @@ export default function StationeryPage() {
                     </div>
 
                     {/* Items Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pr-2 pb-20">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-y-auto pr-2 pb-20">
                         {filteredItems.map(item => {
                             const inCart = cart.find(c => c.id === item.id);
                             return (
@@ -143,7 +143,7 @@ export default function StationeryPage() {
                                             <span className="bg-rose-500 text-white px-3 py-1 rounded-full text-xs font-bold transform -rotate-12 shadow-lg">Out of Stock</span>
                                         </div>
                                     )}
-                                    <div className="flex gap-4">
+                                    <div className="flex gap-3">
                                         <div className="w-16 h-16 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-3xl shadow-inner shrink-0">
                                             {item.image}
                                         </div>
@@ -184,7 +184,7 @@ export default function StationeryPage() {
                 </div>
 
                 {/* Right: Cart & Requests */}
-                <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
+                <div className="lg:col-span-1 space-y-4 flex flex-col h-full overflow-hidden">
                     {/* Cart Widget */}
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-col max-h-[50%]">
                         <div className="flex justify-between items-center mb-4">
@@ -272,3 +272,4 @@ export default function StationeryPage() {
         </div>
     );
 }
+

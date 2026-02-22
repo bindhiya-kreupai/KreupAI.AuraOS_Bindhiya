@@ -31,9 +31,9 @@ export default function ClaimStatusPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Activity className="w-6 h-6 text-indigo-500" />
@@ -43,7 +43,7 @@ export default function ClaimStatusPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 container mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 container mx-auto">
                 {/* Detail View */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                     <div className="flex justify-between items-start mb-8 pb-6 border-b border-slate-100 dark:border-slate-800">
@@ -68,7 +68,7 @@ export default function ClaimStatusPage() {
                             { title: 'Adjudication', date: 'In Progress', status: 'current', desc: 'Determining coverage and co-pay amount.' },
                             { title: 'Payment Processing', date: 'Pending', status: 'pending', desc: 'Funds released to provider or employee.' },
                         ].map((step, i) => (
-                            <div key={i} className="flex gap-4">
+                            <div key={i} className="flex gap-3">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ring-4 ring-white dark:ring-slate-900
                                     ${step.status === 'completed' ? 'bg-emerald-500 text-white' :
                                         step.status === 'current' ? 'bg-indigo-500 text-white animate-pulse' :
@@ -113,3 +113,4 @@ export default function ClaimStatusPage() {
         </div>
     );
 }
+

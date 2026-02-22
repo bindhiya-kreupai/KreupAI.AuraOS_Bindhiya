@@ -14,9 +14,9 @@ import {
 
 export default function KanbanPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100 overflow-hidden">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100 overflow-hidden">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Layout className="w-6 h-6 text-indigo-500" />
@@ -38,7 +38,7 @@ export default function KanbanPage() {
             </div>
 
             {/* Filters */}
-            <div className="flex items-center gap-4 pb-2">
+            <div className="flex items-center gap-3 pb-2">
                 <div className="relative flex-1 max-w-xs">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input type="text" placeholder="Filter tasks..." className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm outline-none" />
@@ -50,7 +50,7 @@ export default function KanbanPage() {
 
             {/* Board */}
             <div className="flex-1 overflow-x-auto overflow-y-hidden pb-4">
-                <div className="flex gap-6 h-full min-w-max">
+                <div className="flex gap-3 h-full min-w-max">
                     {/* Column: Todo */}
                     <div className="w-80 flex flex-col h-full bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-800">
                         <div className="flex justify-between items-center mb-4">
@@ -146,3 +146,4 @@ export default function KanbanPage() {
         </div>
     );
 }
+

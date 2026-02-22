@@ -10,8 +10,8 @@ import {
 
 export default function UtilityBillingPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Receipt className="w-6 h-6 text-indigo-500" />
@@ -24,7 +24,7 @@ export default function UtilityBillingPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                     <h3 className="font-bold text-lg mb-4">Current Due</h3>
                     <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-center mb-4">
@@ -92,3 +92,4 @@ export default function UtilityBillingPage() {
         </div>
     );
 }
+

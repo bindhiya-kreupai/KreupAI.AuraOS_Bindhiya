@@ -62,9 +62,9 @@ export default function TransportPage() {
     const [sosActive, setSosActive] = useState(false);
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Car className="w-6 h-6 text-indigo-500" />
@@ -93,9 +93,9 @@ export default function TransportPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-y-auto lg:overflow-visible">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-y-auto lg:overflow-visible">
                 {/* Left: Active Ride & Roster */}
-                <div className="lg:col-span-1 space-y-6 flex flex-col">
+                <div className="lg:col-span-1 space-y-4 flex flex-col">
                     {/* Active Ride Card */}
                     <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-6 rounded-2xl text-white shadow-lg relative overflow-hidden shrink-0">
                         <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -181,7 +181,7 @@ export default function TransportPage() {
                 </div>
 
                 {/* Right: Map & Booking Form */}
-                <div className="lg:col-span-2 space-y-6 flex flex-col h-full">
+                <div className="lg:col-span-2 space-y-4 flex flex-col h-full">
                     <div className="bg-white dark:bg-stellar-blue p-0 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden flex-1 relative flex flex-col">
                         {/* Tabs */}
                         <div className="flex border-b border-cloud dark:border-slate-800">
@@ -233,7 +233,7 @@ export default function TransportPage() {
                                     <div className="space-y-4">
                                         <div>
                                             <label className="text-xs font-bold text-slate-500 mb-1 block">Request Type</label>
-                                            <div className="flex gap-4">
+                                            <div className="flex gap-3">
                                                 <label className="flex items-center gap-2 p-3 bg-white dark:bg-slate-800 border border-cloud dark:border-slate-700 rounded-xl flex-1 cursor-pointer hover:border-indigo-500 transition-colors">
                                                     <input type="radio" name="type" className="accent-indigo-500" defaultChecked />
                                                     <span className="text-sm font-bold">One Way</span>
@@ -245,7 +245,7 @@ export default function TransportPage() {
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-2 gap-3">
                                             <div>
                                                 <label className="text-xs font-bold text-slate-500 mb-1 block">Pickup Date</label>
                                                 <input type="date" className="w-full p-3 rounded-xl border border-cloud dark:border-slate-700 bg-white dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20" />
@@ -290,3 +290,4 @@ export default function TransportPage() {
         </div>
     );
 }
+

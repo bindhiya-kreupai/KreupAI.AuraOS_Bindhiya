@@ -50,9 +50,9 @@ export default function SelfAssessmentPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <UserCheck className="w-6 h-6 text-indigo-500" />
@@ -83,7 +83,7 @@ export default function SelfAssessmentPage() {
                 </div>
 
                 {/* Questions */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <label className="block font-bold mb-2">1. What were your key achievements this year?</label>
                         <textarea className="w-full h-32 p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none resize-none" placeholder="Describe your major accomplishments..."></textarea>
@@ -96,7 +96,7 @@ export default function SelfAssessmentPage() {
 
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <label className="block font-bold mb-4">3. How would you rate your overall performance?</label>
-                        <div className="flex gap-4">
+                        <div className="flex gap-3">
                             {[1, 2, 3, 4, 5].map((rating) => (
                                 <button key={rating} className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-700 font-bold hover:bg-indigo-50 hover:border-indigo-500 hover:text-indigo-600 transition-all focus:ring-2 focus:ring-indigo-500">
                                     <div className="text-2xl mb-1">{rating}</div>
@@ -114,3 +114,4 @@ export default function SelfAssessmentPage() {
         </div>
     );
 }
+

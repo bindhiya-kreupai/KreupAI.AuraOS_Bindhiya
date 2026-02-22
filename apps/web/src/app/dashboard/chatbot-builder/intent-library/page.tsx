@@ -32,9 +32,9 @@ export default function IntentLibraryPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <BrainCircuit className="w-6 h-6 text-indigo-500" />
@@ -47,7 +47,7 @@ export default function IntentLibraryPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 pb-20">
                 {[
                     { name: '#ApplyLeave', confidence: 98, phrases: 45, status: 'Active', desc: 'User wants to submit a leave request' },
                     { name: '#CheckBalance', confidence: 95, phrases: 32, status: 'Active', desc: 'User queries leave or salary balance' },
@@ -71,7 +71,7 @@ export default function IntentLibraryPage() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                             <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                                 <MessageSquare className="w-4 h-4" />
                                 <span className="font-bold">{intent.phrases}</span> phrases
@@ -87,3 +87,4 @@ export default function IntentLibraryPage() {
         </div>
     );
 }
+

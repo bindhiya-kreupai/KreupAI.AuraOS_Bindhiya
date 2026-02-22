@@ -12,9 +12,9 @@ import {
 
 export default function HousingPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Home className="w-6 h-6 text-indigo-500" />
@@ -27,10 +27,10 @@ export default function HousingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Dorm List */}
                 <div className="lg:col-span-2 space-y-4 overflow-y-auto pb-20">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
                             <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600">
                                 <ClipboardCheck className="w-6 h-6" />
@@ -58,7 +58,7 @@ export default function HousingPage() {
                         { name: 'Family Units', caps: '8/12', status: 'Available', type: 'Family', steward: 'R. Roe' },
                     ].map((d, i) => (
                         <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between hover:shadow-md transition-all">
-                            <div className="flex items-center gap-4 mb-4 md:mb-0">
+                            <div className="flex items-center gap-3 mb-4 md:mb-0">
                                 <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500 border border-slate-200 dark:border-slate-700">
                                     {d.name[0]}
                                 </div>
@@ -71,7 +71,7 @@ export default function HousingPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-3">
                                 <div className="text-right">
                                     <div className="text-lg font-bold text-slate-700 dark:text-slate-300">{d.caps}</div>
                                     <div className="text-xs text-slate-400">Beds Occupied</div>
@@ -122,3 +122,4 @@ export default function HousingPage() {
         </div>
     );
 }
+

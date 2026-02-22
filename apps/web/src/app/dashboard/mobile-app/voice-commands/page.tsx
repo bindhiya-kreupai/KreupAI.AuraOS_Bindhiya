@@ -37,9 +37,9 @@ export default function VoiceCommandsPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Mic className="w-6 h-6 text-indigo-500" />
@@ -59,7 +59,7 @@ export default function VoiceCommandsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Command Usage Stats */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-8 text-white relative overflow-hidden">
                         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
                             <div>
@@ -92,7 +92,7 @@ export default function VoiceCommandsPage() {
                                 { cmd: 'Clock In', phrase: '"Clock in now"', usage: 'Very High', success: '99%' },
                             ].map((item, i) => (
                                 <div key={i} className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors group cursor-pointer">
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                                             <Play className="w-4 h-4 fill-current" />
                                         </div>
@@ -118,12 +118,12 @@ export default function VoiceCommandsPage() {
                 </div>
 
                 {/* Settings & Logs */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold mb-4 flex items-center gap-2">
                             <Activity className="w-4 h-4 text-indigo-500" /> Recent Interactions
                         </h3>
-                        <div className="relative border-l-2 border-slate-100 dark:border-slate-800 ml-3 space-y-6 pl-6 py-2">
+                        <div className="relative border-l-2 border-slate-100 dark:border-slate-800 ml-3 space-y-4 pl-6 py-2">
                             {[
                                 { q: 'Show my payslip', time: '2 mins ago', status: 'Success' },
                                 { q: 'Apply for seek leave', time: '15 mins ago', status: 'Failed' },
@@ -158,3 +158,4 @@ export default function VoiceCommandsPage() {
         </div>
     );
 }
+

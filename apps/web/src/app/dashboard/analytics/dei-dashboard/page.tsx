@@ -40,13 +40,13 @@ export default function DEIDashboardPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       <div>
         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">DEI Dashboard</h1>
         <p className="text-sm text-silver-mist mt-1">Diversity, Equity & Inclusion metrics and progress</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Total Workforce</p>
           <p className="text-2xl font-bold text-celestial-indigo mt-1">{totalEmployees}</p>
@@ -88,7 +88,7 @@ export default function DEIDashboardPage() {
       {tenureData.length > 0 && (
         <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-5">
           <h3 className="font-bold text-sm text-ink-black dark:text-pearl mb-4">Tenure Distribution</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             {tenureData.map((item) => (
               <div key={item.range} className="text-center p-4 bg-slate-50 dark:bg-deep-cosmos rounded-lg">
                 <p className="text-xs text-silver-mist mb-1">{item.range}</p>
@@ -119,3 +119,4 @@ export default function DEIDashboardPage() {
     </div>
   );
 }
+

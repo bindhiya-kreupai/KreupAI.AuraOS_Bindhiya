@@ -99,9 +99,9 @@ export default function PreBoardingPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <CheckSquare className="w-6 h-6 text-indigo-500" />
@@ -115,17 +115,17 @@ export default function PreBoardingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {/* Progress Card */}
                 <div className="md:col-span-3 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-8 text-white relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
 
-                    <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-3">
                         <div className="text-center md:text-left">
                             <h2 className="text-3xl font-bold mb-2">{stats.daysToJoin} Days to Go!</h2>
                             <p className="opacity-90">You're almost there. Complete {stats.totalTasks - stats.completedTasks} more tasks to be fully ready.</p>
                         </div>
-                        <div className="flex items-center gap-4 bg-white/20 p-4 rounded-xl backdrop-blur-sm">
+                        <div className="flex items-center gap-3 bg-white/20 p-4 rounded-xl backdrop-blur-sm">
                             <div className="text-center">
                                 <div className="text-2xl font-bold">{stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0}%</div>
                                 <div className="text-xs opacity-75 uppercase font-bold">Ready</div>
@@ -154,7 +154,7 @@ export default function PreBoardingPage() {
                             {tasks.map(task => (
                                 <div key={task.id}
                                     onClick={() => toggleTask(task.id)}
-                                    className={`p-4 flex items-center gap-4 cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/30 ${task.status === 'Completed' ? 'opacity-60' : ''}`}
+                                    className={`p-4 flex items-center gap-3 cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/30 ${task.status === 'Completed' ? 'opacity-60' : ''}`}
                                 >
                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${task.status === 'Completed' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
                                         <task.icon className="w-5 h-5" />
@@ -173,7 +173,7 @@ export default function PreBoardingPage() {
                 </div>
 
                 {/* Right Info Panel */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-6">
                         <div className="flex gap-3">
                             <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
@@ -206,3 +206,4 @@ export default function PreBoardingPage() {
         </div>
     );
 }
+

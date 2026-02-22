@@ -62,7 +62,7 @@ export default function CriticalPositionsPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <Briefcase className="w-8 h-8 text-indigo-500" />
@@ -78,10 +78,10 @@ export default function CriticalPositionsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Stats Cards */}
-                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3">
                         <div className="p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-xl text-indigo-600">
                             <Shield className="w-8 h-8" />
                         </div>
@@ -90,7 +90,7 @@ export default function CriticalPositionsPage() {
                             <div className="text-sm font-bold text-slate-500">Critical Role Coverage</div>
                         </div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3">
                         <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl text-emerald-600">
                             <Users className="w-8 h-8" />
                         </div>
@@ -191,3 +191,4 @@ export default function CriticalPositionsPage() {
         </div>
     );
 }
+

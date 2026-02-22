@@ -87,9 +87,9 @@ export default function PayslipsPage() {
     const totalDeductions = selectedPayslip.totalDeductions;
 
     return (
-        <div className="max-w-6xl mx-auto space-y-6 pb-10">
+        <div className="max-w-6xl mx-auto space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <DollarSign className="w-6 h-6 text-emerald-500" />
@@ -132,9 +132,9 @@ export default function PayslipsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Breakdown Chart */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4">Salary Distribution</h3>
                         <div className="h-64 relative">
@@ -192,7 +192,7 @@ export default function PayslipsPage() {
                 {/* Digital Payslip */}
                 <div className="lg:col-span-2 bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden flex flex-col">
                     <div className="p-6 border-b border-cloud dark:border-nebula-purple/20 flex justify-between items-start bg-slate-50 dark:bg-slate-900/30">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             <div className="w-12 h-12 bg-celestial-indigo text-white rounded-lg flex items-center justify-center">
                                 <Building2 className="w-7 h-7" />
                             </div>
@@ -299,3 +299,4 @@ export default function PayslipsPage() {
         </div>
     );
 }
+

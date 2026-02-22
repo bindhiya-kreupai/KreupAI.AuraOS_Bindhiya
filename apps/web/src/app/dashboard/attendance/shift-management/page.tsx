@@ -76,7 +76,7 @@ export default function ShiftManagementPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -92,7 +92,7 @@ export default function ShiftManagementPage() {
             </div>
 
             {/* Shift Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 {loading ? (
                     <div className="col-span-full p-8 text-center">
                         <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
@@ -180,7 +180,7 @@ export default function ShiftManagementPage() {
                     <div className="absolute top-14 h-3 bg-indigo-500 rounded-r-full opacity-80 hover:opacity-100 transition-opacity cursor-pointer" style={{ left: '0%', width: '20.8%' }} title="Night Shift (End)" />
                 </div>
 
-                <div className="flex justify-center gap-6 mt-4">
+                <div className="flex justify-center gap-3 mt-4">
                     {shiftList.map(s => (
                         <div key={s.id} className="flex items-center gap-2">
                             <div className={`w-3 h-3 ${s.color} rounded-sm`} />
@@ -192,3 +192,4 @@ export default function ShiftManagementPage() {
         </div>
     );
 }
+

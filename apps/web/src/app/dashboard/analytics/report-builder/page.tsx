@@ -74,8 +74,8 @@ export default function ReportBuilderPage() {
   };
 
   return (
-    <div className="space-y-6 pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Report Builder</h1>
           <p className="text-sm text-silver-mist mt-1">Create custom reports with drag-and-drop simplicity</p>
@@ -90,7 +90,7 @@ export default function ReportBuilderPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
         <div className="space-y-4">
           <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-4">
             <h3 className="text-xs font-bold text-ink-black dark:text-pearl uppercase mb-3">Data Source</h3>
@@ -245,3 +245,4 @@ export default function ReportBuilderPage() {
     </div>
   );
 }
+

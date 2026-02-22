@@ -44,7 +44,7 @@ export default function CompensationPlanningPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Compensation Planning</h1>
@@ -52,7 +52,7 @@ export default function CompensationPlanningPage() {
       </div>
 
       {/* Budget Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <p className="text-xs text-silver-mist uppercase font-medium">Total Compensation</p>
           <p className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">
@@ -140,7 +140,7 @@ export default function CompensationPlanningPage() {
       {/* Market Benchmarking */}
       <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-4">
         <h3 className="text-sm font-bold text-ink-black dark:text-pearl mb-3">Compensation Distribution</h3>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           <div className="text-center p-3 bg-slate-50 dark:bg-deep-cosmos rounded-lg">
             <p className="text-xs text-silver-mist">Total Employees</p>
             <p className="text-lg font-bold text-ink-black dark:text-pearl mt-1">{metrics?.totalEmployees || 0}</p>
@@ -162,3 +162,4 @@ export default function CompensationPlanningPage() {
     </div>
   );
 }
+

@@ -44,7 +44,7 @@ export default function DevelopmentPlanningPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <BookOpen className="w-8 h-8 text-indigo-500" />
@@ -58,7 +58,7 @@ export default function DevelopmentPlanningPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
                     <div className="flex items-center gap-3 mb-2">
                         <div className="p-2 bg-indigo-50 dark:bg-indigo-900/10 rounded-lg text-indigo-600">
@@ -90,7 +90,7 @@ export default function DevelopmentPlanningPage() {
 
             {/* List */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-                <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex gap-4 overflow-x-auto">
+                <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex gap-3 overflow-x-auto">
                     {['All', 'In Progress', 'Completed', 'Not Started'].map((f) => (
                         <button
                             key={f}
@@ -164,3 +164,4 @@ export default function DevelopmentPlanningPage() {
         </div>
     );
 }
+

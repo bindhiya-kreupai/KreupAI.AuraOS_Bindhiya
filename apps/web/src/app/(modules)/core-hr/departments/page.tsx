@@ -463,7 +463,7 @@ export default function DepartmentsPage() {
   ) => (
     <>
       {/* Row 1: Code & Name */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             Department Code <span className="text-red-500">*</span>
@@ -507,7 +507,7 @@ export default function DepartmentsPage() {
       </div>
 
       {/* Row 2: Company & Parent Department */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             Company <span className="text-red-500">*</span>
@@ -626,3 +626,4 @@ export default function DepartmentsPage() {
     />
   );
 }
+

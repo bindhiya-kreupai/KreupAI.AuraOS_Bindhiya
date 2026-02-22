@@ -50,8 +50,8 @@ export default function ELearningPlatformPage() {
     const modules = selectedCourse?.modules ? (Array.isArray(selectedCourse.modules) ? selectedCourse.modules : []) : [];
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col lg:flex-row gap-6 h-full">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col lg:flex-row gap-3 h-full">
                 <div className="flex-1 flex flex-col">
                     <div className="aspect-video bg-black rounded-2xl flex items-center justify-center text-white relative group cursor-pointer mb-4">
                         <MonitorPlay className="w-16 h-16 opacity-50 group-hover:opacity-100 transition-opacity" />
@@ -59,7 +59,7 @@ export default function ELearningPlatformPage() {
                     <h1 className="text-2xl font-bold mb-2">{selectedCourse?.title || 'Select a Course'}</h1>
                     <p className="text-slate-500 text-sm mb-6">{selectedCourse?.description || ''}</p>
 
-                    <div className="flex gap-4 border-b border-slate-200 dark:border-slate-800 pb-4 mb-4">
+                    <div className="flex gap-3 border-b border-slate-200 dark:border-slate-800 pb-4 mb-4">
                         <button className="px-4 py-2 border-b-2 border-indigo-600 text-indigo-600 font-bold text-sm">Overview</button>
                         <button className="px-4 py-2 text-slate-500 font-bold text-sm hover:text-slate-800 dark:hover:text-slate-200">Q&A</button>
                         <button className="px-4 py-2 text-slate-500 font-bold text-sm hover:text-slate-800 dark:hover:text-slate-200">Resources</button>
@@ -100,3 +100,4 @@ export default function ELearningPlatformPage() {
         </div>
     );
 }
+

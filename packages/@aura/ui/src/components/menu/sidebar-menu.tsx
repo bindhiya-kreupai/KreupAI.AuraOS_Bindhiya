@@ -106,63 +106,61 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
   return (
     <aside
       className={cn(
-        'flex flex-col h-full bg-white dark:bg-deep-cosmos border-r border-cloud dark:border-nebula-purple transition-all duration-300',
+        'flex flex-col h-full bg-gradient-to-b from-[#001529] via-[#001529] to-white/20 border-r border-white/10 transition-all duration-300 shadow-xl',
         collapsed ? 'w-16' : 'w-72',
         className
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-cloud dark:border-nebula-purple">
+      <div className="flex items-center justify-between p-4 border-b border-white/10 shadow-md">
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <Image
-              src="/images/auraos-logo.png"
-              alt="AuraOS"
-              width={48}
-              height={48}
-              className="w-12 h-12 object-contain mix-blend-multiply dark:mix-blend-screen"
-            />
-            <span className="font-display font-semibold text-ink-black dark:text-pearl">
+            <div className="p-1 rounded-xl bg-white/10 backdrop-blur-md shadow-inner border border-white/20">
+              <Image
+                src="/images/auraos-logo.png"
+                alt="AuraOS"
+                width={40}
+                height={40}
+                className="w-10 h-10 object-contain mix-blend-screen"
+              />
+            </div>
+            <span className="font-display font-bold text-white tracking-tight text-lg drop-shadow-md">
               AuraOS
             </span>
           </div>
         )}
         <button
           onClick={onToggleCollapse}
-          className="p-2 rounded-lg hover:bg-pearl dark:hover:bg-stellar-blue transition-colors"
+          className="p-2 rounded-lg hover:bg-white/10 transition-all text-white hover:text-white"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? (
-            <PanelLeft className="w-5 h-5 text-twilight dark:text-silver-mist" />
+            <PanelLeft className="w-5 h-5" />
           ) : (
-            <PanelLeftClose className="w-5 h-5 text-twilight dark:text-silver-mist" />
+            <PanelLeftClose className="w-5 h-5" />
           )}
         </button>
       </div>
 
       {/* Search */}
-      {!collapsed && (
-        <div className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
+      <div className="flex items-center">
+        {!collapsed ? (
+          <div className="relative w-full group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70 group-focus-within:text-white transition-colors" />
             <input
               type="text"
               placeholder="Search modules..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-10 py-2 bg-pearl dark:bg-stellar-blue rounded-xl text-sm text-ink-black dark:text-pearl placeholder:text-silver-mist border-2 border-transparent focus:border-brand-blue focus:outline-none transition-colors"
+              className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
             />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
-              >
-                <X className="w-4 h-4 text-silver-mist hover:text-twilight" />
-              </button>
-            )}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="w-full flex justify-center">
+            <button className="p-2 rounded-xl bg-white/10 text-white/70 hover:text-white transition-colors">
+              <Search className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
@@ -188,10 +186,10 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
               {/* Module Item */}
               <div
                 className={cn(
-                  'group flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-all duration-200',
+                  'group flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-all duration-200 relative overflow-hidden',
                   isActive
-                    ? 'bg-brand-blue/10 text-brand-blue dark:text-brand-light-blue'
-                    : 'text-twilight dark:text-silver-mist hover:bg-pearl dark:hover:bg-stellar-blue'
+                    ? 'bg-brand-red text-white shadow-lg font-bold scale-[1.02] z-10'
+                    : 'text-white hover:bg-white/10'
                 )}
                 onClick={() => !collapsed && toggleModule(module.code)}
               >
@@ -199,8 +197,8 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                   className={cn(
                     'flex-shrink-0 p-1.5 rounded-lg transition-colors',
                     isActive
-                      ? 'bg-brand-blue/10 dark:bg-brand-light-blue/10'
-                      : 'group-hover:bg-brand-blue/5'
+                      ? 'bg-white/20'
+                      : 'text-white group-hover:bg-white/5'
                   )}
                 >
                   <Icon className="w-5 h-5" />
@@ -239,8 +237,8 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                             className={cn(
                               "flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors text-sm",
                               isSubActive
-                                ? "text-brand-blue dark:text-brand-light-blue font-medium"
-                                : "text-twilight dark:text-silver-mist hover:text-ink-black dark:hover:text-pearl"
+                                ? "bg-brand-red text-white font-bold shadow-md"
+                                : "text-white hover:bg-white/10"
                             )}
                             onClick={() => toggleSubModule(subModule.code)}
                           >
@@ -260,10 +258,10 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                                   <div
                                     key={feature}
                                     className={cn(
-                                      'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-colors group',
+                                      'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all group relative',
                                       isFeatureActive
-                                        ? 'bg-brand-blue/10 text-brand-blue dark:text-brand-light-blue font-medium'
-                                        : 'text-silver-mist hover:text-ink-black dark:hover:text-pearl'
+                                        ? 'bg-brand-red text-white font-bold shadow-md'
+                                        : 'text-white hover:bg-white/10'
                                     )}
                                   >
                                     <Link
@@ -283,8 +281,8 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                                         className={cn(
                                           'p-0.5 rounded transition-all',
                                           featureIsFavorite
-                                            ? 'text-sunset-amber opacity-100'
-                                            : 'opacity-0 group-hover:opacity-100 text-silver-mist hover:text-sunset-amber'
+                                            ? 'text-brand-red opacity-100 scale-110'
+                                            : 'opacity-0 group-hover:opacity-100 text-silver-mist hover:text-brand-red hover:scale-110'
                                         )}
                                         title={featureIsFavorite ? 'Remove from favorites' : 'Add to favorites'}
                                       >
@@ -310,10 +308,10 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                         <div
                           key={feature}
                           className={cn(
-                            'flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors group',
+                            'flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all group relative',
                             isFeatureActive
-                              ? 'bg-brand-blue/10 text-brand-blue dark:text-brand-light-blue font-medium'
-                              : 'text-twilight dark:text-silver-mist hover:bg-pearl dark:hover:bg-stellar-blue hover:text-ink-black dark:hover:text-pearl'
+                              ? 'bg-brand-red text-white font-bold shadow-md'
+                              : 'text-white hover:bg-white/10'
                           )}
                         >
                           <Link
@@ -333,8 +331,8 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                               className={cn(
                                 'p-0.5 rounded transition-all',
                                 featureIsFavorite
-                                  ? 'text-sunset-amber opacity-100'
-                                  : 'opacity-0 group-hover:opacity-100 text-silver-mist hover:text-sunset-amber'
+                                  ? 'text-brand-red opacity-100 scale-110'
+                                  : 'opacity-0 group-hover:opacity-100 text-silver-mist hover:text-brand-red hover:scale-110'
                               )}
                               title={featureIsFavorite ? 'Remove from favorites' : 'Add to favorites'}
                             >

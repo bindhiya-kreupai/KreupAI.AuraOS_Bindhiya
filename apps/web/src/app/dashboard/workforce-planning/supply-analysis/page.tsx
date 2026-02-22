@@ -32,8 +32,8 @@ const TENURE_DATA = [
 
 export default function SupplyAnalysisPage() {
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Users className="w-6 h-6 text-blue-500" />
@@ -43,29 +43,29 @@ export default function SupplyAnalysisPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3">
                     <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600"><Users className="w-5 h-5" /></div>
                     <div>
                         <div className="text-2xl font-bold">1,200</div>
                         <div className="text-xs text-slate-500">Total Employees</div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3">
                     <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600"><Briefcase className="w-5 h-5" /></div>
                     <div>
                         <div className="text-2xl font-bold">12</div>
                         <div className="text-xs text-slate-500">Departments</div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3">
                     <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-900/20 text-rose-600"><MapPin className="w-5 h-5" /></div>
                     <div>
                         <div className="text-2xl font-bold">5</div>
                         <div className="text-xs text-slate-500">Office Locations</div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3">
                     <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-600"><PieChart className="w-5 h-5" /></div>
                     <div>
                         <div className="text-2xl font-bold">4.2%</div>
@@ -74,7 +74,7 @@ export default function SupplyAnalysisPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <h3 className="font-bold text-lg mb-6">Department Distribution</h3>
                     <div className="h-[300px] w-full flex items-center justify-center">
@@ -97,7 +97,7 @@ export default function SupplyAnalysisPage() {
                             </RePieChart>
                         </ResponsiveContainer>
                     </div>
-                    <div className="flex flex-wrap justify-center gap-4 mt-4">
+                    <div className="flex flex-wrap justify-center gap-3 mt-4">
                         {DEPT_DATA.map(d => (
                             <div key={d.name} className="flex items-center gap-2 text-xs">
                                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }} />
@@ -125,3 +125,4 @@ export default function SupplyAnalysisPage() {
         </div>
     );
 }
+

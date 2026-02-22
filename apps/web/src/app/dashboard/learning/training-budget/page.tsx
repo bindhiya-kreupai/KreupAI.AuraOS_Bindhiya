@@ -34,8 +34,8 @@ export default function TrainingBudgetPage() {
     const utilization = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <DollarSign className="w-6 h-6 text-emerald-500" />
@@ -50,7 +50,7 @@ export default function TrainingBudgetPage() {
                     <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                     <div className="bg-emerald-50 dark:bg-emerald-900/10 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-800">
                         <h3 className="text-xs font-bold uppercase text-emerald-600 mb-1">Total Budget</h3>
                         <div className="text-3xl font-bold text-emerald-700 dark:text-emerald-400">${totalBudget.toLocaleString()}</div>
@@ -103,3 +103,4 @@ export default function TrainingBudgetPage() {
         </div>
     );
 }
+

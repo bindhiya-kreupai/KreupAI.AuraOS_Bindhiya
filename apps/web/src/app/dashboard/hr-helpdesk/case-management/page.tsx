@@ -10,8 +10,8 @@ import {
 
 export default function CaseManagementPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Briefcase className="w-6 h-6 text-indigo-500" />
@@ -21,7 +21,7 @@ export default function CaseManagementPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full">
                 {/* Case List */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col lg:col-span-1">
                     <div className="p-4 border-b border-slate-100 dark:border-slate-800 font-bold">Active Cases (3)</div>
@@ -53,15 +53,15 @@ export default function CaseManagementPage() {
                             <h2 className="text-xl font-bold">CASE-902: Workplace Harassment Investigation</h2>
                             <button className="px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700">Close Case</button>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-slate-500">
+                        <div className="flex items-center gap-3 text-sm text-slate-500">
                             <span className="flex items-center gap-1"><User className="w-4 h-4" /> Reported by: Anonymous</span>
                             <span>|</span>
                             <span>Assignee: Sarah Connor (HRBP)</span>
                         </div>
                     </div>
 
-                    <div className="flex-1 p-6 overflow-y-auto space-y-6">
-                        <div className="flex gap-4">
+                    <div className="flex-1 p-6 overflow-y-auto space-y-4">
+                        <div className="flex gap-3">
                             <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-xs shrink-0">SYS</div>
                             <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl rounded-tl-none max-w-[80%]">
                                 <p className="text-sm">Case created via Ethics Hotline submission.</p>
@@ -69,7 +69,7 @@ export default function CaseManagementPage() {
                             </div>
                         </div>
 
-                        <div className="flex gap-4 flex-row-reverse">
+                        <div className="flex gap-3 flex-row-reverse">
                             <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0">SC</div>
                             <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl rounded-tr-none max-w-[80%]">
                                 <p className="text-sm">Initial interview scheduled with the reporter for Oct 25th.</p>
@@ -92,3 +92,4 @@ export default function CaseManagementPage() {
         </div>
     );
 }
+

@@ -94,7 +94,7 @@ export default function ExecutiveDashboardsPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20 bg-slate-50 dark:bg-slate-950">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <LayoutDashboard className="w-8 h-8 text-indigo-600" />
@@ -104,7 +104,7 @@ export default function ExecutiveDashboardsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <KPICard
                     title="Avg Salary"
                     value={avgSalary > 0 ? `$${(avgSalary / 1000).toFixed(0)}K` : '--'}
@@ -140,7 +140,7 @@ export default function ExecutiveDashboardsPage() {
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                     <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
                         <TrendingUp className="w-5 h-5 text-emerald-500" /> Headcount Trend
@@ -230,3 +230,4 @@ function KPICard({ title, value, trend, trendUp, icon: Icon, color, sub, inverse
         </div>
     );
 }
+

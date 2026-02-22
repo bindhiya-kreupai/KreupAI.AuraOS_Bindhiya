@@ -51,9 +51,9 @@ export default function DependentManagementPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Baby className="w-6 h-6 text-indigo-500" />
@@ -66,7 +66,7 @@ export default function DependentManagementPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-y-auto pb-20">
                 {loading ? (
                     <div className="col-span-full flex justify-center items-center py-20">
                         <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
@@ -89,7 +89,7 @@ export default function DependentManagementPage() {
                                 <MoreVertical className="w-4 h-4" />
                             </button>
 
-                            <div className="flex items-center gap-4 mb-6">
+                            <div className="flex items-center gap-3 mb-6">
                                 <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl font-bold text-slate-400">
                                     {name.charAt(0)}
                                 </div>
@@ -137,3 +137,4 @@ export default function DependentManagementPage() {
         </div>
     );
 }
+

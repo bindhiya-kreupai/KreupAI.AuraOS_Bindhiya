@@ -124,9 +124,9 @@ export default function PayComponentsPage() {
 
     if (loading) {
         return (
-            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
                 <div className="animate-pulse">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 mb-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0 mb-6">
                         <div>
                             <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-48 mb-2" />
                             <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-80" />
@@ -135,7 +135,7 @@ export default function PayComponentsPage() {
                             <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded w-36" />
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                         <div className="lg:col-span-2 space-y-4">
                             <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-fit">
                                 {['Earnings', 'Deductions', 'Reimbursements'].map(tab => (
@@ -148,7 +148,7 @@ export default function PayComponentsPage() {
                                 ))}
                             </div>
                         </div>
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl h-40" />
                             <div className="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-2xl h-40" />
                         </div>
@@ -160,8 +160,8 @@ export default function PayComponentsPage() {
 
     if (error) {
         return (
-            <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                     <div>
                         <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                             <Coins className="w-6 h-6 text-indigo-500" />
@@ -183,9 +183,9 @@ export default function PayComponentsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Coins className="w-6 h-6 text-indigo-500" />
@@ -207,9 +207,9 @@ export default function PayComponentsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
                 {/* Left: Component List */}
-                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-6">
+                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
                     {/* Tabs */}
                     <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0 w-fit">
                         {(['Earnings', 'Deductions', 'Reimbursements'] as TabType[]).map(tab => {
@@ -280,7 +280,7 @@ export default function PayComponentsPage() {
                                             {item.description || 'No description available.'}
                                         </p>
 
-                                        <div className="flex items-center gap-4 ml-13 pl-13 text-xs font-bold border-t border-cloud dark:border-slate-800 pt-3">
+                                        <div className="flex items-center gap-3 ml-13 pl-13 text-xs font-bold border-t border-cloud dark:border-slate-800 pt-3">
                                             <div className={`flex items-center gap-1
                                                 ${taxable === true ? 'text-rose-500' : taxable === 'Partial' ? 'text-amber-500' : 'text-emerald-500'}
                                             `}>
@@ -312,7 +312,7 @@ export default function PayComponentsPage() {
                 </div>
 
                 {/* Right: Config & Rules */}
-                <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
+                <div className="lg:col-span-1 space-y-4 flex flex-col h-full overflow-hidden">
                     {/* Logic Box */}
                     <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-800/30 shrink-0">
                         <h3 className="font-bold text-indigo-800 dark:text-indigo-300 mb-2 flex items-center gap-2">
@@ -475,3 +475,4 @@ export default function PayComponentsPage() {
         </div>
     );
 }
+

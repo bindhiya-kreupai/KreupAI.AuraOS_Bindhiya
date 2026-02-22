@@ -96,9 +96,9 @@ export default function EmployeeDatabasePage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Users className="w-6 h-6 text-indigo-500" />
@@ -117,7 +117,7 @@ export default function EmployeeDatabasePage() {
             </div>
 
             {/* Toolbar */}
-            <div className="flex flex-wrap gap-4 shrink-0 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="flex flex-wrap gap-3 shrink-0 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div className="relative flex-1 min-w-[250px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
@@ -171,7 +171,7 @@ export default function EmployeeDatabasePage() {
 
             {/* Grid */}
             {!loading && filteredEmployees.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-y-auto pb-20 p-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 overflow-y-auto pb-20 p-1">
                     {filteredEmployees.map((emp) => (
                         <div key={emp.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col items-center text-center hover:shadow-xl transition-all duration-300 group relative hover:-translate-y-1">
                             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -223,7 +223,7 @@ export default function EmployeeDatabasePage() {
                             </button>
                         </div>
                         <div className="p-6 space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 mb-1">First Name</label>
                                     <input
@@ -285,3 +285,4 @@ export default function EmployeeDatabasePage() {
         </div>
     );
 }
+

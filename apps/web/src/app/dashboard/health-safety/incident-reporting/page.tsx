@@ -39,8 +39,8 @@ export default function IncidentReportingPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <AlertTriangle className="w-6 h-6 text-rose-500" />
@@ -50,7 +50,7 @@ export default function IncidentReportingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Report Form */}
                 <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 h-fit">
                     <h3 className="font-bold text-lg mb-4">New Report</h3>
@@ -96,7 +96,7 @@ export default function IncidentReportingPage() {
                         </div>
                     ) : (
                         incidents.map((inc, i) => (
-                            <div key={inc.id || i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div key={inc.id || i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${inc.severity === 'High' || inc.severity === 'Critical' ? 'border-rose-200 text-rose-600 bg-rose-50' :
@@ -107,14 +107,14 @@ export default function IncidentReportingPage() {
                                         </span>
                                         <h4 className="font-bold text-sm">{inc.description?.substring(0, 60) || inc.type}</h4>
                                     </div>
-                                    <div className="flex items-center gap-4 text-xs text-slate-500">
+                                    <div className="flex items-center gap-3 text-xs text-slate-500">
                                         <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> {inc.id}</span>
                                         <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {inc.location}</span>
                                         <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {inc.date}</span>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto">
+                                <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
                                     <div className={`text-xs font-bold px-3 py-1 rounded-full ${inc.status === 'Closed' ? 'bg-emerald-100 text-emerald-700' :
                                             inc.status === 'Investigating' || inc.status === 'Action Taken' ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'
                                         }`}>
@@ -130,3 +130,4 @@ export default function IncidentReportingPage() {
         </div>
     );
 }
+

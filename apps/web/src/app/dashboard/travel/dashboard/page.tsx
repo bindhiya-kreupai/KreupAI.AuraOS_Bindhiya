@@ -46,7 +46,7 @@ export default function GenericDashboardPage() {
                             Welcome to the Travel Management Hub. Access your trips, policies, and booking tools from here.
                         </p>
                         {data && (
-                            <div className="mt-4 flex items-center justify-center gap-6 text-sm text-slate-500">
+                            <div className="mt-4 flex items-center justify-center gap-3 text-sm text-slate-500">
                                 <span>Total Requests: <strong className="text-slate-900 dark:text-slate-100">{data.totalRequests || 0}</strong></span>
                                 <span>Approved: <strong className="text-emerald-600">{data.approvedRequests || 0}</strong></span>
                                 <span>Pending: <strong className="text-amber-600">{data.pendingRequests || 0}</strong></span>
@@ -55,7 +55,7 @@ export default function GenericDashboardPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500 transition-colors cursor-pointer group shadow-sm">
                         <Plane className="w-8 h-8 text-indigo-500 mb-4" />
                         <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Book a Trip</h3>
@@ -76,3 +76,4 @@ export default function GenericDashboardPage() {
         </div>
     );
 }
+

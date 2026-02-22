@@ -58,9 +58,9 @@ export default function ResumeParsingPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <ScanLine className="w-6 h-6 text-indigo-500" />
@@ -72,7 +72,7 @@ export default function ResumeParsingPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Upload Area */}
-                <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center text-center space-y-6 border-dashed border-2 border-indigo-100 dark:border-indigo-900/50">
+                <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center text-center space-y-4 border-dashed border-2 border-indigo-100 dark:border-indigo-900/50">
                     <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center text-indigo-500">
                         <UploadCloud className="w-10 h-10" />
                     </div>
@@ -86,7 +86,7 @@ export default function ResumeParsingPage() {
                 </div>
 
                 {/* Parsed Resume Results */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><BrainCircuit className="w-5 h-5 text-emerald-500" /> Parsed Resumes</h3>
 
@@ -143,3 +143,4 @@ export default function ResumeParsingPage() {
         </div>
     );
 }
+

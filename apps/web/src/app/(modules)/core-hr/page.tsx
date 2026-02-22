@@ -90,7 +90,7 @@ export default function CoreHRPage() {
         <p className="text-silver-mist">Centralized administration of employee data, organizational structure, and lifecycle events.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {coreHRFeatures.map((feature) => (
           <Link
             key={feature.title}
@@ -107,7 +107,7 @@ export default function CoreHRPage() {
       </div>
 
       <div className="bg-celestial-indigo/5 border border-celestial-indigo/20 rounded-xl p-6 mt-8">
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3">
           <div className="p-2 bg-celestial-indigo/10 rounded-lg">
             <FileCheck className="w-6 h-6 text-celestial-indigo" />
           </div>
@@ -123,3 +123,4 @@ export default function CoreHRPage() {
     </div>
   );
 }
+

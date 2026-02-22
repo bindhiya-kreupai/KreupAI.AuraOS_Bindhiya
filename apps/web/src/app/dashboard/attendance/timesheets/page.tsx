@@ -82,7 +82,7 @@ export default function TimesheetsPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -195,7 +195,7 @@ export default function TimesheetsPage() {
                 </div>
             </div>
 
-            <div className="flex justify-end gap-6 text-sm">
+            <div className="flex justify-end gap-3 text-sm">
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
                     <span className="text-slate-600">Billable ({summary?.billableHours || 0}h)</span>
@@ -209,3 +209,4 @@ export default function TimesheetsPage() {
         </div>
     );
 }
+

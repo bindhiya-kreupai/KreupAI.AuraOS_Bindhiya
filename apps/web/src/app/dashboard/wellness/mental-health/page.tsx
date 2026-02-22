@@ -43,8 +43,8 @@ export default function MentalHealthPage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Brain className="w-6 h-6 text-purple-500" />
@@ -62,14 +62,14 @@ export default function MentalHealthPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Main Content: Self-care Resources */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <section>
                         <h2 className="font-bold text-lg mb-4">Recommended for You</h2>
                         <div className="space-y-4">
                             {RESOURCES.map(resource => (
-                                <div key={resource.id} className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-all cursor-pointer group">
+                                <div key={resource.id} className="flex items-center gap-3 p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-all cursor-pointer group">
                                     <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 ${resource.color}`}>
                                         <resource.icon className="w-6 h-6" />
                                     </div>
@@ -91,7 +91,7 @@ export default function MentalHealthPage() {
                 </div>
 
                 {/* Sidebar: Counselors */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <h3 className="font-bold mb-4 flex items-center gap-2">
                             <MessageSquare className="w-5 h-5 text-indigo-500" />
@@ -123,3 +123,4 @@ export default function MentalHealthPage() {
         </div>
     );
 }
+

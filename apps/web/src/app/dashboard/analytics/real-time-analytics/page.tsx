@@ -80,7 +80,7 @@ export default function RealTimeAnalyticsPage() {
 
     return (
         <div className="p-6 space-y-8 min-h-screen">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <Activity className="w-8 h-8 text-rose-500 animate-pulse" />
@@ -94,7 +94,7 @@ export default function RealTimeAnalyticsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <LiveMetricCard
                     title="Present Today"
                     value={presentToday}
@@ -125,7 +125,7 @@ export default function RealTimeAnalyticsPage() {
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                     <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
                         <Activity className="w-5 h-5 text-slate-400" /> Live Attendance Pulse
@@ -156,7 +156,7 @@ export default function RealTimeAnalyticsPage() {
                     <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
                         {alerts.length > 0 ? (
                             alerts.map((alert, i) => (
-                                <div key={i} className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border-l-4 border-rose-500">
+                                <div key={i} className="flex gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border-l-4 border-rose-500">
                                     <AlertCircle className="w-5 h-5 text-rose-500 shrink-0 mt-1" />
                                     <div>
                                         <div className="font-bold text-sm text-slate-900 dark:text-slate-100">{alert.type}</div>
@@ -199,3 +199,4 @@ function LiveMetricCard({ title, value, icon: Icon, color, sub, trend }: any) {
         </div>
     );
 }
+

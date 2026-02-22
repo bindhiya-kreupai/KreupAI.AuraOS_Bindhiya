@@ -195,9 +195,9 @@ export default function NitaqatPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <Link href="/dashboard/payroll-compliance" className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2">
             <ArrowLeft className="w-4 h-4" /> Back to Compliance
@@ -228,7 +228,7 @@ export default function NitaqatPage() {
       )}
 
       {/* Current Status */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Band Status */}
         <div className={`${bandInfo.bg} ${bandInfo.text} rounded-2xl p-6`}>
           <div className="text-sm opacity-90 mb-2">Current Nitaqat Band</div>
@@ -326,7 +326,7 @@ export default function NitaqatPage() {
           <span className="text-base font-medium text-slate-600 dark:text-slate-400" dir="rtl">محاكاة القوى العاملة</span>
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Industry */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -419,7 +419,7 @@ export default function NitaqatPage() {
                   {simulateNonSaudi !== 0 && <span className={simulateNonSaudi > 0 ? 'text-blue-600' : 'text-amber-600'}>{simulateNonSaudi > 0 ? '+' : ''}{simulateNonSaudi} Non-Saudi</span>}
                 </div>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <div className="text-center">
                   <div className="text-sm text-slate-500">New Ratio</div>
                   <div className="text-xl font-bold">{simRatio.toFixed(1)}%</div>
@@ -472,3 +472,4 @@ export default function NitaqatPage() {
     </div>
   );
 }
+

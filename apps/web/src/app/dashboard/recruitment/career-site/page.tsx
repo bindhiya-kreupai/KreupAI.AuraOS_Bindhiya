@@ -58,9 +58,9 @@ export default function CareerSitePage() {
     }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Globe className="w-6 h-6 text-indigo-500" />
@@ -80,7 +80,7 @@ export default function CareerSitePage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Settings Panel */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><Palette className="w-4 h-4" /> Branding</h3>
 
@@ -143,7 +143,7 @@ export default function CareerSitePage() {
                             <button className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-full">View Openings</button>
                         </div>
 
-                        <div className="p-8 grid grid-cols-2 gap-4">
+                        <div className="p-8 grid grid-cols-2 gap-3">
                             <div className="h-32 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
                             <div className="h-32 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
                         </div>
@@ -173,3 +173,4 @@ export default function CareerSitePage() {
         </div>
     );
 }
+
