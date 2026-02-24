@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ExitService } from '@/lib/services/exit.service';
+import { ServiceProxy } from '@/lib/services/service-proxy';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
@@ -7,7 +7,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     const { user, params } = context;
     const { id } = params;
 
-    const exitRequest = await ExitService.findById(id, user.tenantId);
+    // Fetch exit request from microservice
+    const exitRequest = await ServiceProxy.get('employee', `/exits/${id}`, { tenantId: user.tenantId });
     if (!exitRequest) {
       return NextResponse.json(
         { success: false, error: { code: 'E2001', message: 'Exit request not found' } },
@@ -30,7 +31,8 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     const { id } = params;
     const body = await request.json();
 
-    const exitRequest = await ExitService.update(id, user.tenantId, body);
+    // Update exit request via microservice
+    const exitRequest = await ServiceProxy.put('employee', `/exits/${id}`, { ...body, tenantId: user.tenantId });
     if (!exitRequest) {
       return NextResponse.json(
         { success: false, error: { code: 'E2001', message: 'Exit request not found' } },
@@ -52,7 +54,8 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
     const { user, params } = context;
     const { id } = params;
 
-    const exitRequest = await ExitService.delete(id, user.tenantId);
+    // Delete exit request via microservice
+    const exitRequest = await ServiceProxy.delete('employee', `/exits/${id}?tenantId=${user.tenantId}`);
     if (!exitRequest) {
       return NextResponse.json(
         { success: false, error: { code: 'E2001', message: 'Exit request not found' } },

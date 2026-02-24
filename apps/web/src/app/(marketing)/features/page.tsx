@@ -120,7 +120,7 @@ export default function FeaturesPage() {
                 <div className="mt-24 text-center bg-ink-black dark:bg-white/5 rounded-3xl p-12 relative overflow-hidden">
                     <div className="relative z-10">
                         <h2 className="text-3xl font-bold text-white mb-6">Ready to see it in action?</h2>
-                        <div className="flex flex-col sm:flex-row justify-center gap-4">
+                        <div className="flex flex-col sm:flex-row justify-center gap-3">
                             <Link href="/auth/register">
                                 <Button className="h-12 px-8 rounded-full bg-celestial-indigo hover:bg-celestial-indigo/90 text-white text-base">
                                     Start Free Trial
@@ -142,3 +142,4 @@ export default function FeaturesPage() {
         </div>
     );
 }
+

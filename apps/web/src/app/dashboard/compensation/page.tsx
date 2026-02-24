@@ -7,14 +7,17 @@ export default function CompensationPage() {
   const features = [
     'Salary Structure',
     'Grade & Bands',
+    'Compensation Planning',
     'Increment Planning',
     'Bonus Management',
+    'Equity Management',
     'Stock Options',
     'Loan & Advances',
     'Arrears Processing',
     'Total Rewards',
     'Market Benchmarking',
     'Budget Simulation',
+    'Expense Reimbursement',
     'Loans'
   ];
 
@@ -27,3 +30,4 @@ export default function CompensationPage() {
     />
   );
 }
+

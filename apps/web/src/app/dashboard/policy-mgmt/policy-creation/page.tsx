@@ -1,19 +1,46 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FilePlus,
     Save,
     Eye,
     Upload,
-    Type
+    Type,
+    Loader2
 } from 'lucide-react';
+import { PolicySettingsService } from '../services';
+import type { PolicySettings } from '../types';
 
 export default function PolicyCreationPage() {
+    const [settings, setSettings] = useState<PolicySettings | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await PolicySettingsService.get();
+                setSettings(data);
+            } catch {
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <FilePlus className="w-6 h-6 text-indigo-500" />
@@ -33,7 +60,7 @@ export default function PolicyCreationPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Editor */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Policy Title</label>
                         <input type="text" className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-lg" placeholder="e.g. Remote Work Policy 2025" />
@@ -55,7 +82,7 @@ export default function PolicyCreationPage() {
                 </div>
 
                 {/* Sidebar Settings */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <h3 className="font-bold text-sm uppercase text-slate-500 mb-4">Configuration</h3>
 
@@ -89,6 +116,13 @@ export default function PolicyCreationPage() {
                                     </label>
                                 </div>
                             </div>
+
+                            {settings && (
+                                <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                                    <div className="text-xs text-slate-400 mb-2">Approval Levels Required: <span className="font-bold text-slate-600 dark:text-slate-300">{settings.approvalSettings?.levelsRequired || 2}</span></div>
+                                    <div className="text-xs text-slate-400">Auto Distribute: <span className="font-bold text-slate-600 dark:text-slate-300">{settings.distributionSettings?.autoDistribute ? 'Yes' : 'No'}</span></div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -104,3 +138,4 @@ export default function PolicyCreationPage() {
         </div>
     );
 }
+

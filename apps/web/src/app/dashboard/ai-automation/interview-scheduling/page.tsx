@@ -45,7 +45,7 @@ export default function InterviewSchedulingPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -57,10 +57,10 @@ export default function InterviewSchedulingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
 
                 {/* 1. Context Panel */}
-                <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm space-y-6">
+                <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm space-y-4">
                     <div>
                         <h3 className="text-xs font-bold text-silver-mist uppercase tracking-wider mb-2">Candidate</h3>
                         <div className="flex items-center gap-3">
@@ -106,7 +106,7 @@ export default function InterviewSchedulingPage() {
                                     ? 'border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50 dark:bg-emerald-900/10 dark:border-emerald-800 cursor-pointer'
                                     : 'border-slate-100 bg-slate-50 opacity-60 dark:bg-slate-800/50 dark:border-slate-700 cursor-not-allowed'
                                 }`}>
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3">
                                     <div className={`p-2 rounded-lg ${slot.available ? 'bg-white text-emerald-600 dark:bg-emerald-900/30' : 'bg-slate-200 text-slate-500'}`}>
                                         <Clock className="w-5 h-5" />
                                     </div>
@@ -119,7 +119,7 @@ export default function InterviewSchedulingPage() {
                                 </div>
 
                                 {slot.available ? (
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
                                         <span className="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-1 rounded dark:bg-emerald-900/30 dark:text-emerald-400">
                                             {slot.reason}
                                         </span>
@@ -147,3 +147,4 @@ export default function InterviewSchedulingPage() {
         </div>
     );
 }
+

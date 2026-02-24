@@ -13,9 +13,9 @@ import {
 
 export default function VendorManagementPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Building2 className="w-6 h-6 text-indigo-500" />
@@ -29,7 +29,7 @@ export default function VendorManagementPage() {
             </div>
 
             {/* Vendor List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {[
                     { name: 'TechStaff Solutions', type: 'IT Services', location: 'San Francisco, CA', rating: 4.8, active: 12 },
                     { name: 'Global Manpower', type: 'General Staffing', location: 'New York, NY', rating: 4.2, active: 45 },
@@ -44,7 +44,7 @@ export default function VendorManagementPage() {
                             </button>
                         </div>
 
-                        <div className="flex items-center gap-4 mb-4">
+                        <div className="flex items-center gap-3 mb-4">
                             <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-xl">
                                 {vendor.name[0]}
                             </div>
@@ -78,3 +78,4 @@ export default function VendorManagementPage() {
         </div>
     );
 }
+

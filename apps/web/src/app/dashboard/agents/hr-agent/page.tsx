@@ -184,10 +184,10 @@ export default function HRAgentPage() {
   };
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-8 pb-6">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-4 mb-2">
+        <div className="flex items-center gap-3 mb-2">
           <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
             <Bot className="w-6 h-6 text-white" />
           </div>
@@ -202,7 +202,7 @@ export default function HRAgentPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Chat Interface */}
         <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col h-[600px]">
           {/* Messages */}
@@ -279,7 +279,7 @@ export default function HRAgentPage() {
         </div>
 
         {/* Capabilities & Examples */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
               What I Can Do
@@ -330,3 +330,4 @@ export default function HRAgentPage() {
     </div>
   );
 }
+

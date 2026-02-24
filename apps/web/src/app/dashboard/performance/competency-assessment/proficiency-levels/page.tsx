@@ -11,9 +11,9 @@ import {
 
 export default function ProficiencyLevelsPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Signal className="w-6 h-6 text-indigo-500" />
@@ -23,7 +23,7 @@ export default function ProficiencyLevelsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 h-full min-h-0">
                 {/* Levels Sidebar */}
                 <div className="lg:col-span-1 space-y-4">
                     {['L1: Novice / Learner', 'L2: Intermediate / Doer', 'L3: Advanced / Expert', 'L4: Master / Mentor', 'L5: Visionary / Strategist'].map((level, i) => (
@@ -77,7 +77,7 @@ export default function ProficiencyLevelsPage() {
                                 </ul>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
                                 <div>
                                     <h4 className="font-bold text-sm text-slate-500 mb-2 uppercase">Knowledge Depth</h4>
                                     <p className="text-sm">Deep understanding of core principles and ability to apply them in complex scenarios.</p>
@@ -94,3 +94,4 @@ export default function ProficiencyLevelsPage() {
         </div>
     );
 }
+

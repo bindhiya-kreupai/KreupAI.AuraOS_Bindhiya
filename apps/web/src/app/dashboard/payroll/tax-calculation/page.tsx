@@ -15,73 +15,32 @@ import {
     TrendingUp,
     Info,
     X,
-    FileIcon
+    FileIcon,
+    Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TaxDeclarationService } from '../services';
+import type { TaxDeclaration, TaxCategory } from '../types';
 
-// --- MOCK DATA ---
+const CATEGORY_ICONS: Record<string, { icon: typeof Briefcase; color: string; bg: string }> = {
+    '80C': { icon: Briefcase, color: 'text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
+    '80c': { icon: Briefcase, color: 'text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
+    'HRA': { icon: Home, color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-500/10' },
+    'hra': { icon: Home, color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-500/10' },
+    '80D': { icon: Heart, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+    '80d': { icon: Heart, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+    'LTA': { icon: Plane, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+    'lta': { icon: Plane, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+};
 
-const INVESTMENT_CATEGORIES = [
-    {
-        id: '80c',
-        name: 'Section 80C',
-        limit: 150000,
-        declared: 150000,
-        verified: 120000,
-        icon: Briefcase,
-        color: 'text-indigo-500',
-        bg: 'bg-indigo-50 dark:bg-indigo-500/10',
-        items: [
-            { id: 1, name: 'EPF', amount: 45000, status: 'Verified' },
-            { id: 2, name: 'PPF', amount: 75000, status: 'Verified' },
-            { id: 3, name: 'ELSS Mutual Fund', amount: 30000, status: 'Pending' }
-        ]
-    },
-    {
-        id: 'hra',
-        name: 'HRA Exemption',
-        limit: 240000,
-        declared: 180000,
-        verified: 150000,
-        icon: Home,
-        color: 'text-rose-500',
-        bg: 'bg-rose-50 dark:bg-rose-500/10',
-        items: [
-            { id: 4, name: 'Rent Receipts (Apr-Sep)', amount: 150000, status: 'Verified' },
-            { id: 5, name: 'Rent Receipts (Oct-Dec)', amount: 30000, status: 'Pending' }
-        ]
-    },
-    {
-        id: '80d',
-        name: 'Medical (80D)',
-        limit: 25000,
-        declared: 15000,
-        verified: 15000,
-        icon: Heart,
-        color: 'text-emerald-500',
-        bg: 'bg-emerald-50 dark:bg-emerald-500/10',
-        items: [
-            { id: 6, name: 'Health Insurance Premium', amount: 15000, status: 'Verified' }
-        ]
-    },
-    {
-        id: 'lta',
-        name: 'LTA',
-        limit: 50000,
-        declared: 0,
-        verified: 0,
-        icon: Plane,
-        color: 'text-amber-500',
-        bg: 'bg-amber-50 dark:bg-amber-500/10',
-        items: []
-    }
-];
+function getCategoryStyle(section: string) {
+    return CATEGORY_ICONS[section] || { icon: Briefcase, color: 'text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-500/10' };
+}
 
 export default function TaxDeclarationsPage() {
     const [regime, setRegime] = useState<'old' | 'new'>('old');
-    const [selectedCategory, setSelectedCategory] = useState<typeof INVESTMENT_CATEGORIES[0] | null>(null);
-    const [declarations, setDeclarations] = useState<any[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<TaxCategory | null>(null);
+    const [declarations, setDeclarations] = useState<TaxDeclaration[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -92,28 +51,65 @@ export default function TaxDeclarationsPage() {
         try {
             setLoading(true);
             const result = await TaxDeclarationService.getTaxDeclarations();
-            if (result.length > 0) {
-                setDeclarations(result);
-            }
+            setDeclarations(result);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
 
-    const toggleRegime = () => setRegime(prev => prev === 'old' ? 'new' : 'old');
+    // Use the first declaration that matches the selected regime, or fallback to first one
+    const activeDeclaration = declarations.find(d => d.regime === regime) || declarations[0];
+    const categories = activeDeclaration?.categories || [];
 
-    // Simple Tax Calculation Mock
-    const grossIncome = 2400000;
-    const totalDeductions = regime === 'old' ? 345000 : 50000; // Standard deduction only for new
-    const taxableIncome = grossIncome - totalDeductions;
-    const taxPayable = taxableIncome * (regime === 'old' ? 0.25 : 0.18); // Simplified average rate
+    const totalDeclared = activeDeclaration?.totalDeclared || 0;
+    const totalVerified = activeDeclaration?.totalVerified || 0;
+
+    // Tax calculation from declaration data
+    const grossIncome = totalDeclared > 0 ? totalDeclared * 7 : 0; // Estimate if available
+    const totalDeductionsAmt = regime === 'old' ? totalDeclared : 50000;
+    const taxableIncome = grossIncome - totalDeductionsAmt;
+    const taxPayable = taxableIncome > 0 ? taxableIncome * (regime === 'old' ? 0.25 : 0.18) : 0;
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                    <p className="text-sm text-silver-mist font-medium">Loading tax declarations...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (declarations.length === 0) {
+        return (
+            <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
+                    <div>
+                        <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
+                            <FileText className="w-6 h-6 text-indigo-500" />
+                            Tax Declarations
+                        </h1>
+                        <p className="text-silver-mist text-sm">Manage tax regime, declared investments, and file details.</p>
+                    </div>
+                </div>
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-3 text-center">
+                        <Calculator className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+                        <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300">No Tax Declarations</h3>
+                        <p className="text-sm text-silver-mist max-w-md">No tax declarations have been submitted yet. Submit your investment proofs to get started.</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <FileText className="w-6 h-6 text-indigo-500" />
@@ -138,23 +134,23 @@ export default function TaxDeclarationsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Left: Summary & Categories */}
-                <div className="lg:col-span-2 flex flex-col gap-6 overflow-hidden">
+                <div className="lg:col-span-2 flex flex-col gap-3 overflow-hidden">
                     {/* Tax Summary Card */}
                     <div className="bg-gradient-to-br from-slate-900 to-indigo-950 p-6 rounded-2xl shadow-lg border border-indigo-500/30 text-white shrink-0">
                         <div className="grid grid-cols-3 gap-8">
                             <div>
-                                <div className="text-sm font-bold opacity-70 mb-1">Gross Income</div>
-                                <div className="text-2xl font-bold">${(grossIncome / 1000).toFixed(0)}k</div>
+                                <div className="text-sm font-bold opacity-70 mb-1">Total Declared</div>
+                                <div className="text-2xl font-bold">${(totalDeclared / 1000).toFixed(0)}k</div>
                             </div>
                             <div>
-                                <div className="text-sm font-bold opacity-70 mb-1">Exemptions</div>
-                                <div className="text-2xl font-bold text-emerald-400">-${(totalDeductions / 1000).toFixed(0)}k</div>
+                                <div className="text-sm font-bold opacity-70 mb-1">Total Verified</div>
+                                <div className="text-2xl font-bold text-emerald-400">${(totalVerified / 1000).toFixed(0)}k</div>
                             </div>
                             <div>
-                                <div className="text-sm font-bold opacity-70 mb-1">Proj. Tax</div>
-                                <div className="text-2xl font-bold text-rose-400">${(taxPayable / 1000).toFixed(0)}k</div>
+                                <div className="text-sm font-bold opacity-70 mb-1">Status</div>
+                                <div className="text-2xl font-bold capitalize">{activeDeclaration?.status?.replace(/_/g, ' ') || 'N/A'}</div>
                             </div>
                         </div>
                         {regime === 'new' && (
@@ -172,10 +168,14 @@ export default function TaxDeclarationsPage() {
                         </h3>
 
                         <div className="flex-1 overflow-y-auto p-5 space-y-4">
-                            {INVESTMENT_CATEGORIES.map(cat => {
-                                const progress = (cat.declared / cat.limit) * 100;
+                            {categories.length === 0 ? (
+                                <div className="text-center text-slate-400 py-8 text-sm">No investment categories declared.</div>
+                            ) : categories.map(cat => {
+                                const style = getCategoryStyle(cat.section);
+                                const IconComponent = style.icon;
+                                const progress = cat.limit > 0 ? (cat.declared / cat.limit) * 100 : 0;
                                 const isMaxed = cat.declared >= cat.limit;
-                                const isDisabled = regime === 'new' && cat.id !== '80d'; // Example logic: only 80D allowed (usually not even that, but for demo)
+                                const isDisabled = regime === 'new' && cat.section.toUpperCase() !== '80D';
 
                                 return (
                                     <div
@@ -189,8 +189,8 @@ export default function TaxDeclarationsPage() {
                                     >
                                         <div className="flex justify-between items-start mb-3">
                                             <div className="flex items-center gap-3">
-                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${cat.bg} ${cat.color}`}>
-                                                    <cat.icon className="w-5 h-5" />
+                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${style.bg} ${style.color}`}>
+                                                    <IconComponent className="w-5 h-5" />
                                                 </div>
                                                 <div>
                                                     <div className="font-bold text-ink-black dark:text-pearl">{cat.name}</div>
@@ -206,7 +206,7 @@ export default function TaxDeclarationsPage() {
                                         </div>
 
                                         <div className="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-                                            <div className={`h-full rounded-full ${cat.color.replace('text', 'bg')}`} style={{ width: `${Math.min(progress, 100)}%` }}></div>
+                                            <div className={`h-full rounded-full ${style.color.replace('text', 'bg')}`} style={{ width: `${Math.min(progress, 100)}%` }}></div>
                                         </div>
 
                                         {isDisabled && (
@@ -240,16 +240,16 @@ export default function TaxDeclarationsPage() {
                                 </div>
 
                                 <div className="flex-1 overflow-y-auto p-5 space-y-4">
-                                    {selectedCategory.items.length > 0 ? selectedCategory.items.map(item => (
-                                        <div key={item.id} className="flex justify-between items-center p-3 border border-cloud dark:border-slate-800 rounded-lg">
+                                    {selectedCategory.proofs && selectedCategory.proofs.length > 0 ? selectedCategory.proofs.map(proof => (
+                                        <div key={proof.id} className="flex justify-between items-center p-3 border border-cloud dark:border-slate-800 rounded-lg">
                                             <div className="flex items-center gap-3">
                                                 <FileIcon className="w-8 h-8 text-indigo-400 stroke-1" />
                                                 <div>
-                                                    <div className="text-sm font-bold text-ink-black dark:text-pearl">{item.name}</div>
-                                                    <div className="text-xs text-silver-mist">${item.amount.toLocaleString()}</div>
+                                                    <div className="text-sm font-bold text-ink-black dark:text-pearl">{proof.name}</div>
+                                                    <div className="text-xs text-silver-mist">${proof.amount.toLocaleString()}</div>
                                                 </div>
                                             </div>
-                                            {item.status === 'Verified' ? (
+                                            {proof.status === 'verified' ? (
                                                 <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                                             ) : (
                                                 <div className="w-5 h-5 rounded-full border-2 border-amber-500 border-t-transparent animate-spin"></div>
@@ -291,3 +291,4 @@ export default function TaxDeclarationsPage() {
         </div>
     );
 }
+

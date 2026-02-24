@@ -112,7 +112,7 @@ export const GET = withEnhancedAuth(
         meta: { total: filteredData.length },
       });
     } catch (error) {
-      logger.error('Error fetching punch rules:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch punch rules' },
         { status: 500 }
@@ -141,9 +141,10 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Attendance - Punch Rules',
+          entityType: 'Attendance - Punch Rules',
           details: `Created punch rule: ${data.name}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -157,7 +158,7 @@ export const POST = withEnhancedAuth(
           { status: 400 }
         );
       }
-      logger.error('Error creating punch rule:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to create punch rule' },
         { status: 500 }
@@ -192,9 +193,10 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Attendance - Punch Rules',
+          entityType: 'Attendance - Punch Rules',
           details: `Updated punch rule: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -202,7 +204,7 @@ export const PUT = withEnhancedAuth(
 
       return NextResponse.json({ success: true, data: updated });
     } catch (error) {
-      logger.error('Error updating punch rule:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to update punch rule' },
         { status: 500 }
@@ -230,9 +232,10 @@ export const DELETE = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
-          module: 'Attendance - Punch Rules',
+          entityType: 'Attendance - Punch Rules',
           details: `Deleted punch rule: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -240,7 +243,7 @@ export const DELETE = withEnhancedAuth(
 
       return NextResponse.json({ success: true, message: 'Punch rule deleted successfully' });
     } catch (error) {
-      logger.error('Error deleting punch rule:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to delete punch rule' },
         { status: 500 }

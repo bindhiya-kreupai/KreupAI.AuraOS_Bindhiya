@@ -20,7 +20,7 @@ import {
   PanelRight,
   History,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '../../utils';
 
 interface ActivityItem {
   path: string;
@@ -99,14 +99,14 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
           className={cn(
             'p-2 rounded-lg transition-colors relative',
             activeTab === 'recent'
-              ? 'bg-celestial-indigo/10 text-celestial-indigo'
+              ? 'bg-brand-blue/10 text-brand-blue'
               : 'hover:bg-pearl dark:hover:bg-stellar-blue text-twilight dark:text-silver-mist'
           )}
           title="Recent Activity"
         >
           <History className="w-5 h-5" />
           {recentActivity.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 text-xs bg-celestial-indigo text-white rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 w-4 h-4 text-xs bg-brand-blue text-white rounded-full flex items-center justify-center">
               {recentActivity.length > 9 ? '9+' : recentActivity.length}
             </span>
           )}
@@ -165,19 +165,19 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
           className={cn(
             'flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium transition-colors relative',
             activeTab === 'recent'
-              ? 'text-celestial-indigo dark:text-quantum-rose'
+              ? 'text-brand-blue dark:text-brand-light-blue'
               : 'text-silver-mist hover:text-twilight dark:hover:text-pearl'
           )}
         >
           <Clock className="w-4 h-4" />
           <span>Recent</span>
           {recentActivity.length > 0 && (
-            <span className="ml-1 px-1.5 py-0.5 text-xs bg-celestial-indigo/10 text-celestial-indigo dark:bg-quantum-rose/10 dark:text-quantum-rose rounded-full">
+            <span className="ml-1 px-1.5 py-0.5 text-xs bg-brand-blue/10 text-brand-blue dark:bg-brand-light-blue/10 dark:text-brand-light-blue rounded-full">
               {recentActivity.length}
             </span>
           )}
           {activeTab === 'recent' && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-celestial-indigo to-quantum-rose" />
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-brand-blue to-brand-light-blue" />
           )}
         </button>
         <button
@@ -224,8 +224,8 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     href={item.path}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-pearl dark:hover:bg-stellar-blue transition-colors group"
                   >
-                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-celestial-indigo/10 to-quantum-rose/10 flex items-center justify-center">
-                      <ChevronRight className="w-4 h-4 text-celestial-indigo dark:text-quantum-rose" />
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-brand-blue/10 flex items-center justify-center">
+                      <ChevronRight className="w-4 h-4 text-brand-blue dark:text-brand-light-blue" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-ink-black dark:text-pearl truncate">

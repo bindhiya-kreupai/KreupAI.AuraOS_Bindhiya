@@ -87,7 +87,7 @@ export default function AttritionPredictionPage() {
     const predictedReduction = Math.min(salaryBoost * 1.5, 40); // 10% boost reduces risk by ~15%
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -100,8 +100,8 @@ export default function AttritionPredictionPage() {
             </div>
 
             {/* Top Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white dark:bg-stellar-blue p-5 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-white dark:bg-stellar-blue p-5 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-3">
                     <div className="p-3 rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-900/20">
                         <Users className="w-8 h-8" />
                     </div>
@@ -111,7 +111,7 @@ export default function AttritionPredictionPage() {
                         <p className="text-xs text-rose-500 font-medium">16.6% of workforce</p>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-stellar-blue p-5 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-4">
+                <div className="bg-white dark:bg-stellar-blue p-5 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-3">
                     <div className="p-3 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-900/20">
                         <DollarSign className="w-8 h-8" />
                     </div>
@@ -121,7 +121,7 @@ export default function AttritionPredictionPage() {
                         <p className="text-xs text-slate-500 font-medium">Est. recruitment + training</p>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-stellar-blue p-5 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-4">
+                <div className="bg-white dark:bg-stellar-blue p-5 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-3">
                     <div className="p-3 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20">
                         <TrendingDown className="w-8 h-8" />
                     </div>
@@ -133,7 +133,7 @@ export default function AttritionPredictionPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
 
                 {/* 1. Risk Distribution (Pie) */}
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
@@ -282,3 +282,4 @@ export default function AttritionPredictionPage() {
         </div>
     );
 }
+

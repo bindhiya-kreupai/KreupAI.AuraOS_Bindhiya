@@ -33,6 +33,10 @@ export enum Resource {
   AUDIT_LOGS = 'audit_logs',
   SYSTEM_SETTINGS = 'system_settings',
 
+  // Payroll
+  PAYROLL = 'payroll',
+  ATTENDANCE = 'attendance',
+
   // Master Data
   MASTER_DATA = 'master_data',
   COUNTRIES = 'countries',

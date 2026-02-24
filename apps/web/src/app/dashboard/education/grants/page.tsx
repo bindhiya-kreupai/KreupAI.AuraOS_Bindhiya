@@ -11,9 +11,9 @@ import {
 
 export default function GrantsPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Banknote className="w-6 h-6 text-emerald-500" />
@@ -26,7 +26,7 @@ export default function GrantsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full min-h-0 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-full min-h-0 overflow-y-auto pb-20">
                 {[
                     { title: 'AI in Healthcare', pi: 'Dr. Sarah Connor', funder: 'NIH', budget: '$1,200,000', start: 'Jan 2024', end: 'Dec 2026', staff: 4 },
                     { title: 'Quantum Computing Materials', pi: 'Prof. Sheldon Cooper', funder: 'NSF', budget: '$850,000', start: 'Jun 2024', end: 'May 2027', staff: 3 },
@@ -43,7 +43,7 @@ export default function GrantsPage() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="grid grid-cols-2 gap-3 mb-6">
                             <div className="p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
                                 <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold uppercase mb-1">Total Budget</div>
                                 <div className="text-lg font-bold text-slate-800 dark:text-slate-200">{grant.budget}</div>
@@ -87,3 +87,4 @@ export default function GrantsPage() {
         </div>
     );
 }
+

@@ -1,17 +1,45 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     LayoutGrid,
     Search,
     Share2,
-    Trophy
+    Trophy,
+    Loader2
 } from 'lucide-react';
+import { AchievementWallService } from '../services';
 
 export default function AchievementWallPage() {
+    const [achievements, setAchievements] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await AchievementWallService.getAchievements();
+                setAchievements(data as any);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <LayoutGrid className="w-6 h-6 text-indigo-500" />
@@ -22,7 +50,7 @@ export default function AchievementWallPage() {
             </div>
 
             {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[200px]">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 auto-rows-[200px]">
                 {/* Large Featured Item */}
                 <div className="md:col-span-2 md:row-span-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-8 text-white relative overflow-hidden group">
                     <div className="relative z-10 h-full flex flex-col justify-end">
@@ -60,3 +88,4 @@ export default function AchievementWallPage() {
         </div>
     );
 }
+

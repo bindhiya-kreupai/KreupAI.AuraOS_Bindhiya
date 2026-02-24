@@ -12,9 +12,9 @@ import {
 
 export default function StaffingPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Users className="w-6 h-6 text-indigo-500" />
@@ -27,7 +27,7 @@ export default function StaffingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full min-h-0 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-full min-h-0 overflow-y-auto pb-20">
                 {[
                     { project: 'Skyline Tower (Phase 2)', loc: 'Downtown', crew: 45, type: 'Concrete & Steel', budget: '82%', status: 'Active' },
                     { project: 'River Bridge Repair', loc: 'Westside', crew: 12, type: 'Maintenance', budget: '50%', status: 'Active' },
@@ -49,7 +49,7 @@ export default function StaffingPage() {
                             </span>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="grid grid-cols-2 gap-3 mb-6">
                             <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
                                 <div className="text-xs text-slate-500 font-bold uppercase mb-1">Crew Size</div>
                                 <div className="text-2xl font-bold flex items-center gap-2">
@@ -98,3 +98,4 @@ export default function StaffingPage() {
         </div>
     );
 }
+

@@ -3,7 +3,7 @@ import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request, context) => {
   try {
-    const schedules = [];
+    const schedules: any[] = [];
     return NextResponse.json({ schedules }, { status: 200 });
   } catch (error) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

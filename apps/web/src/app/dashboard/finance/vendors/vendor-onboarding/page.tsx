@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     UserPlus,
     Building2,
@@ -22,8 +22,10 @@ import {
     Eye,
     Edit,
     TrendingUp,
-    Users
+    Users,
+    Loader2
 } from 'lucide-react';
+import { VendorService } from '../../services';
 
 type OnboardingStatus = 'all' | 'pending' | 'in-review' | 'approved' | 'rejected' | 'incomplete';
 
@@ -60,209 +62,24 @@ interface VendorOnboarding {
 
 export default function VendorOnboardingPage() {
     const [filter, setFilter] = useState<OnboardingStatus>('all');
+    const [loading, setLoading] = useState(true);
 
-    const vendors: VendorOnboarding[] = [
-        {
-            id: 'VO-001',
-            vendorName: 'Tech Solutions Inc',
-            contactPerson: 'Sarah Johnson',
-            email: 'sarah.j@techsolutions.com',
-            phone: '+1 (555) 123-4567',
-            address: '123 Tech Park, Silicon Valley, CA 94025',
-            country: 'USA',
-            website: 'www.techsolutions.com',
-            category: 'IT Services',
-            submittedDate: '2024-12-10',
-            status: 'in-review',
-            completionPercent: 85,
-            requiredDocuments: {
-                taxId: true,
-                businessLicense: true,
-                insurance: true,
-                w9Form: true,
-                bankDetails: false
-            },
-            complianceChecks: {
-                backgroundCheck: true,
-                creditCheck: true,
-                referenceCheck: false
-            },
-            reviewedBy: 'Finance Team',
-            estimatedValue: 50000,
-            notes: 'Pending bank details verification'
-        },
-        {
-            id: 'VO-002',
-            vendorName: 'Global Office Supplies',
-            contactPerson: 'Michael Chen',
-            email: 'm.chen@globalsupplies.com',
-            phone: '+1 (555) 234-5678',
-            address: '456 Commerce St, New York, NY 10001',
-            country: 'USA',
-            website: 'www.globalsupplies.com',
-            category: 'Office Supplies',
-            submittedDate: '2024-12-08',
-            status: 'approved',
-            completionPercent: 100,
-            requiredDocuments: {
-                taxId: true,
-                businessLicense: true,
-                insurance: true,
-                w9Form: true,
-                bankDetails: true
-            },
-            complianceChecks: {
-                backgroundCheck: true,
-                creditCheck: true,
-                referenceCheck: true
-            },
-            reviewedBy: 'John Manager',
-            reviewDate: '2024-12-09',
-            estimatedValue: 25000
-        },
-        {
-            id: 'VO-003',
-            vendorName: 'Facilities Maintenance Corp',
-            contactPerson: 'Lisa Rodriguez',
-            email: 'lisa@facilitiesmaint.com',
-            phone: '+1 (555) 345-6789',
-            address: '789 Service Road, Austin, TX 78701',
-            country: 'USA',
-            category: 'Facilities',
-            submittedDate: '2024-12-12',
-            status: 'pending',
-            completionPercent: 40,
-            requiredDocuments: {
-                taxId: true,
-                businessLicense: false,
-                insurance: false,
-                w9Form: false,
-                bankDetails: false
-            },
-            complianceChecks: {
-                backgroundCheck: false,
-                creditCheck: false,
-                referenceCheck: false
-            },
-            estimatedValue: 15000,
-            notes: 'Awaiting initial documentation'
-        },
-        {
-            id: 'VO-004',
-            vendorName: 'Cloud Services Pro',
-            contactPerson: 'David Kim',
-            email: 'david@cloudpro.com',
-            phone: '+1 (555) 456-7890',
-            address: '321 Cloud Drive, Seattle, WA 98101',
-            country: 'USA',
-            website: 'www.cloudpro.com',
-            category: 'Cloud Services',
-            submittedDate: '2024-12-05',
-            status: 'rejected',
-            completionPercent: 60,
-            requiredDocuments: {
-                taxId: true,
-                businessLicense: true,
-                insurance: false,
-                w9Form: true,
-                bankDetails: false
-            },
-            complianceChecks: {
-                backgroundCheck: true,
-                creditCheck: false,
-                referenceCheck: true
-            },
-            reviewedBy: 'Finance Director',
-            reviewDate: '2024-12-06',
-            estimatedValue: 75000,
-            notes: 'Failed credit check - high risk'
-        },
-        {
-            id: 'VO-005',
-            vendorName: 'Marketing Solutions LLC',
-            contactPerson: 'Emma Wilson',
-            email: 'emma@marketingsol.com',
-            phone: '+1 (555) 567-8901',
-            address: '555 Marketing Ave, Chicago, IL 60601',
-            country: 'USA',
-            website: 'www.marketingsol.com',
-            category: 'Marketing Services',
-            submittedDate: '2024-12-11',
-            status: 'in-review',
-            completionPercent: 75,
-            requiredDocuments: {
-                taxId: true,
-                businessLicense: true,
-                insurance: true,
-                w9Form: false,
-                bankDetails: true
-            },
-            complianceChecks: {
-                backgroundCheck: true,
-                creditCheck: true,
-                referenceCheck: false
-            },
-            reviewedBy: 'Procurement Team',
-            estimatedValue: 40000,
-            notes: 'W9 form pending signature'
-        },
-        {
-            id: 'VO-006',
-            vendorName: 'Legal Advisory Partners',
-            contactPerson: 'Robert Taylor',
-            email: 'r.taylor@legaladvisory.com',
-            phone: '+1 (555) 678-9012',
-            address: '888 Law Plaza, Boston, MA 02101',
-            country: 'USA',
-            website: 'www.legaladvisory.com',
-            category: 'Legal Services',
-            submittedDate: '2024-12-07',
-            status: 'approved',
-            completionPercent: 100,
-            requiredDocuments: {
-                taxId: true,
-                businessLicense: true,
-                insurance: true,
-                w9Form: true,
-                bankDetails: true
-            },
-            complianceChecks: {
-                backgroundCheck: true,
-                creditCheck: true,
-                referenceCheck: true
-            },
-            reviewedBy: 'Legal Team',
-            reviewDate: '2024-12-08',
-            estimatedValue: 60000
-        },
-        {
-            id: 'VO-007',
-            vendorName: 'Catering Services Plus',
-            contactPerson: 'Jennifer Martinez',
-            email: 'jennifer@cateringplus.com',
-            phone: '+1 (555) 789-0123',
-            address: '999 Food Court, Miami, FL 33101',
-            country: 'USA',
-            category: 'Food Services',
-            submittedDate: '2024-12-13',
-            status: 'incomplete',
-            completionPercent: 25,
-            requiredDocuments: {
-                taxId: false,
-                businessLicense: true,
-                insurance: false,
-                w9Form: false,
-                bankDetails: false
-            },
-            complianceChecks: {
-                backgroundCheck: false,
-                creditCheck: false,
-                referenceCheck: false
-            },
-            estimatedValue: 12000,
-            notes: 'Missing critical documents - follow up required'
-        }
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await VendorService.getVendors();
+                setVendors(data as any[]);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const [vendors, setVendors] = useState<any[]>([]);
 
     const filteredVendors = filter === 'all'
         ? vendors
@@ -347,10 +164,18 @@ export default function VendorOnboardingPage() {
         return Object.values(checks).filter(Boolean).length;
     };
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <UserPlus className="w-6 h-6 text-indigo-500" />
@@ -370,7 +195,7 @@ export default function VendorOnboardingPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 shrink-0">
                 {stats.map((stat, i) => {
                     const Icon = stat.icon;
                     return (
@@ -391,7 +216,7 @@ export default function VendorOnboardingPage() {
             </div>
 
             {/* Search and Filters */}
-            <div className="flex flex-col md:flex-row gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row gap-3 shrink-0">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
@@ -640,3 +465,4 @@ export default function VendorOnboardingPage() {
         </div>
     );
 }
+

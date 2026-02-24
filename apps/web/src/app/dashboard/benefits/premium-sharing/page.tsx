@@ -2,15 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-    PieChart,
     Coins,
-    Percent,
-    ArrowUpRight
+    Loader2
 } from 'lucide-react';
-import { PremiumService } from '../services';
+import { BenefitPlanService } from '../services';
+
+interface PremiumItem {
+    plan: string;
+    total: string;
+    employer: number;
+    employee: number;
+}
 
 export default function PremiumSharingPage() {
-    const [deductions, setDeductions] = useState<any[]>([]);
+    const [deductions, setDeductions] = useState<PremiumItem[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -20,32 +25,39 @@ export default function PremiumSharingPage() {
     const fetchDeductions = async () => {
         try {
             setLoading(true);
-            const data = await PremiumService.getDeductions({ employeeId: 'EMP-001' });
-            if (data.length === 0) {
-                setDeductions(mockDeductions);
+            const response = await BenefitPlanService.getPlans({ status: 'ACTIVE' });
+            const plans = response?.data || response || [];
+
+            if (Array.isArray(plans) && plans.length > 0) {
+                const items: PremiumItem[] = plans.map((plan: any) => {
+                    const empPremium = plan.employeePremium || 0;
+                    const erPremium = plan.employerPremium || 0;
+                    const total = empPremium + erPremium;
+                    const employerPct = total > 0 ? Math.round((erPremium / total) * 100) : 0;
+                    const employeePct = total > 0 ? 100 - employerPct : 0;
+                    return {
+                        plan: plan.planName || plan.name || 'Unknown Plan',
+                        total: `$${total.toLocaleString()}`,
+                        employer: employerPct,
+                        employee: employeePct,
+                    };
+                });
+                setDeductions(items);
             } else {
-                setDeductions(data);
+                setDeductions([]);
             }
         } catch (error) {
-            console.error('Error:', error);
-                        setDeductions(mockDeductions);
+            console.error('Error fetching premium data:', error);
+            setDeductions([]);
         } finally {
             setLoading(false);
         }
     };
 
-    const mockDeductions = [
-        { plan: 'Health Insurance (Premium)', total: '$1,200', employer: 80, employee: 20 },
-        { plan: 'Dental Plan', total: '$150', employer: 50, employee: 50 },
-        { plan: 'Vision Plan', total: '$50', employer: 100, employee: 0 },
-        { plan: 'Life Insurance', total: '$80', employer: 100, employee: 0 },
-        { plan: 'Dependents Coverage', total: '$400', employer: 0, employee: 100 },
-    ];
-
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Coins className="w-6 h-6 text-indigo-500" />
@@ -55,10 +67,16 @@ export default function PremiumSharingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto pb-20">
                 {loading ? (
                     <div className="col-span-full flex justify-center items-center py-20">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                        <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
+                    </div>
+                ) : deductions.length === 0 ? (
+                    <div className="col-span-full flex flex-col items-center justify-center py-20 text-center">
+                        <Coins className="w-12 h-12 text-slate-300 mb-4" />
+                        <h3 className="font-bold text-lg text-slate-600 dark:text-slate-300">No Premium Data Available</h3>
+                        <p className="text-sm text-slate-500 max-w-sm mt-1">Premium sharing information will appear once benefit plans are configured.</p>
                     </div>
                 ) : deductions.map((item, i) => (
                     <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
@@ -82,7 +100,7 @@ export default function PremiumSharingPage() {
                             ></div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3">
                             <div>
                                 <span className="block text-xs text-slate-400 font-bold uppercase mb-1">Employer Pays</span>
                                 <div className="flex items-center gap-1.5">
@@ -104,3 +122,4 @@ export default function PremiumSharingPage() {
         </div>
     );
 }
+

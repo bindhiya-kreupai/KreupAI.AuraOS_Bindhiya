@@ -12,9 +12,9 @@ import {
 
 export default function PartsPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Package className="w-6 h-6 text-indigo-500" />
@@ -27,10 +27,10 @@ export default function PartsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Inventory List */}
                 <div className="lg:col-span-2 space-y-4 overflow-y-auto pb-20">
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 mb-2 flex gap-4 items-center">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 mb-2 flex gap-3 items-center">
                         <Search className="w-5 h-5 text-slate-400" />
                         <input type="text" placeholder="Search by Part # or Name..." className="bg-transparent outline-none flex-1 text-sm font-bold" />
                     </div>
@@ -43,7 +43,7 @@ export default function PartsPage() {
                         { part: 'Cabin Air Filter', cat: 'Consumables', stock: '22', min: '10', location: 'Aisle 1-B', status: 'OK' },
                     ].map((p, i) => (
                         <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col md:flex-row md:items-center justify-between hover:shadow-md transition-all">
-                            <div className="flex items-center gap-4 mb-4 md:mb-0">
+                            <div className="flex items-center gap-3 mb-4 md:mb-0">
                                 <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500">
                                     <Archive className="w-6 h-6" />
                                 </div>
@@ -77,7 +77,7 @@ export default function PartsPage() {
                 </div>
 
                 {/* Staff Duties */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                             <Clipboard className="w-5 h-5 text-indigo-500" /> Pending Requisitions
@@ -102,7 +102,7 @@ export default function PartsPage() {
                         </div>
                     </div>
 
-                    <div className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-100 dark:border-amber-900/30 p-6 flex items-start gap-4">
+                    <div className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-100 dark:border-amber-900/30 p-6 flex items-start gap-3">
                         <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400 shrink-0" />
                         <div>
                             <h3 className="font-bold text-amber-900 dark:text-amber-300 text-sm">Stock Discrepancy</h3>
@@ -116,3 +116,4 @@ export default function PartsPage() {
         </div>
     );
 }
+

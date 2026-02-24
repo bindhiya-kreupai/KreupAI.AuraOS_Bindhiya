@@ -12,7 +12,9 @@ import {
     Briefcase,
     Printer,
     Share2,
-    ChevronDown
+    ChevronDown,
+    CheckCircle2,
+    Loader2
 } from 'lucide-react';
 import {
     PieChart,
@@ -23,52 +25,14 @@ import {
     Legend
 } from 'recharts';
 import { PayslipService } from '../services';
+import type { Payslip } from '../types';
 
-// --- MOCK DATA ---
-
-const PAYSLIP_HISTORY = [
-    { id: '1', month: 'July 2024', netPay: 4500, status: 'Paid', date: 'Jul 30, 2024' },
-    { id: '2', month: 'June 2024', netPay: 4500, status: 'Paid', date: 'Jun 28, 2024' },
-    { id: '3', month: 'May 2024', netPay: 4200, status: 'Paid', date: 'May 30, 2024' },
-    { id: '4', month: 'April 2024', netPay: 4200, status: 'Paid', date: 'Apr 29, 2024' },
-];
-
-const CURRENT_PAYSLIP = {
-    month: 'August 2024',
-    empId: 'EMP-2024-001',
-    name: 'Sarah Anderson',
-    designation: 'Senior Product Designer',
-    department: 'Product',
-    doj: '15 Jan 2022',
-    bank: 'HDFC Bank',
-    account: 'XXXX-XXXX-4567',
-    pan: 'ABCDE1234F',
-    daysPayable: 31,
-    earnings: [
-        { label: 'Basic Salary', amount: 3000 },
-        { label: 'HRA', amount: 1500 },
-        { label: 'Special Allowance', amount: 800 },
-        { label: 'Transport Allowance', amount: 200 },
-    ],
-    deductions: [
-        { label: 'Provident Fund (PF)', amount: 360 },
-        { label: 'Professional Tax', amount: 20 },
-        { label: 'Income Tax (TDS)', amount: 620 },
-    ],
-    netPay: 4500
-};
-
-const CHART_DATA = [
-    { name: 'Basic', value: 3000, color: '#6366f1' }, // indigo
-    { name: 'HRA', value: 1500, color: '#ec4899' }, // pink
-    { name: 'Special', value: 800, color: '#8b5cf6' }, // violet
-    { name: 'Transport', value: 200, color: '#10b981' }, // emerald
-];
+const CHART_COLORS = ['#6366f1', '#ec4899', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
 export default function PayslipsPage() {
-    const [selectedMonth, setSelectedMonth] = useState('August 2024');
+    const [payslips, setPayslips] = useState<Payslip[]>([]);
+    const [selectedPayslip, setSelectedPayslip] = useState<Payslip | null>(null);
     const [showHistory, setShowHistory] = useState(false);
-    const [payslips, setPayslips] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -79,23 +43,53 @@ export default function PayslipsPage() {
         try {
             setLoading(true);
             const result = await PayslipService.getPayslips();
+            setPayslips(result);
             if (result.length > 0) {
-                setPayslips(result);
+                setSelectedPayslip(result[0]);
             }
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
 
-    const totalEarnings = CURRENT_PAYSLIP.earnings.reduce((sum, item) => sum + item.amount, 0);
-    const totalDeductions = CURRENT_PAYSLIP.deductions.reduce((sum, item) => sum + item.amount, 0);
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                    <p className="text-sm text-silver-mist font-medium">Loading payslips...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (payslips.length === 0 || !selectedPayslip) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3 text-center">
+                    <DollarSign className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+                    <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300">No Payslips Available</h3>
+                    <p className="text-sm text-silver-mist max-w-md">Payslips will appear here once payroll has been processed.</p>
+                </div>
+            </div>
+        );
+    }
+
+    const chartData = selectedPayslip.earnings.map((e, i) => ({
+        name: e.componentName,
+        value: e.amount,
+        color: CHART_COLORS[i % CHART_COLORS.length],
+    }));
+
+    const totalEarnings = selectedPayslip.totalEarnings;
+    const totalDeductions = selectedPayslip.totalDeductions;
 
     return (
-        <div className="max-w-6xl mx-auto space-y-6 pb-10">
+        <div className="max-w-6xl mx-auto space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <DollarSign className="w-6 h-6 text-emerald-500" />
@@ -108,7 +102,7 @@ export default function PayslipsPage() {
                         onClick={() => setShowHistory(!showHistory)}
                         className="px-4 py-2 bg-white dark:bg-stellar-blue border border-cloud dark:border-nebula-purple/50 rounded-lg text-sm font-medium hover:bg-cloud/50 transition-colors flex items-center gap-2 w-48 justify-between"
                     >
-                        <span className="flex items-center gap-2"><Calendar className="w-4 h-4 text-silver-mist" /> {selectedMonth}</span>
+                        <span className="flex items-center gap-2"><Calendar className="w-4 h-4 text-silver-mist" /> {selectedPayslip.monthName}</span>
                         <ChevronDown className="w-4 h-4 text-silver-mist" />
                     </button>
                     <button className="px-4 py-2 bg-celestial-indigo text-white rounded-lg text-sm font-medium hover:bg-celestial-indigo/90 transition-colors flex items-center gap-2">
@@ -118,14 +112,18 @@ export default function PayslipsPage() {
                     {/* History Dropdown */}
                     {showHistory && (
                         <div className="absolute top-full mt-2 w-full md:w-64 right-0 z-50 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-xl overflow-hidden py-1">
-                            {PAYSLIP_HISTORY.map(slip => (
-                                <button key={slip.id} className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 flex items-center justify-between group">
+                            {payslips.map(slip => (
+                                <button
+                                    key={slip.id}
+                                    onClick={() => { setSelectedPayslip(slip); setShowHistory(false); }}
+                                    className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 flex items-center justify-between group"
+                                >
                                     <div>
-                                        <div className="text-sm font-bold text-ink-black dark:text-pearl">{slip.month}</div>
-                                        <div className="text-xs text-silver-mist">{slip.date}</div>
+                                        <div className="text-sm font-bold text-ink-black dark:text-pearl">{slip.monthName}</div>
+                                        <div className="text-xs text-silver-mist">{slip.paymentDate || slip.generatedAt}</div>
                                     </div>
                                     <div className="text-xs font-bold text-emerald-500 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">
-                                        {slip.status}
+                                        {slip.paymentStatus}
                                     </div>
                                 </button>
                             ))}
@@ -134,23 +132,23 @@ export default function PayslipsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Breakdown Chart */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4">Salary Distribution</h3>
                         <div className="h-64 relative">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
-                                        data={CHART_DATA}
+                                        data={chartData}
                                         innerRadius={60}
                                         outerRadius={80}
                                         paddingAngle={5}
                                         dataKey="value"
                                         stroke="none"
                                     >
-                                        {CHART_DATA.map((entry, index) => (
+                                        {chartData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={entry.color} />
                                         ))}
                                     </Pie>
@@ -159,17 +157,17 @@ export default function PayslipsPage() {
                             </ResponsiveContainer>
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                 <span className="text-xs text-silver-mist uppercase">Gross</span>
-                                <span className="text-xl font-bold text-ink-black dark:text-pearl">${totalEarnings}</span>
+                                <span className="text-xl font-bold text-ink-black dark:text-pearl">${totalEarnings.toLocaleString()}</span>
                             </div>
                         </div>
                         <div className="space-y-2 mt-2">
-                            {CHART_DATA.map(item => (
+                            {chartData.map(item => (
                                 <div key={item.name} className="flex justify-between items-center text-sm">
                                     <div className="flex items-center gap-2">
                                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
                                         <span className="text-slate-600 dark:text-slate-400">{item.name}</span>
                                     </div>
-                                    <span className="font-medium text-ink-black dark:text-pearl">${item.value}</span>
+                                    <span className="font-medium text-ink-black dark:text-pearl">${item.value.toLocaleString()}</span>
                                 </div>
                             ))}
                         </div>
@@ -178,11 +176,11 @@ export default function PayslipsPage() {
                     <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl text-white shadow-lg relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
                         <h3 className="text-emerald-100 font-medium text-sm mb-1 uppercase tracking-wider">Net Payable</h3>
-                        <div className="text-4xl font-bold mb-4">${CURRENT_PAYSLIP.netPay.toLocaleString()}</div>
+                        <div className="text-4xl font-bold mb-4">${selectedPayslip.netPay.toLocaleString()}</div>
                         <div className="flex justify-between items-end">
                             <div className="flex flex-col gap-1">
-                                <span className="text-xs text-emerald-100 opacity-80">Paid on</span>
-                                <span className="text-sm font-semibold">Aug 30, 2024</span>
+                                <span className="text-xs text-emerald-100 opacity-80">Status</span>
+                                <span className="text-sm font-semibold capitalize">{selectedPayslip.paymentStatus}</span>
                             </div>
                             <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
                                 <CheckCircle2 className="w-5 h-5" />
@@ -194,7 +192,7 @@ export default function PayslipsPage() {
                 {/* Digital Payslip */}
                 <div className="lg:col-span-2 bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden flex flex-col">
                     <div className="p-6 border-b border-cloud dark:border-nebula-purple/20 flex justify-between items-start bg-slate-50 dark:bg-slate-900/30">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             <div className="w-12 h-12 bg-celestial-indigo text-white rounded-lg flex items-center justify-center">
                                 <Building2 className="w-7 h-7" />
                             </div>
@@ -205,7 +203,7 @@ export default function PayslipsPage() {
                         </div>
                         <div className="text-right">
                             <h3 className="font-bold text-ink-black dark:text-pearl text-lg uppercase tracking-wide opacity-50">Payslip</h3>
-                            <p className="text-sm text-silver-mist font-medium">{selectedMonth}</p>
+                            <p className="text-sm text-silver-mist font-medium">{selectedPayslip.monthName}</p>
                         </div>
                     </div>
 
@@ -214,35 +212,35 @@ export default function PayslipsPage() {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-4">
                             <div>
                                 <div className="text-xs text-silver-mist uppercase mb-1">Employee Name</div>
-                                <div className="font-bold text-ink-black dark:text-pearl">{CURRENT_PAYSLIP.name}</div>
+                                <div className="font-bold text-ink-black dark:text-pearl">{selectedPayslip.employeeName}</div>
                             </div>
                             <div>
                                 <div className="text-xs text-silver-mist uppercase mb-1">Employee ID</div>
-                                <div className="font-bold text-ink-black dark:text-pearl">{CURRENT_PAYSLIP.empId}</div>
+                                <div className="font-bold text-ink-black dark:text-pearl">{selectedPayslip.employeeCode}</div>
                             </div>
                             <div>
                                 <div className="text-xs text-silver-mist uppercase mb-1">Designation</div>
-                                <div className="font-bold text-ink-black dark:text-pearl">{CURRENT_PAYSLIP.designation}</div>
+                                <div className="font-bold text-ink-black dark:text-pearl">{selectedPayslip.designation}</div>
                             </div>
                             <div>
                                 <div className="text-xs text-silver-mist uppercase mb-1">Department</div>
-                                <div className="font-bold text-ink-black dark:text-pearl">{CURRENT_PAYSLIP.department}</div>
+                                <div className="font-bold text-ink-black dark:text-pearl">{selectedPayslip.department}</div>
                             </div>
                             <div>
-                                <div className="text-xs text-silver-mist uppercase mb-1">Date of Joining</div>
-                                <div className="font-bold text-ink-black dark:text-pearl">{CURRENT_PAYSLIP.doj}</div>
+                                <div className="text-xs text-silver-mist uppercase mb-1">Pay Period</div>
+                                <div className="font-bold text-ink-black dark:text-pearl">{selectedPayslip.payPeriodStart} - {selectedPayslip.payPeriodEnd}</div>
                             </div>
                             <div>
                                 <div className="text-xs text-silver-mist uppercase mb-1">Days Payable</div>
-                                <div className="font-bold text-ink-black dark:text-pearl">{CURRENT_PAYSLIP.daysPayable}</div>
+                                <div className="font-bold text-ink-black dark:text-pearl">{selectedPayslip.paidDays}</div>
                             </div>
                             <div>
                                 <div className="text-xs text-silver-mist uppercase mb-1">Bank Account</div>
-                                <div className="font-bold text-ink-black dark:text-pearl">{CURRENT_PAYSLIP.account}</div>
+                                <div className="font-bold text-ink-black dark:text-pearl">{selectedPayslip.accountNumber}</div>
                             </div>
                             <div>
                                 <div className="text-xs text-silver-mist uppercase mb-1">PAN / Tax ID</div>
-                                <div className="font-bold text-ink-black dark:text-pearl">{CURRENT_PAYSLIP.pan}</div>
+                                <div className="font-bold text-ink-black dark:text-pearl">{selectedPayslip.panNumber}</div>
                             </div>
                         </div>
 
@@ -254,9 +252,9 @@ export default function PayslipsPage() {
                             </div>
                             <div className="grid grid-cols-2">
                                 <div className="border-r border-cloud dark:border-nebula-purple/20 p-4 space-y-3">
-                                    {CURRENT_PAYSLIP.earnings.map((item, i) => (
+                                    {selectedPayslip.earnings.map((item, i) => (
                                         <div key={i} className="flex justify-between items-center text-slate-700 dark:text-slate-300">
-                                            <span>{item.label}</span>
+                                            <span>{item.componentName}</span>
                                             <span className="font-medium">${item.amount.toLocaleString()}</span>
                                         </div>
                                     ))}
@@ -266,9 +264,9 @@ export default function PayslipsPage() {
                                     </div>
                                 </div>
                                 <div className="p-4 space-y-3">
-                                    {CURRENT_PAYSLIP.deductions.map((item, i) => (
+                                    {selectedPayslip.deductions.map((item, i) => (
                                         <div key={i} className="flex justify-between items-center text-slate-700 dark:text-slate-300">
-                                            <span>{item.label}</span>
+                                            <span>{item.componentName}</span>
                                             <span className="font-medium">${item.amount.toLocaleString()}</span>
                                         </div>
                                     ))}
@@ -284,11 +282,11 @@ export default function PayslipsPage() {
                         <div className="bg-slate-50 dark:bg-deep-cosmos/30 p-4 rounded-lg flex justify-between items-center border border-cloud dark:border-nebula-purple/20 border-dashed">
                             <div className="flex flex-col">
                                 <span className="text-xs font-bold text-silver-mist uppercase tracking-wide">Net Pay (In Words)</span>
-                                <span className="text-sm font-medium text-ink-black dark:text-pearl italic">Four Thousand Five Hundred Dollars Only</span>
+                                <span className="text-sm font-medium text-ink-black dark:text-pearl italic">{selectedPayslip.netPayInWords || `$${selectedPayslip.netPay.toLocaleString()}`}</span>
                             </div>
                             <div className="text-right">
                                 <span className="text-xs font-bold text-silver-mist uppercase tracking-wide block">Net Pay</span>
-                                <span className="text-2xl font-black text-ink-black dark:text-pearl">${CURRENT_PAYSLIP.netPay.toLocaleString()}</span>
+                                <span className="text-2xl font-black text-ink-black dark:text-pearl">${selectedPayslip.netPay.toLocaleString()}</span>
                             </div>
                         </div>
 
@@ -302,5 +300,3 @@ export default function PayslipsPage() {
     );
 }
 
-// Icon helper
-import { CheckCircle2 } from 'lucide-react';

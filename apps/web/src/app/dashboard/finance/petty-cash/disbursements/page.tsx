@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Wallet,
     Receipt,
@@ -23,8 +23,10 @@ import {
     User,
     Eye,
     Edit,
-    Trash2
+    Trash2,
+    Loader2
 } from 'lucide-react';
+import { PettyCashService } from '../../services';
 
 type DisbursementStatus = 'all' | 'pending' | 'approved' | 'rejected' | 'reimbursed';
 type DisbursementCategory = 'office-supplies' | 'travel' | 'meals' | 'utilities' | 'maintenance' | 'misc';
@@ -47,145 +49,24 @@ interface Disbursement {
 
 export default function DisbursementsPage() {
     const [filter, setFilter] = useState<DisbursementStatus>('all');
+    const [loading, setLoading] = useState(true);
 
-    const disbursements: Disbursement[] = [
-        {
-            id: 'PC-001',
-            date: '2024-12-10',
-            requestedBy: 'Sarah Connor',
-            department: 'Engineering',
-            category: 'office-supplies',
-            description: 'Whiteboard markers and erasers',
-            amount: 45.50,
-            status: 'reimbursed',
-            approvedBy: 'John Manager',
-            approvalDate: '2024-12-10',
-            hasReceipt: true,
-            receiptNumber: 'RCP-2024-001'
-        },
-        {
-            id: 'PC-002',
-            date: '2024-12-11',
-            requestedBy: 'Kyle Reese',
-            department: 'Sales',
-            category: 'meals',
-            description: 'Client lunch meeting - 4 people',
-            amount: 125.00,
-            status: 'pending',
-            hasReceipt: true,
-            receiptNumber: 'RCP-2024-002',
-            notes: 'Meeting with ABC Corp'
-        },
-        {
-            id: 'PC-003',
-            date: '2024-12-09',
-            requestedBy: 'Lisa Garcia',
-            department: 'Operations',
-            category: 'utilities',
-            description: 'Office electricity bill - urgent',
-            amount: 85.75,
-            status: 'approved',
-            approvedBy: 'Finance Team',
-            approvalDate: '2024-12-09',
-            hasReceipt: true,
-            receiptNumber: 'RCP-2024-003'
-        },
-        {
-            id: 'PC-004',
-            date: '2024-12-08',
-            requestedBy: 'Mike Chen',
-            department: 'IT',
-            category: 'office-supplies',
-            description: 'USB cables and adapters',
-            amount: 32.99,
-            status: 'rejected',
-            approvedBy: 'John Manager',
-            approvalDate: '2024-12-08',
-            hasReceipt: false,
-            notes: 'No receipt provided'
-        },
-        {
-            id: 'PC-005',
-            date: '2024-12-12',
-            requestedBy: 'Emma Wilson',
-            department: 'Marketing',
-            category: 'travel',
-            description: 'Taxi to client site',
-            amount: 28.50,
-            status: 'pending',
-            hasReceipt: true,
-            receiptNumber: 'RCP-2024-004'
-        },
-        {
-            id: 'PC-006',
-            date: '2024-12-07',
-            requestedBy: 'David Park',
-            department: 'HR',
-            category: 'misc',
-            description: 'Team celebration supplies',
-            amount: 67.20,
-            status: 'reimbursed',
-            approvedBy: 'HR Director',
-            approvalDate: '2024-12-07',
-            hasReceipt: true,
-            receiptNumber: 'RCP-2024-005'
-        },
-        {
-            id: 'PC-007',
-            date: '2024-12-11',
-            requestedBy: 'Alex Johnson',
-            department: 'Facilities',
-            category: 'maintenance',
-            description: 'Emergency plumbing repair parts',
-            amount: 145.00,
-            status: 'approved',
-            approvedBy: 'Facilities Manager',
-            approvalDate: '2024-12-11',
-            hasReceipt: true,
-            receiptNumber: 'RCP-2024-006',
-            notes: 'Urgent bathroom sink repair'
-        },
-        {
-            id: 'PC-008',
-            date: '2024-12-10',
-            requestedBy: 'Rachel Green',
-            department: 'Sales',
-            category: 'travel',
-            description: 'Parking fees - client visit',
-            amount: 15.00,
-            status: 'reimbursed',
-            approvedBy: 'Sales Director',
-            approvalDate: '2024-12-10',
-            hasReceipt: true,
-            receiptNumber: 'RCP-2024-007'
-        },
-        {
-            id: 'PC-009',
-            date: '2024-12-12',
-            requestedBy: 'Tom Hardy',
-            department: 'Operations',
-            category: 'office-supplies',
-            description: 'Printer paper and toner',
-            amount: 89.99,
-            status: 'pending',
-            hasReceipt: true,
-            receiptNumber: 'RCP-2024-008'
-        },
-        {
-            id: 'PC-010',
-            date: '2024-12-06',
-            requestedBy: 'Nina Patel',
-            department: 'Product',
-            category: 'meals',
-            description: 'Working dinner - product launch',
-            amount: 95.50,
-            status: 'reimbursed',
-            approvedBy: 'Product Director',
-            approvalDate: '2024-12-06',
-            hasReceipt: true,
-            receiptNumber: 'RCP-2024-009'
-        }
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await PettyCashService.getTransactions();
+                setTransactions(data as any[]);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const [disbursements, setDisbursements] = useState<any[]>([]);
 
     const filteredDisbursements = filter === 'all'
         ? disbursements
@@ -302,10 +183,18 @@ export default function DisbursementsPage() {
         }
     ];
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Wallet className="w-6 h-6 text-indigo-500" />
@@ -325,7 +214,7 @@ export default function DisbursementsPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 shrink-0">
                 {stats.map((stat, i) => {
                     const Icon = stat.icon;
                     return (
@@ -346,7 +235,7 @@ export default function DisbursementsPage() {
             </div>
 
             {/* Search and Filters */}
-            <div className="flex flex-col md:flex-row gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row gap-3 shrink-0">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
@@ -534,3 +423,4 @@ export default function DisbursementsPage() {
         </div>
     );
 }
+

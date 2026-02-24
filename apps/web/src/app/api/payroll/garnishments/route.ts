@@ -1,6 +1,6 @@
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
-import { prisma } from '@aura/database';
+import { prisma } from '@/lib/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
@@ -14,6 +14,7 @@ const GarnishmentSchema = z.object({
   startDate: z.string(),
   endDate: z.string().optional(),
   courtOrderNumber: z.string().optional(),
+  payrollMonth: z.string().optional(),
 });
 
 // GET - Fetch garnishments
@@ -23,50 +24,51 @@ export const GET = withEnhancedAuth(
       const permissionError = requirePermission(Resource.PAYROLL, Action.READ, permissions);
       if (permissionError) return permissionError;
 
+      const tenantId = user.tenantId;
       const { searchParams } = new URL(request.url);
       const employeeId = searchParams.get('employeeId');
       const status = searchParams.get('status');
+      const page = parseInt(searchParams.get('page') || '1', 10);
+      const limit = parseInt(searchParams.get('limit') || '50', 10);
 
-      const mockGarnishments = [
-        {
-          id: '1',
-          employeeId: 'emp-1',
-          employeeName: 'John Doe',
-          type: 'Child Support',
-          amount: 500,
-          percentage: 15,
-          startDate: '2024-01-01',
-          endDate: '2025-12-31',
-          courtOrderNumber: 'CS-2024-001',
-          status: 'ACTIVE',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          employeeId: 'emp-2',
-          employeeName: 'Jane Smith',
-          type: 'Tax Levy',
-          amount: 300,
-          percentage: 10,
-          startDate: '2024-06-01',
-          courtOrderNumber: 'TL-2024-045',
-          status: 'ACTIVE',
-          createdAt: new Date().toISOString(),
-        },
-      ];
+      const where: Record<string, unknown> = {
+        tenantId,
+        category: 'GARNISHMENT',
+        adjustmentType: 'DEDUCTION',
+      };
+      if (employeeId) where.employeeId = employeeId;
+      if (status) where.approvalStatus = status;
 
-      let filteredData = mockGarnishments;
-      if (employeeId) {
-        filteredData = mockGarnishments.filter(g => g.employeeId === employeeId);
-      }
-      if (status) {
-        filteredData = filteredData.filter(g => g.status === status);
-      }
+      const [total, adjustments] = await Promise.all([
+        prisma.payrollAdjustment.count({ where }),
+        prisma.payrollAdjustment.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+      ]);
+
+      const garnishments = adjustments.map((adj) => ({
+        id: adj.id,
+        employeeId: adj.employeeId,
+        type: adj.name,
+        code: adj.code,
+        amount: Number(adj.amount),
+        reason: adj.reason,
+        payrollMonth: adj.payrollMonth,
+        status: adj.approvalStatus,
+        isProcessed: adj.isProcessed,
+        createdAt: adj.createdAt?.toISOString(),
+        createdBy: adj.createdBy,
+        approvedBy: adj.approvedBy,
+        approvedAt: adj.approvedAt?.toISOString(),
+      }));
 
       return NextResponse.json({
         success: true,
-        data: filteredData,
-        meta: { total: filteredData.length },
+        data: garnishments,
+        meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
     } catch (error) {
       logger.error('Error fetching garnishments:', error);
@@ -85,28 +87,45 @@ export const POST = withEnhancedAuth(
       const permissionError = requirePermission(Resource.PAYROLL, Action.CREATE, permissions);
       if (permissionError) return permissionError;
 
+      const tenantId = user.tenantId;
       const body = await request.json();
       const data = GarnishmentSchema.parse(body);
 
-      const newGarnishment = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data,
-        status: 'ACTIVE',
-        createdAt: new Date().toISOString(),
-        createdBy: user.userId,
-      };
+      const currentMonth = data.payrollMonth || new Date().toISOString().slice(0, 7);
+
+      const reasonParts = [`Garnishment: ${data.type}`];
+      if (data.courtOrderNumber) reasonParts.push(`Court Order: ${data.courtOrderNumber}`);
+      if (data.percentage) reasonParts.push(`${data.percentage}% of salary`);
+      if (data.startDate) reasonParts.push(`From: ${data.startDate}`);
+      if (data.endDate) reasonParts.push(`Until: ${data.endDate}`);
+
+      const adjustment = await prisma.payrollAdjustment.create({
+        data: {
+          tenantId,
+          employeeId: data.employeeId,
+          payrollMonth: currentMonth,
+          adjustmentType: 'DEDUCTION',
+          code: `GARN-${data.type.toUpperCase().replace(/\s+/g, '-')}`,
+          name: data.type,
+          amount: data.amount,
+          reason: reasonParts.join(' | '),
+          category: 'GARNISHMENT',
+          approvalStatus: 'APPROVED', // Garnishments from court orders are pre-approved
+          createdBy: user.userId,
+        },
+      });
 
       await prisma.auditLog.create({
         data: {
           userId: user.userId,
           action: 'CREATE',
           module: 'Payroll - Garnishments',
-          details: `Created garnishment: ${data.type} - $${data.amount}`,
+          details: `Created garnishment: ${data.type} - $${data.amount}${data.courtOrderNumber ? ` (${data.courtOrderNumber})` : ''}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
 
-      return NextResponse.json({ success: true, data: newGarnishment }, { status: 201 });
+      return NextResponse.json({ success: true, data: adjustment }, { status: 201 });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(

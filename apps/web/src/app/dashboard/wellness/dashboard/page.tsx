@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Activity,
     Heart,
@@ -14,8 +14,10 @@ import {
     Frown,
     Sun,
     Moon,
-    Play
+    Play,
+    Loader2
 } from 'lucide-react';
+import { WellnessAnalyticsService } from '../services';
 import {
     RadialBarChart,
     RadialBar,
@@ -55,11 +57,36 @@ const MOODS = [
 
 export default function WellnessDashboardPage() {
     const [selectedMood, setSelectedMood] = useState<number | null>(null);
+    const [metrics, setMetrics] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await WellnessAnalyticsService.getMetrics();
+                setMetrics(data as any);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Activity className="w-6 h-6 text-rose-500" />
@@ -73,11 +100,11 @@ export default function WellnessDashboardPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Mood Tracker */}
                 <div className="lg:col-span-2 bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <h3 className="font-bold text-ink-black dark:text-pearl mb-4">How are you feeling today?</h3>
-                    <div className="grid grid-cols-5 gap-2 md:gap-4">
+                    <div className="grid grid-cols-5 gap-2 md:gap-3">
                         {MOODS.map((mood) => (
                             <button
                                 key={mood.value}
@@ -127,7 +154,7 @@ export default function WellnessDashboardPage() {
                         </svg>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4 w-full mt-6 text-center">
+                    <div className="grid grid-cols-3 gap-3 w-full mt-6 text-center">
                         <div>
                             <div className="text-xs text-slate-400">Move</div>
                             <div className="font-bold text-rose-500">400</div>
@@ -144,7 +171,7 @@ export default function WellnessDashboardPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {/* Active Challenges */}
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <div className="flex justify-between items-center mb-6">
@@ -192,7 +219,7 @@ export default function WellnessDashboardPage() {
 
                     <div className="space-y-4">
                         {WELLNESS_RESOURCES.map(resource => (
-                            <div key={resource.id} className="flex items-center gap-4 p-3 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors rounded-xl cursor-pointer group">
+                            <div key={resource.id} className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors rounded-xl cursor-pointer group">
                                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 ${resource.color}`}>
                                     <Play className="w-5 h-5 fill-current" />
                                 </div>
@@ -210,7 +237,7 @@ export default function WellnessDashboardPage() {
                             </div>
                         ))}
 
-                        <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl mt-4 flex items-center gap-4">
+                        <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl mt-4 flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-white dark:bg-indigo-900 flex items-center justify-center text-indigo-600 shadow-sm">
                                 <Calendar className="w-5 h-5" />
                             </div>
@@ -225,3 +252,4 @@ export default function WellnessDashboardPage() {
         </div>
     );
 }
+

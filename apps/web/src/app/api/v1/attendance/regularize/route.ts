@@ -1,9 +1,12 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 import { z } from 'zod';
 
 // API Response Standard
-interface ApiResponse<T = any> {
+interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: {
@@ -25,6 +28,7 @@ const regularizeAttendanceSchema = z.object({
   clockInTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/),
   clockOutTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/),
   reason: z.string().min(20).max(500),
+  regularizationType: z.string().optional(),
   attachments: z.array(z.string()).optional().nullable(),
 });
 
@@ -35,6 +39,7 @@ const regularizeAttendanceSchema = z.object({
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const body = await request.json();
+    const tenantId = context.user.tenantId;
 
     // Validate request body
     const validationResult = regularizeAttendanceSchema.safeParse(body);
@@ -79,42 +84,69 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       return NextResponse.json(response, { status: 400 });
     }
 
-    // TODO: Implement actual regularization logic
-    // 1. Check if date is in past (cannot regularize future dates)
-    // 2. Check if date is within allowed regularization period
-    // 3. Get existing attendance record if any
-    // 4. Create regularization request
-    // 5. Send for manager approval
-    // 6. Calculate work duration
-    // 7. Send notification to approver
+    // Validate date is in the past
+    const regularizeDate = new Date(data.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
+    if (regularizeDate >= today) {
+      const response: ApiResponse = {
+        success: false,
+        error: {
+          code: 'E2001',
+          message: 'Cannot regularize attendance for today or future dates',
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      };
+
+      return NextResponse.json(response, { status: 400 });
+    }
+
+    // Create the regularization request
+    const regularization = await prisma.attendanceRegularization.create({
+      data: {
+        tenantId,
+        employeeId: data.employeeId,
+        date: regularizeDate,
+        regularizationType: data.regularizationType || 'MISSED_PUNCH',
+        requestedClockIn: clockIn,
+        requestedClockOut: clockOut,
+        reason: data.reason,
+        attachments: data.attachments || [],
+        status: 'PENDING',
+      },
+    });
+
+    // Look up employee info
+    const employee = await prisma.employee.findUnique({
+      where: { id: data.employeeId },
+      select: { employeeCode: true, firstName: true, lastName: true },
+    });
+
+    // Calculate work duration
     const workDurationMs = clockOut.getTime() - clockIn.getTime();
     const workDurationMinutes = Math.floor(workDurationMs / (1000 * 60));
 
-    const mockRegularizationRequest = {
-      id: crypto.randomUUID(),
-      requestNumber: `AR-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+    const responseData = {
+      id: regularization.id,
       ...data,
-      employeeCode: 'EMP001',
-      employeeName: 'John Doe',
+      employeeCode: employee?.employeeCode || '',
+      employeeName: employee ? `${employee.firstName} ${employee.lastName}` : '',
       workDurationMinutes,
       workDurationFormatted: `${Math.floor(workDurationMinutes / 60)}h ${workDurationMinutes % 60}m`,
       status: 'PENDING',
-      submittedAt: new Date().toISOString(),
-      approvalWorkflow: [
-        {
-          level: 1,
-          approverName: 'Direct Manager',
-          status: 'PENDING',
-        },
-      ],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      submittedAt: regularization.createdAt.toISOString(),
+      createdAt: regularization.createdAt.toISOString(),
+      updatedAt: regularization.updatedAt.toISOString(),
     };
 
     const response: ApiResponse = {
       success: true,
-      data: mockRegularizationRequest,
+      data: responseData,
       meta: {
         timestamp: new Date().toISOString(),
         requestId: crypto.randomUUID(),

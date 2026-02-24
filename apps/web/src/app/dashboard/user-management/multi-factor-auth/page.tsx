@@ -77,7 +77,7 @@ export default function MFAPage() {
                 <p className="text-silver-mist">Enhance security by requiring multiple forms of verification.</p>
             </div>
 
-            <div className="bg-white dark:bg-stellar-blue/20 rounded-xl border border-cloud dark:border-nebula-purple/30 p-6 space-y-6">
+            <div className="bg-white dark:bg-stellar-blue/20 rounded-xl border border-cloud dark:border-nebula-purple/30 p-6 space-y-4">
                 <div className="flex items-center justify-between pb-6 border-b border-cloud dark:border-nebula-purple/30">
                     <div>
                         <h3 className="text-lg font-medium text-midnight-blue dark:text-white">Enable MFA</h3>
@@ -96,8 +96,8 @@ export default function MFAPage() {
                     </div>
                 </div>
 
-                <div className={`space-y-6 ${!config.enabled ? 'opacity-50 pointer-events-none' : ''}`}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className={`space-y-4 ${!config.enabled ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                             <h4 className="text-sm font-medium text-midnight-blue dark:text-white mb-4">Enforcement</h4>
                             <div className="space-y-3">
@@ -186,3 +186,4 @@ export default function MFAPage() {
         </div>
     );
 }
+

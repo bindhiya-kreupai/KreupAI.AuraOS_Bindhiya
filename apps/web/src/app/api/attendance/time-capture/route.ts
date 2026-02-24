@@ -150,7 +150,7 @@ export const GET = withEnhancedAuth(
         meta: { total: filteredData.length },
       });
     } catch (error) {
-      logger.error('Error fetching time captures:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch time captures' },
         { status: 500 }
@@ -184,9 +184,10 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Attendance - Time Capture',
+          entityType: 'Attendance - Time Capture',
           details: `Captured time: ${data.type} at ${timestamp}`,
           ipAddress,
         },
@@ -200,7 +201,7 @@ export const POST = withEnhancedAuth(
           { status: 400 }
         );
       }
-      logger.error('Error capturing time:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to capture time' },
         { status: 500 }
@@ -235,9 +236,10 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Attendance - Time Capture',
+          entityType: 'Attendance - Time Capture',
           details: `Updated time capture: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -245,7 +247,7 @@ export const PUT = withEnhancedAuth(
 
       return NextResponse.json({ success: true, data: updated });
     } catch (error) {
-      logger.error('Error updating time capture:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to update time capture' },
         { status: 500 }
@@ -273,9 +275,10 @@ export const DELETE = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
-          module: 'Attendance - Time Capture',
+          entityType: 'Attendance - Time Capture',
           details: `Deleted time capture: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -283,7 +286,7 @@ export const DELETE = withEnhancedAuth(
 
       return NextResponse.json({ success: true, message: 'Time capture deleted successfully' });
     } catch (error) {
-      logger.error('Error deleting time capture:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to delete time capture' },
         { status: 500 }

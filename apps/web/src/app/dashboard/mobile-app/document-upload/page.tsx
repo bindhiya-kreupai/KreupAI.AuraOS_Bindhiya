@@ -39,9 +39,9 @@ export default function DocumentUploadPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <UploadCloud className="w-6 h-6 text-indigo-500" />
@@ -65,7 +65,7 @@ export default function DocumentUploadPage() {
             </div>
 
             {/* Gallery Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
                 {[
                     { name: 'Receipt_Lunch.jpg', user: 'John Doe', date: '2h ago', size: '1.2 MB', type: 'image' },
                     { name: 'ID_Front.png', user: 'Sarah Smith', date: '5h ago', size: '3.4 MB', type: 'image' },
@@ -124,8 +124,8 @@ export default function DocumentUploadPage() {
             </div>
 
             {/* Storage Summary */}
-            <div className="bg-indigo-900 rounded-2xl p-6 text-white flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
+            <div className="bg-indigo-900 rounded-2xl p-6 text-white flex flex-col md:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
                         <CheckCircle2 className="w-6 h-6 text-emerald-400" />
                     </div>
@@ -149,3 +149,4 @@ export default function DocumentUploadPage() {
         </div>
     );
 }
+

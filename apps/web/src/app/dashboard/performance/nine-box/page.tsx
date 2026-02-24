@@ -1,14 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { PerformanceAnalyticsService } from '../core/services';
+import { PerformanceAnalyticsService, PerformanceReviewService } from '../core/services';
 import {
     Grid,
     Users,
     Info,
     Move,
     Save,
-    RotateCcw
+    RotateCcw,
+    Loader2
 } from 'lucide-react';
 
 const BOXES = [
@@ -25,18 +26,59 @@ const BOXES = [
     { id: '3-3', title: 'Trusted Pro', desc: 'Low Potential, High Performance', color: 'bg-indigo-50 dark:bg-indigo-900/10 border-indigo-100' },
 ];
 
-const EMPLOYEES = [
-    { id: 1, name: 'Alice M.', role: 'Senior Dev', box: '1-3', avatar: 'AM' },
-    { id: 2, name: 'Bob D.', role: 'Product Lead', box: '1-2', avatar: 'BD' },
-    { id: 3, name: 'Charlie', role: 'Designer', box: '2-2', avatar: 'C' },
-    { id: 4, name: 'Dave', role: 'Support', box: '3-1', avatar: 'D' },
-];
+interface EmployeeBox {
+    id: string;
+    name: string;
+    role: string;
+    box: string;
+    avatar: string;
+}
 
 export default function NineBoxGridPage() {
+    const [loading, setLoading] = useState(true);
+    const [employees, setEmployees] = useState<EmployeeBox[]>([]);
+
+    useEffect(() => {
+        async function loadData() {
+            try {
+                const reviews = await PerformanceReviewService.getReviews();
+                const mapped: EmployeeBox[] = reviews
+                    .filter((r: any) => r.finalRating !== null)
+                    .map((r: any) => {
+                        const rating = Math.round(r.finalRating || 3);
+                        // Map rating to 9-box: row = potential (1=high, 3=low), col = performance (1=low, 3=high)
+                        const col = rating >= 4 ? 3 : rating >= 3 ? 2 : 1;
+                        const row = 2; // Default to moderate potential unless more data available
+                        return {
+                            id: r.id,
+                            name: `Employee ${r.employeeId?.slice(-4) || r.id?.slice(-4)}`,
+                            role: r.reviewType || 'Review',
+                            box: `${row}-${col}`,
+                            avatar: (r.employeeId?.slice(-2) || 'EE').toUpperCase(),
+                        };
+                    });
+                setEmployees(mapped);
+            } catch (error) {
+                console.error('Failed to load nine-box data:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Grid className="w-6 h-6 text-indigo-500" />
@@ -62,14 +104,14 @@ export default function NineBoxGridPage() {
                         Potential &rarr;
                     </div>
 
-                    <div className="flex-1 flex flex-col gap-4">
+                    <div className="flex-1 flex flex-col gap-3">
                         {/* Rows */}
                         {[0, 1, 2].map(row => (
-                            <div key={row} className="flex-1 flex gap-4">
+                            <div key={row} className="flex-1 flex gap-3">
                                 {[0, 1, 2].map(col => {
                                     const boxIndex = row * 3 + col;
                                     const box = BOXES[boxIndex];
-                                    const occupants = EMPLOYEES.filter(e => e.box === box.id);
+                                    const occupants = employees.filter(e => e.box === box.id);
 
                                     return (
                                         <div
@@ -81,7 +123,7 @@ export default function NineBoxGridPage() {
                                                 <Info className="w-4 h-4" />
                                             </div>
 
-                                            {/* Draggable Employees */}
+                                            {/* Employees */}
                                             <div className="flex-1 flex flex-wrap content-start gap-2">
                                                 {occupants.map(emp => (
                                                     <div key={emp.id} className="bg-white dark:bg-slate-800 p-1.5 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700 flex items-center gap-2 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow">
@@ -112,3 +154,4 @@ export default function NineBoxGridPage() {
         </div>
     );
 }
+

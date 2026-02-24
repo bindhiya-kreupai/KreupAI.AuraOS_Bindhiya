@@ -112,7 +112,7 @@ export const GET = withEnhancedAuth(
         meta: { total: filteredData.length },
       });
     } catch (error) {
-      logger.error('Error fetching time rounding rules:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch time rounding rules' },
         { status: 500 }
@@ -195,9 +195,10 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Attendance - Time Rounding',
+          entityType: 'Attendance - Time Rounding',
           details: `Created time rounding rule: ${data.name}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -211,7 +212,7 @@ export const POST = withEnhancedAuth(
           { status: 400 }
         );
       }
-      logger.error('Error creating time rounding rule:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to create time rounding rule' },
         { status: 500 }
@@ -246,9 +247,10 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Attendance - Time Rounding',
+          entityType: 'Attendance - Time Rounding',
           details: `Updated time rounding rule: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -256,7 +258,7 @@ export const PUT = withEnhancedAuth(
 
       return NextResponse.json({ success: true, data: updated });
     } catch (error) {
-      logger.error('Error updating time rounding rule:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to update time rounding rule' },
         { status: 500 }
@@ -284,9 +286,10 @@ export const DELETE = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
-          module: 'Attendance - Time Rounding',
+          entityType: 'Attendance - Time Rounding',
           details: `Deleted time rounding rule: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -294,7 +297,7 @@ export const DELETE = withEnhancedAuth(
 
       return NextResponse.json({ success: true, message: 'Time rounding rule deleted successfully' });
     } catch (error) {
-      logger.error('Error deleting time rounding rule:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to delete time rounding rule' },
         { status: 500 }

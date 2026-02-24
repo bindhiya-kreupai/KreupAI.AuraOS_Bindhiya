@@ -35,9 +35,9 @@ export default function POSHPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <ShieldAlert className="w-6 h-6 text-indigo-500" />
@@ -55,20 +55,20 @@ export default function POSHPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-1 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 overflow-y-auto pb-20">
                 {/* ICC Committee */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                     <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                         <Users className="w-5 h-5 text-indigo-500" /> Internal Complaints Committee (ICC)
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {[
                             { name: 'Dr. Sarah Smith', role: 'Presiding Officer', type: 'Internal' },
                             { name: 'Adv. Raj Malhotra', role: 'Legal Member', type: 'External' },
                             { name: 'Emily Davis', role: 'HR Representative', type: 'Internal' },
                             { name: 'John Wilson', role: 'Employee Rep', type: 'Internal' },
                         ].map(c => (
-                            <div key={c.name} className="flex items-center gap-4 p-4 border border-slate-100 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                            <div key={c.name} className="flex items-center gap-3 p-4 border border-slate-100 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                                 <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-indigo-600 border border-slate-200 dark:border-slate-700 shadow-sm">
                                     {c.name.substring(0, 1)}
                                 </div>
@@ -116,3 +116,4 @@ export default function POSHPage() {
         </div>
     );
 }
+

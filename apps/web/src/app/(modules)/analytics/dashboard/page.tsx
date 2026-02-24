@@ -143,11 +143,11 @@ export default function HRAnalyticsDashboardPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">HR Analytics Dashboard</h1>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <Card key={i} className="animate-pulse">
               <CardHeader className="pb-2">
@@ -164,7 +164,7 @@ export default function HRAnalyticsDashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -182,7 +182,7 @@ export default function HRAnalyticsDashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {kpiCards.map((kpi, index) => {
           const Icon = kpi.icon;
           return (
@@ -262,7 +262,7 @@ export default function HRAnalyticsDashboardPage() {
             {trendingInsights.map((insight, index) => (
               <div
                 key={index}
-                className="flex items-start gap-4 p-4 rounded-lg border hover:bg-muted/50"
+                className="flex items-start gap-3 p-4 rounded-lg border hover:bg-muted/50"
               >
                 <div className={`w-2 h-2 rounded-full mt-2 ${
                   insight.severity === 'high'
@@ -288,7 +288,7 @@ export default function HRAnalyticsDashboardPage() {
 
       {/* Analytics Stats */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-medium">Reports</CardTitle>
@@ -327,3 +327,4 @@ export default function HRAnalyticsDashboardPage() {
     </div>
   );
 }
+

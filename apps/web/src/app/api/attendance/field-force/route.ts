@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -131,7 +131,7 @@ export const GET = withEnhancedAuth(
         meta: { total: filteredData.length },
       });
     } catch (error) {
-      logger.error('Error fetching field force data:', error);
+      logger.error({ error }, 'Error fetching field force data:');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch field force data' },
         { status: 500 }
@@ -172,9 +172,10 @@ export const POST = withEnhancedAuth(
 
         await prisma.auditLog.create({
           data: {
+            tenantId: user.tenantId,
             userId: user.userId,
             action: 'UPDATE',
-            module: 'Attendance - Field Force',
+            entityType: 'Attendance - Field Force',
             details: `Checked out from field visit: ${visitId}`,
             ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
           },
@@ -195,9 +196,10 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Attendance - Field Force',
+          entityType: 'Attendance - Field Force',
           details: `Checked in for field visit: ${data.visitType} at ${data.location.address}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -211,7 +213,7 @@ export const POST = withEnhancedAuth(
           { status: 400 }
         );
       }
-      logger.error('Error creating field visit:', error);
+      logger.error({ error }, 'Error creating field visit:');
       return NextResponse.json(
         { success: false, error: 'Failed to create field visit' },
         { status: 500 }
@@ -245,9 +247,10 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Attendance - Field Force',
+          entityType: 'Attendance - Field Force',
           details: `Updated field visit: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -255,7 +258,7 @@ export const PUT = withEnhancedAuth(
 
       return NextResponse.json({ success: true, data: updated });
     } catch (error) {
-      logger.error('Error updating field visit:', error);
+      logger.error({ error }, 'Error updating field visit:');
       return NextResponse.json(
         { success: false, error: 'Failed to update field visit' },
         { status: 500 }

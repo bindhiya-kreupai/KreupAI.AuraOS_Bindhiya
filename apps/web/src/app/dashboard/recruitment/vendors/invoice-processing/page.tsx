@@ -12,9 +12,9 @@ import {
 
 export default function InvoiceProcessingPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <FileText className="w-6 h-6 text-indigo-500" />
@@ -24,7 +24,7 @@ export default function InvoiceProcessingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Pending Invoices */}
                 <div className="lg:col-span-2 space-y-4">
                     <h3 className="font-bold text-lg flex items-center gap-2">
@@ -34,7 +34,7 @@ export default function InvoiceProcessingPage() {
                         { id: 'INV-2023-001', vendor: 'TechStaff Solutions', amount: '$12,450.00', date: 'Dec 01, 2023', items: 'Nov Timesheets (140 Hrs)' },
                         { id: 'INV-2023-089', vendor: 'Design Hive', amount: '$4,200.00', date: 'Dec 03, 2023', items: 'Project Milestone: UI Kit' },
                     ].map((inv, i) => (
-                        <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-3">
                             <div>
                                 <div className="flex items-center gap-3 mb-1">
                                     <span className="font-bold text-lg text-slate-900 dark:text-slate-100">{inv.vendor}</span>
@@ -43,7 +43,7 @@ export default function InvoiceProcessingPage() {
                                 <div className="text-sm text-slate-500">{inv.items}</div>
                                 <div className="text-xs text-slate-400 mt-2">Received: {inv.date}</div>
                             </div>
-                            <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-3">
                                 <div className="text-right">
                                     <div className="text-xl font-bold text-indigo-600">{inv.amount}</div>
                                     <div className="text-xs text-slate-400">Net 45</div>
@@ -58,7 +58,7 @@ export default function InvoiceProcessingPage() {
                 </div>
 
                 {/* Summary Stats */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     <div className="bg-gradient-to-br from-indigo-600 to-violet-700 text-white rounded-2xl p-6 shadow-lg">
                         <h4 className="font-bold text-indigo-100 mb-2">Total Payable (Dec)</h4>
                         <div className="text-3xl font-bold mb-4">$45,280.00</div>
@@ -102,3 +102,4 @@ export default function InvoiceProcessingPage() {
         </div>
     );
 }
+

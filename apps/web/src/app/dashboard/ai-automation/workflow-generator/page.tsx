@@ -200,7 +200,7 @@ export default function WorkflowGeneratorPage() {
                 </div>
 
                 {/* Sidebar Details (Simulated) */}
-                <div className="w-80 bg-white dark:bg-stellar-blue border-l border-cloud dark:border-nebula-purple/50 p-6 flex flex-col gap-6 scale-95 origin-top-right">
+                <div className="w-80 bg-white dark:bg-stellar-blue border-l border-cloud dark:border-nebula-purple/50 p-6 flex flex-col gap-3 scale-95 origin-top-right">
                     <div>
                         <h3 className="text-xs font-bold text-silver-mist uppercase tracking-wider mb-4">Steps Detected</h3>
                         <div className="space-y-4 relative">
@@ -251,3 +251,4 @@ export default function WorkflowGeneratorPage() {
         </div>
     );
 }
+

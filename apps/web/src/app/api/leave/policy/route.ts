@@ -1,76 +1,81 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { prisma } from '@aura/database';
+import { prisma } from '@/lib/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
 const LeavePolicySchema = z.object({
+  companyId: z.string().optional(),
+  countryCode: z.string().optional(),
+  code: z.string().min(1),
   name: z.string().min(1),
-  description: z.string().optional(),
-  applicableTo: z.enum(['ALL', 'DEPARTMENT', 'DESIGNATION', 'CUSTOM']),
-  rules: z.object({
-    accrualType: z.enum(['MONTHLY', 'QUARTERLY', 'YEARLY', 'ONBOARDING']),
-    carryForwardAllowed: z.boolean(),
-    carryForwardLimit: z.number().optional(),
-    encashmentAllowed: z.boolean(),
-    maxConsecutiveDays: z.number().optional(),
-    minServiceMonths: z.number().optional(),
-    requiresApproval: z.boolean(),
-  }),
+  nameAr: z.string().optional(),
+  leaveTypeId: z.string().min(1),
+  employmentTypes: z.any().optional(),
+  minServiceMonths: z.number().default(0),
+  annualEntitlement: z.coerce.number(),
+  accrualType: z.enum(['ANNUAL', 'MONTHLY', 'QUARTERLY', 'TENURE']).default('MONTHLY'),
+  accrualRate: z.coerce.number().optional(),
+  allowCarryForward: z.boolean().default(true),
+  maxCarryForwardDays: z.coerce.number().optional(),
+  carryForwardExpiryMonths: z.number().optional(),
+  allowEncashment: z.boolean().default(false),
+  maxEncashmentDays: z.coerce.number().optional(),
+  encashmentRate: z.coerce.number().default(100),
+  allowNegativeBalance: z.boolean().default(false),
+  maxNegativeDays: z.coerce.number().optional(),
+  minConsecutiveDays: z.number().optional(),
+  maxConsecutiveDays: z.number().optional(),
+  advanceNoticeDays: z.number().default(0),
+  requiresApproval: z.boolean().default(true),
+  requiresDocument: z.boolean().default(false),
+  proRataOnJoining: z.boolean().default(true),
+  proRataOnExit: z.boolean().default(true),
 });
 
-// GET - Fetch leave policies
+// GET - Fetch leave policies from database
 export const GET = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
       const permissionError = requirePermission(Resource.LEAVE, Action.READ, permissions);
       if (permissionError) return permissionError;
 
-      const mockPolicies = [
-        {
-          id: '1',
-          name: 'Standard Annual Leave Policy',
-          description: 'Default annual leave policy for all employees',
-          applicableTo: 'ALL',
-          status: 'ACTIVE',
-          rules: {
-            accrualType: 'YEARLY',
-            accrualAmount: 20,
-            carryForwardAllowed: true,
-            carryForwardLimit: 5,
-            encashmentAllowed: true,
-            maxConsecutiveDays: 15,
-            minServiceMonths: 6,
-            requiresApproval: true,
-          },
-          createdAt: new Date('2024-01-01').toISOString(),
-        },
-        {
-          id: '2',
-          name: 'Sick Leave Policy',
-          description: 'Sick leave policy with medical certificate requirement',
-          applicableTo: 'ALL',
-          status: 'ACTIVE',
-          rules: {
-            accrualType: 'YEARLY',
-            accrualAmount: 10,
-            carryForwardAllowed: false,
-            carryForwardLimit: 0,
-            encashmentAllowed: false,
-            maxConsecutiveDays: 5,
-            minServiceMonths: 0,
-            requiresApproval: true,
-          },
-          createdAt: new Date('2024-01-01').toISOString(),
-        },
-      ];
+      const { searchParams } = new URL(request.url);
+      const isActive = searchParams.get('isActive');
+      const page = parseInt(searchParams.get('page') || '1');
+      const limit = parseInt(searchParams.get('limit') || '50');
+
+      const tenantId = user.tenantId;
+
+      const where: Record<string, unknown> = { tenantId };
+      if (isActive !== null && isActive !== undefined && isActive !== '') {
+        where.isActive = isActive === 'true';
+      }
+
+      const [total, policies] = await Promise.all([
+        prisma.leavePolicy.count({ where }),
+        prisma.leavePolicy.findMany({
+          where,
+          include: { balances: true },
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+      ]);
 
       return NextResponse.json({
         success: true,
-        data: mockPolicies,
-        meta: { total: mockPolicies.length },
+        policies,
+        leavePolicies: policies,
+        data: policies,
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
       });
     } catch (error) {
       logger.error('Error fetching leave policies:', error);
@@ -82,7 +87,7 @@ export const GET = withEnhancedAuth(
   }
 );
 
-// POST - Create leave policy
+// POST - Create leave policy in database
 export const POST = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
@@ -91,26 +96,54 @@ export const POST = withEnhancedAuth(
 
       const body = await request.json();
       const data = LeavePolicySchema.parse(body);
+      const tenantId = user.tenantId;
 
-      const newPolicy = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data,
-        status: 'ACTIVE',
-        createdAt: new Date().toISOString(),
-        createdBy: user.userId,
-      };
+      const newPolicy = await prisma.leavePolicy.create({
+        data: {
+          tenantId,
+          companyId: data.companyId || null,
+          countryCode: data.countryCode || null,
+          code: data.code,
+          name: data.name,
+          nameAr: data.nameAr || null,
+          leaveTypeId: data.leaveTypeId,
+          employmentTypes: data.employmentTypes || null,
+          minServiceMonths: data.minServiceMonths,
+          annualEntitlement: data.annualEntitlement,
+          accrualType: data.accrualType,
+          accrualRate: data.accrualRate || null,
+          allowCarryForward: data.allowCarryForward,
+          maxCarryForwardDays: data.maxCarryForwardDays || null,
+          carryForwardExpiryMonths: data.carryForwardExpiryMonths || null,
+          allowEncashment: data.allowEncashment,
+          maxEncashmentDays: data.maxEncashmentDays || null,
+          encashmentRate: data.encashmentRate,
+          allowNegativeBalance: data.allowNegativeBalance,
+          maxNegativeDays: data.maxNegativeDays || null,
+          minConsecutiveDays: data.minConsecutiveDays || null,
+          maxConsecutiveDays: data.maxConsecutiveDays || null,
+          advanceNoticeDays: data.advanceNoticeDays,
+          requiresApproval: data.requiresApproval,
+          requiresDocument: data.requiresDocument,
+          proRataOnJoining: data.proRataOnJoining,
+          proRataOnExit: data.proRataOnExit,
+        },
+      });
 
       await prisma.auditLog.create({
         data: {
           userId: user.userId,
           action: 'CREATE',
           module: 'Leave - Policy',
-          details: `Created leave policy: ${data.name}`,
+          details: `Created leave policy: ${data.name} (${data.code})`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
 
-      return NextResponse.json({ success: true, data: newPolicy }, { status: 201 });
+      return NextResponse.json(
+        { success: true, data: newPolicy, policy: newPolicy, leavePolicy: newPolicy },
+        { status: 201 }
+      );
     } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(

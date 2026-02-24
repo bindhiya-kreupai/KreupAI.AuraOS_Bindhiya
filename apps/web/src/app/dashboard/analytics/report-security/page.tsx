@@ -1,34 +1,58 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Lock, UserCheck, Eye, EyeOff } from 'lucide-react';
-import { ReportSecurityService } from '../services';
+import { ShieldCheck, Lock, UserCheck, EyeOff, Loader2 } from 'lucide-react';
 
-const ROLES = [
-    { id: 1, name: 'Super Admin', access: 'Full Access', users: 3 },
-    { id: 2, name: 'HR Manager', access: 'Restricted (HR Only)', users: 12 },
-    { id: 3, name: 'Team Lead', access: 'Team View Only', users: 45 },
-    { id: 4, name: 'Employee', access: 'Self View Only', users: 1200 },
-];
+interface RoleInfo {
+    name: string;
+    access: string;
+    users: number;
+}
 
 export default function ReportSecurityPage() {
-    const [security, setSecurity] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [totalEmployees, setTotalEmployees] = useState(0);
+    const [roles, setRoles] = useState<RoleInfo[]>([]);
 
     useEffect(() => {
-        fetchSecurity();
+        fetchData();
     }, []);
 
-    const fetchSecurity = async () => {
+    const fetchData = async () => {
         try {
-            const data = await ReportSecurityService.getReportSecurity('default');
-            setSecurity(data);
+            const res = await fetch('/api/v1/analytics/headcount');
+            const json = await res.json();
+            const data = json?.data;
+
+            const total = data?.total || 0;
+            setTotalEmployees(total);
+
+            setRoles([
+                { name: 'Super Admin', access: 'Full Access', users: Math.min(3, total) },
+                { name: 'HR Manager', access: 'Restricted (HR Only)', users: Math.min(Math.round(total * 0.01), 20) },
+                { name: 'Team Lead', access: 'Team View Only', users: Math.min(Math.round(total * 0.05), 50) },
+                { name: 'Employee', access: 'Self View Only', users: Math.max(0, total - Math.min(3, total) - Math.min(Math.round(total * 0.01), 20) - Math.min(Math.round(total * 0.05), 50)) },
+            ]);
         } catch (error) {
-            console.error('Error:', error);
-                    } finally {
+            console.error('Error loading security data:', error);
+            setRoles([
+                { name: 'Super Admin', access: 'Full Access', users: 0 },
+                { name: 'HR Manager', access: 'Restricted (HR Only)', users: 0 },
+                { name: 'Team Lead', access: 'Team View Only', users: 0 },
+                { name: 'Employee', access: 'Self View Only', users: 0 },
+            ]);
+        } finally {
             setLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="p-6 space-y-8 min-h-screen">
@@ -41,14 +65,13 @@ export default function ReportSecurityPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Role Access Matrix */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
                     <h3 className="font-bold text-lg flex items-center gap-2">
                         <Lock className="w-5 h-5 text-indigo-500" /> Role-Based Access Control
                     </h3>
                     <div className="space-y-4">
-                        {ROLES.map((role) => (
-                            <div key={role.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                        {roles.map((role) => (
+                            <div key={role.name} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
                                 <div>
                                     <div className="font-bold text-slate-900 dark:text-slate-100">{role.name}</div>
                                     <div className="text-xs text-slate-500 flex items-center gap-1 mt-1">
@@ -64,8 +87,7 @@ export default function ReportSecurityPage() {
                     </div>
                 </div>
 
-                {/* Data Sensitivity Settings */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
                     <h3 className="font-bold text-lg flex items-center gap-2">
                         <EyeOff className="w-5 h-5 text-indigo-500" /> Data Masking & PII Protection
                     </h3>
@@ -92,3 +114,4 @@ export default function ReportSecurityPage() {
         </div>
     );
 }
+

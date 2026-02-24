@@ -126,9 +126,9 @@ const supportedCountries = [
 
 export default function PayrollCompliancePage() {
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-8 pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
             <Globe className="w-7 h-7 text-indigo-500" />
@@ -167,7 +167,7 @@ export default function PayrollCompliancePage() {
       </div>
 
       {/* Compliance Modules Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {complianceModules.map((module) => {
           const Icon = module.icon;
           return (
@@ -210,7 +210,7 @@ export default function PayrollCompliancePage() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-5 text-white">
           <div className="text-3xl font-bold">7</div>
           <div className="text-sm opacity-90">Countries Supported</div>
@@ -235,3 +235,4 @@ export default function PayrollCompliancePage() {
     </div>
   );
 }
+

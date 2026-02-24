@@ -79,7 +79,7 @@ export default function WhiteboardPage() {
                         <span className="font-bold text-sm">User Flow</span>
                         <MoreHorizontal className="w-4 h-4 text-slate-400" />
                     </div>
-                    <div className="flex items-center justify-center gap-4 text-xs font-bold">
+                    <div className="flex items-center justify-center gap-3 text-xs font-bold">
                         <div className="px-3 py-2 bg-indigo-100 text-indigo-700 rounded border border-indigo-200">Login</div>
                         <div className="w-8 h-px bg-slate-300"></div>
                         <div className="px-3 py-2 bg-indigo-100 text-indigo-700 rounded border border-indigo-200">Dashboard</div>
@@ -106,3 +106,4 @@ export default function WhiteboardPage() {
         </div>
     );
 }
+

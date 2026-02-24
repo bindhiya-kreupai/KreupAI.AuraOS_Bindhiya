@@ -32,9 +32,9 @@ export default function HandoffRulesPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <ArrowRightLeft className="w-6 h-6 text-indigo-500" />
@@ -47,7 +47,7 @@ export default function HandoffRulesPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-3">
                 {[
                     { name: 'Negative Sentiment', condition: 'Sentiment Score < 0.3', action: 'Route to Support Tier 2', icon: ThumbsDown, active: true },
                     { name: 'Unknown Intent Loop', condition: 'Fallback Triggered > 2 times', action: 'Route to General Support', icon: UserPlus, active: true },
@@ -55,13 +55,13 @@ export default function HandoffRulesPage() {
                     { name: 'Off-hours Policy', condition: 'Time is outside 9am-6pm', action: 'Create Ticket (No Handoff)', icon: Clock, active: false },
                 ].map((rule, i) => (
                     <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex items-center justify-between hover:shadow-md transition-shadow">
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-3">
                             <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-xl">
                                 <rule.icon className="w-6 h-6" />
                             </div>
                             <div>
                                 <h3 className="font-bold text-lg">{rule.name}</h3>
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-1 text-sm">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1 text-sm">
                                     <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded font-mono text-slate-600 dark:text-slate-400">
                                         If {rule.condition}
                                     </span>
@@ -73,7 +73,7 @@ export default function HandoffRulesPage() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             <div className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors ${rule.active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}>
                                 <div className={`w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform ${rule.active ? 'translate-x-6' : 'translate-x-0'}`}></div>
                             </div>
@@ -84,3 +84,4 @@ export default function HandoffRulesPage() {
         </div>
     );
 }
+

@@ -73,7 +73,7 @@ export default function PlatformPage() {
                             desc: "Auto-scaling Kubernetes clusters ensure 99.99% uptime whether you support 500 or 500,000 employees."
                         }
                     ].map((feature, i) => (
-                        <div key={i} className="flex flex-col items-start gap-4">
+                        <div key={i} className="flex flex-col items-start gap-3">
                             <div className="p-3 bg-cloud dark:bg-stellar-blue/10 rounded-lg">
                                 <feature.icon className="w-6 h-6 text-celestial-indigo" />
                             </div>
@@ -115,3 +115,4 @@ export default function PlatformPage() {
         </div>
     );
 }
+

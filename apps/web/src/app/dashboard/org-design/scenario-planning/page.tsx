@@ -76,9 +76,9 @@ export default function ScenarioPlanningPage() {
     const [selectedScenario, setSelectedScenario] = useState<Scenario>(SCENARIOS[0]);
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <GitBranch className="w-6 h-6 text-celestial-indigo" />
@@ -93,7 +93,7 @@ export default function ScenarioPlanningPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left: Scenarios List */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm min-h-[500px]">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4">Saved Models</h3>
                         <div className="space-y-3">
@@ -138,9 +138,9 @@ export default function ScenarioPlanningPage() {
                 </div>
 
                 {/* Right: Analysis & Modeler */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     {/* Impact Analysis Widget */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                         <div className="bg-white dark:bg-stellar-blue p-5 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                             <div className="text-xs font-bold text-silver-mist uppercase mb-1">Projected Headcount</div>
                             <div className="flex items-end gap-2">
@@ -244,3 +244,4 @@ export default function ScenarioPlanningPage() {
         </div>
     );
 }
+

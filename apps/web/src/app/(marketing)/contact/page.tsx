@@ -11,7 +11,7 @@ export default function ContactPage() {
                         Have questions about AuraOS? Interested in a custom demo? Our team is ready to help.
                     </p>
 
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         <div>
                             <h3 className="font-semibold text-ink-black dark:text-pearl">Sales</h3>
                             <a href="mailto:sales@aurahcm.com" className="text-celestial-indigo hover:underline">sales@aurahcm.com</a>
@@ -31,8 +31,8 @@ export default function ContactPage() {
                 </div>
 
                 <div className="bg-white dark:bg-stellar-blue/5 p-8 rounded-2xl border border-cloud dark:border-nebula-purple shadow-sm">
-                    <form className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
+                    <form className="space-y-4">
+                        <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-ink-black dark:text-pearl">First Name</label>
                                 <input type="text" className="w-full px-3 py-2 rounded-lg border border-cloud dark:border-nebula-purple bg-transparent focus:outline-none focus:ring-2 focus:ring-celestial-indigo" />
@@ -68,3 +68,4 @@ export default function ContactPage() {
         </div>
     );
 }
+

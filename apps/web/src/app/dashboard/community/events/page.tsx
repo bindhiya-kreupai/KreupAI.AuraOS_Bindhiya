@@ -13,9 +13,9 @@ import {
 
 export default function AlumniEventsPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <CalendarDays className="w-6 h-6 text-rose-500" />
@@ -29,7 +29,7 @@ export default function AlumniEventsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full min-h-0 overflow-y-auto pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-full min-h-0 overflow-y-auto pb-20">
                 {/* Featured Event */}
                 <div className="lg:col-span-2 relative h-64 rounded-2xl overflow-hidden group cursor-pointer">
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10"></div>
@@ -39,7 +39,7 @@ export default function AlumniEventsPage() {
                     <div className="absolute bottom-6 left-6 z-20 text-white">
                         <div className="inline-block px-3 py-1 bg-rose-500 rounded-lg text-xs font-bold uppercase mb-2">Annual Reunion</div>
                         <h2 className="text-3xl font-bold mb-2">Global Alumni Summit 2025</h2>
-                        <div className="flex items-center gap-4 text-sm opacity-90 font-bold">
+                        <div className="flex items-center gap-3 text-sm opacity-90 font-bold">
                             <span className="flex items-center gap-1"><CalendarDays className="w-4 h-4" /> Dec 15, 2025</span>
                             <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> San Francisco, CA</span>
                         </div>
@@ -91,3 +91,4 @@ export default function AlumniEventsPage() {
         </div>
     );
 }
+

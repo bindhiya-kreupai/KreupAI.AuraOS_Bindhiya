@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Calculator,
     TrendingDown,
@@ -13,8 +13,10 @@ import {
     Building2,
     Laptop,
     Car,
-    Filter
+    Filter,
+    Loader2
 } from 'lucide-react';
+import { FinancialAssetService } from '../../services';
 
 type DepreciationMethod = 'all' | 'straight-line' | 'declining-balance' | 'sum-of-years' | 'units-of-production';
 
@@ -36,159 +38,23 @@ interface DepreciableAsset {
 
 export default function DepreciationPage() {
     const [filter, setFilter] = useState<DepreciationMethod>('all');
+    const [assets, setAssets] = useState<DepreciableAsset[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const assets: DepreciableAsset[] = [
-        {
-            id: 'DA-001',
-            name: 'MacBook Pro M3 Fleet (25 units)',
-            assetType: 'equipment',
-            purchaseDate: '2024-01-15',
-            purchaseCost: 87500,
-            salvageValue: 17500,
-            usefulLife: 4,
-            currentAge: 0.9,
-            method: 'straight-line',
-            annualDepreciation: 17500,
-            accumulatedDepreciation: 15750,
-            bookValue: 71750,
-            remainingLife: 3.1
-        },
-        {
-            id: 'DA-002',
-            name: 'Office Building - Floor 5',
-            assetType: 'property',
-            purchaseDate: '2018-03-10',
-            purchaseCost: 1200000,
-            salvageValue: 800000,
-            usefulLife: 25,
-            currentAge: 6.75,
-            method: 'straight-line',
-            annualDepreciation: 16000,
-            accumulatedDepreciation: 108000,
-            bookValue: 1092000,
-            remainingLife: 18.25
-        },
-        {
-            id: 'DA-003',
-            name: 'Toyota Camry Fleet (5 units)',
-            assetType: 'vehicles',
-            purchaseDate: '2023-06-01',
-            purchaseCost: 140000,
-            salvageValue: 35000,
-            usefulLife: 5,
-            currentAge: 1.5,
-            method: 'declining-balance',
-            annualDepreciation: 28000,
-            accumulatedDepreciation: 42000,
-            bookValue: 98000,
-            remainingLife: 3.5
-        },
-        {
-            id: 'DA-004',
-            name: 'Industrial Printer HP Z9+',
-            assetType: 'equipment',
-            purchaseDate: '2023-09-15',
-            purchaseCost: 15000,
-            salvageValue: 2000,
-            usefulLife: 5,
-            currentAge: 1.25,
-            method: 'straight-line',
-            annualDepreciation: 2600,
-            accumulatedDepreciation: 3250,
-            bookValue: 11750,
-            remainingLife: 3.75
-        },
-        {
-            id: 'DA-005',
-            name: 'Conference Room Furniture Set',
-            assetType: 'furniture',
-            purchaseDate: '2022-11-20',
-            purchaseCost: 35000,
-            salvageValue: 7000,
-            usefulLife: 10,
-            currentAge: 2.1,
-            method: 'straight-line',
-            annualDepreciation: 2800,
-            accumulatedDepreciation: 5880,
-            bookValue: 29120,
-            remainingLife: 7.9
-        },
-        {
-            id: 'DA-006',
-            name: 'Dell Server Rack - Datacenter',
-            assetType: 'equipment',
-            purchaseDate: '2021-08-10',
-            purchaseCost: 85000,
-            salvageValue: 15000,
-            usefulLife: 7,
-            currentAge: 3.3,
-            method: 'declining-balance',
-            annualDepreciation: 12857,
-            accumulatedDepreciation: 42429,
-            bookValue: 42571,
-            remainingLife: 3.7
-        },
-        {
-            id: 'DA-007',
-            name: 'Manufacturing Equipment - CNC',
-            assetType: 'equipment',
-            purchaseDate: '2020-04-05',
-            purchaseCost: 250000,
-            salvageValue: 50000,
-            usefulLife: 10,
-            currentAge: 4.7,
-            method: 'units-of-production',
-            annualDepreciation: 20000,
-            accumulatedDepreciation: 94000,
-            bookValue: 156000,
-            remainingLife: 5.3
-        },
-        {
-            id: 'DA-008',
-            name: 'Ford Transit Vans (3 units)',
-            assetType: 'vehicles',
-            purchaseDate: '2022-07-01',
-            purchaseCost: 105000,
-            salvageValue: 21000,
-            usefulLife: 6,
-            currentAge: 2.4,
-            method: 'declining-balance',
-            annualDepreciation: 17500,
-            accumulatedDepreciation: 42000,
-            bookValue: 63000,
-            remainingLife: 3.6
-        },
-        {
-            id: 'DA-009',
-            name: 'Warehouse Shelving System',
-            assetType: 'furniture',
-            purchaseDate: '2023-02-15',
-            purchaseCost: 45000,
-            salvageValue: 9000,
-            usefulLife: 12,
-            currentAge: 1.8,
-            method: 'straight-line',
-            annualDepreciation: 3000,
-            accumulatedDepreciation: 5400,
-            bookValue: 39600,
-            remainingLife: 10.2
-        },
-        {
-            id: 'DA-010',
-            name: 'HVAC System - Main Building',
-            assetType: 'property',
-            purchaseDate: '2019-11-01',
-            purchaseCost: 125000,
-            salvageValue: 25000,
-            usefulLife: 15,
-            currentAge: 5.1,
-            method: 'straight-line',
-            annualDepreciation: 6667,
-            accumulatedDepreciation: 34001,
-            bookValue: 90999,
-            remainingLife: 9.9
-        }
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await FinancialAssetService.getAssets();
+                setAssets(data as unknown as DepreciableAsset[]);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     const filteredAssets = filter === 'all'
         ? assets
@@ -273,10 +139,18 @@ export default function DepreciationPage() {
         }
     ];
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Calculator className="w-6 h-6 text-indigo-500" />
@@ -296,7 +170,7 @@ export default function DepreciationPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 shrink-0">
                 {stats.map((stat, i) => {
                     const Icon = stat.icon;
                     return (
@@ -480,3 +354,4 @@ export default function DepreciationPage() {
         </div>
     );
 }
+

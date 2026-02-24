@@ -14,9 +14,9 @@ import {
 
 export default function GDPRToolsPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Database className="w-6 h-6 text-indigo-500" />
@@ -29,9 +29,9 @@ export default function GDPRToolsPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 container mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 container mx-auto">
                 {/* Stats */}
-                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
                         <div>
                             <div className="text-3xl font-bold text-slate-800 dark:text-slate-100">12</div>
@@ -73,7 +73,7 @@ export default function GDPRToolsPage() {
                                 { id: 'REQ-2024-89', user: 'Maria Garcia', type: 'Deletion', status: 'Pending Approval', due: '5 Days' },
                                 { id: 'REQ-2024-90', user: 'David Kim', type: 'Rectification', status: 'Completed', due: '-' },
                             ].map((req, i) => (
-                                <div key={i} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 flex flex-col md:flex-row items-center justify-between gap-4">
+                                <div key={i} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 flex flex-col md:flex-row items-center justify-between gap-3">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
                                             <span className="font-bold text-slate-800 dark:text-slate-200">{req.user}</span>
@@ -81,7 +81,7 @@ export default function GDPRToolsPage() {
                                         </div>
                                         <div className="text-sm text-slate-500 mt-0.5">{req.type} Request</div>
                                     </div>
-                                    <div className="flex items-center gap-4 w-full md:w-auto justify-between">
+                                    <div className="flex items-center gap-3 w-full md:w-auto justify-between">
                                         <div className={`px-3 py-1 rounded-full text-xs font-bold 
                                             ${req.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
                                                 req.status.includes('Pending') ? 'bg-amber-100 text-amber-700' :
@@ -136,3 +136,4 @@ export default function GDPRToolsPage() {
         </div>
     );
 }
+

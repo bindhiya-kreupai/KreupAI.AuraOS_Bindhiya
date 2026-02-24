@@ -36,9 +36,9 @@ export default function MobileAnalyticsPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <BarChart2 className="w-6 h-6 text-indigo-500" />
@@ -53,7 +53,7 @@ export default function MobileAnalyticsPage() {
             </div>
 
             {/* Key Metrics */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
                     { label: 'Daily Active Users', value: '1.2k', change: '+12%', up: true, icon: Users, color: 'text-indigo-500' },
                     { label: 'Avg. Session', value: '4m 32s', change: '+5%', up: true, icon: Activity, color: 'text-emerald-500' },
@@ -76,7 +76,7 @@ export default function MobileAnalyticsPage() {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Feature Usage Heatmap */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                     <h3 className="font-bold text-lg mb-6">Feature Usage Intensity</h3>
@@ -144,3 +144,4 @@ export default function MobileAnalyticsPage() {
         </div>
     );
 }
+

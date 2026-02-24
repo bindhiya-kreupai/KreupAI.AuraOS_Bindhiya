@@ -45,6 +45,10 @@ model Company {
   departments Department[]
   employees   Employee[]
 
+  // Transfers
+  transfersFrom InterCompanyTransfer[] @relation("TransferFrom")
+  transfersTo   InterCompanyTransfer[] @relation("TransferTo")
+
   @@unique([tenantId, code])
   @@index([tenantId])
 }
@@ -281,6 +285,17 @@ model Employee {
 
   // WPS Relations
   wpsRecords           WPSRecord[]
+
+  // Additional Relations
+  emergencyContacts    EmergencyContact[]
+  garnishments         Garnishment[]
+  hsaFsaAccounts       HSAFSAAccount[]
+  taxDocuments         TaxDocument[]
+
+  // Leadership Upgrades
+  transfers            InterCompanyTransfer[]
+  sharedServiceRequests SharedServiceRequest[] @relation("ServiceRequestor")
+  assignedServices     SharedServiceRequest[] @relation("ServiceAssignee")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1130,6 +1145,8 @@ model JobPosting {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  candidateApplications CandidateApplication[]
 
   @@index([status])
   @@index([department])
@@ -3391,6 +3408,11 @@ model EmployeeDocument {
   // Status
   status String @default("ACTIVE")
 
+  // AI OCR Metadata
+  ocrData       Json?    // Parsed fields from AI scanning
+  isAIParsed    Boolean  @default(false)
+  confidence    Float?   // AI confidence score
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -3671,6 +3693,12 @@ model Position {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Advanced Budgeting & Simulations
+  budgetCommitted Decimal? @db.Decimal(15, 2)
+  actualCost      Decimal? @db.Decimal(15, 2)
+  utilizationRate Float?   @default(0)
+  isSimulated     Boolean  @default(false)
+
   // Relations
   employees        Employee[]      @relation("CurrentPosition")
   Address          Address?        @relation(fields: [addressId], references: [id])
@@ -3685,6 +3713,69 @@ model Position {
   @@index([departmentId])
   @@index([status])
   @@index([reportsToPositionId])
+}
+
+// ========================================
+// INTER-COMPANY TRANSFERS
+// ========================================
+
+model InterCompanyTransfer {
+  id       String @id @default(uuid())
+  tenantId String
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  // Transfer Route
+  fromCompanyId String
+  fromCompany   Company @relation("TransferFrom", fields: [fromCompanyId], references: [id])
+  toCompanyId   String
+  toCompany     Company @relation("TransferTo", fields: [toCompanyId], references: [id])
+
+  transferType String // PERMANENT, SECONDMENT, PROJECT_BASED
+  effectiveDate DateTime
+  
+  status String @default("PENDING") // PENDING, APPROVED, IN_PROGRESS, COMPLETED, CANCELLED
+  
+  requestedBy String
+  approvedBy  String?
+  approvedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+// ========================================
+// SHARED SERVICES CENTER
+// ========================================
+
+model SharedServiceRequest {
+  id       String @id @default(uuid())
+  tenantId String
+
+  requestorId String
+  requestor   Employee @relation("ServiceRequestor", fields: [requestorId], references: [id])
+
+  category String // HR_LETTER, IT_ACCESS, EQUIPMENT, TRAVEL, OTHER
+  subject  String
+  details  String?
+  priority String @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+
+  status String @default("OPEN") // OPEN, IN_REVIEW, IN_PROGRESS, COMPLETED, REJECTED
+  
+  assignedToId String?
+  assignedTo   Employee? @relation("ServiceAssignee", fields: [assignedToId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([category])
 }
 
 // Life Events Schema Addition
@@ -4677,4 +4768,1174 @@ model PremiumDeduction {
   @@index([enrollmentId])
   @@index([employeeId])
   @@index([payrollDate])
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GAP CLOSURE MODELS - Added for 100% feature parity
+// ═══════════════════════════════════════════════════════════════════
+
+// Tax Documents - W2, 1099, Form 16
+model TaxDocument {
+  id           String   @id @default(uuid())
+  tenantId     String
+  employeeId   String
+  type         String   // W2, 1099, FORM_16, etc.
+  taxYear      Int
+  status       String   @default("GENERATED") // GENERATED, DELIVERED, AMENDED
+  fileUrl      String?
+  generatedAt  DateTime @default(now())
+  deliveredAt  DateTime?
+  amendments   Int      @default(0)
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([taxYear])
+  @@unique([tenantId, employeeId, type, taxYear])
+}
+
+// Continuous Feedback - Praise, Constructive, Suggestions
+model ContinuousFeedback {
+  id           String   @id @default(uuid())
+  tenantId     String
+  fromUserId   String
+  toEmployeeId String
+  type         String   // PRAISE, CONSTRUCTIVE, SUGGESTION
+  message      String   @db.Text
+  isAnonymous  Boolean  @default(false)
+  visibility   String   @default("PRIVATE") // PRIVATE, MANAGER_ONLY, PUBLIC
+  relatedGoalId String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([fromUserId])
+  @@index([toEmployeeId])
+  @@index([type])
+}
+
+// Recognition - Kudos, Awards, Badges
+model Recognition {
+  id           String   @id @default(uuid())
+  tenantId     String
+  giverId      String
+  receiverId   String
+  message      String   @db.Text
+  coreValue    String?  // INNOVATION, TEAMWORK, CUSTOMER_FIRST, etc.
+  badgeType    String?  // TEAM_PLAYER, INNOVATOR, CHAMPION, etc.
+  points       Int      @default(0)
+  visibility   String   @default("PUBLIC")
+  reactions    Json?    // { thumbsUp: 5, heart: 2 }
+  createdAt    DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([giverId])
+  @@index([receiverId])
+  @@index([createdAt])
+}
+
+// One-on-One Meetings
+model OneOnOneMeeting {
+  id            String   @id @default(uuid())
+  tenantId      String
+  managerId     String
+  employeeId    String
+  scheduledAt   DateTime
+  duration      Int      @default(30) // minutes
+  recurring     String?  // WEEKLY, BIWEEKLY, MONTHLY
+  status        String   @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  notes       OneOnOneNote[]
+  actionItems OneOnOneActionItem[]
+
+  @@index([tenantId])
+  @@index([managerId])
+  @@index([employeeId])
+  @@index([scheduledAt])
+}
+
+// One-on-One Notes
+model OneOnOneNote {
+  id        String   @id @default(uuid())
+  meetingId String
+  authorId  String
+  content   String   @db.Text
+  isPrivate Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  meeting OneOnOneMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+}
+
+// One-on-One Action Items
+model OneOnOneActionItem {
+  id        String    @id @default(uuid())
+  meetingId String
+  assigneeId String
+  title     String
+  status    String    @default("PENDING") // PENDING, IN_PROGRESS, DONE
+  dueDate   DateTime?
+  completedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  meeting OneOnOneMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+  @@index([assigneeId])
+  @@index([status])
+}
+
+// Learning Paths
+model LearningPath {
+  id          String   @id @default(uuid())
+  tenantId    String
+  title       String
+  description String?  @db.Text
+  difficulty  String   @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
+  duration    Int?     // estimated hours
+  modules     Json     // [{ id, title, type, contentUrl, order }]
+  skills      String[] // target skills
+  isPublished Boolean  @default(false)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  enrollments LearningPathEnrollment[]
+
+  @@index([tenantId])
+  @@index([isPublished])
+}
+
+// Learning Path Enrollments
+model LearningPathEnrollment {
+  id           String    @id @default(uuid())
+  tenantId     String
+  pathId       String
+  employeeId   String
+  status       String    @default("ENROLLED") // ENROLLED, IN_PROGRESS, COMPLETED, DROPPED
+  enrolledAt   DateTime  @default(now())
+  completedAt  DateTime?
+  progress     Float     @default(0) // 0-100 percentage
+
+  path LearningPath @relation(fields: [pathId], references: [id])
+
+  @@index([tenantId])
+  @@index([pathId])
+  @@index([employeeId])
+  @@unique([pathId, employeeId])
+}
+
+// Learning Progress Tracking
+model LearningProgress {
+  id           String   @id @default(uuid())
+  tenantId     String
+  employeeId   String
+  contentId    String   // module or video ID
+  contentType  String   // VIDEO, ARTICLE, QUIZ, ASSIGNMENT
+  progress     Float    @default(0) // 0-100
+  lastPosition Float?   // video timestamp or page number
+  timeSpent    Int      @default(0) // seconds
+  completedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([contentId])
+  @@unique([employeeId, contentId])
+}
+
+// Assessments / Quizzes
+model Assessment {
+  id          String   @id @default(uuid())
+  tenantId    String
+  title       String
+  description String?  @db.Text
+  pathId      String?  // linked to learning path module
+  questions   Json     // [{ id, type, text, options, correctAnswer, points }]
+  passingScore Float   @default(70)
+  timeLimit   Int?     // minutes
+  maxAttempts Int      @default(3)
+  isPublished Boolean  @default(false)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  submissions AssessmentSubmission[]
+
+  @@index([tenantId])
+  @@index([pathId])
+}
+
+// Assessment Submissions
+model AssessmentSubmission {
+  id           String   @id @default(uuid())
+  assessmentId String
+  employeeId   String
+  answers      Json     // [{ questionId, answer }]
+  score        Float?
+  passed       Boolean?
+  attemptNumber Int     @default(1)
+  startedAt    DateTime @default(now())
+  submittedAt  DateTime?
+  reviewedAt   DateTime?
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id])
+
+  @@index([assessmentId])
+  @@index([employeeId])
+}
+
+// Webhooks
+model Webhook {
+  id        String   @id @default(uuid())
+  tenantId  String
+  url       String
+  events    String[] // employee.created, leave.approved, etc.
+  secret    String   // HMAC signing key
+  isActive  Boolean  @default(true)
+  headers   Json?    // custom headers
+  retryCount Int     @default(3)
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  logs WebhookLog[]
+
+  @@index([tenantId])
+  @@index([isActive])
+}
+
+// Webhook Delivery Logs
+model WebhookLog {
+  id           String   @id @default(uuid())
+  webhookId    String
+  event        String
+  payload      Json
+  statusCode   Int?
+  responseBody String?  @db.Text
+  responseTime Int?     // milliseconds
+  success      Boolean  @default(false)
+  attempts     Int      @default(1)
+  lastAttempt  DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([createdAt])
+  @@index([success])
+}
+
+// Custom Reports
+model CustomReport {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?
+  dataSource  String   // employees, attendance, payroll, etc.
+  columns     Json     // [{ field, label, type }]
+  filters     Json?    // [{ field, operator, value }]
+  chartType   String?  // bar, line, pie, table
+  schedule    Json?    // { frequency, dayOfWeek, time, recipients }
+  createdBy   String
+  isPublic    Boolean  @default(false)
+  lastRunAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([createdBy])
+}
+
+// Workflow Definitions
+model WorkflowDefinition {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?
+  trigger     String   // MANUAL, EVENT, SCHEDULED
+  triggerEvent String? // employee.created, leave.requested, etc.
+  nodes       Json     // [{ id, type, config, position }]
+  edges       Json     // [{ source, target, condition }]
+  isActive    Boolean  @default(true)
+  version     Int      @default(1)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  instances WorkflowInstance[]
+
+  @@index([tenantId])
+  @@index([isActive])
+  @@index([trigger])
+}
+
+// Workflow Instances (Executions)
+model WorkflowInstance {
+  id           String    @id @default(uuid())
+  definitionId String
+  tenantId     String
+  status       String    @default("RUNNING") // RUNNING, COMPLETED, FAILED, CANCELLED
+  currentNode  String?
+  context      Json?     // runtime variables
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+  error        String?   @db.Text
+  triggeredBy  String
+
+  definition WorkflowDefinition @relation(fields: [definitionId], references: [id])
+
+  @@index([definitionId])
+  @@index([tenantId])
+  @@index([status])
+}
+
+// Project Time Entries
+model ProjectTimeEntry {
+  id         String   @id @default(uuid())
+  tenantId   String
+  employeeId String
+  projectId  String
+  taskId     String?
+  date       DateTime @db.Date
+  hours      Float
+  notes      String?  @db.Text
+  billable   Boolean  @default(true)
+  status     String   @default("DRAFT") // DRAFT, SUBMITTED, APPROVED
+  approvedBy String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([projectId])
+  @@index([date])
+  @@unique([employeeId, projectId, date])
+}
+
+// Geofence Locations
+model GeofenceLocation {
+  id        String  @id @default(uuid())
+  tenantId  String
+  name      String
+  latitude  Float
+  longitude Float
+  radius    Float   // meters
+  address   String?
+  isActive  Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([isActive])
+}
+
+// Expense Claims
+model ExpenseClaim {
+  id          String    @id @default(uuid())
+  tenantId    String
+  employeeId  String
+  title       String
+  amount      Float
+  currency    String    @default("USD")
+  category    String    // MEALS, TRANSPORT, TRAINING, SUPPLIES, OTHER
+  date        DateTime  @db.Date
+  receiptUrl  String?
+  description String?   @db.Text
+  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED, PAID
+  approvedBy  String?
+  approvedAt  DateTime?
+  paidAt      DateTime?
+  rejectionReason String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([date])
+}
+
+// API Keys
+model APIKey {
+  id          String    @id @default(uuid())
+  tenantId    String
+  name        String
+  keyHash     String    @unique // hashed key for lookup
+  prefix      String    // first 8 chars for display (e.g., "aura_sk_")
+  scopes      String[]  // read:employees, write:payroll, etc.
+  expiresAt   DateTime?
+  lastUsedAt  DateTime?
+  requestCount Int      @default(0)
+  isActive    Boolean   @default(true)
+  createdBy   String
+  createdAt   DateTime  @default(now())
+  revokedAt   DateTime?
+
+  @@index([tenantId])
+  @@index([keyHash])
+  @@index([isActive])
+}
+
+// ============================================================================
+// EMPLOYEE EMERGENCY CONTACTS
+// ============================================================================
+
+model EmergencyContact {
+  id         String  @id @default(uuid())
+  tenantId   String
+  employeeId String
+  name       String
+  relationship String
+  isPrimary  Boolean @default(false)
+  phone      String
+  alternatePhone String?
+  email      String?
+  address    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([employeeId])
+}
+
+// ============================================================================
+// PAYROLL GARNISHMENTS
+// ============================================================================
+
+model Garnishment {
+  id          String   @id @default(uuid())
+  tenantId    String
+  employeeId  String
+  type        String   // CHILD_SUPPORT, TAX_LEVY, CREDITOR, STUDENT_LOAN, BANKRUPTCY
+  caseNumber  String?
+  courtOrder  String?
+  amount      Decimal
+  amountType  String   // FIXED, PERCENTAGE
+  maxAmount   Decimal?
+  startDate   DateTime
+  endDate     DateTime?
+  status      String   @default("ACTIVE") // ACTIVE, PAUSED, COMPLETED, CANCELLED
+  priority    Int      @default(1)
+  totalDeducted Decimal @default(0)
+  payeeInfo   Json?    // { name, address, accountNumber }
+
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+// ============================================================================
+// HSA/FSA ACCOUNTS
+// ============================================================================
+
+model HSAFSAAccount {
+  id           String  @id @default(uuid())
+  tenantId     String
+  employeeId   String
+  accountType  String  // HSA, FSA, DCFSA, LPFSA
+  status       String  @default("ACTIVE") // ACTIVE, FROZEN, CLOSED
+  balance      Decimal @default(0)
+  yearToDateContributions Decimal @default(0)
+  annualLimit  Decimal
+  investmentBalance Decimal @default(0)
+  cashBalance  Decimal @default(0)
+  planYear     Int
+
+  contributionAmount   Decimal @default(0)
+  contributionFrequency String @default("PER_PAYCHECK") // PER_PAYCHECK, MONTHLY
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+  transactions HSAFSATransaction[]
+
+  @@unique([employeeId, accountType, planYear])
+  @@index([tenantId])
+  @@index([employeeId])
+}
+
+model HSAFSATransaction {
+  id          String   @id @default(uuid())
+  accountId   String
+  account     HSAFSAAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  type        String   // CONTRIBUTION, DISTRIBUTION, INVESTMENT, FEE
+  amount      Decimal
+  description String?
+  date        DateTime
+  status      String   @default("COMPLETED") // PENDING, COMPLETED, REVERSED
+
+  createdAt DateTime @default(now())
+
+  @@index([accountId])
+  @@index([date])
+}
+
+// ============================================================================
+// RECRUITMENT & ONBOARDING MODELS
+// ============================================================================
+
+model Candidate {
+  id          String   @id @default(uuid())
+  firstName   String
+  lastName    String
+  email       String   @unique
+  phone       String?
+  location    String?
+  linkedinUrl String?
+  resumeUrl   String?
+  source      String?
+  skills      String[]
+  experience  Json?
+  education   Json?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  applications CandidateApplication[]
+}
+
+model CandidateApplication {
+  id              String   @id @default(uuid())
+  candidateId     String
+  jobPostingId    String
+  status          String   @default("applied")
+  currentStage    String   @default("applied")
+  source          String?
+  appliedDate     DateTime @default(now())
+  overallRating   Float?
+  notes           String?
+  resumeUrl       String?
+  coverLetter     String?
+  rejectionReason String?
+  rejectionNotes  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  candidate  Candidate  @relation(fields: [candidateId], references: [id])
+  jobPosting JobPosting @relation(fields: [jobPostingId], references: [id])
+  interviews Interview[]
+  offers     JobOffer[]
+
+  @@index([candidateId])
+  @@index([jobPostingId])
+  @@index([status])
+}
+
+model Interview {
+  id               String   @id @default(uuid())
+  applicationId    String
+  title            String
+  type             String
+  scheduledDate    DateTime
+  duration         Int      @default(60)
+  location         String?
+  meetingLink      String?
+  interviewerIds   String[]
+  interviewerNames String[]
+  status           String   @default("scheduled")
+  feedbackSubmitted Boolean @default(false)
+  overallRating    Float?
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  application CandidateApplication @relation(fields: [applicationId], references: [id])
+  feedback    InterviewFeedback[]
+
+  @@index([applicationId])
+  @@index([scheduledDate])
+}
+
+model InterviewFeedback {
+  id            String   @id @default(uuid())
+  interviewId   String
+  interviewerId String
+  rating        Float
+  strengths     String?
+  weaknesses    String?
+  recommendation String?
+  comments      String?
+  criteria      Json?
+  submittedAt   DateTime @default(now())
+
+  interview Interview @relation(fields: [interviewId], references: [id])
+
+  @@index([interviewId])
+}
+
+model JobOffer {
+  id              String    @id @default(uuid())
+  applicationId   String
+  jobTitle        String
+  department      String
+  location        String?
+  employmentType  String
+  startDate       DateTime?
+  salary          Decimal
+  currency        String    @default("USD")
+  bonus           Decimal?
+  equity          String?
+  benefits        Json?
+  status          String    @default("draft")
+  approvedBy      String?
+  approvedDate    DateTime?
+  sentDate        DateTime?
+  sentBy          String?
+  acceptedDate    DateTime?
+  declinedDate    DateTime?
+  declineReason   String?
+  expiryDate      DateTime?
+  offerLetterUrl  String?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  application CandidateApplication @relation(fields: [applicationId], references: [id])
+
+  @@index([applicationId])
+  @@index([status])
+}
+
+model BackgroundCheck {
+  id              String    @id @default(uuid())
+  tenantId        String
+  applicationId   String?
+  candidateId     String?
+  employeeId      String?
+  checkType       String
+  provider        String?
+  status          String    @default("pending")
+  requestDate     DateTime  @default(now())
+  completionDate  DateTime?
+  result          String?
+  findings        Json?
+  documentUrl     String?
+  notes           String?
+  initiatedBy     String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([applicationId])
+  @@index([status])
+}
+
+model JobRequisition {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  jobTitle           String
+  department         String
+  requestedBy        String
+  requestedDate      DateTime  @default(now())
+  numberOfPositions  Int       @default(1)
+  employmentType     String?
+  priority           String    @default("Medium")
+  status             String    @default("Draft")
+  location           String?
+  salaryRange        Json?
+  requiredSkills     String[]
+  description        String?
+  justification      String?
+  approvalStatus     String    @default("Pending")
+  approvedBy         String?
+  approvedDate       DateTime?
+  rejectionReason    String?
+  closedDate         DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([department])
+}
+
+model OnboardingProgram {
+  id              String   @id @default(uuid())
+  tenantId        String
+  programCode     String
+  programName     String
+  description     String?
+  department      String?
+  position        String?
+  grade           String?
+  employeeType    String?
+  isTemplate      Boolean  @default(true)
+  durationDays    Int      @default(90)
+  phases          Json?
+  checklistTemplate Json?
+  documentsRequired Json?
+  equipmentRequired Json?
+  accessRequired  Json?
+  trainingModules Json?
+  buddyRequired   Boolean  @default(false)
+  surveySchedule  Json?
+  isActive        Boolean  @default(true)
+  usageCount      Int      @default(0)
+  createdBy       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  instances OnboardingInstance[]
+
+  @@unique([tenantId, programCode])
+  @@index([tenantId])
+}
+
+model OnboardingInstance {
+  id              String    @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  programId       String?
+  status          String    @default("not_started")
+  startDate       DateTime?
+  completionDate  DateTime?
+  hireDate        DateTime?
+  managerId       String?
+  buddyId         String?
+  progress        Int       @default(0)
+  totalTasks      Int       @default(0)
+  completedTasks  Int       @default(0)
+  overdueTasks    Int       @default(0)
+  currentPhase    String?
+  notes           String?
+  createdBy       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  program  OnboardingProgram? @relation(fields: [programId], references: [id])
+  tasks    OnboardingTask[]
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+model OnboardingTask {
+  id              String    @id @default(uuid())
+  instanceId      String
+  taskName        String
+  description     String?
+  category        String
+  phase           String?
+  responsibleParty String?
+  assignedTo      String?
+  priority        String    @default("medium")
+  status          String    @default("pending")
+  dueDate         DateTime?
+  completedDate   DateTime?
+  completedBy     String?
+  isMandatory     Boolean   @default(false)
+  requiresApproval Boolean  @default(false)
+  approvedBy      String?
+  approvedAt      DateTime?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  instance OnboardingInstance @relation(fields: [instanceId], references: [id])
+
+  @@index([instanceId])
+  @@index([status])
+}
+
+// ============================================================================
+// PERFORMANCE MANAGEMENT MODELS
+// ============================================================================
+
+model PerformanceReview {
+  id              String    @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  reviewCycleId   String?
+  reviewerId      String?
+  reviewType      String    @default("annual")
+  status          String    @default("draft")
+  selfRating      Float?
+  managerRating   Float?
+  finalRating     Float?
+  selfComments    String?
+  managerComments String?
+  strengths       Json?
+  improvements    Json?
+  goals           Json?
+  competencies    Json?
+  startDate       DateTime?
+  endDate         DateTime?
+  submittedAt     DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  cycle ReviewCycle? @relation(fields: [reviewCycleId], references: [id])
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([reviewCycleId])
+  @@index([status])
+}
+
+model ReviewCycle {
+  id              String    @id @default(uuid())
+  tenantId        String
+  cycleName       String
+  cycleType       String    @default("annual")
+  status          String    @default("draft")
+  startDate       DateTime
+  endDate         DateTime
+  selfReviewStart DateTime?
+  selfReviewEnd   DateTime?
+  managerReviewStart DateTime?
+  managerReviewEnd   DateTime?
+  calibrationStart   DateTime?
+  calibrationEnd     DateTime?
+  description     String?
+  isActive        Boolean   @default(true)
+  createdBy       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  reviews PerformanceReview[]
+
+  @@index([tenantId])
+  @@index([status])
+}
+
+model PerformanceGoal {
+  id              String    @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  reviewCycleId   String?
+  title           String
+  description     String?
+  category        String?
+  type            String    @default("individual")
+  status          String    @default("not_started")
+  priority        String    @default("medium")
+  targetValue     Float?
+  currentValue    Float?
+  unit            String?
+  weight          Float?
+  startDate       DateTime?
+  dueDate         DateTime?
+  completedDate   DateTime?
+  progress        Int       @default(0)
+  parentGoalId    String?
+  alignedTo       String?
+  metrics         Json?
+  milestones      Json?
+  createdBy       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+model CalibrationSession {
+  id              String    @id @default(uuid())
+  tenantId        String
+  sessionName     String
+  reviewCycleId   String?
+  status          String    @default("scheduled")
+  scheduledDate   DateTime?
+  completedDate   DateTime?
+  facilitatorId   String?
+  department      String?
+  participants    String[]
+  adjustments     Json?
+  notes           String?
+  createdBy       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+}
+
+model SalaryComponent {
+  id              String    @id @default(uuid())
+  tenantId        String
+  componentCode   String
+  componentName   String
+  componentType   String    @default("earning")
+  calculationType String    @default("fixed")
+  percentage      Float?
+  amount          Decimal?
+  isActive        Boolean   @default(true)
+  isTaxable       Boolean   @default(true)
+  isStatutory     Boolean   @default(false)
+  description     String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([tenantId, componentCode])
+  @@index([tenantId])
+}
+
+model CompensationBand {
+  id              String    @id @default(uuid())
+  tenantId        String
+  bandName        String
+  gradeId         String?
+  minSalary       Decimal
+  midSalary       Decimal?
+  maxSalary       Decimal
+  currency        String    @default("USD")
+  effectiveFrom   DateTime?
+  effectiveTo     DateTime?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId])
+}
+
+model IncrementCycle {
+  id              String    @id @default(uuid())
+  tenantId        String
+  cycleName       String
+  effectiveDate   DateTime
+  status          String    @default("draft")
+  budgetAmount    Decimal?
+  budgetPercentage Float?
+  eligibilityCriteria Json?
+  approvalWorkflow Json?
+  createdBy       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+}
+
+// NOTIFICATION MODELS
+
+model Notification {
+  id           String    @id @default(uuid())
+  tenantId     String
+  title        String
+  body         String    @db.Text
+  type         String
+  priority     String    @default("medium")
+  targetType   String    @default("all")
+  targetValue  String?
+  status       String    @default("draft")
+  scheduledAt  DateTime?
+  sentAt       DateTime?
+  sentCount    Int       @default(0)
+  deliveredCount Int     @default(0)
+  openedCount  Int       @default(0)
+  metadata     Json?
+  createdBy    String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  recipients   NotificationRecipient[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model NotificationRecipient {
+  id             String    @id @default(uuid())
+  notificationId String
+  userId         String
+  status         String    @default("pending")
+  deliveredAt    DateTime?
+  readAt         DateTime?
+  channel        String    @default("push")
+
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([notificationId])
+  @@index([userId])
+  @@index([status])
+}
+
+model NotificationTemplate {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  subject     String
+  body        String   @db.Text
+  type        String
+  category    String?
+  variables   Json?
+  isActive    Boolean  @default(true)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([type])
+  @@index([isActive])
+}
+
+// ============================================================================
+// LEARNING & DEVELOPMENT MODELS
+// ============================================================================
+
+model Course {
+  id            String   @id @default(uuid())
+  tenantId      String
+  title         String
+  description   String?  @db.Text
+  category      String?
+  level         String   @default("beginner")
+  type          String   @default("online")
+  duration      Int?
+  instructor    String?
+  thumbnailUrl  String?
+  contentUrl    String?
+  modules       Json?
+  skills        String[]
+  prerequisites String[]
+  maxEnrollment Int?
+  status        String   @default("draft")
+  rating        Float?
+  enrollmentCount Int    @default(0)
+  completionRate Float?
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  enrollments   CourseEnrollment[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([category])
+}
+
+model CourseEnrollment {
+  id          String    @id @default(uuid())
+  courseId     String
+  employeeId  String
+  tenantId    String
+  status      String    @default("enrolled")
+  progress    Float     @default(0)
+  enrolledAt  DateTime  @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+  score       Float?
+  certificateId String?
+
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@index([employeeId])
+  @@index([tenantId])
+  @@unique([courseId, employeeId])
+}
+
+model TrainingSession {
+  id           String   @id @default(uuid())
+  tenantId     String
+  title        String
+  description  String?  @db.Text
+  type         String   @default("classroom")
+  courseId     String?
+  instructor   String?
+  location     String?
+  meetingUrl   String?
+  startDate    DateTime
+  endDate      DateTime
+  maxCapacity  Int?
+  status       String   @default("scheduled")
+  materials    Json?
+  createdBy    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  attendees    SessionAttendee[]
+
+  @@index([tenantId])
+  @@index([startDate])
+  @@index([status])
+}
+
+model SessionAttendee {
+  id          String    @id @default(uuid())
+  sessionId   String
+  employeeId  String
+  status      String    @default("registered")
+  registeredAt DateTime @default(now())
+  checkedInAt DateTime?
+  feedback    String?   @db.Text
+  rating      Int?
+
+  session     TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([employeeId])
+  @@unique([sessionId, employeeId])
+}
+
+model Certification {
+  id             String    @id @default(uuid())
+  tenantId       String
+  employeeId     String
+  name           String
+  issuingBody    String?
+  certificationId String?
+  issueDate      DateTime
+  expiryDate     DateTime?
+  status         String    @default("active")
+  credentialUrl  String?
+  documentUrl    String?
+  skills         String[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([expiryDate])
+}
+
+model MentoringProgram {
+  id          String    @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?   @db.Text
+  mentorId    String
+  menteeId    String
+  status      String    @default("active")
+  startDate   DateTime
+  endDate     DateTime?
+  goals       Json?
+  notes       String?   @db.Text
+  meetingFrequency String?
+  createdBy   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([mentorId])
+  @@index([menteeId])
+  @@index([status])
 }

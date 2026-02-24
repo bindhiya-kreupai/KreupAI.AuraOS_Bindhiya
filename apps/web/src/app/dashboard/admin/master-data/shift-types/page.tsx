@@ -162,7 +162,7 @@ export default function ShiftTypesPage() {
                             placeholder="e.g. General Shift"
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-xs font-medium text-silver-mist mb-1">Start Time</label>
                             <input
@@ -198,3 +198,4 @@ export default function ShiftTypesPage() {
         />
     );
 }
+

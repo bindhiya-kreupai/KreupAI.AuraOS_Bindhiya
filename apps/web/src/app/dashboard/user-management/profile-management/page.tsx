@@ -80,7 +80,7 @@ export default function ProfilePage() {
                 <p className="text-silver-mist">Manage your personal information and account settings.</p>
             </div>
 
-            <div className="bg-white dark:bg-stellar-blue/20 rounded-xl border border-cloud dark:border-nebula-purple/30 p-6 space-y-6">
+            <div className="bg-white dark:bg-stellar-blue/20 rounded-xl border border-cloud dark:border-nebula-purple/30 p-6 space-y-4">
                 <div className="flex items-center space-x-4 mb-6">
                     <div className="w-20 h-20 rounded-full bg-celestial-indigo/20 flex items-center justify-center text-2xl font-bold text-celestial-indigo">
                         {profile.employee?.firstName?.[0]}{profile.employee?.lastName?.[0]}
@@ -93,7 +93,7 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <label className="block text-sm font-medium text-midnight-blue dark:text-white mb-2">First Name</label>
                         <input
@@ -136,3 +136,4 @@ export default function ProfilePage() {
         </div>
     );
 }
+

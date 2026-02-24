@@ -77,9 +77,9 @@ export default function BankIntegrationPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Landmark className="w-6 h-6 text-indigo-500" />
@@ -98,9 +98,9 @@ export default function BankIntegrationPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
                 {/* Left: Main Content */}
-                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-6">
+                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
                     {/* Tabs */}
                     <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0 w-fit">
                         {['Accounts', 'Configuration', 'History'].map(tab => (
@@ -125,7 +125,7 @@ export default function BankIntegrationPage() {
                                 {ACCOUNTS.map(acc => (
                                     <div key={acc.id} className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm relative overflow-hidden group">
                                         <div className="flex justify-between items-start mb-6">
-                                            <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-3">
                                                 <div className={`w-14 h-14 rounded-xl ${acc.logo} flex items-center justify-center`}>
                                                     <Landmark className="w-7 h-7" />
                                                 </div>
@@ -147,7 +147,7 @@ export default function BankIntegrationPage() {
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-6 p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-cloud dark:border-slate-800">
+                                        <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-cloud dark:border-slate-800">
                                             <div>
                                                 <div className="text-xs font-bold text-slate-500 mb-1">Account Number</div>
                                                 <div className="font-mono font-bold text-ink-black dark:text-pearl tracking-wider">{acc.number}</div>
@@ -168,13 +168,13 @@ export default function BankIntegrationPage() {
                         )}
 
                         {activeTab === 'Configuration' && (
-                            <div className="space-y-6">
+                            <div className="space-y-4">
                                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50">
                                     <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
                                         <FileSpreadsheet className="w-5 h-5 text-indigo-500" /> Output File Format
                                     </h3>
 
-                                    <div className="grid grid-cols-3 gap-4 mb-6">
+                                    <div className="grid grid-cols-3 gap-3 mb-6">
                                         {['NACH', 'Excel', 'CSV'].map(fmt => (
                                             <button
                                                 key={fmt}
@@ -243,7 +243,7 @@ export default function BankIntegrationPage() {
                 </div>
 
                 {/* Right: Security & Gateways */}
-                <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
+                <div className="lg:col-span-1 space-y-4 flex flex-col h-full overflow-hidden">
                     {/* Security Badge */}
                     <div className="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-800/30 shrink-0">
                         <h3 className="font-bold text-emerald-800 dark:text-emerald-300 mb-2 flex items-center gap-2">
@@ -285,3 +285,4 @@ export default function BankIntegrationPage() {
         </div>
     );
 }
+

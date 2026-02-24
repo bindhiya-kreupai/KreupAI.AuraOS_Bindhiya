@@ -82,7 +82,7 @@ export const POST = authRateLimit(async function (request: NextRequest) {
         data: {
           userId: user.id,
           action: 'LOGIN_MFA_REQUIRED',
-          module: 'Authentication',
+          entityType: 'Authentication',
           details: `User ${user.email} requires MFA verification from ${ipAddress}`,
           ipAddress,
         },
@@ -142,7 +142,7 @@ export const POST = authRateLimit(async function (request: NextRequest) {
       data: {
         userId: user.id,
         action: 'LOGIN',
-        module: 'Authentication',
+        entityType: 'Authentication',
         details: `User logged in from ${ipAddress}`,
         ipAddress,
       },
@@ -176,7 +176,7 @@ export const POST = authRateLimit(async function (request: NextRequest) {
       return validationErrorResponse(error);
     }
 
-    logger.error('Login error:', error);
+    logger.error({ error }, '');
     return NextResponse.json(
       { success: false, error: 'Login failed' },
       { status: 500 }

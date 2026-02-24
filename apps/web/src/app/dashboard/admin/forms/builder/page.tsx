@@ -14,9 +14,9 @@ import {
 
 export default function FormBuilderPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <LayoutTemplate className="w-6 h-6 text-pink-500" />
@@ -36,7 +36,7 @@ export default function FormBuilderPage() {
 
             <div className="flex flex-col lg:flex-row h-full min-h-0 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                 {/* Field Palette */}
-                <div className="w-full lg:w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 space-y-6 overflow-y-auto">
+                <div className="w-full lg:w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 space-y-4 overflow-y-auto">
                     <div>
                         <h3 className="text-xs font-bold text-slate-500 uppercase mb-3">Form Elements</h3>
                         <div className="grid grid-cols-2 gap-2">
@@ -65,7 +65,7 @@ export default function FormBuilderPage() {
                             <input type="text" defaultValue="We value your opinion. Please help us improve." className="text-sm text-slate-500 bg-transparent w-full outline-none border-none mt-1" />
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             {/* Form Item 1 */}
                             <div className="group relative p-4 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-move">
                                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 cursor-move text-slate-400">
@@ -87,7 +87,7 @@ export default function FormBuilderPage() {
                                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                                     How would you rate the new cafeteria menu?
                                 </label>
-                                <div className="flex gap-4">
+                                <div className="flex gap-3">
                                     <label className="flex items-center gap-2 text-sm"><input type="radio" name="r1" /> Good</label>
                                     <label className="flex items-center gap-2 text-sm"><input type="radio" name="r1" /> Average</label>
                                     <label className="flex items-center gap-2 text-sm"><input type="radio" name="r1" /> Poor</label>
@@ -115,3 +115,4 @@ export default function FormBuilderPage() {
         </div>
     );
 }
+

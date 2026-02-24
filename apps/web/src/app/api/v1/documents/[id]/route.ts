@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { DocumentService } from '@/lib/services/document.service';
+import { ServiceProxy } from '@/lib/services/service-proxy';
 import { z } from 'zod';
 
 // API Response Standard
@@ -35,7 +35,8 @@ export const GET = withEnhancedAuth(
       const { id } = params;
       const { user } = (request as any).context;
 
-      const document = await DocumentService.findById(id, user.tenantId);
+      // Fetch document from microservice
+      const document = await ServiceProxy.get('document', `/documents/${id}`, { tenantId: user.tenantId });
 
       if (!document) {
         const response: ApiResponse = {
@@ -98,7 +99,8 @@ export const PUT = withEnhancedAuth(
       const { user } = (request as any).context;
       const body = await request.json();
 
-      const document = await DocumentService.update(id, user.tenantId, body);
+      // Update document via microservice
+      const document = await ServiceProxy.put('document', `/documents/${id}`, { ...body, tenantId: user.tenantId });
 
       const response: ApiResponse = {
         success: true,
@@ -155,7 +157,8 @@ export const DELETE = withEnhancedAuth(
       const { id } = params;
       const { user } = (request as any).context;
 
-      await DocumentService.delete(id, user.tenantId);
+      // Soft delete document via microservice
+      await ServiceProxy.delete('document', `/documents/${id}?tenantId=${user.tenantId}`);
 
       const response: ApiResponse = {
         success: true,

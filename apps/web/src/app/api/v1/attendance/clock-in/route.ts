@@ -1,9 +1,12 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 import { z } from 'zod';
 
 // API Response Standard
-interface ApiResponse<T = any> {
+interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: {
@@ -42,6 +45,7 @@ const clockInSchema = z.object({
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const body = await request.json();
+    const tenantId = context.user.tenantId;
 
     // Validate request body
     const validationResult = clockInSchema.safeParse(body);
@@ -64,40 +68,172 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     }
 
     const data = validationResult.data;
-    const clockInTime = data.clockInTime || new Date().toISOString();
+    const now = data.clockInTime ? new Date(data.clockInTime) : new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    // TODO: Implement actual clock-in logic
-    // 1. Check if employee exists and is active
-    // 2. Get employee's shift schedule for today
-    // 3. Check if already clocked in today
-    // 4. Validate geofencing if enabled
-    // 5. Calculate early/late status based on shift
-    // 6. Create attendance record
-    // 7. Send notification if late
+    // Check if employee already has a CLOCK_IN punch today without a CLOCK_OUT
+    const existingPunch = await prisma.attendancePunch.findFirst({
+      where: {
+        tenantId,
+        employeeId: data.employeeId,
+        punchDate: today,
+        punchType: 'CLOCK_IN',
+      },
+      orderBy: { punchTime: 'desc' },
+    });
 
-    const mockAttendance = {
-      id: crypto.randomUUID(),
+    if (existingPunch) {
+      // Check if there is a corresponding CLOCK_OUT
+      const clockOutPunch = await prisma.attendancePunch.findFirst({
+        where: {
+          tenantId,
+          employeeId: data.employeeId,
+          punchDate: today,
+          punchType: 'CLOCK_OUT',
+          punchTime: { gt: existingPunch.punchTime },
+        },
+      });
+
+      if (!clockOutPunch) {
+        const response: ApiResponse = {
+          success: false,
+          error: {
+            code: 'E4001',
+            message: 'Already clocked in for today',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+
+        return NextResponse.json(response, { status: 400 });
+      }
+    }
+
+    // Build location string from coordinates
+    let locationStr: string | null = null;
+    if (data.location) {
+      const parts: string[] = [];
+      if (data.location.latitude != null && data.location.longitude != null) {
+        parts.push(`${data.location.latitude},${data.location.longitude}`);
+      }
+      if (data.location.address) {
+        parts.push(data.location.address);
+      }
+      locationStr = parts.length > 0 ? parts.join(' - ') : null;
+    }
+
+    // Create the punch record
+    const punch = await prisma.attendancePunch.create({
+      data: {
+        tenantId,
+        employeeId: data.employeeId,
+        punchDate: today,
+        punchTime: now,
+        punchType: 'CLOCK_IN',
+        location: locationStr,
+        device: data.deviceInfo?.deviceType || 'WEB',
+        ipAddress: data.deviceInfo?.ipAddress || null,
+        notes: data.notes || null,
+      },
+    });
+
+    // Look up employee info
+    const employee = await prisma.employee.findUnique({
+      where: { id: data.employeeId },
+      select: { employeeCode: true, firstName: true, lastName: true },
+    });
+
+    // Check for active shift assignment to determine late status
+    const shiftAssignment = await prisma.shiftAssignment.findFirst({
+      where: {
+        tenantId,
+        employeeId: data.employeeId,
+        isActive: true,
+        effectiveFrom: { lte: now },
+        OR: [
+          { effectiveTo: null },
+          { effectiveTo: { gte: now } },
+        ],
+      },
+      include: { shift: true },
+    });
+
+    let status = 'ON_TIME';
+    let lateMinutes = 0;
+    let shiftStartTime: string | null = null;
+    let shiftEndTime: string | null = null;
+
+    if (shiftAssignment) {
+      shiftStartTime = shiftAssignment.shift.startTime;
+      shiftEndTime = shiftAssignment.shift.endTime;
+
+      // Parse shift start time (HH:MM)
+      const [shiftHour, shiftMin] = shiftStartTime.split(':').map(Number);
+      const graceMinutes = shiftAssignment.shift.graceInMinutes || 0;
+      const shiftStartDate = new Date(today);
+      shiftStartDate.setHours(shiftHour, shiftMin + graceMinutes, 0, 0);
+
+      if (now > shiftStartDate) {
+        lateMinutes = Math.floor((now.getTime() - shiftStartDate.getTime()) / (1000 * 60));
+        status = 'LATE';
+      }
+    }
+
+    // Upsert attendance record for today
+    await prisma.attendanceRecord.upsert({
+      where: {
+        tenantId_employeeId_date: {
+          tenantId,
+          employeeId: data.employeeId,
+          date: today,
+        },
+      },
+      create: {
+        tenantId,
+        employeeId: data.employeeId,
+        date: today,
+        shiftId: shiftAssignment?.shiftId || null,
+        shiftStartTime: shiftStartTime ? new Date(`${today.toISOString().split('T')[0]}T${shiftStartTime}:00`) : null,
+        shiftEndTime: shiftEndTime ? new Date(`${today.toISOString().split('T')[0]}T${shiftEndTime}:00`) : null,
+        clockIn: now,
+        status: status === 'LATE' ? 'LATE' : 'PRESENT',
+        isLate: status === 'LATE',
+        approvalStatus: 'PENDING',
+      },
+      update: {
+        clockIn: now,
+        shiftId: shiftAssignment?.shiftId || undefined,
+        isLate: status === 'LATE',
+        status: status === 'LATE' ? 'LATE' : 'PRESENT',
+      },
+    });
+
+    const responseData = {
+      id: punch.id,
       employeeId: data.employeeId,
-      employeeCode: 'EMP001',
-      employeeName: 'John Doe',
-      date: new Date(clockInTime).toISOString().split('T')[0],
-      clockInTime,
-      shiftStartTime: '09:00:00',
-      shiftEndTime: '18:00:00',
-      status: new Date(clockInTime).getHours() > 9 ? 'LATE' : 'ON_TIME',
-      lateMinutes: new Date(clockInTime).getHours() > 9 ? 15 : 0,
+      employeeCode: employee?.employeeCode || '',
+      employeeName: employee ? `${employee.firstName} ${employee.lastName}` : '',
+      date: today.toISOString().split('T')[0],
+      clockInTime: now.toISOString(),
+      shiftStartTime,
+      shiftEndTime,
+      status,
+      lateMinutes,
       location: data.location,
       deviceInfo: data.deviceInfo,
       notes: data.notes,
       clockOutTime: null,
       workDuration: null,
       overtimeMinutes: null,
-      createdAt: new Date().toISOString(),
+      createdAt: punch.createdAt.toISOString(),
     };
 
     const response: ApiResponse = {
       success: true,
-      data: mockAttendance,
+      data: responseData,
       meta: {
         timestamp: new Date().toISOString(),
         requestId: crypto.randomUUID(),

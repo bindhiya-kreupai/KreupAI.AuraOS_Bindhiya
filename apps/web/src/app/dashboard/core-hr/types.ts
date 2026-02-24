@@ -219,6 +219,16 @@ export interface EmployeeDocument {
   tags: string[];
   version: number;
   status: 'active' | 'archived' | 'expired';
+
+  // AI OCR Metadata
+  ocrData?: {
+    documentNumber?: string;
+    expiryDate?: Date;
+    nationality?: string;
+    parsingConfidence?: number;
+    rawText?: string;
+  };
+  isAIParsed?: boolean;
 }
 
 export interface DocumentTemplate {
@@ -283,6 +293,13 @@ export interface Position {
   positionStatus: 'open' | 'filled' | 'frozen' | 'eliminated';
   effectiveDate: Date;
   endDate?: Date;
+
+  // Advanced Budgeting & Simulation
+  budgetCommitted?: number;
+  actualCost?: number;
+  utilizationRate?: number;
+  isSimulated?: boolean;
+
   createdDate: Date;
   lastModifiedDate: Date;
 }
@@ -772,6 +789,39 @@ export interface CoreHRSettings {
   enableExitManagement: boolean;
   lastUpdatedDate: Date;
   lastUpdatedBy: string;
+}
+
+// ============================================================================
+// INTER-COMPANY TRANSFERS & SHARED SERVICES
+// ============================================================================
+
+export interface InterCompanyTransfer {
+  transferId: string;
+  employeeId: string;
+  employeeName: string;
+  fromCompanyId: string;
+  fromCompanyName: string;
+  toCompanyId: string;
+  toCompanyName: string;
+  transferType: 'permanent' | 'secondment' | 'project_based';
+  effectiveDate: Date;
+  status: 'pending' | 'approved' | 'in_progress' | 'completed' | 'cancelled';
+  requestedBy: string;
+  approvedBy?: string;
+}
+
+export interface SharedServiceRequest {
+  requestId: string;
+  requestorId: string;
+  requestorName: string;
+  category: 'hr_letter' | 'it_access' | 'equipment' | 'travel' | 'other';
+  subject: string;
+  details?: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: 'open' | 'in_review' | 'in_progress' | 'completed' | 'rejected';
+  assignedToId?: string;
+  assignedToName?: string;
+  createdDate: Date;
 }
 
 export interface Toast {

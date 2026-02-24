@@ -29,14 +29,12 @@ import {
     Plus,
     Search,
     Filter,
-    Calendar,
     Star,
     BrainCircuit,
     MapPin,
-    Briefcase
+    Briefcase,
+    Loader2
 } from 'lucide-react';
-
-// --- MOCK DATA ---
 
 type Candidate = {
     id: string;
@@ -61,28 +59,15 @@ const COLUMNS: ColumnType[] = [
     { id: 'offer', title: 'Offered', color: 'bg-quantum-rose' },
 ];
 
-const INITIAL_CANDIDATES: Record<string, Candidate[]> = {
-    applied: [
-        { id: 'c1', name: 'Alex Johnson', role: 'Frontend Dev', matchScore: 85, rating: 4, location: 'New York', avatar: 'https://i.pravatar.cc/150?u=c1' },
-        { id: 'c2', name: 'Maria Garcia', role: 'Product Manager', matchScore: 72, rating: 3, location: 'Remote', avatar: 'https://i.pravatar.cc/150?u=c2' },
-        { id: 'c3', name: 'John Smith', role: 'Backend Eng', matchScore: 60, rating: 3, location: 'London', avatar: 'https://i.pravatar.cc/150?u=c3' },
-    ],
-    screening: [
-        { id: 'c4', name: 'Sarah Lee', role: 'UX Designer', matchScore: 92, rating: 5, location: 'San Francisco', avatar: 'https://i.pravatar.cc/150?u=c4' },
-        { id: 'c5', name: 'David Kim', role: 'Data Scientist', matchScore: 88, rating: 4, location: 'Seoul', avatar: 'https://i.pravatar.cc/150?u=c5' },
-    ],
-    interview: [
-        { id: 'c6', name: 'Emily Chen', role: 'Frontend Lead', matchScore: 95, rating: 5, location: 'Singapore', avatar: 'https://i.pravatar.cc/150?u=c6' },
-    ],
-    offer: [
-        { id: 'c7', name: 'James Wilson', role: 'DevOps Eng', matchScore: 90, rating: 5, location: 'Austin', avatar: 'https://i.pravatar.cc/150?u=c7' },
-    ],
+const EMPTY_BOARD: Record<string, Candidate[]> = {
+    applied: [],
+    screening: [],
+    interview: [],
+    offer: [],
 };
 
-// --- COMPONENTS ---
-
 export default function ApplicationTrackingPage() {
-    const [items, setItems] = useState(INITIAL_CANDIDATES);
+    const [items, setItems] = useState<Record<string, Candidate[]>>(EMPTY_BOARD);
     const [activeId, setActiveId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -92,38 +77,39 @@ export default function ApplicationTrackingPage() {
 
     const fetchApplications = async () => {
         try {
+            setLoading(true);
             const data = await CandidateApplicationService.getApplications();
-            if (data.length > 0) {
-                // Group applications by status
-                const grouped: Record<string, Candidate[]> = {
-                    applied: [],
-                    screening: [],
-                    interview: [],
-                    offer: []
+            // Group applications by status
+            const grouped: Record<string, Candidate[]> = {
+                applied: [],
+                screening: [],
+                interview: [],
+                offer: []
+            };
+
+            data.forEach((app: any) => {
+                const candidate = {
+                    id: app.id,
+                    name: app.candidateName || app.candidate?.firstName ? `${app.candidate?.firstName} ${app.candidate?.lastName}` : 'Unknown',
+                    role: app.positionAppliedFor || 'N/A',
+                    matchScore: app.overallRating ? Math.round(app.overallRating * 20) : 0,
+                    rating: app.overallRating || 0,
+                    location: app.location || 'Unknown',
+                    avatar: `https://i.pravatar.cc/150?u=${app.id}`
                 };
 
-                data.forEach((app: any) => {
-                    const candidate = {
-                        id: app.id,
-                        name: app.candidateName || 'Unknown',
-                        role: app.positionAppliedFor || 'N/A',
-                        matchScore: app.matchScore || 0,
-                        rating: app.rating || 0,
-                        location: app.location || 'Unknown',
-                        avatar: app.avatar || `https://i.pravatar.cc/150?u=${app.id}`
-                    };
+                const stage = (app.currentStage || app.status || 'applied').toLowerCase();
+                if (grouped[stage]) {
+                    grouped[stage].push(candidate);
+                } else {
+                    grouped['applied'].push(candidate);
+                }
+            });
 
-                    const status = app.status?.toLowerCase() || 'applied';
-                    if (grouped[status]) {
-                        grouped[status].push(candidate);
-                    }
-                });
-
-                setItems(grouped);
-            }
+            setItems(grouped);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -225,11 +211,22 @@ export default function ApplicationTrackingPage() {
     // Helper to find the active item object for the overlay
     const activeItem = activeId ? Object.values(items).flat().find(i => i.id === activeId) : null;
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                    <p className="text-sm text-silver-mist font-medium">Loading applications...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <div className="flex items-center gap-4 flex-1">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
+                <div className="flex items-center gap-3 flex-1">
                     <h1 className="text-xl font-bold text-ink-black dark:text-pearl whitespace-nowrap">Application Board</h1>
                     <div className="relative flex-1 max-w-sm ml-4">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
@@ -258,7 +255,7 @@ export default function ApplicationTrackingPage() {
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
             >
-                <div className="flex h-full gap-4 overflow-x-auto pb-4">
+                <div className="flex h-full gap-3 overflow-x-auto pb-4">
                     {COLUMNS.map((col) => (
                         <div key={col.id} className="w-80 flex-shrink-0 flex flex-col bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-cloud dark:border-nebula-purple/20">
                             {/* Column Header */}
@@ -267,7 +264,7 @@ export default function ApplicationTrackingPage() {
                                     <div className={`w-3 h-3 rounded-full ${col.color}`} />
                                     <span className="font-semibold text-sm text-ink-black dark:text-pearl">{col.title}</span>
                                     <span className="bg-cloud dark:bg-deep-cosmos px-2 py-0.5 rounded-full text-xs font-medium text-silver-mist">
-                                        {items[col.id].length}
+                                        {items[col.id]?.length || 0}
                                     </span>
                                 </div>
                                 <button className="text-silver-mist hover:text-ink-black dark:hover:text-pearl">
@@ -279,13 +276,18 @@ export default function ApplicationTrackingPage() {
                             <div className="flex-1 p-2 overflow-y-auto">
                                 <SortableContext
                                     id={col.id}
-                                    items={items[col.id].map((c) => c.id)}
+                                    items={(items[col.id] || []).map((c) => c.id)}
                                     strategy={verticalListSortingStrategy}
                                 >
                                     <div className="space-y-3 min-h-[100px]">
-                                        {items[col.id].map((candidate) => (
+                                        {(items[col.id] || []).map((candidate) => (
                                             <SortableCandidateCard key={candidate.id} candidate={candidate} />
                                         ))}
+                                        {(items[col.id] || []).length === 0 && (
+                                            <div className="flex items-center justify-center h-24 text-xs text-slate-400">
+                                                No candidates
+                                            </div>
+                                        )}
                                     </div>
                                 </SortableContext>
                             </div>
@@ -361,3 +363,4 @@ function CandidateCard({ candidate, isOverlay }: { candidate: Candidate, isOverl
         </div>
     );
 }
+

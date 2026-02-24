@@ -10,8 +10,8 @@ import {
 
 export default function DriverManagementPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Truck className="w-6 h-6 text-indigo-500" />
@@ -24,8 +24,8 @@ export default function DriverManagementPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4">Active Assignments</h3>
                         <div className="space-y-4">
@@ -36,7 +36,7 @@ export default function DriverManagementPage() {
                                 { driver: 'Alice Brown', route: 'Midwest Connector', vehicle: 'Trk-5510', status: 'Delayed', eta: '20:45' },
                             ].map((trip, i) => (
                                 <div key={i} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-600 dark:text-slate-300">
                                             {trip.driver.split(' ').map(n => n[0]).join('')}
                                         </div>
@@ -48,7 +48,7 @@ export default function DriverManagementPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-6 mt-4 md:mt-0">
+                                    <div className="flex items-center gap-3 mt-4 md:mt-0">
                                         <div>
                                             <div className="text-xs font-bold text-slate-400 uppercase">ETA</div>
                                             <div className="font-bold text-sm">{trip.eta}</div>
@@ -65,7 +65,7 @@ export default function DriverManagementPage() {
                     </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <h3 className="font-bold text-lg mb-4">License Expirations</h3>
                         <div className="space-y-3">
@@ -106,3 +106,4 @@ export default function DriverManagementPage() {
         </div>
     );
 }
+

@@ -47,6 +47,37 @@ export class PolicySettingsService {
   }
 }
 
+export class AcknowledgementService {
+  private static endpoint = '/policy-mgmt/acknowledgements';
+
+  static async getAll(): Promise<any[]> {
+    try {
+      const response = await APIClient.get<{ acknowledgements?: any[] }>(this.endpoint);
+      return response.acknowledgements || [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  static async create(data: any): Promise<any> {
+    const response = await APIClient.post<{ acknowledgement: any }>(this.endpoint, data);
+    return response.acknowledgement;
+  }
+}
+
+export class PolicyAnalyticsService {
+  private static endpoint = '/policy-mgmt/analytics';
+
+  static async get(): Promise<any> {
+    try {
+      const response = await APIClient.get<any>(this.endpoint);
+      return response;
+    } catch (error) {
+      return null;
+    }
+  }
+}
+
 export class AlertsService {
   private static endpoint = '/policy-mgmt/alerts';
 

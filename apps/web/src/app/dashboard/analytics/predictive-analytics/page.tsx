@@ -3,61 +3,103 @@
 import React, { useState, useEffect } from 'react';
 import {
     PieChart, Pie, Cell,
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     BarChart, Bar,
-    AreaChart, Area
 } from 'recharts';
 import {
     Activity,
     TrendingUp,
     Users,
-    AlertCircle,
     BrainCircuit,
     Sparkles,
     ArrowUpRight,
-    ArrowDownRight
+    ArrowDownRight,
+    Loader2
 } from 'lucide-react';
-import { PredictiveAnalyticsService } from '../services';
-
-// --- MOCK DATA ---
-
-const ORG_HEALTH_DATA = [
-    { name: 'Healthy', value: 75, color: '#10b981' }, // emerald-500
-    { name: 'At Risk', value: 15, color: '#f59e0b' }, // amber-500
-    { name: 'Critical', value: 10, color: '#ef4444' }, // red-500
-];
-
-const ATTRITION_DATA = [
-    { month: 'Jan', actual: 2.1, predicted: 2.0 },
-    { month: 'Feb', actual: 2.3, predicted: 2.2 },
-    { month: 'Mar', actual: 1.8, predicted: 2.4 },
-    { month: 'Apr', actual: 2.5, predicted: 2.6 },
-    { month: 'May', actual: 2.9, predicted: 2.8 },
-    { month: 'Jun', actual: 3.1, predicted: 3.5 }, // AI predicting spike
-];
-
-const DEMOGRAPHICS_DATA = [
-    { name: 'Eng', male: 40, female: 25, other: 5 },
-    { name: 'Sales', male: 30, female: 35, other: 2 },
-    { name: 'HR', male: 10, female: 40, other: 1 },
-    { name: 'Prod', male: 20, female: 20, other: 3 },
-];
-
-const LEAVE_FORECAST_DATA = [
-    { day: 'Mon', actual: 12, predicted: 10 },
-    { day: 'Tue', actual: 15, predicted: 14 },
-    { day: 'Wed', actual: 8, predicted: 9 },
-    { day: 'Thu', actual: 10, predicted: 11 },
-    { day: 'Fri', actual: 20, predicted: 18 }, // Weekend spike
-];
-
-// --- COMPONENTS ---
 
 export default function AnalyticsPage() {
+    const [loading, setLoading] = useState(true);
+    const [highRisk, setHighRisk] = useState(0);
+    const [mediumRisk, setMediumRisk] = useState(0);
+    const [lowRisk, setLowRisk] = useState(0);
+    const [totalEmployees, setTotalEmployees] = useState(0);
+    const [turnoverRate, setTurnoverRate] = useState(0);
+    const [monthlyTrend, setMonthlyTrend] = useState<{ month: string; separations: number }[]>([]);
+    const [deptBreakdown, setDeptBreakdown] = useState<{ department: string; count: number }[]>([]);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            const [predictiveRes, turnoverRes, headcountRes] = await Promise.all([
+                fetch('/api/v1/analytics/predictive').then(r => r.json()).catch(() => null),
+                fetch('/api/v1/analytics/turnover').then(r => r.json()).catch(() => null),
+                fetch('/api/v1/analytics/headcount').then(r => r.json()).catch(() => null),
+            ]);
+
+            const predictive = predictiveRes?.data;
+            const turnover = turnoverRes?.data;
+            const headcount = headcountRes?.data;
+
+            if (predictive?.attritionRisk) {
+                setHighRisk(predictive.attritionRisk.highRisk?.count ?? 0);
+                setMediumRisk(predictive.attritionRisk.mediumRisk?.count ?? 0);
+                setLowRisk(predictive.attritionRisk.lowRisk?.count ?? 0);
+            }
+
+            if (turnover) {
+                setTurnoverRate(turnover.overall?.turnoverRate ?? 0);
+                setMonthlyTrend(
+                    (turnover.monthlyTrend || []).map((m: any) => ({
+                        month: m.month.split('-')[1] || m.month,
+                        separations: m.separations,
+                    }))
+                );
+            }
+
+            if (headcount) {
+                setTotalEmployees(headcount.total || 0);
+                setDeptBreakdown(
+                    (headcount.byDepartment || []).map((d: any) => ({
+                        department: d.department,
+                        count: d.count,
+                    }))
+                );
+            }
+        } catch (error) {
+            console.error('Error loading predictive analytics:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="w-8 h-8 animate-spin text-celestial-indigo" />
+            </div>
+        );
+    }
+
+    const orgHealthData = [
+        { name: 'Low Risk', value: lowRisk, color: '#10b981' },
+        { name: 'Medium Risk', value: mediumRisk, color: '#f59e0b' },
+        { name: 'High Risk', value: highRisk, color: '#ef4444' },
+    ].filter(d => d.value > 0);
+
+    const totalRisk = highRisk + mediumRisk + lowRisk;
+    const healthScore = totalRisk > 0 ? Math.round((lowRisk / totalRisk) * 100) : 0;
+
+    const attritionData = monthlyTrend.map(m => ({
+        month: m.month,
+        actual: m.separations,
+    }));
+
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 animate-in fade-in duration-500">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <BrainCircuit className="w-6 h-6 text-celestial-indigo" />
@@ -76,147 +118,154 @@ export default function AnalyticsPage() {
                 </div>
             </div>
 
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <KPICard
                     title="Org Health Score"
-                    value="8.5/10"
-                    trend="+0.4"
-                    trendUp={true}
+                    value={totalRisk > 0 ? `${healthScore}%` : '--'}
+                    trend={highRisk === 0 ? 'Healthy' : `${highRisk} at risk`}
+                    trendUp={highRisk === 0}
                     icon={Activity}
                     color="text-emerald-500"
                 />
                 <KPICard
-                    title="Predicted Attrition"
-                    value="3.2%"
-                    trend="+0.5%"
-                    trendUp={false} // Bad trend
+                    title="Turnover Rate"
+                    value={turnoverRate > 0 ? `${turnoverRate}%` : '--'}
+                    trend={turnoverRate > 15 ? 'High' : 'Manageable'}
+                    trendUp={turnoverRate <= 15}
                     icon={TrendingUp}
                     color="text-amber-500"
                 />
                 <KPICard
-                    title="Sentiment Index"
-                    value="Positive"
-                    sub="72% Engaged"
+                    title="Total Workforce"
+                    value={totalEmployees > 0 ? totalEmployees.toLocaleString() : '--'}
+                    sub={`${deptBreakdown.length} departments`}
                     icon={Users}
                     color="text-blue-500"
                 />
                 <KPICard
-                    title="Automated Actions"
-                    value="1,240"
-                    trend="+15%"
-                    trendUp={true}
+                    title="Risk Distribution"
+                    value={totalRisk > 0 ? `${totalRisk}` : '--'}
+                    trend={`H:${highRisk} M:${mediumRisk} L:${lowRisk}`}
+                    trendUp={highRisk === 0}
                     icon={BrainCircuit}
                     color="text-purple-500"
                 />
             </div>
 
-            {/* Main Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                {/* 1. Attrition Prediction */}
-                <ChartCard title="Attrition Risk Forecast" subtitle="Actual vs AI Prediction (6 Months)">
-                    <ResponsiveContainer width="100%" height={300}>
-                        <AreaChart data={ATTRITION_DATA}>
-                            <defs>
-                                <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-                                </linearGradient>
-                                <linearGradient id="colorPredicted" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                            <XAxis dataKey="month" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                            <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                            <Tooltip
-                                contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                                itemStyle={{ color: '#f8fafc' }}
-                            />
-                            <Legend />
-                            <Area type="monotone" dataKey="actual" stroke="#8884d8" fillOpacity={1} fill="url(#colorActual)" name="Actual %" />
-                            <Area type="monotone" dataKey="predicted" stroke="#82ca9d" fillOpacity={1} fill="url(#colorPredicted)" strokeDasharray="5 5" name="AI Predicted %" />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </ChartCard>
-
-                {/* 2. Org Health Distribution */}
-                <ChartCard title="Organizational Health Breakdown" subtitle="Employee Well-being Status">
-                    <div className="flex items-center justify-center h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={ORG_HEALTH_DATA}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={80}
-                                    outerRadius={100}
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                >
-                                    {ORG_HEALTH_DATA.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Pie>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <ChartCard title="Monthly Attrition Trend" subtitle="Exits per month">
+                    {attritionData.length > 0 ? (
+                        <ResponsiveContainer width="100%" height={300}>
+                            <AreaChart data={attritionData}>
+                                <defs>
+                                    <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                                <XAxis dataKey="month" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
                                 <Tooltip
                                     contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
+                                    itemStyle={{ color: '#f8fafc' }}
                                 />
-                                <Legend verticalAlign="bottom" height={36} />
-                                {/* Center Text */}
-                                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="fill-ink-black dark:fill-pearl font-bold text-2xl">
-                                    88%
-                                </text>
-                                <text x="50%" y="58%" textAnchor="middle" dominantBaseline="middle" className="fill-silver-mist text-xs">
-                                    Overall Score
-                                </text>
-                            </PieChart>
+                                <Legend />
+                                <Area type="monotone" dataKey="actual" stroke="#8884d8" fillOpacity={1} fill="url(#colorActual)" name="Exits" />
+                            </AreaChart>
                         </ResponsiveContainer>
+                    ) : (
+                        <div className="flex items-center justify-center h-[300px] text-sm text-silver-mist">No trend data available</div>
+                    )}
+                </ChartCard>
+
+                <ChartCard title="Attrition Risk Breakdown" subtitle="Employee risk distribution">
+                    {orgHealthData.length > 0 ? (
+                        <div className="flex items-center justify-center h-[300px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={orgHealthData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={80}
+                                        outerRadius={100}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                    >
+                                        {orgHealthData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
+                                    />
+                                    <Legend verticalAlign="bottom" height={36} />
+                                    <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="fill-ink-black dark:fill-pearl font-bold text-2xl">
+                                        {healthScore}%
+                                    </text>
+                                    <text x="50%" y="58%" textAnchor="middle" dominantBaseline="middle" className="fill-silver-mist text-xs">
+                                        Healthy
+                                    </text>
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center h-[300px] text-sm text-silver-mist">No risk data available</div>
+                    )}
+                </ChartCard>
+
+                <ChartCard title="Department Headcount" subtitle="Workforce distribution">
+                    {deptBreakdown.length > 0 ? (
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={deptBreakdown}>
+                                <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                                <XAxis dataKey="department" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
+                                <Tooltip
+                                    cursor={{ fill: 'transparent' }}
+                                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
+                                />
+                                <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Headcount" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <div className="flex items-center justify-center h-[300px] text-sm text-silver-mist">No department data available</div>
+                    )}
+                </ChartCard>
+
+                <ChartCard title="Risk Insights" subtitle="Predictive attrition indicators">
+                    <div className="space-y-4 py-4">
+                        {highRisk > 0 && (
+                            <div className="p-4 bg-rose-50 dark:bg-rose-900/10 border border-rose-200 dark:border-rose-800 rounded-xl">
+                                <p className="text-sm font-bold text-rose-600">High Risk: {highRisk} employee{highRisk > 1 ? 's' : ''}</p>
+                                <p className="text-xs text-slate-500 mt-1">Low performance + short tenure indicators</p>
+                            </div>
+                        )}
+                        {mediumRisk > 0 && (
+                            <div className="p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl">
+                                <p className="text-sm font-bold text-amber-600">Medium Risk: {mediumRisk} employee{mediumRisk > 1 ? 's' : ''}</p>
+                                <p className="text-xs text-slate-500 mt-1">Moderate risk indicators detected</p>
+                            </div>
+                        )}
+                        {lowRisk > 0 && (
+                            <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+                                <p className="text-sm font-bold text-emerald-600">Low Risk: {lowRisk} employee{lowRisk > 1 ? 's' : ''}</p>
+                                <p className="text-xs text-slate-500 mt-1">Stable workforce segment</p>
+                            </div>
+                        )}
+                        {highRisk === 0 && mediumRisk === 0 && lowRisk === 0 && (
+                            <div className="text-center py-8">
+                                <BrainCircuit className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                                <p className="text-sm text-slate-400">No predictive data available</p>
+                            </div>
+                        )}
                     </div>
-                </ChartCard>
-
-                {/* 3. Workforce Demographics */}
-                <ChartCard title="Diversity & Demographics" subtitle="Gender Distribution by Department">
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={DEMOGRAPHICS_DATA}>
-                            <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                            <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                            <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                            <Tooltip
-                                cursor={{ fill: 'transparent' }}
-                                contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                            />
-                            <Legend />
-                            <Bar dataKey="male" stackId="a" fill="#3b82f6" radius={[0, 0, 4, 4]} name="Male" />
-                            <Bar dataKey="female" stackId="a" fill="#ec4899" radius={[0, 0, 0, 0]} name="Female" />
-                            <Bar dataKey="other" stackId="a" fill="#a855f7" radius={[4, 4, 0, 0]} name="Other" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </ChartCard>
-
-                {/* 4. Leave Trends */}
-                <ChartCard title="Leave Spike Prediction" subtitle="Day-wise Absenteeism Forecast">
-                    <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={LEAVE_FORECAST_DATA}>
-                            <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                            <XAxis dataKey="day" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                            <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                            <Tooltip
-                                contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                            />
-                            <Legend />
-                            <Line type="monotone" dataKey="actual" stroke="#f59e0b" strokeWidth={2} name="Actual" />
-                            <Line type="step" dataKey="predicted" stroke="#6366f1" strokeWidth={2} strokeDasharray="5 5" name="Predicted" />
-                        </LineChart>
-                    </ResponsiveContainer>
                 </ChartCard>
             </div>
         </div>
     );
 }
-
-// --- SUB COMPONENTS ---
 
 function KPICard({ title, value, sub, trend, trendUp, icon: Icon, color }: any) {
     return (
@@ -255,3 +304,4 @@ function ChartCard({ children, title, subtitle }: { children: React.ReactNode, t
         </div>
     );
 }
+

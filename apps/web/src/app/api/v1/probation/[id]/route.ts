@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ProbationService } from '@/lib/services/probation.service';
+import { ServiceProxy } from '@/lib/services/service-proxy';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
@@ -7,7 +7,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     const { user, params } = context;
     const { id } = params;
 
-    const probation = await ProbationService.findById(id, user.tenantId);
+    // Fetch probation from microservice
+    const probation = await ServiceProxy.get('employee', `/probation/${id}`, { tenantId: user.tenantId });
     if (!probation) {
       return NextResponse.json(
         { success: false, error: { code: 'E2001', message: 'Probation not found' } },
@@ -30,7 +31,8 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     const { id } = params;
     const body = await request.json();
 
-    const probation = await ProbationService.update(id, user.tenantId, body);
+    // Update probation via microservice
+    const probation = await ServiceProxy.put('employee', `/probation/${id}`, { ...body, tenantId: user.tenantId });
     if (!probation) {
       return NextResponse.json(
         { success: false, error: { code: 'E2001', message: 'Probation not found' } },
@@ -52,7 +54,8 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
     const { user, params } = context;
     const { id } = params;
 
-    const probation = await ProbationService.delete(id, user.tenantId);
+    // Delete probation via microservice
+    const probation = await ServiceProxy.delete('employee', `/probation/${id}?tenantId=${user.tenantId}`);
     if (!probation) {
       return NextResponse.json(
         { success: false, error: { code: 'E2001', message: 'Probation not found' } },

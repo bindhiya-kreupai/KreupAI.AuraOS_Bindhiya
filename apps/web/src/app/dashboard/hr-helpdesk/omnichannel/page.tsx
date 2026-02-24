@@ -11,8 +11,8 @@ import {
 
 export default function OmnichannelPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Share2 className="w-6 h-6 text-indigo-500" />
@@ -22,7 +22,7 @@ export default function OmnichannelPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {[
                     { name: 'Email Support', icon: Mail, status: 'Connected', desc: 'support@ura-os.com', color: 'text-sky-500', bg: 'bg-sky-50 dark:bg-sky-900/20' },
                     { name: 'Slack Integration', icon: Slack, status: 'Connected', desc: '#hr-helpdesk channel', color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20' },
@@ -49,3 +49,4 @@ export default function OmnichannelPage() {
         </div>
     );
 }
+

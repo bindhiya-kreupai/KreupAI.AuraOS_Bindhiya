@@ -11,20 +11,12 @@ import {
     Calendar,
     FileText,
     Calculator,
-    Play
+    Play,
+    Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PayrollRunService } from '../services';
-
-// --- MOCK DATA ---
-
-const EMPLOYEES = [
-    { id: 1, name: 'Sarah Jenkins', role: 'Senior Dev', salary: 8500, daysWorked: 22, lop: 0, bonus: 0 },
-    { id: 2, name: 'Mike Chen', role: 'UX Designer', salary: 7200, daysWorked: 21, lop: 1, bonus: 500 },
-    { id: 3, name: 'Jessica Wu', role: 'Product Mgr', salary: 9500, daysWorked: 22, lop: 0, bonus: 1200 },
-    { id: 4, name: 'David Kim', role: 'Backend Dev', salary: 7800, daysWorked: 20, lop: 2, bonus: 0 },
-    { id: 5, name: 'Alex Thompson', role: 'QA Lead', salary: 6500, daysWorked: 22, lop: 0, bonus: 0 },
-];
+import { PayrollRunService, EmployeeSalaryService } from '../services';
+import type { EmployeeSalary, PayrollRun } from '../types';
 
 const STEPS = [
     { id: 1, title: 'Attendance Review', icon: Calendar },
@@ -33,10 +25,20 @@ const STEPS = [
     { id: 4, title: 'Final Preview', icon: FileText },
 ];
 
+interface PayrollEmployee {
+    id: string;
+    name: string;
+    role: string;
+    salary: number;
+    daysWorked: number;
+    lop: number;
+    bonus: number;
+}
+
 export default function PayrollRunPage() {
     const [currentStep, setCurrentStep] = useState(1);
-    const [payrollData, setPayrollData] = useState(EMPLOYEES);
-    const [payrollRuns, setPayrollRuns] = useState<any[]>([]);
+    const [payrollData, setPayrollData] = useState<PayrollEmployee[]>([]);
+    const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -46,12 +48,23 @@ export default function PayrollRunPage() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const result = await PayrollRunService.getPayrollRuns();
-            if (result.length > 0) {
-                setPayrollRuns(result);
-            }
+            const [runs, salaries] = await Promise.all([
+                PayrollRunService.getPayrollRuns(),
+                EmployeeSalaryService.getEmployeeSalaries(),
+            ]);
+            setPayrollRuns(runs);
+            const mapped: PayrollEmployee[] = salaries.map((s: EmployeeSalary) => ({
+                id: s.employeeId,
+                name: s.employeeName,
+                role: s.designation,
+                salary: s.monthlyCTC,
+                daysWorked: 22,
+                lop: 0,
+                bonus: 0,
+            }));
+            setPayrollData(mapped);
         } catch (error) {
-            console.error('Failed to fetch payroll runs:', error);
+            console.error('Failed to fetch payroll data:', error);
         } finally {
             setLoading(false);
         }
@@ -63,24 +76,49 @@ export default function PayrollRunPage() {
         return acc + actualPay;
     }, 0);
 
-    const prevMonthCost = 38500;
-    const variance = ((totalCost - prevMonthCost) / prevMonthCost) * 100;
+    const prevMonthCost = payrollRuns.length > 1 ? payrollRuns[1]?.totalNetPay || totalCost : totalCost;
+    const variance = prevMonthCost > 0 ? ((totalCost - prevMonthCost) / prevMonthCost) * 100 : 0;
 
     const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 4));
     const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                    <p className="text-sm text-silver-mist font-medium">Loading payroll data...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (payrollData.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3 text-center">
+                    <Users className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+                    <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300">No Employee Salary Data</h3>
+                    <p className="text-sm text-silver-mist max-w-md">Configure employee salary structures before running payroll.</p>
+                </div>
+            </div>
+        );
+    }
+
+    const lopCount = payrollData.filter(e => e.lop > 0).length;
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <DollarSign className="w-6 h-6 text-emerald-500" />
-                        Run Payroll: Dec 2025
+                        Run Payroll
                     </h1>
                     <p className="text-silver-mist text-sm">Process monthly salaries, review attendance, and finalize disbursements.</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     <div className="text-right hidden md:block">
                         <div className="text-[10px] font-bold text-silver-mist uppercase">Estimated Cost</div>
                         <div className="text-xl font-bold text-ink-black dark:text-pearl">${totalCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
@@ -139,9 +177,11 @@ export default function PayrollRunPage() {
                                 <h2 className="text-lg font-bold flex items-center gap-2">
                                     <Calendar className="w-5 h-5 text-indigo-500" /> Review Attendance
                                 </h2>
-                                <div className="text-sm bg-amber-50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-400 px-3 py-1 rounded-lg border border-amber-200 dark:border-amber-500/20 flex items-center gap-2">
-                                    <AlertCircle className="w-4 h-4" /> 3 Exceptions found
-                                </div>
+                                {lopCount > 0 && (
+                                    <div className="text-sm bg-amber-50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-400 px-3 py-1 rounded-lg border border-amber-200 dark:border-amber-500/20 flex items-center gap-2">
+                                        <AlertCircle className="w-4 h-4" /> {lopCount} Exception{lopCount > 1 ? 's' : ''} found
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex-1 overflow-y-auto">
@@ -205,7 +245,7 @@ export default function PayrollRunPage() {
                                             <div className="font-bold text-ink-black dark:text-pearl">{emp.name}</div>
                                             <div className="text-xs text-silver-mist">{emp.role}</div>
                                         </div>
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-3">
                                             <div className="text-right">
                                                 <div className="text-[10px] uppercase font-bold text-silver-mist mb-1">Performance Bonus</div>
                                                 <div className="relative">
@@ -259,7 +299,7 @@ export default function PayrollRunPage() {
                                     className="h-full bg-indigo-500 rounded-full"
                                 />
                             </div>
-                            <div className="text-sm font-bold text-indigo-500 animate-pulse">Processing Employee 5 of 5...</div>
+                            <div className="text-sm font-bold text-indigo-500 animate-pulse">Processing Employee {payrollData.length} of {payrollData.length}...</div>
                         </motion.div>
                     )}
 
@@ -275,10 +315,9 @@ export default function PayrollRunPage() {
                                 <h2 className="text-lg font-bold flex items-center gap-2">
                                     <FileText className="w-5 h-5 text-indigo-500" /> Executive Summary
                                 </h2>
-                                <span className="text-sm text-slate-400">Reference: PR-2025-DEC</span>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-6 mb-8">
+                            <div className="grid grid-cols-3 gap-3 mb-8">
                                 <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-cloud dark:border-slate-800">
                                     <div className="text-sm text-silver-mist font-bold uppercase mb-1">Total Payroll</div>
                                     <div className="text-3xl font-bold text-ink-black dark:text-pearl">${totalCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
@@ -287,21 +326,21 @@ export default function PayrollRunPage() {
                                     <div className="text-sm text-silver-mist font-bold uppercase mb-1">Total Employees</div>
                                     <div className="text-3xl font-bold text-ink-black dark:text-pearl">{payrollData.length}</div>
                                 </div>
-                                <div className={`p-4 rounded-xl border ${variance > 5 ? 'bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-500/20' : 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-500/20'}`}>
-                                    <div className={`text-sm font-bold uppercase mb-1 ${variance > 5 ? 'text-amber-600' : 'text-emerald-600'}`}>Variance (MoM)</div>
-                                    <div className={`text-3xl font-bold ${variance > 5 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                                <div className={`p-4 rounded-xl border ${Math.abs(variance) > 5 ? 'bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-500/20' : 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-500/20'}`}>
+                                    <div className={`text-sm font-bold uppercase mb-1 ${Math.abs(variance) > 5 ? 'text-amber-600' : 'text-emerald-600'}`}>Variance (MoM)</div>
+                                    <div className={`text-3xl font-bold ${Math.abs(variance) > 5 ? 'text-amber-600' : 'text-emerald-600'}`}>
                                         {variance > 0 ? '+' : ''}{variance.toFixed(1)}%
                                     </div>
                                 </div>
                             </div>
 
-                            {variance > 5 && (
+                            {Math.abs(variance) > 5 && (
                                 <div className="mb-8 p-4 bg-rose-50 dark:bg-rose-900/10 border border-rose-200 dark:border-rose-500/20 rounded-xl flex gap-3 items-start">
                                     <AlertCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
                                     <div>
                                         <h4 className="text-sm font-bold text-rose-700 dark:text-rose-400">High Variance Detected</h4>
                                         <p className="text-xs text-rose-600 dark:text-rose-300 mt-1">
-                                            The total payroll cost is {variance.toFixed(1)}% higher than last month. This is primarily due to year-end bonuses for Jessica Wu ($1,200).
+                                            The total payroll cost is {Math.abs(variance).toFixed(1)}% {variance > 0 ? 'higher' : 'lower'} than last month. Please review the changes before committing.
                                         </p>
                                     </div>
                                 </div>
@@ -309,13 +348,13 @@ export default function PayrollRunPage() {
 
                             <div className="border-t border-cloud dark:border-slate-800 pt-6">
                                 <h3 className="font-bold mb-4">Payout Disbursal</h3>
-                                <div className="flex items-center gap-4 p-4 border border-cloud dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900">
+                                <div className="flex items-center gap-3 p-4 border border-cloud dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900">
                                     <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-lg flex items-center justify-center shadow-sm">
-                                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/SBI-logo.svg/2048px-SBI-logo.svg.png" alt="Bank" className="w-8 h-8 object-contain" />
+                                        <DollarSign className="w-8 h-8 text-emerald-500" />
                                     </div>
                                     <div>
-                                        <div className="font-bold text-sm">State Bank of India</div>
-                                        <div className="text-xs text-silver-mist">Corporate Account •••• 4592</div>
+                                        <div className="font-bold text-sm">Bank Transfer</div>
+                                        <div className="text-xs text-silver-mist">Corporate Account</div>
                                     </div>
                                     <div className="ml-auto text-right">
                                         <div className="text-xs font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-1 rounded inline-block">
@@ -345,3 +384,4 @@ export default function PayrollRunPage() {
         </div>
     );
 }
+

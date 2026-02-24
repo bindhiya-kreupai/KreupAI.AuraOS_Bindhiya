@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Shield,
     DollarSign,
@@ -20,8 +20,10 @@ import {
     TrendingUp,
     Package,
     Briefcase,
-    UserCheck
+    UserCheck,
+    Loader2
 } from 'lucide-react';
+import { PettyCashService } from '../../services';
 
 type PolicyCategory = 'all' | 'spending-limits' | 'approval-workflow' | 'category-rules' | 'receipt-policy';
 
@@ -63,81 +65,24 @@ interface CategoryRule {
 
 export default function PolicyControlsPage() {
     const [activeTab, setActiveTab] = useState<'limits' | 'approvals' | 'categories' | 'compliance'>('limits');
+    const [loading, setLoading] = useState(true);
 
-    const spendingLimits: SpendingLimit[] = [
-        {
-            id: 'SL-001',
-            name: 'Standard Employee',
-            type: 'role',
-            target: 'Employee',
-            singleTransactionLimit: 50,
-            dailyLimit: 100,
-            monthlyLimit: 500,
-            requiresApproval: true,
-            approvalThreshold: 50,
-            status: 'active'
-        },
-        {
-            id: 'SL-002',
-            name: 'Team Lead',
-            type: 'role',
-            target: 'Team Lead',
-            singleTransactionLimit: 150,
-            dailyLimit: 300,
-            monthlyLimit: 1500,
-            requiresApproval: true,
-            approvalThreshold: 100,
-            status: 'active'
-        },
-        {
-            id: 'SL-003',
-            name: 'Manager',
-            type: 'role',
-            target: 'Manager',
-            singleTransactionLimit: 500,
-            dailyLimit: 1000,
-            monthlyLimit: 5000,
-            requiresApproval: true,
-            approvalThreshold: 300,
-            status: 'active'
-        },
-        {
-            id: 'SL-004',
-            name: 'Engineering Department',
-            type: 'department',
-            target: 'Engineering',
-            singleTransactionLimit: 200,
-            dailyLimit: 500,
-            monthlyLimit: 3000,
-            requiresApproval: true,
-            approvalThreshold: 150,
-            status: 'active'
-        },
-        {
-            id: 'SL-005',
-            name: 'Sales Department',
-            type: 'department',
-            target: 'Sales',
-            singleTransactionLimit: 300,
-            dailyLimit: 600,
-            monthlyLimit: 4000,
-            requiresApproval: true,
-            approvalThreshold: 200,
-            status: 'active'
-        },
-        {
-            id: 'SL-006',
-            name: 'Office Supplies Category',
-            type: 'category',
-            target: 'Office Supplies',
-            singleTransactionLimit: 100,
-            dailyLimit: 200,
-            monthlyLimit: 1000,
-            requiresApproval: true,
-            approvalThreshold: 75,
-            status: 'active'
-        }
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await PettyCashService.getFunds();
+                setPolicies(data as any[]);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const [spendingLimits, setSpendingLimits] = useState<any[]>([]);
 
     const approvalRules: ApprovalRule[] = [
         {
@@ -306,10 +251,18 @@ export default function PolicyControlsPage() {
         }
     ];
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Shield className="w-6 h-6 text-indigo-500" />
@@ -329,7 +282,7 @@ export default function PolicyControlsPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 shrink-0">
                 {stats.map((stat, i) => {
                     const Icon = stat.icon;
                     return (
@@ -626,8 +579,8 @@ export default function PolicyControlsPage() {
 
                 {/* Compliance Tab */}
                 {activeTab === 'compliance' && (
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {/* Receipt Policy */}
                             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                                 <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
@@ -758,3 +711,4 @@ export default function PolicyControlsPage() {
         </div>
     );
 }
+

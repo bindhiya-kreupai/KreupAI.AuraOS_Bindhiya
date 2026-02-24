@@ -8,7 +8,8 @@ import {
     Layout,
     Eye,
     Save,
-    Image as ImageIcon
+    Image as ImageIcon,
+    Loader2
 } from 'lucide-react';
 
 export default function CareerSitePage() {
@@ -45,10 +46,21 @@ export default function CareerSitePage() {
                     }
     };
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                    <p className="text-sm text-silver-mist font-medium">Loading career site...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Globe className="w-6 h-6 text-indigo-500" />
@@ -68,7 +80,7 @@ export default function CareerSitePage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Settings Panel */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><Palette className="w-4 h-4" /> Branding</h3>
 
@@ -131,21 +143,26 @@ export default function CareerSitePage() {
                             <button className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-full">View Openings</button>
                         </div>
 
-                        <div className="p-8 grid grid-cols-2 gap-4">
+                        <div className="p-8 grid grid-cols-2 gap-3">
                             <div className="h-32 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
                             <div className="h-32 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
                         </div>
 
                         <div className="px-8 pb-12">
-                            <h3 className="font-bold text-xl mb-6">Open Roles</h3>
+                            <h3 className="font-bold text-xl mb-6">Open Roles ({jobs.length})</h3>
                             <div className="space-y-3">
-                                {[1, 2, 3].map(i => (
-                                    <div key={i} className="p-4 border border-slate-100 dark:border-slate-800 rounded-xl flex justify-between items-center">
+                                {jobs.length === 0 && (
+                                    <div className="p-4 text-center text-sm text-slate-400">No open positions to display.</div>
+                                )}
+                                {jobs.slice(0, 5).map((job: any) => (
+                                    <div key={job.id} className="p-4 border border-slate-100 dark:border-slate-800 rounded-xl flex justify-between items-center">
                                         <div>
-                                            <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded mb-2"></div>
-                                            <div className="h-3 w-20 bg-slate-100 dark:bg-slate-800 rounded"></div>
+                                            <div className="font-bold text-sm">{job.title}</div>
+                                            <div className="text-xs text-slate-500">{job.department} - {job.location}</div>
                                         </div>
-                                        <div className="h-8 w-8 bg-indigo-50 dark:bg-indigo-900/20 rounded-full"></div>
+                                        <div className="h-8 w-8 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center text-indigo-500 text-xs font-bold">
+                                            {job.applies || 0}
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -156,3 +173,4 @@ export default function CareerSitePage() {
         </div>
     );
 }
+

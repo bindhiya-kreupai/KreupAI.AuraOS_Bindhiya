@@ -3,7 +3,7 @@
  * Phase 3: Intelligence Layer - Predictive Analytics
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { AttritionPredictionService } from '@/lib/services/ai';
 
@@ -35,8 +35,8 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const prediction = await AttritionPredictionService.predictAttritionRisk(
-          body.employeeData
+        const prediction = await AttritionPredictionService.predictEmployeeRisk(
+          body.employeeData.id || body.employeeData
         );
 
         return NextResponse.json({
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
 
         const predictions = await Promise.all(
           body.employees.map((emp: any) =>
-            AttritionPredictionService.predictAttritionRisk(emp)
+            AttritionPredictionService.predictEmployeeRisk(emp.id || emp)
           )
         );
 
@@ -81,10 +81,8 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const analytics = await AttritionPredictionService.getAttritionAnalytics(
-          body.tenantId,
-          body.employees,
-          body.options
+        const analytics = await AttritionPredictionService.getAnalytics(
+          body.tenantId
         );
 
         return NextResponse.json({
@@ -99,7 +97,7 @@ export async function POST(request: NextRequest) {
         );
     }
   } catch (error) {
-        return NextResponse.json(
+    return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to predict attrition',
         errorAr: 'فشل في التنبؤ بمغادرة الموظفين',
@@ -152,7 +150,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-        return NextResponse.json(
+    return NextResponse.json(
       { error: 'Failed to fetch attrition data', errorAr: 'فشل في جلب بيانات المغادرة' },
       { status: 500 }
     );

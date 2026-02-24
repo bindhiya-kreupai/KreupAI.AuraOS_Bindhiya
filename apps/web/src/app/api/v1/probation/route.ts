@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ProbationService } from '@/lib/services/probation.service';
+import { ServiceProxy } from '@/lib/services/service-proxy';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
@@ -17,7 +17,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       sortOrder: (searchParams.get('sortOrder') || 'asc') as 'asc' | 'desc',
     };
 
-    const result = await ProbationService.findAll(filter);
+    // Fetch probations from microservice
+    const result = await ServiceProxy.get('employee', '/probation', filter);
 
     return NextResponse.json({
       success: true,
@@ -42,7 +43,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     const body = await request.json();
     body.tenantId = user.tenantId;
 
-    const probation = await ProbationService.create(body);
+    // Create probation via microservice
+    const probation = await ServiceProxy.post('employee', '/probation', body);
 
     return NextResponse.json({ success: true, data: probation }, { status: 201 });
   } catch (error: any) {

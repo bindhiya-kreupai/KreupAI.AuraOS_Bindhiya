@@ -1,9 +1,26 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
 import { ModuleGrid } from '@/components/dashboard/module-grid';
+import { TravelAnalyticsService } from './services';
 
 export default function TravelPage() {
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function init() {
+            try {
+                await TravelAnalyticsService.getMetrics();
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        init();
+    }, []);
+
     const features = [
         'Travel Request',
         'Travel Policy',
@@ -20,6 +37,15 @@ export default function TravelPage() {
         'Dashboard',
     ];
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+                <span className="ml-2 text-sm text-slate-500">Loading travel module...</span>
+            </div>
+        );
+    }
+
     return (
         <ModuleGrid
             title="Travel Management"
@@ -29,3 +55,4 @@ export default function TravelPage() {
         />
     );
 }
+

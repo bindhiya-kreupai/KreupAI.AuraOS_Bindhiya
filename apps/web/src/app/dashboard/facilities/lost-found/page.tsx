@@ -93,9 +93,9 @@ export default function LostFoundPage() {
         : ITEMS.filter(item => item.type === activeTab);
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <HelpCircle className="w-6 h-6 text-indigo-500" />
@@ -120,11 +120,11 @@ export default function LostFoundPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 h-full min-h-0 overflow-hidden">
                 {/* Left side - Filters & List */}
-                <div className="lg:col-span-4 flex flex-col h-full overflow-hidden space-y-6">
+                <div className="lg:col-span-4 flex flex-col h-full overflow-hidden space-y-4">
                     {/* Tabs & Search */}
-                    <div className="flex flex-col sm:flex-row gap-4 justify-between items-center shrink-0">
+                    <div className="flex flex-col sm:flex-row gap-3 justify-between items-center shrink-0">
                         <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                             {['All', 'Lost', 'Found'].map(tab => (
                                 <button
@@ -152,7 +152,7 @@ export default function LostFoundPage() {
                     </div>
 
                     {/* Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-2 pb-20">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 overflow-y-auto pr-2 pb-20">
                         {filteredItems.map(item => (
                             <div key={item.id} className="bg-white dark:bg-stellar-blue p-5 rounded-2xl border border-cloud dark:border-nebula-purple/50 hover:shadow-lg transition-all group flex flex-col h-full relative overflow-hidden">
                                 {/* Type Badge */}
@@ -250,7 +250,7 @@ export default function LostFoundPage() {
                                     <label className="text-xs font-bold text-slate-500 mb-1 block">Item Name</label>
                                     <input type="text" placeholder="e.g., Blue Umbrella" className="w-full p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20" />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="text-xs font-bold text-slate-500 mb-1 block">Category</label>
                                         <select className="w-full p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none">
@@ -300,3 +300,4 @@ export default function LostFoundPage() {
         </div>
     );
 }
+

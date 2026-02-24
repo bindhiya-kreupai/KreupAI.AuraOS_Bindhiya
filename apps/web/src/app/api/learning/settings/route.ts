@@ -4,22 +4,32 @@ import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
+const defaultSettings = {
+  defaultPassingScore: 70,
+  maxAttemptsDefault: 3,
+  certificateExpiryDays: 365,
+  reminderDaysBeforeExpiry: 30,
+  autoEnrollCompliance: true,
+  allowSelfEnrollment: true,
+  requireManagerApproval: false,
+  enableWaitlist: true,
+  emailNotifications: {
+    enrollmentConfirmation: true,
+    courseCompletion: true,
+    certificateIssued: true,
+    sessionReminder: true,
+    deadlineReminder: true,
+    certificationExpiry: true,
+  },
+};
+
 export const GET = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
       const permissionError = requirePermission(Resource.LEARNING, Action.READ, permissions);
       if (permissionError) return permissionError;
 
-      const mockSettings = {
-        allowSelfEnrollment: true,
-        requireManagerApproval: false,
-        certificateAutoIssue: true,
-        reminderDaysBeforeDue: 7,
-        maxConcurrentEnrollments: 5,
-        enableExternalTraining: true,
-      };
-
-      return NextResponse.json({ success: true, data: mockSettings });
+      return NextResponse.json({ success: true, data: defaultSettings });
     } catch (error) {
       logger.error('Error fetching settings:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch settings' }, { status: 500 });
@@ -34,9 +44,10 @@ export const PUT = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const body = await request.json();
-      logger.info('Settings updated by:', user.userId);
+      const merged = { ...defaultSettings, ...body };
 
-      return NextResponse.json({ success: true, data: body });
+      logger.info('Settings updated by:', user.userId);
+      return NextResponse.json({ success: true, data: merged });
     } catch (error) {
       logger.error('Error updating settings:', error);
       return NextResponse.json({ success: false, error: 'Failed to update settings' }, { status: 500 });

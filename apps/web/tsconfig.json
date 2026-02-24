@@ -29,6 +29,21 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@aura/ui": [
+        "../../packages/@aura/ui/src/index.ts"
+      ],
+      "@aura/ui/*": [
+        "../../packages/@aura/ui/src/*"
+      ],
+      "@aura/database": [
+        "../../packages/@aura/database/src/index.ts"
+      ],
+      "@aura/auth": [
+        "../../packages/@aura/auth/src/index.ts"
+      ],
+      "@aura/auth/*": [
+        "../../packages/@aura/auth/src/*"
       ]
     }
   },

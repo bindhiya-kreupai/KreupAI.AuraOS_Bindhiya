@@ -1,9 +1,12 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 import { z } from 'zod';
 
 // API Response Standard
-interface ApiResponse<T = any> {
+interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: {
@@ -30,11 +33,23 @@ const attendanceRecordSchema = z.object({
 
 // Validation schema for bulk import request
 const bulkImportSchema = z.object({
-  companyId: z.string().uuid(),
-  tenantId: z.string().uuid(),
   records: z.array(attendanceRecordSchema).min(1).max(1000),
   overwriteExisting: z.boolean().default(false),
 });
+
+interface ImportError {
+  row: number;
+  employeeCode: string;
+  date: string;
+  error: string;
+}
+
+interface ImportWarning {
+  row: number;
+  employeeCode: string;
+  date: string;
+  warning: string;
+}
 
 /**
  * POST /api/v1/attendance/bulk-import
@@ -43,6 +58,7 @@ const bulkImportSchema = z.object({
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const body = await request.json();
+    const tenantId = context.user.tenantId;
 
     // Validate request body
     const validationResult = bulkImportSchema.safeParse(body);
@@ -66,54 +82,181 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
 
     const data = validationResult.data;
 
-    // TODO: Implement actual bulk import logic
-    // 1. Validate all employee codes exist
-    // 2. Check for duplicate records in batch
-    // 3. Validate clock-out time is after clock-in time
-    // 4. Check if records already exist (if overwriteExisting is false)
-    // 5. Process records in transaction
-    // 6. Calculate work duration and overtime
-    // 7. Update attendance statistics
-    // 8. Generate import report with success/failure details
-    // 9. Send notification to HR about import status
+    // Look up all employee codes in one query
+    const employeeCodes = [...new Set(data.records.map((r) => r.employeeCode))];
+    const employees = await prisma.employee.findMany({
+      where: { employeeCode: { in: employeeCodes } },
+      select: { id: true, employeeCode: true },
+    });
+    const employeeMap = new Map(employees.map((e) => [e.employeeCode, e.id]));
 
-    // Mock validation and processing
-    const mockImportResult = {
-      batchId: crypto.randomUUID(),
-      companyId: data.companyId,
-      totalRecords: data.records.length,
-      successfulRecords: data.records.length - 2, // Mock: 2 failed
-      failedRecords: 2,
-      skippedRecords: 0,
-      errors: [
-        {
-          row: 5,
-          employeeCode: 'EMP999',
-          date: '2024-12-15',
+    const errors: ImportError[] = [];
+    const warnings: ImportWarning[] = [];
+    let successCount = 0;
+    let totalWorkMinutes = 0;
+    let totalOvertimeMinutes = 0;
+    const uniqueEmployeeIds = new Set<string>();
+    let minDate: string | null = null;
+    let maxDate: string | null = null;
+
+    // Process each record
+    for (let i = 0; i < data.records.length; i++) {
+      const record = data.records[i];
+      const rowNum = i + 1;
+
+      // Validate employee exists
+      const employeeId = employeeMap.get(record.employeeCode);
+      if (!employeeId) {
+        errors.push({
+          row: rowNum,
+          employeeCode: record.employeeCode,
+          date: record.date,
           error: 'Employee code not found',
-        },
-        {
-          row: 12,
-          employeeCode: 'EMP005',
-          date: '2024-12-18',
-          error: 'Clock-out time is before clock-in time',
-        },
-      ],
-      warnings: [
-        {
-          row: 8,
-          employeeCode: 'EMP003',
-          date: '2024-12-16',
-          warning: 'Overtime exceeds daily limit',
-        },
-      ],
+        });
+        continue;
+      }
+
+      // Validate clock times
+      if (record.clockOutTime) {
+        const clockIn = new Date(`${record.date}T${record.clockInTime}`);
+        const clockOut = new Date(`${record.date}T${record.clockOutTime}`);
+        if (clockOut <= clockIn) {
+          errors.push({
+            row: rowNum,
+            employeeCode: record.employeeCode,
+            date: record.date,
+            error: 'Clock-out time is before clock-in time',
+          });
+          continue;
+        }
+      }
+
+      const recordDate = new Date(record.date);
+      const clockIn = new Date(`${record.date}T${record.clockInTime}`);
+      const clockOut = record.clockOutTime ? new Date(`${record.date}T${record.clockOutTime}`) : null;
+
+      // Calculate work hours
+      let workMinutes = 0;
+      let overtimeMinutes = 0;
+      if (clockOut) {
+        workMinutes = Math.floor((clockOut.getTime() - clockIn.getTime()) / (1000 * 60));
+        const standardWorkMinutes = 480; // 8 hours
+        if (workMinutes > standardWorkMinutes) {
+          overtimeMinutes = workMinutes - standardWorkMinutes;
+          warnings.push({
+            row: rowNum,
+            employeeCode: record.employeeCode,
+            date: record.date,
+            warning: overtimeMinutes > 120 ? 'Overtime exceeds daily limit' : 'Overtime recorded',
+          });
+        }
+      }
+
+      try {
+        if (data.overwriteExisting) {
+          await prisma.attendanceRecord.upsert({
+            where: {
+              tenantId_employeeId_date: {
+                tenantId,
+                employeeId,
+                date: recordDate,
+              },
+            },
+            create: {
+              tenantId,
+              employeeId,
+              date: recordDate,
+              clockIn,
+              clockOut,
+              workHours: parseFloat((workMinutes / 60).toFixed(2)),
+              overtimeHours: parseFloat((overtimeMinutes / 60).toFixed(2)),
+              status: record.status || 'PRESENT',
+              isLate: false,
+              isEarlyOut: false,
+              approvalStatus: 'APPROVED',
+              remarks: record.notes || null,
+            },
+            update: {
+              clockIn,
+              clockOut,
+              workHours: parseFloat((workMinutes / 60).toFixed(2)),
+              overtimeHours: parseFloat((overtimeMinutes / 60).toFixed(2)),
+              status: record.status || 'PRESENT',
+              remarks: record.notes || null,
+            },
+          });
+        } else {
+          // Check for existing record first
+          const existing = await prisma.attendanceRecord.findUnique({
+            where: {
+              tenantId_employeeId_date: {
+                tenantId,
+                employeeId,
+                date: recordDate,
+              },
+            },
+          });
+
+          if (existing) {
+            warnings.push({
+              row: rowNum,
+              employeeCode: record.employeeCode,
+              date: record.date,
+              warning: 'Record already exists, skipped (overwriteExisting is false)',
+            });
+            continue;
+          }
+
+          await prisma.attendanceRecord.create({
+            data: {
+              tenantId,
+              employeeId,
+              date: recordDate,
+              clockIn,
+              clockOut,
+              workHours: parseFloat((workMinutes / 60).toFixed(2)),
+              overtimeHours: parseFloat((overtimeMinutes / 60).toFixed(2)),
+              status: record.status || 'PRESENT',
+              isLate: false,
+              isEarlyOut: false,
+              approvalStatus: 'APPROVED',
+              remarks: record.notes || null,
+            },
+          });
+        }
+
+        successCount++;
+        totalWorkMinutes += workMinutes;
+        totalOvertimeMinutes += overtimeMinutes;
+        uniqueEmployeeIds.add(employeeId);
+
+        if (!minDate || record.date < minDate) minDate = record.date;
+        if (!maxDate || record.date > maxDate) maxDate = record.date;
+      } catch (dbError) {
+        errors.push({
+          row: rowNum,
+          employeeCode: record.employeeCode,
+          date: record.date,
+          error: dbError instanceof Error ? dbError.message : 'Database error',
+        });
+      }
+    }
+
+    const importResult = {
+      batchId: crypto.randomUUID(),
+      totalRecords: data.records.length,
+      successfulRecords: successCount,
+      failedRecords: errors.length,
+      skippedRecords: data.records.length - successCount - errors.length,
+      errors,
+      warnings: warnings.filter((w) => !w.warning.includes('skipped')),
       summary: {
-        totalWorkMinutes: 48600, // All imported records
-        totalOvertimeMinutes: 1200,
-        uniqueEmployees: 45,
+        totalWorkMinutes,
+        totalOvertimeMinutes,
+        uniqueEmployees: uniqueEmployeeIds.size,
         dateRange: {
-          startDate: '2024-12-01',
-          endDate: '2024-12-23',
+          startDate: minDate || '',
+          endDate: maxDate || '',
         },
       },
       processedAt: new Date().toISOString(),
@@ -121,7 +264,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
 
     const response: ApiResponse = {
       success: true,
-      data: mockImportResult,
+      data: importResult,
       meta: {
         timestamp: new Date().toISOString(),
         requestId: crypto.randomUUID(),
@@ -130,7 +273,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     // Return 207 Multi-Status if there are partial failures
-    const statusCode = mockImportResult.failedRecords > 0 ? 207 : 201;
+    const statusCode = errors.length > 0 ? 207 : 201;
     return NextResponse.json(response, { status: statusCode });
   } catch (error) {
     console.error('[Attendance Bulk Import API] POST Error:', error);

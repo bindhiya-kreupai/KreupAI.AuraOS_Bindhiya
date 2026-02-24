@@ -65,7 +65,7 @@ export const GET = withEnhancedAuth(
         meta: { total: filteredData.length },
       });
     } catch (error) {
-      logger.error('Error fetching WFH requests:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch WFH requests' },
         { status: 500 }
@@ -93,9 +93,10 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Attendance - Work From Home',
+          entityType: 'Attendance - Work From Home',
           details: `Requested WFH from ${data.startDate} to ${data.endDate}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -109,7 +110,7 @@ export const POST = withEnhancedAuth(
           { status: 400 }
         );
       }
-      logger.error('Error creating WFH request:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to create WFH request' },
         { status: 500 }

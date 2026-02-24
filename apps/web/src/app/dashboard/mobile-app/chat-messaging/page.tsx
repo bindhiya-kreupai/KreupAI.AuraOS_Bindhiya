@@ -35,9 +35,9 @@ export default function ChatMessagingPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <MessageSquare className="w-6 h-6 text-indigo-500" />
@@ -50,14 +50,14 @@ export default function ChatMessagingPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Retention Policy */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                     <h2 className="font-bold text-lg mb-6 flex items-center gap-2">
                         <Trash2 className="w-5 h-5 text-rose-500" /> Data Retention
                     </h2>
 
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium mb-2">Message History</label>
                             <select className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
@@ -170,3 +170,4 @@ export default function ChatMessagingPage() {
         </div>
     );
 }
+

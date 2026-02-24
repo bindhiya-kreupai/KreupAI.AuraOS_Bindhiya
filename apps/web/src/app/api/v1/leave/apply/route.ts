@@ -1,54 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 import { z } from 'zod';
 
-// API Response Standard
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: Record<string, unknown>;
-  };
-  meta?: {
-    timestamp: string;
-    requestId: string;
-    apiVersion: string;
-  };
-}
+export const dynamic = 'force-dynamic';
 
 // Validation schemas
 const applyLeaveSchema = z.object({
-  tenantId: z.string().uuid(),
   employeeId: z.string().uuid(),
-  leavePolicyId: z.string().uuid(),
+  leaveTypeId: z.string().uuid(),
+  policyId: z.string().uuid().optional().nullable(),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  leaveType: z.enum(['FULL_DAY', 'HALF_DAY', 'SHORT_LEAVE']).default('FULL_DAY'),
-  halfDayPeriod: z.enum(['FIRST_HALF', 'SECOND_HALF']).optional().nullable(),
+  halfDayStart: z.boolean().default(false),
+  halfDayEnd: z.boolean().default(false),
   reason: z.string().min(10).max(500),
-  emergencyContact: z.string().optional().nullable(),
-  attachments: z.array(z.string()).optional().nullable(),
-  notifyTo: z.array(z.string().uuid()).optional().nullable(),
+  contactNumber: z.string().optional().nullable(),
+  addressDuringLeave: z.string().optional().nullable(),
+  delegateToEmployeeId: z.string().uuid().optional().nullable(),
+  documents: z.array(z.object({
+    fileName: z.string(),
+    fileUrl: z.string(),
+    fileType: z.string(),
+  })).optional().nullable(),
 }).refine(
   (data) => new Date(data.startDate) <= new Date(data.endDate),
   {
     message: 'End date must be after or equal to start date',
     path: ['endDate'],
   }
-).refine(
-  (data) => {
-    if (data.leaveType === 'HALF_DAY') {
-      return data.halfDayPeriod !== null && data.halfDayPeriod !== undefined;
-    }
-    return true;
-  },
-  {
-    message: 'Half day period is required for half-day leave',
-    path: ['halfDayPeriod'],
-  }
 );
+
+/**
+ * Calculate business days between two dates (excluding weekends)
+ */
+function calculateTotalDays(
+  startDate: Date,
+  endDate: Date,
+  halfDayStart: boolean,
+  halfDayEnd: boolean
+): number {
+  let totalDays = 0;
+  const current = new Date(startDate);
+
+  while (current <= endDate) {
+    const dayOfWeek = current.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      totalDays += 1;
+    }
+    current.setDate(current.getDate() + 1);
+  }
+
+  // Adjust for half days
+  if (halfDayStart && totalDays > 0) totalDays -= 0.5;
+  if (halfDayEnd && totalDays > 0) totalDays -= 0.5;
+
+  return totalDays;
+}
 
 /**
  * POST /api/v1/leave/apply
@@ -56,12 +64,13 @@ const applyLeaveSchema = z.object({
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
+    const { user } = context;
     const body = await request.json();
 
     // Validate request body
     const validationResult = applyLeaveSchema.safeParse(body);
     if (!validationResult.success) {
-      const response: ApiResponse = {
+      return NextResponse.json({
         success: false,
         error: {
           code: 'E2001',
@@ -73,60 +82,172 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
           requestId: crypto.randomUUID(),
           apiVersion: 'v1',
         },
-      };
-
-      return NextResponse.json(response, { status: 400 });
+      }, { status: 400 });
     }
 
     const data = validationResult.data;
+    const startDate = new Date(data.startDate);
+    const endDate = new Date(data.endDate);
 
-    // TODO: Implement actual leave application logic
-    // 1. Check employee leave balance
-    // 2. Check for overlapping leave requests
-    // 3. Validate against company leave policy
-    // 4. Check for blackout dates/restricted periods
-    // 5. Calculate total leave days
-    // 6. Send notification to approvers
-    // 7. Create leave application record
+    // Verify the employee belongs to the same tenant
+    const employee = await prisma.employee.findFirst({
+      where: {
+        id: data.employeeId,
+        company: { tenantId: user.tenantId },
+      },
+      select: { id: true, firstName: true, lastName: true, employeeCode: true },
+    });
 
-    const mockLeaveApplication = {
-      id: crypto.randomUUID(),
-      applicationNumber: `LA-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
-      ...data,
-      totalDays: 1, // Calculate based on start/end dates
-      status: 'PENDING',
-      submittedAt: new Date().toISOString(),
-      approvalWorkflow: [
-        {
-          level: 1,
-          approverName: 'Direct Manager',
-          status: 'PENDING',
+    if (!employee) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'E3001',
+          message: 'Employee not found',
         },
-        {
-          level: 2,
-          approverName: 'HR Manager',
-          status: 'PENDING',
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
         },
-      ],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+      }, { status: 404 });
+    }
 
-    const response: ApiResponse = {
+    // Calculate total leave days
+    const totalDays = calculateTotalDays(startDate, endDate, data.halfDayStart, data.halfDayEnd);
+
+    if (totalDays <= 0) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'E2002',
+          message: 'Total leave days must be greater than zero',
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      }, { status: 400 });
+    }
+
+    // Check for overlapping leave requests (PENDING or APPROVED)
+    const overlapping = await prisma.leaveRequest.findFirst({
+      where: {
+        tenantId: user.tenantId,
+        employeeId: data.employeeId,
+        status: { in: ['PENDING', 'APPROVED'] },
+        OR: [
+          { startDate: { lte: endDate }, endDate: { gte: startDate } },
+        ],
+      },
+    });
+
+    if (overlapping) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'E4003',
+          message: 'Overlapping leave request exists for the selected date range',
+          details: { existingRequestId: overlapping.id },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      }, { status: 409 });
+    }
+
+    // Check leave balance if a policy is provided
+    if (data.policyId) {
+      const leaveYear = startDate.getFullYear();
+      const balance = await prisma.leaveBalance.findFirst({
+        where: {
+          tenantId: user.tenantId,
+          employeeId: data.employeeId,
+          policyId: data.policyId,
+          leaveYear,
+        },
+      });
+
+      if (balance && Number(balance.currentBalance) < totalDays) {
+        return NextResponse.json({
+          success: false,
+          error: {
+            code: 'E4002',
+            message: 'Insufficient leave balance',
+            details: {
+              currentBalance: Number(balance.currentBalance),
+              requested: totalDays,
+            },
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        }, { status: 400 });
+      }
+    }
+
+    // Create the leave request
+    const leaveRequest = await prisma.leaveRequest.create({
+      data: {
+        tenantId: user.tenantId,
+        employeeId: data.employeeId,
+        leaveTypeId: data.leaveTypeId,
+        policyId: data.policyId ?? undefined,
+        startDate,
+        endDate,
+        totalDays,
+        halfDayStart: data.halfDayStart,
+        halfDayEnd: data.halfDayEnd,
+        reason: data.reason,
+        contactNumber: data.contactNumber ?? undefined,
+        addressDuringLeave: data.addressDuringLeave ?? undefined,
+        delegateToEmployeeId: data.delegateToEmployeeId ?? undefined,
+        documents: data.documents ?? undefined,
+        status: 'PENDING',
+        currentApproverLevel: 1,
+      },
+    });
+
+    return NextResponse.json({
       success: true,
-      data: mockLeaveApplication,
+      data: {
+        id: leaveRequest.id,
+        tenantId: leaveRequest.tenantId,
+        employeeId: leaveRequest.employeeId,
+        leaveTypeId: leaveRequest.leaveTypeId,
+        policyId: leaveRequest.policyId,
+        startDate: leaveRequest.startDate.toISOString().split('T')[0],
+        endDate: leaveRequest.endDate.toISOString().split('T')[0],
+        totalDays: Number(leaveRequest.totalDays),
+        halfDayStart: leaveRequest.halfDayStart,
+        halfDayEnd: leaveRequest.halfDayEnd,
+        reason: leaveRequest.reason,
+        contactNumber: leaveRequest.contactNumber,
+        addressDuringLeave: leaveRequest.addressDuringLeave,
+        delegateToEmployeeId: leaveRequest.delegateToEmployeeId,
+        documents: leaveRequest.documents,
+        status: leaveRequest.status,
+        appliedAt: leaveRequest.appliedAt.toISOString(),
+        approvers: leaveRequest.approvers,
+        currentApproverLevel: leaveRequest.currentApproverLevel,
+        createdAt: leaveRequest.createdAt.toISOString(),
+        updatedAt: leaveRequest.updatedAt.toISOString(),
+      },
       meta: {
         timestamp: new Date().toISOString(),
         requestId: crypto.randomUUID(),
         apiVersion: 'v1',
       },
-    };
-
-    return NextResponse.json(response, { status: 201 });
+    }, { status: 201 });
   } catch (error) {
     console.error('[Leave Application API] POST Error:', error);
 
-    const response: ApiResponse = {
+    return NextResponse.json({
       success: false,
       error: {
         code: 'E5001',
@@ -138,8 +259,6 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
         requestId: crypto.randomUUID(),
         apiVersion: 'v1',
       },
-    };
-
-    return NextResponse.json(response, { status: 500 });
+    }, { status: 500 });
   }
 });

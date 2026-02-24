@@ -355,9 +355,9 @@ export default function JobBoardsPage() {
   );
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
             <Globe className="w-7 h-7 text-indigo-500" />
@@ -381,7 +381,7 @@ export default function JobBoardsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
@@ -449,7 +449,7 @@ export default function JobBoardsPage() {
       {activeTab === 'postings' && (
         <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 overflow-hidden">
           {/* Filters */}
-          <div className="p-4 border-b border-cloud dark:border-nebula-purple/50 flex flex-col md:flex-row gap-4">
+          <div className="p-4 border-b border-cloud dark:border-nebula-purple/50 flex flex-col md:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
               <input
@@ -478,13 +478,13 @@ export default function JobBoardsPage() {
           <div className="divide-y divide-cloud dark:divide-nebula-purple/50">
             {filteredPostings.map((job) => (
               <div key={job.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-semibold text-ink-black dark:text-pearl truncate">{job.title}</h3>
                       <StatusBadge status={job.status} />
                     </div>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-silver-mist mb-3">
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-silver-mist mb-3">
                       <span className="flex items-center gap-1">
                         <Building2 className="w-4 h-4" />
                         {job.department}
@@ -508,7 +508,7 @@ export default function JobBoardsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-6 text-sm">
+                  <div className="flex items-center gap-3 text-sm">
                     <div className="text-center">
                       <p className="font-bold text-ink-black dark:text-pearl">{job.applications}</p>
                       <p className="text-xs text-silver-mist">Applications</p>
@@ -529,7 +529,7 @@ export default function JobBoardsPage() {
       )}
 
       {activeTab === 'platforms' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {boards.map((board) => (
             <div
               key={board.platform}
@@ -582,7 +582,7 @@ export default function JobBoardsPage() {
       )}
 
       {activeTab === 'analytics' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {/* Applications Over Time */}
           <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50">
             <h3 className="font-semibold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
@@ -617,7 +617,7 @@ export default function JobBoardsPage() {
                   ? ((board.stats.applications / board.stats.views) * 100).toFixed(1)
                   : '0';
                 return (
-                  <div key={board.platform} className="flex items-center gap-4">
+                  <div key={board.platform} className="flex items-center gap-3">
                     <div className={`w-8 h-8 ${board.color} rounded-lg flex items-center justify-center`}>
                       {board.logo}
                     </div>
@@ -645,7 +645,7 @@ export default function JobBoardsPage() {
               <Zap className="w-5 h-5" />
               AI Recommendations
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="bg-white/10 backdrop-blur-sm p-4 rounded-xl">
                 <p className="text-sm text-white/80 mb-2">Best Performing Platform</p>
                 <p className="text-xl font-bold">{ANALYTICS.topPlatform}</p>
@@ -667,3 +667,4 @@ export default function JobBoardsPage() {
     </div>
   );
 }
+

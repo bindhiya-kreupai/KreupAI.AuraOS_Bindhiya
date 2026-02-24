@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, PhoneCall, AlertTriangle, FileText, Download } from 'lucide-react';
-import { TravelRequestService } from '../services';
+import { ShieldCheck, PhoneCall, AlertTriangle, FileText, Download, Loader2 } from 'lucide-react';
+import { TravelSettingsService } from '../services';
 
 export default function TravelInsurancePage() {
-    const [data, setData] = useState<any[]>([]);
+    const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -15,18 +15,27 @@ export default function TravelInsurancePage() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const requests = await TravelRequestService.getRequests();
-            setData(requests);
+            const settings = await TravelSettingsService.getSettings();
+            setData(settings);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+                <span className="ml-2 text-sm text-slate-500">Loading insurance details...</span>
+            </div>
+        );
+    }
+
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <ShieldCheck className="w-8 h-8 text-indigo-500" />
@@ -39,11 +48,10 @@ export default function TravelInsurancePage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Active Policy Card */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div className="lg:col-span-2 bg-gradient-to-br from-indigo-600 to-indigo-800 p-8 rounded-2xl text-white shadow-xl relative overflow-hidden">
                     <div className="relative z-10">
-                        <div className="text-indigo-200 text-sm font-bold uppercase mb-2">Corporate Policy #8829-XJ-2024</div>
+                        <div className="text-indigo-200 text-sm font-bold uppercase mb-2">Corporate Policy #{data?.tenantId?.substring(0, 4) || '0000'}-XJ-2024</div>
                         <h2 className="text-3xl font-bold mb-6">Global Business Travel Protection</h2>
                         <div className="grid grid-cols-2 gap-8">
                             <div>
@@ -66,7 +74,6 @@ export default function TravelInsurancePage() {
                     </div>
                 </div>
 
-                {/* Docs */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                     <h3 className="font-bold text-lg mb-4 text-slate-900 dark:text-slate-100">Policy Documents</h3>
                     <div className="space-y-3">
@@ -83,7 +90,7 @@ export default function TravelInsurancePage() {
                 </div>
             </div>
 
-            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 p-6 rounded-2xl flex items-start gap-4">
+            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 p-6 rounded-2xl flex items-start gap-3">
                 <AlertTriangle className="w-6 h-6 text-amber-600 mt-1" />
                 <div>
                     <h3 className="text-lg font-bold text-amber-700 dark:text-amber-400 mb-2">Before you travel</h3>
@@ -96,3 +103,4 @@ export default function TravelInsurancePage() {
         </div>
     );
 }
+

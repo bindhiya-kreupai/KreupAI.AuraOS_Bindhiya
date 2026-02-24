@@ -33,9 +33,9 @@ function GroundOpsContent() {
   const cleanersList = activeStaff.filter((s) => s.role === 'aircraft_cleaner').length;
 
   return (
-    <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+    <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Truck className="w-6 h-6 text-orange-500" />
@@ -50,7 +50,7 @@ function GroundOpsContent() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
         {/* Active Turnarounds */}
         <div className="lg:col-span-2 space-y-4 overflow-y-auto pb-20">
           <h3 className="font-bold text-lg mb-2">Live Ramp Activity</h3>
@@ -59,7 +59,7 @@ function GroundOpsContent() {
               key={f.assignmentId || i}
               className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between hover:shadow-md transition-all"
             >
-              <div className="flex items-center gap-4 mb-4 md:mb-0">
+              <div className="flex items-center gap-3 mb-4 md:mb-0">
                 <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500">
                   {f.flightNumber.substring(0, 2)}
                 </div>
@@ -76,7 +76,7 @@ function GroundOpsContent() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
                 <div className="text-right">
                   <div className="text-sm font-bold text-slate-700 dark:text-slate-300">
                     {f.status === 'completed' ? 'Finished' : `${f.turnaroundTime}m total`}
@@ -96,7 +96,7 @@ function GroundOpsContent() {
         </div>
 
         {/* Safety & Staffing */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
               <Users className="w-5 h-5 text-indigo-500" /> Ground Crew Roster
@@ -132,7 +132,7 @@ function GroundOpsContent() {
             </button>
           </div>
 
-          <div className="bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900/30 p-6 flex items-start gap-4">
+          <div className="bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900/30 p-6 flex items-start gap-3">
             <AlertTriangle className="w-6 h-6 text-rose-600 dark:text-rose-400 shrink-0" />
             <div>
               <h3 className="font-bold text-rose-900 dark:text-rose-300 text-sm">
@@ -162,3 +162,4 @@ export default function GroundOpsClient() {
     </Suspense>
   );
 }
+

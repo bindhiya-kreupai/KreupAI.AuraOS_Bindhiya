@@ -1,15 +1,35 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Users,
     Heart,
     Calendar,
     MessageCircle,
-    Plus
+    Plus,
+    Loader2
 } from 'lucide-react';
+import { ERGService } from '../services';
 
 export default function ErgManagementPage() {
+    const [groups, setGroups] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await ERGService.getAllERGs();
+                setGroups(Array.isArray(data) ? data : []);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
     const ergs = [
         {
             name: 'Women @ Aura',
@@ -45,9 +65,17 @@ export default function ErgManagementPage() {
         }
     ];
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Users className="w-6 h-6 text-indigo-500" />
@@ -60,7 +88,7 @@ export default function ErgManagementPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {ergs.map((erg, i) => (
                     <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl transition-all group flex flex-col">
                         <div className={`h-24 ${erg.color === 'bg-rainbow-gradient' ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500' : erg.color} p-6 flex justify-between items-start text-white`}>
@@ -75,7 +103,7 @@ export default function ErgManagementPage() {
                             <p className="text-slate-500 text-sm mb-6 flex-1">{erg.description}</p>
 
                             <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-                                <div className="flex items-center gap-4 text-sm text-slate-500">
+                                <div className="flex items-center gap-3 text-sm text-slate-500">
                                     <span className="flex items-center gap-1 font-bold"><Users className="w-4 h-4" /> {erg.members}</span>
                                     <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {erg.nextEvent}</span>
                                 </div>
@@ -90,3 +118,4 @@ export default function ErgManagementPage() {
         </div>
     );
 }
+

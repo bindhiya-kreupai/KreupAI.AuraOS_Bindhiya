@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Package,
     Wrench,
@@ -17,8 +17,10 @@ import {
     Download,
     Edit,
     Trash2,
-    X
+    X,
+    Loader2
 } from 'lucide-react';
+import { FinancialAssetService } from '../../services';
 
 type AssetCategory = 'all' | 'it-accessories' | 'office-supplies' | 'tools' | 'maintenance';
 type StockStatus = 'in-stock' | 'low-stock' | 'out-of-stock' | 'on-order';
@@ -52,176 +54,23 @@ interface AssetFormData {
 export default function OperationalAssetsPage() {
     const [filter, setFilter] = useState<AssetCategory>('all');
     const [showModal, setShowModal] = useState(false);
-    const [assets, setAssets] = useState<OperationalAsset[]>([
-        {
-            id: 'OA-001',
-            name: 'USB-C Cables (3m)',
-            category: 'it-accessories',
-            sku: 'USB-C-3M-001',
-            quantity: 45,
-            reorderPoint: 20,
-            unitCost: 12.50,
-            totalValue: 562.50,
-            location: 'IT Storage Room A',
-            supplier: 'Tech Supply Co',
-            lastRestocked: '2024-11-15',
-            status: 'in-stock'
-        },
-        {
-            id: 'OA-002',
-            name: 'Wireless Mouse - Logitech',
-            category: 'it-accessories',
-            sku: 'MOUSE-LOG-M720',
-            quantity: 8,
-            reorderPoint: 15,
-            unitCost: 29.99,
-            totalValue: 239.92,
-            location: 'IT Storage Room A',
-            supplier: 'Office Depot',
-            lastRestocked: '2024-10-20',
-            status: 'low-stock'
-        },
-        {
-            id: 'OA-003',
-            name: 'A4 Paper Reams',
-            category: 'office-supplies',
-            sku: 'PAPER-A4-500',
-            quantity: 120,
-            reorderPoint: 50,
-            unitCost: 5.99,
-            totalValue: 718.80,
-            location: 'Supply Closet B',
-            supplier: 'Staples',
-            lastRestocked: '2024-12-01',
-            status: 'in-stock'
-        },
-        {
-            id: 'OA-004',
-            name: 'Ballpoint Pens (Black)',
-            category: 'office-supplies',
-            sku: 'PEN-BLK-BIC',
-            quantity: 0,
-            reorderPoint: 100,
-            unitCost: 0.75,
-            totalValue: 0,
-            location: 'Supply Closet B',
-            supplier: 'Office Supplies Inc',
-            lastRestocked: '2024-09-15',
-            status: 'out-of-stock'
-        },
-        {
-            id: 'OA-005',
-            name: 'Screwdriver Set - Professional',
-            category: 'tools',
-            sku: 'TOOL-SCREW-PRO',
-            quantity: 12,
-            reorderPoint: 5,
-            unitCost: 45.00,
-            totalValue: 540.00,
-            location: 'Maintenance Room',
-            supplier: 'Hardware World',
-            lastRestocked: '2024-08-10',
-            status: 'in-stock'
-        },
-        {
-            id: 'OA-006',
-            name: 'Cable Organizers',
-            category: 'it-accessories',
-            sku: 'ORG-CABLE-001',
-            quantity: 35,
-            reorderPoint: 25,
-            unitCost: 8.50,
-            totalValue: 297.50,
-            location: 'IT Storage Room A',
-            supplier: 'Cable Management Pro',
-            lastRestocked: '2024-11-20',
-            status: 'in-stock'
-        },
-        {
-            id: 'OA-007',
-            name: 'Cleaning Supplies Kit',
-            category: 'maintenance',
-            sku: 'CLEAN-KIT-STD',
-            quantity: 15,
-            reorderPoint: 10,
-            unitCost: 22.00,
-            totalValue: 330.00,
-            location: 'Janitorial Storage',
-            supplier: 'CleanCo',
-            lastRestocked: '2024-11-25',
-            status: 'in-stock'
-        },
-        {
-            id: 'OA-008',
-            name: 'Network Cables Cat6 (10m)',
-            category: 'it-accessories',
-            sku: 'NET-CAT6-10M',
-            quantity: 18,
-            reorderPoint: 15,
-            unitCost: 15.99,
-            totalValue: 287.82,
-            location: 'IT Storage Room B',
-            supplier: 'Network Solutions',
-            lastRestocked: '2024-10-30',
-            status: 'in-stock'
-        },
-        {
-            id: 'OA-009',
-            name: 'Sticky Notes (Assorted)',
-            category: 'office-supplies',
-            sku: 'STICKY-ASST-3M',
-            quantity: 6,
-            reorderPoint: 20,
-            unitCost: 4.50,
-            totalValue: 27.00,
-            location: 'Supply Closet A',
-            supplier: '3M Direct',
-            lastRestocked: '2024-09-20',
-            status: 'low-stock'
-        },
-        {
-            id: 'OA-010',
-            name: 'Power Drill - Cordless',
-            category: 'tools',
-            sku: 'DRILL-CORD-DEW',
-            quantity: 5,
-            reorderPoint: 3,
-            unitCost: 120.00,
-            totalValue: 600.00,
-            location: 'Maintenance Room',
-            supplier: 'Hardware World',
-            lastRestocked: '2024-07-15',
-            status: 'in-stock'
-        },
-        {
-            id: 'OA-011',
-            name: 'HDMI Cables (2m)',
-            category: 'it-accessories',
-            sku: 'HDMI-2M-STD',
-            quantity: 22,
-            reorderPoint: 15,
-            unitCost: 9.99,
-            totalValue: 219.78,
-            location: 'IT Storage Room A',
-            supplier: 'Tech Supply Co',
-            lastRestocked: '2024-11-10',
-            status: 'in-stock'
-        },
-        {
-            id: 'OA-012',
-            name: 'Whiteboard Markers',
-            category: 'office-supplies',
-            sku: 'MARKER-WB-4PK',
-            quantity: 28,
-            reorderPoint: 20,
-            unitCost: 6.75,
-            totalValue: 189.00,
-            location: 'Supply Closet B',
-            supplier: 'Office Depot',
-            lastRestocked: '2024-11-28',
-            status: 'in-stock'
-        }
-    ]);
+    const [assets, setAssets] = useState<OperationalAsset[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await FinancialAssetService.getAssets();
+                setAssets(data as unknown as OperationalAsset[]);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     const [formData, setFormData] = useState<AssetFormData>({
         name: '',
@@ -402,10 +251,18 @@ export default function OperationalAssetsPage() {
         }
     ];
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Package className="w-6 h-6 text-indigo-500" />
@@ -428,7 +285,7 @@ export default function OperationalAssetsPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 shrink-0">
                 {stats.map((stat, i) => {
                     const Icon = stat.icon;
                     return (
@@ -449,7 +306,7 @@ export default function OperationalAssetsPage() {
             </div>
 
             {/* Search and Filters */}
-            <div className="flex flex-col md:flex-row gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row gap-3 shrink-0">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
@@ -634,14 +491,14 @@ export default function OperationalAssetsPage() {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div className="space-y-4">
                                 <h3 className="font-bold text-lg flex items-center gap-2 text-indigo-600">
                                     <Package className="w-5 h-5" />
                                     Item Information
                                 </h3>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                                             Item Name *
@@ -698,7 +555,7 @@ export default function OperationalAssetsPage() {
                                     Inventory Details
                                 </h3>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <div>
                                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                                             Quantity *
@@ -756,7 +613,7 @@ export default function OperationalAssetsPage() {
                                     Location & Supplier
                                 </h3>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                                             Location *
@@ -812,3 +669,4 @@ export default function OperationalAssetsPage() {
         </div>
     );
 }
+

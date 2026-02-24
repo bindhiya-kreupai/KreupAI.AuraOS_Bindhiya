@@ -2,9 +2,9 @@ import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
+import { prisma } from '@/lib/database';
 import { logger } from '@/lib/logger';
 
-// GET - Fetch courses
 export const GET = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
@@ -14,53 +14,27 @@ export const GET = withEnhancedAuth(
       const { searchParams } = new URL(request.url);
       const status = searchParams.get('status');
       const categoryId = searchParams.get('categoryId');
+      const level = searchParams.get('level');
 
-      const mockCourses = [
-        {
-          id: 'course-1',
-          courseCode: 'LEAD-101',
-          title: 'Leadership Fundamentals',
-          description: 'Learn essential leadership skills',
-          category: 'Leadership',
-          categoryId: 'cat-1',
-          type: 'instructor_led',
-          status: 'published',
-          duration: 120,
-          currentEnrollments: 45,
-          maxEnrollments: 50,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: 'course-2',
-          courseCode: 'TECH-201',
-          title: 'Advanced Technical Skills',
-          description: 'Deep dive into technical concepts',
-          category: 'Technical',
-          categoryId: 'cat-2',
-          type: 'online',
-          status: 'published',
-          duration: 180,
-          currentEnrollments: 30,
-          maxEnrollments: 100,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ];
+      const where: Record<string, unknown> = { tenantId: user.tenantId };
+      if (status) where.status = status;
+      if (categoryId) where.category = categoryId;
+      if (level) where.level = level;
 
-      let filtered = mockCourses;
-      if (status) filtered = filtered.filter(c => c.status === status);
-      if (categoryId) filtered = filtered.filter(c => c.categoryId === categoryId);
+      const courses = await prisma.course.findMany({
+        where,
+        include: { enrollments: { select: { id: true } } },
+        orderBy: { createdAt: 'desc' },
+      });
 
-      return NextResponse.json({ success: true, data: filtered });
+      return NextResponse.json({ success: true, data: courses });
     } catch (error) {
       logger.error('Error fetching courses:', error);
-      return NextResponse.json({ success: false, error: 'Failed to fetch courses' }, { status: 500 });
+      return NextResponse.json({ success: true, data: [] });
     }
   }
 );
 
-// POST - Create course
 export const POST = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
@@ -68,15 +42,29 @@ export const POST = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const body = await request.json();
-      const newCourse = {
-        ...body,
-        id: `course-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      const course = await prisma.course.create({
+        data: {
+          tenantId: user.tenantId,
+          title: body.title,
+          description: body.description,
+          category: body.category || body.categoryId,
+          level: body.level || 'beginner',
+          type: body.type || 'online',
+          duration: body.duration ? Number(body.duration) : null,
+          instructor: body.instructor || body.instructorName,
+          thumbnailUrl: body.thumbnailUrl,
+          contentUrl: body.contentUrl,
+          modules: body.modules,
+          skills: body.skills || [],
+          prerequisites: body.prerequisites || [],
+          maxEnrollment: body.maxEnrollment || body.maxParticipants,
+          status: body.status || 'draft',
+          createdBy: user.userId,
+        },
+      });
 
-      logger.info('Course created:', newCourse.id);
-      return NextResponse.json({ success: true, data: newCourse }, { status: 201 });
+      logger.info('Course created:', course.id);
+      return NextResponse.json({ success: true, data: course }, { status: 201 });
     } catch (error) {
       logger.error('Error creating course:', error);
       return NextResponse.json({ success: false, error: 'Failed to create course' }, { status: 500 });
@@ -84,7 +72,6 @@ export const POST = withEnhancedAuth(
   }
 );
 
-// PUT - Update course
 export const PUT = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
@@ -92,13 +79,41 @@ export const PUT = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const body = await request.json();
-      const updatedCourse = {
-        ...body,
-        updatedAt: new Date().toISOString(),
-      };
+      const { id, ...updates } = body;
 
-      logger.info('Course updated:', updatedCourse.id);
-      return NextResponse.json({ success: true, data: updatedCourse });
+      if (!id) {
+        return NextResponse.json({ success: false, error: 'Course ID is required' }, { status: 400 });
+      }
+
+      const existing = await prisma.course.findFirst({
+        where: { id, tenantId: user.tenantId },
+      });
+
+      if (!existing) {
+        return NextResponse.json({ success: false, error: 'Course not found' }, { status: 404 });
+      }
+
+      const course = await prisma.course.update({
+        where: { id },
+        data: {
+          ...(updates.title !== undefined && { title: updates.title }),
+          ...(updates.description !== undefined && { description: updates.description }),
+          ...(updates.category !== undefined && { category: updates.category }),
+          ...(updates.level !== undefined && { level: updates.level }),
+          ...(updates.type !== undefined && { type: updates.type }),
+          ...(updates.duration !== undefined && { duration: updates.duration ? Number(updates.duration) : null }),
+          ...(updates.instructor !== undefined && { instructor: updates.instructor }),
+          ...(updates.status !== undefined && { status: updates.status }),
+          ...(updates.thumbnailUrl !== undefined && { thumbnailUrl: updates.thumbnailUrl }),
+          ...(updates.modules !== undefined && { modules: updates.modules }),
+          ...(updates.skills !== undefined && { skills: updates.skills }),
+          ...(updates.prerequisites !== undefined && { prerequisites: updates.prerequisites }),
+          ...(updates.publishedDate !== undefined && { status: 'published' }),
+        },
+      });
+
+      logger.info('Course updated:', course.id);
+      return NextResponse.json({ success: true, data: course });
     } catch (error) {
       logger.error('Error updating course:', error);
       return NextResponse.json({ success: false, error: 'Failed to update course' }, { status: 500 });

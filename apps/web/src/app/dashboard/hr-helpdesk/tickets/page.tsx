@@ -159,9 +159,9 @@ export default function HelpdeskTicketsPage() {
     };
 
     return (
-        <div className="h-[calc(100vh-6rem)] flex flex-col space-y-6 pb-2">
+        <div className="h-[calc(100vh-6rem)] flex flex-col space-y-4 pb-2">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <LifeBuoy className="w-6 h-6 text-celestial-indigo" />
@@ -182,7 +182,7 @@ export default function HelpdeskTicketsPage() {
             {/* Kanban Board */}
             <div className="flex-1 overflow-x-auto overflow-y-hidden">
                 <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-                    <div className="flex gap-6 h-full min-w-[1000px] pb-4">
+                    <div className="flex gap-3 h-full min-w-[1000px] pb-4">
                         {COLUMNS.map(colId => (
                             <div key={colId} className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-cloud dark:border-nebula-purple/20 h-full max-h-full">
                                 {/* Column Header */}
@@ -223,3 +223,4 @@ export default function HelpdeskTicketsPage() {
         </div>
     );
 }
+

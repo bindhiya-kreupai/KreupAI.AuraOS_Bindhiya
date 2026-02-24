@@ -9,10 +9,15 @@ export default function EssPage() {
     'Leave Application',
     'Payslip Access',
     'Tax Declaration',
+    'Tax Documents',
+    'Benefits Enrollment',
     'Attendance View',
     'Team Directory',
     'Request Center',
-    'My Documents'
+    'My Documents',
+    'Life Events',
+    'Dependents',
+    'Career Interests'
   ];
 
   return (
@@ -24,3 +29,4 @@ export default function EssPage() {
     />
   );
 }
+

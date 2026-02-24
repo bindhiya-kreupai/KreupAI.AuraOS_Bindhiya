@@ -30,12 +30,14 @@ const SHIFT_TYPES = {
     WO: { label: 'Week Off', color: 'bg-slate-100 text-slate-500 border-slate-200' },
 };
 
-const getMockShift = (idx: number, dateIdx: number) => {
-    if (dayIndex(dateIdx) > 5) return 'WO';
-    return ['G', 'M', 'N'][idx % 3];
+const getShiftCode = (rosters: any[], empId: string, dateIdx: number): string => {
+    const roster = rosters.find((r: any) => (r.employeeId || r.id) === empId);
+    if (roster && roster.shifts && roster.shifts[dateIdx]) {
+        return roster.shifts[dateIdx];
+    }
+    // If no roster data, return empty
+    return '';
 };
-
-const dayIndex = (i: number) => i + 1;
 
 interface Employee {
     id: string;
@@ -57,17 +59,25 @@ export default function RosterAssignmentPage() {
         try {
             setLoading(true);
             const result = await RosterService.getRosters();
-            if (result && result.length > 0) {
-                setRosters(result);
-            }
+            setRosters(result || []);
+            // Extract employees from roster data
+            const empList: Employee[] = (result || []).map((r: any) => ({
+                id: r.employeeId || r.id,
+                name: r.employeeName || r.name || 'Unknown',
+                role: r.role || r.department || '',
+                avatar: (r.employeeName || r.name || 'U').split(' ').map((n: string) => n[0]).join(''),
+            }));
+            // Deduplicate by id
+            const unique = empList.filter((e, i, arr) => arr.findIndex(x => x.id === e.id) === i);
+            setEmployees(unique);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -88,8 +98,8 @@ export default function RosterAssignmentPage() {
             </div>
 
             {/* Controls */}
-            <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-wrap justify-between items-center gap-4">
-                <div className="flex items-center gap-4">
+            <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-wrap justify-between items-center gap-3">
+                <div className="flex items-center gap-3">
                     <button className="p-1 hover:bg-slate-100 rounded-lg"><ChevronLeft className="w-5 h-5 text-slate-500" /></button>
                     <div className="text-center">
                         <span className="block text-sm font-bold text-ink-black dark:text-pearl">Apr 01 - Apr 07, 2025</span>
@@ -163,7 +173,7 @@ export default function RosterAssignmentPage() {
                                     </div>
                                 </td>
                                 {DATES.map((d, dateIdx) => {
-                                    const shiftCode = getMockShift(empIdx, dateIdx);
+                                    const shiftCode = getShiftCode(rosters, emp.id, dateIdx);
                                     // @ts-ignore
                                     const style = SHIFT_TYPES[shiftCode] || SHIFT_TYPES['G'];
                                     return (
@@ -190,3 +200,4 @@ export default function RosterAssignmentPage() {
         </div>
     );
 }
+

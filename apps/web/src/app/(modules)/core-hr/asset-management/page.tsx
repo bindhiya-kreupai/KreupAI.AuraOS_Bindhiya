@@ -139,11 +139,10 @@ export default function AssetManagementPage() {
     <div className="flex flex-wrap gap-2 mb-6">
       <button
         onClick={() => setSelectedCategory(null)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-          selectedCategory === null
-            ? 'bg-indigo-600 text-white shadow-md'
-            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-        }`}
+        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedCategory === null
+          ? 'bg-indigo-600 text-white shadow-md'
+          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+          }`}
       >
         <Package className="w-4 h-4" />
         All Assets
@@ -156,11 +155,10 @@ export default function AssetManagementPage() {
           <button
             key={category.value}
             onClick={() => setSelectedCategory(category.value)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              selectedCategory === category.value
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedCategory === category.value
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+              }`}
           >
             <Icon className="w-4 h-4" />
             {category.label}
@@ -179,7 +177,7 @@ export default function AssetManagementPage() {
     if (!dashboardStats) return null;
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {/* Total Assets */}
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-2">
@@ -282,9 +280,8 @@ export default function AssetManagementPage() {
       sortable: true,
       render: (row: Asset) => (
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-            ASSET_CATEGORIES.find((c) => c.value === row.category)?.color || 'bg-gray-100 text-gray-600'
-          }`}>
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${ASSET_CATEGORIES.find((c) => c.value === row.category)?.color || 'bg-gray-100 text-gray-600'
+            }`}>
             {React.createElement(
               ASSET_CATEGORIES.find((c) => c.value === row.category)?.icon || Package,
               { className: 'w-5 h-5' }
@@ -431,7 +428,7 @@ export default function AssetManagementPage() {
   // FORM RENDERER
   // ========================================
 
-  const renderForm = (data: Partial<Asset>, onChange: (field: string, value: any) => void) => {
+  const renderForm = (data: Partial<Asset>, onChange: (field: keyof Asset, value: any) => void) => {
     return (
       <div className="space-y-4">
         {/* Basic Information */}
@@ -440,7 +437,7 @@ export default function AssetManagementPage() {
             <Package className="w-4 h-4" />
             Basic Information
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Asset Code <span className="text-red-500">*</span>
@@ -518,7 +515,7 @@ export default function AssetManagementPage() {
             <FileText className="w-4 h-4" />
             Identification
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Serial Number
@@ -576,7 +573,7 @@ export default function AssetManagementPage() {
             <DollarSign className="w-4 h-4" />
             Financial Details
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Purchase Date
@@ -638,7 +635,7 @@ export default function AssetManagementPage() {
             <CheckCircle className="w-4 h-4" />
             Warranty Information
           </h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Start Date
@@ -682,7 +679,7 @@ export default function AssetManagementPage() {
             <Activity className="w-4 h-4" />
             Status & Condition
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Condition
@@ -753,27 +750,27 @@ export default function AssetManagementPage() {
     },
     ...(row.status === 'AVAILABLE'
       ? [
-          {
-            label: 'Assign to Employee',
-            icon: UserPlus,
-            onClick: () => {
-              setSelectedAsset(row);
-              setAssignModalOpen(true);
-            },
+        {
+          label: 'Assign to Employee',
+          icon: UserPlus,
+          onClick: () => {
+            setSelectedAsset(row);
+            setAssignModalOpen(true);
           },
-        ]
+        },
+      ]
       : []),
     ...(row.status === 'ASSIGNED'
       ? [
-          {
-            label: 'Return Asset',
-            icon: RotateCcw,
-            onClick: () => {
-              setSelectedAsset(row);
-              setReturnModalOpen(true);
-            },
+        {
+          label: 'Return Asset',
+          icon: RotateCcw,
+          onClick: () => {
+            setSelectedAsset(row);
+            setReturnModalOpen(true);
           },
-        ]
+        },
+      ]
       : []),
     {
       label: 'Schedule Maintenance',
@@ -819,7 +816,7 @@ export default function AssetManagementPage() {
   // ========================================
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <DashboardStatsCards />
       <AlertBanners />
       <CategoryFilters />
@@ -833,7 +830,7 @@ export default function AssetManagementPage() {
         renderForm={renderForm}
         rowActions={rowActions}
         searchPlaceholder="Search by asset code, name, serial number..."
-        filterOptions={{
+        filterParams={{
           category: selectedCategory || undefined,
         }}
         onDataChange={fetchDashboardStats}
@@ -843,3 +840,4 @@ export default function AssetManagementPage() {
     </div>
   );
 }
+

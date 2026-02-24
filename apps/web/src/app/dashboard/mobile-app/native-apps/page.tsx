@@ -36,9 +36,9 @@ export default function NativeAppsPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Smartphone className="w-6 h-6 text-indigo-500" />
@@ -52,7 +52,7 @@ export default function NativeAppsPage() {
             </div>
 
             {/* Version Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {/* iOS Card */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 dark:bg-slate-800 rounded-bl-full -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
@@ -69,7 +69,7 @@ export default function NativeAppsPage() {
                         <h3 className="text-lg font-bold mb-1">AuraOS for iOS</h3>
                         <p className="text-slate-500 text-sm mb-6">Last updated: Mar 15, 2024</p>
 
-                        <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="grid grid-cols-2 gap-3 mb-6">
                             <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
                                 <div className="text-xs text-slate-500 mb-1">Downloads</div>
                                 <div className="font-bold flex items-center gap-1">
@@ -111,7 +111,7 @@ export default function NativeAppsPage() {
                         <h3 className="text-lg font-bold mb-1">AuraOS for Android</h3>
                         <p className="text-slate-500 text-sm mb-6">Last updated: Mar 10, 2024</p>
 
-                        <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="grid grid-cols-2 gap-3 mb-6">
                             <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
                                 <div className="text-xs text-slate-500 mb-1">Downloads</div>
                                 <div className="font-bold flex items-center gap-1">
@@ -151,7 +151,7 @@ export default function NativeAppsPage() {
                         { v: 'v2.4.0', platform: 'iOS', date: 'Mar 10, 2024', author: 'Sarah Connor', type: 'Minor', desc: 'Added FaceID support and expense claims module.' },
                         { v: 'v2.3.5', platform: 'Both', date: 'Feb 28, 2024', author: 'Mike Ross', type: 'Patch', desc: 'UI improvements for dark mode.' },
                     ].map((release, i) => (
-                        <div key={i} className="px-6 py-4 flex flex-col md:flex-row md:items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <div key={i} className="px-6 py-4 flex flex-col md:flex-row md:items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                             <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center shrink-0">
                                 <GitBranch className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                             </div>
@@ -176,3 +176,4 @@ export default function NativeAppsPage() {
         </div>
     );
 }
+

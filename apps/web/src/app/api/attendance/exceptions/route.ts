@@ -1,5 +1,6 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
@@ -15,86 +16,119 @@ export const GET = withEnhancedAuth(
       const date = searchParams.get('date');
       const type = searchParams.get('type');
       const status = searchParams.get('status');
+      const employeeId = searchParams.get('employeeId');
 
-      const mockExceptions = [
-        {
-          id: '1',
-          employeeId: 'emp-1',
-          employeeName: 'John Doe',
-          date: '2024-08-20',
-          type: 'LATE_ARRIVAL',
-          checkIn: '09:45',
-          expectedCheckIn: '09:00',
-          deviation: 45,
-          reason: 'Traffic jam',
-          status: 'PENDING',
-          createdAt: '2024-08-20T09:45:00',
-        },
-        {
-          id: '2',
-          employeeId: 'emp-2',
-          employeeName: 'Jane Smith',
-          date: '2024-08-21',
-          type: 'EARLY_DEPARTURE',
-          checkOut: '17:00',
-          expectedCheckOut: '18:00',
-          deviation: 60,
-          reason: 'Medical emergency',
-          status: 'APPROVED',
-          createdAt: '2024-08-21T17:00:00',
-          approvedAt: '2024-08-22T09:00:00',
-        },
-        {
-          id: '3',
-          employeeId: 'emp-3',
-          employeeName: 'Mike Ross',
-          date: '2024-08-22',
-          type: 'MISSING_PUNCH',
-          missingPunch: 'CHECK_OUT',
-          expectedCheckOut: '18:00',
-          reason: 'Forgot to punch out',
-          status: 'PENDING',
-          createdAt: '2024-08-23T08:00:00',
-        },
-        {
-          id: '4',
-          employeeId: 'emp-4',
-          employeeName: 'Alice Brown',
-          date: '2024-08-23',
-          type: 'SHORT_DURATION',
-          totalHours: 6,
-          expectedHours: 8,
-          deviation: 2,
-          reason: 'Half day approved',
-          status: 'APPROVED',
-          createdAt: '2024-08-23T16:00:00',
-        },
-      ];
+      // Build where clause - only fetch records that have exceptions
+      const where: Record<string, unknown> = {
+        tenantId: user.tenantId,
+        OR: [
+          { isLate: true },
+          { isEarlyOut: true },
+          { status: 'ABSENT' },
+          { status: 'HALF_DAY' },
+        ],
+      };
 
-      let filteredData = mockExceptions;
-      if (type) filteredData = filteredData.filter(e => e.type === type);
-      if (status) filteredData = filteredData.filter(e => e.status === status);
-      if (date) filteredData = filteredData.filter(e => e.date === date);
+      if (date) {
+        where.date = new Date(date);
+      }
+
+      if (employeeId) {
+        where.employeeId = employeeId;
+      }
+
+      // Filter by exception type
+      if (type) {
+        delete where.OR;
+        switch (type) {
+          case 'LATE_ARRIVAL':
+            where.isLate = true;
+            break;
+          case 'EARLY_DEPARTURE':
+            where.isEarlyOut = true;
+            break;
+          case 'MISSING_PUNCH':
+            // Records with clock-in but no clock-out or vice versa
+            where.OR = [
+              { clockIn: { not: null }, clockOut: null, status: { not: 'ABSENT' } },
+              { clockIn: null, clockOut: { not: null }, status: { not: 'ABSENT' } },
+            ];
+            break;
+          case 'SHORT_DURATION':
+            where.status = 'HALF_DAY';
+            break;
+          case 'ABSENT':
+            where.status = 'ABSENT';
+            break;
+        }
+      }
+
+      if (status) {
+        where.approvalStatus = status;
+      }
+
+      const records = await prisma.attendanceRecord.findMany({
+        where,
+        orderBy: { date: 'desc' },
+      });
+
+      // Look up employee names
+      const employeeIds = Array.from(new Set(records.map(r => r.employeeId)));
+      const employees = employeeIds.length > 0
+        ? await prisma.employee.findMany({
+          where: { id: { in: employeeIds } },
+          select: { id: true, firstName: true, lastName: true },
+        })
+        : [];
+      const employeeMap = new Map(employees.map(e => [e.id, `${e.firstName} ${e.lastName}`]));
+
+      // Map records to exception format
+      const exceptions = records.map((record) => {
+        let exceptionType = 'ABSENT';
+        if (record.isLate) exceptionType = 'LATE_ARRIVAL';
+        else if (record.isEarlyOut) exceptionType = 'EARLY_DEPARTURE';
+        else if (record.status === 'HALF_DAY') exceptionType = 'SHORT_DURATION';
+        else if (
+          (record.clockIn && !record.clockOut) ||
+          (!record.clockIn && record.clockOut)
+        ) exceptionType = 'MISSING_PUNCH';
+
+        return {
+          id: record.id,
+          employeeId: record.employeeId,
+          employeeName: employeeMap.get(record.employeeId) || 'Unknown Employee',
+          date: record.date.toISOString().split('T')[0],
+          type: exceptionType,
+          checkIn: record.clockIn ? record.clockIn.toISOString() : null,
+          checkOut: record.clockOut ? record.clockOut.toISOString() : null,
+          workHours: record.workHours,
+          status: record.approvalStatus,
+          isRegularized: record.isRegularized,
+          remarks: record.remarks,
+          createdAt: record.createdAt.toISOString(),
+        };
+      });
 
       const summary = {
-        total: filteredData.length,
-        pending: filteredData.filter(e => e.status === 'PENDING').length,
-        approved: filteredData.filter(e => e.status === 'APPROVED').length,
-        rejected: filteredData.filter(e => e.status === 'REJECTED').length,
+        total: exceptions.length,
+        pending: exceptions.filter(e => e.status === 'PENDING').length,
+        approved: exceptions.filter(e => e.status === 'APPROVED').length,
+        rejected: exceptions.filter(e => e.status === 'REJECTED').length,
         byType: {
-          lateArrival: filteredData.filter(e => e.type === 'LATE_ARRIVAL').length,
-          earlyDeparture: filteredData.filter(e => e.type === 'EARLY_DEPARTURE').length,
-          missingPunch: filteredData.filter(e => e.type === 'MISSING_PUNCH').length,
-          shortDuration: filteredData.filter(e => e.type === 'SHORT_DURATION').length,
+          lateArrival: exceptions.filter(e => e.type === 'LATE_ARRIVAL').length,
+          earlyDeparture: exceptions.filter(e => e.type === 'EARLY_DEPARTURE').length,
+          missingPunch: exceptions.filter(e => e.type === 'MISSING_PUNCH').length,
+          shortDuration: exceptions.filter(e => e.type === 'SHORT_DURATION').length,
+          absent: exceptions.filter(e => e.type === 'ABSENT').length,
         },
       };
 
       return NextResponse.json({
         success: true,
-        data: { exceptions: filteredData, summary },
+        data: { exceptions, summary },
       });
     } catch (error) {
-      logger.error('Error fetching exceptions:', error);
+      logger.error({ error }, 'Error fetching exceptions:');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch exceptions' },
         { status: 500 }

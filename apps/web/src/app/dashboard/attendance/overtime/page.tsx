@@ -48,23 +48,22 @@ export default function OvertimePage() {
     const fetchOvertimeData = async () => {
         try {
             const records = await OvertimeService.getOvertimeRequests();
-            if (records.length > 0) {
-                setOvertimeRecords(records as any);
-                // Calculate summary from records
-                const approved = records.filter((r: any) => r.status === 'Approved');
-                const totalHours = records.reduce((sum: number, r: any) => sum + (r.hours || 0), 0);
-                setSummary({
-                    totalHours,
-                    weekdayHours: totalHours * 0.6,
-                    weekendHours: totalHours * 0.4,
-                    approvedHours: approved.reduce((sum: number, r: any) => sum + (r.hours || 0), 0),
-                    totalEarnings: records.reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
-                    pendingEarnings: records.filter((r: any) => r.status === 'Pending').reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
-                });
-            }
+            setOvertimeRecords((records || []) as any);
+            // Calculate summary from records
+            const recordsArr = (records || []) as any[];
+            const approved = recordsArr.filter((r: any) => r.status === 'Approved');
+            const totalHours = recordsArr.reduce((sum: number, r: any) => sum + (r.hours || 0), 0);
+            setSummary({
+                totalHours,
+                weekdayHours: totalHours * 0.6,
+                weekendHours: totalHours * 0.4,
+                approvedHours: approved.reduce((sum: number, r: any) => sum + (r.hours || 0), 0),
+                totalEarnings: recordsArr.reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
+                pendingEarnings: recordsArr.filter((r: any) => r.status === 'Pending').reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
+            });
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -87,9 +86,9 @@ export default function OvertimePage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Clock className="w-6 h-6 text-celestial-indigo" />
@@ -104,7 +103,7 @@ export default function OvertimePage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left: Stats & Policy */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     {/* Est. Payout Card */}
                     <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10"></div>
@@ -236,3 +235,4 @@ export default function OvertimePage() {
         </div>
     );
 }
+

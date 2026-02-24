@@ -46,12 +46,12 @@ export default function TimeCapturePage() {
     const fetchCaptures = async () => {
         try {
             const today = new Date().toISOString().split('T')[0];
-            const captures = await AttendanceCheckService.getChecks({ date: today });
-
-            if (captures.length > 0) {
-                setCaptures(captures as any);
-                // Determine current status from latest check
-                const latestCheck = captures[captures.length - 1];
+            const result = await AttendanceCheckService.getChecks({ date: today });
+            const capturesArr = (result || []) as any[];
+            setCaptures(capturesArr as any);
+            // Determine current status from latest check
+            if (capturesArr.length > 0) {
+                const latestCheck = capturesArr[capturesArr.length - 1];
                 if (latestCheck.type === 'CHECK_IN' || latestCheck.type === 'BREAK_END') {
                     setStatus('IN');
                 } else if (latestCheck.type === 'BREAK_START') {
@@ -62,7 +62,7 @@ export default function TimeCapturePage() {
             }
         } catch (error) {
             console.error('Error:', error);
-                    }
+        }
     };
 
     const handleCapture = async (type: 'CHECK_IN' | 'CHECK_OUT' | 'BREAK_START' | 'BREAK_END') => {
@@ -96,10 +96,10 @@ export default function TimeCapturePage() {
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 pb-6">
 
             {/* Clock & Action Panel */}
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-3">
 
                 {/* Main Card */}
                 <div className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-lg p-8 flex flex-col items-center justify-center text-center relative overflow-hidden">
@@ -120,7 +120,7 @@ export default function TimeCapturePage() {
                         </span>
                     </div>
 
-                    <div className="flex gap-4 w-full">
+                    <div className="flex gap-3 w-full">
                         {status === 'OUT' ? (
                             <button
                                 onClick={() => handleCapture('CHECK_IN')}
@@ -158,7 +158,7 @@ export default function TimeCapturePage() {
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                     <div className="bg-white dark:bg-stellar-blue p-5 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                         <p className="text-xs text-silver-mist uppercase font-bold">Today's Hours</p>
                         <h3 className="text-2xl font-bold text-indigo-600">04:32</h3>
@@ -183,7 +183,7 @@ export default function TimeCapturePage() {
             </div>
 
             {/* History & Map Panel */}
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-3">
 
                 {/* Recent Activity */}
                 <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex-1 flex flex-col">
@@ -252,3 +252,4 @@ export default function TimeCapturePage() {
         </div>
     );
 }
+

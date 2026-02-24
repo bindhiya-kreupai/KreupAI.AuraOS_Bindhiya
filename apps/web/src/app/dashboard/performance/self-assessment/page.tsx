@@ -1,19 +1,58 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { PerformanceReviewService } from '../core/services';
+import { PerformanceReviewService, ReviewCycleService } from '../core/services';
 import {
     UserCheck,
     Save,
     Send,
-    Star
+    Star,
+    Loader2
 } from 'lucide-react';
 
 export default function SelfAssessmentPage() {
+    const [loading, setLoading] = useState(true);
+    const [activeCycle, setActiveCycle] = useState<any>(null);
+    const [activeReview, setActiveReview] = useState<any>(null);
+
+    useEffect(() => {
+        async function loadData() {
+            try {
+                const [cycles, reviews] = await Promise.all([
+                    ReviewCycleService.getCycles({ isActive: true }),
+                    PerformanceReviewService.getReviews(),
+                ]);
+                if (cycles.length > 0) {
+                    setActiveCycle(cycles[0]);
+                }
+                // Find the review in self_assessment status
+                const selfReview = reviews.find((r: any) =>
+                    r.status === 'self_assessment' || r.status === 'not_started'
+                );
+                if (selfReview) {
+                    setActiveReview(selfReview);
+                }
+            } catch (error) {
+                console.error('Failed to load self-assessment data:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <UserCheck className="w-6 h-6 text-indigo-500" />
@@ -33,12 +72,18 @@ export default function SelfAssessmentPage() {
 
             <div className="max-w-4xl mx-auto space-y-8">
                 <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-900/30">
-                    <h3 className="font-bold text-lg mb-2 text-indigo-900 dark:text-indigo-100">Annual Review 2025</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">Please complete your self-evaluation highlighting key projects, challenges overcome, and skill acquisition.</p>
+                    <h3 className="font-bold text-lg mb-2 text-indigo-900 dark:text-indigo-100">
+                        {activeCycle ? activeCycle.name : 'Self Assessment'}
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                        {activeCycle
+                            ? `Please complete your self-evaluation for the ${activeCycle.type || 'review'} cycle (${activeCycle.periodStart ? new Date(activeCycle.periodStart).toLocaleDateString() : ''} - ${activeCycle.periodEnd ? new Date(activeCycle.periodEnd).toLocaleDateString() : ''}).`
+                            : 'No active review cycle. Please complete your self-evaluation highlighting key projects, challenges overcome, and skill acquisition.'}
+                    </p>
                 </div>
 
                 {/* Questions */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <label className="block font-bold mb-2">1. What were your key achievements this year?</label>
                         <textarea className="w-full h-32 p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none resize-none" placeholder="Describe your major accomplishments..."></textarea>
@@ -51,7 +96,7 @@ export default function SelfAssessmentPage() {
 
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <label className="block font-bold mb-4">3. How would you rate your overall performance?</label>
-                        <div className="flex gap-4">
+                        <div className="flex gap-3">
                             {[1, 2, 3, 4, 5].map((rating) => (
                                 <button key={rating} className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-700 font-bold hover:bg-indigo-50 hover:border-indigo-500 hover:text-indigo-600 transition-all focus:ring-2 focus:ring-indigo-500">
                                     <div className="text-2xl mb-1">{rating}</div>
@@ -69,3 +114,4 @@ export default function SelfAssessmentPage() {
         </div>
     );
 }
+

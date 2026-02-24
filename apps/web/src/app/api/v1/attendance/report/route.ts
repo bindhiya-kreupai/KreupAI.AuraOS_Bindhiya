@@ -1,8 +1,11 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 
 // API Response Standard
-interface ApiResponse<T = any> {
+interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: {
@@ -39,6 +42,7 @@ interface ApiResponse<T = any> {
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const { searchParams } = new URL(request.url);
+    const tenantId = context.user.tenantId;
     const companyId = searchParams.get('companyId');
     const departmentId = searchParams.get('departmentId');
     const employeeId = searchParams.get('employeeId');
@@ -83,75 +87,139 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       return NextResponse.json(response, { status: 400 });
     }
 
-    // TODO: Implement actual attendance report query
-    // 1. Query attendance records for date range
-    // 2. Calculate summary statistics
-    // 3. Group by employee
-    // 4. Calculate attendance percentage
-    // 5. Identify anomalies
+    const start = new Date(startDate);
+    const end = new Date(endDate);
 
-    const mockAttendanceReport = [
-      {
-        employeeId: crypto.randomUUID(),
-        employeeCode: 'EMP001',
-        employeeName: 'John Doe',
-        department: 'Engineering',
-        totalDays: 22,
-        presentDays: 20,
-        absentDays: 1,
-        leaveDays: 1,
-        halfDays: 0,
-        weekendDays: 8,
-        holidays: 2,
-        lateDays: 3,
-        totalLateMinutes: 45,
-        averageLateMinutes: 15,
-        earlyLeaveDays: 1,
-        totalEarlyLeaveMinutes: 30,
-        overtimeDays: 5,
-        totalOvertimeMinutes: 300,
-        averageOvertimeMinutes: 60,
-        totalWorkMinutes: 10560, // 176 hours
-        attendancePercentage: 95.45,
-        regularizationRequests: 2,
-        pendingRegularizations: 1,
+    // Build employee filter based on company and department
+    interface EmployeeWhereFilter {
+      companyId: string;
+      departmentId?: string;
+      id?: string;
+    }
+    const employeeWhere: EmployeeWhereFilter = { companyId };
+    if (departmentId) employeeWhere.departmentId = departmentId;
+    if (employeeId) employeeWhere.id = employeeId;
+
+    // Get employees matching the filter
+    const employees = await prisma.employee.findMany({
+      where: employeeWhere,
+      select: {
+        id: true,
+        employeeCode: true,
+        firstName: true,
+        lastName: true,
+        department: { select: { name: true } },
       },
-      {
-        employeeId: crypto.randomUUID(),
-        employeeCode: 'EMP002',
-        employeeName: 'Jane Smith',
-        department: 'Engineering',
-        totalDays: 22,
-        presentDays: 22,
-        absentDays: 0,
-        leaveDays: 0,
-        halfDays: 1,
-        weekendDays: 8,
-        holidays: 2,
-        lateDays: 0,
-        totalLateMinutes: 0,
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    const totalEmployees = await prisma.employee.count({ where: employeeWhere });
+
+    const employeeIds = employees.map((e) => e.id);
+
+    // Get attendance records for these employees in the date range
+    const records = await prisma.attendanceRecord.findMany({
+      where: {
+        tenantId,
+        employeeId: { in: employeeIds },
+        date: { gte: start, lte: end },
+      },
+    });
+
+    // Get regularization requests count
+    const regularizations = await prisma.attendanceRegularization.findMany({
+      where: {
+        tenantId,
+        employeeId: { in: employeeIds },
+        date: { gte: start, lte: end },
+      },
+      select: {
+        employeeId: true,
+        status: true,
+      },
+    });
+
+    // Group records by employee
+    const recordsByEmployee = new Map<string, typeof records>();
+    for (const record of records) {
+      const existing = recordsByEmployee.get(record.employeeId) || [];
+      existing.push(record);
+      recordsByEmployee.set(record.employeeId, existing);
+    }
+
+    // Group regularizations by employee
+    const regByEmployee = new Map<string, { total: number; pending: number }>();
+    for (const reg of regularizations) {
+      const existing = regByEmployee.get(reg.employeeId) || { total: 0, pending: 0 };
+      existing.total++;
+      if (reg.status === 'PENDING') existing.pending++;
+      regByEmployee.set(reg.employeeId, existing);
+    }
+
+    // Calculate total working days in the range
+    const totalDaysInRange = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+    // Build report for each employee
+    const report = employees.map((emp) => {
+      const empRecords = recordsByEmployee.get(emp.id) || [];
+      const empRegs = regByEmployee.get(emp.id) || { total: 0, pending: 0 };
+
+      const presentDays = empRecords.filter((r) => ['PRESENT', 'LATE', 'EARLY_OUT'].includes(r.status)).length;
+      const absentDays = empRecords.filter((r) => r.status === 'ABSENT').length;
+      const leaveDays = empRecords.filter((r) => r.status === 'ON_LEAVE').length;
+      const halfDays = empRecords.filter((r) => r.status === 'HALF_DAY').length;
+      const holidays = empRecords.filter((r) => r.status === 'HOLIDAY').length;
+      const weekendDays = empRecords.filter((r) => r.status === 'WEEK_OFF').length;
+      const lateDays = empRecords.filter((r) => r.isLate).length;
+      const earlyLeaveDays = empRecords.filter((r) => r.isEarlyOut).length;
+
+      const totalWorkMinutes = Math.round(empRecords.reduce((sum, r) => sum + r.workHours * 60, 0));
+      const totalOvertimeMinutes = Math.round(empRecords.reduce((sum, r) => sum + r.overtimeHours * 60, 0));
+      const overtimeDays = empRecords.filter((r) => r.overtimeHours > 0).length;
+
+      // For late/early metrics, we approximate from the records
+      const workingDays = totalDaysInRange - weekendDays - holidays;
+      const attendancePercentage = workingDays > 0
+        ? parseFloat(((presentDays / workingDays) * 100).toFixed(2))
+        : 0;
+
+      return {
+        employeeId: emp.id,
+        employeeCode: emp.employeeCode,
+        employeeName: `${emp.firstName} ${emp.lastName}`,
+        department: emp.department.name,
+        totalDays: totalDaysInRange,
+        presentDays,
+        absentDays,
+        leaveDays,
+        halfDays,
+        weekendDays,
+        holidays,
+        lateDays,
+        totalLateMinutes: 0, // Would need punch-level data for precise calculation
         averageLateMinutes: 0,
-        earlyLeaveDays: 0,
+        earlyLeaveDays,
         totalEarlyLeaveMinutes: 0,
-        overtimeDays: 2,
-        totalOvertimeMinutes: 120,
-        averageOvertimeMinutes: 60,
-        totalWorkMinutes: 11880, // 198 hours
-        attendancePercentage: 100,
-        regularizationRequests: 0,
-        pendingRegularizations: 0,
-      },
-    ];
+        overtimeDays,
+        totalOvertimeMinutes,
+        averageOvertimeMinutes: overtimeDays > 0 ? Math.round(totalOvertimeMinutes / overtimeDays) : 0,
+        totalWorkMinutes,
+        attendancePercentage,
+        regularizationRequests: empRegs.total,
+        pendingRegularizations: empRegs.pending,
+      };
+    });
 
     const response: ApiResponse = {
       success: true,
-      data: mockAttendanceReport,
+      data: report,
       meta: {
         pagination: {
           page,
           limit,
-          total: 2,
-          totalPages: 1,
+          total: totalEmployees,
+          totalPages: Math.ceil(totalEmployees / limit),
         },
         timestamp: new Date().toISOString(),
         requestId: crypto.randomUUID(),

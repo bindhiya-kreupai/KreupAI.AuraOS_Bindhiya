@@ -1,27 +1,8 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-
-// API Response Standard
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: Record<string, unknown>;
-  };
-  meta?: {
-    pagination?: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    };
-    timestamp: string;
-    requestId: string;
-    apiVersion: string;
-  };
-}
+import { prisma } from '@aura/database';
 
 /**
  * GET /api/v1/payslips/:employeeId
@@ -29,68 +10,124 @@ interface ApiResponse<T = any> {
  *
  * Query Parameters:
  * - limit (optional): Number of records (default: 12, max: 24)
+ * - page (optional): Page number (default: 1)
  * - month (optional): Specific month in YYYY-MM format
  */
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { params }: { params: { employeeId: string } }) => {
+  async (request: NextRequest, context: { params: Promise<{ employeeId: string }> }) => {
     try {
-      const { employeeId } = params;
+      const { employeeId } = await context.params;
+      const user = (context as unknown as { user: { tenantId: string; userId: string } }).user;
+      const tenantId = user.tenantId;
       const { searchParams } = new URL(request.url);
       const limit = Math.min(
         parseInt(searchParams.get('limit') || '12'),
         24
       );
+      const page = Math.max(parseInt(searchParams.get('page') || '1'), 1);
+      const skip = (page - 1) * limit;
       const month = searchParams.get('month');
 
-      // TODO: Implement actual database query
-      const mockPayslips = Array.from({ length: Math.min(limit, 12) }, (_, i) => {
-        const date = new Date();
-        date.setMonth(date.getMonth() - i);
-        const payrollMonth = date.toISOString().slice(0, 7);
-
-        return {
-          id: crypto.randomUUID(),
-          payrollRunId: crypto.randomUUID(),
-          employeeId,
-          employeeCode: 'EMP001',
-          employeeName: 'John Doe',
-          month: payrollMonth,
-          basicSalary: 5000,
-          totalEarnings: 6500,
-          totalDeductions: 780,
-          grossSalary: 6500,
-          netSalary: 5720,
-          status: i === 0 ? 'CALCULATED' : 'PAID',
-          pdfUrl: i === 0 ? null : `/payslips/${crypto.randomUUID()}.pdf`,
-          createdAt: new Date(date.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-        };
+      // Verify employee belongs to this tenant
+      const employee = await prisma.employee.findFirst({
+        where: { id: employeeId, tenantId },
+        select: { id: true },
       });
 
-      const filteredPayslips = month
-        ? mockPayslips.filter((p) => p.month === month)
-        : mockPayslips;
+      if (!employee) {
+        return NextResponse.json({
+          success: false,
+          error: {
+            code: 'E3001',
+            message: 'Employee not found in this tenant',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        }, { status: 404 });
+      }
 
-      const response: ApiResponse = {
+      // Build where clause for payslips
+      // Payslips are linked through PayrollRun which has tenantId
+      const where: Record<string, unknown> = {
+        employeeId,
+        payrollRun: { tenantId },
+      };
+
+      if (month) {
+        where.payrollRun = { tenantId, payrollMonth: month };
+      }
+
+      const [payslips, total] = await Promise.all([
+        prisma.payslip.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          take: limit,
+          skip,
+          select: {
+            id: true,
+            payrollRunId: true,
+            employeeId: true,
+            employeeCode: true,
+            employeeName: true,
+            basicSalary: true,
+            totalEarnings: true,
+            totalDeductions: true,
+            grossSalary: true,
+            netSalary: true,
+            status: true,
+            pdfUrl: true,
+            createdAt: true,
+            payrollRun: {
+              select: {
+                payrollMonth: true,
+                currency: true,
+              },
+            },
+          },
+        }),
+        prisma.payslip.count({ where }),
+      ]);
+
+      const data = payslips.map((p) => ({
+        id: p.id,
+        payrollRunId: p.payrollRunId,
+        employeeId: p.employeeId,
+        employeeCode: p.employeeCode,
+        employeeName: p.employeeName,
+        month: p.payrollRun.payrollMonth,
+        basicSalary: Number(p.basicSalary),
+        totalEarnings: Number(p.totalEarnings),
+        totalDeductions: Number(p.totalDeductions),
+        grossSalary: Number(p.grossSalary),
+        netSalary: Number(p.netSalary),
+        currency: p.payrollRun.currency,
+        status: p.status,
+        pdfUrl: p.pdfUrl,
+        createdAt: p.createdAt.toISOString(),
+      }));
+
+      return NextResponse.json({
         success: true,
-        data: filteredPayslips,
+        data,
         meta: {
           pagination: {
-            page: 1,
+            page,
             limit,
-            total: filteredPayslips.length,
-            totalPages: 1,
+            total,
+            totalPages: Math.ceil(total / limit),
           },
           timestamp: new Date().toISOString(),
           requestId: crypto.randomUUID(),
           apiVersion: 'v1',
         },
-      };
-
-      return NextResponse.json(response, { status: 200 });
+      }, { status: 200 });
     } catch (error) {
       console.error('[Payslips API] GET Error:', error);
 
-      const response: ApiResponse = {
+      return NextResponse.json({
         success: false,
         error: {
           code: 'E5001',
@@ -102,9 +139,7 @@ export const GET = withEnhancedAuth(
           requestId: crypto.randomUUID(),
           apiVersion: 'v1',
         },
-      };
-
-      return NextResponse.json(response, { status: 500 });
+      }, { status: 500 });
     }
   }
 );

@@ -12,9 +12,9 @@ import {
 
 export default function StandupsPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <MessageCircle className="w-6 h-6 text-indigo-500" />
@@ -27,7 +27,7 @@ export default function StandupsPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Updates Feed */}
                 <div className="lg:col-span-2 flex flex-col h-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                     <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
@@ -40,14 +40,14 @@ export default function StandupsPage() {
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
                         {[
                             { name: 'Sarah Jenkins', role: 'Frontend Dev', time: '9:15 AM', status: 'Working on Dashboard UI', blocker: 'None' },
                             { name: 'Raj Patel', role: 'Backend Lead', time: '9:30 AM', status: 'Fixing API latency issues', blocker: 'Need DB credentials update' },
                             { name: 'Elena Rossi', role: 'Designer', time: '10:05 AM', status: 'Finalizing icon set', blocker: 'None' },
                             { name: 'Kenji Sato', role: 'Product Manager', time: '10:15 AM', status: 'Reviewing Q1 roadmap', blocker: 'Waiting for stakeholder feedback' },
                         ].map((update, i) => (
-                            <div key={i} className="flex gap-4 group">
+                            <div key={i} className="flex gap-3 group">
                                 <div className="flex flex-col items-center">
                                     <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">
                                         {update.name.split(' ').map(n => n[0]).join('')}
@@ -76,7 +76,7 @@ export default function StandupsPage() {
                                         )}
                                     </div>
 
-                                    <div className="flex gap-4 mt-2">
+                                    <div className="flex gap-3 mt-2">
                                         <button className="text-xs font-bold text-slate-400 hover:text-indigo-600 flex items-center gap-1">
                                             👍 Like
                                         </button>
@@ -91,7 +91,7 @@ export default function StandupsPage() {
                 </div>
 
                 {/* Sidebar */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-indigo-600 text-white rounded-2xl p-6 shadow-lg relative overflow-hidden">
                         <div className="relative z-10">
                             <h3 className="font-bold text-lg mb-2">Team Mood</h3>
@@ -128,3 +128,4 @@ export default function StandupsPage() {
         </div>
     );
 }
+

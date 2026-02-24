@@ -39,9 +39,9 @@ export default function MobileTimesheetsPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Clock className="w-6 h-6 text-indigo-500" />
@@ -64,7 +64,7 @@ export default function MobileTimesheetsPage() {
             </div>
 
             {/* Stats Summary */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
                     <div className="text-xs text-slate-500 mb-1">Total Hours</div>
                     <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">142<span className="text-sm text-slate-400">h</span></div>
@@ -93,7 +93,7 @@ export default function MobileTimesheetsPage() {
                         { name: 'Bob Smith', role: 'Sales rep', av: 'BS', start: '08:30 AM', end: '04:30 PM', duration: '8h', project: 'Client Visits', device: 'Android 14', location: 'Jersey City, NJ' },
                         { name: 'Charlie Brown', role: 'Logistics', av: 'CB', start: '09:00 AM', end: 'Running', duration: '5h 15m', project: 'Delivery Route 4', device: 'iOS 16.5', location: 'Queens, NY' },
                     ].map((entry, i) => (
-                        <div key={i} className="relative flex items-center gap-6 group">
+                        <div key={i} className="relative flex items-center gap-3 group">
                             <div className="absolute left-8 -translate-x-1/2 w-4 h-4 rounded-full border-4 border-white dark:border-slate-900 bg-indigo-500 z-10"></div>
 
                             <div className="w-16 text-right text-sm font-medium text-slate-500 pt-1 shrink-0">
@@ -121,7 +121,7 @@ export default function MobileTimesheetsPage() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-slate-500 mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-500 mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
                                     <div className="flex items-center gap-1.5">
                                         <Clock className="w-3.5 h-3.5" />
                                         {entry.start} - {entry.end}
@@ -147,3 +147,4 @@ export default function MobileTimesheetsPage() {
         </div>
     );
 }
+

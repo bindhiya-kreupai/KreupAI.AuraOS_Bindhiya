@@ -129,7 +129,7 @@ export default function ChatbotBuilderPage() {
 
             {/* Toolbar */}
             <div className="flex justify-between items-center bg-white dark:bg-stellar-blue p-4 border-b border-cloud dark:border-nebula-purple/50">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     <h1 className="text-xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <GitFork className="w-6 h-6 text-indigo-500" />
                         Conversation Flow Builder
@@ -158,7 +158,7 @@ export default function ChatbotBuilderPage() {
             <div className="flex-1 flex bg-slate-50 dark:bg-slate-900/20 relative">
 
                 {/* Sidebar Pallete */}
-                <div className="w-64 bg-white dark:bg-stellar-blue border-r border-cloud dark:border-nebula-purple/50 p-4 flex flex-col gap-4 z-10">
+                <div className="w-64 bg-white dark:bg-stellar-blue border-r border-cloud dark:border-nebula-purple/50 p-4 flex flex-col gap-3 z-10">
                     <h3 className="text-xs font-bold text-silver-mist uppercase tracking-wider mb-2">Components</h3>
 
                     <div className="p-3 bg-white border-2 border-slate-100 rounded-lg cursor-grab hover:border-indigo-200 hover:shadow-md transition-all flex items-center gap-3">
@@ -225,3 +225,4 @@ export default function ChatbotBuilderPage() {
         </div>
     );
 }
+

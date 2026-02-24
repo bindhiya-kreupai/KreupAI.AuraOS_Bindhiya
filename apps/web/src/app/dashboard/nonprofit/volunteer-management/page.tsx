@@ -10,8 +10,8 @@ import {
 
 export default function VolunteerManagementPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <HeartHandshake className="w-6 h-6 text-indigo-500" />
@@ -24,7 +24,7 @@ export default function VolunteerManagementPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                     <h3 className="font-bold text-lg mb-4">Active Volunteers</h3>
                     <div className="overflow-x-auto">
@@ -61,7 +61,7 @@ export default function VolunteerManagementPage() {
                     </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-gradient-to-br from-indigo-600 to-purple-600 text-white p-6 rounded-2xl shadow-xl">
                         <div className="flex items-center gap-2 mb-2 opacity-80">
                             <Users className="w-5 h-5" />
@@ -71,7 +71,7 @@ export default function VolunteerManagementPage() {
                         <div className="flex items-center gap-2 text-indigo-100 text-sm mb-4">
                             <span className="bg-white/20 px-1.5 rounded text-xs">+12%</span> vs last month
                         </div>
-                        <div className="grid grid-cols-2 gap-4 text-sm font-bold">
+                        <div className="grid grid-cols-2 gap-3 text-sm font-bold">
                             <div>
                                 <div className="opacity-70 text-xs uppercase">Active</div>
                                 850
@@ -111,3 +111,4 @@ export default function VolunteerManagementPage() {
         </div>
     );
 }
+

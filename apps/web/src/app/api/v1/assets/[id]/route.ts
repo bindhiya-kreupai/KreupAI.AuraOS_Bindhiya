@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { AssetService } from '@/lib/services/asset.service';
+import { ServiceProxy } from '@/lib/services/service-proxy';
 import { z } from 'zod';
 
 // API Response Standard
@@ -35,7 +35,8 @@ export const GET = withEnhancedAuth(
       const { id } = context.params;
       const { user } = context;
 
-      const asset = await AssetService.findById(id, user.tenantId);
+      // Fetch asset from microservice
+      const asset = await ServiceProxy.get('employee', `/assets/${id}`, { tenantId: user.tenantId });
 
       if (!asset) {
         const response: ApiResponse = {
@@ -98,7 +99,8 @@ export const PUT = withEnhancedAuth(
       const { user } = context;
       const body = await request.json();
 
-      const asset = await AssetService.update(id, user.tenantId, body);
+      // Update asset via microservice
+      const asset = await ServiceProxy.put('employee', `/assets/${id}`, { ...body, tenantId: user.tenantId });
 
       const response: ApiResponse = {
         success: true,
@@ -155,7 +157,8 @@ export const DELETE = withEnhancedAuth(
       const { id } = context.params;
       const { user } = context;
 
-      await AssetService.delete(id, user.tenantId);
+      // Soft delete asset via microservice
+      await ServiceProxy.delete('employee', `/assets/${id}?tenantId=${user.tenantId}`);
 
       const response: ApiResponse = {
         success: true,

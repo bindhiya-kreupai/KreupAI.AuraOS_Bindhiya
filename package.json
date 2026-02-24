@@ -3,8 +3,9 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
+        "verify": "node verify-setup.js",
         "build": "turbo run build",
-        "dev": "turbo run dev --concurrency=15",
+        "dev": "turbo run dev --concurrency=25",
         "lint": "turbo run lint",
         "test": "turbo run test",
         "nav:check": "node scripts/nav-smoke.js",

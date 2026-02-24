@@ -66,9 +66,9 @@ export default function VisitorPassPage() {
     const [selectedVisitor, setSelectedVisitor] = useState<typeof VISITORS[0] | null>(null);
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <QrCode className="w-6 h-6 text-indigo-500" />
@@ -87,9 +87,9 @@ export default function VisitorPassPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-y-auto lg:overflow-visible">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-y-auto lg:overflow-visible">
                 {/* Left: Visitor List */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="font-bold text-ink-black dark:text-pearl flex items-center gap-2">
@@ -116,7 +116,7 @@ export default function VisitorPassPage() {
                                     `}
                                 >
                                     <div className="flex justify-between items-start mb-3">
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-3">
                                             <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-300 font-bold text-lg">
                                                 {visitor.photo}
                                             </div>
@@ -136,7 +136,7 @@ export default function VisitorPassPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-6 text-sm text-slate-500 pl-[4rem]">
+                                    <div className="flex items-center gap-3 text-sm text-slate-500 pl-[4rem]">
                                         <span className="flex items-center gap-1.5">
                                             <Clock className="w-4 h-4 text-indigo-500" /> {visitor.time}
                                         </span>
@@ -157,7 +157,7 @@ export default function VisitorPassPage() {
                 </div>
 
                 {/* Right: Pass Preview */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     <AnimatePresence mode="wait">
                         {selectedVisitor ? (
                             <motion.div
@@ -253,7 +253,7 @@ export default function VisitorPassPage() {
                             <p className="text-sm text-silver-mist mb-6">Send a digital pass to your guest.</p>
 
                             <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="text-xs font-bold text-slate-500 mb-1 block">First Name</label>
                                         <input type="text" className="w-full p-2.5 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20" />
@@ -271,7 +271,7 @@ export default function VisitorPassPage() {
                                     <label className="text-xs font-bold text-slate-500 mb-1 block">Company / Purpose</label>
                                     <input type="text" placeholder="e.g., Design Agency - Briefing" className="w-full p-2.5 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20" />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="text-xs font-bold text-slate-500 mb-1 block">Date</label>
                                         <input type="date" className="w-full p-2.5 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none" />
@@ -293,3 +293,4 @@ export default function VisitorPassPage() {
         </div>
     );
 }
+

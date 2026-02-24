@@ -8,8 +8,9 @@ export default function AttendanceLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="w-full h-full space-y-6">
+        <div className="w-full h-full space-y-4">
             {children}
         </div>
     );
 }
+

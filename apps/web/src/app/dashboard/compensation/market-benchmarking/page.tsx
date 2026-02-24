@@ -5,7 +5,8 @@ import {
     Globe,
     BarChart3,
     ArrowRight,
-    Search
+    Search,
+    Loader2
 } from 'lucide-react';
 import {
     BarChart,
@@ -34,22 +35,41 @@ export default function MarketBenchmarkingPage() {
             setBenchmarks(data);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
-    const data = [
-        { name: 'L1: Junior', internal: 60, market: 65 },
-        { name: 'L2: Mid', internal: 95, market: 100 },
-        { name: 'L3: Senior', internal: 130, market: 140 },
-        { name: 'L4: Lead', internal: 170, market: 165 },
-        { name: 'L5: Manager', internal: 210, market: 220 },
-    ];
+
+    // Build chart data from benchmarks
+    const chartData = benchmarks.length > 0
+        ? benchmarks.map((b: any) => ({
+            name: b.jobTitle || b.benchmarkName || b.gradeEquivalent || '--',
+            internal: b.baseSalary50thPercentile ? Math.round(Number(b.baseSalary50thPercentile) / 1000) : 0,
+            market: b.totalComp50thPercentile ? Math.round(Number(b.totalComp50thPercentile) / 1000) : (b.percentile50 ? Math.round(Number(b.percentile50) / 1000) : 0),
+        }))
+        : [];
+
+    // Compute average compa-ratio
+    const avgCompaRatio = benchmarks.length > 0
+        ? benchmarks.reduce((sum: number, b: any) => {
+            const internal = Number(b.baseSalary50thPercentile) || 0;
+            const market = Number(b.totalComp50thPercentile) || Number(b.percentile50) || 0;
+            return sum + (market > 0 ? internal / market : 1);
+        }, 0) / benchmarks.length
+        : 0;
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Globe className="w-6 h-6 text-indigo-500" />
@@ -63,52 +83,70 @@ export default function MarketBenchmarkingPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
-                <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col">
-                    <h3 className="font-bold mb-6">Engineering: Software Developer vs. Market (P50)</h3>
-                    <div className="flex-1 w-full min-h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                                <YAxis tickFormatter={(val) => `$${val}k`} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                                <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: 8 }} />
-                                <Legend />
-                                <Bar dataKey="internal" name="Internal Avg" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={30} />
-                                <Bar dataKey="market" name="Market Median" fill="#94a3b8" radius={[4, 4, 0, 0]} barSize={30} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
+            {benchmarks.length === 0 ? (
+                <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
+                    <Globe className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                    <p className="text-sm text-slate-400">No market benchmark data available.</p>
+                    <p className="text-xs text-slate-300 mt-1">Import benchmark data to compare your compensation against market rates.</p>
                 </div>
-
-                <div className="lg:col-span-1 space-y-4">
-                    <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl">
-                        <h3 className="font-bold text-indigo-900 dark:text-indigo-100 mb-2">Compa-Ratio Analysis</h3>
-                        <div className="text-4xl font-bold text-indigo-600 mb-1">0.94</div>
-                        <p className="text-xs text-indigo-700 dark:text-indigo-300">Overall, we are paying 6% below market median.</p>
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
+                    <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col">
+                        <h3 className="font-bold mb-6">Compensation vs. Market (in $K)</h3>
+                        {chartData.length > 0 ? (
+                            <div className="flex-1 w-full min-h-[300px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                        <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                                        <YAxis tickFormatter={(val) => `$${val}k`} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                                        <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: 8 }} />
+                                        <Legend />
+                                        <Bar dataKey="internal" name="Internal" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={30} />
+                                        <Bar dataKey="market" name="Market Median" fill="#94a3b8" radius={[4, 4, 0, 0]} barSize={30} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-slate-400 py-4">No chart data available.</p>
+                        )}
                     </div>
 
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-                        <h3 className="font-bold text-sm mb-4">Data Sources</h3>
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center font-bold text-xs">R</div>
-                                <div>
-                                    <div className="text-sm font-bold">Radford Global</div>
-                                    <div className="text-[10px] text-slate-500">Tech Sector, 2024</div>
-                                </div>
+                    <div className="lg:col-span-1 space-y-4">
+                        <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl">
+                            <h3 className="font-bold text-indigo-900 dark:text-indigo-100 mb-2">Compa-Ratio Analysis</h3>
+                            <div className="text-4xl font-bold text-indigo-600 mb-1">
+                                {avgCompaRatio > 0 ? avgCompaRatio.toFixed(2) : '--'}
                             </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center font-bold text-xs">M</div>
-                                <div>
-                                    <div className="text-sm font-bold">Mercer High Tech</div>
-                                    <div className="text-[10px] text-slate-500">Software, 2023 Q4</div>
-                                </div>
+                            <p className="text-xs text-indigo-700 dark:text-indigo-300">
+                                {avgCompaRatio > 0
+                                    ? avgCompaRatio < 1
+                                        ? `Paying ${Math.round((1 - avgCompaRatio) * 100)}% below market median.`
+                                        : `Paying ${Math.round((avgCompaRatio - 1) * 100)}% above market median.`
+                                    : 'No data to compute ratio.'}
+                            </p>
+                        </div>
+
+                        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
+                            <h3 className="font-bold text-sm mb-4">Benchmark Sources</h3>
+                            <div className="space-y-3">
+                                {benchmarks.slice(0, 3).map((b: any, i: number) => (
+                                    <div key={b.id || i} className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center font-bold text-xs">
+                                            {(b.source || b.sourceName || 'S')[0].toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-bold">{b.sourceName || b.source || 'Survey'}</div>
+                                            <div className="text-[10px] text-slate-500">{b.industry || '--'}, {b.geography || b.region || '--'}</div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }
+

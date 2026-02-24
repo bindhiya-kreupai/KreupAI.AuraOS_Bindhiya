@@ -74,9 +74,9 @@ export default function CanteenPage() {
         : MENU_ITEMS.filter(item => item.category === selectedCategory);
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Utensils className="w-6 h-6 text-orange-500" />
@@ -98,9 +98,9 @@ export default function CanteenPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
                 {/* Left: Menu & Categories */}
-                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-6">
+                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
                     {/* Categories */}
                     <div className="flex gap-2 overflow-x-auto pb-2 shrink-0">
                         {MENU_CATEGORIES.map(cat => (
@@ -119,12 +119,12 @@ export default function CanteenPage() {
                     </div>
 
                     {/* Menu Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pr-2 pb-20">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-y-auto pr-2 pb-20">
                         {filteredItems.map(item => {
                             const inCart = cart.find(c => c.id === item.id);
                             return (
                                 <div key={item.id} className="bg-white dark:bg-stellar-blue p-4 rounded-2xl border border-cloud dark:border-nebula-purple/50 hover:shadow-lg hover:border-orange-300 transition-all group">
-                                    <div className="flex gap-4">
+                                    <div className="flex gap-3">
                                         <div className="w-20 h-20 rounded-xl bg-orange-50 dark:bg-slate-800 flex items-center justify-center text-4xl shadow-inner">
                                             {item.image}
                                         </div>
@@ -168,7 +168,7 @@ export default function CanteenPage() {
                 </div>
 
                 {/* Right: Cart & History */}
-                <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
+                <div className="lg:col-span-1 space-y-4 flex flex-col h-full overflow-hidden">
                     {/* Cart Widget */}
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-col max-h-[50%]">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
@@ -246,3 +246,4 @@ export default function CanteenPage() {
         </div>
     );
 }
+

@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
       data: {
         userId: user.id,
         action: 'PASSWORD_RESET_REQUESTED',
-        module: 'Authentication',
+        entityType: 'Authentication',
         details: `Password reset requested for ${user.email}`,
         ipAddress,
       },

@@ -61,9 +61,9 @@ export default function WorkflowsPage() {
     const [selectedWorkflow, setSelectedWorkflow] = useState<any>(null);
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <GitMerge className="w-6 h-6 text-indigo-500" />
@@ -98,7 +98,7 @@ export default function WorkflowsPage() {
 
             <div className="flex-1 min-h-0 overflow-hidden">
                 {viewMode === 'List' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto h-full pr-2 pb-20">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto h-full pr-2 pb-20">
                         {WORKFLOWS.map(wf => (
                             <div key={wf.id} className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 hover:shadow-lg transition-all group flex flex-col">
                                 <div className="flex justify-between items-start mb-4">
@@ -145,7 +145,7 @@ export default function WorkflowsPage() {
                         ))}
                     </div>
                 ) : (
-                    <div className="h-full flex flex-col lg:flex-row gap-6 overflow-hidden">
+                    <div className="h-full flex flex-col lg:flex-row gap-3 overflow-hidden">
                         {/* Builder Canvas (Mock) */}
                         <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border-2 border-dashed border-cloud dark:border-slate-800 relative overflow-hidden flex items-center justify-center">
                             {/* Grid Pattern Background */}
@@ -254,3 +254,4 @@ export default function WorkflowsPage() {
         </div>
     );
 }
+

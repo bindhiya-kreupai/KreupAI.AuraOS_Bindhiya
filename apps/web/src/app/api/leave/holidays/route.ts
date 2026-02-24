@@ -1,6 +1,6 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { prisma } from '@aura/database';
+import { prisma } from '@/lib/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
@@ -8,13 +8,12 @@ import { logger } from '@/lib/logger';
 
 const HolidaySchema = z.object({
   name: z.string().min(1),
-  date: z.string(),
-  type: z.enum(['PUBLIC', 'OPTIONAL', 'RESTRICTED']).default('PUBLIC'),
-  description: z.string().optional(),
-  applicableTo: z.array(z.string()).optional(),
+  date: z.string(), // YYYY-MM-DD
+  type: z.string().default('National'), // National, Regional
+  status: z.string().default('Active'),
 });
 
-// GET - Fetch holidays
+// GET - Fetch holidays from database
 export const GET = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
@@ -25,69 +24,32 @@ export const GET = withEnhancedAuth(
       const year = searchParams.get('year') || new Date().getFullYear().toString();
       const type = searchParams.get('type');
 
-      const mockHolidays = [
-        {
-          id: '1',
-          name: 'New Year\'s Day',
-          date: `${year}-01-01`,
-          type: 'PUBLIC',
-          description: 'New Year celebration',
-          applicableTo: ['ALL'],
-          status: 'ACTIVE',
-        },
-        {
-          id: '2',
-          name: 'Independence Day',
-          date: `${year}-08-15`,
-          type: 'PUBLIC',
-          description: 'National Independence Day',
-          applicableTo: ['ALL'],
-          status: 'ACTIVE',
-        },
-        {
-          id: '3',
-          name: 'Diwali',
-          date: `${year}-11-01`,
-          type: 'OPTIONAL',
-          description: 'Festival of Lights',
-          applicableTo: ['INDIA'],
-          status: 'ACTIVE',
-        },
-        {
-          id: '4',
-          name: 'Christmas',
-          date: `${year}-12-25`,
-          type: 'PUBLIC',
-          description: 'Christmas celebration',
-          applicableTo: ['ALL'],
-          status: 'ACTIVE',
-        },
-        {
-          id: '5',
-          name: 'Good Friday',
-          date: `${year}-03-29`,
-          type: 'RESTRICTED',
-          description: 'Good Friday observance',
-          applicableTo: ['CHRISTIAN'],
-          status: 'ACTIVE',
-        },
-      ];
-
-      let filteredData = mockHolidays;
+      // Holiday model has no tenantId - it's global
+      const where: Record<string, unknown> = {};
       if (type) {
-        filteredData = mockHolidays.filter(h => h.type === type);
+        where.type = type;
       }
 
+      // Filter by year using date string pattern (date is stored as YYYY-MM-DD string)
+      where.date = {
+        startsWith: year,
+      };
+
+      const holidays = await prisma.holiday.findMany({
+        where,
+        orderBy: { date: 'asc' },
+      });
+
       const summary = {
-        total: filteredData.length,
-        public: filteredData.filter(h => h.type === 'PUBLIC').length,
-        optional: filteredData.filter(h => h.type === 'OPTIONAL').length,
-        restricted: filteredData.filter(h => h.type === 'RESTRICTED').length,
+        total: holidays.length,
+        national: holidays.filter(h => h.type === 'National').length,
+        regional: holidays.filter(h => h.type === 'Regional').length,
       };
 
       return NextResponse.json({
         success: true,
-        data: { holidays: filteredData, summary },
+        holidays,
+        data: { holidays, summary },
       });
     } catch (error) {
       logger.error('Error fetching holidays:', error);
@@ -99,7 +61,7 @@ export const GET = withEnhancedAuth(
   }
 );
 
-// POST - Create holiday
+// POST - Create holiday in database
 export const POST = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
@@ -109,14 +71,14 @@ export const POST = withEnhancedAuth(
       const body = await request.json();
       const data = HolidaySchema.parse(body);
 
-      const newHoliday = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data,
-        applicableTo: data.applicableTo || ['ALL'],
-        status: 'ACTIVE',
-        createdAt: new Date().toISOString(),
-        createdBy: user.userId,
-      };
+      const newHoliday = await prisma.holiday.create({
+        data: {
+          name: data.name,
+          date: data.date,
+          type: data.type,
+          status: data.status,
+        },
+      });
 
       await prisma.auditLog.create({
         data: {
@@ -128,7 +90,10 @@ export const POST = withEnhancedAuth(
         },
       });
 
-      return NextResponse.json({ success: true, data: newHoliday }, { status: 201 });
+      return NextResponse.json(
+        { success: true, data: newHoliday, holiday: newHoliday },
+        { status: 201 }
+      );
     } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(

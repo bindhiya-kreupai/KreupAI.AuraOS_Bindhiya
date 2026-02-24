@@ -36,9 +36,9 @@ export default function SpanOfControlPage() {
     ];
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <GitCommit className="w-6 h-6 text-indigo-500 rotate-90" />
@@ -56,7 +56,7 @@ export default function SpanOfControlPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Main Distribution Chart */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                     <h3 className="font-bold text-lg mb-6">Manager Distribution by Direct Reports</h3>
@@ -81,7 +81,7 @@ export default function SpanOfControlPage() {
                 {/* Insights Panel */}
                 <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                        <div className="flex items-start gap-4 mb-4">
+                        <div className="flex items-start gap-3 mb-4">
                             <div className="p-2 bg-rose-100 text-rose-600 rounded-lg">
                                 <AlertCircle className="w-5 h-5" />
                             </div>
@@ -90,7 +90,7 @@ export default function SpanOfControlPage() {
                                 <p className="text-xs text-slate-500 mt-1">45 managers have only 1 direct report. Consider merging teams to reduce hierarchy depth.</p>
                             </div>
                         </div>
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-3">
                             <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
                                 <Users className="w-5 h-5" />
                             </div>
@@ -171,3 +171,4 @@ export default function SpanOfControlPage() {
         </div>
     );
 }
+

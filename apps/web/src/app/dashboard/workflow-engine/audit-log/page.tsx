@@ -1,20 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ClipboardList, Search, Filter, Download } from 'lucide-react';
+import { ClipboardList, Search, Filter, Download, Loader2 } from 'lucide-react';
 import { WorkflowExecutionService } from '../services';
 
-const LOGS = [
-    { id: 'LOG-001', event: 'Workflow Executed', resource: 'Expense #442', user: 'System', time: '10:45 AM', status: 'Success' },
-    { id: 'LOG-002', event: 'Rule Modified', resource: 'Approval limit > 5k', user: 'Admin', time: '10:30 AM', status: 'Info' },
-    { id: 'LOG-003', event: 'Execution Failed', resource: 'Sync to Salesforce', user: 'System', time: '09:15 AM', status: 'Error' },
-    { id: 'LOG-004', event: 'Workflow Published', resource: 'Leave Request v2', user: 'Admin', time: 'Yesterday', status: 'Success' },
-    { id: 'LOG-005', event: 'Form Updated', resource: 'Travel Request Form', user: 'Sarah C.', time: 'Yesterday', status: 'Info' },
-];
-
 export default function AuditLogPage() {
-    const [logs, setLogs] = useState<any[]>(LOGS);
-    const [executions, setExecutions] = useState<any[]>([]);
+    const [logs, setLogs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -25,29 +16,33 @@ export default function AuditLogPage() {
         try {
             setLoading(true);
             const data = await WorkflowExecutionService.getExecutions();
-            setExecutions(data);
-            // Transform executions into audit log format if needed
-            if (data.length > 0) {
-                const auditLogs = data.map((exec: any) => ({
-                    id: exec.executionCode,
-                    event: 'Workflow Executed',
-                    resource: exec.workflowName,
-                    user: exec.initiatorName || 'System',
-                    time: new Date(exec.initiatedDate).toLocaleString(),
-                    status: exec.status === 'completed' ? 'Success' : exec.status === 'failed' ? 'Error' : 'Info'
-                }));
-                setLogs([...auditLogs, ...LOGS]);
-            }
+            const auditLogs = (data || []).map((exec: any) => ({
+                id: exec.id || exec.executionCode,
+                event: `Workflow ${exec.status === 'COMPLETED' ? 'Completed' : exec.status === 'FAILED' ? 'Failed' : exec.status === 'RUNNING' ? 'Running' : exec.status}`,
+                resource: exec.definition?.name || exec.workflowName || 'Unknown',
+                user: exec.triggeredBy || exec.initiatorName || 'System',
+                time: exec.startedAt ? new Date(exec.startedAt).toLocaleString() : exec.initiatedDate ? new Date(exec.initiatedDate).toLocaleString() : 'N/A',
+                status: exec.status === 'COMPLETED' ? 'Success' : exec.status === 'FAILED' ? 'Error' : 'Info',
+            }));
+            setLogs(auditLogs);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <ClipboardList className="w-6 h-6 text-slate-500" />
@@ -69,39 +64,48 @@ export default function AuditLogPage() {
                     </div>
                 </div>
 
-                <table className="w-full text-left text-sm">
-                    <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-medium border-b border-slate-200 dark:border-slate-700">
-                        <tr>
-                            <th className="px-6 py-4">Event</th>
-                            <th className="px-6 py-4">Resource</th>
-                            <th className="px-6 py-4">User</th>
-                            <th className="px-6 py-4">Time</th>
-                            <th className="px-6 py-4">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {LOGS.map((log, idx) => (
-                            <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <td className="px-6 py-4 font-bold">{log.event}</td>
-                                <td className="px-6 py-4 text-slate-500">{log.resource}</td>
-                                <td className="px-6 py-4 flex items-center gap-2">
-                                    <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">{log.user[0]}</div>
-                                    {log.user}
-                                </td>
-                                <td className="px-6 py-4 text-slate-500">{log.time}</td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded text-xs font-bold ${log.status === 'Success' ? 'bg-emerald-100 text-emerald-600' :
-                                            log.status === 'Error' ? 'bg-red-100 text-red-600' :
-                                                'bg-blue-100 text-blue-600'
-                                        }`}>
-                                        {log.status}
-                                    </span>
-                                </td>
+                {logs.length === 0 ? (
+                    <div className="p-12 text-center">
+                        <ClipboardList className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                        <h3 className="text-lg font-bold text-slate-500 mb-2">No Audit Logs</h3>
+                        <p className="text-sm text-slate-400">Workflow execution logs will appear here.</p>
+                    </div>
+                ) : (
+                    <table className="w-full text-left text-sm">
+                        <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-medium border-b border-slate-200 dark:border-slate-700">
+                            <tr>
+                                <th className="px-6 py-4">Event</th>
+                                <th className="px-6 py-4">Resource</th>
+                                <th className="px-6 py-4">User</th>
+                                <th className="px-6 py-4">Time</th>
+                                <th className="px-6 py-4">Status</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            {logs.map((log, idx) => (
+                                <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <td className="px-6 py-4 font-bold">{log.event}</td>
+                                    <td className="px-6 py-4 text-slate-500">{log.resource}</td>
+                                    <td className="px-6 py-4 flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">{log.user[0]}</div>
+                                        {log.user}
+                                    </td>
+                                    <td className="px-6 py-4 text-slate-500">{log.time}</td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2 py-1 rounded text-xs font-bold ${log.status === 'Success' ? 'bg-emerald-100 text-emerald-600' :
+                                                log.status === 'Error' ? 'bg-red-100 text-red-600' :
+                                                    'bg-blue-100 text-blue-600'
+                                            }`}>
+                                            {log.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
             </div>
         </div>
     );
 }
+

@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -134,7 +134,7 @@ export const GET = withEnhancedAuth(
         meta: { total: filteredData.length },
       });
     } catch (error) {
-      logger.error('Error fetching IP restrictions:', error);
+      logger.error({ error }, 'Error fetching IP restrictions:');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch IP restrictions' },
         { status: 500 }
@@ -215,9 +215,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
+          tenantId: user.tenantId,
           action: 'CREATE',
-          module: 'Attendance - IP Restriction',
+          entityType: 'Attendance - IP Restriction',
           details: `Created IP restriction: ${data.name}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -231,7 +233,7 @@ export const POST = withEnhancedAuth(
           { status: 400 }
         );
       }
-      logger.error('Error creating IP restriction:', error);
+      logger.error({ error }, 'Error creating IP restriction:');
       return NextResponse.json(
         { success: false, error: 'Failed to create IP restriction' },
         { status: 500 }
@@ -266,9 +268,10 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Attendance - IP Restriction',
+          entityType: 'Attendance - IP Restriction',
           details: `Updated IP restriction: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -276,7 +279,7 @@ export const PUT = withEnhancedAuth(
 
       return NextResponse.json({ success: true, data: updated });
     } catch (error) {
-      logger.error('Error updating IP restriction:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to update IP restriction' },
         { status: 500 }
@@ -304,9 +307,10 @@ export const DELETE = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
-          module: 'Attendance - IP Restriction',
+          entityType: 'Attendance - IP Restriction',
           details: `Deleted IP restriction: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -314,7 +318,7 @@ export const DELETE = withEnhancedAuth(
 
       return NextResponse.json({ success: true, message: 'IP restriction deleted successfully' });
     } catch (error) {
-      logger.error('Error deleting IP restriction:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to delete IP restriction' },
         { status: 500 }

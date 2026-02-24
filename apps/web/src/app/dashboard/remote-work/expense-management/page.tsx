@@ -24,9 +24,9 @@ export default function ExpenseManagementPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+    <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Receipt className="w-6 h-6 text-indigo-500" />
@@ -41,7 +41,7 @@ export default function ExpenseManagementPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-indigo-500 text-white p-6 rounded-2xl shadow-lg shadow-indigo-200 dark:shadow-none lg:col-span-2 flex flex-col justify-between">
           <div>
             <div className="text-sm font-bold opacity-80 mb-1">Available Allowance</div>
@@ -96,7 +96,7 @@ export default function ExpenseManagementPage() {
               key={i}
               className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
             >
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-500">
                   <DollarSign className="w-5 h-5" />
                 </div>
@@ -126,3 +126,4 @@ export default function ExpenseManagementPage() {
     </div>
   );
 }
+

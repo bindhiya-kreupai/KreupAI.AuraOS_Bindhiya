@@ -12,9 +12,9 @@ import {
 
 export default function EventsPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Utensils className="w-6 h-6 text-purple-500" />
@@ -27,7 +27,7 @@ export default function EventsPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Event Calendar List */}
                 <div className="lg:col-span-2 space-y-4 overflow-y-auto pb-20">
                     <h3 className="font-bold text-lg mb-2">Upcoming Events</h3>
@@ -38,7 +38,7 @@ export default function EventsPage() {
                         { title: 'Medical Conference Lunch', date: 'Dec 15, 11:30', venue: 'Conference Hall A', staff: '15/15 Full', status: 'Ready' },
                     ].map((e, i) => (
                         <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between hover:shadow-md transition-all">
-                            <div className="flex items-center gap-4 mb-4 md:mb-0">
+                            <div className="flex items-center gap-3 mb-4 md:mb-0">
                                 <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center font-bold text-purple-600 text-center leading-none text-xs">
                                     DEC<br /><span className="text-lg">{e.date.split(',')[0].split(' ')[1]}</span>
                                 </div>
@@ -51,7 +51,7 @@ export default function EventsPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-3">
                                 <div className="text-right">
                                     <div className="text-lg font-bold text-slate-700 dark:text-slate-300">{e.staff.split(' ')[0]}</div>
                                     <div className="text-xs text-slate-400">Staffing</div>
@@ -72,7 +72,7 @@ export default function EventsPage() {
                 </div>
 
                 {/* Uniform & Casual Pool */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                             <Shirt className="w-5 h-5 text-indigo-500" /> Uniform Inventory
@@ -122,3 +122,4 @@ export default function EventsPage() {
         </div>
     );
 }
+

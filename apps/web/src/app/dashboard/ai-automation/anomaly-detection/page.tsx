@@ -75,7 +75,7 @@ export default function AnomalyDetectionPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -97,7 +97,7 @@ export default function AnomalyDetectionPage() {
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
 
                 {/* 1. Severity Chart */}
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
@@ -158,7 +158,7 @@ export default function AnomalyDetectionPage() {
 
                 <div className="divide-y divide-cloud dark:divide-nebula-purple/20">
                     {anomalies.map((item) => (
-                        <div key={item.id} className="p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors flex flex-col md:flex-row gap-4 items-start md:items-center">
+                        <div key={item.id} className="p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors flex flex-col md:flex-row gap-3 items-start md:items-center">
 
                             {/* Icon */}
                             <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${item.severity === 'Critical' ? 'bg-rose-100 text-rose-600' :
@@ -211,3 +211,4 @@ export default function AnomalyDetectionPage() {
         </div>
     );
 }
+

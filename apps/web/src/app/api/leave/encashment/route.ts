@@ -3,117 +3,141 @@
  * Phase 2: Core Enhancement - Advanced Leave System
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { LeaveAccrualService } from '@/lib/services/leave';
+import { prisma } from '@/lib/database';
+import { z } from 'zod';
+import { withEnhancedAuth } from '@/lib/auth';
+import { Resource, Action, requirePermission } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+
+const EncashmentSchema = z.object({
+  employeeId: z.string().min(1),
+  leaveTypeId: z.string().min(1),
+  policyId: z.string().min(1),
+  requestedDays: z.coerce.number().positive(),
+  eligibleDays: z.coerce.number(),
+  calculationBasis: z.enum(['BASIC', 'GROSS']),
+  dailyRate: z.coerce.number(),
+  totalAmount: z.coerce.number(),
+  encashmentRate: z.coerce.number().default(100),
+  trigger: z.enum(['YEAR_END', 'ON_RESIGNATION', 'ON_TERMINATION', 'ON_REQUEST']),
+  reason: z.string().optional(),
+});
+
+/**
+ * GET /api/leave/encashment
+ * Get encashment requests from database
+ */
+export const GET = withEnhancedAuth(
+  async (request: NextRequest, { user, permissions }) => {
+    try {
+      const permissionError = requirePermission(Resource.LEAVE, Action.READ, permissions);
+      if (permissionError) return permissionError;
+
+      const { searchParams } = new URL(request.url);
+      const employeeId = searchParams.get('employeeId');
+      const status = searchParams.get('status');
+
+      const tenantId = user.tenantId;
+
+      const where: Record<string, unknown> = { tenantId };
+      if (employeeId) where.employeeId = employeeId;
+      if (status) where.status = status;
+
+      const encashments = await prisma.leaveEncashment.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const summary = {
+        totalAmount: encashments.reduce((sum, e) => sum + Number(e.totalAmount), 0),
+        totalDays: encashments.reduce((sum, e) => sum + Number(e.requestedDays), 0),
+        pendingCount: encashments.filter(e => e.status === 'PENDING').length,
+      };
+
+      return NextResponse.json({
+        success: true,
+        encashments,
+        leaveEncashments: encashments,
+        data: {
+          encashments,
+          summary,
+        },
+      });
+    } catch (error) {
+      logger.error('Error fetching encashment requests:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch encashment requests', errorAr: 'فشل في جلب طلبات صرف الإجازات' },
+        { status: 500 }
+      );
+    }
+  }
+);
 
 /**
  * POST /api/leave/encashment
  * Submit leave encashment request
  */
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
+export const POST = withEnhancedAuth(
+  async (request: NextRequest, { user, permissions }) => {
+    try {
+      const permissionError = requirePermission(Resource.LEAVE, Action.CREATE, permissions);
+      if (permissionError) return permissionError;
 
-    // Validate required fields
-    const required = ['tenantId', 'employeeId', 'leaveTypeCode', 'requestedDays', 'trigger'];
-    for (const field of required) {
-      if (!body[field]) {
+      const body = await request.json();
+      const data = EncashmentSchema.parse(body);
+      const tenantId = user.tenantId;
+
+      const encashment = await prisma.leaveEncashment.create({
+        data: {
+          tenantId,
+          employeeId: data.employeeId,
+          leaveTypeId: data.leaveTypeId,
+          policyId: data.policyId,
+          requestedDays: data.requestedDays,
+          eligibleDays: data.eligibleDays,
+          calculationBasis: data.calculationBasis,
+          dailyRate: data.dailyRate,
+          totalAmount: data.totalAmount,
+          encashmentRate: data.encashmentRate,
+          trigger: data.trigger,
+          reason: data.reason || null,
+          status: 'PENDING',
+        },
+      });
+
+      await prisma.auditLog.create({
+        data: {
+          userId: user.userId,
+          action: 'CREATE',
+          module: 'Leave - Encashment',
+          details: `Created encashment request for ${data.requestedDays} days, amount: ${data.totalAmount}`,
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: encashment,
+        encashment,
+        leaveEncashment: encashment,
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
         return NextResponse.json(
-          { error: `${field} is required`, errorAr: `${field} مطلوب` },
+          { success: false, error: 'Validation error', details: error.errors },
           { status: 400 }
         );
       }
-    }
-
-    // Calculate encashment
-    const calculation = await LeaveAccrualService.calculateEncashment(
-      body.employeeId,
-      body.leaveTypeCode,
-      body.requestedDays,
-      body.trigger
-    );
-
-    // Return calculation preview or process based on action
-    if (body.action === 'PREVIEW') {
-      return NextResponse.json({
-        success: true,
-        data: {
-          preview: true,
-          calculation,
-        },
-      });
-    }
-
-    // Process encashment
-    const request_data = {
-      id: `enc_${Date.now()}`,
-      tenantId: body.tenantId,
-      employeeId: body.employeeId,
-      employeeName: body.employeeName || '',
-      leaveTypeId: body.leaveTypeId || '',
-      leaveTypeCode: body.leaveTypeCode,
-      requestedDays: body.requestedDays,
-      eligibleDays: calculation.eligibleDays,
-      approvedDays: 0,
-      calculationBasis: calculation.basis,
-      dailyRate: calculation.dailyRate,
-      totalAmount: calculation.totalAmount,
-      trigger: body.trigger,
-      reason: body.reason,
-      status: 'PENDING' as const,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    return NextResponse.json({
-      success: true,
-      data: request_data,
-    });
-  } catch (error) {
-        return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to process encashment',
-        errorAr: 'فشل في معالجة صرف الإجازات',
-      },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * GET /api/leave/encashment
- * Get encashment requests
- */
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId');
-    const employeeId = searchParams.get('employeeId');
-    const status = searchParams.get('status');
-
-    if (!tenantId) {
+      logger.error('Error creating encashment request:', error);
       return NextResponse.json(
-        { error: 'tenantId is required', errorAr: 'معرف المستأجر مطلوب' },
-        { status: 400 }
+        {
+          error: error instanceof Error ? error.message : 'Failed to process encashment',
+          errorAr: 'فشل في معالجة صرف الإجازات',
+        },
+        { status: 500 }
       );
     }
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        encashments: [],
-        summary: {
-          totalAmount: 0,
-          totalDays: 0,
-          pendingCount: 0,
-        },
-      },
-    });
-  } catch (error) {
-        return NextResponse.json(
-      { error: 'Failed to fetch encashment requests', errorAr: 'فشل في جلب طلبات صرف الإجازات' },
-      { status: 500 }
-    );
   }
-}
+);

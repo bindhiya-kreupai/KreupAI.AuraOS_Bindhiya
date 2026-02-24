@@ -7,57 +7,91 @@ import {
     Columns,
     Filter,
     ArrowRight,
-    Save,
-    Play
+    Play,
+    Loader2
 } from 'lucide-react';
-import { CustomReportService } from '../services';
+
+interface SavedReport {
+    id: string;
+    name: string;
+    code: string;
+    category: string;
+    createdAt: string;
+}
 
 export default function CustomReportsPage() {
     const [step, setStep] = useState(1);
     const [selectedSource, setSelectedSource] = useState('');
-    const [savedReports, setSavedReports] = useState<any[]>([]);
+    const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
     const [loading, setLoading] = useState(true);
+    const [dataSources, setDataSources] = useState<{ id: string; name: string; desc: string; count: string }[]>([]);
 
     useEffect(() => {
-        fetchReports();
+        fetchData();
     }, []);
 
-    const fetchReports = async () => {
+    const fetchData = async () => {
         try {
-            const data = await CustomReportService.getAllReports();
-            setSavedReports(data);
+            const [reportsRes, headcountRes] = await Promise.all([
+                fetch('/api/v1/analytics/reports/custom').then(r => r.json()).catch(() => null),
+                fetch('/api/v1/analytics/headcount').then(r => r.json()).catch(() => null),
+            ]);
+
+            if (reportsRes?.data) {
+                setSavedReports(
+                    reportsRes.data.map((r: any) => ({
+                        id: r.id,
+                        name: r.name,
+                        code: r.code,
+                        category: r.category || 'Custom',
+                        createdAt: r.createdAt,
+                    }))
+                );
+            }
+
+            const totalEmployees = headcountRes?.data?.total || 0;
+            setDataSources([
+                { id: 'src-emp', name: 'Employees', desc: 'Core employee master data', count: `${totalEmployees} Records` },
+                { id: 'src-att', name: 'Attendance', desc: 'Daily punch logs and shifts', count: 'Records' },
+                { id: 'src-pay', name: 'Payroll', desc: 'Salary and tax information', count: 'Records' },
+                { id: 'src-rec', name: 'Recruitment', desc: 'Candidates and applications', count: 'Records' },
+            ]);
         } catch (error) {
-            console.error('Error:', error);
-                    } finally {
+            console.error('Error loading custom reports:', error);
+        } finally {
             setLoading(false);
         }
     };
 
     const handleCreateReport = async () => {
         try {
-            await CustomReportService.createReport({
-                reportName: 'New Custom Report',
-                filters: [],
-                columns: [],
-                groupings: [],
-                sortOrder: [],
+            await fetch('/api/v1/analytics/reports/custom', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    reportName: 'New Custom Report',
+                    filters: [],
+                    columns: [],
+                    groupings: [],
+                    sortOrder: [],
+                }),
             });
-            await fetchReports();
+            await fetchData();
         } catch (error) {
-            console.error('Error:', error);
-                    }
+            console.error('Error creating report:', error);
+        }
     };
 
-    const DATA_SOURCES = [
-        { id: 'src-emp', name: 'Employees', desc: 'Core employee master data', count: '1,240 Records' },
-        { id: 'src-att', name: 'Attendance', desc: 'Daily punch logs and shifts', count: '45,200 Records' },
-        { id: 'src-pay', name: 'Payroll', desc: 'Salary and tax information', count: '3,600 Records' },
-        { id: 'src-rec', name: 'Recruitment', desc: 'Candidates and applications', count: '850 Records' },
-    ];
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="p-6 space-y-8 min-h-screen">
-            {/* Header */}
             <div>
                 <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                     <PencilRuler className="w-8 h-8 text-indigo-500" />
@@ -66,8 +100,7 @@ export default function CustomReportsPage() {
                 <p className="text-slate-500 mt-2 text-lg">Create bespoke reports by selecting data sources, columns, and filters.</p>
             </div>
 
-            {/* Stepper */}
-            <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+            <div className="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-6">
                 {[1, 2, 3].map((s) => (
                     <div key={s} className="flex items-center gap-2">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= s ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
@@ -81,17 +114,15 @@ export default function CustomReportsPage() {
                 ))}
             </div>
 
-            {/* Step Content */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Panel: Controls */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     {step === 1 && (
                         <div className="space-y-4 animate-in slide-in-from-left duration-300">
                             <h2 className="text-xl font-bold flex items-center gap-2">
                                 <Database className="w-5 h-5 text-indigo-500" /> Select Data Source
                             </h2>
                             <div className="space-y-3">
-                                {DATA_SOURCES.map((source) => (
+                                {dataSources.map((source) => (
                                     <div
                                         key={source.id}
                                         onClick={() => setSelectedSource(source.id)}
@@ -166,26 +197,47 @@ export default function CustomReportsPage() {
                                 Next <ArrowRight className="w-4 h-4" />
                             </button>
                         ) : (
-                            <button className="px-4 py-2 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 flex-1 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
+                            <button onClick={handleCreateReport} className="px-4 py-2 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 flex-1 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
                                 <Play className="w-4 h-4" /> Run Report
                             </button>
                         )}
                     </div>
                 </div>
 
-                {/* Right Panel: Preview Placeholder */}
-                <div className="lg:col-span-2 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-800 border-dashed flex items-center justify-center min-h-[400px]">
-                    <div className="text-center space-y-4 max-w-sm mx-auto p-6">
-                        <div className="w-16 h-16 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
-                            <Database className="w-8 h-8 text-slate-400" />
+                <div className="lg:col-span-2">
+                    {savedReports.length > 0 ? (
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                            <h3 className="font-bold text-lg mb-4">Saved Reports</h3>
+                            <div className="space-y-3">
+                                {savedReports.map(r => (
+                                    <div key={r.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                                        <div>
+                                            <div className="font-bold text-sm text-slate-900 dark:text-slate-100">{r.name}</div>
+                                            <div className="text-xs text-slate-500">{r.category} | {r.code}</div>
+                                        </div>
+                                        <div className="text-xs text-slate-400">
+                                            {new Date(r.createdAt).toLocaleDateString()}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Live Preview</h3>
-                        <p className="text-sm text-slate-500">
-                            Select a data source and configure columns to see a live preview of your report data here.
-                        </p>
-                    </div>
+                    ) : (
+                        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-800 border-dashed flex items-center justify-center min-h-[400px]">
+                            <div className="text-center space-y-4 max-w-sm mx-auto p-6">
+                                <div className="w-16 h-16 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
+                                    <Database className="w-8 h-8 text-slate-400" />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">No Saved Reports</h3>
+                                <p className="text-sm text-slate-500">
+                                    Select a data source and configure columns to create your first custom report.
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     );
 }
+

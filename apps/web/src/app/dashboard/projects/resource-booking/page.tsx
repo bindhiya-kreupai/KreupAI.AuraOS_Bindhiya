@@ -58,9 +58,9 @@ const CONFLICTS = ['4-2025-12-08', '4-2025-12-09'];
 
 export default function ResourceBookingPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <CalendarDays className="w-6 h-6 text-indigo-500" />
@@ -86,9 +86,9 @@ export default function ResourceBookingPage() {
             </div>
 
             {/* Main Content - Split View */}
-            <div className="flex gap-6 h-full min-h-0">
+            <div className="flex gap-3 h-full min-h-0">
                 {/* Left: Project List / Legend */}
-                <div className="w-64 shrink-0 flex flex-col gap-6">
+                <div className="w-64 shrink-0 flex flex-col gap-3">
                     <div className="bg-white dark:bg-stellar-blue p-5 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                         <h3 className="text-xs font-bold text-silver-mist uppercase mb-4 flex items-center gap-2">
                             <Briefcase className="w-4 h-4" /> Projects
@@ -221,3 +221,4 @@ export default function ResourceBookingPage() {
         </div>
     );
 }
+

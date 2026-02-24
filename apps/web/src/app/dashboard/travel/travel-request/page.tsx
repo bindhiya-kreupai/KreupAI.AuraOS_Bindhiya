@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Plane, Calendar, MapPin, Briefcase, ChevronRight, CheckCircle } from 'lucide-react';
+import { Plane, Calendar, MapPin, Briefcase, ChevronRight, CheckCircle, Loader2 } from 'lucide-react';
 import { TravelRequestService } from '../services';
 
 export default function TravelRequestPage() {
@@ -20,14 +20,23 @@ export default function TravelRequestPage() {
             setData(requests);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+                <span className="ml-2 text-sm text-slate-500">Loading travel request...</span>
+            </div>
+        );
+    }
+
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <Plane className="w-8 h-8 text-indigo-500" />
@@ -37,8 +46,7 @@ export default function TravelRequestPage() {
                 </div>
             </div>
 
-            {/* Stepper */}
-            <div className="flex items-center gap-4 max-w-2xl">
+            <div className="flex items-center gap-3 max-w-2xl">
                 {[1, 2, 3].map((s) => (
                     <div key={s} className="flex items-center gap-2 flex-1">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= s ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
@@ -54,11 +62,11 @@ export default function TravelRequestPage() {
 
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm max-w-4xl">
                 {step === 1 && (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
+                    <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
                         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                             <Briefcase className="w-5 h-5 text-indigo-500" /> Trip Basics
                         </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Trip Purpose</label>
                                 <select className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 text-sm">
@@ -81,11 +89,11 @@ export default function TravelRequestPage() {
                 )}
 
                 {step === 2 && (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
+                    <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
                         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                             <MapPin className="w-5 h-5 text-indigo-500" /> Destination & Logistics
                         </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Origin City</label>
                                 <div className="relative">
@@ -123,7 +131,7 @@ export default function TravelRequestPage() {
                 )}
 
                 {step === 3 && (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
+                    <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
                         <div className="bg-emerald-50 dark:bg-emerald-900/10 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-900/20 text-center">
                             <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
                             <h3 className="text-2xl font-bold text-emerald-700 dark:text-emerald-400 mb-2">Ready to Submit?</h3>
@@ -165,3 +173,4 @@ export default function TravelRequestPage() {
         </div>
     );
 }
+

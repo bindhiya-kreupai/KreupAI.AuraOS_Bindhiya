@@ -46,22 +46,21 @@ export default function AttendanceExceptionsPage() {
     const fetchExceptions = async () => {
         try {
             const exceptions = await AttendanceAnalyticsService.getExceptions();
-            if (exceptions.length > 0) {
-                setExceptionList(exceptions as any);
-                // Calculate stats from exceptions
-                const lateIn = exceptions.filter((e: any) => e.type?.includes('Late')).length;
-                const earlyOut = exceptions.filter((e: any) => e.type?.includes('Early')).length;
-                const absent = exceptions.filter((e: any) => e.type?.includes('Absent')).length;
-                setStats({
-                    total: exceptions.length,
-                    lateIn,
-                    earlyOut,
-                    absent,
-                });
-            }
+            const exceptionsArr = (exceptions || []) as any[];
+            setExceptionList(exceptionsArr as any);
+            // Calculate stats from exceptions
+            const lateIn = exceptionsArr.filter((e: any) => e.type?.includes('Late')).length;
+            const earlyOut = exceptionsArr.filter((e: any) => e.type?.includes('Early')).length;
+            const absent = exceptionsArr.filter((e: any) => e.type?.includes('Absent')).length;
+            setStats({
+                total: exceptionsArr.length,
+                lateIn,
+                earlyOut,
+                absent,
+            });
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -78,7 +77,7 @@ export default function AttendanceExceptionsPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -99,7 +98,7 @@ export default function AttendanceExceptionsPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div className="p-4 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <p className="text-xs font-bold text-silver-mist uppercase">Total Exceptions</p>
                     <h3 className="text-2xl font-bold text-ink-black dark:text-pearl">{stats.total}</h3>
@@ -193,3 +192,4 @@ export default function AttendanceExceptionsPage() {
         </div>
     );
 }
+

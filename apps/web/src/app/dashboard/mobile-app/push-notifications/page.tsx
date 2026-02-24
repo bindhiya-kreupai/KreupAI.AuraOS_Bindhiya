@@ -11,7 +11,8 @@ import {
     Clock,
     CheckCircle2,
     AlertCircle,
-    BarChart3
+    BarChart3,
+    Loader2
 } from 'lucide-react';
 import { PushNotificationService } from '../services';
 
@@ -31,36 +32,35 @@ export default function PushNotificationsPage() {
         try {
             setLoading(true);
             const result = await PushNotificationService.getAllNotifications();
-            if (result.length > 0) {
-                setNotifications(result);
-            }
+            setNotifications(result);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
 
-    const history = notifications.length > 0 ? notifications.slice(0, 5).map((notif: any) => ({
-        id: notif.notificationId,
+    const history = notifications.slice(0, 5).map((notif: any) => ({
+        id: notif.id || notif.notificationId,
         title: notif.title,
         message: notif.body,
         audience: notif.targetType === 'all' ? 'All Users' : notif.targetType,
-        sentAt: notif.sentDate ? new Date(notif.sentDate).toLocaleString() : 'Not sent',
-        openRate: notif.openRate ? `${notif.openRate}%` : '0%',
+        sentAt: notif.sentAt ? new Date(notif.sentAt).toLocaleString() : 'Not sent',
+        openRate: notif.openedCount && notif.sentCount ? `${Math.round((notif.openedCount / notif.sentCount) * 100)}%` : '0%',
         status: notif.status === 'sent' ? 'Sent' : notif.status === 'failed' ? 'Failed' : 'Draft'
-    })) : [
-        { id: 1, title: 'Server Maintenance Alert', message: 'System will be down for 30 mins tonight at 2 AM.', audience: 'All Users', sentAt: 'Mar 15, 10:00 AM', openRate: '68%', status: 'Sent' },
-        { id: 2, title: 'New Benefits Policy', message: 'Check out the new health insurance options available.', audience: 'All Users', sentAt: 'Mar 12, 09:30 AM', openRate: '45%', status: 'Sent' },
-        { id: 3, title: 'Sales Team Meeting', message: 'Urgent meeting in Conference Room B.', audience: 'Sales Dept', sentAt: 'Mar 10, 02:15 PM', openRate: '92%', status: 'Sent' },
-        { id: 4, title: 'Holiday Announcement', message: 'Office will be closed on Friday for Good Friday.', audience: 'All Users', sentAt: 'Mar 08, 11:00 AM', openRate: '88%', status: 'Sent' },
-        { id: 5, title: 'Check-in Reminder', message: 'Don\'t forget to mark your attendance.', audience: 'Remote Employees', sentAt: 'Mar 05, 08:50 AM', openRate: '35%', status: 'Failed' },
-    ];
+    }));
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Bell className="w-6 h-6 text-indigo-500" />
@@ -70,7 +70,6 @@ export default function PushNotificationsPage() {
                 </div>
             </div>
 
-            {/* Tabs */}
             <div className="flex border-b border-slate-200 dark:border-slate-800">
                 <button
                     onClick={() => setActiveTab('compose')}
@@ -95,15 +94,14 @@ export default function PushNotificationsPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Content Area */}
                 <div className="lg:col-span-2">
                     {activeTab === 'compose' ? (
                         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                             <h2 className="text-lg font-bold mb-6">New Notification</h2>
-                            <div className="space-y-6">
+                            <div className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Target Audience</label>
-                                    <div className="grid grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-3 gap-3">
                                         {['All Users', 'Department', 'Location', 'Specific Users'].map((opt) => (
                                             <button
                                                 key={opt}
@@ -151,7 +149,7 @@ export default function PushNotificationsPage() {
                                         className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                                     ></textarea>
                                     <div className="flex justify-between text-xs text-slate-400">
-                                        <span>Supports emojis 🎉</span>
+                                        <span>Supports emojis</span>
                                         <span>{message.length}/140 chars</span>
                                     </div>
                                 </div>
@@ -165,7 +163,7 @@ export default function PushNotificationsPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-4 pt-4">
+                                <div className="flex gap-3 pt-4">
                                     <button className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 dark:shadow-none flex items-center justify-center gap-2">
                                         <Send className="w-4 h-4" /> Send Now
                                     </button>
@@ -231,17 +229,14 @@ export default function PushNotificationsPage() {
                     )}
                 </div>
 
-                {/* Live Preview Sidebar */}
                 <div className="hidden lg:block">
                     <div className="sticky top-6">
                         <div className="bg-slate-900 rounded-[3rem] p-4 border-[8px] border-slate-950 shadow-2xl max-w-xs mx-auto relative aspect-[9/19]">
-                            {/* Phone Notch */}
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-950 rounded-b-2xl z-20"></div>
 
-                            {/* Screen Content */}
                             <div className="bg-slate-100 w-full h-full rounded-[2rem] overflow-hidden relative flex flex-col pt-10">
                                 <div className="px-4 pb-2 border-b border-slate-200 bg-white z-10">
-                                    <div className="text-xs font-bold text-slate-400 mb-1">AuraOS • Now</div>
+                                    <div className="text-xs font-bold text-slate-400 mb-1">AuraOS - Now</div>
                                     <div className="flex items-start gap-3">
                                         <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0">
                                             <Bell className="w-5 h-5 text-white" />
@@ -255,13 +250,11 @@ export default function PushNotificationsPage() {
                                     </div>
                                 </div>
 
-                                {/* Background illustration */}
                                 <div className="flex-1 bg-slate-100 flex items-center justify-center opacity-10">
                                     <Smartphone className="w-32 h-32 text-slate-900" />
                                 </div>
                             </div>
 
-                            {/* Home Indicator */}
                             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 h-1 bg-slate-700 rounded-full opacity-50"></div>
                         </div>
                         <p className="text-center text-xs text-slate-400 mt-6 font-medium uppercase tracking-wide">Live Lock Screen Preview</p>
@@ -271,3 +264,4 @@ export default function PushNotificationsPage() {
         </div>
     );
 }
+

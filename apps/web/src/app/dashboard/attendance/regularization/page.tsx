@@ -40,12 +40,10 @@ export default function RegularizationPage() {
     const fetchRegularizations = async () => {
         try {
             const result = await RegularizationService.getRegularizations({ status: 'PENDING' });
-            if (result.length > 0) {
-                setRequests(result as any);
-            }
+            setRequests(result as any);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -86,9 +84,9 @@ export default function RegularizationPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Clock className="w-6 h-6 text-amber-500" />
@@ -101,7 +99,7 @@ export default function RegularizationPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-full min-h-0">
                 {/* Request List */}
                 <div className="space-y-4 overflow-y-auto pb-20">
                     <h3 className="font-bold text-lg mb-2">Incoming Requests</h3>
@@ -116,7 +114,7 @@ export default function RegularizationPage() {
                         </div>
                     ) : (
                         requests.map((r, i) => (
-                        <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col gap-4">
+                        <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col gap-3">
                             <div className="flex justify-between items-start">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500">
@@ -218,3 +216,4 @@ export default function RegularizationPage() {
         </div>
     );
 }
+

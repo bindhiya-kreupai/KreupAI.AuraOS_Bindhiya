@@ -71,6 +71,18 @@ const envSchema = z.object({
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100).describe('Max requests per window'),
   RATE_LIMIT_WINDOW: z.coerce.number().int().positive().default(900000).describe('Rate limit window in ms (15min)'),
 
+  // Microservices Configuration
+  AUTH_SERVICE_URL: z.string().url().default('http://localhost:3001'),
+  EMPLOYEE_SERVICE_URL: z.string().url().default('http://localhost:3002'),
+  NOTIFICATION_SERVICE_URL: z.string().url().default('http://localhost:3003'),
+  DOCUMENT_SERVICE_URL: z.string().url().default('http://localhost:3004'),
+  PAYROLL_SERVICE_URL: z.string().url().default('http://localhost:3005'),
+  ANALYTICS_SERVICE_URL: z.string().url().default('http://localhost:3007'),
+  AI_SERVICE_URL: z.string().url().default('http://localhost:3000'),
+  INTEGRATION_SERVICE_URL: z.string().url().default('http://localhost:3008'),
+  SCHEDULING_SERVICE_URL: z.string().url().default('http://localhost:3009'),
+  WORKFLOW_SERVICE_URL: z.string().url().default('http://localhost:3010'),
+
   // Deployment Information (Vercel)
   VERCEL_ENV: z.enum(['production', 'preview', 'development']).optional(),
   VERCEL_URL: z.string().optional(),
@@ -204,6 +216,22 @@ export const featureFlags = {
 export const rateLimitConfig = {
   max: env.RATE_LIMIT_MAX,
   windowMs: env.RATE_LIMIT_WINDOW,
+};
+
+/**
+ * Microservices configuration
+ */
+export const servicesConfig = {
+  auth: env.AUTH_SERVICE_URL,
+  employee: env.EMPLOYEE_SERVICE_URL,
+  notification: env.NOTIFICATION_SERVICE_URL,
+  document: env.DOCUMENT_SERVICE_URL,
+  payroll: env.PAYROLL_SERVICE_URL,
+  analytics: env.ANALYTICS_SERVICE_URL,
+  ai: env.AI_SERVICE_URL,
+  integration: env.INTEGRATION_SERVICE_URL,
+  scheduling: env.SCHEDULING_SERVICE_URL,
+  workflow: env.WORKFLOW_SERVICE_URL,
 };
 
 /**

@@ -125,7 +125,7 @@ interface DepartmentGapSummary {
     teams: TeamGapSummary[];
 }
 
-// --- MOCK DATA ---
+// --- CONSTANTS & HELPERS ---
 
 const CATEGORY_STYLES: Record<CompetencyCategory, { icon: React.ReactNode; color: string; bgColor: string }> = {
     Technical: { icon: <Code className="w-3.5 h-3.5" />, color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
@@ -143,225 +143,35 @@ const SEVERITY_STYLES: Record<GapSeverity, { color: string; bgColor: string; bor
     None: { color: 'text-emerald-600', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30', borderColor: 'border-emerald-300 dark:border-emerald-700' },
 };
 
-const ORGANIZATION_GAPS: CompetencyGap[] = [
-    {
-        competencyId: 'COMP-001',
-        competencyName: 'Cloud Architecture',
-        category: 'Technical',
-        currentLevel: 2.3,
-        requiredLevel: 4,
-        gap: -1.7,
-        severity: 'Critical',
-        trend: 'improving',
-        impactedEmployees: 45,
-        recommendedActions: ['AWS Solutions Architect Training', 'Cloud Migration Bootcamp', 'Internal Knowledge Sharing'],
-        estimatedTimeToClose: '6-9 months',
-        priority: 1
-    },
-    {
-        competencyId: 'COMP-002',
-        competencyName: 'Data Analytics',
-        category: 'Technical',
-        currentLevel: 2.5,
-        requiredLevel: 3.5,
-        gap: -1.0,
-        severity: 'Significant',
-        trend: 'improving',
-        impactedEmployees: 38,
-        recommendedActions: ['SQL Advanced Training', 'Python for Data Science', 'Tableau Certification'],
-        estimatedTimeToClose: '4-6 months',
-        priority: 2
-    },
-    {
-        competencyId: 'COMP-003',
-        competencyName: 'Strategic Thinking',
-        category: 'Leadership',
-        currentLevel: 2.8,
-        requiredLevel: 4,
-        gap: -1.2,
-        severity: 'Significant',
-        trend: 'stable',
-        impactedEmployees: 28,
-        recommendedActions: ['Leadership Development Program', 'Executive Coaching', 'Strategic Planning Workshop'],
-        estimatedTimeToClose: '9-12 months',
-        priority: 3
-    },
-    {
-        competencyId: 'COMP-004',
-        competencyName: 'Change Management',
-        category: 'Leadership',
-        currentLevel: 2.4,
-        requiredLevel: 3.5,
-        gap: -1.1,
-        severity: 'Significant',
-        trend: 'declining',
-        impactedEmployees: 22,
-        recommendedActions: ['Prosci Change Management', 'Agile Transformation Training'],
-        estimatedTimeToClose: '6-9 months',
-        priority: 4
-    },
-    {
-        competencyId: 'COMP-005',
-        competencyName: 'Customer Focus',
-        category: 'Core',
-        currentLevel: 3.2,
-        requiredLevel: 4,
-        gap: -0.8,
-        severity: 'Moderate',
-        trend: 'improving',
-        impactedEmployees: 56,
-        recommendedActions: ['Customer Journey Mapping', 'Design Thinking Workshop'],
-        estimatedTimeToClose: '3-6 months',
-        priority: 5
-    },
-    {
-        competencyId: 'COMP-006',
-        competencyName: 'Effective Communication',
-        category: 'Behavioral',
-        currentLevel: 3.4,
-        requiredLevel: 4,
-        gap: -0.6,
-        severity: 'Moderate',
-        trend: 'stable',
-        impactedEmployees: 42,
-        recommendedActions: ['Presentation Skills Workshop', 'Crucial Conversations'],
-        estimatedTimeToClose: '3-4 months',
-        priority: 6
-    },
-    {
-        competencyId: 'COMP-007',
-        competencyName: 'Project Management',
-        category: 'Functional',
-        currentLevel: 3.1,
-        requiredLevel: 3.5,
-        gap: -0.4,
-        severity: 'Minor',
-        trend: 'improving',
-        impactedEmployees: 35,
-        recommendedActions: ['PMP Certification Support', 'Agile Scrum Training'],
-        estimatedTimeToClose: '2-4 months',
-        priority: 7
-    },
-    {
-        competencyId: 'COMP-008',
-        competencyName: 'Problem Solving',
-        category: 'Behavioral',
-        currentLevel: 3.5,
-        requiredLevel: 3.5,
-        gap: 0,
-        severity: 'None',
-        trend: 'stable',
-        impactedEmployees: 0,
-        recommendedActions: [],
-        estimatedTimeToClose: 'N/A',
-        priority: 8
-    },
-];
-
-const EMPLOYEE_GAPS: EmployeeGapSummary[] = [
-    {
-        employeeId: 'EMP-001',
-        employeeName: 'Sarah Chen',
-        role: 'Senior Software Engineer',
-        department: 'Engineering',
-        totalCompetencies: 7,
-        criticalGaps: 1,
-        significantGaps: 1,
-        moderateGaps: 2,
-        averageGap: -0.9,
-        overallReadiness: 72,
-        gaps: [
-            { competencyId: 'COMP-001', competencyName: 'Cloud Architecture', category: 'Technical', currentLevel: 2, requiredLevel: 4, gap: -2, severity: 'Critical', trend: 'improving', impactedEmployees: 1, recommendedActions: ['AWS Training'], estimatedTimeToClose: '6 months', priority: 1 },
-            { competencyId: 'COMP-003', competencyName: 'Strategic Thinking', category: 'Leadership', currentLevel: 2, requiredLevel: 3, gap: -1, severity: 'Significant', trend: 'stable', impactedEmployees: 1, recommendedActions: ['Leadership Program'], estimatedTimeToClose: '9 months', priority: 2 },
-        ]
-    },
-    {
-        employeeId: 'EMP-002',
-        employeeName: 'Michael Torres',
-        role: 'Product Manager',
-        department: 'Product',
-        totalCompetencies: 6,
-        criticalGaps: 0,
-        significantGaps: 2,
-        moderateGaps: 1,
-        averageGap: -0.7,
-        overallReadiness: 78,
-        gaps: [
-            { competencyId: 'COMP-002', competencyName: 'Data Analytics', category: 'Technical', currentLevel: 2, requiredLevel: 3, gap: -1, severity: 'Significant', trend: 'improving', impactedEmployees: 1, recommendedActions: ['SQL Training'], estimatedTimeToClose: '4 months', priority: 1 },
-        ]
-    },
-    {
-        employeeId: 'EMP-003',
-        employeeName: 'Emily Rodriguez',
-        role: 'Engineering Manager',
-        department: 'Engineering',
-        totalCompetencies: 6,
-        criticalGaps: 0,
-        significantGaps: 1,
-        moderateGaps: 1,
-        averageGap: -0.5,
-        overallReadiness: 85,
-        gaps: []
-    },
-    {
-        employeeId: 'EMP-004',
-        employeeName: 'David Kim',
-        role: 'Software Engineer',
-        department: 'Engineering',
-        totalCompetencies: 7,
-        criticalGaps: 2,
-        significantGaps: 2,
-        moderateGaps: 1,
-        averageGap: -1.4,
-        overallReadiness: 58,
-        gaps: []
-    },
-    {
-        employeeId: 'EMP-005',
-        employeeName: 'Jessica Martinez',
-        role: 'Sales Representative',
-        department: 'Sales',
-        totalCompetencies: 5,
-        criticalGaps: 0,
-        significantGaps: 1,
-        moderateGaps: 2,
-        averageGap: -0.6,
-        overallReadiness: 80,
-        gaps: []
-    },
-];
-
-const DEPARTMENT_GAPS: DepartmentGapSummary[] = [
-    { departmentId: 'DEPT-001', departmentName: 'Engineering', headcount: 85, avgReadiness: 71, criticalGapsCount: 12, teams: [] },
-    { departmentId: 'DEPT-002', departmentName: 'Product', headcount: 24, avgReadiness: 76, criticalGapsCount: 3, teams: [] },
-    { departmentId: 'DEPT-003', departmentName: 'Sales', headcount: 42, avgReadiness: 79, criticalGapsCount: 2, teams: [] },
-    { departmentId: 'DEPT-004', departmentName: 'People & Culture', headcount: 12, avgReadiness: 84, criticalGapsCount: 1, teams: [] },
-    { departmentId: 'DEPT-005', departmentName: 'Finance', headcount: 18, avgReadiness: 82, criticalGapsCount: 2, teams: [] },
-];
-
-const RADAR_DATA = ORGANIZATION_GAPS.slice(0, 6).map(gap => ({
-    subject: gap.competencyName.split(' ')[0],
-    current: gap.currentLevel,
-    required: gap.requiredLevel,
-    fullMark: 5
-}));
-
-const CATEGORY_DISTRIBUTION = [
-    { name: 'Technical', gaps: 2, color: '#3B82F6' },
-    { name: 'Leadership', gaps: 2, color: '#F59E0B' },
-    { name: 'Behavioral', gaps: 2, color: '#F43F5E' },
-    { name: 'Functional', gaps: 1, color: '#8B5CF6' },
-    { name: 'Core', gaps: 1, color: '#10B981' },
-];
-
-const STATS = {
-    totalEmployees: 181,
-    avgReadiness: 76,
-    criticalGaps: 18,
-    significantGaps: 42,
-    improvingTrend: 65,
-    trainingHoursNeeded: 2840
+// Category color map for chart distribution
+const CATEGORY_COLORS: Record<string, string> = {
+    Technical: '#3B82F6',
+    Leadership: '#F59E0B',
+    Behavioral: '#F43F5E',
+    Functional: '#8B5CF6',
+    Core: '#10B981',
 };
+
+// Helper: map API priority to page severity
+function mapPriorityToSeverity(priority: string): GapSeverity {
+    switch (priority) {
+        case 'Critical': return 'Critical';
+        case 'High': return 'Significant';
+        case 'Medium': return 'Moderate';
+        case 'Low': return 'Minor';
+        default: return 'None';
+    }
+}
+
+// Helper: determine severity from numeric gap
+function severityFromGap(gap: number): GapSeverity {
+    const absGap = Math.abs(gap);
+    if (absGap >= 1.5) return 'Critical';
+    if (absGap >= 1.0) return 'Significant';
+    if (absGap >= 0.5) return 'Moderate';
+    if (absGap > 0) return 'Minor';
+    return 'None';
+}
 
 // --- COMPONENTS ---
 
@@ -491,7 +301,7 @@ const GapCard: React.FC<{ gap: CompetencyGap; showDetails?: boolean }> = ({ gap,
 
                     {expanded && (
                         <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 space-y-3 animate-in slide-in-from-top-2 duration-200">
-                            <div className="flex items-center gap-4 text-xs text-slate-500">
+                            <div className="flex items-center gap-3 text-xs text-slate-500">
                                 <span className="flex items-center gap-1">
                                     <Users className="w-3 h-3" /> {gap.impactedEmployees} employees impacted
                                 </span>
@@ -530,7 +340,229 @@ export default function GapAnalysisPage() {
     const [categoryFilter, setCategoryFilter] = useState<CompetencyCategory | 'All'>('All');
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
-    
+    const [fetchError, setFetchError] = useState<string | null>(null);
+
+    // API data state
+    const [orgGaps, setOrgGaps] = useState<CompetencyGap[]>([]);
+    const [employeeGaps, setEmployeeGaps] = useState<EmployeeGapSummary[]>([]);
+    const [departmentGaps, setDepartmentGaps] = useState<DepartmentGapSummary[]>([]);
+
+    // Fetch gap analyses from API
+    useEffect(() => {
+        let cancelled = false;
+
+        async function fetchData() {
+            setIsLoading(true);
+            setFetchError(null);
+            try {
+                const result = await GapAnalysisService.getAll();
+
+                if (cancelled) return;
+
+                if (!result.success || !result.data) {
+                    setFetchError('Failed to load gap analysis data');
+                    setOrgGaps([]);
+                    setEmployeeGaps([]);
+                    setDepartmentGaps([]);
+                    return;
+                }
+
+                const analyses = result.data as any[];
+
+                // --- Build organization-level CompetencyGap[] from all items ---
+                const gapMap = new Map<string, CompetencyGap>();
+                let priorityCounter = 1;
+
+                for (const analysis of analyses) {
+                    const items = analysis.items || [];
+                    for (const item of items) {
+                        const compId = item.competencyId || item.id;
+                        const compName = item.competency?.name || 'Unknown Competency';
+                        const rawCategory = item.competency?.category?.name || 'Core';
+                        const category: CompetencyCategory =
+                            (['Technical', 'Leadership', 'Behavioral', 'Functional', 'Core'].includes(rawCategory)
+                                ? rawCategory
+                                : 'Core') as CompetencyCategory;
+
+                        const currentLvl = item.currentLevel?.levelNumber ?? item.currentLevel?.level ?? 1;
+                        const targetLvl = item.targetLevel?.levelNumber ?? item.targetLevel?.level ?? 3;
+                        const gapScore = typeof item.gapScore === 'number' ? item.gapScore : targetLvl - currentLvl;
+                        const gapValue = -(Math.abs(gapScore));
+
+                        const severity: GapSeverity = item.priority
+                            ? mapPriorityToSeverity(item.priority)
+                            : severityFromGap(gapValue);
+
+                        if (!gapMap.has(compId)) {
+                            gapMap.set(compId, {
+                                competencyId: compId,
+                                competencyName: compName,
+                                category,
+                                currentLevel: currentLvl,
+                                requiredLevel: targetLvl,
+                                gap: gapValue === 0 ? 0 : gapValue,
+                                severity,
+                                trend: 'stable' as const,
+                                impactedEmployees: 0,
+                                recommendedActions: item.notes ? [item.notes] : [],
+                                estimatedTimeToClose: 'TBD',
+                                priority: priorityCounter++,
+                            });
+                        }
+                    }
+                }
+
+                const orgGapsList = Array.from(gapMap.values()).sort((a, b) => {
+                    const severityOrder: Record<GapSeverity, number> = { Critical: 0, Significant: 1, Moderate: 2, Minor: 3, None: 4 };
+                    return (severityOrder[a.severity] - severityOrder[b.severity]) || (Math.abs(b.gap) - Math.abs(a.gap));
+                });
+                // Re-assign priorities after sorting
+                orgGapsList.forEach((g, i) => { g.priority = i + 1; });
+
+                setOrgGaps(orgGapsList);
+
+                // --- Build employee-level summaries from Individual analyses ---
+                const empSummaries: EmployeeGapSummary[] = [];
+                for (const analysis of analyses) {
+                    if (analysis.type === 'Individual' && analysis.targetType === 'Employee') {
+                        const items = analysis.items || [];
+                        const empGaps: CompetencyGap[] = items.map((item: any, idx: number) => {
+                            const compName = item.competency?.name || 'Unknown';
+                            const rawCat = item.competency?.category?.name || 'Core';
+                            const cat: CompetencyCategory = (['Technical', 'Leadership', 'Behavioral', 'Functional', 'Core'].includes(rawCat) ? rawCat : 'Core') as CompetencyCategory;
+                            const cl = item.currentLevel?.levelNumber ?? 1;
+                            const tl = item.targetLevel?.levelNumber ?? 3;
+                            const gs = typeof item.gapScore === 'number' ? item.gapScore : tl - cl;
+                            const gv = -(Math.abs(gs));
+                            return {
+                                competencyId: item.competencyId || item.id,
+                                competencyName: compName,
+                                category: cat,
+                                currentLevel: cl,
+                                requiredLevel: tl,
+                                gap: gv === 0 ? 0 : gv,
+                                severity: item.priority ? mapPriorityToSeverity(item.priority) : severityFromGap(gv),
+                                trend: 'stable' as const,
+                                impactedEmployees: 1,
+                                recommendedActions: item.notes ? [item.notes] : [],
+                                estimatedTimeToClose: 'TBD',
+                                priority: idx + 1,
+                            };
+                        });
+
+                        const critical = empGaps.filter(g => g.severity === 'Critical').length;
+                        const significant = empGaps.filter(g => g.severity === 'Significant').length;
+                        const moderate = empGaps.filter(g => g.severity === 'Moderate').length;
+                        const totalComp = empGaps.length || 1;
+                        const avgGap = empGaps.length > 0
+                            ? empGaps.reduce((s, g) => s + g.gap, 0) / empGaps.length
+                            : 0;
+                        const readiness = Math.max(0, Math.min(100, Math.round(
+                            ((totalComp - critical - significant) / totalComp) * 100
+                        )));
+
+                        empSummaries.push({
+                            employeeId: analysis.targetId || analysis.id,
+                            employeeName: analysis.name || 'Unknown Employee',
+                            role: analysis.targetType || 'Employee',
+                            department: analysis.type === 'Individual' ? 'General' : (analysis.targetId || 'General'),
+                            totalCompetencies: totalComp,
+                            criticalGaps: critical,
+                            significantGaps: significant,
+                            moderateGaps: moderate,
+                            averageGap: Math.round(avgGap * 10) / 10,
+                            overallReadiness: readiness,
+                            gaps: empGaps,
+                        });
+                    }
+                }
+                setEmployeeGaps(empSummaries);
+
+                // --- Build department-level summaries from Department analyses ---
+                const deptSummaries: DepartmentGapSummary[] = [];
+                for (const analysis of analyses) {
+                    if (analysis.type === 'Department') {
+                        const items = analysis.items || [];
+                        const criticalCount = items.filter((i: any) => i.priority === 'Critical').length;
+                        const totalItems = items.length || 1;
+                        const avgGapScore = items.length > 0
+                            ? items.reduce((s: number, i: any) => s + (typeof i.gapScore === 'number' ? i.gapScore : 0), 0) / items.length
+                            : 0;
+                        // Estimate readiness: lower gap score = higher readiness (scale 0-5 gap to 0-100)
+                        const readiness = Math.max(0, Math.min(100, Math.round((1 - avgGapScore / 5) * 100)));
+
+                        deptSummaries.push({
+                            departmentId: analysis.targetId || analysis.id,
+                            departmentName: analysis.name || 'Unknown Department',
+                            headcount: 0,
+                            avgReadiness: readiness,
+                            criticalGapsCount: criticalCount,
+                            teams: [],
+                        });
+                    }
+                }
+                setDepartmentGaps(deptSummaries);
+
+            } catch (err) {
+                if (!cancelled) {
+                    console.error('Gap analysis fetch error:', err);
+                    setFetchError('An error occurred while loading gap analysis data.');
+                    setOrgGaps([]);
+                    setEmployeeGaps([]);
+                    setDepartmentGaps([]);
+                }
+            } finally {
+                if (!cancelled) setIsLoading(false);
+            }
+        }
+
+        fetchData();
+        return () => { cancelled = true; };
+    }, []);
+
+    // --- Derived data ---
+    const radarData = useMemo(() =>
+        orgGaps.slice(0, 6).map(gap => ({
+            subject: gap.competencyName.split(' ')[0],
+            current: gap.currentLevel,
+            required: gap.requiredLevel,
+            fullMark: 5,
+        })),
+    [orgGaps]);
+
+    const categoryDistribution = useMemo(() => {
+        const counts: Record<string, number> = {};
+        for (const g of orgGaps) {
+            counts[g.category] = (counts[g.category] || 0) + 1;
+        }
+        return Object.entries(counts).map(([name, gaps]) => ({
+            name,
+            gaps,
+            color: CATEGORY_COLORS[name] || '#6B7280',
+        }));
+    }, [orgGaps]);
+
+    const stats = useMemo(() => {
+        const totalEmployees = employeeGaps.length || departmentGaps.reduce((s, d) => s + d.headcount, 0);
+        const critical = orgGaps.filter(g => g.severity === 'Critical').length;
+        const significant = orgGaps.filter(g => g.severity === 'Significant').length;
+        const improving = orgGaps.filter(g => g.trend === 'improving').length;
+        const improvingPct = orgGaps.length > 0 ? Math.round((improving / orgGaps.length) * 100) : 0;
+        const avgReadiness = departmentGaps.length > 0
+            ? Math.round(departmentGaps.reduce((s, d) => s + d.avgReadiness, 0) / departmentGaps.length)
+            : (orgGaps.length > 0
+                ? Math.round((1 - (orgGaps.reduce((s, g) => s + Math.abs(g.gap), 0) / orgGaps.length) / 5) * 100)
+                : 0);
+        return {
+            totalEmployees,
+            avgReadiness,
+            criticalGaps: critical,
+            significantGaps: significant,
+            improvingTrend: improvingPct,
+            trainingHoursNeeded: orgGaps.length * 40, // rough estimate
+        };
+    }, [orgGaps, employeeGaps, departmentGaps]);
+
     // Development Plan Sheet state
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [developmentPlans, setDevelopmentPlans] = useState<{
@@ -701,7 +733,7 @@ export default function GapAnalysisPage() {
     };
     
     const handleAddAllCriticalGaps = () => {
-        const criticalGaps = ORGANIZATION_GAPS.filter(g => g.severity === 'Critical' || g.severity === 'Significant');
+        const criticalGaps = orgGaps.filter(g => g.severity === 'Critical' || g.severity === 'Significant');
         const newGaps = criticalGaps
             .filter(g => !planFormData.selectedGaps.find(sg => sg.gapId === g.competencyId))
             .map((g, idx) => ({
@@ -718,7 +750,7 @@ export default function GapAnalysisPage() {
     };
 
     const filteredGaps = useMemo(() => {
-        let result = ORGANIZATION_GAPS;
+        let result = orgGaps;
 
         if (severityFilter !== 'All') {
             result = result.filter(g => g.severity === severityFilter);
@@ -734,10 +766,10 @@ export default function GapAnalysisPage() {
         }
 
         return result;
-    }, [severityFilter, categoryFilter, searchQuery]);
+    }, [orgGaps, severityFilter, categoryFilter, searchQuery]);
 
     const filteredEmployees = useMemo(() => {
-        let result = EMPLOYEE_GAPS;
+        let result = employeeGaps;
 
         if (selectedDepartment !== 'All') {
             result = result.filter(e => e.department === selectedDepartment);
@@ -752,12 +784,29 @@ export default function GapAnalysisPage() {
         }
 
         return result.sort((a, b) => b.criticalGaps - a.criticalGaps || a.overallReadiness - b.overallReadiness);
-    }, [selectedDepartment, searchQuery]);
+    }, [employeeGaps, selectedDepartment, searchQuery]);
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center py-32 space-y-4">
+                <Loader2 className="w-10 h-10 text-celestial-indigo animate-spin" />
+                <p className="text-sm text-silver-mist font-medium">Loading gap analysis data...</p>
+            </div>
+        );
+    }
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
+            {/* Error Banner */}
+            {fetchError && (
+                <div className="flex items-center gap-3 p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl">
+                    <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+                    <p className="text-sm text-rose-700 dark:text-rose-300">{fetchError}</p>
+                </div>
+            )}
+
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Target className="w-6 h-6 text-celestial-indigo" />
@@ -801,14 +850,14 @@ export default function GapAnalysisPage() {
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-lg">
                             <Users className="w-5 h-5" />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{STATS.totalEmployees}</div>
+                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{stats.totalEmployees}</div>
                             <div className="text-[10px] text-silver-mist uppercase font-bold">Employees</div>
                         </div>
                     </div>
@@ -819,7 +868,7 @@ export default function GapAnalysisPage() {
                             <Award className="w-5 h-5" />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{STATS.avgReadiness}%</div>
+                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{stats.avgReadiness}%</div>
                             <div className="text-[10px] text-silver-mist uppercase font-bold">Avg Readiness</div>
                         </div>
                     </div>
@@ -830,7 +879,7 @@ export default function GapAnalysisPage() {
                             <AlertTriangle className="w-5 h-5" />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{STATS.criticalGaps}</div>
+                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{stats.criticalGaps}</div>
                             <div className="text-[10px] text-silver-mist uppercase font-bold">Critical Gaps</div>
                         </div>
                     </div>
@@ -841,7 +890,7 @@ export default function GapAnalysisPage() {
                             <AlertCircle className="w-5 h-5" />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{STATS.significantGaps}</div>
+                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{stats.significantGaps}</div>
                             <div className="text-[10px] text-silver-mist uppercase font-bold">Significant</div>
                         </div>
                     </div>
@@ -852,7 +901,7 @@ export default function GapAnalysisPage() {
                             <TrendingUp className="w-5 h-5" />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{STATS.improvingTrend}%</div>
+                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{stats.improvingTrend}%</div>
                             <div className="text-[10px] text-silver-mist uppercase font-bold">Improving</div>
                         </div>
                     </div>
@@ -863,7 +912,7 @@ export default function GapAnalysisPage() {
                             <GraduationCap className="w-5 h-5" />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{STATS.trainingHoursNeeded}</div>
+                            <div className="text-2xl font-bold text-ink-black dark:text-pearl">{stats.trainingHoursNeeded}</div>
                             <div className="text-[10px] text-silver-mist uppercase font-bold">Training Hrs</div>
                         </div>
                     </div>
@@ -871,7 +920,7 @@ export default function GapAnalysisPage() {
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Radar Chart */}
                 <div className="lg:col-span-1 bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <h3 className="font-bold text-ink-black dark:text-pearl mb-2 flex items-center gap-2">
@@ -882,7 +931,7 @@ export default function GapAnalysisPage() {
 
                     <div className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
-                            <RadarChart cx="50%" cy="50%" outerRadius="75%" data={RADAR_DATA}>
+                            <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
                                 <PolarGrid stroke="#e2e8f0" />
                                 <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' }} />
                                 <PolarRadiusAxis angle={30} domain={[0, 5]} tick={false} axisLine={false} />
@@ -922,7 +971,7 @@ export default function GapAnalysisPage() {
 
                     <div className="h-[250px]">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={CATEGORY_DISTRIBUTION} layout="vertical">
+                            <BarChart data={categoryDistribution} layout="vertical">
                                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                                 <XAxis type="number" tick={{ fontSize: 10 }} />
                                 <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={80} />
@@ -930,7 +979,7 @@ export default function GapAnalysisPage() {
                                     contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 />
                                 <Bar dataKey="gaps" radius={[0, 4, 4, 0]}>
-                                    {CATEGORY_DISTRIBUTION.map((entry, index) => (
+                                    {categoryDistribution.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
                                 </Bar>
@@ -939,7 +988,7 @@ export default function GapAnalysisPage() {
                     </div>
 
                     <div className="mt-4 space-y-2">
-                        {CATEGORY_DISTRIBUTION.map(cat => (
+                        {categoryDistribution.map(cat => (
                             <div key={cat.name} className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <div className="w-3 h-3 rounded" style={{ backgroundColor: cat.color }} />
@@ -960,7 +1009,13 @@ export default function GapAnalysisPage() {
                     <p className="text-xs text-silver-mist mb-4">Overall competency readiness by department</p>
 
                     <div className="space-y-4">
-                        {DEPARTMENT_GAPS.map(dept => (
+                        {departmentGaps.length === 0 && (
+                            <div className="text-center py-8 text-slate-400">
+                                <Building2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                <p className="text-sm">No department data available.</p>
+                            </div>
+                        )}
+                        {departmentGaps.map(dept => (
                             <div key={dept.departmentId} className="p-3 bg-slate-50 dark:bg-deep-cosmos/30 rounded-xl">
                                 <div className="flex items-center justify-between mb-2">
                                     <div>
@@ -994,7 +1049,7 @@ export default function GapAnalysisPage() {
 
             {/* Filters Bar */}
             <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
-                <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex flex-col md:flex-row gap-3">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
                         <input
@@ -1042,7 +1097,7 @@ export default function GapAnalysisPage() {
                             className="px-3 py-2.5 bg-slate-50 dark:bg-deep-cosmos/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 outline-none cursor-pointer"
                         >
                             <option value="All">All Departments</option>
-                            {DEPARTMENT_GAPS.map(dept => (
+                            {departmentGaps.map(dept => (
                                 <option key={dept.departmentId} value={dept.departmentName}>{dept.departmentName}</option>
                             ))}
                         </select>
@@ -1060,11 +1115,19 @@ export default function GapAnalysisPage() {
                         <span className="text-sm text-silver-mist">{filteredGaps.length} gaps identified</span>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {filteredGaps.map(gap => (
-                            <GapCard key={gap.competencyId} gap={gap} showDetails />
-                        ))}
-                    </div>
+                    {filteredGaps.length === 0 ? (
+                        <div className="text-center py-12 text-slate-400">
+                            <Target className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                            <p className="text-sm font-medium">No competency gaps found.</p>
+                            <p className="text-xs mt-1">Adjust filters or check back after analyses are completed.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                            {filteredGaps.map(gap => (
+                                <GapCard key={gap.competencyId} gap={gap} showDetails />
+                            ))}
+                        </div>
+                    )}
                 </div>
             ) : (
                 <div>
@@ -1075,6 +1138,13 @@ export default function GapAnalysisPage() {
                         <span className="text-sm text-silver-mist">{filteredEmployees.length} employees</span>
                     </div>
 
+                    {filteredEmployees.length === 0 ? (
+                        <div className="text-center py-12 text-slate-400">
+                            <Users className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                            <p className="text-sm font-medium">No individual gap data available.</p>
+                            <p className="text-xs mt-1">Individual gap analyses will appear here once created.</p>
+                        </div>
+                    ) : (
                     <div className="space-y-4">
                         {filteredEmployees.map(emp => (
                             <div
@@ -1082,7 +1152,7 @@ export default function GapAnalysisPage() {
                                 className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm p-6"
                             >
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
                                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-celestial-indigo to-purple-600 flex items-center justify-center text-white font-bold text-lg">
                                             {emp.employeeName.split(' ').map(n => n[0]).join('')}
                                         </div>
@@ -1092,7 +1162,7 @@ export default function GapAnalysisPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-6">
+                                    <div className="flex items-center gap-3">
                                         {/* Gap Summary */}
                                         <div className="flex items-center gap-3">
                                             {emp.criticalGaps > 0 && (
@@ -1143,12 +1213,13 @@ export default function GapAnalysisPage() {
                             </div>
                         ))}
                     </div>
+                    )}
                 </div>
             )}
 
             {/* AI Recommendations */}
             <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-6 rounded-2xl shadow-lg border border-indigo-500/30 text-white">
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3">
                     <div className="p-3 bg-white/10 rounded-xl">
                         <BrainCircuit className="w-6 h-6" />
                     </div>
@@ -1159,7 +1230,7 @@ export default function GapAnalysisPage() {
                         </div>
                         <h3 className="font-bold text-lg mb-3">Priority Actions to Close Gaps</h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
                             <div className="bg-white/10 backdrop-blur-sm p-4 rounded-xl">
                                 <div className="flex items-center gap-2 mb-2">
                                     <div className="w-8 h-8 bg-rose-500/20 rounded-lg flex items-center justify-center">
@@ -1229,7 +1300,7 @@ export default function GapAnalysisPage() {
                     </div>
                 }
             >
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {/* Description */}
                     <p className="text-sm text-silver-mist">
                         Create a targeted development plan to address competency gaps. Select gaps to address, define learning activities, and set timelines.
@@ -1242,7 +1313,7 @@ export default function GapAnalysisPage() {
                             Plan Details
                         </h3>
                         
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3">
                             {/* Plan Name */}
                             <div className="col-span-2">
                                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
@@ -1300,7 +1371,7 @@ export default function GapAnalysisPage() {
                                         className="w-full px-3 py-2 bg-white dark:bg-stellar-blue border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-celestial-indigo/50 text-ink-black dark:text-pearl cursor-pointer"
                                     >
                                         <option value="">Select Employee</option>
-                                        {EMPLOYEE_GAPS.map(emp => (
+                                        {employeeGaps.map(emp => (
                                             <option key={emp.employeeId} value={emp.employeeName}>
                                                 {emp.employeeName} - {emp.role}
                                             </option>
@@ -1387,7 +1458,7 @@ export default function GapAnalysisPage() {
                                 Select gaps from the analysis
                             </label>
                             <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
-                                {ORGANIZATION_GAPS.map(gap => {
+                                {orgGaps.map(gap => {
                                     const isSelected = planFormData.selectedGaps.find(g => g.gapId === gap.competencyId);
                                     const sevStyle = SEVERITY_STYLES[gap.severity];
                                     return (
@@ -1568,3 +1639,4 @@ export default function GapAnalysisPage() {
         </div>
     );
 }
+

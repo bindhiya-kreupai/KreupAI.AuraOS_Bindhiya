@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { employeeService } from '@/lib/services/employee';
+import { ServiceProxy } from '@/lib/services/service-proxy';
 import { z } from 'zod';
 
 // API Response Standard
@@ -42,8 +42,8 @@ export const GET = withEnhancedAuth(
     try {
       const { id } = params;
 
-      // Fetch employee
-      const employee = await employeeService.findById(id);
+      // Fetch employee from microservice
+      const employee = await ServiceProxy.get('employee', `/employees/${id}`);
 
       if (!employee) {
         const response: ApiResponse = {
@@ -125,8 +125,8 @@ export const PUT = withEnhancedAuth(
         return NextResponse.json(response, { status: 400 });
       }
 
-      // Update employee
-      const employee = await employeeService.update(id, validationResult.data);
+      // Update employee via microservice
+      const employee = await ServiceProxy.put('employee', `/employees/${id}`, validationResult.data);
 
       const response: ApiResponse = {
         success: true,
@@ -230,8 +230,8 @@ export const DELETE = withEnhancedAuth(
         return NextResponse.json(response, { status: 400 });
       }
 
-      // Soft delete employee
-      await employeeService.delete(id, terminatedStatusId);
+      // Soft delete employee via microservice
+      await ServiceProxy.delete('employee', `/employees/${id}?terminatedStatusId=${terminatedStatusId}`);
 
       const response: ApiResponse = {
         success: true,

@@ -137,7 +137,7 @@ export const GET = withEnhancedAuth(
         meta: { total: filteredData.length },
       });
     } catch (error) {
-      logger.error('Error fetching attendance rules:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch attendance rules' },
         { status: 500 }
@@ -166,9 +166,10 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Attendance - Rules',
+          entityType: 'Attendance - Rules',
           details: `Created attendance rule: ${data.name}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -182,7 +183,7 @@ export const POST = withEnhancedAuth(
           { status: 400 }
         );
       }
-      logger.error('Error creating attendance rule:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to create attendance rule' },
         { status: 500 }
@@ -217,9 +218,10 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Attendance - Rules',
+          entityType: 'Attendance - Rules',
           details: `Updated attendance rule: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -227,7 +229,7 @@ export const PUT = withEnhancedAuth(
 
       return NextResponse.json({ success: true, data: updated });
     } catch (error) {
-      logger.error('Error updating attendance rule:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to update attendance rule' },
         { status: 500 }
@@ -255,9 +257,10 @@ export const DELETE = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
-          module: 'Attendance - Rules',
+          entityType: 'Attendance - Rules',
           details: `Deleted attendance rule: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -265,7 +268,7 @@ export const DELETE = withEnhancedAuth(
 
       return NextResponse.json({ success: true, message: 'Attendance rule deleted successfully' });
     } catch (error) {
-      logger.error('Error deleting attendance rule:', error);
+      logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to delete attendance rule' },
         { status: 500 }

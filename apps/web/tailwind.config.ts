@@ -18,14 +18,19 @@ const config: Config = {
     extend: {
       // Aurora Professional Color Palette
       colors: {
-        // Primary Brand Colors
-        'celestial-indigo': '#4B3BF5',
-        'quantum-rose': '#E91E8C',
-        'neural-mint': '#00D4AA',
+        // Brand Colors — Blue / Light Blue / Red / White
+        'brand-blue': '#1D4ED8',
+        'brand-light-blue': '#60A5FA',
+        'brand-red': '#DC2626',
+
+        // Primary Brand Colors (legacy aliases)
+        'celestial-indigo': '#1D4ED8',
+        'quantum-rose': '#DC2626',
+        'neural-mint': '#60A5FA',
 
         // Status Colors
         'sunset-amber': '#FFB547',
-        'coral-alert': '#FF5744',
+        'coral-alert': '#DC2626',
 
         // Neutral Spectrum - Moonlight Grays
         'ink-black': '#0A0E27',
@@ -113,17 +118,17 @@ const config: Config = {
 
       // Box Shadow
       boxShadow: {
-        'glow-indigo': '0 0 20px rgba(75, 59, 245, 0.3)',
-        'glow-rose': '0 0 20px rgba(233, 30, 140, 0.3)',
-        'glow-mint': '0 0 20px rgba(0, 212, 170, 0.3)',
-        'card': '0 10px 40px rgba(75, 59, 245, 0.08), 0 2px 10px rgba(0, 0, 0, 0.05)',
-        'card-hover': '0 20px 60px rgba(75, 59, 245, 0.12), 0 5px 20px rgba(233, 30, 140, 0.08)',
+        'glow-indigo': '0 0 20px rgba(29, 78, 216, 0.3)',
+        'glow-rose': '0 0 20px rgba(220, 38, 38, 0.3)',
+        'glow-mint': '0 0 20px rgba(96, 165, 250, 0.3)',
+        'card': '0 10px 40px rgba(29, 78, 216, 0.08), 0 2px 10px rgba(0, 0, 0, 0.05)',
+        'card-hover': '0 20px 60px rgba(29, 78, 216, 0.12), 0 5px 20px rgba(96, 165, 250, 0.08)',
       },
 
       // Background Image (Gradients)
       backgroundImage: {
-        'aurora-gradient': 'linear-gradient(135deg, #4B3BF5 0%, #E91E8C 50%, #00D4AA 100%)',
-        'aurora-soft': 'linear-gradient(120deg, rgba(75, 59, 245, 0.05) 0%, rgba(233, 30, 140, 0.03) 50%, rgba(0, 212, 170, 0.05) 100%)',
+        'aurora-gradient': 'linear-gradient(135deg, #1D4ED8 0%, #60A5FA 50%, #DC2626 100%)',
+        'aurora-soft': 'linear-gradient(120deg, rgba(29, 78, 216, 0.05) 0%, rgba(96, 165, 250, 0.03) 50%, rgba(220, 38, 38, 0.05) 100%)',
         'glass': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
       },
 
@@ -160,8 +165,8 @@ const config: Config = {
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
         pulseGlow: {
-          '0%, 100%': { boxShadow: '0 0 20px rgba(75, 59, 245, 0.3)' },
-          '50%': { boxShadow: '0 0 40px rgba(233, 30, 140, 0.5)' },
+          '0%, 100%': { boxShadow: '0 0 20px rgba(29, 78, 216, 0.3)' },
+          '50%': { boxShadow: '0 0 40px rgba(96, 165, 250, 0.5)' },
         },
         auroraWave: {
           '0%, 100%': { backgroundPosition: '0% 50%' },

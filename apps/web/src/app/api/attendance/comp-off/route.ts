@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -91,7 +91,7 @@ export const GET = withEnhancedAuth(
         meta: { total: filteredData.length },
       });
     } catch (error) {
-      logger.error('Error fetching comp-off records:', error);
+      logger.error({ error }, 'Error fetching comp-off records:');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch comp-off records' },
         { status: 500 }
@@ -126,9 +126,10 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Attendance - Comp-off',
+          entityType: 'Attendance - Comp-off',
           details: `Requested comp-off for work on ${data.workDate}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -142,7 +143,7 @@ export const POST = withEnhancedAuth(
           { status: 400 }
         );
       }
-      logger.error('Error creating comp-off request:', error);
+      logger.error({ error }, 'Error creating comp-off request:');
       return NextResponse.json(
         { success: false, error: 'Failed to create comp-off request' },
         { status: 500 }
@@ -179,9 +180,10 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Attendance - Comp-off',
+          entityType: 'Attendance - Comp-off',
           details: `${status} comp-off request: ${id}`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
@@ -189,7 +191,7 @@ export const PUT = withEnhancedAuth(
 
       return NextResponse.json({ success: true, data: updated });
     } catch (error) {
-      logger.error('Error updating comp-off request:', error);
+      logger.error({ error }, 'Error updating comp-off request:');
       return NextResponse.json(
         { success: false, error: 'Failed to update comp-off request' },
         { status: 500 }

@@ -151,7 +151,7 @@ export default function AgentMetricsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-8 pb-10">
+      <div className="space-y-8 pb-6">
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
             <Activity className="w-12 h-12 text-slate-400 animate-pulse mx-auto mb-4" />
@@ -165,10 +165,10 @@ export default function AgentMetricsPage() {
   const activeAgentsCount = Object.values(agentDefinitions).filter(a => a?.isActive).length;
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-8 pb-6">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-4 mb-2">
+        <div className="flex items-center gap-3 mb-2">
           <BarChart3 className="w-10 h-10 text-slate-700 dark:text-slate-300" />
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
@@ -182,7 +182,7 @@ export default function AgentMetricsPage() {
       </div>
 
       {/* Overall Performance Indicators */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {performanceIndicators.map((indicator) => {
           const Icon = indicator.icon;
           return (
@@ -207,7 +207,7 @@ export default function AgentMetricsPage() {
       </div>
 
       {/* Individual Agent Metrics */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         {agents.map((agent) => {
           const Icon = agent.icon;
           const successRate = ((agent.metrics.successful / agent.metrics.totalRequests) * 100).toFixed(1);
@@ -220,7 +220,7 @@ export default function AgentMetricsPage() {
             >
               <div className="p-6">
                 {/* Agent Header */}
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-3 mb-6">
                   <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${agent.color} flex items-center justify-center`}>
                     <Icon className="w-6 h-6 text-white" />
                   </div>
@@ -235,7 +235,7 @@ export default function AgentMetricsPage() {
                 </div>
 
                 {/* Metrics Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
                   <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4">
                     <p className="text-xs text-slate-500 dark:text-slate-500 mb-1">Total Requests</p>
                     <p className="text-xl font-bold text-slate-900 dark:text-white">
@@ -315,7 +315,7 @@ export default function AgentMetricsPage() {
             System Health Status
           </h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-5 h-5 text-green-600" />
             <div>
@@ -404,3 +404,4 @@ export default function AgentMetricsPage() {
     </div>
   );
 }
+

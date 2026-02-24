@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { redis } from '@/lib/cache/redis';
 import { queryMonitor } from '@/lib/monitoring/query-monitor';
+import { checkPhase3Health } from '@/lib/init/phase3';
+import { getEnvironmentSummary, isFeatureEnabled } from '@/lib/config/env-validation';
 import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
@@ -28,6 +30,9 @@ export async function GET(request: NextRequest) {
     // Check Redis connectivity
     const redisStatus = redis.isReady() ? 'healthy' : 'unavailable';
 
+    // Check Phase 3 services
+    const phase3Health = await checkPhase3Health();
+
     // Get query performance stats
     const queryStats = queryMonitor.getStats();
 
@@ -35,11 +40,31 @@ export async function GET(request: NextRequest) {
     const environment = process.env.NODE_ENV || 'development';
     const nodeVersion = process.version;
 
+    // Check feature flags
+    const features = {
+      oauth2Google: isFeatureEnabled('google-oauth'),
+      oauth2Microsoft: isFeatureEnabled('microsoft-oauth'),
+      oauth2Okta: isFeatureEnabled('okta-oauth'),
+      messaging: isFeatureEnabled('rabbitmq'),
+      search: isFeatureEnabled('elasticsearch'),
+      monitoring: isFeatureEnabled('datadog'),
+    };
+
+    // Get environment summary
+    const envSummary = getEnvironmentSummary();
+
     // Calculate total response time
     const totalResponseTime = Date.now() - startTime;
 
+    // Determine overall status
+    const criticalServicesHealthy = dbStatus === 'healthy' && redisStatus === 'healthy';
+    const phase3ServicesHealthy = phase3Health.messaging && phase3Health.search && phase3Health.events;
+    const overallStatus = criticalServicesHealthy
+      ? (phase3ServicesHealthy ? 'healthy' : 'degraded')
+      : 'unhealthy';
+
     const healthData = {
-      status: dbStatus === 'healthy' ? 'healthy' : 'degraded',
+      status: overallStatus,
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       environment,
@@ -52,6 +77,18 @@ export async function GET(request: NextRequest) {
         },
         cache: {
           status: redisStatus,
+        },
+        messaging: {
+          status: phase3Health.messaging ? 'healthy' : 'unavailable',
+          message: phase3Health.messaging ? 'RabbitMQ connected' : 'RabbitMQ unavailable',
+        },
+        search: {
+          status: phase3Health.search ? 'healthy' : 'unavailable',
+          message: phase3Health.search ? 'Elasticsearch connected' : 'Elasticsearch unavailable',
+        },
+        events: {
+          status: phase3Health.events ? 'healthy' : 'unavailable',
+          message: phase3Health.events ? 'Event bus ready' : 'Event bus not initialized',
         },
         api: {
           status: 'healthy',
@@ -66,10 +103,15 @@ export async function GET(request: NextRequest) {
           averageDuration: queryStats.averageDuration.toFixed(2) + 'ms',
         },
       },
+      features,
+      environmentVariables: {
+        required: envSummary.required.map(v => ({ key: v.key, present: v.present })),
+        optionalMissing: envSummary.optional.filter(v => !v.present).map(v => v.key),
+      },
     };
 
     // Return 503 if any critical service is unhealthy
-    const statusCode = dbStatus === 'healthy' ? 200 : 503;
+    const statusCode = overallStatus === 'unhealthy' ? 503 : 200;
 
     return NextResponse.json(healthData, { status: statusCode });
   } catch (error) {
@@ -82,5 +124,27 @@ export async function GET(request: NextRequest) {
       },
       { status: 503 }
     );
+  }
+}
+
+/**
+ * HEAD /api/health
+ * Lightweight readiness probe for Kubernetes/load balancers
+ * Only checks critical services (database + Redis)
+ */
+export async function HEAD(request: NextRequest) {
+  try {
+    // Check only critical services for readiness
+    await prisma.$queryRaw`SELECT 1`;
+    const redisReady = redis.isReady();
+
+    if (redisReady) {
+      return new NextResponse(null, { status: 200 });
+    } else {
+      return new NextResponse(null, { status: 503 });
+    }
+  } catch (error) {
+    logger.error('Readiness check failed:', error);
+    return new NextResponse(null, { status: 503 });
   }
 }

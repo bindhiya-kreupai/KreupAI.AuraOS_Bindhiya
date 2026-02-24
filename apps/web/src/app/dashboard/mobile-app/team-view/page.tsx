@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Users,
     Layout,
@@ -10,14 +10,42 @@ import {
     GitMerge,
     Phone,
     Mail,
-    MapPin
+    MapPin,
+    Loader2
 } from 'lucide-react';
+import { MobileProfileService } from '../services';
 
 export default function TeamViewPage() {
+    const [profile, setProfile] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await MobileProfileService.getProfile();
+                setProfile(data as any);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Users className="w-6 h-6 text-indigo-500" />
@@ -32,7 +60,7 @@ export default function TeamViewPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Configuration Controls */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     {/* Visible Fields */}
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
@@ -72,7 +100,7 @@ export default function TeamViewPage() {
                         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                             <GitMerge className="w-5 h-5 text-amber-500" /> Structure Visualization
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             {[
                                 { name: 'List View', desc: 'Simple directory list', icon: Layout, active: false },
                                 { name: 'Org Chart', desc: 'Hierarchy tree view', icon: GitMerge, active: true },
@@ -136,3 +164,4 @@ export default function TeamViewPage() {
         </div>
     );
 }
+

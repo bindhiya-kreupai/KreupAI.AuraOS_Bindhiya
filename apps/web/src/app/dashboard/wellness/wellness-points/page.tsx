@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
-import { Award, Gift, Clock, CreditCard, ShoppingBag, ArrowUpRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Award, Gift, Clock, CreditCard, ShoppingBag, ArrowUpRight, Loader2 } from 'lucide-react';
+import { WellnessPointsService } from '../services';
 
 const REWARDS = [
     { id: 1, title: '$50 Adidas Voucher', points: 5000, category: 'Apparel', image: 'bg-slate-900' },
@@ -17,9 +18,35 @@ const HISTORY = [
 ];
 
 export default function WellnessPointsPage() {
+    const [transactions, setTransactions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await WellnessPointsService.getTransactions();
+                setTransactions(Array.isArray(data) ? data : []);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Award className="w-6 h-6 text-yellow-500" />
@@ -31,7 +58,7 @@ export default function WellnessPointsPage() {
 
             {/* Points Balance Card */}
             <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
-                <div className="relative z-10 flex flex-col md:flex-row justify-between items-end gap-6">
+                <div className="relative z-10 flex flex-col md:flex-row justify-between items-end gap-3">
                     <div>
                         <div className="text-yellow-100 font-medium mb-1 flex items-center gap-2">
                             <CreditCard className="w-4 h-4" /> Available Balance
@@ -64,9 +91,9 @@ export default function WellnessPointsPage() {
                         <button className="text-sm font-medium text-slate-500 hover:text-indigo-500">View All</button>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {REWARDS.map(reward => (
-                            <div key={reward.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer group">
+                            <div key={reward.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex items-center gap-3 hover:shadow-md transition-shadow cursor-pointer group">
                                 <div className={`w-16 h-16 rounded-lg ${reward.image} flex items-center justify-center text-white font-bold text-xs`}>
                                     IMG
                                 </div>
@@ -110,3 +137,4 @@ export default function WellnessPointsPage() {
         </div>
     );
 }
+

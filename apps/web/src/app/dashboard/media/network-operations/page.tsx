@@ -10,8 +10,8 @@ import {
 
 export default function NetworkOperationsPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Network className="w-6 h-6 text-indigo-500" />
@@ -24,8 +24,8 @@ export default function NetworkOperationsPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <h3 className="font-bold text-lg mb-4">Active Alerts</h3>
                         <div className="space-y-3">
@@ -34,7 +34,7 @@ export default function NetworkOperationsPage() {
                                 { msg: 'Latency spike in South-East region', sev: 'Warning', time: '15m ago' },
                                 { msg: 'Scheduled maintenance for DB-Cluster-02', sev: 'Info', time: '1h ago' },
                             ].map((alert, i) => (
-                                <div key={i} className={`flex items-start gap-4 p-4 rounded-xl border ${alert.sev === 'Critical' ? 'bg-rose-50 dark:bg-rose-900/10 border-rose-100 dark:border-rose-900/30' :
+                                <div key={i} className={`flex items-start gap-3 p-4 rounded-xl border ${alert.sev === 'Critical' ? 'bg-rose-50 dark:bg-rose-900/10 border-rose-100 dark:border-rose-900/30' :
                                         alert.sev === 'Warning' ? 'bg-amber-50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30' :
                                             'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-800'
                                     }`}>
@@ -66,7 +66,7 @@ export default function NetworkOperationsPage() {
 
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <h3 className="font-bold text-lg mb-4">System Health</h3>
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         {[
                             { name: 'Core Network', status: 'Healthy', uptime: '99.99%', load: 45 },
                             { name: 'Edge Servers', status: 'Healthy', uptime: '99.95%', load: 72 },
@@ -106,3 +106,4 @@ export default function NetworkOperationsPage() {
         </div>
     );
 }
+

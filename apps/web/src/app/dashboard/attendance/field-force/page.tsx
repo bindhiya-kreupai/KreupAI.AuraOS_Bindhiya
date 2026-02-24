@@ -58,24 +58,20 @@ export default function FieldForcePage() {
         try {
             setLoading(true);
             const agentsResult = await FieldForceService.getFieldAgents();
-            if (agentsResult && agentsResult.length > 0) {
-                setAgents(agentsResult as any);
-            }
+            setAgents((agentsResult || []) as any);
             const visitsResult = await FieldForceService.getVisitLogs();
-            if (visitsResult && visitsResult.length > 0) {
-                setVisitLogs(visitsResult as any);
-            }
+            setVisitLogs((visitsResult || []) as any);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Map className="w-6 h-6 text-emerald-500" />
@@ -91,9 +87,9 @@ export default function FieldForcePage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-y-auto lg:overflow-visible">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-y-auto lg:overflow-visible">
                 {/* Left: Agent List & Filters */}
-                <div className="lg:col-span-1 space-y-6 flex flex-col h-full">
+                <div className="lg:col-span-1 space-y-4 flex flex-col h-full">
                     {/* Search & Filter */}
                     <div className="relative shrink-0">
                         <input
@@ -106,7 +102,14 @@ export default function FieldForcePage() {
 
                     {/* Agents List */}
                     <div className="bg-white dark:bg-stellar-blue p-4 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex-1 overflow-y-auto space-y-3">
-                        {agents.map(agent => (
+                        {loading ? (
+                            <div className="p-8 text-center">
+                                <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                                <p className="mt-2 text-slate-500">Loading agents...</p>
+                            </div>
+                        ) : agents.length === 0 ? (
+                            <div className="p-8 text-center text-slate-400">No field agents found</div>
+                        ) : agents.map(agent => (
                             <div
                                 key={agent.id}
                                 onClick={() => setSelectedAgent(agent)}
@@ -149,7 +152,7 @@ export default function FieldForcePage() {
                 </div>
 
                 {/* Right: Map & Activity Feed */}
-                <div className="lg:col-span-2 space-y-6 flex flex-col h-full overflow-hidden">
+                <div className="lg:col-span-2 space-y-4 flex flex-col h-full overflow-hidden">
                     {/* Map Widget (Mock) */}
                     <div className="h-64 sm:h-96 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-cloud dark:border-nebula-purple/50 overflow-hidden relative group">
                         {/* Map Background Pattern */}
@@ -188,8 +191,14 @@ export default function FieldForcePage() {
                         </div>
 
                         <div className="overflow-y-auto space-y-4 pr-1">
-                            {visitLogs.map(log => (
-                                <div key={log.id} className="flex gap-4 p-4 border border-cloud dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                            {loading ? (
+                            <div className="p-8 text-center">
+                                <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                            </div>
+                        ) : visitLogs.length === 0 ? (
+                            <div className="p-8 text-center text-slate-400">No visit logs for today</div>
+                        ) : visitLogs.map(log => (
+                                <div key={log.id} className="flex gap-3 p-4 border border-cloud dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-800 transition-colors">
                                     <div className="flex flex-col items-center gap-1">
                                         <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs border border-indigo-100 dark:border-indigo-800">
                                             {log.time}
@@ -226,3 +235,4 @@ export default function FieldForcePage() {
         </div>
     );
 }
+

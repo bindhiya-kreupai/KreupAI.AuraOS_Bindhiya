@@ -12,9 +12,9 @@ import {
 
 export default function ContractRenewalPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <RefreshCw className="w-6 h-6 text-indigo-500" />
@@ -24,7 +24,7 @@ export default function ContractRenewalPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {/* Expiring Soon */}
                 <div className="space-y-4">
                     <h3 className="font-bold text-lg flex items-center gap-2 text-amber-600">
@@ -55,13 +55,13 @@ export default function ContractRenewalPage() {
                         <HistoryIcon className="w-5 h-5" /> Detailed History
                     </h3>
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             {[
                                 { action: 'Renewed', name: 'David Smith', term: '+6 Months', date: 'Yesterday', icon: CheckCircle2, color: 'text-emerald-500' },
                                 { action: 'Terminated', name: 'Emily White', term: 'Effective Immediately', date: '2 days ago', icon: XCircle, color: 'text-slate-400' },
                                 { action: 'Rate Adjusted', name: 'James Wilson', term: '$85/hr -> $90/hr', date: 'Last Week', icon: RefreshCw, color: 'text-blue-500' },
                             ].map((log, i) => (
-                                <div key={i} className="flex gap-4">
+                                <div key={i} className="flex gap-3">
                                     <div className={`mt-1 ${log.color}`}>
                                         <log.icon className="w-5 h-5" />
                                     </div>
@@ -82,3 +82,4 @@ export default function ContractRenewalPage() {
 
 function ClockIcon(props: any) { return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg> }
 function HistoryIcon(props: any) { return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v5h5" /><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" /><path d="M12 7v5l4 2" /></svg> }
+

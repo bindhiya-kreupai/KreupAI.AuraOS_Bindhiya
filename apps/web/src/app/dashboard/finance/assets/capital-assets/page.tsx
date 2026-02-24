@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Building2,
     Laptop,
@@ -17,8 +17,10 @@ import {
     Edit,
     Trash2,
     MoreVertical,
-    X
+    X,
+    Loader2
 } from 'lucide-react';
+import { FinancialAssetService } from '../../services';
 
 type AssetCategory = 'all' | 'equipment' | 'vehicles' | 'property' | 'furniture';
 
@@ -52,112 +54,23 @@ interface AssetFormData {
 export default function CapitalAssetsPage() {
     const [filter, setFilter] = useState<AssetCategory>('all');
     const [showModal, setShowModal] = useState(false);
-    const [assets, setAssets] = useState<CapitalAsset[]>([
-        {
-            id: 'CA-001',
-            name: 'MacBook Pro M3 Max',
-            category: 'equipment',
-            purchaseDate: '2024-01-15',
-            purchaseCost: 3500,
-            currentValue: 3100,
-            location: 'Engineering Dept',
-            assignedTo: 'Sarah Connor',
-            status: 'active',
-            serialNumber: 'MBP-2024-001',
-            depreciationRate: 20
-        },
-        {
-            id: 'CA-002',
-            name: 'Toyota Camry 2023',
-            category: 'vehicles',
-            purchaseDate: '2023-06-20',
-            purchaseCost: 28000,
-            currentValue: 24000,
-            location: 'HQ Parking',
-            assignedTo: 'Fleet Management',
-            status: 'active',
-            serialNumber: 'VEH-2023-001',
-            depreciationRate: 15
-        },
-        {
-            id: 'CA-003',
-            name: 'Office Building - Floor 3',
-            category: 'property',
-            purchaseDate: '2020-03-10',
-            purchaseCost: 850000,
-            currentValue: 920000,
-            location: '123 Business St',
-            assignedTo: 'Corporate',
-            status: 'active',
-            serialNumber: 'PROP-2020-001',
-            depreciationRate: 2
-        },
-        {
-            id: 'CA-004',
-            name: 'Industrial Printer HP LaserJet',
-            category: 'equipment',
-            purchaseDate: '2023-09-05',
-            purchaseCost: 5500,
-            currentValue: 4200,
-            location: 'Print Room',
-            assignedTo: 'Operations',
-            status: 'maintenance',
-            serialNumber: 'PRT-2023-002',
-            depreciationRate: 25
-        },
-        {
-            id: 'CA-005',
-            name: 'Executive Desk Set',
-            category: 'furniture',
-            purchaseDate: '2023-11-12',
-            purchaseCost: 2800,
-            currentValue: 2400,
-            location: 'CEO Office',
-            assignedTo: 'Executive Team',
-            status: 'active',
-            serialNumber: 'FRN-2023-005',
-            depreciationRate: 10
-        },
-        {
-            id: 'CA-006',
-            name: 'Dell Latitude Laptop x15',
-            category: 'equipment',
-            purchaseDate: '2024-02-01',
-            purchaseCost: 22500,
-            currentValue: 20000,
-            location: 'IT Department',
-            assignedTo: 'Various Staff',
-            status: 'active',
-            serialNumber: 'LAP-2024-015',
-            depreciationRate: 20
-        },
-        {
-            id: 'CA-007',
-            name: 'Ford Transit Van',
-            category: 'vehicles',
-            purchaseDate: '2022-08-15',
-            purchaseCost: 35000,
-            currentValue: 26000,
-            location: 'Service Center',
-            assignedTo: 'Field Operations',
-            status: 'active',
-            serialNumber: 'VAN-2022-003',
-            depreciationRate: 15
-        },
-        {
-            id: 'CA-008',
-            name: 'Conference Room Furniture',
-            category: 'furniture',
-            purchaseDate: '2023-04-20',
-            purchaseCost: 8500,
-            currentValue: 7200,
-            location: 'Floor 2 - Room 201',
-            assignedTo: 'Facilities',
-            status: 'active',
-            serialNumber: 'FRN-2023-008',
-            depreciationRate: 12
-        }
-    ]);
+    const [assets, setAssets] = useState<CapitalAsset[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await FinancialAssetService.getAssets();
+                setAssets(data as unknown as CapitalAsset[]);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     const [formData, setFormData] = useState<AssetFormData>({
         name: '',
@@ -311,10 +224,18 @@ export default function CapitalAssetsPage() {
         }
     ];
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Building2 className="w-6 h-6 text-indigo-500" />
@@ -342,7 +263,7 @@ export default function CapitalAssetsPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 shrink-0">
                 {stats.map((stat, i) => {
                     const Icon = stat.icon;
                     return (
@@ -546,7 +467,7 @@ export default function CapitalAssetsPage() {
                         </div>
 
                         {/* Modal Body */}
-                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             {/* Basic Information */}
                             <div className="space-y-4">
                                 <h3 className="font-bold text-lg flex items-center gap-2 text-indigo-600">
@@ -554,7 +475,7 @@ export default function CapitalAssetsPage() {
                                     Basic Information
                                 </h3>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                                             Asset Name *
@@ -629,7 +550,7 @@ export default function CapitalAssetsPage() {
                                     Financial Information
                                 </h3>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <div>
                                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                                             Purchase Date *
@@ -706,7 +627,7 @@ export default function CapitalAssetsPage() {
                                     Location & Assignment
                                 </h3>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                                             Location *
@@ -763,3 +684,4 @@ export default function CapitalAssetsPage() {
         </div>
     );
 }
+

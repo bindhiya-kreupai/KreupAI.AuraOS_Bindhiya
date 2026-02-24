@@ -1,10 +1,11 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
-// GET - Fetch leave calendar
+// GET - Fetch leave calendar from database
 export const GET = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
@@ -12,66 +13,83 @@ export const GET = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const { searchParams } = new URL(request.url);
-      const month = searchParams.get('month') || new Date().toISOString().slice(0, 7);
+      const month = searchParams.get('month') || new Date().toISOString().slice(0, 7); // YYYY-MM
       const departmentId = searchParams.get('departmentId');
-      const teamId = searchParams.get('teamId');
+      const employeeId = searchParams.get('employeeId');
 
-      const mockEvents = [
-        {
-          id: '1',
-          employeeId: 'emp-1',
-          employeeName: 'John Doe',
-          leaveType: 'Annual Leave',
-          startDate: `${month}-10`,
-          endDate: `${month}-12`,
-          days: 3,
-          status: 'APPROVED',
-          color: '#3b82f6',
+      const tenantId = user.tenantId;
+
+      // Parse month to get date range
+      const [yearStr, monthStr] = month.split('-');
+      const year = parseInt(yearStr);
+      const monthNum = parseInt(monthStr);
+      const monthStart = new Date(year, monthNum - 1, 1);
+      const monthEnd = new Date(year, monthNum, 0, 23, 59, 59); // Last day of month
+
+      // Get approved and pending leave requests overlapping with the month
+      const leaveWhere: Record<string, unknown> = {
+        tenantId,
+        status: { in: ['APPROVED', 'PENDING'] },
+        startDate: { lte: monthEnd },
+        endDate: { gte: monthStart },
+      };
+      if (employeeId) leaveWhere.employeeId = employeeId;
+
+      const leaveRequests = await prisma.leaveRequest.findMany({
+        where: leaveWhere,
+        orderBy: { startDate: 'asc' },
+      });
+
+      // Format leave requests as calendar events
+      const leaveEvents = leaveRequests.map(lr => ({
+        id: lr.id,
+        employeeId: lr.employeeId,
+        leaveTypeId: lr.leaveTypeId,
+        startDate: lr.startDate.toISOString().split('T')[0],
+        endDate: lr.endDate.toISOString().split('T')[0],
+        days: Number(lr.totalDays),
+        status: lr.status,
+        reason: lr.reason,
+      }));
+
+      // Get holidays for this month (Holiday dates are stored as YYYY-MM-DD strings)
+      const holidays = await prisma.holiday.findMany({
+        where: {
+          date: {
+            startsWith: month,
+          },
+          status: 'Active',
         },
-        {
-          id: '2',
-          employeeId: 'emp-2',
-          employeeName: 'Jane Smith',
-          leaveType: 'Sick Leave',
-          startDate: `${month}-15`,
-          endDate: `${month}-15`,
-          days: 1,
-          status: 'APPROVED',
-          color: '#ef4444',
-        },
-        {
-          id: '3',
-          employeeId: 'emp-3',
-          employeeName: 'Mike Ross',
-          leaveType: 'Casual Leave',
-          startDate: `${month}-20`,
-          endDate: `${month}-21`,
-          days: 2,
-          status: 'PENDING',
-          color: '#f59e0b',
-        },
-        {
-          id: '4',
-          type: 'HOLIDAY',
-          name: 'Christmas Day',
-          date: `${month}-25`,
-          color: '#10b981',
-        },
-      ];
+        orderBy: { date: 'asc' },
+      });
+
+      const holidayEvents = holidays.map(h => ({
+        id: h.id,
+        type: 'HOLIDAY' as const,
+        name: h.name,
+        date: h.date,
+      }));
+
+      // Combine events
+      const events = [...leaveEvents, ...holidayEvents];
+
+      // Calculate stats
+      const approvedLeaves = leaveRequests.filter(lr => lr.status === 'APPROVED');
+      const pendingLeaves = leaveRequests.filter(lr => lr.status === 'PENDING');
+      const totalLeaveDays = approvedLeaves.reduce((sum, lr) => sum + Number(lr.totalDays), 0);
 
       const monthStats = {
-        totalLeaves: 6,
-        approved: 4,
-        pending: 2,
-        holidays: 1,
-        teamAvailability: 85,
+        totalLeaves: totalLeaveDays,
+        approved: approvedLeaves.length,
+        pending: pendingLeaves.length,
+        holidays: holidays.length,
       };
 
       return NextResponse.json({
         success: true,
         data: {
           month,
-          events: mockEvents,
+          events,
           stats: monthStats,
         },
       });

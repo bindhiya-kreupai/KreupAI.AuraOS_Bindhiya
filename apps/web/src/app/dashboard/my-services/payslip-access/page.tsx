@@ -1,12 +1,13 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     DollarSign,
     Download,
     Eye,
     Landmark,
-    TrendingUp
+    TrendingUp,
+    Loader2
 } from 'lucide-react';
 import {
     AreaChart,
@@ -17,27 +18,49 @@ import {
     Tooltip,
     ResponsiveContainer
 } from 'recharts';
+import { PayslipService } from '../services';
 
 export default function PayslipAccessPage() {
-    const payslips = [
-        { month: 'November 2023', net: 4250, date: 'Nov 30, 2023', status: 'Paid' },
-        { month: 'October 2023', net: 4250, date: 'Oct 31, 2023', status: 'Paid' },
-        { month: 'September 2023', net: 4100, date: 'Sep 30, 2023', status: 'Paid' },
-        { month: 'August 2023', net: 4250, date: 'Aug 31, 2023', status: 'Paid' },
-    ];
+    const [fetching, setFetching] = useState(true);
+    const [payslips, setPayslips] = useState<any[]>([]);
+    const [chartData, setChartData] = useState<any[]>([]);
 
-    const chartData = [
-        { name: 'Jan', pay: 4000 },
-        { name: 'Feb', pay: 4000 },
-        { name: 'Mar', pay: 4100 },
-        { name: 'Apr', pay: 4100 },
-        { name: 'May', pay: 4250 },
-        { name: 'Jun', pay: 4250 },
-    ];
+    useEffect(() => {
+        const fetchPayslips = async () => {
+            try {
+                const res = await PayslipService.getPayslips('me');
+                if (res?.success && Array.isArray(res.data)) {
+                    setPayslips(res.data);
+                    const chart = res.data.slice(0, 6).reverse().map((s: any) => ({
+                        name: s.month?.substring(0, 3) || new Date(s.payDate || s.createdAt).toLocaleDateString('en', { month: 'short' }),
+                        pay: s.netPay || s.net || 0,
+                    }));
+                    setChartData(chart);
+                }
+            } catch (err) {
+                console.error('Failed to fetch payslips:', err);
+            } finally {
+                setFetching(false);
+            }
+        };
+        fetchPayslips();
+    }, []);
+
+    if (fetching) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+            </div>
+        );
+    }
+
+    const latestPayslip = payslips[0];
+    const netPay = latestPayslip?.netPay || latestPayslip?.net || 0;
+    const payDate = latestPayslip?.payDate || latestPayslip?.date || '';
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <DollarSign className="w-6 h-6 text-emerald-500" />
@@ -47,16 +70,15 @@ export default function PayslipAccessPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Summary & Chart */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 <div className="bg-emerald-600 rounded-2xl p-6 text-white shadow-lg shadow-emerald-500/20 flex flex-col justify-between">
                     <div>
                         <div className="flex items-center gap-2 opacity-80 mb-1">
                             <Landmark className="w-4 h-4" />
                             <span className="text-sm font-bold uppercase">Net Pay (Last Month)</span>
                         </div>
-                        <div className="text-4xl font-bold">$4,250.00</div>
-                        <div className="text-sm opacity-75 mt-2">Disbursed on Nov 30, 2023</div>
+                        <div className="text-4xl font-bold">${netPay.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                        <div className="text-sm opacity-75 mt-2">{payDate ? `Disbursed on ${new Date(payDate).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}` : 'No payslip data yet'}</div>
                     </div>
 
                     <div className="mt-8 h-32 w-full">
@@ -75,43 +97,54 @@ export default function PayslipAccessPage() {
                     </div>
                 </div>
 
-                {/* List */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                     <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 font-bold text-lg">
                         History
                     </div>
-                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {payslips.map((slip, i) => (
-                            <div key={i} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 font-bold">
-                                        {slip.month.substring(0, 3)}
-                                    </div>
-                                    <div>
-                                        <div className="font-bold">{slip.month}</div>
-                                        <div className="text-xs text-slate-500 flex items-center gap-2">
-                                            <span className="text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded font-bold">{slip.status}</span>
-                                            <span>• {slip.date}</span>
+                    {payslips.length > 0 ? (
+                        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                            {payslips.map((slip: any, i: number) => {
+                                const month = slip.month || new Date(slip.payDate || slip.createdAt).toLocaleDateString('en', { month: 'long', year: 'numeric' });
+                                const net = slip.netPay || slip.net || 0;
+                                const date = slip.payDate || slip.date || slip.createdAt;
+                                return (
+                                    <div key={slip.id || i} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 font-bold">
+                                                {month.substring(0, 3)}
+                                            </div>
+                                            <div>
+                                                <div className="font-bold">{month}</div>
+                                                <div className="text-xs text-slate-500 flex items-center gap-2">
+                                                    <span className="text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded font-bold">{slip.status || 'Paid'}</span>
+                                                    <span>&#8226; {date ? new Date(date).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-3">
+                                            <div className="font-mono font-bold text-slate-700 dark:text-slate-300">
+                                                ${net.toLocaleString()}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all" title="View">
+                                                    <Eye className="w-4 h-4" />
+                                                </button>
+                                                <button className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all" title="Download PDF">
+                                                    <Download className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="flex items-center gap-6">
-                                    <div className="font-mono font-bold text-slate-700 dark:text-slate-300">
-                                        ${slip.net.toLocaleString()}
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all" title="View">
-                                            <Eye className="w-4 h-4" />
-                                        </button>
-                                        <button className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all" title="Download PDF">
-                                            <Download className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="p-12 text-center text-slate-400">
+                            <DollarSign className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                            <p className="text-sm">No payslips available yet</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -121,9 +154,10 @@ export default function PayslipAccessPage() {
                 </div>
                 <div>
                     <h4 className="font-bold text-amber-700 dark:text-amber-300">Tax Projection</h4>
-                    <p className="text-sm text-amber-600/80 dark:text-amber-400">Based on your current earnings, your projected annual tax liability is $8,450. Consider submitting investment proofs to save up to $1,200.</p>
+                    <p className="text-sm text-amber-600/80 dark:text-amber-400">Based on your current earnings, your projected annual tax liability is being calculated. Consider submitting investment proofs to optimize your tax savings.</p>
                 </div>
             </div>
         </div>
     );
 }
+

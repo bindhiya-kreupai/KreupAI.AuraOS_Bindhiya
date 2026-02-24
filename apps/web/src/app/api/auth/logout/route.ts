@@ -36,7 +36,7 @@ export const POST = withAuth(async (request: NextRequest, { user }) => {
       data: {
         userId: user.userId,
         action: 'LOGOUT',
-        module: 'Authentication',
+        entityType: 'Authentication',
         details: `User logged out from ${ipAddress}`,
         ipAddress,
       },

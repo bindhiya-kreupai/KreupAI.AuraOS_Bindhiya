@@ -1,30 +1,17 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 import { z } from 'zod';
-
-// API Response Standard
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: Record<string, unknown>;
-  };
-  meta?: {
-    timestamp: string;
-    requestId: string;
-    apiVersion: string;
-  };
-}
 
 // Validation schema
 const runPayrollSchema = z.object({
-  tenantId: z.string().uuid('Valid tenant ID is required'),
   companyId: z.string().uuid('Valid company ID is required'),
   month: z.string().regex(/^\d{4}-\d{2}$/, 'Month must be in YYYY-MM format'),
   countryCode: z.enum(['IN', 'AE', 'SA', 'QA', 'KW', 'BH', 'OM']),
   employeeIds: z.array(z.string().uuid()).optional(),
+  notes: z.string().optional(),
 });
 
 /**
@@ -42,7 +29,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     // Validate request body
     const validationResult = runPayrollSchema.safeParse(body);
     if (!validationResult.success) {
-      const response: ApiResponse = {
+      return NextResponse.json({
         success: false,
         error: {
           code: 'E2001',
@@ -54,35 +41,108 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
           requestId: crypto.randomUUID(),
           apiVersion: 'v1',
         },
-      };
-
-      return NextResponse.json(response, { status: 400 });
+      }, { status: 400 });
     }
 
-    const { tenantId, companyId, month, countryCode, employeeIds } = validationResult.data;
+    const { companyId, month, countryCode, employeeIds, notes } = validationResult.data;
+    const tenantId = user.tenantId;
 
-    // TODO: Import and use PayrollService from @/lib/services/payroll
-    // For now, return a placeholder response indicating the payroll run has been initiated
-    const response: ApiResponse = {
+    // Find the payroll configuration for this tenant/company
+    const config = await prisma.payrollConfiguration.findUnique({
+      where: {
+        tenantId_companyId: {
+          tenantId,
+          companyId,
+        },
+      },
+    });
+
+    if (!config) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'E3001',
+          message: 'Payroll configuration not found for this company',
+          details: { tenantId, companyId },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      }, { status: 404 });
+    }
+
+    // Check if a payroll run already exists for this month
+    const existingRun = await prisma.payrollRun.findUnique({
+      where: {
+        tenantId_configId_payrollMonth: {
+          tenantId,
+          configId: config.id,
+          payrollMonth: month,
+        },
+      },
+    });
+
+    if (existingRun) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'E2002',
+          message: `A payroll run already exists for ${month}`,
+          details: { existingRunId: existingRun.id, status: existingRun.status },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      }, { status: 409 });
+    }
+
+    // Count employees to process
+    const employeeCount = employeeIds
+      ? employeeIds.length
+      : await prisma.employee.count({
+          where: { tenantId, status: 'Active' },
+        });
+
+    // Create the payroll run
+    const payrollRun = await prisma.payrollRun.create({
+      data: {
+        tenantId,
+        configId: config.id,
+        payrollMonth: month,
+        status: 'PROCESSING',
+        totalEmployees: employeeCount,
+        currency: config.countryCode === 'IN' ? 'INR' : 'AED',
+        notes: notes || `Payroll run for ${month} (${countryCode})`,
+        createdBy: user.userId,
+        processedAt: new Date(),
+      },
+    });
+
+    return NextResponse.json({
       success: true,
       data: {
-        runId: crypto.randomUUID(),
-        status: 'PROCESSING',
-        message: `Payroll run initiated for ${month}. Processing ${employeeIds?.length || 'all'} employees.`,
-        estimatedCompletionTime: new Date(Date.now() + 60000).toISOString(), // 1 minute
+        runId: payrollRun.id,
+        status: payrollRun.status,
+        payrollMonth: payrollRun.payrollMonth,
+        totalEmployees: payrollRun.totalEmployees,
+        currency: payrollRun.currency,
+        message: `Payroll run initiated for ${month}. Processing ${employeeCount} employees.`,
+        estimatedCompletionTime: new Date(Date.now() + 60000).toISOString(),
       },
       meta: {
         timestamp: new Date().toISOString(),
         requestId: crypto.randomUUID(),
         apiVersion: 'v1',
       },
-    };
-
-    return NextResponse.json(response, { status: 202 }); // 202 Accepted - async processing
+    }, { status: 202 });
   } catch (error) {
     console.error('[Payroll Run API] POST Error:', error);
 
-    const response: ApiResponse = {
+    return NextResponse.json({
       success: false,
       error: {
         code: 'E5001',
@@ -94,8 +154,6 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
         requestId: crypto.randomUUID(),
         apiVersion: 'v1',
       },
-    };
-
-    return NextResponse.json(response, { status: 500 });
+    }, { status: 500 });
   }
 });

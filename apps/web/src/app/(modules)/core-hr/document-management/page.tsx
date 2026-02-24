@@ -262,7 +262,7 @@ export default function DocumentManagementPage() {
             <FileText className="w-4 h-4 text-celestial-indigo dark:text-sky-400" />
             <span className="font-semibold text-ink-black dark:text-pearl">{row.documentName}</span>
             {row.isVerified && (
-              <CheckCircle className="w-4 h-4 text-emerald-500" title="Verified" />
+              <CheckCircle className="w-4 h-4 text-emerald-500" />
             )}
             {row.isConfidential && (
               <span className="text-xs bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full">
@@ -502,11 +502,10 @@ export default function DocumentManagementPage() {
             Upload File <span className="text-red-500">*</span>
           </label>
           <div
-            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-              uploadedFile
+            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${uploadedFile
                 ? 'border-green-500 bg-green-50 dark:bg-green-900/10'
                 : 'border-silver-mist/30 hover:border-celestial-indigo'
-            }`}
+              }`}
             onClick={() => fileInputRef.current?.click()}
           >
             <input
@@ -544,7 +543,7 @@ export default function DocumentManagementPage() {
       )}
 
       {/* Row 1: Document Type & Category */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             Document Type <span className="text-red-500">*</span>
@@ -598,7 +597,7 @@ export default function DocumentManagementPage() {
       </div>
 
       {/* Row 2: Document Name & Number */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             Document Name <span className="text-red-500">*</span>
@@ -637,7 +636,7 @@ export default function DocumentManagementPage() {
       </div>
 
       {/* Row 3: Issue Date & Expiry Date */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             Issue Date
@@ -670,7 +669,7 @@ export default function DocumentManagementPage() {
       </div>
 
       {/* Row 4: Access Level & Confidential */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1.5 text-ink-black dark:text-pearl">
             Access Level
@@ -748,7 +747,7 @@ export default function DocumentManagementPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Alerts Section */}
       {expiringCount > 0 && (
         <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-lg p-4">
@@ -775,11 +774,10 @@ export default function DocumentManagementPage() {
             <button
               key={cat.value}
               onClick={() => setSelectedCategory(cat.value)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium text-sm ${
-                isSelected
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium text-sm ${isSelected
                   ? 'bg-celestial-indigo text-white'
                   : 'bg-white dark:bg-midnight-gray text-ink-black dark:text-pearl border border-silver-mist/30 hover:border-celestial-indigo'
-              }`}
+                }`}
             >
               <Icon className="w-4 h-4" />
               {cat.label}
@@ -805,3 +803,4 @@ export default function DocumentManagementPage() {
     </div>
   );
 }
+

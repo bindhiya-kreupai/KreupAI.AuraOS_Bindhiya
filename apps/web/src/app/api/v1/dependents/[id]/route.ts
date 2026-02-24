@@ -1,0 +1,71 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
+
+  const mockDependent = {
+    id,
+    employeeId: 'emp-001',
+    name: 'Emily Smith',
+    relationship: 'spouse',
+    dateOfBirth: '1990-05-15',
+    ssn: '***-**-1234',
+    gender: 'female',
+    enrolledInBenefits: true,
+    benefitPlans: ['health-001', 'dental-001', 'vision-001'],
+    address: {
+      street: '123 Main Street',
+      city: 'San Francisco',
+      state: 'CA',
+      zip: '94102',
+    },
+    primaryCarePhysician: 'Dr. Rebecca Martinez',
+    addedAt: '2024-01-15T10:00:00Z',
+    updatedAt: '2024-06-20T14:30:00Z',
+  };
+
+  return NextResponse.json({ data: mockDependent });
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
+  const body = await request.json();
+
+  const updatedDependent = {
+    id,
+    employeeId: 'emp-001',
+    name: body.name || 'Emily Smith',
+    relationship: body.relationship || 'spouse',
+    dateOfBirth: body.dob || '1990-05-15',
+    ssn: body.ssn ? '***-**-' + body.ssn.slice(-4) : '***-**-1234',
+    gender: body.gender || 'female',
+    enrolledInBenefits: body.enrolledInBenefits ?? true,
+    benefitPlans: body.benefitPlans || ['health-001', 'dental-001', 'vision-001'],
+    addedAt: '2024-01-15T10:00:00Z',
+    updatedAt: new Date().toISOString(),
+  };
+
+  return NextResponse.json({ data: updatedDependent });
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
+
+  return NextResponse.json({
+    data: {
+      id,
+      deleted: true,
+      deletedAt: new Date().toISOString(),
+      message: `Dependent ${id} has been successfully removed`,
+    },
+  });
+}

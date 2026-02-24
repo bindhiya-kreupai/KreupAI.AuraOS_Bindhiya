@@ -44,8 +44,12 @@
 
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/database';
 import { PayrollService } from '@/lib/services/payroll';
 import type { SupportedCountryCode } from '@/lib/services/compliance/types';
+import { withEnhancedAuth } from '@/lib/auth';
+import { Resource, Action, requirePermission } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/payroll
@@ -119,38 +123,64 @@ export async function POST(request: NextRequest) {
  * GET /api/payroll
  * Get payroll runs list
  */
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId');
-    const companyId = searchParams.get('companyId');
-    const month = searchParams.get('month');
-    const status = searchParams.get('status');
+export const GET = withEnhancedAuth(
+  async (request: NextRequest, { user, permissions }) => {
+    try {
+      const permissionError = requirePermission(Resource.PAYROLL, Action.READ, permissions);
+      if (permissionError) return permissionError;
 
-    if (!tenantId) {
+      const tenantId = user.tenantId;
+      const { searchParams } = new URL(request.url);
+      const payrollMonth = searchParams.get('month') || undefined;
+      const status = searchParams.get('status') || undefined;
+      const page = parseInt(searchParams.get('page') || '1', 10);
+      const limit = parseInt(searchParams.get('limit') || '50', 10);
+
+      const where: Record<string, unknown> = { tenantId };
+      if (payrollMonth) where.payrollMonth = payrollMonth;
+      if (status) where.status = status;
+
+      const [total, payrollRuns] = await Promise.all([
+        prisma.payrollRun.count({ where }),
+        prisma.payrollRun.findMany({
+          where,
+          include: {
+            config: true,
+            _count: { select: { payslips: true } },
+          },
+          orderBy: { payrollMonth: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+      ]);
+
+      const runs = payrollRuns.map((run) => ({
+        ...run,
+        payslipsCount: run._count.payslips,
+        _count: undefined,
+      }));
+
+      return NextResponse.json({
+        success: true,
+        runs,
+        payrollRuns: runs,
+        data: {
+          payrollRuns: runs,
+          runs,
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+          },
+        },
+      });
+    } catch (error) {
+      logger.error('Error fetching payroll runs:', error);
       return NextResponse.json(
-        { error: 'tenantId is required', errorAr: 'معرف المستأجر مطلوب' },
-        { status: 400 }
+        { success: false, error: 'Failed to fetch payroll runs', errorAr: 'فشل في جلب سجلات الرواتب' },
+        { status: 500 }
       );
     }
-
-    // This would fetch from database
-    // For now, return structure
-    return NextResponse.json({
-      success: true,
-      data: {
-        payrollRuns: [],
-        pagination: {
-          page: 1,
-          limit: 10,
-          total: 0,
-        },
-      },
-    });
-  } catch (error) {
-        return NextResponse.json(
-      { error: 'Failed to fetch payroll runs', errorAr: 'فشل في جلب سجلات الرواتب' },
-      { status: 500 }
-    );
   }
-}
+);

@@ -1,105 +1,103 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-
-// API Response Standard
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: Record<string, unknown>;
-  };
-  meta?: {
-    pagination?: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    };
-    timestamp: string;
-    requestId: string;
-    apiVersion: string;
-  };
-}
+import { prisma } from '@aura/database';
 
 /**
  * GET /api/v1/payroll/history
  * Get payroll history for a company
  *
  * Query Parameters:
- * - tenantId (required): Tenant ID
  * - companyId (optional): Filter by company
+ * - status (optional): Filter by payroll run status
  * - limit (optional): Number of records (default: 12, max: 24)
+ * - page (optional): Page number for pagination (default: 1)
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
+    const { user } = context;
+    const tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId');
     const companyId = searchParams.get('companyId');
+    const status = searchParams.get('status');
     const limit = Math.min(
       parseInt(searchParams.get('limit') || '12'),
       24
     );
+    const page = Math.max(parseInt(searchParams.get('page') || '1'), 1);
+    const skip = (page - 1) * limit;
 
-    if (!tenantId) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'tenantId is required in query parameters',
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 400 });
+    // Build where clause
+    const where: Record<string, unknown> = { tenantId };
+    if (companyId) {
+      where.config = { companyId };
+    }
+    if (status) {
+      where.status = status.toUpperCase();
     }
 
-    // TODO: Implement actual database query
-    const mockHistory = Array.from({ length: Math.min(limit, 12) }, (_, i) => {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      const month = date.toISOString().slice(0, 7);
+    // Query payroll runs with count
+    const [payrollRuns, total] = await Promise.all([
+      prisma.payrollRun.findMany({
+        where,
+        orderBy: { payrollMonth: 'desc' },
+        take: limit,
+        skip,
+        select: {
+          id: true,
+          payrollMonth: true,
+          status: true,
+          totalEmployees: true,
+          totalGrossSalary: true,
+          totalDeductions: true,
+          totalNetSalary: true,
+          totalEmployerCost: true,
+          currency: true,
+          processedAt: true,
+          approvedAt: true,
+          paidAt: true,
+          createdAt: true,
+        },
+      }),
+      prisma.payrollRun.count({ where }),
+    ]);
 
-      return {
-        id: crypto.randomUUID(),
-        month,
-        status: i === 0 ? 'CALCULATED' : 'PAID',
-        totalEmployees: 150 + Math.floor(Math.random() * 20),
-        totalGross: 750000 + Math.floor(Math.random() * 50000),
-        totalNet: 660000 + Math.floor(Math.random() * 40000),
-        currency: 'AED',
-        processedAt: new Date(date.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-        approvedAt: i === 0 ? null : new Date(date.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString(),
-        paidAt: i === 0 ? null : new Date(date.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      };
-    });
+    const data = payrollRuns.map((run) => ({
+      id: run.id,
+      month: run.payrollMonth,
+      status: run.status,
+      totalEmployees: run.totalEmployees,
+      totalGross: Number(run.totalGrossSalary),
+      totalDeductions: Number(run.totalDeductions),
+      totalNet: Number(run.totalNetSalary),
+      totalEmployerCost: Number(run.totalEmployerCost),
+      currency: run.currency,
+      processedAt: run.processedAt?.toISOString() || null,
+      approvedAt: run.approvedAt?.toISOString() || null,
+      paidAt: run.paidAt?.toISOString() || null,
+      createdAt: run.createdAt.toISOString(),
+    }));
 
-    const response: ApiResponse = {
+    return NextResponse.json({
       success: true,
-      data: mockHistory,
+      data,
       meta: {
         pagination: {
-          page: 1,
+          page,
           limit,
-          total: 12,
-          totalPages: 1,
+          total,
+          totalPages: Math.ceil(total / limit),
         },
         timestamp: new Date().toISOString(),
         requestId: crypto.randomUUID(),
         apiVersion: 'v1',
       },
-    };
-
-    return NextResponse.json(response, { status: 200 });
+    }, { status: 200 });
   } catch (error) {
     console.error('[Payroll History API] GET Error:', error);
 
-    const response: ApiResponse = {
+    return NextResponse.json({
       success: false,
       error: {
         code: 'E5001',
@@ -111,8 +109,6 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         requestId: crypto.randomUUID(),
         apiVersion: 'v1',
       },
-    };
-
-    return NextResponse.json(response, { status: 500 });
+    }, { status: 500 });
   }
 });

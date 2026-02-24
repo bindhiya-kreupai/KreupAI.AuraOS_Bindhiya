@@ -1,26 +1,48 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Trophy,
     Medal,
     Crown,
     TrendingUp,
-    Users
+    Users,
+    Loader2
 } from 'lucide-react';
+import { LeaderboardsService } from '../services';
 
 export default function LeaderboardsPage() {
-    const leaderboard = [
-        { rank: 1, name: 'Sarah Connor', points: 3450, avatar: 'https://i.pravatar.cc/150?u=sarah', change: 'up' },
-        { rank: 2, name: 'Kyle Reese', points: 3200, avatar: 'https://i.pravatar.cc/150?u=kyle', change: 'same' },
-        { rank: 3, name: 'John Connor', points: 3150, avatar: 'https://i.pravatar.cc/150?u=john', change: 'down' },
-        { rank: 4, name: 'T-800', points: 2900, avatar: 'https://i.pravatar.cc/150?u=t800', change: 'up' },
-        { rank: 5, name: 'Dr. Silberman', points: 2450, avatar: 'https://i.pravatar.cc/150?u=dr', change: 'same' },
-    ];
+    const [leaderboards, setLeaderboards] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await LeaderboardsService.getLeaderboards();
+                setLeaderboards(data as any);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const leaderboard = leaderboards;
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Trophy className="w-6 h-6 text-yellow-500" />
@@ -39,7 +61,7 @@ export default function LeaderboardsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end mb-8">
                 {/* Top 3 Podium Visual */}
-                <div className="lg:col-span-3 flex justify-center items-end gap-4 h-64 mb-4">
+                <div className="lg:col-span-3 flex justify-center items-end gap-3 h-64 mb-4">
                     {/* 2nd Place */}
                     <div className="flex flex-col items-center gap-2">
                         <img src={leaderboard[1].avatar} className="w-16 h-16 rounded-full border-4 border-slate-300 shadow-lg" />
@@ -76,7 +98,7 @@ export default function LeaderboardsPage() {
                 <div className="space-y-2">
                     {leaderboard.map((user, i) => (
                         <div key={i} className={`flex items-center justify-between p-4 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all ${user.name === 'Dr. Silberman' ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200' : 'bg-white dark:bg-slate-900'}`}>
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3">
                                 <span className={`font-bold w-6 text-center ${i < 3 ? 'text-indigo-600' : 'text-slate-400'}`}>{user.rank}</span>
                                 <img src={user.avatar} className="w-10 h-10 rounded-full bg-slate-200" />
                                 <div>
@@ -84,7 +106,7 @@ export default function LeaderboardsPage() {
                                     <p className="text-xs text-slate-500">Global Rank: #{user.rank}</p>
                                 </div>
                             </div>
-                            <div className="text-right flex items-center gap-6">
+                            <div className="text-right flex items-center gap-3">
                                 <div className="text-xs text-slate-400 hidden md:block">
                                     {user.change === 'up' && <span className="text-emerald-500 flex items-center gap-1"><TrendingUp className="w-3 h-3" /> +2</span>}
                                     {user.change === 'down' && <span className="text-rose-500 flex items-center gap-1"><TrendingUp className="w-3 h-3 rotate-180" /> -1</span>}
@@ -99,3 +121,4 @@ export default function LeaderboardsPage() {
         </div>
     );
 }
+

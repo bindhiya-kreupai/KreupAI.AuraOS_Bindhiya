@@ -28,8 +28,8 @@ export default function UnionDatabasePage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Users className="w-6 h-6 text-indigo-500" />
@@ -42,7 +42,7 @@ export default function UnionDatabasePage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {[
                     { name: 'Local 42 - Logistics', rep: 'Frank Sobotka', members: 450, contract: 'Exp. 2026', status: 'Active' },
                     { name: 'Local 101 - Manufacturing', rep: 'Norma Rae', members: 1200, contract: 'Negotiating', status: 'Warning' },
@@ -66,7 +66,7 @@ export default function UnionDatabasePage() {
                                 }`}>{union.status}</span>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+                        <div className="grid grid-cols-2 gap-3 text-sm mb-4">
                             <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
                                 <div className="text-slate-500 mb-1">Membership</div>
                                 <div className="font-bold">{union.members} Members</div>
@@ -91,3 +91,4 @@ export default function UnionDatabasePage() {
         </div>
     );
 }
+

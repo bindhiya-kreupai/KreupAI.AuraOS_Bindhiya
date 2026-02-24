@@ -12,9 +12,9 @@ import {
 
 export default function TipsPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Coins className="w-6 h-6 text-amber-500" />
@@ -27,9 +27,9 @@ export default function TipsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Daily Pool Stats */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
                     <div className="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-2xl p-6 shadow-lg">
                         <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                             <Receipt className="w-5 h-5 text-amber-200" /> Today's Pool
@@ -37,7 +37,7 @@ export default function TipsPage() {
                         <div className="text-4xl font-bold mb-1">$4,250.50</div>
                         <div className="text-sm opacity-90 mb-6">Collected from 145 checks.</div>
 
-                        <div className="grid grid-cols-2 gap-4 border-t border-white/20 pt-4">
+                        <div className="grid grid-cols-2 gap-3 border-t border-white/20 pt-4">
                             <div>
                                 <div className="text-xs font-bold uppercase opacity-80">Cash Tips</div>
                                 <div className="text-lg font-bold">$850.00</div>
@@ -115,3 +115,4 @@ export default function TipsPage() {
         </div>
     );
 }
+

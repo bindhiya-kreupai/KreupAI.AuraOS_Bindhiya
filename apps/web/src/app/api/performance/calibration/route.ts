@@ -16,17 +16,17 @@ const decisionsSchema = z.object({
 });
 
 const createSessionSchema = z.object({
-  cycleId: z.string().min(1, 'Cycle ID is required'),
-  name: z.string().min(1, 'Session name is required'),
+  reviewCycleId: z.string().min(1, 'Cycle ID is required'),
+  sessionName: z.string().min(1, 'Session name is required'),
   participants: z.array(z.string()).min(2, 'At least 2 participants are required'),
-  meetingDate: z.string().datetime(),
-  status: z.enum(['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']).optional(),
+  scheduledDate: z.string().datetime(),
+  status: z.enum(['scheduled', 'in_progress', 'completed', 'cancelled']).optional(),
 });
 
 const updateSessionSchema = z.object({
   id: z.string().min(1, 'Session ID is required'),
-  status: z.enum(['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']).optional(),
-  decisions: decisionsSchema.optional(),
+  status: z.enum(['scheduled', 'in_progress', 'completed', 'cancelled']).optional(),
+  adjustments: decisionsSchema.optional(),
   notes: z.string().optional(),
 });
 
@@ -42,9 +42,9 @@ export const GET = withEnhancedAuth(async (request, context) => {
     };
 
     // Filter by cycle
-    const cycleId = searchParams.get('cycleId');
-    if (cycleId) {
-      where.cycleId = cycleId;
+    const reviewCycleId = searchParams.get('cycleId') || searchParams.get('reviewCycleId');
+    if (reviewCycleId) {
+      where.reviewCycleId = reviewCycleId;
     }
 
     // Filter by status
@@ -59,12 +59,12 @@ export const GET = withEnhancedAuth(async (request, context) => {
     const skip = (page - 1) * limit;
 
     // Sorting
-    const sortBy = searchParams.get('sortBy') || 'meetingDate';
+    const sortBy = searchParams.get('sortBy') || 'scheduledDate';
     const sortOrder = (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc';
 
     // Fetch calibration sessions
     const [sessions, total] = await Promise.all([
-      prisma.calibration.findMany({
+      prisma.calibrationSession.findMany({
         where,
         orderBy: {
           [sortBy]: sortOrder,
@@ -72,7 +72,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
         skip,
         take: limit,
       }),
-      prisma.calibration.count({ where }),
+      prisma.calibrationSession.count({ where }),
     ]);
 
     return NextResponse.json(
@@ -105,21 +105,21 @@ export const POST = withEnhancedAuth(async (request, context) => {
     // Validate input
     const validatedData = createSessionSchema.parse(body);
 
-    // Validate meeting date is in the future for scheduled sessions
-    const meetingDate = new Date(validatedData.meetingDate);
+    // Validate scheduled date is in the future for scheduled sessions
+    const scheduledDate = new Date(validatedData.scheduledDate);
     const now = new Date();
 
-    if ((validatedData.status === 'SCHEDULED' || !validatedData.status) && meetingDate <= now) {
+    if ((validatedData.status === 'scheduled' || !validatedData.status) && scheduledDate <= now) {
       return NextResponse.json(
-        { error: 'Meeting date must be in the future for scheduled sessions' },
+        { error: 'Scheduled date must be in the future for scheduled sessions' },
         { status: 400 }
       );
     }
 
     // Validate cycle exists
-    const cycle = await prisma.performanceReviewCycle.findFirst({
+    const cycle = await prisma.reviewCycle.findFirst({
       where: {
-        id: validatedData.cycleId,
+        id: validatedData.reviewCycleId,
         tenantId: user.tenantId,
       },
     });
@@ -132,13 +132,13 @@ export const POST = withEnhancedAuth(async (request, context) => {
     }
 
     // Create calibration session
-    const session = await prisma.calibration.create({
+    const session = await prisma.calibrationSession.create({
       data: {
-        cycleId: validatedData.cycleId,
-        name: validatedData.name,
+        reviewCycleId: validatedData.reviewCycleId,
+        sessionName: validatedData.sessionName,
         participants: validatedData.participants,
-        meetingDate,
-        status: validatedData.status || 'SCHEDULED',
+        scheduledDate,
+        status: validatedData.status || 'scheduled',
         tenantId: user.tenantId,
         createdBy: user.userId,
       },
@@ -174,7 +174,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     const { id, ...updateData } = validatedData;
 
     // Verify session exists and belongs to tenant
-    const existingSession = await prisma.calibration.findFirst({
+    const existingSession = await prisma.calibrationSession.findFirst({
       where: {
         id,
         tenantId: user.tenantId,
@@ -194,17 +194,17 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     if (updateData.status !== undefined) {
       dataToUpdate.status = updateData.status;
 
-      // Set completedAt when status is COMPLETED
-      if (updateData.status === 'COMPLETED' && existingSession.status !== 'COMPLETED') {
-        dataToUpdate.completedAt = new Date();
+      // Set completedDate when status is completed
+      if (updateData.status === 'completed' && existingSession.status !== 'completed') {
+        dataToUpdate.completedDate = new Date();
       }
     }
 
-    if (updateData.decisions !== undefined) dataToUpdate.decisions = updateData.decisions as any;
+    if (updateData.adjustments !== undefined) dataToUpdate.adjustments = updateData.adjustments as any;
     if (updateData.notes !== undefined) dataToUpdate.notes = updateData.notes;
 
     // Update calibration session
-    const session = await prisma.calibration.update({
+    const session = await prisma.calibrationSession.update({
       where: { id },
       data: dataToUpdate,
     });
@@ -243,7 +243,7 @@ export const DELETE = withEnhancedAuth(async (request, context) => {
     }
 
     // Verify session exists and belongs to tenant
-    const existingSession = await prisma.calibration.findFirst({
+    const existingSession = await prisma.calibrationSession.findFirst({
       where: {
         id,
         tenantId: user.tenantId,
@@ -257,8 +257,8 @@ export const DELETE = withEnhancedAuth(async (request, context) => {
       );
     }
 
-    // Only allow deletion if session is SCHEDULED or CANCELLED
-    if (existingSession.status === 'COMPLETED' || existingSession.status === 'IN_PROGRESS') {
+    // Only allow deletion if session is scheduled or cancelled
+    if (existingSession.status === 'completed' || existingSession.status === 'in_progress') {
       return NextResponse.json(
         { error: 'Cannot delete completed or in-progress calibration sessions' },
         { status: 400 }
@@ -266,7 +266,7 @@ export const DELETE = withEnhancedAuth(async (request, context) => {
     }
 
     // Delete calibration session
-    await prisma.calibration.delete({
+    await prisma.calibrationSession.delete({
       where: { id },
     });
 

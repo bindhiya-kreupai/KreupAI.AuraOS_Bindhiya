@@ -4,101 +4,22 @@ import React, { useState, useEffect } from 'react';
 import {
     ShoppingBag,
     Search,
-    Filter,
     Plus,
     MessageCircle,
     Heart,
     DollarSign,
-    Tag,
-    MapPin,
     Image as ImageIcon,
     X,
     CheckCircle2,
-    Clock,
-    User
+    Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SocialFeedService } from '../services';
 
-// --- MOCK DATA ---
-
 const CATEGORIES = ['All', 'Electronics', 'Furniture', 'Vehicles', 'Fashion', 'Books', 'Other'];
 
-const ITEMS = [
-    {
-        id: 1,
-        title: 'iPhone 13 Pro - 128GB',
-        price: 550,
-        currency: '$',
-        category: 'Electronics',
-        condition: 'Like New',
-        seller: 'Sarah J.',
-        department: 'Finance',
-        posted: '2 hours ago',
-        image: '📱',
-        color: 'bg-slate-100',
-        description: 'Upgrading to the new model. Used for 1 year, battery health 92%. Comes with box and cable.'
-    },
-    {
-        id: 2,
-        title: 'IKEA Standing Desk',
-        price: 120,
-        currency: '$',
-        category: 'Furniture',
-        condition: 'Good',
-        seller: 'Mike R.',
-        department: 'Engineering',
-        posted: 'Yesterday',
-        image: '🪑',
-        color: 'bg-amber-50',
-        description: 'White stain oak effect, 160x80 cm. Fully functional electric height adjustment.'
-    },
-    {
-        id: 3,
-        title: 'Trek Mountain Bike',
-        price: 350,
-        currency: '$',
-        category: 'Vehicles',
-        condition: 'Used',
-        seller: 'David K.',
-        department: 'Marketing',
-        posted: '3 days ago',
-        image: '🚲',
-        color: 'bg-emerald-50',
-        description: 'Marlin 5, size M. Recently serviced brakes and gears. Great for weekend trails.'
-    },
-    {
-        id: 4,
-        title: 'Sony WH-1000XM4',
-        price: 180,
-        currency: '$',
-        category: 'Electronics',
-        condition: 'Like New',
-        seller: 'Jessica W.',
-        department: 'HR',
-        posted: '4 hours ago',
-        image: '🎧',
-        color: 'bg-neutral-100',
-        description: 'Noise cancelling headphones. Barely used, pristine condition.'
-    },
-    {
-        id: 5,
-        title: 'Espresso Machine',
-        price: 80,
-        currency: '$',
-        category: 'Home',
-        condition: 'Fair',
-        seller: 'Tom H.',
-        department: 'Sales',
-        posted: '1 week ago',
-        image: '☕',
-        color: 'bg-orange-50',
-        description: 'DeLonghi Dedica style. Works perfectly but needs a bit of descaling.'
-    }
-];
-
 export default function ClassifiedsPage() {
-    const [data, setData] = useState<any[]>([]);
+    const [items, setItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
@@ -112,11 +33,12 @@ export default function ClassifiedsPage() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const posts = await SocialFeedService.getPosts();
-            setData(posts.filter(p => p.type === 'classified'));
-        } catch (error) {
-            console.error('Error:', error);
-                    } finally {
+            const result = await SocialFeedService.getPosts();
+            const data = (result as any)?.data || result;
+            const allPosts = Array.isArray(data) ? data : [];
+            setItems(allPosts.filter((p: any) => p.type === 'classified'));
+        } catch {
+        } finally {
             setLoading(false);
         }
     };
@@ -129,18 +51,22 @@ export default function ClassifiedsPage() {
         }
     };
 
-    // Use fetched data if available, otherwise use mock data
-    const itemsToDisplay = data.length > 0 ? data : ITEMS;
-
-    const filteredItems = itemsToDisplay.filter(item =>
+    const filteredItems = items.filter((item: any) =>
         (selectedCategory === 'All' || item.category === selectedCategory) &&
-        (item.title.toLowerCase().includes(searchQuery.toLowerCase()) || item.description.toLowerCase().includes(searchQuery.toLowerCase()))
+        ((item.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || (item.description || '').toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <ShoppingBag className="w-6 h-6 text-indigo-500" />
@@ -158,16 +84,14 @@ export default function ClassifiedsPage() {
                     </button>
                     <div className="bg-white dark:bg-stellar-blue px-4 py-2 rounded-xl border border-cloud dark:border-nebula-purple/50 flex items-center gap-2 shadow-sm">
                         <DollarSign className="w-4 h-4 text-emerald-500" />
-                        <span className="text-sm font-bold text-ink-black dark:text-pearl">My Listings (0)</span>
+                        <span className="text-sm font-bold text-ink-black dark:text-pearl">My Listings ({items.length})</span>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full min-h-0 overflow-hidden">
-                {/* Left side - Filters & Grid */}
-                <div className="lg:col-span-4 flex flex-col h-full overflow-hidden space-y-6">
-                    {/* Tabs & Search */}
-                    <div className="flex flex-col sm:flex-row gap-4 justify-between items-center shrink-0">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 h-full min-h-0 overflow-hidden">
+                <div className="lg:col-span-4 flex flex-col h-full overflow-hidden space-y-4">
+                    <div className="flex flex-col sm:flex-row gap-3 justify-between items-center shrink-0">
                         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none max-w-full">
                             {CATEGORIES.map(cat => (
                                 <button
@@ -196,65 +120,76 @@ export default function ClassifiedsPage() {
                         </div>
                     </div>
 
-                    {/* Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-2 pb-20">
-                        {filteredItems.map(item => (
-                            <div key={item.id} className="bg-white dark:bg-stellar-blue p-4 rounded-2xl border border-cloud dark:border-nebula-purple/50 hover:shadow-xl transition-all group flex flex-col h-full relative overflow-hidden">
-                                {/* Image Area */}
-                                <div className={`w-full aspect-square ${item.color} rounded-xl mb-4 flex items-center justify-center text-7xl shadow-inner relative`}>
-                                    {item.image}
-                                    <button
-                                        onClick={() => toggleLike(item.id)}
-                                        className="absolute top-2 right-2 p-2 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur-sm hover:scale-110 transition-transform"
-                                    >
-                                        <Heart className={`w-4 h-4 ${likedItems.includes(item.id) ? 'fill-rose-500 text-rose-500' : 'text-slate-400'}`} />
+                    {filteredItems.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                            <ShoppingBag className="w-12 h-12 mb-4 opacity-50" />
+                            <p className="font-medium">No listings found.</p>
+                            <p className="text-sm">Post an ad to get started!</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 overflow-y-auto pr-2 pb-20">
+                            {filteredItems.map((item: any) => (
+                                <div key={item.id} className="bg-white dark:bg-stellar-blue p-4 rounded-2xl border border-cloud dark:border-nebula-purple/50 hover:shadow-xl transition-all group flex flex-col h-full relative overflow-hidden">
+                                    <div className={`w-full aspect-square ${item.color || 'bg-slate-100'} rounded-xl mb-4 flex items-center justify-center text-7xl shadow-inner relative`}>
+                                        {item.image || ''}
+                                        <button
+                                            onClick={() => toggleLike(item.id)}
+                                            className="absolute top-2 right-2 p-2 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur-sm hover:scale-110 transition-transform"
+                                        >
+                                            <Heart className={`w-4 h-4 ${likedItems.includes(item.id) ? 'fill-rose-500 text-rose-500' : 'text-slate-400'}`} />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex-1 flex flex-col">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <h3 className="font-bold text-ink-black dark:text-pearl text-lg leading-tight line-clamp-1" title={item.title}>{item.title}</h3>
+                                            {item.price !== undefined && (
+                                                <div className="text-lg font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                                                    {item.currency || '$'}{item.price}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <p className="text-xs text-silver-mist line-clamp-2 mb-4 flex-1">
+                                            {item.description || ''}
+                                        </p>
+
+                                        <div className="border-t border-cloud dark:border-slate-800 pt-3 mt-auto space-y-2">
+                                            <div className="flex items-center justify-between text-xs">
+                                                <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 font-bold">
+                                                    <div className="w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center text-[8px] font-bold text-indigo-600">
+                                                        {(item.seller || item.authorName || 'U').charAt(0)}
+                                                    </div>
+                                                    {item.seller || item.authorName || 'User'}
+                                                </div>
+                                                <span className="text-silver-mist">{item.posted || item.createdDate || ''}</span>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                {item.condition && (
+                                                    <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded">
+                                                        {item.condition}
+                                                    </span>
+                                                )}
+                                                {item.category && (
+                                                    <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded">
+                                                        {item.category}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button className="w-full mt-4 py-2 border border-indigo-200 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 font-bold rounded-lg text-sm hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors flex items-center justify-center gap-2">
+                                        <MessageCircle className="w-4 h-4" /> Contact Seller
                                     </button>
                                 </div>
-
-                                <div className="flex-1 flex flex-col">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <h3 className="font-bold text-ink-black dark:text-pearl text-lg leading-tight line-clamp-1" title={item.title}>{item.title}</h3>
-                                        <div className="text-lg font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
-                                            {item.currency}{item.price}
-                                        </div>
-                                    </div>
-
-                                    <p className="text-xs text-silver-mist line-clamp-2 mb-4 flex-1">
-                                        {item.description}
-                                    </p>
-
-                                    <div className="border-t border-cloud dark:border-slate-800 pt-3 mt-auto space-y-2">
-                                        <div className="flex items-center justify-between text-xs">
-                                            <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 font-bold">
-                                                <div className="w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center text-[8px] font-bold text-indigo-600">
-                                                    {item.seller.charAt(0)}
-                                                </div>
-                                                {item.seller}
-                                            </div>
-                                            <span className="text-silver-mist">{item.posted}</span>
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded">
-                                                {item.condition}
-                                            </span>
-                                            <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded">
-                                                {item.category}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button className="w-full mt-4 py-2 border border-indigo-200 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 font-bold rounded-lg text-sm hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors flex items-center justify-center gap-2">
-                                    <MessageCircle className="w-4 h-4" /> Contact Seller
-                                </button>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Post Ad Modal */}
             <AnimatePresence>
                 {showPostModal && (
                     <motion.div
@@ -280,7 +215,7 @@ export default function ClassifiedsPage() {
                             <p className="text-sm text-silver-mist mb-6">Create a listing to reach colleagues across the company.</p>
 
                             <div className="space-y-4">
-                                <div className="flex gap-4">
+                                <div className="flex gap-3">
                                     <div className="w-24 h-24 rounded-2xl bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center text-slate-400 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shrink-0">
                                         <ImageIcon className="w-6 h-6 mb-1" />
                                         <span className="text-[10px] font-bold">Add Photo</span>
@@ -290,7 +225,7 @@ export default function ClassifiedsPage() {
                                             <label className="text-xs font-bold text-slate-500 mb-1 block">Title</label>
                                             <input type="text" placeholder="e.g., Mechanical Keyboard" className="w-full p-2.5 rounded-lg border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20" />
                                         </div>
-                                        <div className="flex gap-4">
+                                        <div className="flex gap-3">
                                             <div className="flex-1">
                                                 <label className="text-xs font-bold text-slate-500 mb-1 block">Price ($)</label>
                                                 <input type="number" placeholder="0.00" className="w-full p-2.5 rounded-lg border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20" />
@@ -340,3 +275,4 @@ export default function ClassifiedsPage() {
         </div>
     );
 }
+

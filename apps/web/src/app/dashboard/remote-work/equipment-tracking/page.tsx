@@ -58,9 +58,9 @@ export default function EquipmentTrackingPage() {
   };
 
   return (
-    <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+    <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Monitor className="w-6 h-6 text-indigo-500" />
@@ -73,7 +73,7 @@ export default function EquipmentTrackingPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <div className="text-xs font-bold text-slate-500 uppercase mb-1">Total Assets</div>
           <div className="text-2xl font-black text-indigo-600">{stats.total}</div>
@@ -93,7 +93,7 @@ export default function EquipmentTrackingPage() {
       </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50 dark:bg-slate-950/50">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row gap-3 justify-between items-center bg-slate-50 dark:bg-slate-950/50">
           <h3 className="font-bold text-sm text-slate-500 uppercase">Asset Inventory</h3>
           <div className="flex gap-2 text-xs font-bold">
             <span className="flex items-center gap-1 text-emerald-600">
@@ -111,7 +111,7 @@ export default function EquipmentTrackingPage() {
             return (
               <div
                 key={asset.equipmentId || i}
-                className="p-4 flex flex-col md:flex-row md:items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                className="p-4 flex flex-col md:flex-row md:items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
               >
                 <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-500 shrink-0">
                   <Icon className="w-6 h-6" />
@@ -162,3 +162,4 @@ export default function EquipmentTrackingPage() {
     </div>
   );
 }
+

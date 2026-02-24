@@ -10,8 +10,8 @@ import {
 
 export default function SecurityClearancePage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <ShieldAlert className="w-6 h-6 text-indigo-500" />
@@ -29,7 +29,7 @@ export default function SecurityClearancePage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
                 {[
                     { label: 'Top Secret', count: 14, color: 'text-rose-500', bg: 'bg-rose-500' },
                     { label: 'Secret', count: 85, color: 'text-amber-500', bg: 'bg-amber-500' },
@@ -56,7 +56,7 @@ export default function SecurityClearancePage() {
                         { name: 'Morpheus D.', level: 'Confidential', stage: 'Submission', updated: '3 days ago', status: 'In Progress' },
                     ].map((caseItem, i) => (
                         <div key={i} className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500">
                                     <Lock className="w-5 h-5" />
                                 </div>
@@ -87,3 +87,4 @@ export default function SecurityClearancePage() {
         </div>
     );
 }
+

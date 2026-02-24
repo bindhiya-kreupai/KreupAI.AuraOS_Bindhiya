@@ -1,32 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 import { z } from 'zod';
 
-// API Response Standard
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: Record<string, unknown>;
-  };
-  meta?: {
-    pagination?: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    };
-    timestamp: string;
-    requestId: string;
-    apiVersion: string;
-  };
-}
+export const dynamic = 'force-dynamic';
 
 // Validation schemas
 const createLeavePolicySchema = z.object({
-  tenantId: z.string().uuid(),
   companyId: z.string().uuid().optional().nullable(),
   countryCode: z.string().optional().nullable(),
   code: z.string().min(1),
@@ -52,100 +32,108 @@ const createLeavePolicySchema = z.object({
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
+    const { user } = context;
     const { searchParams } = new URL(request.url);
 
-    const filter = {
-      tenantId: searchParams.get('tenantId'),
-      companyId: searchParams.get('companyId'),
-      countryCode: searchParams.get('countryCode'),
-      search: searchParams.get('search'),
-      page: parseInt(searchParams.get('page') || '1'),
-      limit: Math.min(parseInt(searchParams.get('limit') || '20'), 100),
+    const companyId = searchParams.get('companyId');
+    const countryCode = searchParams.get('countryCode');
+    const search = searchParams.get('search');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    const limit = Math.min(Math.max(1, parseInt(searchParams.get('limit') || '20')), 100);
+    const skip = (page - 1) * limit;
+
+    // Build where clause
+    const where: Record<string, any> = {
+      tenantId: user.tenantId,
     };
 
-    if (!filter.tenantId) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'tenantId is required in query parameters',
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 400 });
+    if (companyId) {
+      where.companyId = companyId;
     }
 
-    // TODO: Implement actual database query
-    const mockPolicies = [
-      {
-        id: crypto.randomUUID(),
-        code: 'ANNUAL_LEAVE',
-        name: 'Annual Leave',
-        nameAr: 'الإجازة السنوية',
-        leaveType: {
-          id: crypto.randomUUID(),
-          code: 'AL',
-          name: 'Annual Leave',
-          isPaid: true,
-        },
-        annualEntitlement: 21,
-        accrualType: 'MONTHLY',
-        accrualRate: 1.75,
-        allowCarryForward: true,
-        maxCarryForwardDays: 5,
-        allowEncashment: true,
-        maxEncashmentDays: 10,
-        encashmentRate: 100,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: crypto.randomUUID(),
-        code: 'SICK_LEAVE',
-        name: 'Sick Leave',
-        nameAr: 'الإجازة المرضية',
-        leaveType: {
-          id: crypto.randomUUID(),
-          code: 'SL',
-          name: 'Sick Leave',
-          isPaid: true,
-        },
-        annualEntitlement: 12,
-        accrualType: 'MONTHLY',
-        accrualRate: 1,
-        allowCarryForward: false,
-        allowEncashment: false,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-      },
-    ];
+    if (countryCode) {
+      where.countryCode = countryCode;
+    }
 
-    const response: ApiResponse = {
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { code: { contains: search, mode: 'insensitive' } },
+        { nameAr: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Query policies with pagination
+    const [policies, total] = await Promise.all([
+      prisma.leavePolicy.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { name: 'asc' },
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          nameAr: true,
+          leaveTypeId: true,
+          companyId: true,
+          countryCode: true,
+          employmentTypes: true,
+          minServiceMonths: true,
+          annualEntitlement: true,
+          accrualType: true,
+          accrualRate: true,
+          allowCarryForward: true,
+          maxCarryForwardDays: true,
+          carryForwardExpiryMonths: true,
+          allowEncashment: true,
+          maxEncashmentDays: true,
+          encashmentRate: true,
+          isActive: true,
+          effectiveFrom: true,
+          effectiveTo: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+      prisma.leavePolicy.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    // Format the response to maintain existing shape
+    const formattedPolicies = policies.map(p => ({
+      ...p,
+      annualEntitlement: Number(p.annualEntitlement),
+      accrualRate: p.accrualRate ? Number(p.accrualRate) : null,
+      maxCarryForwardDays: p.maxCarryForwardDays ? Number(p.maxCarryForwardDays) : null,
+      maxEncashmentDays: p.maxEncashmentDays ? Number(p.maxEncashmentDays) : null,
+      encashmentRate: Number(p.encashmentRate),
+      createdAt: p.createdAt.toISOString(),
+      updatedAt: p.updatedAt.toISOString(),
+      effectiveFrom: p.effectiveFrom.toISOString(),
+      effectiveTo: p.effectiveTo?.toISOString() ?? null,
+    }));
+
+    return NextResponse.json({
       success: true,
-      data: mockPolicies,
+      data: formattedPolicies,
       meta: {
         pagination: {
-          page: 1,
-          limit: filter.limit,
-          total: mockPolicies.length,
-          totalPages: 1,
+          page,
+          limit,
+          total,
+          totalPages,
         },
         timestamp: new Date().toISOString(),
         requestId: crypto.randomUUID(),
         apiVersion: 'v1',
       },
-    };
-
-    return NextResponse.json(response, { status: 200 });
+    }, { status: 200 });
   } catch (error) {
     console.error('[Leave Policies API] GET Error:', error);
 
-    const response: ApiResponse = {
+    return NextResponse.json({
       success: false,
       error: {
         code: 'E5001',
@@ -157,9 +145,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         requestId: crypto.randomUUID(),
         apiVersion: 'v1',
       },
-    };
-
-    return NextResponse.json(response, { status: 500 });
+    }, { status: 500 });
   }
 });
 
@@ -169,12 +155,13 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
+    const { user } = context;
     const body = await request.json();
 
     // Validate request body
     const validationResult = createLeavePolicySchema.safeParse(body);
     if (!validationResult.success) {
-      const response: ApiResponse = {
+      return NextResponse.json({
         success: false,
         error: {
           code: 'E2001',
@@ -186,35 +173,86 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
           requestId: crypto.randomUUID(),
           apiVersion: 'v1',
         },
-      };
-
-      return NextResponse.json(response, { status: 400 });
+      }, { status: 400 });
     }
 
-    // TODO: Implement actual database creation
-    const mockPolicy = {
-      id: crypto.randomUUID(),
-      ...validationResult.data,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    const data = validationResult.data;
 
-    const response: ApiResponse = {
+    // Check for duplicate code within tenant
+    const existing = await prisma.leavePolicy.findUnique({
+      where: {
+        tenantId_code: {
+          tenantId: user.tenantId,
+          code: data.code,
+        },
+      },
+    });
+
+    if (existing) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'E4004',
+          message: `A leave policy with code '${data.code}' already exists`,
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      }, { status: 409 });
+    }
+
+    // Create the leave policy
+    const policy = await prisma.leavePolicy.create({
+      data: {
+        tenantId: user.tenantId,
+        companyId: data.companyId ?? undefined,
+        countryCode: data.countryCode ?? undefined,
+        code: data.code,
+        name: data.name,
+        nameAr: data.nameAr ?? undefined,
+        leaveTypeId: data.leaveTypeId,
+        employmentTypes: data.employmentTypes ?? undefined,
+        minServiceMonths: data.minServiceMonths,
+        annualEntitlement: data.annualEntitlement,
+        accrualType: data.accrualType,
+        accrualRate: data.accrualRate ?? undefined,
+        allowCarryForward: data.allowCarryForward,
+        maxCarryForwardDays: data.maxCarryForwardDays ?? undefined,
+        carryForwardExpiryMonths: data.carryForwardExpiryMonths ?? undefined,
+        allowEncashment: data.allowEncashment,
+        maxEncashmentDays: data.maxEncashmentDays ?? undefined,
+        encashmentRate: data.encashmentRate,
+        isActive: true,
+      },
+    });
+
+    return NextResponse.json({
       success: true,
-      data: mockPolicy,
+      data: {
+        ...policy,
+        annualEntitlement: Number(policy.annualEntitlement),
+        accrualRate: policy.accrualRate ? Number(policy.accrualRate) : null,
+        maxCarryForwardDays: policy.maxCarryForwardDays ? Number(policy.maxCarryForwardDays) : null,
+        maxEncashmentDays: policy.maxEncashmentDays ? Number(policy.maxEncashmentDays) : null,
+        maxNegativeDays: policy.maxNegativeDays ? Number(policy.maxNegativeDays) : null,
+        encashmentRate: Number(policy.encashmentRate),
+        createdAt: policy.createdAt.toISOString(),
+        updatedAt: policy.updatedAt.toISOString(),
+        effectiveFrom: policy.effectiveFrom.toISOString(),
+        effectiveTo: policy.effectiveTo?.toISOString() ?? null,
+      },
       meta: {
         timestamp: new Date().toISOString(),
         requestId: crypto.randomUUID(),
         apiVersion: 'v1',
       },
-    };
-
-    return NextResponse.json(response, { status: 201 });
+    }, { status: 201 });
   } catch (error) {
     console.error('[Leave Policies API] POST Error:', error);
 
-    const response: ApiResponse = {
+    return NextResponse.json({
       success: false,
       error: {
         code: 'E5001',
@@ -226,8 +264,6 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
         requestId: crypto.randomUUID(),
         apiVersion: 'v1',
       },
-    };
-
-    return NextResponse.json(response, { status: 500 });
+    }, { status: 500 });
   }
 });

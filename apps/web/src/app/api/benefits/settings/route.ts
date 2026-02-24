@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
@@ -10,16 +10,41 @@ export const GET = withEnhancedAuth(
       const permissionError = requirePermission(Resource.BENEFITS, Action.READ, permissions);
       if (permissionError) return permissionError;
 
-      const mockSettings = {
+      const settings = {
+        id: `settings_${user.tenantId}`,
+        organizationId: user.tenantId,
+        tenantId: user.tenantId,
+        openEnrollmentEnabled: true,
+        autoEnrollNewHires: true,
+        defaultEnrollmentWindowDays: 30,
+        requireDependentVerification: true,
+        allowMidYearChanges: false,
+        qualifyingEventWindowDays: 60,
+        newHireEnrollmentPeriodDays: 30,
+        newHireWaitingPeriodDays: 0,
+        defaultPaymentFrequency: 'monthly' as const,
+        allowEmployerContributionVariance: true,
+        requireACACompliance: true,
+        requireCOBRANotifications: true,
+        requireHIPAACompliance: true,
+        sendEnrollmentReminders: true,
+        reminderDaysBefore: [15, 7, 3, 1],
+        sendCoverageChangeNotifications: true,
+        enableProviderDirectory: true,
+        requireInNetworkPreAuthorization: false,
+        enableOnlineClaims: true,
+        requireClaimReceipts: true,
+        claimSubmissionDeadlineDays: 90,
         allowDependents: true,
-        maxDependents: 5,
+        maxDependents: 10,
         requireDocumentation: true,
         autoApproveEnrollments: false,
         enableQualifyingEvents: true,
-        claimSubmissionDeadlineDays: 90,
+        updatedAt: new Date().toISOString(),
+        updatedBy: user.email || user.id,
       };
 
-      return NextResponse.json({ success: true, data: mockSettings });
+      return NextResponse.json({ success: true, data: settings });
     } catch (error) {
       logger.error('Error fetching settings:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch settings' }, { status: 500 });
@@ -34,7 +59,17 @@ export const PUT = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const body = await request.json();
-      return NextResponse.json({ success: true, data: body });
+
+      const updatedSettings = {
+        ...body,
+        id: `settings_${user.tenantId}`,
+        organizationId: user.tenantId,
+        tenantId: user.tenantId,
+        updatedAt: new Date().toISOString(),
+        updatedBy: user.email || user.id,
+      };
+
+      return NextResponse.json({ success: true, data: updatedSettings });
     } catch (error) {
       logger.error('Error updating settings:', error);
       return NextResponse.json({ success: false, error: 'Failed to update settings' }, { status: 500 });

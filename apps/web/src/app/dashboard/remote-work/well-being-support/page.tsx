@@ -28,9 +28,9 @@ export default function WellbeingSupportPage() {
   const highBurnoutCount = employees.filter((e) => e.wellbeing.burnoutRisk === 'high').length;
 
   return (
-    <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+    <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Heart className="w-6 h-6 text-rose-500" />
@@ -56,7 +56,7 @@ export default function WellbeingSupportPage() {
           Your response is private and helps us understand overall team sentiment.
         </p>
 
-        <div className="flex justify-center gap-4 flex-wrap">
+        <div className="flex justify-center gap-3 flex-wrap">
           {['🤩 Great', '🙂 Good', '😐 Okay', '😫 Stressed', '🤒 Unwell'].map((mood, i) => (
             <button
               key={i}
@@ -69,7 +69,7 @@ export default function WellbeingSupportPage() {
       </div>
 
       <h3 className="font-bold text-lg pt-4">Resources</h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="bg-gradient-to-br from-teal-400 to-emerald-500 rounded-2xl p-6 text-white shadow-lg">
           <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
             <Moon className="w-6 h-6 text-white" />
@@ -106,3 +106,4 @@ export default function WellbeingSupportPage() {
     </div>
   );
 }
+

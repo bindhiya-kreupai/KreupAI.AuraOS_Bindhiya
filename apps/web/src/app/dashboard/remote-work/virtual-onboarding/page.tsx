@@ -26,9 +26,9 @@ export default function VirtualOnboardingPage() {
   const recentJoiners = employees.slice(0, 3);
 
   return (
-    <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+    <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <UserPlus className="w-6 h-6 text-indigo-500" />
@@ -51,7 +51,7 @@ export default function VirtualOnboardingPage() {
             {employees.length} remote joiners in the current cycle. Equipment has been delivered and
             accounts are provisioned.
           </p>
-          <div className="flex gap-4 pt-2">
+          <div className="flex gap-3 pt-2">
             <button className="px-6 py-2 bg-white text-indigo-600 rounded-xl font-bold text-sm shadow-lg hover:bg-slate-50 transition-colors">
               Start Orientation
             </button>
@@ -136,7 +136,7 @@ export default function VirtualOnboardingPage() {
           ].map((event, i) => (
             <div
               key={i}
-              className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-4"
+              className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-3"
             >
               <div
                 className={`w-12 h-12 rounded-xl flex items-center justify-center ${event.color}`}
@@ -157,3 +157,4 @@ export default function VirtualOnboardingPage() {
     </div>
   );
 }
+

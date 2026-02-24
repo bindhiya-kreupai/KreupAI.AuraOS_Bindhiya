@@ -12,9 +12,9 @@ import {
 
 export default function MaintenancePage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Activity className="w-6 h-6 text-indigo-500" />
@@ -24,7 +24,7 @@ export default function MaintenancePage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
                 {/* Upcoming Schedule */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col">
                     <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
@@ -39,7 +39,7 @@ export default function MaintenancePage() {
                             { asset: 'Generator Backup', task: 'Fuel Refill & Test Run', date: 'Dec 25, 2024', type: 'Routine', status: 'Scheduled' },
                         ].map((job, i) => (
                             <div key={i} className="flex flex-col md:flex-row md:items-center justify-between p-4 border border-slate-100 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                <div className="flex items-start gap-4">
+                                <div className="flex items-start gap-3">
                                     <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl text-indigo-600 shrink-0">
                                         <Settings className="w-6 h-6" />
                                     </div>
@@ -66,7 +66,7 @@ export default function MaintenancePage() {
                 </div>
 
                 {/* Right Panel: Health & History */}
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-3">
                     {/* Health Card */}
                     <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-6 text-white shadow-lg">
                         <div className="flex items-center gap-2 font-bold mb-4 opacity-90">
@@ -110,3 +110,4 @@ export default function MaintenancePage() {
         </div>
     );
 }
+

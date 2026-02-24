@@ -10,11 +10,14 @@ import {
   GitBranch,
   Globe2,
   Heart,
+  Key,
   Layers,
   Network,
+  Paintbrush,
   Plane,
   Shield,
   ShieldCheck,
+  Upload,
   Workflow,
   Zap,
 } from "lucide-react";
@@ -92,12 +95,36 @@ const adminSpaces = [
     description: "Bulk uploads, data pipelines, and backup/restore jobs.",
     icon: GitBranch,
   },
+  {
+    title: "API Keys",
+    href: "/dashboard/admin/system/api-keys",
+    description: "Manage API keys, scopes, and usage monitoring.",
+    icon: Key,
+  },
+  {
+    title: "Branding",
+    href: "/dashboard/admin/system/branding",
+    description: "Customize logo, colors, favicon, and white-label settings.",
+    icon: Paintbrush,
+  },
+  {
+    title: "Permission Matrix",
+    href: "/dashboard/admin/system/permissions",
+    description: "Role-based permission grid with granular module access control.",
+    icon: Shield,
+  },
+  {
+    title: "Data Import Wizard",
+    href: "/dashboard/admin/system/data-import",
+    description: "Step-by-step wizard for importing employee data from CSV/Excel.",
+    icon: Upload,
+  },
 ];
 
 export default function AdminOverviewPage() {
   return (
-    <div className="space-y-8 pb-10 text-slate-900 dark:text-slate-100">
-      <div className="flex flex-col gap-4">
+    <div className="space-y-8 pb-6 text-slate-900 dark:text-slate-100">
+      <div className="flex flex-col gap-3">
         <p className="text-sm font-semibold text-indigo-500">Administration</p>
         <h1 className="text-3xl font-bold">Tenant Control Center</h1>
         <p className="text-slate-500 max-w-3xl">
@@ -106,7 +133,7 @@ export default function AdminOverviewPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {adminSpaces.map((item) => {
           const Icon = item.icon;
           return (
@@ -136,3 +163,4 @@ export default function AdminOverviewPage() {
     </div>
   );
 }
+

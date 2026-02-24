@@ -40,9 +40,9 @@ export default function OfflineModePage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <WifiOff className="w-6 h-6 text-indigo-500" />
@@ -58,7 +58,7 @@ export default function OfflineModePage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Module Configuration */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-lg font-bold flex items-center gap-2">
@@ -76,7 +76,7 @@ export default function OfflineModePage() {
                                 { name: 'Image Cache', icon: ImageIcon, size: '45.2 MB', lastSync: '5m ago', enabled: true },
                             ].map((mod, i) => (
                                 <div key={i} className={`flex items-center justify-between p-4 rounded-xl border transition-colors ${mod.enabled ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700' : 'bg-slate-50 dark:bg-slate-800/50 border-transparent opacity-75'}`}>
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
                                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${mod.enabled ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`}>
                                             <mod.icon className="w-5 h-5" />
                                         </div>
@@ -88,7 +88,7 @@ export default function OfflineModePage() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input type="checkbox" className="sr-only peer" defaultChecked={mod.enabled} />
                                             <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
@@ -106,7 +106,7 @@ export default function OfflineModePage() {
                             <p className="text-indigo-100 text-sm mb-6 max-w-lg">
                                 When conflicts occur between offline edits and server data, the system is configured to:
                             </p>
-                            <div className="flex gap-4">
+                            <div className="flex gap-3">
                                 <button className="px-4 py-2 bg-white text-indigo-700 rounded-lg text-sm font-bold shadow-sm flex items-center gap-2">
                                     <Check className="w-4 h-4" /> Server Wins
                                 </button>
@@ -122,13 +122,13 @@ export default function OfflineModePage() {
                 </div>
 
                 {/* Global Settings */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
                             <Settings2 className="w-4 h-4 text-slate-400" /> Global Sync Settings
                         </h3>
 
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             <div>
                                 <div className="flex justify-between mb-2">
                                     <label className="text-sm font-medium">Sync Frequency</label>
@@ -180,3 +180,4 @@ export default function OfflineModePage() {
         </div>
     );
 }
+

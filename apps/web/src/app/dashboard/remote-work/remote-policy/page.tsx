@@ -24,9 +24,9 @@ export default function RemotePolicyPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100 overflow-y-auto pr-2">
+    <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100 overflow-y-auto pr-2">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <FileText className="w-6 h-6 text-indigo-500" />
@@ -38,7 +38,7 @@ export default function RemotePolicyPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {policies.map((policy, i) => (
           <div
             key={policy.id || i}
@@ -72,8 +72,8 @@ export default function RemotePolicyPage() {
         ))}
       </div>
 
-      <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 border border-indigo-100 dark:border-indigo-900/50">
-        <div className="flex items-center gap-4">
+      <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-3 border border-indigo-100 dark:border-indigo-900/50">
+        <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-sm">
             <ShieldCheck className="w-6 h-6 text-indigo-500" />
           </div>
@@ -93,3 +93,4 @@ export default function RemotePolicyPage() {
     </div>
   );
 }
+

@@ -65,7 +65,7 @@ export default function PricingPage() {
               alt="AuraOS Logo"
               width={120}
               height={120}
-              className="w-24 h-24 md:w-28 md:h-28"
+              className="w-24 h-24 md:w-28 md:h-28 mix-blend-multiply dark:mix-blend-screen"
             />
           </div>
           <h1 className="text-4xl md:text-5xl font-display font-bold text-ink-black dark:text-pearl mb-6">
@@ -134,7 +134,7 @@ export default function PricingPage() {
               Companies using AuraOS typically see these results in the first year:
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
               <div className="p-6 rounded-xl bg-pearl dark:bg-stellar-blue/10 border border-cloud dark:border-nebula-purple">
                 <div className="text-3xl font-bold text-celestial-indigo mb-2">80%</div>
                 <div className="text-sm text-twilight dark:text-silver-mist">
@@ -165,7 +165,7 @@ export default function PricingPage() {
             </div>
 
             <div className="bg-gradient-to-r from-celestial-indigo/10 to-quantum-rose/10 rounded-xl p-6 border border-celestial-indigo/20">
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3">
                 <DollarSign className="w-6 h-6 text-celestial-indigo shrink-0 mt-1" />
                 <div className="text-left">
                   <div className="font-semibold text-ink-black dark:text-pearl mb-2">
@@ -346,7 +346,7 @@ export default function PricingPage() {
             Pricing Questions
           </h3>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             {[
               {
                 q: 'Can I change plans later?',
@@ -407,3 +407,4 @@ export default function PricingPage() {
     </div>
   );
 }
+

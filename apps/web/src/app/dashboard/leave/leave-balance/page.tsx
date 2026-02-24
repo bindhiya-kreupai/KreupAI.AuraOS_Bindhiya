@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import {
     PieChart,
     Search,
-    UserCircle,
-    Download
+    Download,
+    Loader2
 } from 'lucide-react';
 import { LeaveBalanceService } from '../services';
 import type { LeaveBalance } from '../types';
@@ -22,18 +22,16 @@ export default function LeaveBalancePage() {
         try {
             setLoading(true);
             const result = await LeaveBalanceService.getBalances();
-            if (result.length > 0) {
-                setBalances(result);
-            }
+            setBalances(result);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <PieChart className="w-6 h-6 text-indigo-500" />
@@ -61,26 +59,30 @@ export default function LeaveBalancePage() {
                     <thead className="bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-500 uppercase">
                         <tr>
                             <th className="px-6 py-4">Employee</th>
-                            <th className="px-6 py-4 text-center">Annual (AL)</th>
-                            <th className="px-6 py-4 text-center">Sick (SL)</th>
-                            <th className="px-6 py-4 text-center">Casual (CL)</th>
-                            <th className="px-6 py-4 text-center">Comp-Off</th>
-                            <th className="px-6 py-4 text-center">Total Balance</th>
+                            <th className="px-6 py-4 text-center">Leave Type</th>
+                            <th className="px-6 py-4 text-center">Opening</th>
+                            <th className="px-6 py-4 text-center">Accrued</th>
+                            <th className="px-6 py-4 text-center">Availed</th>
+                            <th className="px-6 py-4 text-center">Available Balance</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                         {loading ? (
                             <tr>
                                 <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
-                                    Loading leave balances...
+                                    <div className="flex items-center justify-center gap-2">
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Loading leave balances...
+                                    </div>
                                 </td>
                             </tr>
-                        ) : (balances.length > 0 ? balances : [
-                            { id: '1', employeeId: 'E001', employeeName: 'John Doe', department: 'Engineering', leaveTypeId: 'AL', availableBalance: 12, totalBalance: 24, accrued: 24, availed: 12, lapsed: 0 },
-                            { id: '2', employeeId: 'E002', employeeName: 'Jane Smith', department: 'Marketing', leaveTypeId: 'AL', availableBalance: 8, totalBalance: 24, accrued: 24, availed: 16, lapsed: 0 },
-                            { id: '3', employeeId: 'E003', employeeName: 'Robert Fox', department: 'Sales', leaveTypeId: 'AL', availableBalance: 20, totalBalance: 24, accrued: 24, availed: 4, lapsed: 0 },
-                            { id: '4', employeeId: 'E004', employeeName: 'Emily Davis', department: 'HR', leaveTypeId: 'AL', availableBalance: 15, totalBalance: 24, accrued: 24, availed: 9, lapsed: 0 },
-                        ] as LeaveBalance[]).map((bal, i) => {
+                        ) : balances.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
+                                    No leave balances found.
+                                </td>
+                            </tr>
+                        ) : balances.map((bal, i) => {
                             const initials = bal.employeeName?.split(' ').map(n => n[0]).join('') || 'NA';
                             return (
                                 <tr key={bal.id || i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
@@ -91,25 +93,25 @@ export default function LeaveBalancePage() {
                                             </div>
                                             <div>
                                                 <div className="font-bold">{bal.employeeName}</div>
-                                                <div className="text-xs text-slate-500">{bal.department}</div>
+                                                <div className="text-xs text-slate-500">{bal.financialYear}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-center font-bold text-slate-600 dark:text-slate-400">
-                                        {bal.leaveTypeId === 'AL' ? bal.availableBalance : '-'}
+                                        {bal.leaveTypeName || bal.leaveTypeId}
                                     </td>
                                     <td className="px-6 py-4 text-center font-bold text-slate-600 dark:text-slate-400">
-                                        {bal.leaveTypeId === 'SL' ? bal.availableBalance : '-'}
+                                        {bal.openingBalance ?? 0}
                                     </td>
                                     <td className="px-6 py-4 text-center font-bold text-slate-600 dark:text-slate-400">
-                                        {bal.leaveTypeId === 'CL' ? bal.availableBalance : '-'}
+                                        {bal.accrued ?? 0}
                                     </td>
                                     <td className="px-6 py-4 text-center font-bold text-slate-600 dark:text-slate-400">
-                                        {bal.leaveTypeId === 'COMP' ? bal.availableBalance : '-'}
+                                        {bal.availed ?? 0}
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <span className="px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 font-bold">
-                                            {bal.availableBalance} Days
+                                            {bal.availableBalance ?? 0} Days
                                         </span>
                                     </td>
                                 </tr>
@@ -121,3 +123,4 @@ export default function LeaveBalancePage() {
         </div>
     );
 }
+

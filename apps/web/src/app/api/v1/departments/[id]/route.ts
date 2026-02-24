@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { departmentService } from '@/lib/services/organization';
+import { ServiceProxy } from '@/lib/services/service-proxy';
 import { z } from 'zod';
 
 // API Response Standard
@@ -35,7 +35,8 @@ export const GET = withEnhancedAuth(
     try {
       const { id } = params;
 
-      const department = await departmentService.findById(id);
+      // Fetch department from microservice
+      const department = await ServiceProxy.get('employee', `/departments/${id}`);
 
       if (!department) {
         const response: ApiResponse = {
@@ -117,8 +118,8 @@ export const PUT = withEnhancedAuth(
         return NextResponse.json(response, { status: 400 });
       }
 
-      // Update department
-      const department = await departmentService.update(id, validationResult.data);
+      // Update department via microservice
+      const department = await ServiceProxy.put('employee', `/departments/${id}`, validationResult.data);
 
       const response: ApiResponse = {
         success: true,
@@ -154,8 +155,8 @@ export const PUT = withEnhancedAuth(
         }
 
         if (error.message.includes('already exists') ||
-            error.message.includes('own parent') ||
-            error.message.includes('Circular reference')) {
+          error.message.includes('own parent') ||
+          error.message.includes('Circular reference')) {
           const response: ApiResponse = {
             success: false,
             error: {
@@ -201,7 +202,8 @@ export const DELETE = withEnhancedAuth(
     try {
       const { id } = params;
 
-      await departmentService.delete(id);
+      // Delete department via microservice
+      await ServiceProxy.delete('employee', `/departments/${id}`);
 
       const response: ApiResponse = {
         success: true,

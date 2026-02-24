@@ -93,7 +93,7 @@ export default function AgentsDashboardPage() {
   ];
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-8 pb-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
@@ -105,7 +105,7 @@ export default function AgentsDashboardPage() {
       </div>
 
       {/* Overall Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {overallMetrics.map((metric) => {
           const Icon = metric.icon;
           return (
@@ -128,7 +128,7 @@ export default function AgentsDashboardPage() {
       </div>
 
       {/* Agent Cards */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         {agents.map((agent) => {
           const Icon = agent.icon;
           return (
@@ -138,7 +138,7 @@ export default function AgentsDashboardPage() {
             >
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${agent.color} flex items-center justify-center`}>
                       <Icon className="w-6 h-6 text-white" />
                     </div>
@@ -179,7 +179,7 @@ export default function AgentsDashboardPage() {
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <div className="grid grid-cols-3 gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                   <div>
                     <p className="text-xs text-slate-500 dark:text-slate-500 mb-1">Automation Rate</p>
                     <p className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -208,7 +208,7 @@ export default function AgentsDashboardPage() {
       {/* Metrics Link */}
       <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <BarChart3 className="w-10 h-10 text-slate-700 dark:text-slate-300" />
             <div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
@@ -231,3 +231,4 @@ export default function AgentsDashboardPage() {
     </div>
   );
 }
+

@@ -66,7 +66,7 @@ export default function SSOPage() {
                 <p className="text-silver-mist">Configure SAML or OIDC authentication for your organization.</p>
             </div>
 
-            <div className="bg-white dark:bg-stellar-blue/20 rounded-xl border border-cloud dark:border-nebula-purple/30 p-6 space-y-6">
+            <div className="bg-white dark:bg-stellar-blue/20 rounded-xl border border-cloud dark:border-nebula-purple/30 p-6 space-y-4">
                 <div className="flex items-center justify-between pb-6 border-b border-cloud dark:border-nebula-purple/30">
                     <div>
                         <h3 className="text-lg font-medium text-midnight-blue dark:text-white">Enable SSO</h3>
@@ -85,7 +85,7 @@ export default function SSOPage() {
                     </div>
                 </div>
 
-                <div className={`space-y-6 ${!config.enabled ? 'opacity-50 pointer-events-none' : ''}`}>
+                <div className={`space-y-4 ${!config.enabled ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div>
                         <label className="block text-sm font-medium text-midnight-blue dark:text-white mb-2">Provider Type</label>
                         <select
@@ -145,3 +145,4 @@ export default function SSOPage() {
         </div>
     );
 }
+

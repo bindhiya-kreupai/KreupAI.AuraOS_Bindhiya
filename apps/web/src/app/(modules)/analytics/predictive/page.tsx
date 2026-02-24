@@ -152,7 +152,7 @@ export default function PredictiveAnalyticsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -206,7 +206,7 @@ export default function PredictiveAnalyticsPage() {
                   placeholder="Brief description"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label htmlFor="algorithm">Algorithm</Label>
                   <Select
@@ -246,7 +246,7 @@ export default function PredictiveAnalyticsPage() {
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -445,3 +445,4 @@ export default function PredictiveAnalyticsPage() {
     </div>
   );
 }
+

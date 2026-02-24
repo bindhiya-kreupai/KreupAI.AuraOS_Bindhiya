@@ -209,7 +209,7 @@ export class SentimentAnalysisService {
   /**
    * Extract topics from text
    */
-  private static extractTopics(text: string): string[] {
+  public static extractTopics(text: string): string[] {
     const topics: Set<string> = new Set();
 
     for (const [topic, keywords] of Object.entries(TOPIC_KEYWORDS)) {
@@ -338,7 +338,7 @@ export class SentimentAnalysisService {
       numericResponseCount: numericResponses.length,
       overallScore,
       overallSentiment: avgSentimentScore >= 0.2 ? 'POSITIVE' :
-                        avgSentimentScore <= -0.2 ? 'NEGATIVE' : 'NEUTRAL',
+        avgSentimentScore <= -0.2 ? 'NEGATIVE' : 'NEUTRAL',
       categoryScores: categoryAverages,
       themes,
       highlights,
@@ -610,7 +610,7 @@ export class SentimentAnalysisService {
         percentage: Math.round((data.count / texts.length) * 100),
         averageSentiment: data.count > 0 ? data.sentimentSum / data.count : 0,
         sentiment: data.sentimentSum / data.count > 0.2 ? 'POSITIVE' as const :
-                   data.sentimentSum / data.count < -0.2 ? 'NEGATIVE' as const : 'NEUTRAL' as const,
+          data.sentimentSum / data.count < -0.2 ? 'NEGATIVE' as const : 'NEUTRAL' as const,
       }))
       .sort((a, b) => b.count - a.count);
 
@@ -692,7 +692,7 @@ export class SentimentAnalysisService {
         issue: category.replace('_', ' ').toLowerCase(),
         frequency: data.count,
         urgency: data.count > feedbackTexts.length * 0.3 ? 'HIGH' as const :
-                 data.count > feedbackTexts.length * 0.1 ? 'MEDIUM' as const : 'LOW' as const,
+          data.count > feedbackTexts.length * 0.1 ? 'MEDIUM' as const : 'LOW' as const,
         suggestedAction: issuePatterns[category].action,
       }))
       .sort((a, b) => b.frequency - a.frequency);

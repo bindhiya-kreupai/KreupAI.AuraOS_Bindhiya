@@ -4,13 +4,13 @@
 
 @layer base {
   :root {
-    /* Aurora Professional Palette */
-    --primary: 75 59 245;
-    /* Celestial Indigo #4B3BF5 */
-    --secondary: 233 30 140;
-    /* Quantum Rose #E91E8C */
-    --tertiary: 0 212 170;
-    /* Neural Mint #00D4AA */
+    /* Brand Palette — Blue / Light Blue / Red / White */
+    --primary: 29 78 216;
+    /* Brand Blue #1D4ED8 */
+    --secondary: 220 38 38;
+    /* Brand Red #DC2626 */
+    --tertiary: 96 165 250;
+    /* Brand Light Blue #60A5FA */
 
     --background: 255 255 255;
     --foreground: 10 14 39;
@@ -36,7 +36,7 @@
 
     --border: 226 232 240;
     --input: 226 232 240;
-    --ring: 75 59 245;
+    --ring: 29 78 216;
 
     --radius: 0.75rem;
   }
@@ -53,10 +53,10 @@
     --popover: 10 11 30;
     --popover-foreground: 232 236 244;
 
-    --primary: 75 59 245;
+    --primary: 96 165 250;
     --primary-foreground: 255 255 255;
 
-    --secondary: 233 30 140;
+    --secondary: 220 38 38;
     --secondary-foreground: 255 255 255;
 
     --muted: 30 41 59;
@@ -70,7 +70,7 @@
 
     --border: 30 41 59;
     --input: 30 41 59;
-    --ring: 75 59 245;
+    --ring: 96 165 250;
   }
 }
 

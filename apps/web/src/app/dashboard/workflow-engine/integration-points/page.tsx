@@ -1,18 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plug, Check, Power, RefreshCw, Key } from 'lucide-react';
+import { Plug, Check, Power, RefreshCw, Key, Loader2 } from 'lucide-react';
 import { IntegrationService } from '../services';
 
-const APPS = [
-    { id: 1, name: 'Slack', description: 'Send notifications to channels', status: 'Connected', icon: 'bg-indigo-500' },
-    { id: 2, name: 'Google Sheets', description: 'Sync form responses', status: 'Connected', icon: 'bg-green-500' },
-    { id: 3, name: 'Salesforce', description: 'Create CRM records', status: 'Disconnected', icon: 'bg-blue-500' },
-    { id: 4, name: 'Jira', description: 'Create issues from tickets', status: 'Connected', icon: 'bg-blue-600' },
-];
-
 export default function IntegrationPointsPage() {
-    const [apps, setApps] = useState<any[]>(APPS);
+    const [apps, setApps] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -23,19 +16,32 @@ export default function IntegrationPointsPage() {
         try {
             setLoading(true);
             const data = await IntegrationService.getIntegrations();
-            if (data.length > 0) {
-                setApps(data);
-            }
+            const integrations = (data || []).map((item: any) => ({
+                id: item.id,
+                name: item.name || item.integrationName || 'Unknown',
+                description: item.description || 'Workflow integration',
+                status: item.isActive ? 'Connected' : 'Disconnected',
+                icon: 'bg-indigo-500',
+            }));
+            setApps(integrations);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Plug className="w-6 h-6 text-cyan-500" />
@@ -48,36 +54,45 @@ export default function IntegrationPointsPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {apps.map(app => (
-                    <div key={app.id} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between h-[180px]">
-                        <div className="flex justify-between items-start">
-                            <div className={`w-12 h-12 rounded-xl ${app.icon} flex items-center justify-center text-white font-bold text-lg`}>
-                                {app.name[0]}
+            {apps.length === 0 ? (
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 text-center">
+                    <Plug className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-bold text-slate-500 mb-2">No Integrations</h3>
+                    <p className="text-sm text-slate-400">Create workflow definitions to see integration points.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {apps.map(app => (
+                        <div key={app.id} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between h-[180px]">
+                            <div className="flex justify-between items-start">
+                                <div className={`w-12 h-12 rounded-xl ${app.icon} flex items-center justify-center text-white font-bold text-lg`}>
+                                    {app.name[0]}
+                                </div>
+                                <div className={`w-8 h-4 rounded-full p-0.5 ${app.status === 'Connected' ? 'bg-emerald-500 justify-end' : 'bg-slate-300 justify-start'} flex items-center transition-colors cursor-pointer`}>
+                                    <div className="w-3 h-3 rounded-full bg-white shadow-sm" />
+                                </div>
                             </div>
-                            <div className={`w-8 h-4 rounded-full p-0.5 ${app.status === 'Connected' ? 'bg-emerald-500 justify-end' : 'bg-slate-300 justify-start'} flex items-center transition-colors cursor-pointer`}>
-                                <div className="w-3 h-3 rounded-full bg-white shadow-sm" />
+
+                            <div>
+                                <h3 className="font-bold text-lg">{app.name}</h3>
+                                <p className="text-sm text-slate-500">{app.description}</p>
+                            </div>
+
+                            <div className="flex items-center gap-2 text-xs font-medium pt-4 border-t border-slate-100 dark:border-slate-800">
+                                {app.status === 'Connected' ? (
+                                    <span className="text-emerald-500 flex items-center gap-1"><Check className="w-3 h-3" /> Active</span>
+                                ) : (
+                                    <span className="text-slate-400 flex items-center gap-1"><Power className="w-3 h-3" /> Inactive</span>
+                                )}
+                                {app.status === 'Connected' && (
+                                    <span className="ml-auto text-slate-400 flex items-center gap-1 cursor-pointer hover:text-cyan-500"><RefreshCw className="w-3 h-3" /> Sync</span>
+                                )}
                             </div>
                         </div>
-
-                        <div>
-                            <h3 className="font-bold text-lg">{app.name}</h3>
-                            <p className="text-sm text-slate-500">{app.description}</p>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-xs font-medium pt-4 border-t border-slate-100 dark:border-slate-800">
-                            {app.status === 'Connected' ? (
-                                <span className="text-emerald-500 flex items-center gap-1"><Check className="w-3 h-3" /> Active</span>
-                            ) : (
-                                <span className="text-slate-400 flex items-center gap-1"><Power className="w-3 h-3" /> Inactive</span>
-                            )}
-                            {app.status === 'Connected' && (
-                                <span className="ml-auto text-slate-400 flex items-center gap-1 cursor-pointer hover:text-cyan-500"><RefreshCw className="w-3 h-3" /> Sync</span>
-                            )}
-                        </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
+

@@ -1,28 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 import { z } from 'zod';
 
-// API Response Standard
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: Record<string, unknown>;
-  };
-  meta?: {
-    timestamp: string;
-    requestId: string;
-    apiVersion: string;
-  };
-}
+export const dynamic = 'force-dynamic';
 
 // Validation schema
 const encashLeaveSchema = z.object({
-  tenantId: z.string().uuid(),
   employeeId: z.string().uuid(),
-  leavePolicyId: z.string().uuid(),
+  policyId: z.string().uuid(),
   numberOfDays: z.number().int().min(1),
   reason: z.string().min(10).max(500).optional().nullable(),
   requestedPaymentMonth: z.string().regex(/^\d{4}-\d{2}$/),
@@ -34,12 +20,13 @@ const encashLeaveSchema = z.object({
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
+    const { user } = context;
     const body = await request.json();
 
     // Validate request body
     const validationResult = encashLeaveSchema.safeParse(body);
     if (!validationResult.success) {
-      const response: ApiResponse = {
+      return NextResponse.json({
         success: false,
         error: {
           code: 'E2001',
@@ -51,68 +38,61 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
           requestId: crypto.randomUUID(),
           apiVersion: 'v1',
         },
-      };
-
-      return NextResponse.json(response, { status: 400 });
+      }, { status: 400 });
     }
 
     const data = validationResult.data;
 
-    // TODO: Implement actual leave encashment logic
-    // 1. Check if leave policy allows encashment
-    // 2. Verify employee has sufficient leave balance
-    // 3. Check maximum encashment limit
-    // 4. Calculate encashment amount based on policy rate
-    // 5. Create encashment request
-    // 6. Deduct leave balance
-    // 7. Send for approval
-    // 8. Add to payroll upon approval
-
-    const mockEncashmentRequest = {
-      id: crypto.randomUUID(),
-      requestNumber: `LE-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
-      ...data,
-      leaveType: 'Annual Leave',
-      currentBalance: 15,
-      encashmentRate: 100, // Percentage of basic salary
-      basicSalary: 5000,
-      perDayRate: 166.67, // basicSalary / 30
-      encashmentAmount: 1666.7, // numberOfDays * perDayRate * (encashmentRate / 100)
-      balanceAfterEncashment: 5, // currentBalance - numberOfDays
-      status: 'PENDING',
-      submittedAt: new Date().toISOString(),
-      approvalWorkflow: [
-        {
-          level: 1,
-          approverName: 'HR Manager',
-          status: 'PENDING',
-        },
-        {
-          level: 2,
-          approverName: 'Finance Manager',
-          status: 'PENDING',
-        },
-      ],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    const response: ApiResponse = {
-      success: true,
-      data: mockEncashmentRequest,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
+    // Verify employee belongs to tenant
+    const employee = await prisma.employee.findFirst({
+      where: {
+        id: data.employeeId,
+        company: { tenantId: user.tenantId },
       },
-    };
+      select: { id: true, firstName: true, lastName: true, employeeCode: true },
+    });
 
-    return NextResponse.json(response, { status: 201 });
-  } catch (error) {
-    console.error('[Leave Encashment API] POST Error:', error);
+    if (!employee) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'E3001',
+          message: 'Employee not found',
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      }, { status: 404 });
+    }
 
-    if (error instanceof Error && error.message.includes('not allowed')) {
-      const response: ApiResponse = {
+    // Fetch the leave policy to verify encashment is allowed
+    const policy = await prisma.leavePolicy.findFirst({
+      where: {
+        id: data.policyId,
+        tenantId: user.tenantId,
+        isActive: true,
+      },
+    });
+
+    if (!policy) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'E3002',
+          message: 'Leave policy not found',
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      }, { status: 404 });
+    }
+
+    if (!policy.allowEncashment) {
+      return NextResponse.json({
         success: false,
         error: {
           code: 'E4001',
@@ -123,29 +103,135 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
           requestId: crypto.randomUUID(),
           apiVersion: 'v1',
         },
-      };
-
-      return NextResponse.json(response, { status: 400 });
+      }, { status: 400 });
     }
 
-    if (error instanceof Error && error.message.includes('insufficient balance')) {
-      const response: ApiResponse = {
+    // Check maximum encashment days
+    const maxEncashDays = policy.maxEncashmentDays ? Number(policy.maxEncashmentDays) : null;
+    if (maxEncashDays !== null && data.numberOfDays > maxEncashDays) {
+      return NextResponse.json({
         success: false,
         error: {
-          code: 'E4002',
-          message: 'Insufficient leave balance for encashment',
+          code: 'E4003',
+          message: `Maximum encashment allowed is ${maxEncashDays} days`,
+          details: { maxEncashmentDays: maxEncashDays, requested: data.numberOfDays },
         },
         meta: {
           timestamp: new Date().toISOString(),
           requestId: crypto.randomUUID(),
           apiVersion: 'v1',
         },
-      };
-
-      return NextResponse.json(response, { status: 400 });
+      }, { status: 400 });
     }
 
-    const response: ApiResponse = {
+    // Get the employee's current leave balance
+    const currentYear = new Date().getFullYear();
+    const balance = await prisma.leaveBalance.findFirst({
+      where: {
+        tenantId: user.tenantId,
+        employeeId: data.employeeId,
+        policyId: data.policyId,
+        leaveYear: currentYear,
+      },
+    });
+
+    if (!balance) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'E4002',
+          message: 'No leave balance record found for this policy and year',
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      }, { status: 400 });
+    }
+
+    const currentBalance = Number(balance.currentBalance);
+    if (currentBalance < data.numberOfDays) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'E4002',
+          message: 'Insufficient leave balance for encashment',
+          details: {
+            currentBalance,
+            requested: data.numberOfDays,
+          },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      }, { status: 400 });
+    }
+
+    // Calculate encashment amount
+    // dailyRate is a placeholder - in production this would come from payroll/salary data
+    // Using encashmentRate as percentage of calculated daily rate
+    const encashmentRate = Number(policy.encashmentRate);
+    // We store a placeholder daily rate; actual rate would come from payroll integration
+    const dailyRate = 0; // Will be computed by payroll service
+    const totalAmount = dailyRate * data.numberOfDays * (encashmentRate / 100);
+
+    // Create the encashment record
+    const encashment = await prisma.leaveEncashment.create({
+      data: {
+        tenantId: user.tenantId,
+        employeeId: data.employeeId,
+        leaveTypeId: policy.leaveTypeId,
+        policyId: data.policyId,
+        requestedDays: data.numberOfDays,
+        eligibleDays: Math.min(data.numberOfDays, maxEncashDays ?? data.numberOfDays),
+        calculationBasis: 'BASIC',
+        dailyRate,
+        totalAmount,
+        encashmentRate,
+        trigger: 'ON_REQUEST',
+        reason: data.reason ?? undefined,
+        status: 'PENDING',
+        payrollMonth: data.requestedPaymentMonth,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        id: encashment.id,
+        tenantId: encashment.tenantId,
+        employeeId: encashment.employeeId,
+        leaveTypeId: encashment.leaveTypeId,
+        policyId: encashment.policyId,
+        requestedDays: Number(encashment.requestedDays),
+        eligibleDays: Number(encashment.eligibleDays),
+        approvedDays: encashment.approvedDays ? Number(encashment.approvedDays) : null,
+        calculationBasis: encashment.calculationBasis,
+        dailyRate: Number(encashment.dailyRate),
+        totalAmount: Number(encashment.totalAmount),
+        encashmentRate: Number(encashment.encashmentRate),
+        trigger: encashment.trigger,
+        reason: encashment.reason,
+        status: encashment.status,
+        currentBalance,
+        balanceAfterEncashment: currentBalance - data.numberOfDays,
+        payrollMonth: encashment.payrollMonth,
+        createdAt: encashment.createdAt.toISOString(),
+        updatedAt: encashment.updatedAt.toISOString(),
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
+    }, { status: 201 });
+  } catch (error) {
+    console.error('[Leave Encashment API] POST Error:', error);
+
+    return NextResponse.json({
       success: false,
       error: {
         code: 'E5001',
@@ -157,8 +243,6 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
         requestId: crypto.randomUUID(),
         apiVersion: 'v1',
       },
-    };
-
-    return NextResponse.json(response, { status: 500 });
+    }, { status: 500 });
   }
 });

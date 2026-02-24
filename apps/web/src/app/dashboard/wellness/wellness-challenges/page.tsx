@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
-import { Trophy, Flame, Users, Calendar, ArrowUpRight, Crown } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Trophy, Flame, Users, Calendar, ArrowUpRight, Crown, Loader2 } from 'lucide-react';
+import { ChallengeService } from '../services';
 
 const CHALLENGES = [
     {
@@ -50,9 +51,35 @@ const LEADERBOARD = [
 ];
 
 export default function WellnessChallengesPage() {
+    const [challenges, setChallenges] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await ChallengeService.getChallenges();
+                setChallenges(Array.isArray(data) ? data : []);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Trophy className="w-6 h-6 text-amber-500" />
@@ -65,15 +92,15 @@ export default function WellnessChallengesPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <div className="lg:col-span-2 space-y-4">
                     {CHALLENGES.map(challenge => (
                         <div key={challenge.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
                             {/* Background Decoration */}
                             <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20 -mr-10 -mt-10 pointer-events-none ${challenge.image.split(' ')[0]}`} />
 
                             <div className="flex justify-between items-start relative z-10">
-                                <div className="flex gap-4">
+                                <div className="flex gap-3">
                                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${challenge.image}`}>
                                         <challenge.icon className="w-7 h-7" />
                                     </div>
@@ -85,7 +112,7 @@ export default function WellnessChallengesPage() {
                                         </div>
                                         <p className="text-slate-500 text-sm mb-3">{challenge.description}</p>
 
-                                        <div className="flex gap-4 text-xs font-medium text-slate-400">
+                                        <div className="flex gap-3 text-xs font-medium text-slate-400">
                                             <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {challenge.participants} Joined</span>
                                             <span className="flex items-center gap-1"><Trophy className="w-3 h-3" /> Prize: {challenge.prize}</span>
                                         </div>
@@ -124,7 +151,7 @@ export default function WellnessChallengesPage() {
                         </h3>
                         <div className="space-y-4">
                             {LEADERBOARD.map((user, idx) => (
-                                <div key={idx} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/10">
+                                <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
                                     <div className={`font-bold font-mono w-6 text-center ${idx < 3 ? 'text-yellow-400' : 'text-slate-400'}`}>
                                         #{user.rank}
                                     </div>
@@ -145,3 +172,4 @@ export default function WellnessChallengesPage() {
         </div>
     );
 }
+

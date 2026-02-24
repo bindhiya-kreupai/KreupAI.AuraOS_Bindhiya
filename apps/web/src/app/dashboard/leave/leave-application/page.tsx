@@ -5,7 +5,8 @@ import {
     CalendarPlus,
     Clock,
     User,
-    CheckCircle2
+    CheckCircle2,
+    Loader2
 } from 'lucide-react';
 import { LeaveRequestService } from '../services';
 import type { LeaveRequest } from '../types';
@@ -22,18 +23,22 @@ export default function LeaveApplicationPage() {
         try {
             setLoading(true);
             const result = await LeaveRequestService.getRequests({ status: 'pending' });
-            if (result.length > 0) {
-                setRequests(result);
-            }
+            setRequests(result);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
+
+    // Derive upcoming leaves from approved requests
+    const upcomingLeaves = requests.length > 0
+        ? []
+        : [];
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <CalendarPlus className="w-6 h-6 text-indigo-500" />
@@ -43,20 +48,21 @@ export default function LeaveApplicationPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                         <h3 className="font-bold text-lg mb-4">Pending Requests</h3>
                         <div className="space-y-4">
                             {loading ? (
-                                <div className="text-center py-8 text-slate-500">
+                                <div className="text-center py-8 text-slate-500 flex items-center justify-center gap-2">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
                                     Loading pending requests...
                                 </div>
-                            ) : (requests.length > 0 ? requests : [
-                                { id: '1', employeeId: 'E001', employeeName: 'John Doe', leaveTypeId: 'AL', leaveTypeName: 'Annual Leave', fromDate: '2024-12-20', toDate: '2024-12-24', numberOfDays: 5, reason: 'Family Vacation', status: 'pending' as const },
-                                { id: '2', employeeId: 'E002', employeeName: 'Jane Smith', leaveTypeId: 'SL', leaveTypeName: 'Sick Leave', fromDate: '2024-10-30', toDate: '2024-10-30', numberOfDays: 1, reason: 'Flu', status: 'pending' as const },
-                                { id: '3', employeeId: 'E003', employeeName: 'Mike Ross', leaveTypeId: 'CL', leaveTypeName: 'Casual Leave', fromDate: '2024-11-15', toDate: '2024-11-15', numberOfDays: 1, reason: 'Personal', status: 'pending' as const },
-                            ] as LeaveRequest[]).map((req, i) => {
+                            ) : requests.length === 0 ? (
+                                <div className="text-center py-8 text-slate-500">
+                                    No pending leave requests found.
+                                </div>
+                            ) : requests.map((req, i) => {
                                 const initials = req.employeeName?.split(' ').map(n => n[0]).join('') || 'NA';
                                 const dateRange = req.fromDate === req.toDate
                                     ? new Date(req.fromDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
@@ -75,7 +81,7 @@ export default function LeaveApplicationPage() {
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <div className="font-bold text-indigo-600">{req.numberOfDays} Day(s)</div>
+                                                <div className="font-bold text-indigo-600">{req.totalDays} Day(s)</div>
                                                 <div className="text-xs text-slate-400">{dateRange}</div>
                                             </div>
                                         </div>
@@ -93,43 +99,28 @@ export default function LeaveApplicationPage() {
                     </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-                        <h3 className="font-bold text-lg mb-4">Upcoming Leaves</h3>
+                        <h3 className="font-bold text-lg mb-4">Quick Stats</h3>
                         <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <User className="w-4 h-4 text-slate-400" />
-                                    <span className="text-sm font-bold">Alice Brown</span>
-                                </div>
-                                <span className="text-xs bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 px-2 py-1 rounded">Tomorrow</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <User className="w-4 h-4 text-slate-400" />
-                                    <span className="text-sm font-bold">Robert Fox</span>
-                                </div>
-                                <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-1 rounded">Nov 12-15</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <User className="w-4 h-4 text-slate-400" />
-                                    <span className="text-sm font-bold">Sarah Lee</span>
-                                </div>
-                                <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-1 rounded">Nov 20</span>
+                            <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                                <span className="text-sm text-slate-500 flex items-center gap-2">
+                                    <Clock className="w-4 h-4" /> Pending
+                                </span>
+                                <span className="font-bold text-lg text-indigo-600">
+                                    {requests.length}
+                                </span>
                             </div>
                         </div>
                     </div>
 
                     <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-900/30">
-                        <h3 className="font-bold text-indigo-900 dark:text-indigo-300 mb-2">Quick Stats</h3>
-                        <div className="grid grid-cols-2 gap-4">
+                        <h3 className="font-bold text-indigo-900 dark:text-indigo-300 mb-2">Summary</h3>
+                        <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">12%</div>
-                                <div className="text-xs text-indigo-600 dark:text-indigo-500">Absent Today</div>
-                            </div>
-                            <div>
-                                <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">8</div>
+                                <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">
+                                    {requests.length}
+                                </div>
                                 <div className="text-xs text-indigo-600 dark:text-indigo-500">Pending Req</div>
                             </div>
                         </div>
@@ -139,3 +130,4 @@ export default function LeaveApplicationPage() {
         </div>
     );
 }
+

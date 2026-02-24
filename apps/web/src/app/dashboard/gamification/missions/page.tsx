@@ -1,17 +1,45 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Map,
     CheckSquare,
     Gift,
-    Lock
+    Lock,
+    Loader2
 } from 'lucide-react';
+import { MissionsService } from '../services';
 
 export default function MissionsPage() {
+    const [missions, setMissions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await MissionsService.getMissions();
+                setMissions(data as any);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Map className="w-6 h-6 text-indigo-500" />
@@ -23,7 +51,7 @@ export default function MissionsPage() {
 
             {/* Streak Banner */}
             <div className="bg-indigo-600 rounded-2xl p-6 text-white flex items-center justify-between shadow-lg shadow-indigo-600/20">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     <div className="text-center">
                         <div className="text-3xl font-bold">5</div>
                         <div className="text-[10px] uppercase font-bold text-indigo-200">Day Streak</div>
@@ -54,7 +82,7 @@ export default function MissionsPage() {
                     { title: 'Submit Weekly Timesheet', reward: '100 XP', status: 'Locked' },
                 ].map((m, i) => (
                     <div key={i} className={`flex items-center justify-between p-5 rounded-2xl border ${m.status === 'Completed' ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-900' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${m.status === 'Completed' ? 'bg-emerald-500 text-white' :
                                     m.status === 'Locked' ? 'bg-slate-200 text-slate-400' : 'border-2 border-slate-300'
                                 }`}>
@@ -73,3 +101,4 @@ export default function MissionsPage() {
         </div>
     );
 }
+

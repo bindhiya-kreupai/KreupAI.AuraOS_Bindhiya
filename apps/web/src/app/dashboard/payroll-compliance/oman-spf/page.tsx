@@ -84,9 +84,9 @@ export default function OmanSPFPage() {
   };
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-8 pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <Link href="/dashboard/payroll-compliance" className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2">
             <ArrowLeft className="w-4 h-4" /> Back to Compliance
@@ -137,7 +137,7 @@ export default function OmanSPFPage() {
 
       {/* Calculate Tab */}
       {activeTab === 'calculate' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -201,7 +201,7 @@ export default function OmanSPFPage() {
 
       {/* Rates Tab */}
       {activeTab === 'rates' && referenceData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
               Omani Nationals
@@ -264,7 +264,7 @@ export default function OmanSPFPage() {
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3">
             {referenceData.schemes.map((scheme: any) => (
               <div key={scheme.id} className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
                 <h4 className="font-semibold text-slate-900 dark:text-white mb-1">
@@ -297,3 +297,4 @@ export default function OmanSPFPage() {
     </div>
   );
 }
+

@@ -66,9 +66,9 @@ export default function TravelPage() {
     const [selectedTrip, setSelectedTrip] = useState<any>(null);
 
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Plane className="w-6 h-6 text-indigo-500" />
@@ -87,11 +87,11 @@ export default function TravelPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
                 {/* Left: My Trips */}
-                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-6">
+                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
                     {/* Stats */}
-                    <div className="grid grid-cols-3 gap-4 shrink-0">
+                    <div className="grid grid-cols-3 gap-3 shrink-0">
                         <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                             <div className="text-xs font-bold text-silver-mist uppercase mb-1">Total Spend (YTD)</div>
                             <div className="text-2xl font-black text-ink-black dark:text-pearl">$12,450</div>
@@ -127,7 +127,7 @@ export default function TravelPage() {
                                             {trip.status}
                                         </span>
                                     </div>
-                                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 text-xs text-silver-mist justify-center sm:justify-start">
+                                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 text-xs text-silver-mist justify-center sm:justify-start">
                                         <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {trip.dates}</span>
                                         <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> {trip.purpose}</span>
                                         <span className="font-mono font-bold text-slate-500">{trip.id}</span>
@@ -143,7 +143,7 @@ export default function TravelPage() {
                 </div>
 
                 {/* Right: Policy & Quick Actions */}
-                <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
+                <div className="lg:col-span-1 space-y-4 flex flex-col h-full overflow-hidden">
                     {/* Policy Widget */}
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm shrink-0">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
@@ -168,7 +168,7 @@ export default function TravelPage() {
                     </div>
 
                     {/* Quick Tools */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                         <button className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/30 flex flex-col items-center justify-center gap-2 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors">
                             <Globe className="w-6 h-6" />
                             <span className="text-xs font-bold">Visa Checker</span>
@@ -207,7 +207,7 @@ export default function TravelPage() {
                             <p className="text-sm text-silver-mist mb-6">Plan your business travel. Approvals required.</p>
 
                             <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="text-xs font-bold text-slate-500 mb-1 block">From</label>
                                         <div className="relative">
@@ -224,7 +224,7 @@ export default function TravelPage() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="text-xs font-bold text-slate-500 mb-1 block">Start Date</label>
                                         <input type="date" className="w-full p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm outline-none" />
@@ -248,7 +248,7 @@ export default function TravelPage() {
 
                                 <div>
                                     <label className="text-xs font-bold text-slate-500 mb-1 block">Requirements</label>
-                                    <div className="flex gap-4">
+                                    <div className="flex gap-3">
                                         <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 cursor-pointer">
                                             <input type="checkbox" className="w-4 h-4 accent-indigo-500" defaultChecked /> Flight
                                         </label>
@@ -282,3 +282,4 @@ export default function TravelPage() {
         </div>
     );
 }
+

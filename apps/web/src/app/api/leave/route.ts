@@ -3,129 +3,195 @@
  * Phase 2: Core Enhancement - Advanced Leave System
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { LeaveAccrualService } from '@/lib/services/leave';
+import { prisma } from '@/lib/database';
+import { withEnhancedAuth } from '@/lib/auth';
+import { Resource, Action, requirePermission } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/leave
- * Get leave requests or balances
+ * Get leave requests with filters
  */
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') || 'requests'; // 'requests' | 'balances' | 'policies'
-    const employeeId = searchParams.get('employeeId');
-    const tenantId = searchParams.get('tenantId');
-    const status = searchParams.get('status');
-    const year = searchParams.get('year') || new Date().getFullYear().toString();
+export const GET = withEnhancedAuth(
+  async (request: NextRequest, { user, permissions }) => {
+    try {
+      const permissionError = requirePermission(Resource.LEAVE, Action.READ, permissions);
+      if (permissionError) return permissionError;
 
-    if (!tenantId) {
+      const { searchParams } = new URL(request.url);
+      const type = searchParams.get('type') || 'requests';
+      const employeeId = searchParams.get('employeeId');
+      const status = searchParams.get('status');
+      const leaveTypeId = searchParams.get('leaveTypeId');
+      const startDate = searchParams.get('startDate');
+      const endDate = searchParams.get('endDate');
+      const year = searchParams.get('year') || new Date().getFullYear().toString();
+      const page = parseInt(searchParams.get('page') || '1');
+      const limit = parseInt(searchParams.get('limit') || '50');
+
+      const tenantId = user.tenantId;
+
+      switch (type) {
+        case 'balances': {
+          if (!employeeId) {
+            return NextResponse.json(
+              { error: 'employeeId is required for balances', errorAr: 'معرف الموظف مطلوب للأرصدة' },
+              { status: 400 }
+            );
+          }
+
+          const balances = await prisma.leaveBalance.findMany({
+            where: {
+              tenantId,
+              employeeId,
+              leaveYear: parseInt(year),
+            },
+            include: { policy: true },
+            orderBy: { lastUpdated: 'desc' },
+          });
+
+          return NextResponse.json({
+            success: true,
+            data: {
+              employeeId,
+              year: parseInt(year),
+              balances,
+            },
+          });
+        }
+
+        case 'policies': {
+          const policies = await prisma.leavePolicy.findMany({
+            where: { tenantId, isActive: true },
+            orderBy: { createdAt: 'desc' },
+          });
+
+          return NextResponse.json({
+            success: true,
+            data: {
+              policies,
+            },
+          });
+        }
+
+        case 'requests':
+        default: {
+          const where: Record<string, unknown> = { tenantId };
+          if (employeeId) where.employeeId = employeeId;
+          if (status) where.status = status;
+          if (leaveTypeId) where.leaveTypeId = leaveTypeId;
+          if (startDate) where.startDate = { gte: new Date(startDate) };
+          if (endDate) where.endDate = { lte: new Date(endDate) };
+
+          const [total, requests] = await Promise.all([
+            prisma.leaveRequest.count({ where }),
+            prisma.leaveRequest.findMany({
+              where,
+              orderBy: { appliedAt: 'desc' },
+              skip: (page - 1) * limit,
+              take: limit,
+            }),
+          ]);
+
+          return NextResponse.json({
+            success: true,
+            requests,
+            leaveRequests: requests,
+            data: {
+              requests,
+              pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+              },
+            },
+          });
+        }
+      }
+    } catch (error) {
+      logger.error('Error fetching leave data:', error);
       return NextResponse.json(
-        { error: 'tenantId is required', errorAr: 'معرف المستأجر مطلوب' },
-        { status: 400 }
+        { error: 'Failed to fetch leave data', errorAr: 'فشل في جلب بيانات الإجازات' },
+        { status: 500 }
       );
     }
-
-    switch (type) {
-      case 'balances':
-        if (!employeeId) {
-          return NextResponse.json(
-            { error: 'employeeId is required for balances', errorAr: 'معرف الموظف مطلوب للأرصدة' },
-            { status: 400 }
-          );
-        }
-        // Fetch balances
-        return NextResponse.json({
-          success: true,
-          data: {
-            employeeId,
-            year: parseInt(year),
-            balances: [],
-          },
-        });
-
-      case 'policies':
-        // Fetch policies
-        return NextResponse.json({
-          success: true,
-          data: {
-            policies: [],
-          },
-        });
-
-      case 'requests':
-      default:
-        // Fetch leave requests
-        return NextResponse.json({
-          success: true,
-          data: {
-            requests: [],
-            pagination: {
-              page: 1,
-              limit: 10,
-              total: 0,
-            },
-          },
-        });
-    }
-  } catch (error) {
-        return NextResponse.json(
-      { error: 'Failed to fetch leave data', errorAr: 'فشل في جلب بيانات الإجازات' },
-      { status: 500 }
-    );
   }
-}
+);
 
 /**
  * POST /api/leave
  * Submit leave request
  */
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
+export const POST = withEnhancedAuth(
+  async (request: NextRequest, { user, permissions }) => {
+    try {
+      const permissionError = requirePermission(Resource.LEAVE, Action.CREATE, permissions);
+      if (permissionError) return permissionError;
 
-    // Validate required fields
-    const required = ['tenantId', 'employeeId', 'leaveTypeId', 'startDate', 'endDate', 'reason'];
-    for (const field of required) {
-      if (!body[field]) {
+      const body = await request.json();
+      const tenantId = user.tenantId;
+      const employeeId = body.employeeId || user.userId;
+
+      // Validate required fields
+      const required = ['leaveTypeId', 'startDate', 'endDate', 'reason'];
+      for (const field of required) {
+        if (!body[field]) {
+          return NextResponse.json(
+            { error: `${field} is required`, errorAr: `${field} مطلوب` },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Validate dates
+      const startDate = new Date(body.startDate);
+      const endDate = new Date(body.endDate);
+      if (endDate < startDate) {
         return NextResponse.json(
-          { error: `${field} is required`, errorAr: `${field} مطلوب` },
+          { error: 'End date cannot be before start date', errorAr: 'لا يمكن أن يكون تاريخ الانتهاء قبل تاريخ البدء' },
           { status: 400 }
         );
       }
-    }
 
-    // Validate dates
-    const startDate = new Date(body.startDate);
-    const endDate = new Date(body.endDate);
-    if (endDate < startDate) {
+      // Calculate total days
+      const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+      const totalDays = body.totalDays || Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+      const leaveRequest = await prisma.leaveRequest.create({
+        data: {
+          tenantId,
+          employeeId,
+          leaveTypeId: body.leaveTypeId,
+          policyId: body.policyId || null,
+          startDate,
+          endDate,
+          totalDays,
+          halfDayStart: body.halfDayStart || false,
+          halfDayEnd: body.halfDayEnd || false,
+          reason: body.reason,
+          contactNumber: body.contactNumber || null,
+          addressDuringLeave: body.addressDuringLeave || null,
+          delegateToEmployeeId: body.delegateToEmployeeId || null,
+          documents: body.documents || null,
+          status: 'PENDING',
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: leaveRequest,
+        request: leaveRequest,
+        leaveRequest: leaveRequest,
+      });
+    } catch (error) {
+      logger.error('Error submitting leave request:', error);
       return NextResponse.json(
-        { error: 'End date cannot be before start date', errorAr: 'لا يمكن أن يكون تاريخ الانتهاء قبل تاريخ البدء' },
-        { status: 400 }
+        { error: 'Failed to submit leave request', errorAr: 'فشل في تقديم طلب الإجازة' },
+        { status: 500 }
       );
     }
-
-    // Calculate total days
-    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-    const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
-    // Check balance (would connect to database)
-    // For now, return success
-    return NextResponse.json({
-      success: true,
-      data: {
-        id: `leave_${Date.now()}`,
-        ...body,
-        totalDays,
-        status: 'PENDING',
-        createdAt: new Date().toISOString(),
-      },
-    });
-  } catch (error) {
-        return NextResponse.json(
-      { error: 'Failed to submit leave request', errorAr: 'فشل في تقديم طلب الإجازة' },
-      { status: 500 }
-    );
   }
-}
+);

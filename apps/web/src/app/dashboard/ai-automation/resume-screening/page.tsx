@@ -48,7 +48,7 @@ export default function ResumeScreeningPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -65,7 +65,7 @@ export default function ResumeScreeningPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-5 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <p className="text-xs text-silver-mist font-bold uppercase">Resumes Processed</p>
                     <h3 className="text-3xl font-bold text-ink-black dark:text-pearl">342</h3>
@@ -166,3 +166,4 @@ export default function ResumeScreeningPage() {
         </div>
     );
 }
+

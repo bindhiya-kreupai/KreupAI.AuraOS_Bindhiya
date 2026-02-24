@@ -12,8 +12,8 @@ const CRITICAL_ROLES = [
 
 export default function SuccessionReadinessPage() {
     return (
-        <div className="space-y-6 pb-10 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6 animate-in fade-in duration-500 text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Crown className="w-6 h-6 text-yellow-500" />
@@ -23,9 +23,9 @@ export default function SuccessionReadinessPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-3">
                 {CRITICAL_ROLES.map((role, idx) => (
-                    <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center gap-6">
+                    <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center gap-3">
                         <div className="flex-1">
                             <h3 className="font-bold text-lg">{role.role}</h3>
                             <p className="text-sm text-slate-500">Incumbent: <span className="text-slate-700 dark:text-slate-300 font-medium">{role.incumbent}</span></p>
@@ -54,3 +54,4 @@ export default function SuccessionReadinessPage() {
         </div>
     );
 }
+

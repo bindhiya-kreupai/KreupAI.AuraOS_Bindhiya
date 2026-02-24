@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Building2,
     Users,
@@ -21,8 +21,10 @@ import {
     Filter,
     BarChart3,
     Download,
-    PieChart
+    PieChart,
+    Loader2
 } from 'lucide-react';
+import { FinancialAssetService } from '../../services';
 
 type CostCenterType = 'all' | 'department' | 'project' | 'location';
 type VarianceStatus = 'under-budget' | 'on-budget' | 'over-budget';
@@ -46,169 +48,23 @@ interface CostCenter {
 
 export default function CostCentersPage() {
     const [filter, setFilter] = useState<CostCenterType>('all');
+    const [costCenters, setCostCenters] = useState<CostCenter[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const costCenters: CostCenter[] = [
-        {
-            id: 'CC-001',
-            name: 'Engineering',
-            code: 'ENG-001',
-            type: 'department',
-            manager: 'Sarah Connor',
-            budget: 850000,
-            actualSpend: 782000,
-            variance: 68000,
-            variancePercent: 8.0,
-            assetCount: 45,
-            assetValue: 425000,
-            headcount: 32,
-            status: 'under-budget',
-            icon: Code
-        },
-        {
-            id: 'CC-002',
-            name: 'Sales & Marketing',
-            code: 'SAL-001',
-            type: 'department',
-            manager: 'Kyle Reese',
-            budget: 450000,
-            actualSpend: 468000,
-            variance: -18000,
-            variancePercent: -4.0,
-            assetCount: 28,
-            assetValue: 185000,
-            headcount: 24,
-            status: 'over-budget',
-            icon: Megaphone
-        },
-        {
-            id: 'CC-003',
-            name: 'Operations',
-            code: 'OPS-001',
-            type: 'department',
-            manager: 'John Connor',
-            budget: 320000,
-            actualSpend: 315000,
-            variance: 5000,
-            variancePercent: 1.6,
-            assetCount: 35,
-            assetValue: 280000,
-            headcount: 18,
-            status: 'on-budget',
-            icon: Settings
-        },
-        {
-            id: 'CC-004',
-            name: 'Customer Support',
-            code: 'SUP-001',
-            type: 'department',
-            manager: 'Lisa Garcia',
-            budget: 180000,
-            actualSpend: 172000,
-            variance: 8000,
-            variancePercent: 4.4,
-            assetCount: 22,
-            assetValue: 95000,
-            headcount: 15,
-            status: 'under-budget',
-            icon: HeadphonesIcon
-        },
-        {
-            id: 'CC-005',
-            name: 'Product Development',
-            code: 'PRD-001',
-            type: 'department',
-            manager: 'Mike Chen',
-            budget: 620000,
-            actualSpend: 615000,
-            variance: 5000,
-            variancePercent: 0.8,
-            assetCount: 38,
-            assetValue: 340000,
-            headcount: 28,
-            status: 'on-budget',
-            icon: Briefcase
-        },
-        {
-            id: 'CC-006',
-            name: 'Project Alpha - Mobile App',
-            code: 'PRJ-ALPHA',
-            type: 'project',
-            manager: 'Emma Wilson',
-            budget: 250000,
-            actualSpend: 225000,
-            variance: 25000,
-            variancePercent: 10.0,
-            assetCount: 15,
-            assetValue: 120000,
-            headcount: 12,
-            status: 'under-budget',
-            icon: Code
-        },
-        {
-            id: 'CC-007',
-            name: 'Project Beta - Enterprise Suite',
-            code: 'PRJ-BETA',
-            type: 'project',
-            manager: 'David Park',
-            budget: 480000,
-            actualSpend: 495000,
-            variance: -15000,
-            variancePercent: -3.1,
-            assetCount: 20,
-            assetValue: 185000,
-            headcount: 18,
-            status: 'over-budget',
-            icon: Building2
-        },
-        {
-            id: 'CC-008',
-            name: 'San Francisco Office',
-            code: 'LOC-SF',
-            type: 'location',
-            manager: 'Regional Admin',
-            budget: 580000,
-            actualSpend: 572000,
-            variance: 8000,
-            variancePercent: 1.4,
-            assetCount: 85,
-            assetValue: 520000,
-            headcount: 75,
-            status: 'on-budget',
-            icon: Building2
-        },
-        {
-            id: 'CC-009',
-            name: 'New York Office',
-            code: 'LOC-NY',
-            type: 'location',
-            manager: 'Regional Admin',
-            budget: 720000,
-            actualSpend: 695000,
-            variance: 25000,
-            variancePercent: 3.5,
-            assetCount: 95,
-            assetValue: 680000,
-            headcount: 88,
-            status: 'under-budget',
-            icon: Building2
-        },
-        {
-            id: 'CC-010',
-            name: 'R&D Lab',
-            code: 'RND-001',
-            type: 'department',
-            manager: 'Dr. Alan Grant',
-            budget: 450000,
-            actualSpend: 445000,
-            variance: 5000,
-            variancePercent: 1.1,
-            assetCount: 42,
-            assetValue: 380000,
-            headcount: 22,
-            status: 'on-budget',
-            icon: Code
-        }
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await FinancialAssetService.getAssets();
+                setCostCenters(data as unknown as CostCenter[]);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     const filteredCostCenters = filter === 'all'
         ? costCenters
@@ -291,10 +147,18 @@ export default function CostCentersPage() {
         }
     ];
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Building2 className="w-6 h-6 text-indigo-500" />
@@ -314,7 +178,7 @@ export default function CostCentersPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 shrink-0">
                 {stats.map((stat, i) => {
                     const Icon = stat.icon;
                     return (
@@ -335,7 +199,7 @@ export default function CostCentersPage() {
             </div>
 
             {/* Search and Filters */}
-            <div className="flex flex-col md:flex-row gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row gap-3 shrink-0">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
@@ -504,3 +368,4 @@ export default function CostCentersPage() {
         </div>
     );
 }
+

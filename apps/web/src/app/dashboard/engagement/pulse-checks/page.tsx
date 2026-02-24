@@ -6,14 +6,12 @@ import {
     TrendingUp,
     MessageCircle,
     Send,
-    Smile,
-    Meh,
-    Frown,
     Users,
     Zap,
-    Thermometer
+    Thermometer,
+    Loader2
 } from 'lucide-react';
-import { SurveyService } from '../services';
+import { SurveyService, EngagementAnalyticsService } from '../services';
 import {
     LineChart,
     Line,
@@ -22,48 +20,16 @@ import {
     CartesianGrid,
     Tooltip,
     ResponsiveContainer,
-    BarChart,
-    Bar,
-    Cell
 } from 'recharts';
 import { motion } from 'framer-motion';
 
-// --- MOCK DATA ---
-
-const SENTIMENT_TREND = [
-    { date: 'Nov 01', score: 7.2 },
-    { date: 'Nov 05', score: 7.5 },
-    { date: 'Nov 10', score: 6.8 }, // Dip due to deadline?
-    { date: 'Nov 15', score: 7.8 },
-    { date: 'Nov 20', score: 8.1 },
-    { date: 'Nov 25', score: 8.3 },
-    { date: 'Nov 30', score: 8.5 },
-];
-
-const DEPT_MOODS = [
-    { name: 'Product Design', score: 8.8, color: '#10b981' }, // Happy
-    { name: 'Engineering', score: 7.2, color: '#6366f1' },    // Okay
-    { name: 'Marketing', score: 8.1, color: '#10b981' },      // Happy
-    { name: 'Sales', score: 6.5, color: '#f59e0b' },          // Stressed
-    { name: 'Cust. Support', score: 5.4, color: '#ef4444' },  // Upset
-];
-
-const WORD_CLOUD = [
-    { text: 'Collaborative', size: 'text-3xl', color: 'text-indigo-500' },
-    { text: 'Burnout', size: 'text-xl', color: 'text-rose-400' },
-    { text: 'Exciting', size: 'text-2xl', color: 'text-emerald-500' },
-    { text: 'Meetings', size: 'text-lg', color: 'text-slate-400' },
-    { text: 'Growth', size: 'text-2xl', color: 'text-amber-500' },
-    { text: 'Supportive', size: 'text-xl', color: 'text-blue-500' },
-    { text: 'Deadline', size: 'text-lg', color: 'text-rose-500' },
-    { text: 'Flexible', size: 'text-2xl', color: 'text-teal-500' },
-];
-
 export default function PulseChecksPage() {
-    const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentMood, setCurrentMood] = useState(5);
     const [pulseSent, setPulseSent] = useState(false);
+    const [metrics, setMetrics] = useState<any>(null);
+    const [sentimentData, setSentimentData] = useState<any[]>([]);
+    const [deptData, setDeptData] = useState<any[]>([]);
 
     useEffect(() => {
         fetchData();
@@ -72,11 +38,16 @@ export default function PulseChecksPage() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const surveys = await SurveyService.getSurveys();
-            setData(surveys);
-        } catch (error) {
-            console.error('Error:', error);
-                    } finally {
+            const [analyticsResult] = await Promise.all([
+                EngagementAnalyticsService.getMetrics().catch(() => null),
+                SurveyService.getSurveys().catch(() => []),
+            ]);
+            if (analyticsResult) {
+                const data = (analyticsResult as any)?.data || analyticsResult;
+                setMetrics(data);
+            }
+        } catch {
+        } finally {
             setLoading(false);
         }
     };
@@ -86,10 +57,20 @@ export default function PulseChecksPage() {
         setTimeout(() => setPulseSent(false), 3000);
     };
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
+    const overallScore = metrics?.overallEngagementScore || 0;
+    const participationRate = metrics?.surveyParticipationRate || 0;
+
     return (
-        <div className="space-y-6 pb-10">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 pb-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Heart className="w-6 h-6 text-rose-500" />
@@ -108,19 +89,20 @@ export default function PulseChecksPage() {
                 </div>
             </div>
 
-            {/* Top Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-5">
                         <Thermometer className="w-32 h-32" />
                     </div>
                     <div className="text-sm font-bold text-silver-mist uppercase mb-2">Overall Vibe</div>
                     <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-500">
-                        7.8
+                        {overallScore > 0 ? overallScore.toFixed(1) : '--'}
                     </div>
-                    <div className="flex items-center gap-1 text-emerald-500 font-bold text-sm mt-2">
-                        <TrendingUp className="w-4 h-4" /> +0.6 vs Last Week
-                    </div>
+                    {overallScore > 0 && (
+                        <div className="flex items-center gap-1 text-emerald-500 font-bold text-sm mt-2">
+                            <TrendingUp className="w-4 h-4" /> Active
+                        </div>
+                    )}
                 </div>
 
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm relative group overflow-hidden">
@@ -140,7 +122,7 @@ export default function PulseChecksPage() {
                             animate={{ scale: [1, 1.2, 1] }}
                             transition={{ duration: 0.2 }}
                         >
-                            {currentMood < 4 ? '😫' : currentMood < 7 ? '😐' : '🤩'}
+                            {currentMood < 4 ? '\uD83D\uDE2B' : currentMood < 7 ? '\uD83D\uDE10' : '\uD83E\uDD29'}
                         </motion.div>
                     </div>
                     <div className="flex justify-between text-xs text-slate-400 mt-2 font-medium">
@@ -156,94 +138,79 @@ export default function PulseChecksPage() {
                             <Zap className="w-4 h-4" />
                             <span className="text-sm font-bold uppercase">Participation Rate</span>
                         </div>
-                        <div className="text-4xl font-black">84%</div>
-                        <p className="text-xs opacity-70 mt-1">112/134 employees responded</p>
+                        <div className="text-4xl font-black">{participationRate}%</div>
+                        <p className="text-xs opacity-70 mt-1">Based on survey responses</p>
                     </div>
                     <div className="w-full bg-black/20 h-1.5 rounded-full mt-4 overflow-hidden">
-                        <div className="bg-white/90 h-full rounded-full w-[84%]"></div>
+                        <div className="bg-white/90 h-full rounded-full" style={{ width: `${participationRate}%` }}></div>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Sentiment Trend Chart */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <h3 className="font-bold text-ink-black dark:text-pearl mb-6 flex items-center gap-2">
                         <TrendingUp className="w-5 h-5 text-indigo-500" /> 30-Day Morale Trend
                     </h3>
-                    <div className="h-[300px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={SENTIMENT_TREND}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} dy={10} />
-                                <YAxis domain={[0, 10]} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
-                                <Tooltip
-                                    contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                    cursor={{ stroke: '#6366f1', strokeWidth: 2 }}
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="score"
-                                    stroke="#8b5cf6"
-                                    strokeWidth={3}
-                                    dot={{ r: 4, strokeWidth: 2, fill: '#fff' }}
-                                    activeDot={{ r: 6 }}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </div>
+                    {sentimentData.length > 0 ? (
+                        <div className="h-[300px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={sentimentData}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} dy={10} />
+                                    <YAxis domain={[0, 10]} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
+                                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                                    <Line type="monotone" dataKey="score" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6 }} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center h-[300px] text-slate-400 text-sm">
+                            No trend data available yet. Data will populate as pulse checks are submitted.
+                        </div>
+                    )}
                 </div>
 
-                {/* Function Breakdown */}
                 <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <h3 className="font-bold text-ink-black dark:text-pearl mb-6 flex items-center gap-2">
                         <Users className="w-5 h-5 text-indigo-500" /> Dept. Breakdown
                     </h3>
-                    <div className="space-y-5">
-                        {DEPT_MOODS.map((dept, idx) => (
-                            <div key={idx}>
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{dept.name}</span>
-                                    <span className="text-sm font-bold" style={{ color: dept.color }}>{dept.score}/10</span>
+                    {deptData.length > 0 ? (
+                        <div className="space-y-5">
+                            {deptData.map((dept: any, idx: number) => (
+                                <div key={idx}>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{dept.name}</span>
+                                        <span className="text-sm font-bold" style={{ color: dept.color }}>{dept.score}/10</span>
+                                    </div>
+                                    <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${dept.score * 10}%` }}
+                                            transition={{ duration: 1, delay: idx * 0.1 }}
+                                            className="h-full rounded-full"
+                                            style={{ backgroundColor: dept.color }}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${dept.score * 10}%` }}
-                                        transition={{ duration: 1, delay: idx * 0.1 }}
-                                        className="h-full rounded-full"
-                                        style={{ backgroundColor: dept.color }}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center h-48 text-slate-400 text-sm">
+                            No department breakdown data available yet.
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Word Cloud / Feedback */}
             <div className="bg-white dark:bg-stellar-blue p-8 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                 <div className="flex items-center justify-between mb-8">
                     <h3 className="font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <MessageCircle className="w-5 h-5 text-indigo-500" /> What everyone's saying
                     </h3>
-                    <div className="text-xs text-silver-mist bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
-                        AI Summarized from 42 comments
-                    </div>
                 </div>
-
-                <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 min-h-[150px]">
-                    {WORD_CLOUD.map((word, idx) => (
-                        <motion.span
-                            key={idx}
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: idx * 0.05, type: 'spring' }}
-                            className={`${word.size} ${word.color} font-black cursor-default hover:scale-110 transition-transform select-none opacity-80 hover:opacity-100`}
-                        >
-                            {word.text}
-                        </motion.span>
-                    ))}
+                <div className="flex items-center justify-center min-h-[100px] text-slate-400 text-sm">
+                    Feedback summaries will appear here as more pulse checks are collected.
                 </div>
             </div>
         </div>
@@ -257,3 +224,4 @@ function CheckCircleIcon() {
         </svg>
     )
 }
+

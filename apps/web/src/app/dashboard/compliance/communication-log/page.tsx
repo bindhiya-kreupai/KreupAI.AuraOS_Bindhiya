@@ -28,8 +28,8 @@ export default function CommunicationLogPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <MessageSquare className="w-6 h-6 text-indigo-500" />
@@ -53,7 +53,7 @@ export default function CommunicationLogPage() {
                         { type: 'Email', subject: 'Q4 Contract Proposal Draft', from: 'Legal Counsel', to: 'Union President', date: 'Oct 25, 09:00 AM', icon: Mail },
                         { type: 'Meeting', subject: 'Disciplanry Review Board', from: 'Internal', to: 'Committee', date: 'Oct 24, 01:30 PM', icon: MessageSquare },
                     ].map((log, i) => (
-                        <div key={i} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-start gap-4">
+                        <div key={i} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-start gap-3">
                             <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500">
                                 <log.icon className="w-5 h-5" />
                             </div>
@@ -74,3 +74,4 @@ export default function CommunicationLogPage() {
         </div>
     );
 }
+

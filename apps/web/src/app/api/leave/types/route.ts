@@ -1,6 +1,6 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { prisma } from '@aura/database';
+import { prisma } from '@/lib/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
@@ -9,15 +9,11 @@ import { logger } from '@/lib/logger';
 const LeaveTypeSchema = z.object({
   name: z.string().min(1),
   code: z.string().min(1),
-  description: z.string().optional(),
   isPaid: z.boolean().default(true),
-  requiresApproval: z.boolean().default(true),
-  requiresDocument: z.boolean().default(false),
-  color: z.string().optional(),
-  icon: z.string().optional(),
+  status: z.string().default('Active'),
 });
 
-// GET - Fetch leave types
+// GET - Fetch leave types from database
 export const GET = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
@@ -27,109 +23,22 @@ export const GET = withEnhancedAuth(
       const { searchParams } = new URL(request.url);
       const status = searchParams.get('status');
 
-      const mockLeaveTypes = [
-        {
-          id: '1',
-          name: 'Annual Leave',
-          code: 'AL',
-          description: 'Paid annual vacation leave',
-          isPaid: true,
-          requiresApproval: true,
-          requiresDocument: false,
-          color: '#3b82f6',
-          icon: 'calendar',
-          status: 'ACTIVE',
-          defaultDays: 20,
-        },
-        {
-          id: '2',
-          name: 'Sick Leave',
-          code: 'SL',
-          description: 'Paid sick leave with medical certificate',
-          isPaid: true,
-          requiresApproval: true,
-          requiresDocument: true,
-          color: '#ef4444',
-          icon: 'heart-pulse',
-          status: 'ACTIVE',
-          defaultDays: 10,
-        },
-        {
-          id: '3',
-          name: 'Casual Leave',
-          code: 'CL',
-          description: 'Short-term casual leave',
-          isPaid: true,
-          requiresApproval: true,
-          requiresDocument: false,
-          color: '#f59e0b',
-          icon: 'coffee',
-          status: 'ACTIVE',
-          defaultDays: 7,
-        },
-        {
-          id: '4',
-          name: 'Maternity Leave',
-          code: 'ML',
-          description: 'Maternity leave for female employees',
-          isPaid: true,
-          requiresApproval: true,
-          requiresDocument: true,
-          color: '#ec4899',
-          icon: 'baby',
-          status: 'ACTIVE',
-          defaultDays: 90,
-        },
-        {
-          id: '5',
-          name: 'Paternity Leave',
-          code: 'PL',
-          description: 'Paternity leave for male employees',
-          isPaid: true,
-          requiresApproval: true,
-          requiresDocument: true,
-          color: '#6366f1',
-          icon: 'user',
-          status: 'ACTIVE',
-          defaultDays: 5,
-        },
-        {
-          id: '6',
-          name: 'Loss of Pay',
-          code: 'LOP',
-          description: 'Unpaid leave',
-          isPaid: false,
-          requiresApproval: true,
-          requiresDocument: false,
-          color: '#64748b',
-          icon: 'x-circle',
-          status: 'ACTIVE',
-          defaultDays: 0,
-        },
-        {
-          id: '7',
-          name: 'Comp-off',
-          code: 'CO',
-          description: 'Compensatory off for overtime work',
-          isPaid: true,
-          requiresApproval: true,
-          requiresDocument: false,
-          color: '#10b981',
-          icon: 'refresh-cw',
-          status: 'ACTIVE',
-          defaultDays: 0,
-        },
-      ];
-
-      let filteredData = mockLeaveTypes;
+      const where: Record<string, unknown> = {};
       if (status) {
-        filteredData = mockLeaveTypes.filter(lt => lt.status === status);
+        where.status = status;
       }
+
+      const leaveTypes = await prisma.leaveType.findMany({
+        where,
+        orderBy: { name: 'asc' },
+      });
 
       return NextResponse.json({
         success: true,
-        data: filteredData,
-        meta: { total: filteredData.length },
+        types: leaveTypes,
+        leaveTypes: leaveTypes,
+        data: leaveTypes,
+        meta: { total: leaveTypes.length },
       });
     } catch (error) {
       logger.error('Error fetching leave types:', error);
@@ -141,7 +50,7 @@ export const GET = withEnhancedAuth(
   }
 );
 
-// POST - Create leave type
+// POST - Create leave type in database
 export const POST = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
@@ -151,14 +60,14 @@ export const POST = withEnhancedAuth(
       const body = await request.json();
       const data = LeaveTypeSchema.parse(body);
 
-      const newLeaveType = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data,
-        status: 'ACTIVE',
-        defaultDays: 0,
-        createdAt: new Date().toISOString(),
-        createdBy: user.userId,
-      };
+      const newLeaveType = await prisma.leaveType.create({
+        data: {
+          code: data.code,
+          name: data.name,
+          isPaid: data.isPaid,
+          status: data.status,
+        },
+      });
 
       await prisma.auditLog.create({
         data: {
@@ -170,7 +79,10 @@ export const POST = withEnhancedAuth(
         },
       });
 
-      return NextResponse.json({ success: true, data: newLeaveType }, { status: 201 });
+      return NextResponse.json(
+        { success: true, data: newLeaveType, type: newLeaveType, leaveType: newLeaveType },
+        { status: 201 }
+      );
     } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(

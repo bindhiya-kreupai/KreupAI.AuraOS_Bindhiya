@@ -15,9 +15,9 @@ import {
 
 export default function WorkflowDesignerPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <GitFork className="w-6 h-6 text-indigo-500" />
@@ -37,7 +37,7 @@ export default function WorkflowDesignerPage() {
 
             <div className="flex flex-col lg:flex-row h-full min-h-0 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                 {/* Sidebar / Toolkit */}
-                <div className="w-full lg:w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 space-y-6 overflow-y-auto">
+                <div className="w-full lg:w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 space-y-4 overflow-y-auto">
                     <div>
                         <h3 className="text-xs font-bold text-slate-500 uppercase mb-3">Triggers</h3>
                         <div className="space-y-2">
@@ -136,3 +136,4 @@ export default function WorkflowDesignerPage() {
         </div>
     );
 }
+

@@ -39,9 +39,9 @@ export default function QuickActionsPage() {
         }
     };
     return (
-        <div className="space-y-6 pb-10 min-h-screen text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Zap className="w-6 h-6 text-indigo-500" />
@@ -108,7 +108,7 @@ export default function QuickActionsPage() {
                             {/* Quick Actions Grid (Drop Zone) */}
                             <div className="flex-1 bg-slate-50 dark:bg-slate-950 px-4 py-6">
                                 <h3 className="text-xs font-bold text-slate-400 mb-4 px-1">QUICK ACTIONS</h3>
-                                <div className="grid grid-cols-4 gap-4">
+                                <div className="grid grid-cols-4 gap-3">
                                     {[
                                         { name: 'Punch In', icon: Clock, color: 'text-white', bg: 'bg-indigo-500' },
                                         { name: 'Leave', icon: CalendarPlus, color: 'text-indigo-500', bg: 'bg-white' },
@@ -158,3 +158,4 @@ export default function QuickActionsPage() {
         </div>
     );
 }
+

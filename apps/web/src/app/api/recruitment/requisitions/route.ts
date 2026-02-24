@@ -1,5 +1,6 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
 
 /**
@@ -7,66 +8,29 @@ import { withEnhancedAuth } from '@/lib/auth';
  * Fetch all job requisitions for the authenticated user's tenant
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
-  try {
-    const { user } = context;
+    try {
+        const { user } = context;
+        const tenantId = user.tenantId;
+        const { searchParams } = new URL(request.url);
+        const status = searchParams.get('status');
+        const department = searchParams.get('departmentId') || searchParams.get('department');
 
-    // Mock data for job requisitions
-    const mockRequisitions = [
-      {
-        id: '1',
-        tenantId: user.tenantId,
-        jobTitle: 'Senior Software Engineer',
-        department: 'Engineering',
-        requestedBy: 'John Doe',
-        requestedDate: '2025-12-15T10:00:00Z',
-        numberOfPositions: 2,
-        employmentType: 'Full-time',
-        priority: 'High',
-        status: 'Open',
-        location: 'San Francisco, CA',
-        salaryRange: {
-          min: 120000,
-          max: 180000,
-          currency: 'USD',
-        },
-        requiredSkills: ['React', 'Node.js', 'TypeScript', 'AWS'],
-        description: 'We are looking for experienced software engineers to join our growing team.',
-        approvalStatus: 'Approved',
-        approvedBy: 'Jane Smith',
-        approvedDate: '2025-12-16T14:30:00Z',
-      },
-      {
-        id: '2',
-        tenantId: user.tenantId,
-        jobTitle: 'Product Manager',
-        department: 'Product',
-        requestedBy: 'Alice Johnson',
-        requestedDate: '2025-12-18T09:00:00Z',
-        numberOfPositions: 1,
-        employmentType: 'Full-time',
-        priority: 'Medium',
-        status: 'Open',
-        location: 'Remote',
-        salaryRange: {
-          min: 100000,
-          max: 140000,
-          currency: 'USD',
-        },
-        requiredSkills: ['Product Strategy', 'Agile', 'User Research', 'Analytics'],
-        description: 'Seeking a product manager to drive our product roadmap.',
-        approvalStatus: 'Pending',
-        approvedBy: null,
-        approvedDate: null,
-      },
-    ];
+        const where: Record<string, unknown> = { tenantId };
+        if (status) where.status = status;
+        if (department) where.department = department;
 
-    return NextResponse.json({ data: mockRequisitions }, { status: 200 });
-  } catch (error) {
+        const requisitions = await prisma.jobRequisition.findMany({
+            where,
+            orderBy: { requestedDate: 'desc' },
+        });
+
+        return NextResponse.json({ success: true, data: requisitions, items: requisitions }, { status: 200 });
+    } catch (error) {
         return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
+            { success: false, error: 'Failed to fetch requisitions' },
+            { status: 500 }
+        );
+    }
 });
 
 /**
@@ -74,28 +38,37 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
  * Create a new job requisition
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
+    try {
+        const { user } = context;
+        const body = await request.json();
 
-    // Mock creating a requisition
-    const newRequisition = {
-      id: `req_${Date.now()}`,
-      tenantId: user.tenantId,
-      createdBy: user.userId,
-      createdDate: new Date().toISOString(),
-      ...body,
-      status: 'Draft',
-      approvalStatus: 'Pending',
-    };
+        const requisition = await prisma.jobRequisition.create({
+            data: {
+                tenantId: user.tenantId,
+                jobTitle: body.jobTitle || body.title,
+                department: body.department,
+                requestedBy: body.requestedBy || user.userId,
+                requestedDate: body.requestedDate ? new Date(body.requestedDate) : new Date(),
+                numberOfPositions: body.numberOfPositions || 1,
+                employmentType: body.employmentType || null,
+                priority: body.priority || 'Medium',
+                status: body.status || 'Draft',
+                location: body.location || null,
+                salaryRange: body.salaryRange || null,
+                requiredSkills: body.requiredSkills || [],
+                description: body.description || null,
+                justification: body.justification || null,
+                approvalStatus: 'Pending',
+            },
+        });
 
-    return NextResponse.json({ data: newRequisition }, { status: 201 });
-  } catch (error) {
+        return NextResponse.json({ success: true, data: requisition, items: [requisition] }, { status: 201 });
+    } catch (error) {
         return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
+            { success: false, error: 'Failed to create requisition' },
+            { status: 500 }
+        );
+    }
 });
 
 /**
@@ -103,32 +76,58 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
  * Update an existing job requisition
  */
 export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
-    const { id, ...updates } = body;
+    try {
+        const { user } = context;
+        const body = await request.json();
+        const { id, ...updates } = body;
 
-    if (!id) {
-      return NextResponse.json(
-        { error: 'Requisition ID is required' },
-        { status: 400 }
-      );
-    }
+        if (!id) {
+            return NextResponse.json(
+                { error: 'Requisition ID is required' },
+                { status: 400 }
+            );
+        }
 
-    // Mock updating a requisition
-    const updatedRequisition = {
-      id,
-      tenantId: user.tenantId,
-      ...updates,
-      updatedBy: user.userId,
-      updatedDate: new Date().toISOString(),
-    };
+        // Verify the requisition belongs to the tenant
+        const existing = await prisma.jobRequisition.findFirst({
+            where: { id, tenantId: user.tenantId },
+        });
 
-    return NextResponse.json({ data: updatedRequisition }, { status: 200 });
-  } catch (error) {
+        if (!existing) {
+            return NextResponse.json(
+                { error: 'Requisition not found' },
+                { status: 404 }
+            );
+        }
+
+        // Build update data, only including fields that are provided
+        const updateData: Record<string, unknown> = {};
+        if (updates.jobTitle !== undefined) updateData.jobTitle = updates.jobTitle;
+        if (updates.department !== undefined) updateData.department = updates.department;
+        if (updates.numberOfPositions !== undefined) updateData.numberOfPositions = updates.numberOfPositions;
+        if (updates.employmentType !== undefined) updateData.employmentType = updates.employmentType;
+        if (updates.priority !== undefined) updateData.priority = updates.priority;
+        if (updates.status !== undefined) updateData.status = updates.status;
+        if (updates.location !== undefined) updateData.location = updates.location;
+        if (updates.salaryRange !== undefined) updateData.salaryRange = updates.salaryRange;
+        if (updates.requiredSkills !== undefined) updateData.requiredSkills = updates.requiredSkills;
+        if (updates.description !== undefined) updateData.description = updates.description;
+        if (updates.justification !== undefined) updateData.justification = updates.justification;
+        if (updates.approvalStatus !== undefined) updateData.approvalStatus = updates.approvalStatus;
+        if (updates.approvedBy !== undefined) updateData.approvedBy = updates.approvedBy;
+        if (updates.approvedDate !== undefined) updateData.approvedDate = new Date(updates.approvedDate);
+        if (updates.rejectionReason !== undefined) updateData.rejectionReason = updates.rejectionReason;
+
+        const requisition = await prisma.jobRequisition.update({
+            where: { id },
+            data: updateData,
+        });
+
+        return NextResponse.json({ success: true, data: requisition }, { status: 200 });
+    } catch (error) {
         return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
+            { success: false, error: 'Failed to update requisition' },
+            { status: 500 }
+        );
+    }
 });

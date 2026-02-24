@@ -109,9 +109,9 @@ export default function VendorManagementPage() {
     };
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-4 pb-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Building2 className="w-6 h-6 text-celestial-indigo" />
@@ -124,10 +124,10 @@ export default function VendorManagementPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 {/* Top Level Stats */}
-                <div className="md:col-span-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-4">
+                <div className="md:col-span-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-3">
                         <div className="p-3 bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 rounded-lg">
                             <Briefcase className="w-6 h-6" />
                         </div>
@@ -136,7 +136,7 @@ export default function VendorManagementPage() {
                             <div className="text-xs text-silver-mist uppercase font-bold">Total Hires (YTD)</div>
                         </div>
                     </div>
-                    <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-4">
+                    <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-3">
                         <div className="p-3 bg-amber-100 dark:bg-amber-900/20 text-amber-600 rounded-lg">
                             <DollarSign className="w-6 h-6" />
                         </div>
@@ -145,7 +145,7 @@ export default function VendorManagementPage() {
                             <div className="text-xs text-silver-mist uppercase font-bold">Agency Spend</div>
                         </div>
                     </div>
-                    <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-4">
+                    <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-3">
                         <div className="p-3 bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 rounded-lg">
                             <Clock className="w-6 h-6" />
                         </div>
@@ -160,8 +160,8 @@ export default function VendorManagementPage() {
                 <div className="md:col-span-3 space-y-4">
                     {vendors.map(vendor => (
                         <div key={vendor.id} className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm hover:shadow-md transition-shadow group">
-                            <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
-                                <div className="flex items-start gap-4">
+                            <div className="flex flex-col md:flex-row justify-between items-start gap-3 mb-6">
+                                <div className="flex items-start gap-3">
                                     <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500 text-lg">
                                         {vendor.name.charAt(0)}
                                     </div>
@@ -194,7 +194,7 @@ export default function VendorManagementPage() {
                             </div>
 
                             {/* Metrics Grid */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-slate-50 dark:bg-deep-cosmos/30 rounded-xl">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-slate-50 dark:bg-deep-cosmos/30 rounded-xl">
                                 <div>
                                     <div className="text-[10px] text-silver-mist uppercase font-bold mb-1">Submitted</div>
                                     <div className="font-bold text-ink-black dark:text-pearl">{vendor.metrics.candidatesSubmitted}</div>
@@ -219,7 +219,7 @@ export default function VendorManagementPage() {
                 </div>
 
                 {/* Spend Analysis Widget */}
-                <div className="md:col-span-1 space-y-6">
+                <div className="md:col-span-1 space-y-4">
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm h-full">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4">Spend Breakdown</h3>
                         <div className="h-48 mb-4">
@@ -246,3 +246,4 @@ export default function VendorManagementPage() {
         </div>
     );
 }
+

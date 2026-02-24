@@ -1,19 +1,9 @@
 "use client";
 
-import React from 'react';
-import { Grid, Info } from 'lucide-react';
-
-const TALENT_DATA = [
-    { id: 1, name: 'Alice Chen', role: 'Sr. Dev', box: 9, performance: 'High', potential: 'High' },
-    { id: 2, name: 'Bob Smith', role: 'Sales Lead', box: 8, performance: 'Med', potential: 'High' },
-    { id: 3, name: 'Charlie Kim', role: 'Product Mgr', box: 7, performance: 'Low', potential: 'High' },
-    { id: 4, name: 'David Lee', role: 'Analyst', box: 6, performance: 'High', potential: 'Med' },
-    { id: 5, name: 'Eve White', role: 'HR BP', box: 5, performance: 'Med', potential: 'Med' },
-    { id: 6, name: 'Frank Wright', role: 'Engineer', box: 4, performance: 'Low', potential: 'Med' },
-    { id: 7, name: 'Grace Ho', role: 'Designer', box: 3, performance: 'High', potential: 'Low' },
-    { id: 8, name: 'Hank Green', role: 'Support', box: 2, performance: 'Med', potential: 'Low' },
-    { id: 9, name: 'Ivy Blue', role: 'Intern', box: 1, performance: 'Low', potential: 'Low' },
-];
+import React, { useState, useEffect } from 'react';
+import { Grid, Info, Loader2 } from 'lucide-react';
+import { SuccessionCandidateService } from '../services';
+import type { SuccessionCandidate } from '../types';
 
 const BOX_LABELS: Record<number, { title: string, color: string }> = {
     9: { title: 'Star / Future Leader', color: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' },
@@ -28,9 +18,47 @@ const BOX_LABELS: Record<number, { title: string, color: string }> = {
 };
 
 export default function TalentMatrixPage() {
+    const [candidates, setCandidates] = useState<SuccessionCandidate[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await SuccessionCandidateService.getCandidates();
+                setCandidates(data);
+            } catch {
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
+    // Map candidates to 9-box model based on readiness
+    const talentData = candidates.map((c, i) => {
+        let box = 5; // default core player
+        if (c.readinessLevel === 'ready_now') box = 9;
+        else if (c.readinessLevel === 'ready_1_2_years') box = 6;
+        else if (c.readinessLevel === 'ready_3_5_years') box = 3;
+        return {
+            id: i + 1,
+            name: c.employeeName || `Candidate ${i + 1}`,
+            role: c.currentPosition || 'N/A',
+            box,
+        };
+    });
+
     return (
         <div className="p-6 space-y-8 min-h-screen pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
                         <Grid className="w-8 h-8 text-indigo-500" />
@@ -53,7 +81,7 @@ export default function TalentMatrixPage() {
                 </div>
 
                 {/* Grid */}
-                <div className="grid grid-cols-3 gap-4 h-[600px] w-full">
+                <div className="grid grid-cols-3 gap-3 h-[600px] w-full">
                     {[
                         [7, 8, 9], // Top Row: High Potential
                         [4, 5, 6], // Mid Row: Med Potential
@@ -61,7 +89,7 @@ export default function TalentMatrixPage() {
                     ].map((row, rIdx) => (
                         <React.Fragment key={rIdx}>
                             {row.map((boxNum) => {
-                                const employees = TALENT_DATA.filter(e => e.box === boxNum);
+                                const employees = talentData.filter(e => e.box === boxNum);
                                 const style = BOX_LABELS[boxNum];
                                 return (
                                     <div key={boxNum} className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden group hover:border-indigo-400 transition-colors">
@@ -89,3 +117,4 @@ export default function TalentMatrixPage() {
         </div>
     );
 }
+

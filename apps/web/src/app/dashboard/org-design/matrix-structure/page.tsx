@@ -13,9 +13,9 @@ import {
 
 export default function MatrixPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Network className="w-6 h-6 text-indigo-500" />
@@ -90,7 +90,7 @@ export default function MatrixPage() {
                                 </div>
                                 <div className="h-12 w-0.5 bg-slate-300 dark:bg-slate-700"></div>
                                 {/* Level 3 - Under Jane */}
-                                <div className="flex gap-4 pt-12 relative">
+                                <div className="flex gap-3 pt-12 relative">
                                     <div className="absolute -top-0 left-1/2 -translate-x-1/2 w-[120px] h-12 border-t-2 border-x-2 border-slate-300 dark:border-slate-700 rounded-t-xl"></div>
                                     <div className="bg-white dark:bg-slate-900 p-3 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 w-48 text-center">
                                         <div className="font-bold text-xs text-indigo-600 mb-1">Product A Team</div>
@@ -126,3 +126,4 @@ export default function MatrixPage() {
         </div>
     );
 }
+

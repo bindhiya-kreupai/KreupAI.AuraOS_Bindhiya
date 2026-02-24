@@ -10,8 +10,8 @@ import {
 
 export default function DateTimeFormatsPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Clock className="w-6 h-6 text-indigo-500" />
@@ -21,7 +21,7 @@ export default function DateTimeFormatsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {[
                     { region: 'United States', date: 'MM/DD/YYYY', time: '12-hour (AM/PM)', example: '12/31/2024 02:30 PM' },
                     { region: 'Europe (Generic)', date: 'DD/MM/YYYY', time: '24-hour', example: '31/12/2024 14:30' },
@@ -56,3 +56,4 @@ export default function DateTimeFormatsPage() {
         </div>
     );
 }
+

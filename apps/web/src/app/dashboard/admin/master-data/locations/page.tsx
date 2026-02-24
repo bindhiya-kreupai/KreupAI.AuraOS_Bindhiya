@@ -183,7 +183,7 @@ export default function LocationsPage() {
             defaultValues={{ type: 'HEADQUARTERS' }}
             renderForm={(record, onChange) => (
                 <>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                         <div className="col-span-2">
                             <label className="block text-xs font-medium text-silver-mist mb-1">Company</label>
                             <select
@@ -250,3 +250,4 @@ export default function LocationsPage() {
         />
     );
 }
+

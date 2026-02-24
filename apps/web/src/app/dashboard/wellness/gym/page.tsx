@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Dumbbell,
     Calendar,
@@ -13,8 +13,10 @@ import {
     Zap,
     Users,
     ChevronRight,
-    Star
+    Star,
+    Loader2
 } from 'lucide-react';
+import { GymMembershipService } from '../services';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- MOCK DATA ---
@@ -84,6 +86,23 @@ const TRAINERS = [
 
 export default function GymPage() {
     const [selectedDay, setSelectedDay] = useState('Today');
+    const [providers, setProviders] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await GymMembershipService.getProviders();
+                setProviders(data as any[]);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
     const [filter, setFilter] = useState('All');
     const [bookedClasses, setBookedClasses] = useState<number[]>([]);
 
@@ -97,10 +116,18 @@ export default function GymPage() {
         ? CLASSES
         : CLASSES.filter(c => c.type === filter);
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                         <Dumbbell className="w-6 h-6 text-rose-500" />
@@ -117,9 +144,9 @@ export default function GymPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0 overflow-hidden">
                 {/* Left: Schedule & Classes */}
-                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-6">
+                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden space-y-4">
                     {/* Date Selector */}
                     <div className="flex gap-2 overflow-x-auto pb-2 shrink-0">
                         {['Today', 'Tomorrow', ...WEEK_DAYS].map(day => (
@@ -155,7 +182,7 @@ export default function GymPage() {
                     </div>
 
                     {/* Classes Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pr-2 pb-20">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-y-auto pr-2 pb-20">
                         {filteredClasses.map(cls => {
                             const isBooked = bookedClasses.includes(cls.id);
                             const spotsLeft = cls.spotsTotal - cls.spotsBooked - (isBooked ? 1 : 0);
@@ -225,7 +252,7 @@ export default function GymPage() {
                 </div>
 
                 {/* Right: My Bookings & Trainers */}
-                <div className="lg:col-span-1 space-y-6 flex flex-col h-full overflow-hidden">
+                <div className="lg:col-span-1 space-y-4 flex flex-col h-full overflow-hidden">
                     {/* My Bookings */}
                     <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm shrink-0">
                         <h3 className="font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
@@ -282,3 +309,4 @@ export default function GymPage() {
         </div>
     );
 }
+

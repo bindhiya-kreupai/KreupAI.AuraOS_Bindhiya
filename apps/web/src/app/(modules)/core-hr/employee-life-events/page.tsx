@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DataPage, FormField } from '@aura/ui';
+import { DataPage, FormField, type RowAction } from '@aura/ui';
 import { Heart, Baby, Users, Home, AlertCircle, CheckCircle, Clock, XCircle, FileText, Calendar } from 'lucide-react';
 
 const EVENT_TYPES = [
@@ -198,8 +198,8 @@ export default function EmployeeLifeEventsPage() {
     },
   ];
 
-  const getRowActions = (row: any) => {
-    const actions = [
+  const getRowActions = (row: any): RowAction<any>[] => {
+    const actions: RowAction<any>[] = [
       { label: 'View', icon: FileText },
       { label: 'Edit', icon: FileText },
     ];
@@ -239,8 +239,8 @@ export default function EmployeeLifeEventsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
           <div className="flex items-center justify-between">
             <div>
@@ -296,3 +296,4 @@ export default function EmployeeLifeEventsPage() {
     </div>
   );
 }
+

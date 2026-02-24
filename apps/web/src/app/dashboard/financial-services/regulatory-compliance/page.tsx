@@ -11,8 +11,8 @@ import {
 
 export default function RegulatoryCompliancePage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Scale className="w-6 h-6 text-indigo-500" />
@@ -25,7 +25,7 @@ export default function RegulatoryCompliancePage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <div className="text-xs font-bold text-slate-500 uppercase mb-2">Compliance Score</div>
                     <div className="text-4xl font-bold text-emerald-600">98%</div>
@@ -64,7 +64,7 @@ export default function RegulatoryCompliancePage() {
                                     <div className="text-xs text-slate-500">{row.date}</div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3">
                                 <span className="text-xs font-bold text-slate-400 uppercase">{row.level} Priority</span>
                                 <button className="opacity-0 group-hover:opacity-100 p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full text-slate-500 transition-all">
                                     <Search className="w-4 h-4" />
@@ -77,3 +77,4 @@ export default function RegulatoryCompliancePage() {
         </div>
     );
 }
+

@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
@@ -10,22 +10,13 @@ export const GET = withEnhancedAuth(
       const permissionError = requirePermission(Resource.ENGAGEMENT, Action.READ, permissions);
       if (permissionError) return permissionError;
 
-      const mockSurveys = [
-        {
-          id: 'survey-1',
-          title: 'Employee Satisfaction Q1 2024',
-          description: 'Quarterly employee satisfaction survey',
-          type: 'pulse',
-          status: 'active',
-          responseCount: 145,
-          targetAudience: 'all_employees',
-          startDate: '2024-01-01',
-          endDate: '2024-01-31',
-          createdAt: new Date().toISOString(),
+      return NextResponse.json({
+        success: true,
+        data: {
+          surveys: [],
+          tenantId: user.tenantId,
         },
-      ];
-
-      return NextResponse.json({ success: true, data: mockSurveys });
+      });
     } catch (error) {
       logger.error('Error fetching surveys:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch surveys' }, { status: 500 });
@@ -43,6 +34,8 @@ export const POST = withEnhancedAuth(
       const newSurvey = {
         ...body,
         id: `survey-${Date.now()}`,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
         createdAt: new Date().toISOString(),
       };
 
@@ -61,7 +54,15 @@ export const PUT = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const body = await request.json();
-      return NextResponse.json({ success: true, data: { ...body, lastModified: new Date().toISOString() } });
+      return NextResponse.json({
+        success: true,
+        data: {
+          ...body,
+          tenantId: user.tenantId,
+          lastModified: new Date().toISOString(),
+          modifiedBy: user.userId,
+        },
+      });
     } catch (error) {
       logger.error('Error updating survey:', error);
       return NextResponse.json({ success: false, error: 'Failed to update survey' }, { status: 500 });

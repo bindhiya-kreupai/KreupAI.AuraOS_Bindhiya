@@ -45,9 +45,9 @@ export default function ProductionPage() {
   const avgLaborCost = 0.45; // Placeholder as labor cost isn't directly in the types yet
 
   return (
-    <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+    <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Activity className="w-6 h-6 text-sky-500" />
@@ -66,7 +66,7 @@ export default function ProductionPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-lg">
@@ -165,7 +165,7 @@ export default function ProductionPage() {
             );
           })}
         </div>
-        <div className="flex justify-center gap-6 mt-6">
+        <div className="flex justify-center gap-3 mt-6">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
             <span className="w-3 h-3 bg-emerald-500 rounded-sm"></span> High Output
           </div>
@@ -181,3 +181,4 @@ export default function ProductionPage() {
     </div>
   );
 }
+

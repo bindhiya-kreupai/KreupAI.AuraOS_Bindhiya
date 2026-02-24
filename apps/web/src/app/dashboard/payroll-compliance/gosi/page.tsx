@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Building2,
   Download,
@@ -13,7 +13,8 @@ import {
   FileText,
   TrendingUp,
   Info,
-  PieChart
+  PieChart,
+  Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -37,151 +38,177 @@ interface ValidationResult {
   warnings: Array<{ employeeId: string; field: string; message: string; messageAr: string }>;
 }
 
-// GOSI Contribution Rates
-const GOSI_RATES = {
+interface GOSIRates {
   saudi: {
-    annuity: { employee: 9.0, employer: 9.0 },
-    saned: { employee: 0.75, employer: 0.75 },
-    occupationalHazards: { employee: 0, employer: 2.0 },
-  },
+    annuity: { employee: number; employer: number; total: number };
+    saned: { employee: number; employer: number; total: number };
+    occupationalHazards: { employee: number; employer: number; total: number };
+  };
   nonSaudi: {
-    annuity: { employee: 0, employer: 0 },
-    saned: { employee: 0, employer: 0 },
-    occupationalHazards: { employee: 0, employer: 2.0 },
-  },
-};
-
-const GOSI_WAGE_CEILING = 45000;
-const GOSI_MIN_WAGE = 4000;
+    occupationalHazards: { employee: number; employer: number; total: number };
+  };
+}
 
 export default function GOSIPage() {
   const [activeTab, setActiveTab] = useState<'calculate' | 'records' | 'rates'>('calculate');
   const [contributionMonth, setContributionMonth] = useState('');
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [calculating, setCalculating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock GOSI configuration
+  // Data from API
+  const [gosiRates, setGosiRates] = useState<GOSIRates | null>(null);
+  const [wageCeiling, setWageCeiling] = useState<number>(45000);
+  const [minimumWage, setMinimumWage] = useState<number>(4000);
+  const [records, setRecords] = useState<GOSIRecord[]>([]);
+
+  // GOSI configuration
   const gosiConfig = {
     establishmentNumber: '5000123456',
     laborOfficeCode: '1',
     unifiedNumber: '700012345678',
   };
 
-  // Mock employee records
-  const mockRecords: GOSIRecord[] = [
-    {
-      id: '1',
-      name: 'محمد أحمد العلي',
-      nationalId: '1098765432',
-      isSaudi: true,
-      basicSalary: 12000,
-      housingAllowance: 3000,
-      contributableSalary: 15000,
-      employeeContribution: 1462.50,
-      employerContribution: 1762.50,
-      status: 'valid'
-    },
-    {
-      id: '2',
-      name: 'سارة الفيصل',
-      nationalId: '1087654321',
-      isSaudi: true,
-      basicSalary: 18000,
-      housingAllowance: 4500,
-      contributableSalary: 22500,
-      employeeContribution: 2193.75,
-      employerContribution: 2643.75,
-      status: 'valid'
-    },
-    {
-      id: '3',
-      name: 'John Smith',
-      iqamaNumber: '2098765432',
-      isSaudi: false,
-      basicSalary: 15000,
-      housingAllowance: 3750,
-      contributableSalary: 18750,
-      employeeContribution: 0,
-      employerContribution: 375,
-      status: 'valid'
-    },
-    {
-      id: '4',
-      name: 'أحمد الدوسري',
-      nationalId: '109876543',
-      isSaudi: true,
-      basicSalary: 8000,
-      housingAllowance: 2000,
-      contributableSalary: 10000,
-      employeeContribution: 975,
-      employerContribution: 1175,
-      status: 'error'
-    },
-    {
-      id: '5',
-      name: 'Ravi Kumar',
-      iqamaNumber: '2087654321',
-      isSaudi: false,
-      basicSalary: 3500,
-      housingAllowance: 875,
-      contributableSalary: 4375,
-      employeeContribution: 0,
-      employerContribution: 87.50,
-      status: 'warning'
-    },
-  ];
-
-  const saudiCount = mockRecords.filter(r => r.isSaudi).length;
-  const nonSaudiCount = mockRecords.filter(r => !r.isSaudi).length;
-  const totalEmployeeContribution = mockRecords.reduce((sum, r) => sum + r.employeeContribution, 0);
-  const totalEmployerContribution = mockRecords.reduce((sum, r) => sum + r.employerContribution, 0);
-
-  const handleValidate = () => {
-    setValidationResult({
-      isValid: false,
-      errors: [
-        { employeeId: '4', field: 'nationalId', message: 'Invalid National ID format (must be 10 digits starting with 1)', messageAr: 'صيغة رقم الهوية غير صالحة (يجب أن تكون 10 أرقام تبدأ بـ 1)' },
-      ],
-      warnings: [
-        { employeeId: '5', field: 'basicSalary', message: 'Non-Saudi employee salary is below typical minimum for role', messageAr: 'راتب الموظف غير السعودي أقل من الحد الأدنى النموذجي للوظيفة' },
-      ],
-    });
-  };
-
   // Calculator state
   const [calcBasicSalary, setCalcBasicSalary] = useState<string>('10000');
   const [calcHousingAllowance, setCalcHousingAllowance] = useState<string>('2500');
   const [calcIsSaudi, setCalcIsSaudi] = useState<boolean>(true);
+  const [calcResult, setCalcResult] = useState<any>(null);
 
-  const calculateContributions = () => {
-    const basic = parseFloat(calcBasicSalary) || 0;
-    const housing = parseFloat(calcHousingAllowance) || 0;
-    const contributable = Math.min(basic + housing, GOSI_WAGE_CEILING);
-    const rates = calcIsSaudi ? GOSI_RATES.saudi : GOSI_RATES.nonSaudi;
+  // Fetch reference data on mount
+  useEffect(() => {
+    fetchReferenceData();
+  }, []);
 
-    const employeeAnnuity = (contributable * rates.annuity.employee) / 100;
-    const employerAnnuity = (contributable * rates.annuity.employer) / 100;
-    const employeeSaned = (contributable * rates.saned.employee) / 100;
-    const employerSaned = (contributable * rates.saned.employer) / 100;
-    const employerHazards = (contributable * rates.occupationalHazards.employer) / 100;
+  // Recalculate when inputs change (using API rates if available)
+  useEffect(() => {
+    if (gosiRates) {
+      calculateContributions();
+    }
+  }, [calcBasicSalary, calcHousingAllowance, calcIsSaudi, gosiRates]);
 
-    return {
-      contributable,
-      employeeTotal: employeeAnnuity + employeeSaned,
-      employerTotal: employerAnnuity + employerSaned + employerHazards,
-      breakdown: {
-        annuity: { employee: employeeAnnuity, employer: employerAnnuity },
-        saned: { employee: employeeSaned, employer: employerSaned },
-        hazards: { employee: 0, employer: employerHazards },
+  const fetchReferenceData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch('/api/compliance/gosi');
+      const result = await response.json();
+      if (result.success) {
+        setGosiRates(result.data.rates);
+        setWageCeiling(result.data.wageCeiling || 45000);
+        setMinimumWage(result.data.minimumWage || 4000);
+      } else {
+        setError(result.error || 'Failed to load GOSI reference data');
       }
-    };
+    } catch (err) {
+      console.error('Error fetching GOSI data:', err);
+      setError('Failed to connect to GOSI service');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const calcResult = calculateContributions();
+  const calculateContributions = () => {
+    if (!gosiRates) return;
+
+    const basic = parseFloat(calcBasicSalary) || 0;
+    const housing = parseFloat(calcHousingAllowance) || 0;
+    const contributable = Math.min(basic + housing, wageCeiling);
+    const rates = calcIsSaudi ? gosiRates.saudi : null;
+
+    if (calcIsSaudi && rates) {
+      const employeeAnnuity = (contributable * rates.annuity.employee) / 100;
+      const employerAnnuity = (contributable * rates.annuity.employer) / 100;
+      const employeeSaned = (contributable * rates.saned.employee) / 100;
+      const employerSaned = (contributable * rates.saned.employer) / 100;
+      const employerHazards = (contributable * rates.occupationalHazards.employer) / 100;
+
+      setCalcResult({
+        contributable,
+        employeeTotal: employeeAnnuity + employeeSaned,
+        employerTotal: employerAnnuity + employerSaned + employerHazards,
+        breakdown: {
+          annuity: { employee: employeeAnnuity, employer: employerAnnuity },
+          saned: { employee: employeeSaned, employer: employerSaned },
+          hazards: { employee: 0, employer: employerHazards },
+        },
+      });
+    } else {
+      const nonSaudiRates = gosiRates.nonSaudi;
+      const employerHazards = (contributable * nonSaudiRates.occupationalHazards.employer) / 100;
+
+      setCalcResult({
+        contributable,
+        employeeTotal: 0,
+        employerTotal: employerHazards,
+        breakdown: {
+          annuity: { employee: 0, employer: 0 },
+          saned: { employee: 0, employer: 0 },
+          hazards: { employee: 0, employer: employerHazards },
+        },
+      });
+    }
+  };
+
+  const handleCalculateAPI = async () => {
+    setCalculating(true);
+    try {
+      const response = await fetch('/api/compliance/gosi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          config: gosiConfig,
+          records: records.map(r => ({
+            employeeId: r.id,
+            employeeName: r.name,
+            nationalId: r.isSaudi ? r.nationalId : undefined,
+            iqamaNumber: r.isSaudi ? undefined : r.iqamaNumber,
+            isSaudi: r.isSaudi,
+            basicSalary: r.basicSalary,
+            housingAllowance: r.housingAllowance,
+          })),
+          contributionMonth: contributionMonth || new Date().toISOString().slice(0, 7).replace('-', ''),
+          format: 'json',
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setValidationResult(result.data.validation);
+      } else {
+        setValidationResult({
+          isValid: false,
+          errors: result.errors || [{ employeeId: '-', field: 'general', message: result.error || 'Calculation failed', messageAr: result.errorAr || 'فشل الحساب' }],
+          warnings: result.warnings || [],
+        });
+      }
+    } catch (err) {
+      console.error('Error calculating GOSI:', err);
+      setError('Failed to calculate GOSI contributions');
+    } finally {
+      setCalculating(false);
+    }
+  };
+
+  const saudiCount = records.filter(r => r.isSaudi).length;
+  const nonSaudiCount = records.filter(r => !r.isSaudi).length;
+  const totalEmployeeContribution = records.reduce((sum, r) => sum + r.employeeContribution, 0);
+  const totalEmployerContribution = records.reduce((sum, r) => sum + r.employerContribution, 0);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+        <span className="ml-3 text-slate-500">Loading GOSI data...</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <Link href="/dashboard/payroll-compliance" className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2">
             <ArrowLeft className="w-4 h-4" /> Back to Compliance
@@ -204,8 +231,17 @@ export default function GOSIPage() {
         </div>
       </div>
 
+      {/* Error Banner */}
+      {error && (
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-red-500" />
+          <span className="text-red-700 dark:text-red-400">{error}</span>
+          <button onClick={() => setError(null)} className="ml-auto text-red-500 hover:text-red-700 text-sm">Dismiss</button>
+        </div>
+      )}
+
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
           <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
             <Users className="w-4 h-4" />
@@ -268,7 +304,7 @@ export default function GOSIPage() {
 
       {/* Tab Content */}
       {activeTab === 'calculate' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {/* Calculator Input */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
@@ -281,7 +317,7 @@ export default function GOSIPage() {
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Employee Type | <span dir="rtl">نوع الموظف</span>
                 </label>
-                <div className="flex gap-4">
+                <div className="flex gap-3">
                   <label className="flex items-center gap-2">
                     <input
                       type="radio"
@@ -332,7 +368,7 @@ export default function GOSIPage() {
               <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
                   <Info className="w-4 h-4" />
-                  <span>GOSI Wage Ceiling: SAR {GOSI_WAGE_CEILING.toLocaleString()}</span>
+                  <span>GOSI Wage Ceiling: SAR {wageCeiling.toLocaleString()}</span>
                 </div>
                 <p className="text-xs text-slate-400">
                   Contributions are calculated on Basic + Housing, capped at ceiling
@@ -348,77 +384,84 @@ export default function GOSIPage() {
               <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">تفصيل الاشتراكات</span>
             </h2>
 
-            <div className="space-y-4">
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                <div className="text-sm text-blue-600 dark:text-blue-400 mb-1">Contributable Salary</div>
-                <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
-                  SAR {calcResult.contributable.toLocaleString()}
-                </div>
-                <div className="text-xs text-blue-500" dir="rtl">الراتب الخاضع للاشتراك</div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
-                  <div className="text-sm text-green-600 dark:text-green-400 mb-1">Employee Share</div>
-                  <div className="text-xl font-bold text-green-700 dark:text-green-300">
-                    SAR {calcResult.employeeTotal.toFixed(2)}
+            {calcResult ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                  <div className="text-sm text-blue-600 dark:text-blue-400 mb-1">Contributable Salary</div>
+                  <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                    SAR {calcResult.contributable.toLocaleString()}
                   </div>
-                  <div className="text-xs text-green-500" dir="rtl">حصة الموظف</div>
+                  <div className="text-xs text-blue-500" dir="rtl">الراتب الخاضع للاشتراك</div>
                 </div>
-                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
-                  <div className="text-sm text-amber-600 dark:text-amber-400 mb-1">Employer Share</div>
-                  <div className="text-xl font-bold text-amber-700 dark:text-amber-300">
-                    SAR {calcResult.employerTotal.toFixed(2)}
-                  </div>
-                  <div className="text-xs text-amber-500" dir="rtl">حصة صاحب العمل</div>
-                </div>
-              </div>
 
-              <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
-                <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
-                  Detailed Breakdown | <span dir="rtl">التفصيل</span>
-                </h3>
-                <table className="w-full text-sm">
-                  <thead className="text-left text-slate-500">
-                    <tr>
-                      <th className="pb-2">Component</th>
-                      <th className="pb-2 text-right">Employee</th>
-                      <th className="pb-2 text-right">Employer</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    <tr>
-                      <td className="py-2">Annuity <span className="text-xs text-slate-400" dir="rtl">(معاش)</span></td>
-                      <td className="py-2 text-right">SAR {calcResult.breakdown.annuity.employee.toFixed(2)}</td>
-                      <td className="py-2 text-right">SAR {calcResult.breakdown.annuity.employer.toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2">SANED <span className="text-xs text-slate-400" dir="rtl">(ساند)</span></td>
-                      <td className="py-2 text-right">SAR {calcResult.breakdown.saned.employee.toFixed(2)}</td>
-                      <td className="py-2 text-right">SAR {calcResult.breakdown.saned.employer.toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2">Occupational Hazards <span className="text-xs text-slate-400" dir="rtl">(أخطار مهنية)</span></td>
-                      <td className="py-2 text-right">-</td>
-                      <td className="py-2 text-right">SAR {calcResult.breakdown.hazards.employer.toFixed(2)}</td>
-                    </tr>
-                  </tbody>
-                  <tfoot className="font-semibold border-t border-slate-200 dark:border-slate-700">
-                    <tr>
-                      <td className="pt-2">Total</td>
-                      <td className="pt-2 text-right">SAR {calcResult.employeeTotal.toFixed(2)}</td>
-                      <td className="pt-2 text-right">SAR {calcResult.employerTotal.toFixed(2)}</td>
-                    </tr>
-                  </tfoot>
-                </table>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
+                    <div className="text-sm text-green-600 dark:text-green-400 mb-1">Employee Share</div>
+                    <div className="text-xl font-bold text-green-700 dark:text-green-300">
+                      SAR {calcResult.employeeTotal.toFixed(2)}
+                    </div>
+                    <div className="text-xs text-green-500" dir="rtl">حصة الموظف</div>
+                  </div>
+                  <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
+                    <div className="text-sm text-amber-600 dark:text-amber-400 mb-1">Employer Share</div>
+                    <div className="text-xl font-bold text-amber-700 dark:text-amber-300">
+                      SAR {calcResult.employerTotal.toFixed(2)}
+                    </div>
+                    <div className="text-xs text-amber-500" dir="rtl">حصة صاحب العمل</div>
+                  </div>
+                </div>
+
+                <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                  <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                    Detailed Breakdown | <span dir="rtl">التفصيل</span>
+                  </h3>
+                  <table className="w-full text-sm">
+                    <thead className="text-left text-slate-500">
+                      <tr>
+                        <th className="pb-2">Component</th>
+                        <th className="pb-2 text-right">Employee</th>
+                        <th className="pb-2 text-right">Employer</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      <tr>
+                        <td className="py-2">Annuity <span className="text-xs text-slate-400" dir="rtl">(معاش)</span></td>
+                        <td className="py-2 text-right">SAR {calcResult.breakdown.annuity.employee.toFixed(2)}</td>
+                        <td className="py-2 text-right">SAR {calcResult.breakdown.annuity.employer.toFixed(2)}</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2">SANED <span className="text-xs text-slate-400" dir="rtl">(ساند)</span></td>
+                        <td className="py-2 text-right">SAR {calcResult.breakdown.saned.employee.toFixed(2)}</td>
+                        <td className="py-2 text-right">SAR {calcResult.breakdown.saned.employer.toFixed(2)}</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2">Occupational Hazards <span className="text-xs text-slate-400" dir="rtl">(أخطار مهنية)</span></td>
+                        <td className="py-2 text-right">-</td>
+                        <td className="py-2 text-right">SAR {calcResult.breakdown.hazards.employer.toFixed(2)}</td>
+                      </tr>
+                    </tbody>
+                    <tfoot className="font-semibold border-t border-slate-200 dark:border-slate-700">
+                      <tr>
+                        <td className="pt-2">Total</td>
+                        <td className="pt-2 text-right">SAR {calcResult.employeeTotal.toFixed(2)}</td>
+                        <td className="pt-2 text-right">SAR {calcResult.employerTotal.toFixed(2)}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center justify-center py-16 text-slate-400">
+                <Loader2 className="w-6 h-6 animate-spin mr-2" />
+                Loading rates...
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {activeTab === 'records' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Configuration */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <div className="flex items-center justify-between mb-4">
@@ -426,7 +469,7 @@ export default function GOSIPage() {
                 GOSI Configuration
                 <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">إعدادات التأمينات</span>
               </h2>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <div>
                   <label className="block text-xs text-slate-500 mb-1">Contribution Month</label>
                   <input
@@ -438,7 +481,7 @@ export default function GOSIPage() {
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <div className="text-xs text-slate-500 mb-1">Establishment Number</div>
                 <div className="font-mono text-sm">{gosiConfig.establishmentNumber}</div>
@@ -466,126 +509,138 @@ export default function GOSIPage() {
               </h2>
               <div className="flex gap-2">
                 <button
-                  onClick={handleValidate}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm hover:bg-indigo-600"
+                  onClick={handleCalculateAPI}
+                  disabled={calculating || records.length === 0}
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm hover:bg-indigo-600 disabled:opacity-50"
                 >
-                  <CheckCircle className="w-4 h-4" />
-                  Validate
+                  {calculating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                  {calculating ? 'Calculating...' : 'Validate'}
                 </button>
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="text-left text-slate-500 border-b border-slate-200 dark:border-slate-700">
-                  <tr>
-                    <th className="pb-3 font-medium">Employee</th>
-                    <th className="pb-3 font-medium">ID Number</th>
-                    <th className="pb-3 font-medium text-center">Saudi</th>
-                    <th className="pb-3 font-medium text-right">Contributable</th>
-                    <th className="pb-3 font-medium text-right">Employee</th>
-                    <th className="pb-3 font-medium text-right">Employer</th>
-                    <th className="pb-3 font-medium text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {mockRecords.map((record) => (
-                    <tr key={record.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                      <td className="py-3">{record.name}</td>
-                      <td className="py-3 font-mono text-xs">
-                        {record.isSaudi ? record.nationalId : record.iqamaNumber}
-                      </td>
-                      <td className="py-3 text-center">
-                        {record.isSaudi ? (
-                          <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs">Yes</span>
-                        ) : (
-                          <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded text-xs">No</span>
-                        )}
-                      </td>
-                      <td className="py-3 text-right">SAR {record.contributableSalary.toLocaleString()}</td>
-                      <td className="py-3 text-right">SAR {record.employeeContribution.toLocaleString()}</td>
-                      <td className="py-3 text-right">SAR {record.employerContribution.toLocaleString()}</td>
-                      <td className="py-3 text-center">
-                        {record.status === 'valid' && (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs">
-                            <CheckCircle className="w-3 h-3" /> Valid
-                          </span>
-                        )}
-                        {record.status === 'error' && (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs">
-                            <AlertCircle className="w-3 h-3" /> Error
-                          </span>
-                        )}
-                        {record.status === 'warning' && (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-xs">
-                            <AlertTriangle className="w-3 h-3" /> Warning
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Validation Results */}
-            {validationResult && (
-              <div className="mt-6 space-y-4">
-                {validationResult.errors.length > 0 && (
-                  <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
-                    <h3 className="font-semibold text-red-700 dark:text-red-400 mb-2 flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4" />
-                      Errors ({validationResult.errors.length})
-                    </h3>
-                    {validationResult.errors.map((error, index) => (
-                      <div key={index} className="text-sm">
-                        <span className="font-medium">Employee #{error.employeeId}:</span> {error.message}
-                        <span className="block text-xs text-red-500 mt-0.5" dir="rtl">{error.messageAr}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {validationResult.warnings.length > 0 && (
-                  <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
-                    <h3 className="font-semibold text-amber-700 dark:text-amber-400 mb-2 flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4" />
-                      Warnings ({validationResult.warnings.length})
-                    </h3>
-                    {validationResult.warnings.map((warning, index) => (
-                      <div key={index} className="text-sm">
-                        <span className="font-medium">Employee #{warning.employeeId}:</span> {warning.message}
-                        <span className="block text-xs text-amber-500 mt-0.5" dir="rtl">{warning.messageAr}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+            {records.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+                <Users className="w-12 h-12 mb-3 opacity-50" />
+                <p className="text-lg font-medium">No employee records loaded</p>
+                <p className="text-sm mt-1">Import employee data to calculate GOSI contributions</p>
+                <p className="text-sm mt-1" dir="rtl">استيراد بيانات الموظفين لحساب اشتراكات التأمينات</p>
               </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="text-left text-slate-500 border-b border-slate-200 dark:border-slate-700">
+                      <tr>
+                        <th className="pb-3 font-medium">Employee</th>
+                        <th className="pb-3 font-medium">ID Number</th>
+                        <th className="pb-3 font-medium text-center">Saudi</th>
+                        <th className="pb-3 font-medium text-right">Contributable</th>
+                        <th className="pb-3 font-medium text-right">Employee</th>
+                        <th className="pb-3 font-medium text-right">Employer</th>
+                        <th className="pb-3 font-medium text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {records.map((record) => (
+                        <tr key={record.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                          <td className="py-3">{record.name}</td>
+                          <td className="py-3 font-mono text-xs">
+                            {record.isSaudi ? record.nationalId : record.iqamaNumber}
+                          </td>
+                          <td className="py-3 text-center">
+                            {record.isSaudi ? (
+                              <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs">Yes</span>
+                            ) : (
+                              <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded text-xs">No</span>
+                            )}
+                          </td>
+                          <td className="py-3 text-right">SAR {record.contributableSalary.toLocaleString()}</td>
+                          <td className="py-3 text-right">SAR {record.employeeContribution.toLocaleString()}</td>
+                          <td className="py-3 text-right">SAR {record.employerContribution.toLocaleString()}</td>
+                          <td className="py-3 text-center">
+                            {record.status === 'valid' && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs">
+                                <CheckCircle className="w-3 h-3" /> Valid
+                              </span>
+                            )}
+                            {record.status === 'error' && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs">
+                                <AlertCircle className="w-3 h-3" /> Error
+                              </span>
+                            )}
+                            {record.status === 'warning' && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-xs">
+                                <AlertTriangle className="w-3 h-3" /> Warning
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Validation Results */}
+                {validationResult && (
+                  <div className="mt-6 space-y-4">
+                    {validationResult.errors.length > 0 && (
+                      <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+                        <h3 className="font-semibold text-red-700 dark:text-red-400 mb-2 flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4" />
+                          Errors ({validationResult.errors.length})
+                        </h3>
+                        {validationResult.errors.map((error, index) => (
+                          <div key={index} className="text-sm">
+                            <span className="font-medium">Employee #{error.employeeId}:</span> {error.message}
+                            <span className="block text-xs text-red-500 mt-0.5" dir="rtl">{error.messageAr}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {validationResult.warnings.length > 0 && (
+                      <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                        <h3 className="font-semibold text-amber-700 dark:text-amber-400 mb-2 flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4" />
+                          Warnings ({validationResult.warnings.length})
+                        </h3>
+                        {validationResult.warnings.map((warning, index) => (
+                          <div key={index} className="text-sm">
+                            <span className="font-medium">Employee #{warning.employeeId}:</span> {warning.message}
+                            <span className="block text-xs text-amber-500 mt-0.5" dir="rtl">{warning.messageAr}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Summary & Export */}
+                <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                  <div className="text-sm text-slate-500">
+                    <span className="font-medium text-slate-900 dark:text-slate-100">{records.length}</span> employees
+                    <span className="mx-2">•</span>
+                    Total Contribution: <span className="font-medium text-slate-900 dark:text-slate-100">SAR {(totalEmployeeContribution + totalEmployerContribution).toLocaleString()}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-700">
+                      <FileText className="w-4 h-4" />
+                      Export CSV
+                    </button>
+                    <button className="flex items-center gap-2 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                      <Download className="w-4 h-4" />
+                      Generate GOSI File
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
-
-            {/* Summary & Export */}
-            <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
-              <div className="text-sm text-slate-500">
-                <span className="font-medium text-slate-900 dark:text-slate-100">{mockRecords.length}</span> employees
-                <span className="mx-2">•</span>
-                Total Contribution: <span className="font-medium text-slate-900 dark:text-slate-100">SAR {(totalEmployeeContribution + totalEmployerContribution).toLocaleString()}</span>
-              </div>
-              <div className="flex gap-2">
-                <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-700">
-                  <FileText className="w-4 h-4" />
-                  Export CSV
-                </button>
-                <button className="flex items-center gap-2 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                  <Download className="w-4 h-4" />
-                  Generate GOSI File
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}
 
-      {activeTab === 'rates' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {activeTab === 'rates' && gosiRates && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Saudi Rates */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <div className="flex items-center gap-3 mb-4">
@@ -605,8 +660,8 @@ export default function GOSIPage() {
                   <div className="text-xs text-slate-500" dir="rtl">المعاش</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm">Employee: <span className="font-semibold">{GOSI_RATES.saudi.annuity.employee}%</span></div>
-                  <div className="text-sm">Employer: <span className="font-semibold">{GOSI_RATES.saudi.annuity.employer}%</span></div>
+                  <div className="text-sm">Employee: <span className="font-semibold">{gosiRates.saudi.annuity.employee}%</span></div>
+                  <div className="text-sm">Employer: <span className="font-semibold">{gosiRates.saudi.annuity.employer}%</span></div>
                 </div>
               </div>
               <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
@@ -615,8 +670,8 @@ export default function GOSIPage() {
                   <div className="text-xs text-slate-500" dir="rtl">ساند</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm">Employee: <span className="font-semibold">{GOSI_RATES.saudi.saned.employee}%</span></div>
-                  <div className="text-sm">Employer: <span className="font-semibold">{GOSI_RATES.saudi.saned.employer}%</span></div>
+                  <div className="text-sm">Employee: <span className="font-semibold">{gosiRates.saudi.saned.employee}%</span></div>
+                  <div className="text-sm">Employer: <span className="font-semibold">{gosiRates.saudi.saned.employer}%</span></div>
                 </div>
               </div>
               <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
@@ -626,14 +681,14 @@ export default function GOSIPage() {
                 </div>
                 <div className="text-right">
                   <div className="text-sm">Employee: <span className="font-semibold">-</span></div>
-                  <div className="text-sm">Employer: <span className="font-semibold">{GOSI_RATES.saudi.occupationalHazards.employer}%</span></div>
+                  <div className="text-sm">Employer: <span className="font-semibold">{gosiRates.saudi.occupationalHazards.employer}%</span></div>
                 </div>
               </div>
               <div className="flex justify-between items-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                 <div className="font-semibold">Total</div>
                 <div className="text-right">
-                  <div className="text-sm">Employee: <span className="font-bold text-green-600">{GOSI_RATES.saudi.annuity.employee + GOSI_RATES.saudi.saned.employee}%</span></div>
-                  <div className="text-sm">Employer: <span className="font-bold text-green-600">{GOSI_RATES.saudi.annuity.employer + GOSI_RATES.saudi.saned.employer + GOSI_RATES.saudi.occupationalHazards.employer}%</span></div>
+                  <div className="text-sm">Employee: <span className="font-bold text-green-600">{gosiRates.saudi.annuity.employee + gosiRates.saudi.saned.employee}%</span></div>
+                  <div className="text-sm">Employer: <span className="font-bold text-green-600">{gosiRates.saudi.annuity.employer + gosiRates.saudi.saned.employer + gosiRates.saudi.occupationalHazards.employer}%</span></div>
                 </div>
               </div>
             </div>
@@ -679,14 +734,14 @@ export default function GOSIPage() {
                 </div>
                 <div className="text-right">
                   <div className="text-sm">Employee: <span className="font-semibold">-</span></div>
-                  <div className="text-sm">Employer: <span className="font-semibold">{GOSI_RATES.nonSaudi.occupationalHazards.employer}%</span></div>
+                  <div className="text-sm">Employer: <span className="font-semibold">{gosiRates.nonSaudi.occupationalHazards.employer}%</span></div>
                 </div>
               </div>
               <div className="flex justify-between items-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                 <div className="font-semibold">Total</div>
                 <div className="text-right">
                   <div className="text-sm">Employee: <span className="font-bold text-blue-600">0%</span></div>
-                  <div className="text-sm">Employer: <span className="font-bold text-blue-600">{GOSI_RATES.nonSaudi.occupationalHazards.employer}%</span></div>
+                  <div className="text-sm">Employer: <span className="font-bold text-blue-600">{gosiRates.nonSaudi.occupationalHazards.employer}%</span></div>
                 </div>
               </div>
             </div>
@@ -703,15 +758,15 @@ export default function GOSIPage() {
               <li className="flex items-start gap-2">
                 <span className="mt-1">•</span>
                 <div>
-                  <span>Maximum contributable wage ceiling: <strong>SAR 45,000</strong>/month</span>
-                  <span className="block text-xs text-amber-600" dir="rtl">الحد الأقصى للراتب الخاضع للاشتراك: 45,000 ريال</span>
+                  <span>Maximum contributable wage ceiling: <strong>SAR {wageCeiling.toLocaleString()}</strong>/month</span>
+                  <span className="block text-xs text-amber-600" dir="rtl">الحد الأقصى للراتب الخاضع للاشتراك: {wageCeiling.toLocaleString()} ريال</span>
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-1">•</span>
                 <div>
-                  <span>Minimum wage for Saudi employees: <strong>SAR 4,000</strong>/month</span>
-                  <span className="block text-xs text-amber-600" dir="rtl">الحد الأدنى لراتب الموظف السعودي: 4,000 ريال</span>
+                  <span>Minimum wage for Saudi employees: <strong>SAR {minimumWage.toLocaleString()}</strong>/month</span>
+                  <span className="block text-xs text-amber-600" dir="rtl">الحد الأدنى لراتب الموظف السعودي: {minimumWage.toLocaleString()} ريال</span>
                 </div>
               </li>
               <li className="flex items-start gap-2">
@@ -735,3 +790,4 @@ export default function GOSIPage() {
     </div>
   );
 }
+

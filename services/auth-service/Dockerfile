@@ -1,69 +1,63 @@
 # Multi-stage build for Auth Service
-
-# Stage 1: Dependencies
 FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat
-
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
+# Copy workspace files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/@aura/database/package.json ./packages/@aura/database/
+COPY services/auth-service/package.json ./services/auth-service/
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --filter @auraos/auth-service...
 
-# Stage 2: Builder
 FROM node:20-alpine AS builder
 WORKDIR /app
+RUN apk add --no-cache openssl
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Install pnpm
-RUN npm install -g pnpm
-
-# Copy dependencies
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages ./packages
+COPY --from=deps /app/services ./services
 
-# Copy source code
+# Copy source code and config
+COPY packages/@aura/database ./packages/@aura/database
 COPY services/auth-service ./services/auth-service
-COPY prisma ./prisma
-COPY tsconfig.base.json ./
+COPY tsconfig.base.json tsconfig.json ./
 
 # Generate Prisma client
-RUN cd packages/@aura/database && pnpm prisma generate
+RUN pnpm --filter @aura/database prisma generate
 
 # Build the service
-WORKDIR /app/services/auth-service
-RUN pnpm build
+RUN pnpm --filter @auraos/auth-service build
 
-# Stage 3: Runner
 FROM node:20-alpine AS runner
 WORKDIR /app
+RUN apk add --no-cache openssl curl
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Add non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 authservice
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+  adduser --system --uid 1001 authservice
 
-# Install production dependencies only
-RUN npm install -g pnpm
+ENV NODE_ENV=production
 
-COPY --from=builder /app/services/auth-service/package.json ./
-COPY --from=builder /app/services/auth-service/node_modules ./node_modules
-COPY --from=builder /app/services/auth-service/dist ./dist
-COPY --from=builder /app/packages/@aura/database/node_modules/.prisma ./node_modules/.prisma
+# Copy built files and dependencies
+COPY --from=builder /app/services/auth-service/dist ./services/auth-service/dist
+COPY --from=builder /app/services/auth-service/package.json ./services/auth-service/
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages/@aura/database/package.json ./packages/@aura/database/
 
-# Switch to non-root user
+WORKDIR /app/services/auth-service
+
 USER authservice
 
-# Expose ports
 EXPOSE 3001 50051
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3001/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); })"
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3001/health || exit 1
 
-# Start the service
 CMD ["node", "dist/index.js"]

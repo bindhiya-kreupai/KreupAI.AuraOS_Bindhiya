@@ -1,35 +1,37 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Download, FileText, Table as TableIcon, Image, Settings } from 'lucide-react';
-import { ReportExportService } from '../services';
+import { Download, FileText, Table as TableIcon, Image, Settings, Loader2 } from 'lucide-react';
 
 export default function ExportOptionsPage() {
-    const [exports, setExports] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [reportCount, setReportCount] = useState(0);
 
     useEffect(() => {
-        fetchExports();
+        fetchData();
     }, []);
 
-    const fetchExports = async () => {
+    const fetchData = async () => {
         try {
-            // Export service doesn't have a getAll method, but we can prepare for future use
-            setExports([]);
+            const res = await fetch('/api/v1/analytics/reports/custom');
+            const json = await res.json();
+            const data = json?.data || [];
+            setReportCount(data.length);
         } catch (error) {
-            console.error('Error:', error);
-                    } finally {
+            console.error('Error loading export data:', error);
+        } finally {
             setLoading(false);
         }
     };
 
-    const handleExport = async (reportId: string, format: string) => {
-        try {
-            await ReportExportService.exportReport(reportId, format);
-        } catch (error) {
-            console.error('Error:', error);
-                    }
-    };
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
     return (
         <div className="p-6 space-y-8 min-h-screen">
             <div>
@@ -38,9 +40,12 @@ export default function ExportOptionsPage() {
                     Export Management
                 </h1>
                 <p className="text-slate-500 mt-2 text-lg">Configure default export formats, branding, and templates.</p>
+                {reportCount > 0 && (
+                    <p className="text-sm text-indigo-600 mt-1">{reportCount} report(s) available for export</p>
+                )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {[
                     { title: 'PDF Settings', icon: FileText, color: 'text-red-500', desc: 'Layout, Page Size, Branding' },
                     { title: 'Excel / CSV', icon: TableIcon, color: 'text-emerald-500', desc: 'Delimiter, Encoding, Headers' },
@@ -95,3 +100,4 @@ export default function ExportOptionsPage() {
         </div>
     );
 }
+

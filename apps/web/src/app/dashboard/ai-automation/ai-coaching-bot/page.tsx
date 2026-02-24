@@ -92,7 +92,7 @@ export default function AICoachingBotPage() {
     };
 
     return (
-        <div className="flex h-[calc(100vh-6rem)] gap-6">
+        <div className="flex h-[calc(100vh-6rem)] gap-3">
 
             {/* Main Chat Area */}
             <div className="flex-1 flex flex-col bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden">
@@ -117,7 +117,7 @@ export default function AICoachingBotPage() {
                 </div>
 
                 {/* Messages List */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-slate-50/50 dark:bg-slate-900/20">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 dark:bg-slate-900/20">
                     {messages.map((msg) => (
                         <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                             <div className={`flex gap-3 max-w-[80%] ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -185,7 +185,7 @@ export default function AICoachingBotPage() {
             </div>
 
             {/* Sidebar Resources */}
-            <div className="w-80 flex flex-col gap-4">
+            <div className="w-80 flex flex-col gap-3">
                 <div className="bg-white dark:bg-stellar-blue p-5 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <h3 className="text-sm font-bold text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
                         <Sparkles className="w-4 h-4 text-amber-400" />
@@ -224,3 +224,4 @@ export default function AICoachingBotPage() {
         </div>
     );
 }
+

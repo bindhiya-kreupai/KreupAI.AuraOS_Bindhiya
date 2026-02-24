@@ -1,20 +1,22 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { prisma } from '@aura/database';
+import { prisma } from '@/lib/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
 const CompOffSchema = z.object({
-  employeeId: z.string(),
+  employeeId: z.string().min(1),
   workedDate: z.string(),
-  hours: z.number().positive(),
+  workedHours: z.coerce.number().positive(),
   reason: z.string().min(1),
-  approverNotes: z.string().optional(),
+  projectCode: z.string().optional(),
+  creditedDays: z.coerce.number().default(1),
+  expiryDate: z.string(),
 });
 
-// GET - Fetch comp-off tracking data
+// GET - Fetch comp-off tracking data from database
 export const GET = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
@@ -25,65 +27,29 @@ export const GET = withEnhancedAuth(
       const employeeId = searchParams.get('employeeId') || user.userId;
       const status = searchParams.get('status');
 
-      const mockCompOffs = [
-        {
-          id: '1',
-          employeeId: 'emp-1',
-          employeeName: 'John Doe',
-          workedDate: '2024-08-15',
-          hours: 8,
-          reason: 'Weekend deployment',
-          status: 'APPROVED',
-          approvedBy: 'manager-1',
-          approvedAt: '2024-08-16',
-          expiryDate: '2024-11-15',
-          isUsed: false,
-          createdAt: '2024-08-15',
-        },
-        {
-          id: '2',
-          employeeId: 'emp-1',
-          employeeName: 'John Doe',
-          workedDate: '2024-07-20',
-          hours: 10,
-          reason: 'Holiday critical support',
-          status: 'APPROVED',
-          approvedBy: 'manager-1',
-          approvedAt: '2024-07-21',
-          expiryDate: '2024-10-20',
-          isUsed: true,
-          usedOn: '2024-09-05',
-          createdAt: '2024-07-20',
-        },
-        {
-          id: '3',
-          employeeId: 'emp-2',
-          employeeName: 'Jane Smith',
-          workedDate: '2024-08-25',
-          hours: 8,
-          reason: 'Project deadline work',
-          status: 'PENDING',
-          expiryDate: null,
-          isUsed: false,
-          createdAt: '2024-08-25',
-        },
-      ];
+      const tenantId = user.tenantId;
 
-      let filteredData = mockCompOffs.filter(co => co.employeeId === employeeId);
-      if (status) {
-        filteredData = filteredData.filter(co => co.status === status);
-      }
+      const where: Record<string, unknown> = { tenantId };
+      if (employeeId) where.employeeId = employeeId;
+      if (status) where.status = status;
+
+      const compOffs = await prisma.compOffEarned.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+      });
 
       const summary = {
-        total: filteredData.length,
-        available: filteredData.filter(co => !co.isUsed && co.status === 'APPROVED').length,
-        used: filteredData.filter(co => co.isUsed).length,
-        pending: filteredData.filter(co => co.status === 'PENDING').length,
+        total: compOffs.length,
+        available: compOffs.filter(co => !co.isUsed && co.status === 'APPROVED').length,
+        used: compOffs.filter(co => co.isUsed).length,
+        pending: compOffs.filter(co => co.status === 'PENDING').length,
       };
 
       return NextResponse.json({
         success: true,
-        data: { compOffs: filteredData, summary },
+        compOffs,
+        compOffRequests: compOffs,
+        data: { compOffs, summary },
       });
     } catch (error) {
       logger.error('Error fetching comp-off data:', error);
@@ -95,7 +61,7 @@ export const GET = withEnhancedAuth(
   }
 );
 
-// POST - Request comp-off
+// POST - Request comp-off in database
 export const POST = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
@@ -104,26 +70,37 @@ export const POST = withEnhancedAuth(
 
       const body = await request.json();
       const data = CompOffSchema.parse(body);
+      const tenantId = user.tenantId;
 
-      const newCompOff = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data,
-        status: 'PENDING',
-        isUsed: false,
-        createdAt: new Date().toISOString(),
-      };
+      const newCompOff = await prisma.compOffEarned.create({
+        data: {
+          tenantId,
+          employeeId: data.employeeId,
+          workedDate: new Date(data.workedDate),
+          workedHours: data.workedHours,
+          reason: data.reason,
+          projectCode: data.projectCode || null,
+          creditedDays: data.creditedDays,
+          expiryDate: new Date(data.expiryDate),
+          remainingDays: data.creditedDays,
+          status: 'PENDING',
+        },
+      });
 
       await prisma.auditLog.create({
         data: {
           userId: user.userId,
           action: 'CREATE',
           module: 'Leave - Comp-off',
-          details: `Requested comp-off for ${data.workedDate} - ${data.hours} hours`,
+          details: `Requested comp-off for ${data.workedDate} - ${data.workedHours} hours`,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
 
-      return NextResponse.json({ success: true, data: newCompOff }, { status: 201 });
+      return NextResponse.json(
+        { success: true, data: newCompOff, compOff: newCompOff, compOffRequest: newCompOff },
+        { status: 201 }
+      );
     } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
@@ -140,7 +117,7 @@ export const POST = withEnhancedAuth(
   }
 );
 
-// PUT - Approve/Reject comp-off
+// PUT - Approve/Reject comp-off in database
 export const PUT = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
     try {
@@ -148,7 +125,7 @@ export const PUT = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const body = await request.json();
-      const { id, status, approverNotes } = body;
+      const { id, status, rejectionReason } = body;
 
       if (!id || !status) {
         return NextResponse.json(
@@ -157,14 +134,34 @@ export const PUT = withEnhancedAuth(
         );
       }
 
-      const updated = {
-        id,
-        status,
-        approverNotes,
-        approvedBy: user.userId,
-        approvedAt: new Date().toISOString(),
-        expiryDate: status === 'APPROVED' ? new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : null,
-      };
+      const tenantId = user.tenantId;
+
+      // Verify the comp-off exists and belongs to this tenant
+      const existing = await prisma.compOffEarned.findFirst({
+        where: { id, tenantId },
+      });
+
+      if (!existing) {
+        return NextResponse.json(
+          { success: false, error: 'Comp-off request not found' },
+          { status: 404 }
+        );
+      }
+
+      const updateData: Record<string, unknown> = { status };
+
+      if (status === 'APPROVED') {
+        updateData.approvedBy = user.userId;
+        updateData.approvedAt = new Date();
+      } else if (status === 'REJECTED') {
+        updateData.rejectedBy = user.userId;
+        updateData.rejectionReason = rejectionReason || null;
+      }
+
+      const updated = await prisma.compOffEarned.update({
+        where: { id },
+        data: updateData,
+      });
 
       await prisma.auditLog.create({
         data: {
@@ -176,7 +173,12 @@ export const PUT = withEnhancedAuth(
         },
       });
 
-      return NextResponse.json({ success: true, data: updated });
+      return NextResponse.json({
+        success: true,
+        data: updated,
+        compOff: updated,
+        compOffRequest: updated,
+      });
     } catch (error) {
       logger.error('Error updating comp-off:', error);
       return NextResponse.json(

@@ -15,7 +15,7 @@ const MarketingNavbar = () => (
             alt="AuraOS"
             width={60}
             height={60}
-            className="w-[60px] h-[60px] object-contain"
+            className="w-[60px] h-[60px] object-contain mix-blend-multiply dark:mix-blend-screen"
             priority
           />
           <span className="font-display font-bold text-xl text-ink-black dark:text-pearl">
@@ -52,7 +52,7 @@ const MarketingNavbar = () => (
         </div>
 
         {/* CTA */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link
             href="/auth/login"
             className="text-sm font-medium text-twilight dark:text-silver-mist hover:text-ink-black dark:hover:text-pearl transition-colors"
@@ -144,3 +144,4 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
     </div>
   );
 }
+

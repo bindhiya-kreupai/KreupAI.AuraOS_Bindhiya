@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import {
     ArrowRightCircle,
-    Archive,
-    AlertCircle
+    AlertCircle,
+    Loader2
 } from 'lucide-react';
 import { CarryForwardService } from '../services';
 import type { CarryForward } from '../types';
@@ -21,18 +21,16 @@ export default function CarryForwardPage() {
         try {
             setLoading(true);
             const result = await CarryForwardService.getCarryForwards();
-            if (result.length > 0) {
-                setCarryForwards(result);
-            }
+            setCarryForwards(result);
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+        } finally {
             setLoading(false);
         }
     };
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <ArrowRightCircle className="w-6 h-6 text-indigo-500" />
@@ -43,14 +41,14 @@ export default function CarryForwardPage() {
             </div>
 
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                <h3 className="font-bold text-lg mb-4">Year-End Processing (2024 to 2025)</h3>
+                <h3 className="font-bold text-lg mb-4">Year-End Processing</h3>
 
-                <div className="flex items-start gap-4 p-4 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-900/30 mb-6">
+                <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-900/30 mb-6">
                     <AlertCircle className="w-5 h-5 text-amber-500 mt-1" />
                     <div>
                         <h4 className="font-bold text-amber-900 dark:text-amber-200">Policy Limit</h4>
                         <p className="text-sm text-amber-800 dark:text-amber-300">
-                            Maximum carry forward limit is <strong>10 days</strong> for Annual Leave. Any excess balance will lapse on Dec 31st.
+                            Maximum carry forward limit is defined per leave type policy. Any excess balance will lapse.
                         </p>
                     </div>
                 </div>
@@ -60,32 +58,39 @@ export default function CarryForwardPage() {
                         <thead className="bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-500 uppercase">
                             <tr>
                                 <th className="px-6 py-4">Employee</th>
-                                <th className="px-6 py-4">Current Balance (2024)</th>
-                                <th className="px-6 py-4">Carry Forward (2025)</th>
-                                <th className="px-6 py-4">Lapsed Days</th>
+                                <th className="px-6 py-4">Leave Type</th>
+                                <th className="px-6 py-4">Eligible Balance</th>
+                                <th className="px-6 py-4">Carry Forward</th>
+                                <th className="px-6 py-4">Lapsed</th>
                                 <th className="px-6 py-4">Status</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
-                                        Loading carry forward data...
+                                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            Loading carry forward data...
+                                        </div>
                                     </td>
                                 </tr>
-                            ) : (carryForwards.length > 0 ? carryForwards : [
-                                { id: '1', employeeId: 'E001', employeeName: 'John Doe', leaveTypeId: 'AL', fromYear: 2024, toYear: 2025, previousBalance: 15, carryForwardDays: 10, lapsedDays: 5, status: 'pending' as const },
-                                { id: '2', employeeId: 'E002', employeeName: 'Jane Smith', leaveTypeId: 'AL', fromYear: 2024, toYear: 2025, previousBalance: 8, carryForwardDays: 8, lapsedDays: 0, status: 'processed' as const },
-                                { id: '3', employeeId: 'E003', employeeName: 'Mike Ross', leaveTypeId: 'AL', fromYear: 2024, toYear: 2025, previousBalance: 22, carryForwardDays: 10, lapsedDays: 12, status: 'pending' as const },
-                            ] as CarryForward[]).map((emp, i) => (
+                            ) : carryForwards.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
+                                        No carry forward records found.
+                                    </td>
+                                </tr>
+                            ) : carryForwards.map((emp, i) => (
                                 <tr key={emp.id || i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                     <td className="px-6 py-4 font-bold">{emp.employeeName}</td>
-                                    <td className="px-6 py-4 font-bold text-slate-600 dark:text-slate-400">{emp.previousBalance}</td>
-                                    <td className="px-6 py-4 font-bold text-indigo-600">{emp.carryForwardDays}</td>
-                                    <td className="px-6 py-4 font-bold text-rose-600">{emp.lapsedDays}</td>
+                                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{emp.leaveTypeName || emp.leaveTypeId}</td>
+                                    <td className="px-6 py-4 font-bold text-slate-600 dark:text-slate-400">{emp.eligibleBalance ?? 0}</td>
+                                    <td className="px-6 py-4 font-bold text-indigo-600">{emp.actualCarryForward ?? 0}</td>
+                                    <td className="px-6 py-4 font-bold text-rose-600">{emp.lapsedBalance ?? 0}</td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded text-xs font-bold ${emp.status === 'processed' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-600'
-                                            }`}>{emp.status === 'processed' ? 'Processed' : 'Pending'}</span>
+                                        <span className={`px-2 py-1 rounded text-xs font-bold ${emp.status === 'processed' ? 'bg-emerald-100 text-emerald-600' : emp.status === 'utilized' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-200 text-slate-600'
+                                            }`}>{emp.status === 'processed' ? 'Processed' : emp.status === 'utilized' ? 'Utilized' : emp.status === 'expired' ? 'Expired' : emp.status}</span>
                                     </td>
                                 </tr>
                             ))}
@@ -100,3 +105,4 @@ export default function CarryForwardPage() {
         </div>
     );
 }
+

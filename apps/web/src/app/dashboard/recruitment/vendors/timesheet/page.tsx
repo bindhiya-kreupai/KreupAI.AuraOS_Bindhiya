@@ -13,9 +13,9 @@ import {
 
 export default function AgencyTimesheetPage() {
     return (
-        <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Clock className="w-6 h-6 text-indigo-500" />
@@ -23,7 +23,7 @@ export default function AgencyTimesheetPage() {
                     </h1>
                     <p className="text-slate-500 text-sm">Review and approve weekly hours from vendors.</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2">
                         <button className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"><ChevronLeft className="w-4 h-4" /></button>
                         <span className="text-sm font-bold">Dec 04 - Dec 10, 2023</span>
@@ -83,3 +83,4 @@ export default function AgencyTimesheetPage() {
         </div>
     );
 }
+
