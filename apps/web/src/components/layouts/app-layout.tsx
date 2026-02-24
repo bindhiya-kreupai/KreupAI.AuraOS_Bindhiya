@@ -13,6 +13,9 @@ import { usePathname } from 'next/navigation';
 import { SidebarMenu, MobileMenu, TopNav, RightSidebar } from '@aura/ui/components/menu';
 import { cn } from '@/lib/utils';
 import { ActivityProvider, useActivity } from '@/stores/activity-store';
+import { SearchProvider, useSearch } from '@/stores/search-store';
+import { ThemeProvider, useTheme } from '@/stores/theme-store';
+import { GlobalSearchCommand } from '@/components/search/GlobalSearchCommand';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -24,7 +27,10 @@ const AppLayoutInner: React.FC<AppLayoutProps> = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { recentActivity, favorites, addActivity, clearActivity, toggleFavorite, removeFavorite } = useActivity();
+  const { recentActivity, favorites, addActivity, clearActivity, toggleFavorite, removeFavorite } =
+    useActivity();
+  const { setIsOpen: setSearchOpen } = useSearch();
+  const { isDark, toggleTheme } = useTheme();
 
   // Track page visits for recent activity
   useEffect(() => {
@@ -34,17 +40,27 @@ const AppLayoutInner: React.FC<AppLayoutProps> = ({ children }) => {
       const pageName = pathParts[pathParts.length - 1] || 'Dashboard';
       const title = pageName
         .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
-      
+
       // Extract module name (2nd or 3rd level from path)
-      const moduleName = pathParts.length > 2 
-        ? pathParts.slice(1, 3).map(p => 
-            p.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-          ).join(' > ')
-        : pathParts.length > 1 
-          ? pathParts[1].split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-          : 'Home';
+      const moduleName =
+        pathParts.length > 2
+          ? pathParts
+              .slice(1, 3)
+              .map((p) =>
+                p
+                  .split('-')
+                  .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                  .join(' ')
+              )
+              .join(' > ')
+          : pathParts.length > 1
+            ? pathParts[1]
+                .split('-')
+                .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(' ')
+            : 'Home';
 
       addActivity({
         path: pathname,
@@ -64,8 +80,16 @@ const AppLayoutInner: React.FC<AppLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-white-glow dark:bg-deep-cosmos">
+      {/* Global Search Command Palette */}
+      <GlobalSearchCommand />
+
       {/* Top Navigation */}
-      <TopNav onMenuClick={() => setMobileMenuOpen(true)} />
+      <TopNav
+        onMenuClick={() => setMobileMenuOpen(true)}
+        onSearchClick={() => setSearchOpen(true)}
+        isDark={isDark}
+        onThemeToggle={toggleTheme}
+      />
 
       <div className="flex h-[calc(100vh-4rem)]">
         {/* Desktop Sidebar */}
@@ -80,10 +104,7 @@ const AppLayoutInner: React.FC<AppLayoutProps> = ({ children }) => {
         </div>
 
         {/* Mobile Menu */}
-        <MobileMenu
-          isOpen={mobileMenuOpen}
-          onClose={() => setMobileMenuOpen(false)}
-        />
+        <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
         {/* Main Content */}
         <main
@@ -114,9 +135,13 @@ const AppLayoutInner: React.FC<AppLayoutProps> = ({ children }) => {
 // Main component that wraps with provider
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
-    <ActivityProvider>
-      <AppLayoutInner>{children}</AppLayoutInner>
-    </ActivityProvider>
+    <ThemeProvider>
+      <ActivityProvider>
+        <SearchProvider>
+          <AppLayoutInner>{children}</AppLayoutInner>
+        </SearchProvider>
+      </ActivityProvider>
+    </ThemeProvider>
   );
 };
 

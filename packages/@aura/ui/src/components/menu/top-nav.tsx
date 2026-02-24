@@ -28,11 +28,13 @@ import { cn } from '../../utils';
 
 interface TopNavProps {
   onMenuClick?: () => void;
+  onSearchClick?: () => void;
+  isDark?: boolean;
+  onThemeToggle?: () => void;
   className?: string;
 }
 
-export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, className }) => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, onSearchClick, isDark = false, onThemeToggle, className }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
@@ -67,19 +69,18 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, className }) => {
           </span>
         </Link>
 
-        {/* Search */}
+        {/* Search - Click to open command palette */}
         <div className="hidden md:flex items-center">
-          <div className="relative">
+          <button
+            onClick={onSearchClick}
+            className="relative w-64 lg:w-80 flex items-center gap-2 pl-10 pr-4 py-2 bg-pearl dark:bg-stellar-blue rounded-xl text-sm text-silver-mist border-2 border-transparent hover:border-celestial-indigo/30 focus:border-celestial-indigo focus:outline-none transition-colors text-left"
+          >
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-64 lg:w-80 pl-10 pr-4 py-2 bg-pearl dark:bg-stellar-blue rounded-xl text-sm text-ink-black dark:text-pearl placeholder:text-silver-mist border-2 border-transparent focus:border-celestial-indigo focus:outline-none transition-colors"
-            />
+            Search...
             <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden lg:inline-flex items-center gap-1 px-2 py-0.5 text-xs text-silver-mist bg-cloud dark:bg-nebula-purple rounded">
               ⌘K
             </kbd>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -93,10 +94,11 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, className }) => {
 
         {/* Theme Toggle */}
         <button
-          onClick={() => setIsDarkMode(!isDarkMode)}
+          onClick={onThemeToggle}
           className="p-2 rounded-lg hover:bg-pearl dark:hover:bg-stellar-blue transition-colors"
+          title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
         >
-          {isDarkMode ? (
+          {isDark ? (
             <Sun className="w-5 h-5 text-sunset-amber" />
           ) : (
             <Moon className="w-5 h-5 text-twilight dark:text-silver-mist" />
