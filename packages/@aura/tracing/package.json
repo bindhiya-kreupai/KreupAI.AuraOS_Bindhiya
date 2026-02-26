@@ -1,0 +1,42 @@
+{
+  "name": "@aura/tracing",
+  "version": "1.0.0",
+  "description": "AuraOS OpenTelemetry tracing, Prometheus metrics, and structured logging",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint src/",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.7.0",
+    "@opentelemetry/sdk-node": "^0.49.1",
+    "@opentelemetry/auto-instrumentations-node": "^0.42.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.49.1",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.49.1",
+    "@opentelemetry/resources": "^1.22.0",
+    "@opentelemetry/semantic-conventions": "^1.22.0",
+    "@opentelemetry/sdk-metrics": "^1.22.0",
+    "prom-client": "^15.1.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/uuid": "^9.0.7",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

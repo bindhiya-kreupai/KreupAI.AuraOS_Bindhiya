@@ -225,28 +225,26 @@ export const industryCodes: IndustryCode[] = [
   ...sicCodes,
 ];
 
+/**
+ * NOTE: IndustryCode is not a dedicated Prisma model.
+ * Codes are stored in SystemSetting under the `industry_codes` group.
+ */
 export async function seed(prisma: PrismaClient): Promise<void> {
   console.log('Seeding industry codes...');
 
   for (const code of industryCodes) {
-    const key = `${code.system}_${code.code}`;
-    await prisma.industryCode.upsert({
-      where: { key },
-      update: {
-        system: code.system,
-        code: code.code,
-        title: code.title,
-        level: code.level,
-      },
+    const settingKey = `industry_code.${code.system}_${code.code}`;
+    await prisma.systemSetting.upsert({
+      where: { key: settingKey },
+      update: { value: JSON.stringify(code) },
       create: {
-        key,
-        system: code.system,
-        code: code.code,
-        title: code.title,
-        level: code.level,
+        key: settingKey,
+        value: JSON.stringify(code),
+        group: 'industry_codes',
+        description: `${code.system} code ${code.code}: ${code.title}`,
       },
     });
   }
 
-  console.log(`Seeded ${industryCodes.length} industry codes (${naicsCodes.length} NAICS sectors, ${naicsSubsectors.length} NAICS subsectors, ${naicsIndustryGroups.length} NAICS industry groups, ${sicCodes.length} SIC).`);
+  console.log(`Seeded ${industryCodes.length} industry codes.`);
 }

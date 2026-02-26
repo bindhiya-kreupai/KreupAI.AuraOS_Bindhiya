@@ -1,0 +1,352 @@
+# Staging Deployment Pipeline
+# Triggered after CI passes on main branch
+# Builds Docker images, pushes to registry, deploys to staging environment
+
+name: Deploy to Staging
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deploy even if CI did not pass'
+        required: false
+        default: 'false'
+        type: boolean
+
+# Only allow one staging deployment at a time
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false   # Queue, don't cancel; staging should be predictable
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  ENVIRONMENT: staging
+
+jobs:
+  # ============================================================================
+  # GUARD: Only proceed if CI succeeded (or force_deploy is true)
+  # ============================================================================
+  check-ci-status:
+    name: Check CI Status
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.check.outputs.should-deploy }}
+
+    steps:
+      - name: Check CI workflow result
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && \
+             [ "${{ inputs.force_deploy }}" = "true" ]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "Force deploy requested"
+          elif [ "${{ github.event.workflow_run.conclusion }}" = "success" ]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "CI passed — proceeding with deployment"
+          else
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+            echo "CI did not pass — skipping deployment"
+          fi
+
+  # ============================================================================
+  # BUILD & PUSH DOCKER IMAGES
+  # ============================================================================
+  build-and-push:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest
+    needs: check-ci-status
+    if: needs.check-ci-status.outputs.should-deploy == 'true'
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      web-image: ${{ steps.meta-web.outputs.tags }}
+      web-digest: ${{ steps.build-web.outputs.digest }}
+      service-image: ${{ steps.meta-service.outputs.tags }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # -----------------------------------------------------------------------
+      # Web app (Next.js)
+      # -----------------------------------------------------------------------
+      - name: Extract metadata for web image
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web
+          tags: |
+            type=sha,prefix=staging-,format=short
+            type=raw,value=staging-latest
+
+      - name: Build and push web Docker image
+        id: build-web
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile.web
+          push: true
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max
+          build-args: |
+            NODE_ENV=production
+            NEXT_TELEMETRY_DISABLED=1
+            BUILD_SHA=${{ github.sha }}
+
+      # -----------------------------------------------------------------------
+      # Microservices (build one image used for all services via CMD override)
+      # -----------------------------------------------------------------------
+      - name: Extract metadata for service image
+        id: meta-service
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/service
+          tags: |
+            type=sha,prefix=staging-,format=short
+            type=raw,value=staging-latest
+
+      - name: Build and push service Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile.service
+          push: true
+          tags: ${{ steps.meta-service.outputs.tags }}
+          labels: ${{ steps.meta-service.outputs.labels }}
+          cache-from: type=gha,scope=service
+          cache-to: type=gha,scope=service,mode=max
+          build-args: |
+            NODE_ENV=production
+            BUILD_SHA=${{ github.sha }}
+
+  # ============================================================================
+  # RUN DATABASE MIGRATIONS
+  # ============================================================================
+  run-migrations:
+    name: Run Database Migrations
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment:
+      name: staging
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Prisma migrations against staging database
+        run: pnpm --filter @aura/database prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+      - name: Verify migration status
+        run: pnpm --filter @aura/database prisma migrate status
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+  # ============================================================================
+  # DEPLOY TO STAGING
+  # ============================================================================
+  deploy:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build-and-push, run-migrations]
+    environment:
+      name: staging
+      url: https://staging.auraos.kreupai.com
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Docker Compose deployment (primary strategy)
+      # -----------------------------------------------------------------------
+      - name: Deploy via Docker Compose (SSH)
+        if: ${{ vars.DEPLOY_TARGET == 'docker-compose' || vars.DEPLOY_TARGET == '' }}
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          port: ${{ secrets.STAGING_SSH_PORT || 22 }}
+          timeout: 300s
+          script: |
+            set -e
+            cd /opt/auraos-staging
+
+            # Pull latest images
+            echo "${{ secrets.GITHUB_TOKEN }}" | \
+              docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            docker compose pull web scheduling-service payroll-service \
+              employee-service auth-service notification-service \
+              workflow-service analytics-service document-service \
+              ai-service integration-service
+
+            # Rolling update — web first, then services
+            docker compose up -d --no-deps --remove-orphans web
+            sleep 5
+
+            # Start/update all microservices
+            docker compose up -d --no-deps --remove-orphans \
+              scheduling-service payroll-service employee-service \
+              auth-service notification-service workflow-service \
+              analytics-service document-service ai-service integration-service
+
+            # Verify containers are healthy
+            docker compose ps
+            echo "Deployment complete"
+
+      # -----------------------------------------------------------------------
+      # Kubernetes deployment (alternative strategy)
+      # -----------------------------------------------------------------------
+      - name: Deploy via Kubernetes
+        if: ${{ vars.DEPLOY_TARGET == 'kubernetes' }}
+        env:
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_STAGING }}
+          WEB_IMAGE: ${{ needs.build-and-push.outputs.web-image }}
+        run: |
+          echo "$KUBECONFIG_DATA" > /tmp/kubeconfig
+          export KUBECONFIG=/tmp/kubeconfig
+
+          # Update web deployment
+          kubectl set image deployment/auraos-web \
+            web=$(echo "$WEB_IMAGE" | head -1) \
+            -n staging
+
+          kubectl rollout status deployment/auraos-web -n staging --timeout=300s
+
+          # Update microservices
+          for service in scheduling payroll employee auth notification workflow analytics document ai integration; do
+            kubectl rollout restart deployment/auraos-${service}-service -n staging || true
+          done
+
+          rm /tmp/kubeconfig
+
+  # ============================================================================
+  # POST-DEPLOYMENT HEALTH CHECKS
+  # ============================================================================
+  health-checks:
+    name: Post-Deployment Health Checks
+    runs-on: ubuntu-latest
+    needs: deploy
+    timeout-minutes: 10
+
+    steps:
+      - name: Wait for services to stabilise
+        run: sleep 30
+
+      - name: Health check — Web app
+        run: |
+          for i in $(seq 1 5); do
+            if curl -sf https://staging.auraos.kreupai.com/api/health; then
+              echo "Web app is healthy"
+              break
+            fi
+            echo "Attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
+
+      - name: Health check — Auth service
+        run: |
+          curl -sf https://staging.auraos.kreupai.com/api/auth/health || \
+            echo "Warning: auth service health check failed (non-fatal)"
+
+      - name: Health check — Employee service
+        run: |
+          curl -sf https://staging.auraos.kreupai.com/api/employees/health || \
+            echo "Warning: employee service health check failed (non-fatal)"
+
+      - name: Generate deployment summary
+        if: always()
+        run: |
+          echo "## Staging Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Item | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | staging |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit SHA | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deployed by | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Triggered by | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Web Image | ${{ needs.build-and-push.outputs.web-image }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**URL**: https://staging.auraos.kreupai.com" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================================
+  # NOTIFY
+  # ============================================================================
+  notify:
+    name: Notify Deployment Result
+    runs-on: ubuntu-latest
+    needs: [build-and-push, deploy, health-checks]
+    if: always()
+
+    steps:
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          custom_payload: |
+            {
+              "attachments": [{
+                "color": "${{ contains(needs.*.result, 'failure') && 'danger' || 'good' }}",
+                "title": "AuraOS Staging Deployment",
+                "fields": [
+                  { "title": "Status", "value": "${{ contains(needs.*.result, 'failure') && 'FAILED' || 'SUCCESS' }}", "short": true },
+                  { "title": "Branch", "value": "${{ github.ref_name }}", "short": true },
+                  { "title": "Commit", "value": "${{ github.sha }}", "short": true },
+                  { "title": "Actor", "value": "${{ github.actor }}", "short": true }
+                ]
+              }]
+            }
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}

@@ -1,0 +1,53 @@
+---
+# AuraOS Payroll Service — HorizontalPodAutoscaler
+# Scales from min 2 to max 8 replicas based on CPU and memory.
+# NOTE: The base Deployment + Service already exist at k8s/services/payroll-service.yaml.
+#       This file adds/updates the HPA targeting that Deployment.
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: payroll-service-hpa
+  namespace: aura-system
+  labels:
+    app: payroll-service
+    app.kubernetes.io/name: payroll-service-hpa
+    app.kubernetes.io/component: autoscaler
+    app.kubernetes.io/part-of: aura-system
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: payroll-service
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+      selectPolicy: Max

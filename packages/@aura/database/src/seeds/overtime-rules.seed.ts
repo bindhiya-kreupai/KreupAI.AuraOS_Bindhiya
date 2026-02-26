@@ -34,24 +34,23 @@ export const overtimeRules: OvertimeRule[] = [
   { jurisdiction: 'AE', dailyThreshold: 8, weeklyThreshold: 48, multiplier: 1.25 },
 ];
 
+/**
+ * NOTE: OvertimeRule is not a dedicated Prisma model.
+ * Rules are stored in SystemSetting under the `overtime_rules` group.
+ */
 export async function seed(prisma: PrismaClient): Promise<void> {
   console.log('Seeding overtime rules...');
 
   for (const rule of overtimeRules) {
-    await prisma.overtimeRule.upsert({
-      where: { jurisdiction: rule.jurisdiction },
-      update: {
-        dailyThreshold: rule.dailyThreshold ?? null,
-        weeklyThreshold: rule.weeklyThreshold,
-        multiplier: rule.multiplier,
-        doubleTimeThreshold: rule.doubleTimeThreshold ?? null,
-      },
+    const key = `overtime_rule.${rule.jurisdiction}`;
+    await prisma.systemSetting.upsert({
+      where: { key },
+      update: { value: JSON.stringify(rule) },
       create: {
-        jurisdiction: rule.jurisdiction,
-        dailyThreshold: rule.dailyThreshold ?? null,
-        weeklyThreshold: rule.weeklyThreshold,
-        multiplier: rule.multiplier,
-        doubleTimeThreshold: rule.doubleTimeThreshold ?? null,
+        key,
+        value: JSON.stringify(rule),
+        group: 'overtime_rules',
+        description: `Overtime rule for jurisdiction: ${rule.jurisdiction}`,
       },
     });
   }

@@ -1,8 +1,10 @@
 import { Worker, Job, Queue } from 'bullmq';
 import { MetricsService, MetricsQuery, AggregatedMetrics } from '../services/metricsService';
+import { prisma } from '../lib/prisma';
 
 export interface MetricsAggregationJobData {
   organizationId: string;
+  tenantId?: string;
   departmentId?: string;
   period: 'daily' | 'weekly' | 'monthly';
   startDate: string;
@@ -15,6 +17,7 @@ export interface MetricsAggregationResult {
   metricsCount: number;
   duration: number;
   cachedUntil: string;
+  cacheKey?: string;
 }
 
 const QUEUE_NAME = 'metrics-aggregation';
@@ -24,19 +27,40 @@ const REDIS_CONNECTION = {
   port: parseInt(process.env.REDIS_PORT || '6379', 10),
 };
 
+// TTL map by period (milliseconds)
+const CACHE_TTL_MS: Record<string, number> = {
+  daily: 3_600_000,        // 1 hour
+  weekly: 86_400_000,      // 24 hours
+  monthly: 604_800_000,    // 7 days
+};
+
 /**
- * Start the periodic metrics aggregation worker
+ * Start the periodic metrics aggregation worker.
+ *
+ * Wired to real DB operations:
+ *  - Queries Employee and EmploymentHistory tables for headcount, turnover, diversity
+ *  - Stores aggregated results in AnalyticsCache with TTL based on period
+ *  - On failure, logs the error and returns a failed result (non-fatal cache miss)
  */
 export async function startMetricsAggregationWorker(): Promise<Worker<MetricsAggregationJobData, MetricsAggregationResult>> {
   const metricsService = new MetricsService();
 
   const worker = new Worker<MetricsAggregationJobData, MetricsAggregationResult>(
     QUEUE_NAME,
-    async (job: Job<MetricsAggregationJobData>) => {
-      const { organizationId, departmentId, period, startDate, endDate } = job.data;
-      const startTime = Date.now();
+    async (job: Job<MetricsAggregationJobData>): Promise<MetricsAggregationResult> => {
+      const {
+        organizationId,
+        tenantId = organizationId,
+        departmentId,
+        period,
+        startDate,
+        endDate,
+      } = job.data;
 
-      job.log('Starting metrics aggregation for org ' + organizationId + ' period ' + period);
+      const startTime = Date.now();
+      job.log(`Starting metrics aggregation for org ${organizationId} period ${period} [${startDate} → ${endDate}]`);
+
+      await job.updateProgress(10);
 
       const query: MetricsQuery = {
         organizationId,
@@ -46,22 +70,61 @@ export async function startMetricsAggregationWorker(): Promise<Worker<MetricsAgg
         granularity: period === 'daily' ? 'daily' : period === 'weekly' ? 'weekly' : 'monthly',
       };
 
-      // Aggregate all metrics
-      const metrics: AggregatedMetrics = await metricsService.getAllMetrics(query);
+      let metrics: AggregatedMetrics;
+      try {
+        metrics = await metricsService.getAllMetrics(query);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        job.log(`[ERROR] Metrics aggregation failed: ${msg}`);
+        throw err; // Let BullMQ handle retry
+      }
 
-      // TODO: Cache the aggregated metrics in Redis with TTL based on period
-      // const cacheTTL = period === 'daily' ? 3600 : period === 'weekly' ? 86400 : 604800;
-      // await redis.setex(cacheKey, cacheTTL, JSON.stringify(metrics));
+      await job.updateProgress(80);
 
       const duration = Date.now() - startTime;
-      const cacheDuration = period === 'daily' ? 3600000 : period === 'weekly' ? 86400000 : 604800000;
+      const ttlMs = CACHE_TTL_MS[period] ?? CACHE_TTL_MS.daily;
+      const expiresAt = new Date(Date.now() + ttlMs);
+      const cacheKey = `metrics:${organizationId}:${period}:${startDate}:${endDate}${departmentId ? `:${departmentId}` : ''}`;
+
+      // ------------------------------------------------------------------ //
+      // Persist aggregated metrics to AnalyticsCache                        //
+      // ------------------------------------------------------------------ //
+      try {
+        await prisma.analyticsCache.upsert({
+          where: { tenantId_cacheKey: { tenantId, cacheKey } },
+          update: {
+            data: metrics as unknown as Record<string, unknown>,
+            generatedAt: new Date(),
+            expiresAt,
+            recordCount: metrics.headcount.total,
+          },
+          create: {
+            tenantId,
+            cacheKey,
+            category: 'ANALYTICS',
+            data: metrics as unknown as Record<string, unknown>,
+            generatedAt: new Date(),
+            expiresAt,
+            recordCount: metrics.headcount.total,
+          },
+        });
+        job.log(`Metrics cached at key: ${cacheKey} expires: ${expiresAt.toISOString()}`);
+      } catch (cacheErr) {
+        // Non-fatal: log and continue — cache miss is acceptable
+        job.log(
+          `[WARN] Could not write AnalyticsCache: ${cacheErr instanceof Error ? cacheErr.message : String(cacheErr)}`
+        );
+      }
+
+      await job.updateProgress(100);
 
       return {
         organizationId,
         period,
         metricsCount: 3, // headcount, turnover, diversity
         duration,
-        cachedUntil: new Date(Date.now() + cacheDuration).toISOString(),
+        cachedUntil: expiresAt.toISOString(),
+        cacheKey,
       };
     },
     {
@@ -71,11 +134,13 @@ export async function startMetricsAggregationWorker(): Promise<Worker<MetricsAgg
   );
 
   worker.on('completed', (job, result) => {
-    console.log('Metrics aggregation completed:', job.id, 'duration:', result.duration + 'ms');
+    console.log(
+      `Metrics aggregation completed: ${job.id} org: ${result.organizationId} period: ${result.period} duration: ${result.duration}ms`
+    );
   });
 
   worker.on('failed', (job, error) => {
-    console.error('Metrics aggregation job failed:', job?.id, error.message);
+    console.error(`Metrics aggregation job failed: ${job?.id}`, error.message);
   });
 
   console.log('Metrics aggregation worker started');
@@ -98,6 +163,7 @@ export async function schedulePeriodicAggregation(organizationIds: string[]): Pr
       'aggregate-daily',
       {
         organizationId: orgId,
+        tenantId: orgId,
         period: 'daily',
         startDate: startOfDay,
         endDate: now.toISOString(),

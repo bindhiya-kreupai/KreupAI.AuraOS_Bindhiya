@@ -1,0 +1,27 @@
+# Grafana Dashboard Provisioning — AuraOS
+# Auto-loads all JSON dashboards from the /dashboards directory.
+# Reference: https://grafana.com/docs/grafana/latest/administration/provisioning/#dashboards
+
+apiVersion: 1
+
+providers:
+  - name: AuraOS Dashboards
+    orgId: 1
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/dashboards
+      foldersFromFilesStructure: false
+
+  - name: AuraOS Payroll Dashboards
+    orgId: 1
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    folder: Payroll
+    options:
+      path: /etc/grafana/dashboards
+      foldersFromFilesStructure: false

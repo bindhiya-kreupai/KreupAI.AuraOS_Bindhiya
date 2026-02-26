@@ -290,24 +290,23 @@ export const integrationConfigs: IntegrationConfig[] = [
   },
 ];
 
+/**
+ * NOTE: IntegrationConfig is not a dedicated Prisma model.
+ * Configs are stored in SystemSetting under the `integration_configs` group.
+ */
 export async function seed(prisma: PrismaClient): Promise<void> {
   console.log('Seeding integration configs...');
 
   for (const config of integrationConfigs) {
-    await prisma.integrationConfig.upsert({
-      where: { provider: config.provider },
-      update: {
-        name: config.name,
-        requiredFields: JSON.stringify(config.requiredFields),
-        optionalFields: JSON.stringify(config.optionalFields),
-        authType: config.authType,
-      },
+    const key = `integration_config.${config.provider}`;
+    await prisma.systemSetting.upsert({
+      where: { key },
+      update: { value: JSON.stringify(config) },
       create: {
-        name: config.name,
-        provider: config.provider,
-        requiredFields: JSON.stringify(config.requiredFields),
-        optionalFields: JSON.stringify(config.optionalFields),
-        authType: config.authType,
+        key,
+        value: JSON.stringify(config),
+        group: 'integration_configs',
+        description: `Integration config for: ${config.name}`,
       },
     });
   }

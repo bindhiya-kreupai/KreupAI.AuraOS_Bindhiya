@@ -8,9 +8,12 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@prisma/client": "^5.7.1",
     "fastify": "^4.26.0",
     "date-fns": "^3.2.0",
-    "uuid": "^9.0.0"
+    "ioredis": "^5.3.2",
+    "uuid": "^9.0.0",
+    "@aura/scheduler": "*"
   },
   "devDependencies": {
     "typescript": "^5.3.3",

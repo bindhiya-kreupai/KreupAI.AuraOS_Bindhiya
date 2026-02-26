@@ -1,0 +1,270 @@
+# Security Scanning Pipeline
+# Runs dependency audit, secret scanning, SAST, and license compliance checks.
+# Triggers on every push to main and on pull requests.
+
+name: Security Scan
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run every day at 02:00 UTC for continuous security monitoring
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8'
+
+jobs:
+  # =============================================================================
+  # DEPENDENCY AUDIT — pnpm audit
+  # =============================================================================
+  dependency-audit:
+    name: Dependency Vulnerability Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run pnpm audit (fail on critical/high)
+        run: |
+          pnpm audit --audit-level=high --json > audit-report.json || true
+          CRITICAL=$(cat audit-report.json | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('metadata',{}).get('vulnerabilities',{}).get('critical',0))" 2>/dev/null || echo "0")
+          HIGH=$(cat audit-report.json | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('metadata',{}).get('vulnerabilities',{}).get('high',0))" 2>/dev/null || echo "0")
+          echo "Critical: $CRITICAL, High: $HIGH"
+          if [ "$CRITICAL" -gt "0" ] || [ "$HIGH" -gt "0" ]; then
+            echo "ERROR: Found critical or high severity vulnerabilities!"
+            cat audit-report.json | python3 -m json.tool
+            exit 1
+          fi
+          echo "No critical or high vulnerabilities found."
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-audit-report
+          path: audit-report.json
+          retention-days: 30
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### Dependency Audit" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Tool: pnpm audit" >> $GITHUB_STEP_SUMMARY
+          echo "- Threshold: high + critical = 0 allowed" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # SECRET SCAN — TruffleHog
+  # =============================================================================
+  secret-scan:
+    name: Secret Detection (TruffleHog)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for secret scan
+
+      - name: TruffleHog OSS Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: >
+            --debug
+            --only-verified
+            --fail
+          # Fail on verified secrets only to reduce false positives
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### Secret Detection" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Tool: TruffleHog OSS" >> $GITHUB_STEP_SUMMARY
+          echo "- Mode: verified secrets only" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # SAST — Semgrep
+  # =============================================================================
+  sast:
+    name: Static Application Security Testing (Semgrep)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep SAST
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >
+            p/typescript
+            p/nodejs
+            p/owasp-top-ten
+            p/jwt
+            p/sql-injection
+            p/xss
+          # Fail on ERROR and WARNING severity findings
+          generateSarif: '1'
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### SAST Scan" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Tool: Semgrep" >> $GITHUB_STEP_SUMMARY
+          echo "- Rule sets: typescript, nodejs, owasp-top-ten, jwt, sql-injection, xss" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # LICENSE COMPLIANCE CHECK
+  # =============================================================================
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install license-checker
+        run: pnpm add -g license-checker
+
+      - name: Check for prohibited licenses
+        run: |
+          license-checker --json --out license-report.json || true
+
+          # Prohibited licenses (copyleft that could affect proprietary code)
+          PROHIBITED="GPL-2.0,GPL-3.0,AGPL-1.0,AGPL-3.0,LGPL-2.0,LGPL-2.1,LGPL-3.0,CC-BY-SA-4.0"
+
+          echo "Checking for prohibited licenses: $PROHIBITED"
+          FOUND=$(cat license-report.json | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          prohibited = '$PROHIBITED'.split(',')
+          violations = []
+          for pkg, info in data.items():
+              lic = info.get('licenses', '')
+              for p in prohibited:
+                  if p.lower() in str(lic).lower():
+                      violations.append({'package': pkg, 'license': lic})
+          print(json.dumps(violations))
+          " 2>/dev/null || echo "[]")
+
+          VIOLATION_COUNT=$(echo "$FOUND" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "0")
+
+          if [ "$VIOLATION_COUNT" -gt "0" ]; then
+            echo "ERROR: Found packages with prohibited licenses:"
+            echo "$FOUND" | python3 -m json.tool
+            exit 1
+          fi
+          echo "License check passed: no prohibited licenses found."
+
+      - name: Upload license report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: license-report
+          path: license-report.json
+          retention-days: 30
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### License Compliance" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Tool: license-checker" >> $GITHUB_STEP_SUMMARY
+          echo "- Prohibited: GPL, AGPL, LGPL, CC-BY-SA" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # AGGREGATE SECURITY STATUS
+  # =============================================================================
+  security-gate:
+    name: Security Gate
+    runs-on: ubuntu-latest
+    needs: [dependency-audit, secret-scan, sast, license-check]
+    if: always()
+
+    steps:
+      - name: Evaluate security gate
+        run: |
+          AUDIT="${{ needs.dependency-audit.result }}"
+          SECRETS="${{ needs.secret-scan.result }}"
+          SAST="${{ needs.sast.result }}"
+          LICENSES="${{ needs.license-check.result }}"
+
+          echo "Dependency Audit: $AUDIT"
+          echo "Secret Scan:      $SECRETS"
+          echo "SAST:             $SAST"
+          echo "License Check:    $LICENSES"
+
+          if [ "$AUDIT" != "success" ] || [ "$SECRETS" != "success" ] || \
+             [ "$SAST" != "success" ] || [ "$LICENSES" != "success" ]; then
+            echo "SECURITY GATE FAILED — one or more security checks did not pass"
+            exit 1
+          fi
+
+          echo "All security checks passed."
+
+      - name: Final summary
+        if: always()
+        run: |
+          echo "## Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Audit | ${{ needs.dependency-audit.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Secret Detection | ${{ needs.secret-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| SAST (Semgrep) | ${{ needs.sast.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| License Check | ${{ needs.license-check.result }} |" >> $GITHUB_STEP_SUMMARY

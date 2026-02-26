@@ -1,5 +1,7 @@
 
 import { PrismaClient, Prisma } from '@prisma/client';
+import { createSoftDeleteMiddleware } from './middleware/soft-delete';
+import { createAuditMiddleware } from './middleware/audit';
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
@@ -63,6 +65,13 @@ function createPrismaClient(): PrismaClient {
         console.warn('[PRISMA WARNING]', e.message);
     });
 
+    // Register soft-delete middleware (converts deletes to isDeleted=true updates
+    // and injects isDeleted:false filter on reads)
+    client.$use(createSoftDeleteMiddleware());
+
+    // Register audit middleware (auto-populates createdBy/updatedBy from context)
+    client.$use(createAuditMiddleware());
+
     return client;
 }
 
@@ -71,3 +80,14 @@ export const prisma = globalForPrisma.prisma || createPrismaClient();
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 export * from '@prisma/client';
+
+// Re-export middleware utilities so consumers can set up audit context
+export {
+    withSoftDelete,
+    withAudit,
+    runWithAuditContext,
+    getAuditContext,
+    createSoftDeleteMiddleware,
+    createAuditMiddleware,
+} from './middleware';
+export type { AuditContext } from './middleware';

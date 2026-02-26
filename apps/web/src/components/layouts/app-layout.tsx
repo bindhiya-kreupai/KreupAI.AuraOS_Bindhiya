@@ -16,6 +16,7 @@ import { ActivityProvider, useActivity } from '@/stores/activity-store';
 import { SearchProvider, useSearch } from '@/stores/search-store';
 import { ThemeProvider, useTheme } from '@/stores/theme-store';
 import { GlobalSearchCommand } from '@/components/search/GlobalSearchCommand';
+import HRChatbot from '@/components/ai/HRChatbot';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -128,6 +129,9 @@ const AppLayoutInner: React.FC<AppLayoutProps> = ({ children }) => {
           />
         </div>
       </div>
+
+      {/* Floating HR AI Chatbot — available on all pages */}
+      <HRChatbot />
     </div>
   );
 };

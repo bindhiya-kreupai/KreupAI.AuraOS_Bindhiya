@@ -418,25 +418,24 @@ HR Department`,
   },
 ];
 
+/**
+ * NOTE: DocumentTemplate is not a top-level Prisma model.
+ * Templates are stored in SystemSetting under the `document_templates` group.
+ * The LetterTemplate model handles letter-type documents; use it where applicable.
+ */
 export async function seed(prisma: PrismaClient): Promise<void> {
   console.log('Seeding document templates...');
 
   for (const doc of documentTemplates) {
-    await prisma.documentTemplate.upsert({
-      where: {
-        name_jurisdiction: { name: doc.name, jurisdiction: doc.jurisdiction },
-      },
-      update: {
-        type: doc.type,
-        placeholders: JSON.stringify(doc.placeholders),
-        template: doc.template,
-      },
+    const key = `document_template.${doc.type}.${doc.jurisdiction}.${doc.name.toLowerCase().replace(/\s+/g, '_')}`;
+    await prisma.systemSetting.upsert({
+      where: { key },
+      update: { value: JSON.stringify(doc) },
       create: {
-        name: doc.name,
-        type: doc.type,
-        jurisdiction: doc.jurisdiction,
-        placeholders: JSON.stringify(doc.placeholders),
-        template: doc.template,
+        key,
+        value: JSON.stringify(doc),
+        group: 'document_templates',
+        description: `Document template: ${doc.name} (${doc.jurisdiction})`,
       },
     });
   }

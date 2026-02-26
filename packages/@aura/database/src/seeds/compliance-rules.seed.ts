@@ -144,27 +144,30 @@ export const complianceRules: ComplianceRule[] = [
   { jurisdiction: 'JP', category: 'notice_period', rule: 'Statutory minimum', value: 30, unit: 'days' },
 ];
 
+/**
+ * NOTE: ComplianceRule is not a dedicated Prisma model.
+ * Rules are stored in SystemSetting under the `compliance_rules` group.
+ */
 export async function seed(prisma: PrismaClient): Promise<void> {
   console.log('Seeding compliance rules...');
 
   for (const rule of complianceRules) {
-    const key = `${rule.jurisdiction}_${rule.category}_${rule.rule}`;
-    await prisma.complianceRule.upsert({
+    // Create a deterministic key from jurisdiction + category + rule text
+    const keySlug = `${rule.jurisdiction}_${rule.category}_${rule.rule}`
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g, '_')
+      .replace(/_+/g, '_')
+      .slice(0, 200);
+    const key = `compliance_rule.${keySlug}`;
+
+    await prisma.systemSetting.upsert({
       where: { key },
-      update: {
-        jurisdiction: rule.jurisdiction,
-        category: rule.category,
-        rule: rule.rule,
-        value: String(rule.value),
-        unit: rule.unit,
-      },
+      update: { value: JSON.stringify(rule) },
       create: {
         key,
-        jurisdiction: rule.jurisdiction,
-        category: rule.category,
-        rule: rule.rule,
-        value: String(rule.value),
-        unit: rule.unit,
+        value: JSON.stringify(rule),
+        group: 'compliance_rules',
+        description: `${rule.jurisdiction} – ${rule.category}: ${rule.rule}`,
       },
     });
   }

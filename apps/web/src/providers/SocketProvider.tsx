@@ -1,7 +1,15 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { SocketClient, SocketClientOptions } from '@/lib/websocket/socket-client';
+/**
+ * @module SocketProvider
+ * @description React context provider that manages a Socket.IO connection
+ *   for the AuraOS web app.
+ * @project AURA HCM Platform
+ */
+
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import type { SocketClientOptions } from '@/lib/websocket/socket-client';
+import { SocketClient } from '@/lib/websocket/socket-client';
 
 type SocketContextType = {
   socket: SocketClient | null;
@@ -27,24 +35,29 @@ export function SocketProvider({ children, url, autoConnect = false }: SocketPro
   const socketRef = useRef<SocketClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  const connect = (options?: Partial<SocketClientOptions>) => {
-    if (socketRef.current?.connected) return;
+  const connect = useCallback(
+    (options?: Partial<SocketClientOptions>) => {
+      if (socketRef.current?.connected) return;
 
-    const socketUrl = options?.url || url || process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
-    const client = new SocketClient({ url: socketUrl, ...options });
+      const socketUrl =
+        options?.url || url || process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
 
-    client.on('connect', () => setIsConnected(true));
-    client.on('disconnect', () => setIsConnected(false));
+      const client = new SocketClient({ url: socketUrl, ...options });
 
-    client.connect();
-    socketRef.current = client;
-  };
+      client.on('connect', () => setIsConnected(true));
+      client.on('disconnect', () => setIsConnected(false));
 
-  const disconnect = () => {
+      client.connect();
+      socketRef.current = client;
+    },
+    [url]
+  );
+
+  const disconnect = useCallback(() => {
     socketRef.current?.disconnect();
     socketRef.current = null;
     setIsConnected(false);
-  };
+  }, []);
 
   useEffect(() => {
     if (autoConnect && url) {
@@ -53,6 +66,7 @@ export function SocketProvider({ children, url, autoConnect = false }: SocketPro
     return () => {
       socketRef.current?.disconnect();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoConnect, url]);
 
   return (

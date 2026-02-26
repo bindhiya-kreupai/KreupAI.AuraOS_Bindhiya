@@ -1,0 +1,65 @@
+# AuraOS Kustomize base configuration
+# Apply with: kubectl apply -k k8s/
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: aura-system
+
+# Namespace for all resources
+namespace: aura-system
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
+  app.kubernetes.io/instance: aura-hcm-production
+
+# Common annotations
+commonAnnotations:
+  app.kubernetes.io/version: "1.0.0"
+  managed-by: "AuraOS GitOps Pipeline"
+
+# Resources to include
+resources:
+  # Namespace (must come first)
+  - base/namespace.yaml
+
+  # Shared configuration
+  - base/configmap.yaml
+  - base/secrets.yaml
+
+  # Application services
+  - services/web-deployment.yaml
+  - services/payroll-service.yaml
+  - services/notification-service.yaml
+  - services/ingress.yaml
+
+  # Infrastructure
+  - infrastructure/postgres.yaml
+  - infrastructure/redis.yaml
+  - infrastructure/rabbitmq.yaml
+
+# Image tags — override these in overlays (staging/production)
+images:
+  - name: kreupai/aura-web
+    newTag: latest
+  - name: kreupai/aura-payroll-service
+    newTag: latest
+  - name: kreupai/aura-notification-service
+    newTag: latest
+  - name: kreupai/aura-migrations
+    newTag: latest
+
+# ConfigMap generators (additional env files)
+# configMapGenerator:
+#   - name: aura-env-overrides
+#     envs:
+#       - config/production.env
+
+# Secret generators (use with caution — prefer External Secrets Operator)
+# secretGenerator:
+#   - name: aura-tls-secret
+#     files:
+#       - tls.crt=certs/production.crt
+#       - tls.key=certs/production.key
+#     type: kubernetes.io/tls

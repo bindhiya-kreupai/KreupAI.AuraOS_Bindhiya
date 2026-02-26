@@ -1,0 +1,371 @@
+---
+# AuraOS Scheduling Microservice
+# Deployment + ClusterIP Service + CronJob for scheduled tasks
+# Port: 4007
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduling-service
+  namespace: aura-system
+  labels:
+    app: scheduling-service
+    app.kubernetes.io/name: scheduling-service
+    app.kubernetes.io/component: microservice
+    app.kubernetes.io/part-of: aura-system
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: scheduling-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: scheduling-service
+        version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "4007"
+        prometheus.io/path: "/metrics"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+
+      containers:
+        - name: scheduling-service
+          image: kreupai/aura-scheduling-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 4007
+              protocol: TCP
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+
+          envFrom:
+            - configMapRef:
+                name: aura-config
+            - secretRef:
+                name: aura-secrets
+
+          env:
+            - name: SERVICE_NAME
+              value: "scheduling-service"
+            - name: PORT
+              value: "4007"
+            - name: NODE_ENV
+              value: "production"
+            - name: SCHEDULER_TIMEZONE
+              value: "UTC"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4007
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 4007
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 4007
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 12
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+      terminationGracePeriodSeconds: 60
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scheduling-service
+  namespace: aura-system
+  labels:
+    app: scheduling-service
+    app.kubernetes.io/name: scheduling-service
+    app.kubernetes.io/component: microservice
+    app.kubernetes.io/part-of: aura-system
+spec:
+  type: ClusterIP
+  selector:
+    app: scheduling-service
+  ports:
+    - name: http
+      port: 4007
+      targetPort: 4007
+      protocol: TCP
+
+---
+# CronJob — Scheduled Notification Dispatcher
+# Runs every minute to process the notification schedule queue
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: notification-dispatcher
+  namespace: aura-system
+  labels:
+    app.kubernetes.io/name: notification-dispatcher
+    app.kubernetes.io/component: cronjob
+    app.kubernetes.io/part-of: aura-system
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 30
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 55
+      template:
+        metadata:
+          labels:
+            app: notification-dispatcher
+            app.kubernetes.io/component: cronjob
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            runAsGroup: 1001
+            fsGroup: 1001
+
+          containers:
+            - name: dispatcher
+              image: kreupai/aura-scheduling-service:latest
+              imagePullPolicy: IfNotPresent
+              command: ["node", "dist/jobs/notification-dispatcher.js"]
+
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+
+              envFrom:
+                - configMapRef:
+                    name: aura-config
+                - secretRef:
+                    name: aura-secrets
+
+              env:
+                - name: JOB_NAME
+                  value: "notification-dispatcher"
+                - name: NODE_ENV
+                  value: "production"
+
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "128Mi"
+                limits:
+                  cpu: "250m"
+                  memory: "256Mi"
+
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+
+          volumes:
+            - name: tmp
+              emptyDir: {}
+
+---
+# CronJob — Payroll Processing Trigger (monthly on 25th at 00:00 UTC)
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: payroll-processor
+  namespace: aura-system
+  labels:
+    app.kubernetes.io/name: payroll-processor
+    app.kubernetes.io/component: cronjob
+    app.kubernetes.io/part-of: aura-system
+spec:
+  schedule: "0 0 25 * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 7200
+      template:
+        metadata:
+          labels:
+            app: payroll-processor
+            app.kubernetes.io/component: cronjob
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            runAsGroup: 1001
+            fsGroup: 1001
+
+          containers:
+            - name: payroll-processor
+              image: kreupai/aura-scheduling-service:latest
+              imagePullPolicy: IfNotPresent
+              command: ["node", "dist/jobs/payroll-processor.js"]
+
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+
+              envFrom:
+                - configMapRef:
+                    name: aura-config
+                - secretRef:
+                    name: aura-secrets
+
+              env:
+                - name: JOB_NAME
+                  value: "payroll-processor"
+                - name: NODE_ENV
+                  value: "production"
+
+              resources:
+                requests:
+                  cpu: "250m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"
+
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+
+          volumes:
+            - name: tmp
+              emptyDir: {}
+
+---
+# CronJob — Leave Balance Rollover (yearly on Jan 1 at 00:05 UTC)
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: leave-balance-rollover
+  namespace: aura-system
+  labels:
+    app.kubernetes.io/name: leave-balance-rollover
+    app.kubernetes.io/component: cronjob
+    app.kubernetes.io/part-of: aura-system
+spec:
+  schedule: "5 0 1 1 *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  startingDeadlineSeconds: 600
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 3600
+      template:
+        metadata:
+          labels:
+            app: leave-balance-rollover
+            app.kubernetes.io/component: cronjob
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            runAsGroup: 1001
+            fsGroup: 1001
+
+          containers:
+            - name: rollover
+              image: kreupai/aura-scheduling-service:latest
+              imagePullPolicy: IfNotPresent
+              command: ["node", "dist/jobs/leave-balance-rollover.js"]
+
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+
+              envFrom:
+                - configMapRef:
+                    name: aura-config
+                - secretRef:
+                    name: aura-secrets
+
+              env:
+                - name: JOB_NAME
+                  value: "leave-balance-rollover"
+                - name: NODE_ENV
+                  value: "production"
+
+              resources:
+                requests:
+                  cpu: "250m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"
+
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+
+          volumes:
+            - name: tmp
+              emptyDir: {}

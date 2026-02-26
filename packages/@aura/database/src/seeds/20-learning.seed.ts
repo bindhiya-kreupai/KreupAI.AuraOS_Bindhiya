@@ -1,359 +1,333 @@
+/**
+ * Learning & Development Seed
+ *
+ * Schema alignment fixes:
+ *  - enrollment       → courseEnrollment  (CourseEnrollment model)
+ *  - assessmentAttempt → assessmentSubmission (AssessmentSubmission model)
+ *  - Course field renames:
+ *      courseCode     → removed (not in Course schema; use title uniqueness)
+ *      categoryId     → category  (String, not a relation)
+ *      categoryName   → removed
+ *      durationUnit   → removed
+ *      objectives / prerequisites → prerequisites (String[])
+ *      targetAudience → removed
+ *      competencies   → removed
+ *      maxParticipants → maxEnrollment
+ *      currentEnrollments → enrollmentCount
+ *      isComplianceTraining → removed
+ *      publishedDate  → removed
+ *      skills         → skills (String[]) — kept
+ *  - LearningPath field renames:
+ *      estimatedHours  → duration
+ *      completionRate  → removed
+ *  - Assessment field renames:
+ *      assessmentCode  → removed
+ *      courseId        → pathId (links to LearningPath, not Course)
+ *      totalPoints     → removed
+ *      isRandomized/showResults/allowReview → removed
+ *      questions       → questions (Json) — kept
+ *      instructions    → removed
+ *      isActive        → removed
+ *  - CourseEnrollment (was Enrollment) field renames:
+ *      enrollmentNumber → removed
+ *      learnerId        → employeeId
+ *      learnerName/Email → removed (denormalised fields not in schema)
+ *      enrollmentType   → removed
+ *      enrolledDate     → enrolledAt
+ *      timeSpent        → removed
+ *      attempts/maxAttempts → removed
+ *      learningPathId   → separate LearningPathEnrollment model
+ *  - AssessmentSubmission (was AssessmentAttempt):
+ *      learnerId        → employeeId
+ *      learnerName      → removed
+ *      attemptNumber    → attemptNumber (kept)
+ *      duration         → removed
+ *      percentage       → removed
+ *      answers          → answers (Json)
+ *  - Certification field renames:
+ *      certificateNumber → certificationId
+ *      certificateName   → name
+ *      learnerId         → employeeId
+ *      learnerName/Email → removed
+ *      courseId/courseName → removed (not in Certification schema)
+ *      issuedDate        → issueDate
+ *      issuedBy          → removed (no field)
+ *      verificationUrl   → credentialUrl
+ */
+
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export async function learningSeed(tenantId: string) {
-  console.log('Seeding Learning & Development data...');
+    console.log('Seeding Learning & Development data...');
 
-  // Create Courses
-  const course1 = await prisma.course.create({
-    data: {
-      tenantId,
-      courseCode: 'LEAD-101',
-      title: 'Leadership Fundamentals',
-      description: 'Learn essential leadership skills for new managers and team leads. This course covers communication, delegation, conflict resolution, and team motivation.',
-      type: 'INSTRUCTOR_LED',
-      level: 'BEGINNER',
-      status: 'PUBLISHED',
-      categoryId: 'cat-leadership',
-      categoryName: 'Leadership',
-      duration: 16,
-      durationUnit: 'hours',
-      objectives: ['Understand core leadership principles', 'Develop effective communication skills', 'Learn conflict management techniques'],
-      prerequisites: [],
-      targetAudience: 'New managers and aspiring leaders',
-      skills: ['Leadership', 'Communication', 'Conflict Resolution'],
-      competencies: ['Team Management', 'Strategic Thinking'],
-      maxParticipants: 50,
-      currentEnrollments: 12,
-      passingScore: 70,
-      credits: 16,
-      cost: 0,
-      currency: 'USD',
-      tags: ['Leadership', 'Management', 'Soft Skills'],
-      isComplianceTraining: false,
-      publishedDate: new Date('2024-01-15'),
-      createdBy: 'system',
-    },
-  });
+    // -----------------------------------------------------------------------
+    // 1. Courses
+    // -----------------------------------------------------------------------
+    const course1 = await prisma.course.create({
+        data: {
+            tenantId,
+            title: 'Leadership Fundamentals',
+            description: 'Learn essential leadership skills for new managers and team leads.',
+            type: 'INSTRUCTOR_LED',
+            level: 'BEGINNER',
+            status: 'PUBLISHED',
+            category: 'Leadership',                    // was categoryId+categoryName
+            duration: 16,
+            skills: ['Leadership', 'Communication', 'Conflict Resolution'],
+            prerequisites: [],
+            maxEnrollment: 50,                         // was maxParticipants
+            enrollmentCount: 12,                       // was currentEnrollments
+            passingScore: 70,
+            cost: 0,
+            createdBy: 'system',
+        },
+    });
 
-  const course2 = await prisma.course.create({
-    data: {
-      tenantId,
-      courseCode: 'TECH-201',
-      title: 'Advanced React Patterns',
-      description: 'Master advanced React patterns including hooks, context, custom hooks, performance optimization, and state management.',
-      type: 'E_LEARNING',
-      level: 'ADVANCED',
-      status: 'PUBLISHED',
-      categoryId: 'cat-technical',
-      categoryName: 'Technical',
-      duration: 24,
-      durationUnit: 'hours',
-      objectives: ['Master React hooks', 'Implement custom hooks', 'Optimize performance'],
-      prerequisites: ['Basic React knowledge', 'JavaScript ES6+'],
-      targetAudience: 'Frontend developers with React experience',
-      skills: ['React', 'JavaScript', 'Performance Optimization'],
-      competencies: ['Frontend Development', 'Technical Architecture'],
-      maxParticipants: 100,
-      currentEnrollments: 35,
-      passingScore: 80,
-      credits: 24,
-      cost: 0,
-      currency: 'USD',
-      tags: ['React', 'Frontend', 'JavaScript', 'Technical'],
-      isComplianceTraining: false,
-      publishedDate: new Date('2024-02-01'),
-      createdBy: 'system',
-    },
-  });
+    const course2 = await prisma.course.create({
+        data: {
+            tenantId,
+            title: 'Advanced React Patterns',
+            description: 'Master advanced React patterns including hooks, context, and state management.',
+            type: 'E_LEARNING',
+            level: 'ADVANCED',
+            status: 'PUBLISHED',
+            category: 'Technical',
+            duration: 24,
+            skills: ['React', 'JavaScript', 'Performance Optimization'],
+            prerequisites: ['Basic React knowledge', 'JavaScript ES6+'],
+            maxEnrollment: 100,
+            enrollmentCount: 35,
+            passingScore: 80,
+            cost: 0,
+            createdBy: 'system',
+        },
+    });
 
-  const course3 = await prisma.course.create({
-    data: {
-      tenantId,
-      courseCode: 'COMP-301',
-      title: 'Information Security & GDPR Compliance',
-      description: 'Essential training on information security best practices and GDPR compliance requirements for all employees.',
-      type: 'E_LEARNING',
-      level: 'BEGINNER',
-      status: 'PUBLISHED',
-      categoryId: 'cat-compliance',
-      categoryName: 'Compliance',
-      duration: 4,
-      durationUnit: 'hours',
-      objectives: ['Understand GDPR requirements', 'Learn data protection principles', 'Implement security best practices'],
-      prerequisites: [],
-      targetAudience: 'All employees',
-      skills: ['Information Security', 'GDPR', 'Data Protection'],
-      competencies: ['Compliance', 'Security Awareness'],
-      maxParticipants: null,
-      currentEnrollments: 85,
-      passingScore: 90,
-      credits: 4,
-      cost: 0,
-      currency: 'USD',
-      tags: ['Compliance', 'Security', 'GDPR', 'Mandatory'],
-      isComplianceTraining: true,
-      validityPeriod: 365,
-      publishedDate: new Date('2024-01-01'),
-      createdBy: 'system',
-    },
-  });
+    const course3 = await prisma.course.create({
+        data: {
+            tenantId,
+            title: 'Information Security & GDPR Compliance',
+            description: 'Essential training on information security best practices and GDPR compliance.',
+            type: 'E_LEARNING',
+            level: 'BEGINNER',
+            status: 'PUBLISHED',
+            category: 'Compliance',
+            duration: 4,
+            skills: ['Information Security', 'GDPR', 'Data Protection'],
+            prerequisites: [],
+            maxEnrollment: 500,
+            enrollmentCount: 248,
+            passingScore: 90,
+            cost: 0,
+            createdBy: 'system',
+        },
+    });
 
-  const course4 = await prisma.course.create({
-    data: {
-      tenantId,
-      courseCode: 'TECH-102',
-      title: 'Python for Data Analysis',
-      description: 'Learn Python programming for data analysis using pandas, numpy, and matplotlib.',
-      type: 'SELF_PACED',
-      level: 'INTERMEDIATE',
-      status: 'PUBLISHED',
-      categoryId: 'cat-technical',
-      categoryName: 'Technical',
-      duration: 32,
-      durationUnit: 'hours',
-      objectives: ['Master Python basics', 'Learn pandas and numpy', 'Create data visualizations'],
-      prerequisites: ['Basic programming knowledge'],
-      targetAudience: 'Data analysts and aspiring data scientists',
-      skills: ['Python', 'Data Analysis', 'Pandas', 'Matplotlib'],
-      competencies: ['Data Analysis', 'Technical Skills'],
-      maxParticipants: null,
-      currentEnrollments: 28,
-      passingScore: 75,
-      credits: 32,
-      ceus: 3.2,
-      cost: 0,
-      currency: 'USD',
-      tags: ['Python', 'Data Science', 'Technical'],
-      isComplianceTraining: false,
-      publishedDate: new Date('2024-01-20'),
-      createdBy: 'system',
-    },
-  });
+    const course4 = await prisma.course.create({
+        data: {
+            tenantId,
+            title: 'Project Management Professional (PMP) Prep',
+            description: 'Comprehensive preparation for the PMP certification exam.',
+            type: 'BLENDED',
+            level: 'INTERMEDIATE',
+            status: 'PUBLISHED',
+            category: 'Project Management',
+            duration: 35,
+            skills: ['Project Management', 'Agile', 'Risk Management'],
+            prerequisites: ['3 years project management experience'],
+            maxEnrollment: 30,
+            enrollmentCount: 18,
+            passingScore: 75,
+            cost: 299,
+            createdBy: 'system',
+        },
+    });
 
-  // Create Learning Paths
-  const learningPath1 = await prisma.learningPath.create({
-    data: {
-      tenantId,
-      pathCode: 'LP-FRONTEND',
-      title: 'Frontend Developer Career Path',
-      description: 'Complete journey from beginner to advanced frontend developer, covering HTML, CSS, JavaScript, and modern frameworks.',
-      level: 'INTERMEDIATE',
-      categoryId: 'cat-technical',
-      categoryName: 'Technical',
-      duration: 120,
-      courses: [
-        { courseId: course2.id, courseTitle: course2.title, order: 1, isRequired: true, prerequisites: [] },
-      ],
-      skills: ['HTML', 'CSS', 'JavaScript', 'React', 'TypeScript'],
-      competencies: ['Frontend Development', 'UI/UX Implementation'],
-      isActive: true,
-      enrollmentCount: 15,
-      completionRate: 35.5,
-      createdBy: 'system',
-    },
-  });
+    // -----------------------------------------------------------------------
+    // 2. Learning Paths
+    // -----------------------------------------------------------------------
+    const learningPath1 = await prisma.learningPath.create({
+        data: {
+            tenantId,
+            title: 'Engineering Leadership Track',
+            description: 'A comprehensive path for engineers transitioning to leadership roles.',
+            difficulty: 'INTERMEDIATE',
+            duration: 80,                              // was estimatedHours
+            modules: [
+                { id: 'lm-1', title: 'Leadership Fundamentals', type: 'course', courseId: course1.id, order: 1 },
+                { id: 'lm-2', title: 'Advanced React Patterns', type: 'course', courseId: course2.id, order: 2 },
+                { id: 'lm-3', title: 'PMP Certification Prep', type: 'course', courseId: course4.id, order: 3 },
+            ],
+            skills: ['Leadership', 'Technical Architecture', 'Project Management'],
+            isPublished: true,
+            createdBy: 'system',
+        },
+    });
 
-  const learningPath2 = await prisma.learningPath.create({
-    data: {
-      tenantId,
-      pathCode: 'LP-LEADERSHIP',
-      title: 'New Manager Onboarding Path',
-      description: 'Comprehensive onboarding program for new managers covering leadership, team management, and organizational skills.',
-      level: 'BEGINNER',
-      categoryId: 'cat-leadership',
-      categoryName: 'Leadership',
-      duration: 40,
-      courses: [
-        { courseId: course1.id, courseTitle: course1.title, order: 1, isRequired: true, prerequisites: [] },
-      ],
-      skills: ['Leadership', 'Management', 'Communication'],
-      competencies: ['Team Leadership', 'People Management'],
-      isActive: true,
-      enrollmentCount: 8,
-      completionRate: 62.5,
-      createdBy: 'system',
-    },
-  });
+    const learningPath2 = await prisma.learningPath.create({
+        data: {
+            tenantId,
+            title: 'Compliance & Security Essentials',
+            description: 'Mandatory compliance training for all employees.',
+            difficulty: 'BEGINNER',
+            duration: 8,
+            modules: [
+                { id: 'lm-c1', title: 'GDPR Compliance', type: 'course', courseId: course3.id, order: 1 },
+            ],
+            skills: ['Compliance', 'Information Security'],
+            isPublished: true,
+            createdBy: 'system',
+        },
+    });
 
-  // Create Enrollments
-  const enrollment1 = await prisma.enrollment.create({
-    data: {
-      tenantId,
-      enrollmentNumber: 'ENR-2024-001',
-      courseId: course2.id,
-      learnerId: 'user-1',
-      learnerName: 'John Doe',
-      learnerEmail: 'john.doe@example.com',
-      enrollmentType: 'SELF_ENROLLED',
-      status: 'IN_PROGRESS',
-      enrolledDate: new Date('2024-11-01'),
-      startDate: new Date('2024-11-01'),
-      dueDate: new Date('2025-02-01'),
-      progress: 45,
-      timeSpent: 720, // 12 hours
-      passingScore: 80,
-      attempts: 2,
-      maxAttempts: 3,
-    },
-  });
+    // -----------------------------------------------------------------------
+    // 3. Enrollments  →  CourseEnrollment (was prisma.enrollment)
+    //    + LearningPathEnrollment for path-based enrollment
+    // -----------------------------------------------------------------------
+    await prisma.courseEnrollment.create({              // was prisma.enrollment
+        data: {
+            tenantId,
+            courseId: course2.id,
+            employeeId: 'user-1',                       // was learnerId
+            status: 'in_progress',
+            progress: 45,
+            enrolledAt: new Date('2024-11-01'),         // was enrolledDate
+            startedAt: new Date('2024-11-01'),
+            score: null,
+        },
+    });
 
-  const enrollment2 = await prisma.enrollment.create({
-    data: {
-      tenantId,
-      enrollmentNumber: 'ENR-2024-002',
-      courseId: course3.id,
-      learnerId: 'user-2',
-      learnerName: 'Jane Smith',
-      learnerEmail: 'jane.smith@example.com',
-      enrollmentType: 'MANDATORY',
-      status: 'COMPLETED',
-      enrolledDate: new Date('2024-01-15'),
-      startDate: new Date('2024-01-15'),
-      completedDate: new Date('2024-01-20'),
-      dueDate: new Date('2024-02-15'),
-      progress: 100,
-      timeSpent: 240, // 4 hours
-      score: 95,
-      passingScore: 90,
-      attempts: 1,
-    },
-  });
+    await prisma.courseEnrollment.create({
+        data: {
+            tenantId,
+            courseId: course3.id,
+            employeeId: 'user-2',
+            status: 'completed',
+            progress: 100,
+            enrolledAt: new Date('2024-01-15'),
+            startedAt: new Date('2024-01-15'),
+            completedAt: new Date('2024-01-20'),
+            score: 95,
+        },
+    });
 
-  const enrollment3 = await prisma.enrollment.create({
-    data: {
-      tenantId,
-      enrollmentNumber: 'ENR-2024-003',
-      learningPathId: learningPath1.id,
-      learnerId: 'user-3',
-      learnerName: 'Mike Johnson',
-      learnerEmail: 'mike.johnson@example.com',
-      enrollmentType: 'RECOMMENDED',
-      status: 'IN_PROGRESS',
-      enrolledDate: new Date('2024-10-15'),
-      startDate: new Date('2024-10-15'),
-      dueDate: new Date('2025-04-15'),
-      progress: 25,
-      timeSpent: 1800, // 30 hours
-      passingScore: 70,
-    },
-  });
+    // Path-based enrollment uses LearningPathEnrollment
+    await prisma.learningPathEnrollment.create({
+        data: {
+            tenantId,
+            pathId: learningPath1.id,
+            employeeId: 'user-3',
+            status: 'IN_PROGRESS',
+            progress: 25,
+            enrolledAt: new Date('2024-10-15'),
+        },
+    });
 
-  // Create Assessments
-  const assessment1 = await prisma.assessment.create({
-    data: {
-      tenantId,
-      assessmentCode: 'QUIZ-LEAD-101',
-      title: 'Leadership Fundamentals Quiz',
-      description: 'Final assessment for Leadership Fundamentals course',
-      courseId: course1.id,
-      type: 'QUIZ',
-      duration: 60,
-      totalPoints: 100,
-      passingScore: 70,
-      maxAttempts: 3,
-      isRandomized: true,
-      showResults: true,
-      allowReview: true,
-      questions: [
-        { id: 'q1', type: 'multiple_choice', question: 'What is the most important skill for a leader?', points: 10 },
-        { id: 'q2', type: 'multiple_choice', question: 'How should conflicts be resolved?', points: 10 },
-        { id: 'q3', type: 'short_answer', question: 'Describe your leadership style.', points: 20 },
-      ],
-      instructions: 'Answer all questions to the best of your ability. You have 60 minutes to complete this quiz.',
-      isActive: true,
-      createdBy: 'system',
-    },
-  });
+    // -----------------------------------------------------------------------
+    // 4. Assessments
+    //    courseId → pathId (Assessment links to LearningPath.pathId not Course)
+    // -----------------------------------------------------------------------
+    const assessment1 = await prisma.assessment.create({
+        data: {
+            tenantId,
+            title: 'Leadership Fundamentals Quiz',
+            description: 'Final assessment for Leadership Fundamentals course',
+            pathId: learningPath1.id,               // was courseId
+            questions: [
+                { id: 'q1', type: 'multiple_choice', text: 'What is the most important skill for a leader?', points: 10, options: ['A', 'B', 'C', 'D'], correctAnswer: 'A' },
+                { id: 'q2', type: 'multiple_choice', text: 'How should conflicts be resolved?', points: 10, options: ['A', 'B', 'C', 'D'], correctAnswer: 'B' },
+                { id: 'q3', type: 'short_answer', text: 'Describe your leadership style.', points: 20, options: [], correctAnswer: null },
+            ],
+            passingScore: 70,
+            timeLimit: 60,
+            maxAttempts: 3,
+            isPublished: true,
+            createdBy: 'system',
+        },
+    });
 
-  const assessment2 = await prisma.assessment.create({
-    data: {
-      tenantId,
-      assessmentCode: 'EXAM-COMP-301',
-      title: 'GDPR Compliance Exam',
-      description: 'Mandatory compliance exam for GDPR training',
-      courseId: course3.id,
-      type: 'EXAM',
-      duration: 45,
-      totalPoints: 100,
-      passingScore: 90,
-      maxAttempts: 2,
-      isRandomized: false,
-      showResults: true,
-      allowReview: false,
-      questions: [
-        { id: 'q1', type: 'true_false', question: 'GDPR applies to all EU citizens data.', points: 5 },
-        { id: 'q2', type: 'multiple_choice', question: 'What is the penalty for GDPR violations?', points: 10 },
-      ],
-      instructions: 'This is a mandatory compliance exam. You must score at least 90% to pass.',
-      isActive: true,
-      createdBy: 'system',
-    },
-  });
+    const assessment2 = await prisma.assessment.create({
+        data: {
+            tenantId,
+            title: 'GDPR Compliance Exam',
+            description: 'Mandatory compliance exam for GDPR training',
+            pathId: learningPath2.id,
+            questions: [
+                { id: 'q1', type: 'true_false', text: 'GDPR applies to all EU citizens data.', points: 5, options: ['True', 'False'], correctAnswer: 'True' },
+                { id: 'q2', type: 'multiple_choice', text: 'What is the penalty for GDPR violations?', points: 10, options: ['A', 'B', 'C', 'D'], correctAnswer: 'A' },
+            ],
+            passingScore: 90,
+            timeLimit: 45,
+            maxAttempts: 2,
+            isPublished: true,
+            createdBy: 'system',
+        },
+    });
 
-  // Create Assessment Attempts
-  const attempt1 = await prisma.assessmentAttempt.create({
-    data: {
-      tenantId,
-      assessmentId: assessment2.id,
-      learnerId: 'user-2',
-      learnerName: 'Jane Smith',
-      attemptNumber: 1,
-      startedAt: new Date('2024-01-20T10:00:00Z'),
-      submittedAt: new Date('2024-01-20T10:35:00Z'),
-      duration: 35,
-      score: 95,
-      percentage: 95,
-      passed: true,
-      answers: [
-        { questionId: 'q1', answer: 'true', isCorrect: true },
-        { questionId: 'q2', answer: 'option_b', isCorrect: true },
-      ],
-    },
-  });
+    // -----------------------------------------------------------------------
+    // 5. Assessment Attempts  →  AssessmentSubmission (was assessmentAttempt)
+    //    learnerId → employeeId
+    // -----------------------------------------------------------------------
+    await prisma.assessmentSubmission.create({          // was prisma.assessmentAttempt
+        data: {
+            assessmentId: assessment2.id,
+            employeeId: 'user-2',                       // was learnerId
+            answers: [
+                { questionId: 'q1', answer: 'True', isCorrect: true },
+                { questionId: 'q2', answer: 'A', isCorrect: true },
+            ],
+            score: 95,
+            passed: true,
+            attemptNumber: 1,
+            startedAt: new Date('2024-01-20T10:00:00Z'),
+            submittedAt: new Date('2024-01-20T10:35:00Z'),
+        },
+    });
 
-  // Create Certifications
-  const certification1 = await prisma.certification.create({
-    data: {
-      tenantId,
-      certificateNumber: 'CERT-2024-001',
-      certificateName: 'GDPR Compliance Certification',
-      learnerId: 'user-2',
-      learnerName: 'Jane Smith',
-      learnerEmail: 'jane.smith@example.com',
-      courseId: course3.id,
-      courseName: course3.title,
-      issuedDate: new Date('2024-01-20'),
-      expiryDate: new Date('2025-01-20'),
-      status: 'ACTIVE',
-      issuedBy: 'system',
-      verificationUrl: 'https://verify.example.com/CERT-2024-001',
-    },
-  });
+    // -----------------------------------------------------------------------
+    // 6. Certifications  →  Certification
+    //    certificateNumber → certificationId
+    //    certificateName   → name
+    //    learnerId         → employeeId
+    //    issuedDate        → issueDate
+    //    verificationUrl   → credentialUrl
+    // -----------------------------------------------------------------------
+    await prisma.certification.create({
+        data: {
+            tenantId,
+            certificationId: 'CERT-2024-001',          // was certificateNumber
+            name: 'GDPR Compliance Certification',      // was certificateName
+            employeeId: 'user-2',                       // was learnerId
+            issuingBody: 'AuraOS Compliance',
+            issueDate: new Date('2024-01-20'),          // was issuedDate
+            expiryDate: new Date('2025-01-20'),
+            status: 'active',
+            credentialUrl: 'https://verify.example.com/CERT-2024-001', // was verificationUrl
+            skills: ['GDPR', 'Data Protection'],
+        },
+    });
 
-  const certification2 = await prisma.certification.create({
-    data: {
-      tenantId,
-      certificateNumber: 'CERT-2024-002',
-      certificateName: 'Leadership Fundamentals Certificate',
-      learnerId: 'user-1',
-      learnerName: 'John Doe',
-      learnerEmail: 'john.doe@example.com',
-      courseId: course1.id,
-      courseName: course1.title,
-      issuedDate: new Date('2024-03-15'),
-      status: 'ACTIVE',
-      issuedBy: 'system',
-      verificationUrl: 'https://verify.example.com/CERT-2024-002',
-    },
-  });
+    await prisma.certification.create({
+        data: {
+            tenantId,
+            certificationId: 'CERT-2024-002',
+            name: 'Leadership Fundamentals Certificate',
+            employeeId: 'user-1',
+            issuingBody: 'AuraOS Learning',
+            issueDate: new Date('2024-03-15'),
+            status: 'active',
+            credentialUrl: 'https://verify.example.com/CERT-2024-002',
+            skills: ['Leadership', 'Management'],
+        },
+    });
 
-  console.log('Learning & Development seed data created successfully!');
-  console.log(`- Created ${4} courses`);
-  console.log(`- Created ${2} learning paths`);
-  console.log(`- Created ${3} enrollments`);
-  console.log(`- Created ${2} assessments`);
-  console.log(`- Created ${1} assessment attempts`);
-  console.log(`- Created ${2} certifications`);
+    console.log('Learning & Development seed data created successfully!');
+    console.log('- Created 4 courses');
+    console.log('- Created 2 learning paths');
+    console.log('- Created 2 course enrollments + 1 path enrollment');
+    console.log('- Created 2 assessments');
+    console.log('- Created 1 assessment submission');
+    console.log('- Created 2 certifications');
 }

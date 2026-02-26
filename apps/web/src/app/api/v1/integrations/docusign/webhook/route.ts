@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // DocuSign Connect webhook handler
 // Receives real-time notifications about envelope status changes
@@ -27,30 +28,30 @@ export async function POST(request: NextRequest) {
 
   switch (event) {
     case 'envelope-sent':
-      console.log(`[DocuSign] Envelope ${envelopeId} sent for signing`);
+      console.warn(`[DocuSign] Envelope ${envelopeId} sent for signing`);
       break;
     case 'envelope-delivered':
-      console.log(`[DocuSign] Envelope ${envelopeId} delivered to recipient`);
+      console.warn(`[DocuSign] Envelope ${envelopeId} delivered to recipient`);
       break;
     case 'envelope-completed':
-      console.log(`[DocuSign] Envelope ${envelopeId} completed - all signatures collected`);
+      console.warn(`[DocuSign] Envelope ${envelopeId} completed - all signatures collected`);
       // In production: update offer status, notify HR, trigger onboarding workflow
       break;
     case 'envelope-declined':
-      console.log(`[DocuSign] Envelope ${envelopeId} declined by recipient`);
+      console.warn(`[DocuSign] Envelope ${envelopeId} declined by recipient`);
       // In production: notify recruiter, update candidate status
       break;
     case 'envelope-voided':
-      console.log(`[DocuSign] Envelope ${envelopeId} voided`);
+      console.warn(`[DocuSign] Envelope ${envelopeId} voided`);
       break;
     case 'recipient-sent':
     case 'recipient-delivered':
     case 'recipient-completed':
     case 'recipient-declined':
-      console.log(`[DocuSign] Recipient event: ${event} for envelope ${envelopeId}`);
+      console.warn(`[DocuSign] Recipient event: ${event} for envelope ${envelopeId}`);
       break;
     default:
-      console.log(`[DocuSign] Unknown event: ${event}`);
+      console.warn(`[DocuSign] Unknown event: ${event}`);
   }
 
   // Always return 200 to acknowledge receipt

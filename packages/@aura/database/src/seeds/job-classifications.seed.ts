@@ -1,212 +1,359 @@
+/**
+ * @module JobClassificationsSeed
+ * @description Industry codes, job families, job levels, and salary bands.
+ *   These are stored as SystemSetting JSON payloads since there is no dedicated
+ *   JobClassification model — the data is consumed at runtime when creating
+ *   job profiles and compensation bands.
+ * @project AuraOS Enterprise HCM — Phase 2 GAP Closure
+ * @section Task Group A — Seed 4
+ */
+
 import { PrismaClient } from '@prisma/client';
 
-export interface JobClassification {
-  system: string;
+// ---------------------------------------------------------------------------
+// Type definitions
+// ---------------------------------------------------------------------------
+
+export interface IndustryCode {
   code: string;
-  title: string;
-  examples: string[];
+  name: string;
+  description: string;
+  naceCodes?: string[];
 }
 
-export const onetSocGroups: JobClassification[] = [
-  { system: 'SOC', code: '11-0000', title: 'Management Occupations', examples: ['Chief Executives', 'Marketing Managers', 'Financial Managers', 'HR Managers'] },
-  { system: 'SOC', code: '13-0000', title: 'Business and Financial Operations Occupations', examples: ['Accountants', 'Financial Analysts', 'Management Analysts', 'HR Specialists'] },
-  { system: 'SOC', code: '15-0000', title: 'Computer and Mathematical Occupations', examples: ['Software Developers', 'Data Scientists', 'Database Administrators', 'Systems Analysts'] },
-  { system: 'SOC', code: '17-0000', title: 'Architecture and Engineering Occupations', examples: ['Civil Engineers', 'Electrical Engineers', 'Mechanical Engineers', 'Architects'] },
-  { system: 'SOC', code: '19-0000', title: 'Life, Physical, and Social Science Occupations', examples: ['Biologists', 'Chemists', 'Psychologists', 'Economists'] },
-  { system: 'SOC', code: '21-0000', title: 'Community and Social Service Occupations', examples: ['Social Workers', 'Counselors', 'Probation Officers', 'Community Health Workers'] },
-  { system: 'SOC', code: '23-0000', title: 'Legal Occupations', examples: ['Lawyers', 'Paralegals', 'Judges', 'Legal Secretaries'] },
-  { system: 'SOC', code: '25-0000', title: 'Educational Instruction and Library Occupations', examples: ['Teachers', 'Professors', 'Librarians', 'Instructional Coordinators'] },
-  { system: 'SOC', code: '27-0000', title: 'Arts, Design, Entertainment, Sports, and Media Occupations', examples: ['Graphic Designers', 'Writers', 'Photographers', 'Animators'] },
-  { system: 'SOC', code: '29-0000', title: 'Healthcare Practitioners and Technical Occupations', examples: ['Physicians', 'Nurses', 'Pharmacists', 'Physical Therapists'] },
-  { system: 'SOC', code: '31-0000', title: 'Healthcare Support Occupations', examples: ['Medical Assistants', 'Home Health Aides', 'Pharmacy Technicians', 'Dental Assistants'] },
-  { system: 'SOC', code: '33-0000', title: 'Protective Service Occupations', examples: ['Police Officers', 'Firefighters', 'Security Guards', 'Correctional Officers'] },
-  { system: 'SOC', code: '35-0000', title: 'Food Preparation and Serving Related Occupations', examples: ['Chefs', 'Cooks', 'Bartenders', 'Food Service Managers'] },
-  { system: 'SOC', code: '37-0000', title: 'Building and Grounds Cleaning and Maintenance Occupations', examples: ['Janitors', 'Landscapers', 'Pest Control Workers', 'Maids'] },
-  { system: 'SOC', code: '39-0000', title: 'Personal Care and Service Occupations', examples: ['Hairdressers', 'Childcare Workers', 'Fitness Trainers', 'Funeral Attendants'] },
-  { system: 'SOC', code: '41-0000', title: 'Sales and Related Occupations', examples: ['Retail Salespersons', 'Insurance Agents', 'Real Estate Agents', 'Sales Engineers'] },
-  { system: 'SOC', code: '43-0000', title: 'Office and Administrative Support Occupations', examples: ['Secretaries', 'Bookkeepers', 'Customer Service Reps', 'Data Entry Keyers'] },
-  { system: 'SOC', code: '45-0000', title: 'Farming, Fishing, and Forestry Occupations', examples: ['Farm Workers', 'Fishers', 'Logging Workers', 'Agricultural Inspectors'] },
-  { system: 'SOC', code: '47-0000', title: 'Construction and Extraction Occupations', examples: ['Carpenters', 'Electricians', 'Plumbers', 'Construction Laborers'] },
-  { system: 'SOC', code: '49-0000', title: 'Installation, Maintenance, and Repair Occupations', examples: ['HVAC Technicians', 'Auto Mechanics', 'Electricians', 'Millwrights'] },
-  { system: 'SOC', code: '51-0000', title: 'Production Occupations', examples: ['Machinists', 'Welders', 'Assemblers', 'Quality Control Inspectors'] },
-  { system: 'SOC', code: '53-0000', title: 'Transportation and Material Moving Occupations', examples: ['Truck Drivers', 'Bus Drivers', 'Pilots', 'Warehouse Workers'] },
-  { system: 'SOC', code: '55-0000', title: 'Military Specific Occupations', examples: ['Infantry Officers', 'Military Enlisted', 'Special Forces', 'Military Officers'] },
+export interface SalaryRange {
+  currency: string;
+  min: number;
+  mid: number;
+  max: number;
+  region?: string;
+}
+
+export interface JobLevel {
+  code: string;
+  name: string;
+  order: number;
+  description: string;
+  typicalYearsExperience: string;
+  salaryRanges: SalaryRange[];
+}
+
+export interface JobFamily {
+  code: string;
+  name: string;
+  description: string;
+  industry?: string;
+  levels: JobLevel[];
+}
+
+// ---------------------------------------------------------------------------
+// 10 Industry Codes
+// ---------------------------------------------------------------------------
+
+export const industryCodes: IndustryCode[] = [
+  {
+    code: 'IND_TECH',
+    name: 'Technology & IT Services',
+    description: 'Software development, IT infrastructure, cybersecurity, and digital transformation',
+    naceCodes: ['J62', 'J63'],
+  },
+  {
+    code: 'IND_HEALTH',
+    name: 'Healthcare & Life Sciences',
+    description: 'Hospitals, clinics, pharmaceuticals, medical devices, and health insurance',
+    naceCodes: ['Q86', 'Q87', 'M72'],
+  },
+  {
+    code: 'IND_FINANCE',
+    name: 'Financial Services & Banking',
+    description: 'Banking, investment management, insurance, and fintech',
+    naceCodes: ['K64', 'K65', 'K66'],
+  },
+  {
+    code: 'IND_MANUFACTURING',
+    name: 'Manufacturing & Industrial',
+    description: 'Discrete and process manufacturing, industrial equipment, and supply chain',
+    naceCodes: ['C10', 'C20', 'C25', 'C28'],
+  },
+  {
+    code: 'IND_RETAIL',
+    name: 'Retail & Consumer Goods',
+    description: 'E-commerce, brick-and-mortar retail, FMCG, and consumer electronics',
+    naceCodes: ['G47', 'G46'],
+  },
+  {
+    code: 'IND_EDUCATION',
+    name: 'Education & Training',
+    description: 'K-12, higher education, vocational training, e-learning, and EdTech',
+    naceCodes: ['P85'],
+  },
+  {
+    code: 'IND_GOVERNMENT',
+    name: 'Government & Public Sector',
+    description: 'Federal, state, and municipal government, defence, and public utilities',
+    naceCodes: ['O84'],
+  },
+  {
+    code: 'IND_ENERGY',
+    name: 'Energy & Utilities',
+    description: 'Oil & gas, renewable energy, electricity generation, and water utilities',
+    naceCodes: ['B06', 'D35', 'E36'],
+  },
+  {
+    code: 'IND_TELECOM',
+    name: 'Telecommunications',
+    description: 'Mobile, broadband, satellite, and enterprise connectivity services',
+    naceCodes: ['J61'],
+  },
+  {
+    code: 'IND_CONSTRUCTION',
+    name: 'Construction & Real Estate',
+    description: 'Civil engineering, property development, facilities management, and architecture',
+    naceCodes: ['F41', 'F42', 'L68'],
+  },
 ];
 
-export const socMinorGroups: JobClassification[] = [
-  // Management
-  { system: 'SOC', code: '11-1000', title: 'Top Executives', examples: ['Chief Executives', 'General and Operations Managers', 'Legislators'] },
-  { system: 'SOC', code: '11-2000', title: 'Advertising, Marketing, Promotions, Public Relations, and Sales Managers', examples: ['Advertising Managers', 'Marketing Managers', 'Sales Managers', 'PR Managers'] },
-  { system: 'SOC', code: '11-3000', title: 'Operations Specialties Managers', examples: ['Administrative Services Managers', 'Computer and IT Managers', 'Financial Managers', 'HR Managers'] },
-  { system: 'SOC', code: '11-9000', title: 'Other Management Occupations', examples: ['Construction Managers', 'Education Administrators', 'Food Service Managers', 'Property Managers'] },
-  // Business and Financial
-  { system: 'SOC', code: '13-1000', title: 'Business Operations Specialists', examples: ['Buyers', 'Claims Adjusters', 'HR Specialists', 'Management Analysts'] },
-  { system: 'SOC', code: '13-2000', title: 'Financial Specialists', examples: ['Accountants', 'Auditors', 'Budget Analysts', 'Financial Analysts'] },
-  // Computer and Mathematical
-  { system: 'SOC', code: '15-1200', title: 'Computer Occupations', examples: ['Computer Systems Analysts', 'Software Developers', 'Web Developers', 'Database Administrators'] },
-  { system: 'SOC', code: '15-2000', title: 'Mathematical Science Occupations', examples: ['Actuaries', 'Mathematicians', 'Operations Research Analysts', 'Statisticians'] },
-  // Architecture and Engineering
-  { system: 'SOC', code: '17-1000', title: 'Architects, Surveyors, and Cartographers', examples: ['Architects', 'Landscape Architects', 'Surveyors', 'Cartographers'] },
-  { system: 'SOC', code: '17-2000', title: 'Engineers', examples: ['Aerospace Engineers', 'Civil Engineers', 'Electrical Engineers', 'Software Engineers'] },
-  { system: 'SOC', code: '17-3000', title: 'Drafters, Engineering Technicians, and Mapping Technicians', examples: ['Drafters', 'Engineering Technicians', 'Surveying Technicians'] },
-  // Life, Physical, and Social Science
-  { system: 'SOC', code: '19-1000', title: 'Life Scientists', examples: ['Biochemists', 'Microbiologists', 'Zoologists', 'Medical Scientists'] },
-  { system: 'SOC', code: '19-2000', title: 'Physical Scientists', examples: ['Astronomers', 'Physicists', 'Chemists', 'Atmospheric Scientists'] },
-  { system: 'SOC', code: '19-3000', title: 'Social Scientists and Related Workers', examples: ['Economists', 'Political Scientists', 'Psychologists', 'Sociologists'] },
-  { system: 'SOC', code: '19-4000', title: 'Life, Physical, and Social Science Technicians', examples: ['Agricultural Technicians', 'Chemical Technicians', 'Environmental Technicians'] },
-  // Community and Social Service
-  { system: 'SOC', code: '21-1000', title: 'Counselors, Social Workers, and Other Community and Social Service Specialists', examples: ['Substance Abuse Counselors', 'Social Workers', 'Health Educators', 'Probation Officers'] },
-  { system: 'SOC', code: '21-2000', title: 'Religious Workers', examples: ['Clergy', 'Directors of Religious Activities', 'Religious Workers'] },
-  // Legal
-  { system: 'SOC', code: '23-1000', title: 'Lawyers, Judges, and Related Workers', examples: ['Lawyers', 'Judges', 'Magistrates', 'Hearing Officers'] },
-  { system: 'SOC', code: '23-2000', title: 'Legal Support Workers', examples: ['Paralegals', 'Legal Assistants', 'Court Reporters', 'Title Examiners'] },
-  // Education
-  { system: 'SOC', code: '25-1000', title: 'Postsecondary Teachers', examples: ['Business Professors', 'Computer Science Professors', 'Engineering Professors', 'Nursing Professors'] },
-  { system: 'SOC', code: '25-2000', title: 'Preschool, Primary, Secondary, and Special Education Teachers', examples: ['Kindergarten Teachers', 'Elementary Teachers', 'Middle School Teachers', 'High School Teachers'] },
-  { system: 'SOC', code: '25-3000', title: 'Other Teachers and Instructors', examples: ['Adult Literacy Teachers', 'Self-Enrichment Teachers', 'Substitute Teachers'] },
-  { system: 'SOC', code: '25-4000', title: 'Librarians, Curators, and Archivists', examples: ['Librarians', 'Curators', 'Museum Technicians', 'Archivists'] },
-  // Arts and Media
-  { system: 'SOC', code: '27-1000', title: 'Art and Design Workers', examples: ['Art Directors', 'Graphic Designers', 'Interior Designers', 'Industrial Designers'] },
-  { system: 'SOC', code: '27-2000', title: 'Entertainers and Performers, Sports and Related Workers', examples: ['Actors', 'Athletes', 'Dancers', 'Musicians'] },
-  { system: 'SOC', code: '27-3000', title: 'Media and Communication Workers', examples: ['Broadcast Announcers', 'Editors', 'Reporters', 'Technical Writers'] },
-  { system: 'SOC', code: '27-4000', title: 'Media and Communication Equipment Workers', examples: ['Audio and Video Technicians', 'Broadcast Technicians', 'Photographers', 'Camera Operators'] },
-  // Healthcare Practitioners
-  { system: 'SOC', code: '29-1000', title: 'Healthcare Diagnosing or Treating Practitioners', examples: ['Dentists', 'Optometrists', 'Physicians', 'Surgeons'] },
-  { system: 'SOC', code: '29-2000', title: 'Health Technologists and Technicians', examples: ['Clinical Lab Technicians', 'Dental Hygienists', 'Radiologic Technicians', 'Surgical Technologists'] },
-  { system: 'SOC', code: '29-9000', title: 'Other Healthcare Practitioners and Technical Occupations', examples: ['Dietitians', 'Opticians', 'Hearing Aid Specialists'] },
-  // Healthcare Support
-  { system: 'SOC', code: '31-1100', title: 'Home Health and Personal Care Aides; and Nursing Assistants', examples: ['Home Health Aides', 'Personal Care Aides', 'Nursing Assistants', 'Orderlies'] },
-  { system: 'SOC', code: '31-9000', title: 'Other Healthcare Support Occupations', examples: ['Massage Therapists', 'Dental Assistants', 'Medical Assistants', 'Pharmacy Aides'] },
-  // Protective Service
-  { system: 'SOC', code: '33-1000', title: 'Supervisors of Protective Service Workers', examples: ['First-Line Supervisors of Police', 'First-Line Supervisors of Firefighters'] },
-  { system: 'SOC', code: '33-2000', title: 'Firefighting and Prevention Workers', examples: ['Firefighters', 'Fire Inspectors', 'Forest Fire Prevention Workers'] },
-  { system: 'SOC', code: '33-3000', title: 'Law Enforcement Workers', examples: ['Detectives', 'Police Officers', 'Sheriff Officers', 'Transit Police'] },
-  { system: 'SOC', code: '33-9000', title: 'Other Protective Service Workers', examples: ['Crossing Guards', 'Lifeguards', 'Security Guards', 'TSA Agents'] },
-  // Food Preparation
-  { system: 'SOC', code: '35-1000', title: 'Supervisors of Food Preparation and Serving Workers', examples: ['Chefs and Head Cooks', 'First-Line Supervisors of Food Workers'] },
-  { system: 'SOC', code: '35-2000', title: 'Cooks and Food Preparation Workers', examples: ['Cooks (Restaurant)', 'Cooks (Fast Food)', 'Food Preparation Workers'] },
-  { system: 'SOC', code: '35-3000', title: 'Food and Beverage Serving Workers', examples: ['Bartenders', 'Waiters', 'Food Servers', 'Hosts and Hostesses'] },
-  // Building and Grounds
-  { system: 'SOC', code: '37-1000', title: 'Supervisors of Building and Grounds Cleaning and Maintenance Workers', examples: ['First-Line Supervisors of Housekeeping', 'First-Line Supervisors of Janitorial'] },
-  { system: 'SOC', code: '37-2000', title: 'Building Cleaning and Pest Control Workers', examples: ['Janitors', 'Maids', 'Pest Control Workers'] },
-  { system: 'SOC', code: '37-3000', title: 'Grounds Maintenance Workers', examples: ['Landscapers', 'Groundskeepers', 'Tree Trimmers', 'Pesticide Applicators'] },
-  // Sales
-  { system: 'SOC', code: '41-1000', title: 'Supervisors of Sales Workers', examples: ['First-Line Supervisors of Retail', 'First-Line Supervisors of Non-Retail Sales'] },
-  { system: 'SOC', code: '41-2000', title: 'Retail Sales Workers', examples: ['Cashiers', 'Retail Salespersons', 'Parts Salespersons'] },
-  { system: 'SOC', code: '41-3000', title: 'Sales Representatives, Services', examples: ['Advertising Sales Agents', 'Insurance Sales Agents', 'Travel Agents'] },
-  { system: 'SOC', code: '41-4000', title: 'Sales Representatives, Wholesale and Manufacturing', examples: ['Sales Engineers', 'Wholesale Sales Reps (Technical)', 'Wholesale Sales Reps (Non-Technical)'] },
-  { system: 'SOC', code: '41-9000', title: 'Other Sales and Related Workers', examples: ['Door-to-Door Sales', 'Telemarketers', 'Real Estate Brokers', 'Real Estate Sales Agents'] },
-  // Office and Administrative
-  { system: 'SOC', code: '43-1000', title: 'Supervisors of Office and Administrative Support Workers', examples: ['First-Line Supervisors of Office Workers'] },
-  { system: 'SOC', code: '43-2000', title: 'Communications Equipment Operators', examples: ['Telephone Operators', 'Switchboard Operators'] },
-  { system: 'SOC', code: '43-3000', title: 'Financial Clerks', examples: ['Billing Clerks', 'Bookkeeping Clerks', 'Payroll Clerks', 'Tellers'] },
-  { system: 'SOC', code: '43-4000', title: 'Information and Record Clerks', examples: ['Customer Service Reps', 'File Clerks', 'Receptionists', 'Library Assistants'] },
-  { system: 'SOC', code: '43-5000', title: 'Material Recording, Scheduling, Dispatching, and Distributing Workers', examples: ['Dispatchers', 'Postal Service Workers', 'Shipping Clerks', 'Stock Clerks'] },
-  { system: 'SOC', code: '43-6000', title: 'Secretaries and Administrative Assistants', examples: ['Executive Secretaries', 'Legal Secretaries', 'Medical Secretaries'] },
-  { system: 'SOC', code: '43-9000', title: 'Other Office and Administrative Support Workers', examples: ['Data Entry Keyers', 'Office Clerks', 'Proofreaders', 'Statistical Assistants'] },
-  // Construction
-  { system: 'SOC', code: '47-1000', title: 'Supervisors of Construction and Extraction Workers', examples: ['First-Line Supervisors of Construction Trades', 'First-Line Supervisors of Extraction Workers'] },
-  { system: 'SOC', code: '47-2000', title: 'Construction Trades Workers', examples: ['Boilermakers', 'Carpenters', 'Electricians', 'Plumbers'] },
-  { system: 'SOC', code: '47-3000', title: 'Helpers, Construction Trades', examples: ['Helpers-Brickmasons', 'Helpers-Carpenters', 'Helpers-Electricians', 'Helpers-Plumbers'] },
-  { system: 'SOC', code: '47-4000', title: 'Other Construction and Related Workers', examples: ['Fence Erectors', 'Hazardous Materials Removal Workers', 'Rail-Track Workers'] },
-  { system: 'SOC', code: '47-5000', title: 'Extraction Workers', examples: ['Derrick Operators', 'Mining Machine Operators', 'Roustabouts'] },
-  // Installation, Maintenance, and Repair
-  { system: 'SOC', code: '49-1000', title: 'Supervisors of Installation, Maintenance, and Repair Workers', examples: ['First-Line Supervisors of Mechanics'] },
-  { system: 'SOC', code: '49-2000', title: 'Electrical and Electronic Equipment Mechanics, Installers, and Repairers', examples: ['Avionics Technicians', 'Computer Repairers', 'Telecom Equipment Installers'] },
-  { system: 'SOC', code: '49-3000', title: 'Vehicle and Mobile Equipment Mechanics, Installers, and Repairers', examples: ['Aircraft Mechanics', 'Automotive Technicians', 'Bus Mechanics', 'Diesel Mechanics'] },
-  { system: 'SOC', code: '49-9000', title: 'Other Installation, Maintenance, and Repair Occupations', examples: ['Locksmiths', 'Riggers', 'Signal Repairers', 'Coin Machine Servicers'] },
-  // Production
-  { system: 'SOC', code: '51-1000', title: 'Supervisors of Production Workers', examples: ['First-Line Supervisors of Production Workers'] },
-  { system: 'SOC', code: '51-2000', title: 'Assemblers and Fabricators', examples: ['Aircraft Assemblers', 'Electrical Assemblers', 'Engine Assemblers', 'Team Assemblers'] },
-  { system: 'SOC', code: '51-4000', title: 'Metal Workers and Plastic Workers', examples: ['CNC Operators', 'Machinists', 'Tool and Die Makers', 'Welders'] },
-  { system: 'SOC', code: '51-6000', title: 'Textile, Apparel, and Furnishings Workers', examples: ['Laundry Workers', 'Sewers', 'Tailors', 'Upholsterers'] },
-  { system: 'SOC', code: '51-9000', title: 'Other Production Occupations', examples: ['Chemical Plant Operators', 'Inspectors', 'Jewelers', 'Painting Workers'] },
-  // Transportation
-  { system: 'SOC', code: '53-1000', title: 'Supervisors of Transportation and Material Moving Workers', examples: ['Aircraft Cargo Supervisors', 'First-Line Supervisors of Transportation'] },
-  { system: 'SOC', code: '53-2000', title: 'Air Transportation Workers', examples: ['Airline Pilots', 'Commercial Pilots', 'Flight Engineers', 'Air Traffic Controllers'] },
-  { system: 'SOC', code: '53-3000', title: 'Motor Vehicle Operators', examples: ['Bus Drivers', 'Taxi Drivers', 'Light Truck Drivers', 'Heavy Truck Drivers'] },
-  { system: 'SOC', code: '53-4000', title: 'Rail Transportation Workers', examples: ['Locomotive Engineers', 'Railroad Conductors', 'Subway Operators'] },
-  { system: 'SOC', code: '53-5000', title: 'Water Transportation Workers', examples: ['Captains', 'Mates', 'Sailors', 'Ship Engineers'] },
-  { system: 'SOC', code: '53-7000', title: 'Material Moving Workers', examples: ['Crane Operators', 'Excavating Operators', 'Industrial Truck Operators', 'Laborers'] },
-];
+// ---------------------------------------------------------------------------
+// 8 Job Families with 5 levels each
+// ---------------------------------------------------------------------------
 
-export const socDetailedCodes: JobClassification[] = [
-  { system: 'SOC', code: '11-1011', title: 'Chief Executives', examples: ['CEO', 'COO', 'Executive Director'] },
-  { system: 'SOC', code: '11-1021', title: 'General and Operations Managers', examples: ['Operations Manager', 'Branch Manager', 'Store Manager'] },
-  { system: 'SOC', code: '11-2021', title: 'Marketing Managers', examples: ['Marketing Director', 'Brand Manager', 'Digital Marketing Manager'] },
-  { system: 'SOC', code: '11-3021', title: 'Computer and Information Systems Managers', examples: ['IT Director', 'CTO', 'IT Manager'] },
-  { system: 'SOC', code: '11-3031', title: 'Financial Managers', examples: ['CFO', 'Finance Director', 'Controller'] },
-  { system: 'SOC', code: '11-3121', title: 'Human Resources Managers', examples: ['HR Director', 'CHRO', 'VP of People'] },
-  { system: 'SOC', code: '13-1111', title: 'Management Analysts', examples: ['Management Consultant', 'Business Analyst', 'Strategy Consultant'] },
-  { system: 'SOC', code: '13-1151', title: 'Training and Development Specialists', examples: ['Corporate Trainer', 'Learning Specialist', 'Instructional Designer'] },
-  { system: 'SOC', code: '13-1161', title: 'Market Research Analysts and Marketing Specialists', examples: ['Market Researcher', 'Marketing Analyst', 'Consumer Insights Analyst'] },
-  { system: 'SOC', code: '13-2011', title: 'Accountants and Auditors', examples: ['CPA', 'Internal Auditor', 'Tax Accountant', 'Forensic Accountant'] },
-  { system: 'SOC', code: '13-2051', title: 'Financial and Investment Analysts', examples: ['Financial Analyst', 'Investment Analyst', 'Equity Analyst', 'Risk Analyst'] },
-  { system: 'SOC', code: '13-2072', title: 'Loan Officers', examples: ['Mortgage Loan Officer', 'Commercial Loan Officer', 'Consumer Loan Officer'] },
-  { system: 'SOC', code: '15-1211', title: 'Computer Systems Analysts', examples: ['Systems Analyst', 'Business Systems Analyst', 'IT Analyst'] },
-  { system: 'SOC', code: '15-1232', title: 'Computer User Support Specialists', examples: ['Help Desk Technician', 'Desktop Support', 'IT Support Specialist'] },
-  { system: 'SOC', code: '15-1252', title: 'Software Developers', examples: ['Full-Stack Developer', 'Backend Developer', 'Mobile Developer', 'Software Engineer'] },
-  { system: 'SOC', code: '15-1253', title: 'Software Quality Assurance Analysts and Testers', examples: ['QA Engineer', 'Test Engineer', 'SDET', 'QA Analyst'] },
-  { system: 'SOC', code: '15-1255', title: 'Web and Digital Interface Designers', examples: ['UX Designer', 'UI Designer', 'Web Designer', 'Product Designer'] },
-  { system: 'SOC', code: '15-1299', title: 'Computer Occupations, All Other', examples: ['DevOps Engineer', 'Site Reliability Engineer', 'Cloud Engineer'] },
-  { system: 'SOC', code: '15-2051', title: 'Data Scientists', examples: ['Data Scientist', 'Machine Learning Engineer', 'AI Researcher'] },
-  { system: 'SOC', code: '17-2051', title: 'Civil Engineers', examples: ['Structural Engineer', 'Transportation Engineer', 'Geotechnical Engineer'] },
-  { system: 'SOC', code: '17-2071', title: 'Electrical Engineers', examples: ['Power Systems Engineer', 'Electronics Engineer', 'Control Systems Engineer'] },
-  { system: 'SOC', code: '17-2112', title: 'Industrial Engineers', examples: ['Process Engineer', 'Manufacturing Engineer', 'Quality Engineer'] },
-  { system: 'SOC', code: '17-2141', title: 'Mechanical Engineers', examples: ['Design Engineer', 'HVAC Engineer', 'Automotive Engineer'] },
-  { system: 'SOC', code: '29-1141', title: 'Registered Nurses', examples: ['Staff Nurse', 'Charge Nurse', 'Clinical Nurse', 'Nurse Practitioner'] },
-  { system: 'SOC', code: '29-1215', title: 'Family Medicine Physicians', examples: ['Family Doctor', 'Primary Care Physician', 'General Practitioner'] },
-  { system: 'SOC', code: '41-2031', title: 'Retail Salespersons', examples: ['Sales Associate', 'Store Clerk', 'Floor Sales'] },
-  { system: 'SOC', code: '43-3031', title: 'Bookkeeping, Accounting, and Auditing Clerks', examples: ['Bookkeeper', 'Accounts Payable Clerk', 'Accounts Receivable Clerk'] },
-  { system: 'SOC', code: '43-4051', title: 'Customer Service Representatives', examples: ['Customer Support Agent', 'Call Center Representative', 'Client Service Rep'] },
-  { system: 'SOC', code: '43-6014', title: 'Secretaries and Administrative Assistants, Except Legal, Medical, and Executive', examples: ['Administrative Assistant', 'Office Assistant', 'Department Secretary'] },
-  { system: 'SOC', code: '47-2111', title: 'Electricians', examples: ['Journeyman Electrician', 'Master Electrician', 'Industrial Electrician'] },
-  { system: 'SOC', code: '49-3023', title: 'Automotive Service Technicians and Mechanics', examples: ['Auto Mechanic', 'Automotive Technician', 'Brake Specialist'] },
-  { system: 'SOC', code: '53-3032', title: 'Heavy and Tractor-Trailer Truck Drivers', examples: ['Long-Haul Trucker', 'OTR Driver', 'CDL Driver'] },
-];
-
-export const iscoGroups: JobClassification[] = [
-  { system: 'ISCO-08', code: '1', title: 'Managers', examples: ['Chief Executives', 'Administrative Managers', 'Sales Managers', 'ICT Managers'] },
-  { system: 'ISCO-08', code: '2', title: 'Professionals', examples: ['Engineers', 'Health Professionals', 'Teachers', 'Business Professionals'] },
-  { system: 'ISCO-08', code: '3', title: 'Technicians and Associate Professionals', examples: ['Science Technicians', 'Health Associates', 'Business Associates', 'Legal Associates'] },
-  { system: 'ISCO-08', code: '4', title: 'Clerical Support Workers', examples: ['Office Clerks', 'Secretaries', 'Tellers', 'Customer Service Clerks'] },
-  { system: 'ISCO-08', code: '5', title: 'Service and Sales Workers', examples: ['Travel Attendants', 'Cooks', 'Hairdressers', 'Sales Workers'] },
-  { system: 'ISCO-08', code: '6', title: 'Skilled Agricultural, Forestry and Fishery Workers', examples: ['Crop Growers', 'Animal Producers', 'Forestry Workers', 'Fishery Workers'] },
-  { system: 'ISCO-08', code: '7', title: 'Craft and Related Trades Workers', examples: ['Building Workers', 'Metal Workers', 'Printing Workers', 'Electrical Workers'] },
-  { system: 'ISCO-08', code: '8', title: 'Plant and Machine Operators, and Assemblers', examples: ['Mining Operators', 'Processing Operators', 'Drivers', 'Assemblers'] },
-  { system: 'ISCO-08', code: '9', title: 'Elementary Occupations', examples: ['Cleaners', 'Agricultural Laborers', 'Street Vendors', 'Refuse Workers'] },
-  { system: 'ISCO-08', code: '0', title: 'Armed Forces Occupations', examples: ['Commissioned Officers', 'Non-commissioned Officers', 'Armed Forces Other Ranks'] },
-];
-
-export const jobClassifications: JobClassification[] = [
-  ...onetSocGroups,
-  ...socMinorGroups,
-  ...socDetailedCodes,
-  ...iscoGroups,
-];
-
-export async function seed(prisma: PrismaClient): Promise<void> {
-  console.log('Seeding job classifications...');
-
-  for (const classification of jobClassifications) {
-    const key = `${classification.system}_${classification.code}`;
-    await prisma.jobClassification.upsert({
-      where: { key },
-      update: {
-        system: classification.system,
-        code: classification.code,
-        title: classification.title,
-        examples: JSON.stringify(classification.examples),
+export const jobFamilies: JobFamily[] = [
+  // ---- 1. Engineering ----
+  {
+    code: 'JF_ENG',
+    name: 'Engineering',
+    description: 'Software, hardware, and systems engineering roles',
+    levels: [
+      {
+        code: 'JF_ENG_ENTRY',
+        name: 'Associate Engineer',
+        order: 1,
+        description: 'Entry-level engineer with 0–2 years experience; works on defined tasks with close supervision',
+        typicalYearsExperience: '0–2 years',
+        salaryRanges: [
+          { currency: 'AED', min: 72000, mid: 90000, max: 108000, region: 'UAE' },
+          { currency: 'SAR', min: 72000, mid: 90000, max: 108000, region: 'KSA' },
+          { currency: 'INR', min: 400000, mid: 600000, max: 800000, region: 'India' },
+          { currency: 'USD', min: 60000, mid: 75000, max: 90000, region: 'US' },
+        ],
       },
+      {
+        code: 'JF_ENG_MID',
+        name: 'Engineer',
+        order: 2,
+        description: 'Mid-level engineer with 2–5 years experience; works independently on complex features',
+        typicalYearsExperience: '2–5 years',
+        salaryRanges: [
+          { currency: 'AED', min: 108000, mid: 144000, max: 180000, region: 'UAE' },
+          { currency: 'SAR', min: 108000, mid: 144000, max: 180000, region: 'KSA' },
+          { currency: 'INR', min: 800000, mid: 1200000, max: 1800000, region: 'India' },
+          { currency: 'USD', min: 90000, mid: 120000, max: 150000, region: 'US' },
+        ],
+      },
+      {
+        code: 'JF_ENG_SENIOR',
+        name: 'Senior Engineer',
+        order: 3,
+        description: 'Senior engineer with 5–8 years; leads technical design and mentors junior engineers',
+        typicalYearsExperience: '5–8 years',
+        salaryRanges: [
+          { currency: 'AED', min: 180000, mid: 240000, max: 300000, region: 'UAE' },
+          { currency: 'SAR', min: 180000, mid: 240000, max: 300000, region: 'KSA' },
+          { currency: 'INR', min: 1800000, mid: 2400000, max: 3600000, region: 'India' },
+          { currency: 'USD', min: 150000, mid: 190000, max: 230000, region: 'US' },
+        ],
+      },
+      {
+        code: 'JF_ENG_LEAD',
+        name: 'Lead Engineer',
+        order: 4,
+        description: 'Technical lead with 8–12 years; drives architecture, sets engineering standards',
+        typicalYearsExperience: '8–12 years',
+        salaryRanges: [
+          { currency: 'AED', min: 300000, mid: 390000, max: 480000, region: 'UAE' },
+          { currency: 'SAR', min: 300000, mid: 390000, max: 480000, region: 'KSA' },
+          { currency: 'INR', min: 3600000, mid: 4800000, max: 6000000, region: 'India' },
+          { currency: 'USD', min: 200000, mid: 250000, max: 300000, region: 'US' },
+        ],
+      },
+      {
+        code: 'JF_ENG_DIR',
+        name: 'Director of Engineering',
+        order: 5,
+        description: 'Engineering director with 12+ years; leads multiple engineering teams and defines technology strategy',
+        typicalYearsExperience: '12+ years',
+        salaryRanges: [
+          { currency: 'AED', min: 480000, mid: 660000, max: 840000, region: 'UAE' },
+          { currency: 'SAR', min: 480000, mid: 660000, max: 840000, region: 'KSA' },
+          { currency: 'INR', min: 6000000, mid: 9000000, max: 12000000, region: 'India' },
+          { currency: 'USD', min: 280000, mid: 360000, max: 450000, region: 'US' },
+        ],
+      },
+    ],
+  },
+
+  // ---- 2. Sales ----
+  {
+    code: 'JF_SALES',
+    name: 'Sales',
+    description: 'Revenue generation, business development, and account management roles',
+    levels: [
+      { code: 'JF_SALES_ENTRY', name: 'Sales Development Representative', order: 1, description: 'Inbound/outbound prospecting, lead qualification', typicalYearsExperience: '0–2 years', salaryRanges: [{ currency: 'AED', min: 60000, mid: 84000, max: 108000, region: 'UAE' }, { currency: 'USD', min: 45000, mid: 60000, max: 75000, region: 'US' }] },
+      { code: 'JF_SALES_MID', name: 'Account Executive', order: 2, description: 'Full-cycle sales, pipeline management, and quota attainment', typicalYearsExperience: '2–5 years', salaryRanges: [{ currency: 'AED', min: 120000, mid: 180000, max: 240000, region: 'UAE' }, { currency: 'USD', min: 80000, mid: 110000, max: 140000, region: 'US' }] },
+      { code: 'JF_SALES_SENIOR', name: 'Senior Account Executive', order: 3, description: 'Enterprise accounts, complex deal structures, strategic selling', typicalYearsExperience: '5–8 years', salaryRanges: [{ currency: 'AED', min: 240000, mid: 360000, max: 480000, region: 'UAE' }, { currency: 'USD', min: 130000, mid: 175000, max: 220000, region: 'US' }] },
+      { code: 'JF_SALES_LEAD', name: 'Sales Manager', order: 4, description: 'Team management, territory strategy, coaching, and forecasting', typicalYearsExperience: '8–12 years', salaryRanges: [{ currency: 'AED', min: 300000, mid: 420000, max: 540000, region: 'UAE' }, { currency: 'USD', min: 160000, mid: 210000, max: 260000, region: 'US' }] },
+      { code: 'JF_SALES_DIR', name: 'VP of Sales', order: 5, description: 'Regional sales leadership, GTM strategy, and revenue targets', typicalYearsExperience: '12+ years', salaryRanges: [{ currency: 'AED', min: 540000, mid: 720000, max: 900000, region: 'UAE' }, { currency: 'USD', min: 250000, mid: 330000, max: 420000, region: 'US' }] },
+    ],
+  },
+
+  // ---- 3. Human Resources ----
+  {
+    code: 'JF_HR',
+    name: 'Human Resources',
+    description: 'HR generalist, specialist, and HR business partner roles',
+    levels: [
+      { code: 'JF_HR_ENTRY', name: 'HR Associate', order: 1, description: 'HR admin, onboarding support, data entry', typicalYearsExperience: '0–2 years', salaryRanges: [{ currency: 'AED', min: 54000, mid: 72000, max: 90000, region: 'UAE' }, { currency: 'INR', min: 300000, mid: 450000, max: 600000, region: 'India' }] },
+      { code: 'JF_HR_MID', name: 'HR Executive', order: 2, description: 'Recruitment, employee relations, HRIS management', typicalYearsExperience: '2–5 years', salaryRanges: [{ currency: 'AED', min: 90000, mid: 120000, max: 150000, region: 'UAE' }, { currency: 'INR', min: 600000, mid: 900000, max: 1200000, region: 'India' }] },
+      { code: 'JF_HR_SENIOR', name: 'Senior HR Executive / HRBP', order: 3, description: 'HR business partnering, talent management, compensation', typicalYearsExperience: '5–8 years', salaryRanges: [{ currency: 'AED', min: 150000, mid: 210000, max: 270000, region: 'UAE' }, { currency: 'INR', min: 1200000, mid: 1800000, max: 2400000, region: 'India' }] },
+      { code: 'JF_HR_LEAD', name: 'HR Manager', order: 4, description: 'HR strategy, team leadership, policy development', typicalYearsExperience: '8–12 years', salaryRanges: [{ currency: 'AED', min: 240000, mid: 330000, max: 420000, region: 'UAE' }, { currency: 'INR', min: 2400000, mid: 3600000, max: 4800000, region: 'India' }] },
+      { code: 'JF_HR_DIR', name: 'HR Director / CHRO', order: 5, description: 'HR function leadership, C-suite advisory, workforce transformation', typicalYearsExperience: '12+ years', salaryRanges: [{ currency: 'AED', min: 420000, mid: 600000, max: 780000, region: 'UAE' }, { currency: 'USD', min: 200000, mid: 280000, max: 360000, region: 'US' }] },
+    ],
+  },
+
+  // ---- 4. Finance ----
+  {
+    code: 'JF_FIN',
+    name: 'Finance',
+    description: 'Financial planning, accounting, treasury, and FP&A roles',
+    levels: [
+      { code: 'JF_FIN_ENTRY', name: 'Finance Analyst', order: 1, description: 'Financial reporting, reconciliation, and analysis support', typicalYearsExperience: '0–3 years', salaryRanges: [{ currency: 'AED', min: 72000, mid: 96000, max: 120000, region: 'UAE' }, { currency: 'USD', min: 55000, mid: 70000, max: 85000, region: 'US' }] },
+      { code: 'JF_FIN_MID', name: 'Senior Finance Analyst', order: 2, description: 'Budgeting, forecasting, and complex financial modelling', typicalYearsExperience: '3–6 years', salaryRanges: [{ currency: 'AED', min: 120000, mid: 168000, max: 216000, region: 'UAE' }, { currency: 'USD', min: 80000, mid: 105000, max: 130000, region: 'US' }] },
+      { code: 'JF_FIN_SENIOR', name: 'Finance Manager', order: 3, description: 'P&L ownership, treasury, compliance, and team leadership', typicalYearsExperience: '6–10 years', salaryRanges: [{ currency: 'AED', min: 216000, mid: 300000, max: 384000, region: 'UAE' }, { currency: 'USD', min: 120000, mid: 155000, max: 190000, region: 'US' }] },
+      { code: 'JF_FIN_LEAD', name: 'Senior Finance Manager / Controller', order: 4, description: 'Financial control, statutory reporting, audit management', typicalYearsExperience: '10–15 years', salaryRanges: [{ currency: 'AED', min: 360000, mid: 480000, max: 600000, region: 'UAE' }, { currency: 'USD', min: 175000, mid: 225000, max: 275000, region: 'US' }] },
+      { code: 'JF_FIN_DIR', name: 'CFO / Finance Director', order: 5, description: 'Financial strategy, investor relations, and enterprise risk management', typicalYearsExperience: '15+ years', salaryRanges: [{ currency: 'AED', min: 600000, mid: 900000, max: 1200000, region: 'UAE' }, { currency: 'USD', min: 300000, mid: 420000, max: 550000, region: 'US' }] },
+    ],
+  },
+
+  // ---- 5. Operations ----
+  {
+    code: 'JF_OPS',
+    name: 'Operations',
+    description: 'Business operations, process management, logistics, and supply chain',
+    levels: [
+      { code: 'JF_OPS_ENTRY', name: 'Operations Coordinator', order: 1, description: 'Day-to-day operational support, data entry, scheduling', typicalYearsExperience: '0–2 years', salaryRanges: [{ currency: 'AED', min: 54000, mid: 72000, max: 90000, region: 'UAE' }, { currency: 'USD', min: 40000, mid: 52000, max: 64000, region: 'US' }] },
+      { code: 'JF_OPS_MID', name: 'Operations Analyst', order: 2, description: 'Process analysis, KPI tracking, operational improvement projects', typicalYearsExperience: '2–5 years', salaryRanges: [{ currency: 'AED', min: 90000, mid: 120000, max: 150000, region: 'UAE' }, { currency: 'USD', min: 65000, mid: 80000, max: 95000, region: 'US' }] },
+      { code: 'JF_OPS_SENIOR', name: 'Senior Operations Manager', order: 3, description: 'End-to-end operations ownership, SLA management, team leadership', typicalYearsExperience: '5–10 years', salaryRanges: [{ currency: 'AED', min: 180000, mid: 240000, max: 300000, region: 'UAE' }, { currency: 'USD', min: 100000, mid: 130000, max: 160000, region: 'US' }] },
+      { code: 'JF_OPS_LEAD', name: 'Head of Operations', order: 4, description: 'Cross-functional operations leadership, strategic planning, vendor management', typicalYearsExperience: '10–15 years', salaryRanges: [{ currency: 'AED', min: 300000, mid: 420000, max: 540000, region: 'UAE' }, { currency: 'USD', min: 155000, mid: 200000, max: 245000, region: 'US' }] },
+      { code: 'JF_OPS_DIR', name: 'COO / VP Operations', order: 5, description: 'Company-wide operational excellence, transformation, and C-suite leadership', typicalYearsExperience: '15+ years', salaryRanges: [{ currency: 'AED', min: 540000, mid: 780000, max: 1020000, region: 'UAE' }, { currency: 'USD', min: 280000, mid: 375000, max: 470000, region: 'US' }] },
+    ],
+  },
+
+  // ---- 6. Marketing ----
+  {
+    code: 'JF_MKT',
+    name: 'Marketing',
+    description: 'Brand management, digital marketing, product marketing, and content strategy',
+    levels: [
+      { code: 'JF_MKT_ENTRY', name: 'Marketing Associate', order: 1, description: 'Content creation, social media, event coordination', typicalYearsExperience: '0–2 years', salaryRanges: [{ currency: 'AED', min: 60000, mid: 78000, max: 96000, region: 'UAE' }, { currency: 'USD', min: 45000, mid: 58000, max: 70000, region: 'US' }] },
+      { code: 'JF_MKT_MID', name: 'Marketing Executive', order: 2, description: 'Campaign execution, digital channels, analytics, and SEO', typicalYearsExperience: '2–5 years', salaryRanges: [{ currency: 'AED', min: 96000, mid: 132000, max: 168000, region: 'UAE' }, { currency: 'USD', min: 65000, mid: 85000, max: 105000, region: 'US' }] },
+      { code: 'JF_MKT_SENIOR', name: 'Senior Marketing Manager', order: 3, description: 'Full-funnel marketing, brand strategy, team lead', typicalYearsExperience: '5–9 years', salaryRanges: [{ currency: 'AED', min: 168000, mid: 240000, max: 312000, region: 'UAE' }, { currency: 'USD', min: 110000, mid: 145000, max: 180000, region: 'US' }] },
+      { code: 'JF_MKT_LEAD', name: 'Head of Marketing', order: 4, description: 'Multi-channel marketing leadership, budget ownership, brand identity', typicalYearsExperience: '9–14 years', salaryRanges: [{ currency: 'AED', min: 312000, mid: 432000, max: 552000, region: 'UAE' }, { currency: 'USD', min: 175000, mid: 225000, max: 275000, region: 'US' }] },
+      { code: 'JF_MKT_DIR', name: 'CMO / VP Marketing', order: 5, description: 'Marketing strategy, brand vision, and growth leadership', typicalYearsExperience: '14+ years', salaryRanges: [{ currency: 'AED', min: 552000, mid: 780000, max: 1008000, region: 'UAE' }, { currency: 'USD', min: 270000, mid: 365000, max: 460000, region: 'US' }] },
+    ],
+  },
+
+  // ---- 7. Legal ----
+  {
+    code: 'JF_LEGAL',
+    name: 'Legal',
+    description: 'Corporate legal, compliance, contract management, and dispute resolution',
+    levels: [
+      { code: 'JF_LEGAL_ENTRY', name: 'Legal Officer / Paralegal', order: 1, description: 'Contract drafting support, legal research, document management', typicalYearsExperience: '0–3 years', salaryRanges: [{ currency: 'AED', min: 72000, mid: 96000, max: 120000, region: 'UAE' }, { currency: 'USD', min: 50000, mid: 65000, max: 80000, region: 'US' }] },
+      { code: 'JF_LEGAL_MID', name: 'In-House Counsel', order: 2, description: 'Contract negotiations, regulatory compliance, M&A support', typicalYearsExperience: '3–7 years', salaryRanges: [{ currency: 'AED', min: 150000, mid: 210000, max: 270000, region: 'UAE' }, { currency: 'USD', min: 100000, mid: 135000, max: 170000, region: 'US' }] },
+      { code: 'JF_LEGAL_SENIOR', name: 'Senior Counsel', order: 3, description: 'Complex legal matters, litigation oversight, policy development', typicalYearsExperience: '7–12 years', salaryRanges: [{ currency: 'AED', min: 270000, mid: 390000, max: 510000, region: 'UAE' }, { currency: 'USD', min: 165000, mid: 215000, max: 265000, region: 'US' }] },
+      { code: 'JF_LEGAL_LEAD', name: 'Legal Director', order: 4, description: 'Legal function leadership, risk management, board advisory', typicalYearsExperience: '12–18 years', salaryRanges: [{ currency: 'AED', min: 480000, mid: 660000, max: 840000, region: 'UAE' }, { currency: 'USD', min: 245000, mid: 320000, max: 395000, region: 'US' }] },
+      { code: 'JF_LEGAL_DIR', name: 'Chief Legal Officer / GC', order: 5, description: 'Corporate governance, legal strategy, and C-suite advisory', typicalYearsExperience: '18+ years', salaryRanges: [{ currency: 'AED', min: 840000, mid: 1200000, max: 1560000, region: 'UAE' }, { currency: 'USD', min: 350000, mid: 475000, max: 600000, region: 'US' }] },
+    ],
+  },
+
+  // ---- 8. Executive ----
+  {
+    code: 'JF_EXEC',
+    name: 'Executive',
+    description: 'C-suite and senior executive leadership roles',
+    levels: [
+      { code: 'JF_EXEC_ENTRY', name: 'Executive Assistant', order: 1, description: 'C-suite support, calendar management, stakeholder coordination', typicalYearsExperience: '2–5 years', salaryRanges: [{ currency: 'AED', min: 96000, mid: 132000, max: 168000, region: 'UAE' }, { currency: 'USD', min: 55000, mid: 72000, max: 89000, region: 'US' }] },
+      { code: 'JF_EXEC_MID', name: 'Senior Manager / Department Head', order: 2, description: 'Department leadership, cross-functional coordination, P&L ownership', typicalYearsExperience: '10–15 years', salaryRanges: [{ currency: 'AED', min: 360000, mid: 540000, max: 720000, region: 'UAE' }, { currency: 'USD', min: 200000, mid: 270000, max: 340000, region: 'US' }] },
+      { code: 'JF_EXEC_SENIOR', name: 'Vice President', order: 3, description: 'Business unit leadership, strategy execution, board reporting', typicalYearsExperience: '15–20 years', salaryRanges: [{ currency: 'AED', min: 720000, mid: 1020000, max: 1320000, region: 'UAE' }, { currency: 'USD', min: 300000, mid: 400000, max: 500000, region: 'US' }] },
+      { code: 'JF_EXEC_LEAD', name: 'SVP / EVP', order: 4, description: 'Enterprise-wide strategy, multi-market leadership', typicalYearsExperience: '20–25 years', salaryRanges: [{ currency: 'AED', min: 1200000, mid: 1680000, max: 2160000, region: 'UAE' }, { currency: 'USD', min: 450000, mid: 600000, max: 750000, region: 'US' }] },
+      { code: 'JF_EXEC_DIR', name: 'CEO / President', order: 5, description: 'Company vision, Board accountability, investor relations', typicalYearsExperience: '25+ years', salaryRanges: [{ currency: 'AED', min: 2400000, mid: 3600000, max: 4800000, region: 'UAE' }, { currency: 'USD', min: 700000, mid: 1000000, max: 1500000, region: 'US' }] },
+    ],
+  },
+];
+
+/**
+ * Seed industry codes and job families into SystemSetting.
+ * Idempotent — safe to run multiple times.
+ */
+export async function seedJobClassifications(prisma: PrismaClient): Promise<void> {
+  console.log('  Seeding job classifications...');
+  let industryCount = 0;
+  let familyCount = 0;
+  let levelCount = 0;
+
+  // Seed industry codes
+  for (const industry of industryCodes) {
+    const key = `job_classification.industry.${industry.code.toLowerCase()}`;
+    await prisma.systemSetting.upsert({
+      where: { key },
+      update: { value: JSON.stringify(industry), description: industry.description },
       create: {
         key,
-        system: classification.system,
-        code: classification.code,
-        title: classification.title,
-        examples: JSON.stringify(classification.examples),
+        value: JSON.stringify(industry),
+        group: 'job_classifications',
+        description: industry.description,
       },
     });
+    industryCount++;
   }
 
-  console.log(`Seeded ${jobClassifications.length} job classifications (${onetSocGroups.length} SOC major groups, ${socMinorGroups.length} SOC minor groups, ${socDetailedCodes.length} SOC detailed, ${iscoGroups.length} ISCO-08).`);
+  // Seed job families and their levels
+  for (const family of jobFamilies) {
+    const familyKey = `job_classification.family.${family.code.toLowerCase()}`;
+    await prisma.systemSetting.upsert({
+      where: { key: familyKey },
+      update: {
+        value: JSON.stringify({ code: family.code, name: family.name, description: family.description }),
+        description: family.description,
+      },
+      create: {
+        key: familyKey,
+        value: JSON.stringify({ code: family.code, name: family.name, description: family.description }),
+        group: 'job_families',
+        description: family.description,
+      },
+    });
+    familyCount++;
+
+    // Seed each level
+    for (const level of family.levels) {
+      const levelKey = `job_classification.level.${level.code.toLowerCase()}`;
+      await prisma.systemSetting.upsert({
+        where: { key: levelKey },
+        update: { value: JSON.stringify({ ...level, familyCode: family.code, familyName: family.name }) },
+        create: {
+          key: levelKey,
+          value: JSON.stringify({ ...level, familyCode: family.code, familyName: family.name }),
+          group: 'job_levels',
+          description: `${family.name} — ${level.name}: ${level.description}`,
+        },
+      });
+      levelCount++;
+    }
+  }
+
+  console.log(`  ✓ Job classifications: ${industryCount} industries, ${familyCount} families, ${levelCount} levels seeded`);
 }
+
+// Legacy named export for backward compatibility
+export { seedJobClassifications as seed };

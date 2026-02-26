@@ -1,7 +1,7 @@
 {
   "name": "@aura/events",
   "version": "1.0.0",
-  "description": "AuraOS Event-Driven Architecture",
+  "description": "AuraOS Event-Driven Architecture — in-process event bus + RabbitMQ transport",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -18,8 +18,11 @@
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {},
+  "dependencies": {
+    "amqplib": "^0.10.4"
+  },
   "devDependencies": {
+    "@types/amqplib": "^0.10.5",
     "@types/node": "^20.11.0",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3"

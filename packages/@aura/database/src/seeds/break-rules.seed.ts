@@ -63,28 +63,23 @@ export const breakRules: BreakRule[] = [
   { jurisdiction: 'AE', type: 'rest', afterHours: 5, durationMinutes: 30, paid: false },
 ];
 
+/**
+ * NOTE: BreakRule is not a dedicated Prisma model.
+ * Rules are stored in SystemSetting under the `break_rules` group.
+ */
 export async function seed(prisma: PrismaClient): Promise<void> {
   console.log('Seeding break rules...');
 
-  for (let i = 0; i < breakRules.length; i++) {
-    const rule = breakRules[i];
-    const key = `${rule.jurisdiction}_${rule.type}_${rule.afterHours}h`;
-    await prisma.breakRule.upsert({
+  for (const rule of breakRules) {
+    const key = `break_rule.${rule.jurisdiction}_${rule.type}_${rule.afterHours}h`;
+    await prisma.systemSetting.upsert({
       where: { key },
-      update: {
-        jurisdiction: rule.jurisdiction,
-        type: rule.type,
-        afterHours: rule.afterHours,
-        durationMinutes: rule.durationMinutes,
-        paid: rule.paid,
-      },
+      update: { value: JSON.stringify(rule) },
       create: {
         key,
-        jurisdiction: rule.jurisdiction,
-        type: rule.type,
-        afterHours: rule.afterHours,
-        durationMinutes: rule.durationMinutes,
-        paid: rule.paid,
+        value: JSON.stringify(rule),
+        group: 'break_rules',
+        description: `Break rule for ${rule.jurisdiction} – ${rule.type} after ${rule.afterHours}h`,
       },
     });
   }

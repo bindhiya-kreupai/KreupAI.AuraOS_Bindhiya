@@ -1,0 +1,236 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "type": "datasource",
+      "pluginId": "prometheus"
+    }
+  ],
+  "annotations": { "list": [] },
+  "description": "AuraOS Payroll Service — Run duration, success rate, employee throughput, WPS/GOSI",
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Payroll Run Success Rate",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "100 * sum(aura_payroll_runs_total{status=\"success\"}) / sum(aura_payroll_runs_total)",
+          "legendFormat": "Success Rate",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 95 },
+              { "color": "green", "value": 99 }
+            ]
+          }
+        }
+      },
+      "options": { "colorMode": "background", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 2,
+      "title": "Active Payroll Runs",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "aura_payroll_active_runs",
+          "legendFormat": "Active Runs",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 3 },
+              { "color": "red", "value": 10 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Employees Processed (Last Run)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "aura_payroll_last_run_employee_count",
+          "legendFormat": "Employee Count",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short" }
+      }
+    },
+    {
+      "id": 4,
+      "title": "WPS / GOSI Submission Status",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "aura_payroll_wps_submissions_total{status=\"success\"}",
+          "legendFormat": "WPS Success",
+          "refId": "A"
+        },
+        {
+          "expr": "aura_payroll_wps_submissions_total{status=\"failed\"}",
+          "legendFormat": "WPS Failed",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short" }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Payroll Run Duration",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(aura_payroll_run_duration_seconds_bucket[$__rate_interval]))",
+          "legendFormat": "p95 Duration",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(aura_payroll_run_duration_seconds_bucket[$__rate_interval]))",
+          "legendFormat": "p50 Duration",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(aura_payroll_run_duration_seconds_sum[$__rate_interval]) / rate(aura_payroll_run_duration_seconds_count[$__rate_interval])",
+          "legendFormat": "Average Duration",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s" }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Payroll Runs Over Time",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "increase(aura_payroll_runs_total{status=\"success\"}[$__rate_interval])",
+          "legendFormat": "Successful Runs",
+          "refId": "A"
+        },
+        {
+          "expr": "increase(aura_payroll_runs_total{status=\"failed\"}[$__rate_interval])",
+          "legendFormat": "Failed Runs",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Failed Runs" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "title": "Employee Count Per Run (Trend)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "aura_payroll_run_employee_count",
+          "legendFormat": "{{entity}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short" }
+      }
+    },
+    {
+      "id": 8,
+      "title": "WPS / GOSI Submission Latency",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(aura_payroll_submission_duration_seconds_bucket{type=\"wps\"}[$__rate_interval]))",
+          "legendFormat": "WPS p95",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(aura_payroll_submission_duration_seconds_bucket{type=\"gosi\"}[$__rate_interval]))",
+          "legendFormat": "GOSI p95",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s" }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Calculation Errors by Type",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "increase(aura_payroll_calculation_errors_total[$__rate_interval])",
+          "legendFormat": "{{error_type}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short" }
+      }
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 38,
+  "tags": ["auraos", "payroll", "wps", "gosi"],
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "AuraOS Payroll Service",
+  "uid": "aura-payroll",
+  "version": 1
+}

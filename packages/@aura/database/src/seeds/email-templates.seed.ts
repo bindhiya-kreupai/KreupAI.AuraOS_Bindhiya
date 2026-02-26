@@ -422,22 +422,24 @@ HR Benefits Team`,
   },
 ];
 
+/**
+ * NOTE: EmailTemplate is not a dedicated Prisma model.
+ * Templates are stored in SystemSetting under the `email_templates` group
+ * until an EmailTemplate model is added to the schema.
+ */
 export async function seed(prisma: PrismaClient): Promise<void> {
   console.log('Seeding email templates...');
 
   for (const template of emailTemplates) {
-    await prisma.emailTemplate.upsert({
-      where: { slug: template.slug },
-      update: {
-        subject: template.subject,
-        body: template.body,
-        category: template.category,
-      },
+    const key = `email_template.${template.slug}`;
+    await prisma.systemSetting.upsert({
+      where: { key },
+      update: { value: JSON.stringify(template) },
       create: {
-        slug: template.slug,
-        subject: template.subject,
-        body: template.body,
-        category: template.category,
+        key,
+        value: JSON.stringify(template),
+        group: 'email_templates',
+        description: `Email template: ${template.subject}`,
       },
     });
   }

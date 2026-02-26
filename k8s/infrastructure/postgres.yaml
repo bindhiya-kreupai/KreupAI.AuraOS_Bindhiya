@@ -1,0 +1,210 @@
+---
+# AuraOS PostgreSQL StatefulSet
+# Production-grade with PVC, init container for migrations, backup hooks
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: aura-system
+  labels:
+    app: postgres
+data:
+  POSTGRES_DB: "aura_hcm"
+  POSTGRES_USER: "aura_app"
+  PGDATA: "/var/lib/postgresql/data/pgdata"
+  # PostgreSQL tuning parameters
+  postgresql.conf: |
+    max_connections = 200
+    shared_buffers = 256MB
+    effective_cache_size = 768MB
+    maintenance_work_mem = 64MB
+    checkpoint_completion_target = 0.9
+    wal_buffers = 16MB
+    default_statistics_target = 100
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    work_mem = 4MB
+    min_wal_size = 1GB
+    max_wal_size = 4GB
+    max_worker_processes = 8
+    max_parallel_workers_per_gather = 4
+    max_parallel_workers = 8
+    log_min_duration_statement = 500
+    log_checkpoints = on
+    log_connections = on
+    log_disconnections = on
+    log_lock_waits = on
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: aura-system
+  labels:
+    app: postgres
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: aura-system
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+
+      initContainers:
+        # Run database migrations before main container starts
+        - name: run-migrations
+          image: kreupai/aura-migrations:latest
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: aura-config
+            - secretRef:
+                name: aura-secrets
+          env:
+            - name: DB_HOST
+              value: "127.0.0.1"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Waiting for PostgreSQL to be ready..."
+              until pg_isready -h 127.0.0.1 -U aura_app -d aura_hcm; do
+                echo "PostgreSQL not ready — retrying in 2s"
+                sleep 2
+              done
+              echo "Running migrations..."
+              node /app/dist/migrate.js
+              echo "Migrations complete."
+
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+
+          env:
+            - name: POSTGRES_DB
+              value: "aura_hcm"
+            - name: POSTGRES_USER
+              value: "aura_app"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: aura-secrets
+                  key: DB_PASSWORD
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "aura_app", "-d", "aura_hcm"]
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "aura_app", "-d", "aura_hcm"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: postgres-config-volume
+              mountPath: /etc/postgresql/postgresql.conf
+              subPath: postgresql.conf
+            - name: postgres-init
+              mountPath: /docker-entrypoint-initdb.d
+
+      volumes:
+        - name: postgres-config-volume
+          configMap:
+            name: postgres-config
+            items:
+              - key: postgresql.conf
+                path: postgresql.conf
+        - name: postgres-init
+          emptyDir: {}
+
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+        labels:
+          app: postgres
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: gp3
+        resources:
+          requests:
+            storage: 100Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: aura-system
+  labels:
+    app: postgres
+    app.kubernetes.io/name: postgres
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service for StatefulSet DNS
+  selector:
+    app: postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+
+---
+# Read-replica service (for analytics / read-heavy workloads)
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-read
+  namespace: aura-system
+  labels:
+    app: postgres
+    role: read
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP

@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { seedGCCStatutoryData } from '../seeds/gcc-statutory-data';
 import { countriesSeed } from '../src/seeds/01-countries.seed';
 import { currenciesSeed } from '../src/seeds/02-currencies.seed';
 import { languagesSeed } from '../src/seeds/03-languages.seed';
@@ -37,6 +38,34 @@ import { learningSeed } from '../src/seeds/20-learning.seed';
 import { compensationSeed } from '../src/seeds/21-compensation.seed';
 import { benefitsSeed } from '../src/seeds/22-benefits.seed';
 import { seedPositions } from '../src/seeds/21-positions.seed';
+
+// ============================================================
+// Phase 2 — Enterprise Seed Modules (GAP Closure)
+// ============================================================
+import { seedCountriesCurrencies } from '../src/seeds/countries-currencies.seed';
+import { seedGeographicData } from '../src/seeds/geographic-data.seed';
+import { seedWorkflowTemplates } from '../src/seeds/workflow-templates.seed';
+import { seedSkillsTaxonomy } from '../src/seeds/skills-taxonomy.seed';
+import { seedNotificationTemplates } from '../src/seeds/notification-templates.seed';
+import { seedJobClassifications } from '../src/seeds/job-classifications.seed';
+import { seedLeaveTypes } from '../src/seeds/leave-types.seed';
+import { seedOvertimeBreakRules } from '../src/seeds/overtime-break-rules.seed';
+import { seedApprovalChains } from '../src/seeds/approval-chains.seed';
+
+// ============================================================
+// Helper: run a non-critical seed step with error isolation
+// ============================================================
+async function runSeedStep(
+    stepName: string,
+    fn: () => Promise<void>
+): Promise<void> {
+    try {
+        await fn();
+    } catch (err) {
+        console.error(`  [ERROR] Seed step "${stepName}" failed:`, err instanceof Error ? err.message : err);
+        console.error(`  [INFO]  Continuing with remaining seed steps...`);
+    }
+}
 
 const prisma = new PrismaClient();
 
@@ -930,7 +959,59 @@ async function main() {
     console.log('\n💊 Seeding Benefits Management Module...');
     await benefitsSeed(tenant.id);
 
-    console.log('🏁 Comprehensive Seeding Completed!');
+    // ============================================
+    // GCC STATUTORY RATES (WPS, GOSI, EOSB, SIO, PASI)
+    // ============================================
+    console.log('\n Seeding GCC Statutory Rates...');
+    await seedGCCStatutoryData(prisma);
+
+    // ============================================================
+    // PHASE 2 — ENTERPRISE SEED DATA (GAP Closure)
+    // Run in dependency order; each step is error-isolated so a
+    // failure in one seed does not abort the rest.
+    // ============================================================
+    console.log('\n========================================');
+    console.log(' PHASE 2 — Enterprise Seed Data (GAP Closure)');
+    console.log('========================================\n');
+
+    // Step P2-1: Countries & Currencies (replaces / supplements 01 + 02)
+    console.log('[P2-1] Countries & Currencies...');
+    await runSeedStep('countries-currencies', () => seedCountriesCurrencies(prisma));
+
+    // Step P2-2: Geographic Data (UAE Emirates, KSA Regions, India States, US States)
+    console.log('[P2-2] Geographic Data...');
+    await runSeedStep('geographic-data', () => seedGeographicData(prisma));
+
+    // Step P2-3: Workflow Templates
+    console.log('[P2-3] Workflow Templates...');
+    await runSeedStep('workflow-templates', () => seedWorkflowTemplates(prisma));
+
+    // Step P2-4: Skills Taxonomy (8 categories, 40+ skills)
+    console.log('[P2-4] Skills Taxonomy...');
+    await runSeedStep('skills-taxonomy', () => seedSkillsTaxonomy(prisma));
+
+    // Step P2-5: Notification Templates (20+ multi-channel)
+    console.log('[P2-5] Notification Templates...');
+    await runSeedStep('notification-templates', () => seedNotificationTemplates(prisma));
+
+    // Step P2-6: Job Classifications (10 industries, 8 families, 5 levels)
+    console.log('[P2-6] Job Classifications...');
+    await runSeedStep('job-classifications', () => seedJobClassifications(prisma));
+
+    // Step P2-7: Leave Types (GCC + India + US with country-specific policies)
+    console.log('[P2-7] Leave Types (Enhanced)...');
+    await runSeedStep('leave-types', () => seedLeaveTypes(prisma));
+
+    // Step P2-8: Overtime & Break Rules (all GCC + India + US + UK)
+    console.log('[P2-8] Overtime & Break Rules...');
+    await runSeedStep('overtime-break-rules', () => seedOvertimeBreakRules(prisma));
+
+    // Step P2-9: Approval Chains & SoD Rules
+    console.log('[P2-9] Approval Chains & SoD Rules...');
+    await runSeedStep('approval-chains', () => seedApprovalChains(prisma));
+
+    console.log('\n Phase 2 Enterprise Seed Data completed.');
+    console.log('Comprehensive Seeding Completed!');
 }
 
 main()

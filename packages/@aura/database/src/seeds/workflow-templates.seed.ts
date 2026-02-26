@@ -1,346 +1,795 @@
+/**
+ * @module WorkflowTemplatesSeed
+ * @description Enterprise workflow templates for approval processes, onboarding,
+ *   offboarding, and HR operations — stored as SystemSetting JSON payloads.
+ *   WorkflowDefinition is the runtime model; templates provide blueprint data.
+ * @project AuraOS Enterprise HCM — Phase 2 GAP Closure
+ * @section Task Group A — Seed 1
+ */
+
 import { PrismaClient } from '@prisma/client';
 
-export interface WorkflowNode {
-  id: string;
-  type: string;
-  label: string;
-  config: Record<string, unknown>;
+// ---------------------------------------------------------------------------
+// Type definitions
+// ---------------------------------------------------------------------------
+
+export interface WorkflowStepApprover {
+  role: string;
+  label?: string;
+  escalateAfterHours?: number;
 }
 
-export interface WorkflowEdge {
-  from: string;
-  to: string;
-  condition?: string;
+export interface WorkflowStep {
+  id: string;
+  type: 'approval' | 'action' | 'validation' | 'notification';
+  label: string;
+  approvers?: WorkflowStepApprover[];
+  actions?: string[];
+  checks?: string[];
+  slaHours?: number;
+  escalationRules?: {
+    escalateAfterHours: number;
+    escalateTo: string;
+    notifyOn: string[];
+  };
+  conditions?: Record<string, unknown>;
+  config?: Record<string, unknown>;
 }
 
 export interface WorkflowTemplate {
   name: string;
+  code: string;
+  description: string;
   trigger: string;
-  nodes: WorkflowNode[];
-  edges: WorkflowEdge[];
+  module: string;
+  version: string;
+  steps: WorkflowStep[];
+  slaHours: number;
+  escalationRules: {
+    firstReminderHours: number;
+    secondReminderHours: number;
+    autoEscalateHours: number;
+    notifyHR: boolean;
+  };
+  conditions?: Record<string, unknown>;
 }
+
+// ---------------------------------------------------------------------------
+// 1. Leave Approval (2-level: Manager → HR)
+// ---------------------------------------------------------------------------
+
+const leaveApprovalTemplate: WorkflowTemplate = {
+  name: 'Leave Approval',
+  code: 'WF_LEAVE_APPROVAL',
+  description: 'Standard 2-level leave approval: direct manager followed by HR manager',
+  trigger: 'leave.requested',
+  module: 'leave',
+  version: '2.0',
+  slaHours: 48,
+  escalationRules: {
+    firstReminderHours: 24,
+    secondReminderHours: 36,
+    autoEscalateHours: 48,
+    notifyHR: true,
+  },
+  steps: [
+    {
+      id: 'lv-validate',
+      type: 'validation',
+      label: 'Validate Leave Request',
+      checks: [
+        'sufficient_balance',
+        'no_date_overlap',
+        'blackout_dates_check',
+        'min_notice_period_check',
+        'max_consecutive_days_check',
+      ],
+      config: { autoRejectOnFailure: true },
+    },
+    {
+      id: 'lv-manager',
+      type: 'approval',
+      label: 'Manager Approval (Level 1)',
+      approvers: [
+        { role: 'direct_manager', label: 'Direct Manager', escalateAfterHours: 24 },
+      ],
+      slaHours: 24,
+      escalationRules: {
+        escalateAfterHours: 24,
+        escalateTo: 'skip_level_manager',
+        notifyOn: ['approved', 'rejected', 'escalated'],
+      },
+    },
+    {
+      id: 'lv-hr',
+      type: 'approval',
+      label: 'HR Approval (Level 2)',
+      approvers: [
+        { role: 'hr_manager', label: 'HR Manager', escalateAfterHours: 24 },
+      ],
+      slaHours: 24,
+      conditions: {
+        triggerConditions: [
+          'leaveType IN [HAJJ, STUDY, MATERNITY, PATERNITY, UNPAID]',
+          'duration > 14',
+        ],
+      },
+      escalationRules: {
+        escalateAfterHours: 24,
+        escalateTo: 'hr_director',
+        notifyOn: ['approved', 'rejected', 'escalated'],
+      },
+    },
+    {
+      id: 'lv-notify',
+      type: 'action',
+      label: 'Process and Notify',
+      actions: [
+        'update_leave_balance',
+        'update_team_calendar',
+        'notify_employee',
+        'set_out_of_office',
+        'notify_team_members',
+      ],
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// 2. Expense Approval (3-level: Manager → Finance → CFO for >$5000)
+// ---------------------------------------------------------------------------
+
+const expenseApprovalTemplate: WorkflowTemplate = {
+  name: 'Expense Claim Approval',
+  code: 'WF_EXPENSE_APPROVAL',
+  description: 'Threshold-based expense approval: manager for <$500, finance for <$5000, CFO for >$5000',
+  trigger: 'expense.submitted',
+  module: 'expense',
+  version: '2.0',
+  slaHours: 72,
+  escalationRules: {
+    firstReminderHours: 36,
+    secondReminderHours: 60,
+    autoEscalateHours: 72,
+    notifyHR: false,
+  },
+  steps: [
+    {
+      id: 'exp-validate',
+      type: 'validation',
+      label: 'Policy & Receipt Validation',
+      checks: [
+        'receipt_attached',
+        'within_daily_limit',
+        'valid_expense_category',
+        'not_duplicate_claim',
+        'expense_date_within_policy',
+      ],
+      config: { autoRejectOnFailure: false, flagForManualReview: true },
+    },
+    {
+      id: 'exp-manager',
+      type: 'approval',
+      label: 'Manager Approval (Level 1)',
+      approvers: [
+        { role: 'direct_manager', label: 'Direct Manager', escalateAfterHours: 48 },
+      ],
+      slaHours: 48,
+      conditions: { threshold: { min: 0, max: 999999 } },
+      escalationRules: {
+        escalateAfterHours: 48,
+        escalateTo: 'department_head',
+        notifyOn: ['approved', 'rejected'],
+      },
+    },
+    {
+      id: 'exp-finance',
+      type: 'approval',
+      label: 'Finance Controller Approval (Level 2)',
+      approvers: [
+        { role: 'finance_controller', label: 'Finance Controller', escalateAfterHours: 48 },
+      ],
+      slaHours: 48,
+      conditions: {
+        triggerConditions: ['amount >= 500'],
+      },
+      escalationRules: {
+        escalateAfterHours: 48,
+        escalateTo: 'finance_director',
+        notifyOn: ['approved', 'rejected'],
+      },
+    },
+    {
+      id: 'exp-cfo',
+      type: 'approval',
+      label: 'CFO Approval (Level 3)',
+      approvers: [
+        { role: 'cfo', label: 'Chief Financial Officer', escalateAfterHours: 72 },
+      ],
+      slaHours: 72,
+      conditions: {
+        triggerConditions: ['amount >= 5000'],
+      },
+      escalationRules: {
+        escalateAfterHours: 72,
+        escalateTo: 'ceo',
+        notifyOn: ['approved', 'rejected'],
+      },
+    },
+    {
+      id: 'exp-process',
+      type: 'action',
+      label: 'Process Reimbursement',
+      actions: [
+        'generate_reimbursement_voucher',
+        'update_cost_center_budget',
+        'notify_employee',
+        'schedule_bank_transfer',
+        'update_expense_report',
+      ],
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// 3. Employee Onboarding (5-step checklist)
+// ---------------------------------------------------------------------------
+
+const employeeOnboardingTemplate: WorkflowTemplate = {
+  name: 'Employee Onboarding',
+  code: 'WF_EMPLOYEE_ONBOARDING',
+  description: '5-step employee onboarding workflow covering IT, facilities, HR, training, and manager check-in',
+  trigger: 'employee.created',
+  module: 'onboarding',
+  version: '2.0',
+  slaHours: 168,
+  escalationRules: {
+    firstReminderHours: 24,
+    secondReminderHours: 72,
+    autoEscalateHours: 120,
+    notifyHR: true,
+  },
+  steps: [
+    {
+      id: 'onb-it',
+      type: 'action',
+      label: 'Step 1: IT Provisioning',
+      actions: [
+        'create_email_account',
+        'create_slack_workspace',
+        'provision_laptop_request',
+        'assign_access_badge',
+        'setup_vpn_credentials',
+        'grant_system_accesses',
+      ],
+      slaHours: 24,
+      config: { assignee: 'it_team', priority: 'high' },
+      escalationRules: {
+        escalateAfterHours: 24,
+        escalateTo: 'it_manager',
+        notifyOn: ['overdue'],
+      },
+    },
+    {
+      id: 'onb-facilities',
+      type: 'action',
+      label: 'Step 2: Workspace & Equipment',
+      actions: [
+        'assign_desk_workstation',
+        'order_office_supplies',
+        'prepare_welcome_kit',
+        'setup_parking_permit',
+      ],
+      slaHours: 48,
+      config: { assignee: 'facilities_team', priority: 'medium' },
+    },
+    {
+      id: 'onb-hr',
+      type: 'action',
+      label: 'Step 3: HR Documentation & Welcome',
+      actions: [
+        'send_welcome_email',
+        'distribute_employee_handbook',
+        'assign_buddy_mentor',
+        'schedule_orientation_sessions',
+        'collect_bank_details',
+        'initiate_document_collection',
+        'enroll_benefits',
+      ],
+      slaHours: 24,
+      config: {
+        assignee: 'hr_team',
+        emailTemplate: 'welcome-new-hire',
+        requiredDocuments: [
+          'national_id',
+          'passport',
+          'educational_certificates',
+          'offer_letter_signed',
+          'bank_details',
+        ],
+      },
+    },
+    {
+      id: 'onb-training',
+      type: 'action',
+      label: 'Step 4: Training & Compliance',
+      actions: [
+        'assign_mandatory_training',
+        'enroll_compliance_courses',
+        'assign_role_specific_training',
+        'schedule_product_overview',
+      ],
+      slaHours: 48,
+      config: {
+        assignee: 'learning_team',
+        mandatoryCourses: [
+          'code_of_conduct',
+          'data_privacy_gdpr',
+          'information_security_awareness',
+          'anti_harassment_policy',
+          'health_safety_environment',
+        ],
+        deadlineDays: 30,
+      },
+    },
+    {
+      id: 'onb-manager',
+      type: 'approval',
+      label: 'Step 5: Manager 30-Day Check-in',
+      approvers: [
+        { role: 'direct_manager', label: 'Direct Manager', escalateAfterHours: 168 },
+      ],
+      actions: [
+        'schedule_30_day_checkin',
+        'set_probation_goals',
+        'confirm_onboarding_complete',
+        'update_onboarding_status',
+      ],
+      slaHours: 168,
+      config: { checklistRequired: true },
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// 4. Employee Offboarding (4-step clearance)
+// ---------------------------------------------------------------------------
+
+const employeeOffboardingTemplate: WorkflowTemplate = {
+  name: 'Employee Offboarding',
+  code: 'WF_EMPLOYEE_OFFBOARDING',
+  description: '4-step offboarding clearance covering exit process, IT revocation, final settlement, and archive',
+  trigger: 'employee.terminated',
+  module: 'offboarding',
+  version: '2.0',
+  slaHours: 336,
+  escalationRules: {
+    firstReminderHours: 48,
+    secondReminderHours: 120,
+    autoEscalateHours: 240,
+    notifyHR: true,
+  },
+  steps: [
+    {
+      id: 'off-initiate',
+      type: 'action',
+      label: 'Step 1: Initiate Exit Process',
+      actions: [
+        'schedule_exit_interview',
+        'calculate_final_settlement',
+        'notify_stakeholders',
+        'initiate_knowledge_transfer',
+        'update_org_chart',
+        'notify_client_accounts',
+      ],
+      slaHours: 24,
+      config: { assignee: 'hr_team', priority: 'urgent' },
+    },
+    {
+      id: 'off-it-clearance',
+      type: 'action',
+      label: 'Step 2: IT & Asset Clearance',
+      actions: [
+        'revoke_email_access',
+        'revoke_system_accesses',
+        'collect_laptop_equipment',
+        'collect_access_badge',
+        'revoke_vpn_credentials',
+        'backup_work_files',
+        'transfer_data_ownership',
+      ],
+      slaHours: 72,
+      config: {
+        assignee: 'it_team',
+        deadline: 'last_working_day',
+        clearanceCertificateRequired: true,
+      },
+    },
+    {
+      id: 'off-settlement',
+      type: 'action',
+      label: 'Step 3: Final Settlement Processing',
+      actions: [
+        'calculate_leave_encashment',
+        'process_final_salary',
+        'calculate_eosb_gratuity',
+        'generate_tax_forms',
+        'issue_experience_letter',
+        'issue_relieving_letter',
+        'update_statutory_records',
+      ],
+      slaHours: 168,
+      config: {
+        assignee: 'payroll_team',
+        deadline: '7_days_after_last_working_day',
+        requiresFinanceApproval: true,
+      },
+    },
+    {
+      id: 'off-close',
+      type: 'action',
+      label: 'Step 4: Exit Interview & Archive',
+      actions: [
+        'conduct_exit_interview',
+        'collect_exit_survey',
+        'archive_employee_records',
+        'remove_from_distribution_lists',
+        'close_payroll_profile',
+        'terminate_benefits',
+      ],
+      slaHours: 72,
+      config: {
+        assignee: 'hr_team',
+        exitInterviewMandatory: true,
+      },
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// 5. Profile Change Approval
+// ---------------------------------------------------------------------------
+
+const profileChangeApprovalTemplate: WorkflowTemplate = {
+  name: 'Profile Change Approval',
+  code: 'WF_PROFILE_CHANGE',
+  description: 'Approval workflow for sensitive employee profile changes requiring manager and HR sign-off',
+  trigger: 'employee.profile_change_requested',
+  module: 'employee',
+  version: '2.0',
+  slaHours: 72,
+  escalationRules: {
+    firstReminderHours: 24,
+    secondReminderHours: 48,
+    autoEscalateHours: 72,
+    notifyHR: true,
+  },
+  steps: [
+    {
+      id: 'pc-validate',
+      type: 'validation',
+      label: 'Validate Profile Change Request',
+      checks: [
+        'supporting_documents_attached',
+        'change_within_policy',
+        'no_duplicate_request',
+      ],
+      config: { autoRejectOnFailure: false },
+    },
+    {
+      id: 'pc-manager',
+      type: 'approval',
+      label: 'Manager Approval',
+      approvers: [
+        { role: 'direct_manager', label: 'Direct Manager', escalateAfterHours: 48 },
+      ],
+      slaHours: 48,
+      conditions: {
+        sensitiveFields: [
+          'designation',
+          'department',
+          'location',
+          'salary_grade',
+          'reporting_manager',
+        ],
+      },
+    },
+    {
+      id: 'pc-hr',
+      type: 'approval',
+      label: 'HR Approval',
+      approvers: [
+        { role: 'hr_business_partner', label: 'HR Business Partner', escalateAfterHours: 24 },
+      ],
+      slaHours: 24,
+      conditions: {
+        triggerConditions: [
+          'field IN [designation, department, salary_grade, employment_type]',
+        ],
+      },
+    },
+    {
+      id: 'pc-apply',
+      type: 'action',
+      label: 'Apply Profile Changes',
+      actions: [
+        'update_employee_profile',
+        'update_payroll_records',
+        'update_org_chart',
+        'notify_employee',
+        'send_confirmation_letter',
+        'log_audit_trail',
+      ],
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// 6. Loan / Salary Advance Request
+// ---------------------------------------------------------------------------
+
+const loanAdvanceTemplate: WorkflowTemplate = {
+  name: 'Loan and Salary Advance Request',
+  code: 'WF_LOAN_ADVANCE',
+  description: 'Approval workflow for employee loan and salary advance requests with eligibility checks',
+  trigger: 'loan.requested',
+  module: 'payroll',
+  version: '2.0',
+  slaHours: 120,
+  escalationRules: {
+    firstReminderHours: 48,
+    secondReminderHours: 72,
+    autoEscalateHours: 120,
+    notifyHR: false,
+  },
+  steps: [
+    {
+      id: 'loan-eligibility',
+      type: 'validation',
+      label: 'Eligibility Check',
+      checks: [
+        'min_service_period_6_months',
+        'no_existing_active_loan',
+        'within_max_loan_amount_policy',
+        'credit_history_internal',
+        'probation_completed',
+      ],
+      config: { autoRejectOnFailure: true },
+    },
+    {
+      id: 'loan-manager',
+      type: 'approval',
+      label: 'Manager Approval',
+      approvers: [
+        { role: 'direct_manager', label: 'Direct Manager', escalateAfterHours: 48 },
+      ],
+      slaHours: 48,
+    },
+    {
+      id: 'loan-hr',
+      type: 'approval',
+      label: 'HR Approval',
+      approvers: [
+        { role: 'hr_manager', label: 'HR Manager', escalateAfterHours: 48 },
+      ],
+      slaHours: 48,
+    },
+    {
+      id: 'loan-finance',
+      type: 'approval',
+      label: 'Finance Approval',
+      approvers: [
+        { role: 'finance_controller', label: 'Finance Controller', escalateAfterHours: 24 },
+      ],
+      slaHours: 24,
+      conditions: {
+        triggerConditions: ['amount > 5000'],
+      },
+    },
+    {
+      id: 'loan-disburse',
+      type: 'action',
+      label: 'Disburse Loan',
+      actions: [
+        'create_loan_account',
+        'setup_monthly_deduction_schedule',
+        'process_disbursement',
+        'notify_employee',
+        'generate_loan_agreement',
+      ],
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// 7. Training Enrollment Approval
+// ---------------------------------------------------------------------------
+
+const trainingEnrollmentTemplate: WorkflowTemplate = {
+  name: 'Training Enrollment Approval',
+  code: 'WF_TRAINING_ENROLLMENT',
+  description: 'Approval workflow for employee training enrollment with budget and manager sign-off',
+  trigger: 'training.enrollment_requested',
+  module: 'learning',
+  version: '2.0',
+  slaHours: 96,
+  escalationRules: {
+    firstReminderHours: 48,
+    secondReminderHours: 72,
+    autoEscalateHours: 96,
+    notifyHR: false,
+  },
+  steps: [
+    {
+      id: 'trn-validate',
+      type: 'validation',
+      label: 'Training Request Validation',
+      checks: [
+        'course_within_approved_catalog',
+        'training_budget_available',
+        'no_conflicting_schedule',
+        'employee_meets_prerequisites',
+      ],
+      config: { autoRejectOnFailure: false },
+    },
+    {
+      id: 'trn-manager',
+      type: 'approval',
+      label: 'Manager Approval',
+      approvers: [
+        { role: 'direct_manager', label: 'Direct Manager', escalateAfterHours: 48 },
+      ],
+      slaHours: 48,
+      config: { reviewWorkloadImpact: true },
+    },
+    {
+      id: 'trn-l-and-d',
+      type: 'approval',
+      label: 'L&D Team Approval',
+      approvers: [
+        { role: 'learning_development_team', label: 'L&D Team', escalateAfterHours: 24 },
+      ],
+      slaHours: 24,
+      conditions: {
+        triggerConditions: ['trainingCost > 500 OR externalVendor == true'],
+      },
+    },
+    {
+      id: 'trn-finance',
+      type: 'approval',
+      label: 'Finance Budget Approval',
+      approvers: [
+        { role: 'finance_business_partner', label: 'Finance Business Partner', escalateAfterHours: 24 },
+      ],
+      slaHours: 24,
+      conditions: {
+        triggerConditions: ['trainingCost > 2000'],
+      },
+    },
+    {
+      id: 'trn-enroll',
+      type: 'action',
+      label: 'Complete Enrollment',
+      actions: [
+        'confirm_enrollment',
+        'send_calendar_invite',
+        'book_training_seat',
+        'notify_employee',
+        'update_development_plan',
+        'raise_purchase_order_if_external',
+      ],
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// 8. Overtime Approval
+// ---------------------------------------------------------------------------
+
+const overtimeApprovalTemplate: WorkflowTemplate = {
+  name: 'Overtime Approval',
+  code: 'WF_OVERTIME_APPROVAL',
+  description: 'Approval workflow for employee overtime requests with statutory compliance checks',
+  trigger: 'overtime.requested',
+  module: 'attendance',
+  version: '2.0',
+  slaHours: 24,
+  escalationRules: {
+    firstReminderHours: 8,
+    secondReminderHours: 16,
+    autoEscalateHours: 24,
+    notifyHR: false,
+  },
+  steps: [
+    {
+      id: 'ot-validate',
+      type: 'validation',
+      label: 'Overtime Eligibility Validation',
+      checks: [
+        'max_weekly_overtime_not_exceeded',
+        'max_monthly_overtime_not_exceeded',
+        'cooling_off_period_check',
+        'statutory_overtime_cap_check',
+        'employee_not_on_leave',
+      ],
+      config: { autoRejectOnFailure: true, jurisdictionAware: true },
+    },
+    {
+      id: 'ot-manager',
+      type: 'approval',
+      label: 'Manager Approval',
+      approvers: [
+        { role: 'direct_manager', label: 'Direct Manager', escalateAfterHours: 8 },
+      ],
+      slaHours: 8,
+      escalationRules: {
+        escalateAfterHours: 8,
+        escalateTo: 'department_head',
+        notifyOn: ['approved', 'rejected', 'escalated'],
+      },
+    },
+    {
+      id: 'ot-record',
+      type: 'action',
+      label: 'Record Overtime',
+      actions: [
+        'update_attendance_record',
+        'calculate_overtime_pay',
+        'update_comp_off_balance',
+        'notify_payroll_team',
+        'notify_employee',
+      ],
+      config: { applyJurisdictionRates: true },
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// Aggregated export
+// ---------------------------------------------------------------------------
 
 export const workflowTemplates: WorkflowTemplate[] = [
-  {
-    name: 'Employee Onboarding',
-    trigger: 'employee.created',
-    nodes: [
-      {
-        id: 'onb-1',
-        type: 'action',
-        label: 'Create Accounts & Provision Access',
-        config: {
-          actions: ['create_email', 'create_slack', 'provision_laptop', 'assign_badge'],
-          assignee: 'it_team',
-          sla: '24h',
-        },
-      },
-      {
-        id: 'onb-2',
-        type: 'action',
-        label: 'Prepare Workspace & Equipment',
-        config: {
-          actions: ['assign_desk', 'order_equipment', 'prepare_welcome_kit'],
-          assignee: 'facilities_team',
-          sla: '48h',
-        },
-      },
-      {
-        id: 'onb-3',
-        type: 'action',
-        label: 'Send Welcome Package & Documents',
-        config: {
-          actions: ['send_welcome_email', 'send_handbook', 'assign_buddy', 'schedule_orientation'],
-          assignee: 'hr_team',
-          sla: '24h',
-          emailTemplate: 'welcome-new-hire',
-        },
-      },
-      {
-        id: 'onb-4',
-        type: 'action',
-        label: 'Assign Training & Compliance Courses',
-        config: {
-          actions: ['assign_mandatory_training', 'assign_compliance_courses', 'assign_role_training'],
-          assignee: 'learning_team',
-          sla: '48h',
-          mandatoryCourses: ['code_of_conduct', 'data_privacy', 'security_awareness', 'anti_harassment'],
-        },
-      },
-      {
-        id: 'onb-5',
-        type: 'approval',
-        label: 'Manager Check-in & Probation Goals',
-        config: {
-          actions: ['schedule_30_day_checkin', 'set_probation_goals', 'confirm_onboarding_complete'],
-          assignee: 'direct_manager',
-          sla: '7d',
-        },
-      },
-    ],
-    edges: [
-      { from: 'onb-1', to: 'onb-2' },
-      { from: 'onb-1', to: 'onb-3' },
-      { from: 'onb-2', to: 'onb-4' },
-      { from: 'onb-3', to: 'onb-4' },
-      { from: 'onb-4', to: 'onb-5' },
-    ],
-  },
-  {
-    name: 'Employee Offboarding',
-    trigger: 'employee.terminated',
-    nodes: [
-      {
-        id: 'off-1',
-        type: 'action',
-        label: 'Initiate Exit Process',
-        config: {
-          actions: ['schedule_exit_interview', 'calculate_fnf', 'notify_stakeholders', 'initiate_knowledge_transfer'],
-          assignee: 'hr_team',
-          sla: '24h',
-        },
-      },
-      {
-        id: 'off-2',
-        type: 'action',
-        label: 'Revoke Access & Collect Assets',
-        config: {
-          actions: ['revoke_email', 'revoke_systems', 'collect_laptop', 'collect_badge', 'revoke_vpn'],
-          assignee: 'it_team',
-          sla: 'last_working_day',
-        },
-      },
-      {
-        id: 'off-3',
-        type: 'action',
-        label: 'Process Final Settlement',
-        config: {
-          actions: ['calculate_leave_encashment', 'process_final_pay', 'generate_form16', 'issue_experience_letter'],
-          assignee: 'payroll_team',
-          sla: '7d_after_lwd',
-        },
-      },
-      {
-        id: 'off-4',
-        type: 'action',
-        label: 'Complete Exit & Archive',
-        config: {
-          actions: ['conduct_exit_interview', 'archive_records', 'update_org_chart', 'remove_from_distribution_lists'],
-          assignee: 'hr_team',
-          sla: '14d_after_lwd',
-        },
-      },
-    ],
-    edges: [
-      { from: 'off-1', to: 'off-2' },
-      { from: 'off-1', to: 'off-3', condition: 'lastWorkingDay reached' },
-      { from: 'off-2', to: 'off-4' },
-      { from: 'off-3', to: 'off-4' },
-    ],
-  },
-  {
-    name: 'Leave Approval',
-    trigger: 'leave.requested',
-    nodes: [
-      {
-        id: 'lv-1',
-        type: 'validation',
-        label: 'Validate Leave Request',
-        config: {
-          checks: ['sufficient_balance', 'no_overlap', 'blackout_dates', 'min_notice_period'],
-          autoReject: true,
-        },
-      },
-      {
-        id: 'lv-2',
-        type: 'approval',
-        label: 'Manager Approval',
-        config: {
-          approver: 'direct_manager',
-          sla: '48h',
-          escalateTo: 'skip_level_manager',
-          emailTemplate: 'leave-request-notification',
-        },
-      },
-      {
-        id: 'lv-3',
-        type: 'action',
-        label: 'Process & Notify',
-        config: {
-          actions: ['update_leave_balance', 'update_calendar', 'notify_team', 'set_out_of_office'],
-          emailTemplateApproved: 'leave-approved',
-          emailTemplateRejected: 'leave-rejected',
-        },
-      },
-    ],
-    edges: [
-      { from: 'lv-1', to: 'lv-2', condition: 'validation_passed' },
-      { from: 'lv-2', to: 'lv-3' },
-    ],
-  },
-  {
-    name: 'Expense Approval',
-    trigger: 'expense.submitted',
-    nodes: [
-      {
-        id: 'exp-1',
-        type: 'validation',
-        label: 'Validate Expense Claim',
-        config: {
-          checks: ['receipt_attached', 'within_policy_limits', 'valid_category', 'not_duplicate'],
-          autoReject: false,
-        },
-      },
-      {
-        id: 'exp-2',
-        type: 'approval',
-        label: 'Manager Approval',
-        config: {
-          approver: 'direct_manager',
-          sla: '72h',
-          thresholdForNextLevel: 5000,
-          currency: 'USD',
-        },
-      },
-      {
-        id: 'exp-3',
-        type: 'approval',
-        label: 'Finance Review & Processing',
-        config: {
-          approver: 'finance_team',
-          sla: '48h',
-          actions: ['verify_receipts', 'check_budget', 'process_reimbursement'],
-          condition: 'amount > 1000 OR category == travel',
-        },
-      },
-    ],
-    edges: [
-      { from: 'exp-1', to: 'exp-2', condition: 'validation_passed' },
-      { from: 'exp-2', to: 'exp-3', condition: 'approved AND (amount > 1000 OR requiresFinanceReview)' },
-    ],
-  },
-  {
-    name: 'Job Requisition',
-    trigger: 'requisition.created',
-    nodes: [
-      {
-        id: 'req-1',
-        type: 'action',
-        label: 'Draft Requisition & Job Description',
-        config: {
-          requiredFields: ['title', 'department', 'level', 'budget', 'justification', 'headcount'],
-          assignee: 'hiring_manager',
-        },
-      },
-      {
-        id: 'req-2',
-        type: 'approval',
-        label: 'Department Head Approval',
-        config: {
-          approver: 'department_head',
-          sla: '72h',
-          escalateTo: 'vp',
-        },
-      },
-      {
-        id: 'req-3',
-        type: 'approval',
-        label: 'Finance & Budget Approval',
-        config: {
-          approver: 'finance_bp',
-          sla: '48h',
-          checks: ['budget_available', 'within_headcount_plan'],
-        },
-      },
-      {
-        id: 'req-4',
-        type: 'action',
-        label: 'Publish & Source Candidates',
-        config: {
-          actions: ['post_internal', 'post_external', 'notify_recruiters', 'create_sourcing_plan'],
-          assignee: 'talent_acquisition',
-          channels: ['linkedin', 'indeed', 'company_careers', 'referrals'],
-        },
-      },
-    ],
-    edges: [
-      { from: 'req-1', to: 'req-2' },
-      { from: 'req-2', to: 'req-3', condition: 'approved' },
-      { from: 'req-3', to: 'req-4', condition: 'approved' },
-    ],
-  },
-  {
-    name: 'Promotion Process',
-    trigger: 'promotion.initiated',
-    nodes: [
-      {
-        id: 'promo-1',
-        type: 'action',
-        label: 'Prepare Promotion Case',
-        config: {
-          requiredDocs: ['performance_history', 'peer_feedback', 'business_case', 'competency_assessment'],
-          assignee: 'direct_manager',
-          sla: '7d',
-        },
-      },
-      {
-        id: 'promo-2',
-        type: 'approval',
-        label: 'Skip-Level Manager Review',
-        config: {
-          approver: 'skip_level_manager',
-          sla: '5d',
-          requiredReview: ['performance_ratings', 'compensation_data', 'team_equity'],
-        },
-      },
-      {
-        id: 'promo-3',
-        type: 'approval',
-        label: 'Calibration & HR Review',
-        config: {
-          approver: 'hr_business_partner',
-          sla: '5d',
-          checks: ['pay_equity', 'band_alignment', 'budget_impact', 'diversity_impact'],
-        },
-      },
-      {
-        id: 'promo-4',
-        type: 'action',
-        label: 'Process & Communicate',
-        config: {
-          actions: ['update_title', 'update_compensation', 'update_grade', 'send_letter', 'announce'],
-          assignee: 'hr_team',
-          effectiveDate: 'next_pay_cycle',
-        },
-      },
-    ],
-    edges: [
-      { from: 'promo-1', to: 'promo-2' },
-      { from: 'promo-2', to: 'promo-3', condition: 'approved' },
-      { from: 'promo-3', to: 'promo-4', condition: 'approved' },
-    ],
-  },
+  leaveApprovalTemplate,
+  expenseApprovalTemplate,
+  employeeOnboardingTemplate,
+  employeeOffboardingTemplate,
+  profileChangeApprovalTemplate,
+  loanAdvanceTemplate,
+  trainingEnrollmentTemplate,
+  overtimeApprovalTemplate,
 ];
 
-export async function seed(prisma: PrismaClient): Promise<void> {
-  console.log('Seeding workflow templates...');
+/**
+ * Seed workflow templates into SystemSetting (key-value store).
+ * Uses the `workflow_templates` group for namespace isolation.
+ * Idempotent — safe to run multiple times.
+ */
+export async function seedWorkflowTemplates(prisma: PrismaClient): Promise<void> {
+  console.log('  Seeding workflow templates...');
+  let count = 0;
 
-  for (const workflow of workflowTemplates) {
-    await prisma.workflowTemplate.upsert({
-      where: { name: workflow.name },
+  for (const template of workflowTemplates) {
+    const key = `workflow_template.${template.code.toLowerCase()}`;
+
+    await prisma.systemSetting.upsert({
+      where: { key },
       update: {
-        trigger: workflow.trigger,
-        nodes: JSON.stringify(workflow.nodes),
-        edges: JSON.stringify(workflow.edges),
+        value: JSON.stringify(template),
+        description: `Workflow template v${template.version}: ${template.name} — ${template.description}`,
       },
       create: {
-        name: workflow.name,
-        trigger: workflow.trigger,
-        nodes: JSON.stringify(workflow.nodes),
-        edges: JSON.stringify(workflow.edges),
+        key,
+        value: JSON.stringify(template),
+        group: 'workflow_templates',
+        description: `Workflow template v${template.version}: ${template.name} — ${template.description}`,
       },
     });
+
+    count++;
   }
 
-  console.log(`Seeded ${workflowTemplates.length} workflow templates.`);
+  console.log(`  ✓ Workflow templates: ${count} templates seeded (${workflowTemplates.map(t => t.code).join(', ')})`);
 }
+
+// Legacy named export for backward compatibility
+export { seedWorkflowTemplates as seed };

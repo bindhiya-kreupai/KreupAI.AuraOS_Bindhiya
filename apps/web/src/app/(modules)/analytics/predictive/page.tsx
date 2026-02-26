@@ -20,8 +20,13 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Brain, TrendingUp, Users, DollarSign, Award, Play, CheckCircle } from 'lucide-react';
+import AIInsightsDashboard from '@/components/ai/AIInsightsDashboard';
+import AttritionPredictor from '@/components/ai/AttritionPredictor';
+
+type PredictiveView = 'models' | 'ai-insights' | 'attrition';
 
 export default function PredictiveAnalyticsPage() {
+  const [predictiveView, setPredictiveView] = useState<PredictiveView>('models');
   const [models, setModels] = useState<any[]>([]);
   const [predictions, setPredictions] = useState<any[]>([]);
   const [stats, setStats] = useState({ totalModels: 0, activeModels: 0, totalPredictions: 0 });
@@ -53,7 +58,7 @@ export default function PredictiveAnalyticsPage() {
           activeModels: data.data?.filter((m: any) => m.isActive).length || 0,
         }));
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching models:', error);
     } finally {
       setLoading(false);
@@ -68,7 +73,7 @@ export default function PredictiveAnalyticsPage() {
         setPredictions(data.data || []);
         setStats((prev) => ({ ...prev, totalPredictions: data.meta?.total || 0 }));
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching predictions:', error);
     }
   };
@@ -96,7 +101,7 @@ export default function PredictiveAnalyticsPage() {
         });
         fetchModels();
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error creating model:', error);
     }
   };
@@ -111,7 +116,7 @@ export default function PredictiveAnalyticsPage() {
         fetchModels();
         alert('Model training started successfully');
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error training model:', error);
     }
   };
@@ -151,8 +156,89 @@ export default function PredictiveAnalyticsPage() {
     return 'text-red-600 dark:text-red-400';
   };
 
+  if (predictiveView === 'ai-insights') {
+    return (
+      <div className="space-y-4">
+        <div className="border-b border-slate-200">
+          <div className="flex gap-0">
+            {[
+              { id: 'models', label: 'ML Models' },
+              { id: 'ai-insights', label: 'AI Insights Dashboard' },
+              { id: 'attrition', label: 'Attrition Predictor' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setPredictiveView(tab.id as PredictiveView)}
+                className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                  predictiveView === tab.id
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <AIInsightsDashboard />
+      </div>
+    );
+  }
+
+  if (predictiveView === 'attrition') {
+    return (
+      <div className="space-y-4">
+        <div className="border-b border-slate-200">
+          <div className="flex gap-0">
+            {[
+              { id: 'models', label: 'ML Models' },
+              { id: 'ai-insights', label: 'AI Insights Dashboard' },
+              { id: 'attrition', label: 'Attrition Predictor' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setPredictiveView(tab.id as PredictiveView)}
+                className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                  predictiveView === tab.id
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <AttritionPredictor />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
+      {/* View switcher */}
+      <div className="border-b border-slate-200">
+        <div className="flex gap-0">
+          {[
+            { id: 'models', label: 'ML Models' },
+            { id: 'ai-insights', label: 'AI Insights Dashboard' },
+            { id: 'attrition', label: 'Attrition Predictor' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setPredictiveView(tab.id as PredictiveView)}
+              className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                predictiveView === tab.id
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -307,7 +393,10 @@ export default function PredictiveAnalyticsPage() {
                 </thead>
                 <tbody>
                   {models.map((model) => {
-                    const IconConfig = modelTypeIcons[model.modelType] || { icon: Brain, color: 'text-gray-600' };
+                    const IconConfig = modelTypeIcons[model.modelType] || {
+                      icon: Brain,
+                      color: 'text-gray-600',
+                    };
                     const Icon = IconConfig.icon;
                     return (
                       <tr key={model.id} className="border-b hover:bg-muted/50">
@@ -411,9 +500,7 @@ export default function PredictiveAnalyticsPage() {
                           {prediction.model?.modelType}
                         </div>
                       </td>
-                      <td className="py-3 px-4 font-mono text-sm">
-                        {prediction.entityId || '-'}
-                      </td>
+                      <td className="py-3 px-4 font-mono text-sm">{prediction.entityId || '-'}</td>
                       <td className="py-3 px-4 text-right font-semibold">
                         {typeof prediction.predictionValue === 'number'
                           ? prediction.predictionValue.toFixed(2)
@@ -445,4 +532,3 @@ export default function PredictiveAnalyticsPage() {
     </div>
   );
 }
-

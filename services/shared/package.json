@@ -1,0 +1,30 @@
+{
+  "name": "@aura/shared-services",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared middleware, messaging, and health utilities for AuraOS microservices",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts",
+    "test": "jest"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "jsonwebtoken": "^9.0.2",
+    "ioredis": "^5.3.2",
+    "pino": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.4",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.5"
+  },
+  "files": [
+    "dist",
+    "src"
+  ]
+}

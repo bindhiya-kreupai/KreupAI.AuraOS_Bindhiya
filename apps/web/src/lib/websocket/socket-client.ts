@@ -1,3 +1,17 @@
+/**
+ * @module SocketClient
+ * @description Socket.IO-backed real-time client for AuraOS.
+ *   Replaces the raw WebSocket implementation so that the client protocol
+ *   matches the Socket.IO server-side stack used by the backend.
+ *   The public API (connect / disconnect / on / off / send / connected) is
+ *   intentionally kept identical to the previous WebSocket-based class so
+ *   that SocketProvider.tsx requires no changes.
+ * @project AURA HCM Platform
+ */
+
+import type { Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
+
 type SocketEventHandler = (data: unknown) => void;
 
 export type SocketClientOptions = {
@@ -9,16 +23,14 @@ export type SocketClientOptions = {
 };
 
 export class SocketClient {
-  private ws: WebSocket | null = null;
-  private handlers: Map<string, Set<SocketEventHandler>> = new Map();
+  private socket: Socket | null = null;
   private options: Required<SocketClientOptions>;
-  private reconnectAttempts = 0;
-  private isConnected = false;
+  private _isConnected = false;
 
   constructor(options: SocketClientOptions) {
     this.options = {
       url: options.url,
-      token: options.token || '',
+      token: options.token ?? '',
       reconnect: options.reconnect ?? true,
       reconnectInterval: options.reconnectInterval ?? 3000,
       maxReconnectAttempts: options.maxReconnectAttempts ?? 10,
@@ -26,73 +38,57 @@ export class SocketClient {
   }
 
   connect(): void {
-    const url = this.options.token
-      ? `${this.options.url}?token=${this.options.token}`
-      : this.options.url;
+    if (this.socket?.connected) return;
 
-    this.ws = new WebSocket(url);
+    this.socket = io(this.options.url, {
+      // Send JWT as a handshake query parameter (same convention as before)
+      ...(this.options.token ? { auth: { token: this.options.token } } : {}),
+      reconnection: this.options.reconnect,
+      reconnectionDelay: this.options.reconnectInterval,
+      reconnectionAttempts: this.options.maxReconnectAttempts,
+      // Use WebSocket transport first, fall back to polling
+      transports: ['websocket', 'polling'],
+    });
 
-    this.ws.onopen = () => {
-      this.isConnected = true;
-      this.reconnectAttempts = 0;
-      this.emit('connect', {});
-    };
+    this.socket.on('connect', () => {
+      this._isConnected = true;
+    });
 
-    this.ws.onmessage = (event) => {
-      try {
-        const { type, payload } = JSON.parse(event.data);
-        this.emit(type, payload);
-      } catch {
-        // Ignore malformed messages
-      }
-    };
-
-    this.ws.onclose = () => {
-      this.isConnected = false;
-      this.emit('disconnect', {});
-      if (this.options.reconnect && this.reconnectAttempts < this.options.maxReconnectAttempts) {
-        this.reconnectAttempts++;
-        setTimeout(() => this.connect(), this.options.reconnectInterval * this.reconnectAttempts);
-      }
-    };
-
-    this.ws.onerror = (error) => {
-      this.emit('error', error);
-    };
+    this.socket.on('disconnect', () => {
+      this._isConnected = false;
+    });
   }
 
   disconnect(): void {
-    this.options.reconnect = false;
-    this.ws?.close();
-    this.ws = null;
-    this.isConnected = false;
+    this.socket?.disconnect();
+    this.socket = null;
+    this._isConnected = false;
   }
 
+  /**
+   * Register a listener for a named event.
+   * Returns an unsubscribe function for convenience.
+   */
   on(event: string, handler: SocketEventHandler): () => void {
-    if (!this.handlers.has(event)) {
-      this.handlers.set(event, new Set());
-    }
-    this.handlers.get(event)!.add(handler);
-    return () => {
-      this.handlers.get(event)?.delete(handler);
-    };
+    this.socket?.on(event, handler as (...args: unknown[]) => void);
+    return () => this.off(event, handler);
   }
 
   off(event: string, handler: SocketEventHandler): void {
-    this.handlers.get(event)?.delete(handler);
+    this.socket?.off(event, handler as (...args: unknown[]) => void);
   }
 
+  /**
+   * Emit an event with an optional payload.
+   * Matches the previous WebSocket `send(event, payload)` signature.
+   */
   send(event: string, payload: unknown): void {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ type: event, payload }));
+    if (this.socket?.connected) {
+      this.socket.emit(event, payload);
     }
   }
 
   get connected(): boolean {
-    return this.isConnected;
-  }
-
-  private emit(event: string, data: unknown): void {
-    this.handlers.get(event)?.forEach((handler) => handler(data));
+    return this._isConnected;
   }
 }

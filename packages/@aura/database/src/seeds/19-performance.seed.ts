@@ -1,3 +1,33 @@
+/**
+ * Performance Management Seed
+ *
+ * Schema alignment fixes:
+ *  - performanceReviewCycle  → reviewCycle  (ReviewCycle model)
+ *  - performanceCompetency   → competencyCatalog (CompetencyCatalog model, with
+ *                              CompetencyCategory lookup)
+ *  - feedback                → continuousFeedback (ContinuousFeedback model)
+ *  - developmentPlanPerf     → developmentPlan (DevelopmentPlan model)
+ *  - calibration             → calibrationSession (CalibrationSession model)
+ *  - PerformanceReview field names mapped to actual schema fields:
+ *      overallRating         → finalRating
+ *      overallComments       → managerComments / selfComments
+ *      strengths             → strengths (Json, stored as JSON array)
+ *      areasForImprovement   → improvements (Json)
+ *      selfAssessment        → competencies (Json)
+ *      managerAssessment     → competencies (Json)
+ *  - PerformanceGoal:
+ *      cycleId               → reviewCycleId
+ *      weightage             → weight
+ *  - OneOnOneMeeting:
+ *      scheduledDate         → scheduledAt
+ *      notes / agenda removed (stored via OneOnOneNote relation or metadata)
+ *  - CalibrationSession:
+ *      cycleId               → reviewCycleId
+ *      name                  → sessionName
+ *      meetingDate           → scheduledDate
+ *      decisions             → adjustments (Json)
+ */
+
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -14,118 +44,127 @@ export async function performanceSeed(tenantId: string) {
     });
 
     if (employees.length === 0) {
-        console.log('⚠️  No employees found. Skipping performance seed.');
+        console.log('No employees found. Skipping performance seed.');
         return;
     }
 
-    // Create Performance Review Cycles
-    const cycles = [
+    // -----------------------------------------------------------------------
+    // 1. Performance Review Cycles  →  ReviewCycle
+    // -----------------------------------------------------------------------
+    const cycleData = [
         {
             id: 'cycle-2024-annual',
-            name: '2024 Annual Performance Review',
+            cycleName: '2024 Annual Performance Review',
             description: 'Annual performance review cycle for all employees',
-            type: 'ANNUAL' as const,
+            cycleType: 'annual',
             startDate: new Date('2024-01-01'),
             endDate: new Date('2024-12-31'),
-            reviewDueDate: new Date('2025-01-15'),
-            status: 'ACTIVE' as const,
+            status: 'active',
         },
         {
             id: 'cycle-2024-q4',
-            name: 'Q4 2024 Quarterly Review',
+            cycleName: 'Q4 2024 Quarterly Review',
             description: 'Quarterly review for Q4 2024',
-            type: 'QUARTERLY' as const,
+            cycleType: 'quarterly',
             startDate: new Date('2024-10-01'),
             endDate: new Date('2024-12-31'),
-            reviewDueDate: new Date('2025-01-10'),
-            status: 'IN_REVIEW' as const,
+            status: 'completed',
         },
         {
             id: 'cycle-2025-q1',
-            name: 'Q1 2025 Quarterly Review',
+            cycleName: 'Q1 2025 Quarterly Review',
             description: 'Quarterly review for Q1 2025',
-            type: 'QUARTERLY' as const,
+            cycleType: 'quarterly',
             startDate: new Date('2025-01-01'),
             endDate: new Date('2025-03-31'),
-            reviewDueDate: new Date('2025-04-15'),
-            status: 'DRAFT' as const,
+            status: 'draft',
         },
     ];
 
-    for (const cycleData of cycles) {
-        await prisma.performanceReviewCycle.upsert({
-            where: { id: cycleData.id },
+    for (const cycle of cycleData) {
+        await prisma.reviewCycle.upsert({
+            where: { id: cycle.id },
             update: {},
             create: {
-                ...cycleData,
+                ...cycle,
                 tenantId,
                 createdBy: employees[0].id,
             },
         });
     }
-    console.log(`✅ Created ${cycles.length} performance review cycles`);
+    console.log(`Created ${cycleData.length} review cycles`);
 
-    // Create Performance Goals
+    // -----------------------------------------------------------------------
+    // 2. Performance Goals  →  PerformanceGoal
+    //    cycleId → reviewCycleId; weightage → weight
+    // -----------------------------------------------------------------------
     const goalTemplates = [
-        { title: 'Increase sales revenue by 20%', type: 'INDIVIDUAL' as const, category: 'KPI', targetValue: 120000, unit: 'USD' },
-        { title: 'Complete professional certification', type: 'INDIVIDUAL' as const, category: 'SMART', progress: 65 },
-        { title: 'Improve customer satisfaction score', type: 'TEAM' as const, category: 'KPI', targetValue: 4.5, currentValue: 4.1, unit: 'rating' },
-        { title: 'Launch new product feature', type: 'TEAM' as const, category: 'OKR', progress: 80 },
-        { title: 'Reduce operational costs by 15%', type: 'ORGANIZATIONAL' as const, category: 'KPI', targetValue: 85, unit: 'percentage' },
-        { title: 'Complete leadership training program', type: 'INDIVIDUAL' as const, category: 'SMART', progress: 45 },
-        { title: 'Mentor 2 junior team members', type: 'INDIVIDUAL' as const, category: 'SMART', targetValue: 2, currentValue: 1, unit: 'members' },
-        { title: 'Improve code quality metrics', type: 'TEAM' as const, category: 'KPI', targetValue: 90, currentValue: 75, unit: 'percentage' },
+        { title: 'Increase sales revenue by 20%', type: 'individual', category: 'KPI', targetValue: 120000, unit: 'USD' },
+        { title: 'Complete professional certification', type: 'individual', category: 'SMART', progress: 65 },
+        { title: 'Improve customer satisfaction score', type: 'team', category: 'KPI', targetValue: 4.5, currentValue: 4.1, unit: 'rating' },
+        { title: 'Launch new product feature', type: 'team', category: 'OKR', progress: 80 },
+        { title: 'Reduce operational costs by 15%', type: 'individual', category: 'KPI', targetValue: 85, unit: 'percentage' },
+        { title: 'Complete leadership training program', type: 'individual', category: 'SMART', progress: 45 },
+        { title: 'Mentor 2 junior team members', type: 'individual', category: 'SMART', targetValue: 2, currentValue: 1, unit: 'members' },
+        { title: 'Improve code quality metrics', type: 'team', category: 'KPI', targetValue: 90, currentValue: 75, unit: 'percentage' },
     ];
 
     let goalCount = 0;
     for (const employee of employees.slice(0, 8)) {
         const template = goalTemplates[goalCount % goalTemplates.length];
-        const startDate = new Date('2024-01-01');
-        const dueDate = new Date('2024-12-31');
-
-        const progress = template.progress || 0;
+        const progress = template.progress ?? 0;
         await prisma.performanceGoal.create({
             data: {
                 title: template.title,
                 description: `Performance goal for ${employee.firstName} ${employee.lastName}`,
                 type: template.type,
                 category: template.category,
-                targetValue: template.targetValue || null,
-                currentValue: template.currentValue || 0,
-                unit: template.unit || null,
-                weightage: 20,
-                startDate,
-                dueDate,
-                status: progress >= 100 ? 'COMPLETED' : progress > 0 ? 'ACTIVE' : 'DRAFT',
+                targetValue: template.targetValue ?? null,
+                currentValue: template.currentValue ?? 0,
+                unit: template.unit ?? null,
+                weight: 20,                   // was `weightage` — schema field is `weight`
+                startDate: new Date('2024-01-01'),
+                dueDate: new Date('2024-12-31'),
+                status: progress >= 100 ? 'completed' : progress > 0 ? 'active' : 'not_started',
                 progress,
-                cycleId: cycles[0].id,
+                reviewCycleId: 'cycle-2024-annual', // was `cycleId`
                 employeeId: employee.id,
                 tenantId,
-                createdBy: employee.managerId || employee.id,
+                createdBy: employee.managerId ?? employee.id,
             },
         });
         goalCount++;
     }
-    console.log(`✅ Created ${goalCount} performance goals`);
+    console.log(`Created ${goalCount} performance goals`);
 
-    // Create Performance Reviews
-    const reviewCount = 0;
+    // -----------------------------------------------------------------------
+    // 3. Performance Reviews  →  PerformanceReview
+    //    Field renames:
+    //      overallRating       → finalRating / selfRating / managerRating
+    //      overallComments     → selfComments / managerComments
+    //      strengths           → strengths (Json)
+    //      areasForImprovement → improvements (Json)
+    //      selfAssessment      → competencies (Json)
+    //      reviewType values   → lowercase to match schema defaults
+    // -----------------------------------------------------------------------
+    let reviewCount = 0;
     for (const employee of employees.slice(0, 6)) {
         if (!employee.managerId) continue;
 
         // Self Review
         await prisma.performanceReview.create({
             data: {
-                cycleId: cycles[1].id, // Q4 2024
+                reviewCycleId: 'cycle-2024-q4',
                 employeeId: employee.id,
                 reviewerId: employee.id,
-                reviewType: 'SELF',
-                status: 'SUBMITTED',
-                overallRating: 4.2,
-                overallComments: 'I have made significant progress on my goals this quarter. Key achievements include completing major project milestones and improving team collaboration.',
-                strengths: 'Strong technical skills, good communication, proactive problem-solving',
-                areasForImprovement: 'Time management, delegation skills',
-                selfAssessment: {
+                reviewType: 'self',
+                status: 'submitted',
+                selfRating: 4.2,
+                finalRating: 4.2,
+                selfComments: 'I have made significant progress on my goals this quarter.',
+                strengths: ['Strong technical skills', 'Good communication', 'Proactive problem-solving'],
+                improvements: ['Time management', 'Delegation skills'],
+                competencies: {
                     technicalSkills: 4,
                     communication: 4,
                     teamwork: 5,
@@ -139,16 +178,16 @@ export async function performanceSeed(tenantId: string) {
         // Manager Review
         await prisma.performanceReview.create({
             data: {
-                cycleId: cycles[1].id, // Q4 2024
+                reviewCycleId: 'cycle-2024-q4',
                 employeeId: employee.id,
                 reviewerId: employee.managerId,
-                reviewType: 'MANAGER',
-                status: 'IN_PROGRESS',
-                overallRating: 4.0,
-                overallComments: 'Consistently delivers high-quality work and shows initiative in taking on new challenges.',
-                strengths: 'Technical expertise, reliability, good team player',
-                areasForImprovement: 'Could benefit from improving presentation skills and strategic thinking',
-                managerAssessment: {
+                reviewType: 'manager',
+                status: 'in_progress',
+                managerRating: 4.0,
+                managerComments: 'Consistently delivers high-quality work and shows initiative.',
+                strengths: ['Technical expertise', 'Reliability', 'Good team player'],
+                improvements: ['Presentation skills', 'Strategic thinking'],
+                competencies: {
                     technicalSkills: 4,
                     communication: 4,
                     problemSolving: 5,
@@ -157,73 +196,67 @@ export async function performanceSeed(tenantId: string) {
                 tenantId,
             },
         });
-    }
-    console.log(`✅ Created ${employees.slice(0, 6).filter(e => e.managerId).length * 2} performance reviews`);
 
-    // Create Competencies
-    const competencies = [
-        {
-            name: 'Technical Expertise',
-            description: 'Demonstrates proficiency in technical skills required for the role',
-            category: 'Technical',
-            type: 'TECHNICAL' as const,
-            levels: [
-                { level: 1, name: 'Foundational', description: 'Basic understanding of core concepts' },
-                { level: 2, name: 'Developing', description: 'Can apply skills with guidance' },
-                { level: 3, name: 'Proficient', description: 'Independently applies skills effectively' },
-                { level: 4, name: 'Advanced', description: 'Expert level with ability to teach others' },
-                { level: 5, name: 'Expert', description: 'Recognized authority and innovator' },
-            ],
-        },
-        {
-            name: 'Communication',
-            description: 'Effectively communicates with team members and stakeholders',
-            category: 'Soft Skills',
-            type: 'CORE' as const,
-            levels: [
-                { level: 1, name: 'Basic', description: 'Can convey simple messages clearly' },
-                { level: 2, name: 'Developing', description: 'Communicates well in familiar situations' },
-                { level: 3, name: 'Proficient', description: 'Adapts communication style to audience' },
-                { level: 4, name: 'Advanced', description: 'Influences and persuades effectively' },
-                { level: 5, name: 'Expert', description: 'Master communicator across all levels' },
-            ],
-        },
-        {
-            name: 'Leadership',
-            description: 'Demonstrates leadership qualities and inspires others',
-            category: 'Leadership',
-            type: 'LEADERSHIP' as const,
-            levels: [
-                { level: 1, name: 'Emerging', description: 'Shows potential for leadership' },
-                { level: 2, name: 'Developing', description: 'Leads small teams or projects' },
-                { level: 3, name: 'Proficient', description: 'Effectively leads teams and initiatives' },
-                { level: 4, name: 'Advanced', description: 'Strategic leader with proven track record' },
-                { level: 5, name: 'Expert', description: 'Visionary leader who transforms organizations' },
-            ],
-        },
+        reviewCount += 2;
+    }
+    console.log(`Created ${reviewCount} performance reviews`);
+
+    // -----------------------------------------------------------------------
+    // 4. Competencies  →  CompetencyCatalog
+    //    Requires a CompetencyCategory to exist. We use upsert for safety.
+    // -----------------------------------------------------------------------
+    const competencyDefs = [
+        { code: 'TECH-EXPERTISE', name: 'Technical Expertise', category: 'TECHNICAL', description: 'Demonstrates proficiency in technical skills required for the role' },
+        { code: 'COMMUNICATION', name: 'Communication', category: 'CORE', description: 'Effectively communicates with team members and stakeholders' },
+        { code: 'LEADERSHIP', name: 'Leadership', category: 'LEADERSHIP', description: 'Demonstrates leadership qualities and inspires others' },
     ];
 
-    for (const comp of competencies) {
-        await prisma.performanceCompetency.create({
-            data: {
+    for (const comp of competencyDefs) {
+        // Ensure the category exists
+        const cat = await prisma.competencyCategory.upsert({
+            where: { code: comp.category },
+            update: {},
+            create: {
+                code: comp.category,
+                name: comp.category.charAt(0) + comp.category.slice(1).toLowerCase(),
+                status: 'Active',
+            },
+        });
+
+        await prisma.competencyCatalog.upsert({
+            where: { code: comp.code },
+            update: {},
+            create: {
+                code: comp.code,
                 name: comp.name,
                 description: comp.description,
-                category: comp.category,
-                type: comp.type,
-                levels: comp.levels,
-                isActive: true,
-                tenantId,
+                categoryId: cat.id,
+                status: 'Active',
             },
         });
     }
-    console.log(`✅ Created ${competencies.length} competencies`);
+    console.log(`Created ${competencyDefs.length} competencies`);
 
-    // Create Feedback entries
+    // -----------------------------------------------------------------------
+    // 5. Feedback  →  ContinuousFeedback
+    //    Field renames:
+    //      providedBy → fromUserId
+    //      content    → message
+    //      (no isPrivate / tags on ContinuousFeedback — stored in visibility)
+    //      type values: RECOGNITION → PRAISE; CONSTRUCTIVE stays; others → SUGGESTION
+    // -----------------------------------------------------------------------
+    const feedbackTypeMap: Record<string, string> = {
+        RECOGNITION: 'PRAISE',
+        CONSTRUCTIVE: 'CONSTRUCTIVE',
+        CONTINUOUS: 'SUGGESTION',
+        FORMAL: 'SUGGESTION',
+    };
+
     const feedbackTemplates = [
-        { type: 'RECOGNITION' as const, content: 'Great job on the presentation! Your clarity and engagement with the audience were excellent.' },
-        { type: 'CONSTRUCTIVE' as const, content: 'Consider breaking down complex tasks into smaller milestones to improve delivery predictability.' },
-        { type: 'CONTINUOUS' as const, content: 'Your collaboration on the recent project was outstanding. Keep up the excellent teamwork!' },
-        { type: 'FORMAL' as const, content: 'Mid-year check-in: You are on track with your goals. Focus on the certification completion in Q3.' },
+        { type: 'RECOGNITION', content: 'Great job on the presentation! Your clarity and engagement with the audience were excellent.' },
+        { type: 'CONSTRUCTIVE', content: 'Consider breaking down complex tasks into smaller milestones to improve delivery predictability.' },
+        { type: 'CONTINUOUS', content: 'Your collaboration on the recent project was outstanding. Keep up the excellent teamwork!' },
+        { type: 'FORMAL', content: 'Mid-year check-in: You are on track with your goals. Focus on the certification completion in Q3.' },
     ];
 
     let feedbackCount = 0;
@@ -231,121 +264,104 @@ export async function performanceSeed(tenantId: string) {
         if (!employee.managerId) continue;
 
         const template = feedbackTemplates[feedbackCount % feedbackTemplates.length];
-        await prisma.feedback.create({
+        await prisma.continuousFeedback.create({
             data: {
-                employeeId: employee.id,
-                providedBy: employee.managerId,
-                type: template.type,
-                content: template.content,
-                isPrivate: false,
+                toEmployeeId: employee.id,
+                fromUserId: employee.managerId,   // was `providedBy`
+                type: feedbackTypeMap[template.type] ?? 'SUGGESTION',
+                message: template.content,         // was `content`
                 isAnonymous: false,
-                tags: ['performance', 'quarterly-review'],
+                visibility: 'PRIVATE',
                 tenantId,
             },
         });
         feedbackCount++;
     }
-    console.log(`✅ Created ${feedbackCount} feedback entries`);
+    console.log(`Created ${feedbackCount} feedback entries`);
 
-    // Create Development Plans
+    // -----------------------------------------------------------------------
+    // 6. Development Plans  →  DevelopmentPlan
+    //    DevelopmentPlan requires a unique `code`. We use employeeId for that.
+    //    Fields: title → name, targetDate → endDate, progress removed (not in schema)
+    // -----------------------------------------------------------------------
     for (const employee of employees.slice(0, 4)) {
-        await prisma.developmentPlanPerf.create({
-            data: {
-                employeeId: employee.id,
-                title: `${new Date().getFullYear()} Professional Development Plan`,
-                description: `Development plan to enhance skills and career progression for ${employee.firstName} ${employee.lastName}`,
-                goals: [
-                    {
-                        title: 'Complete Advanced Technical Certification',
-                        targetDate: '2025-06-30',
-                        status: 'in_progress',
-                    },
-                    {
-                        title: 'Mentor Junior Team Member',
-                        targetDate: '2025-12-31',
-                        status: 'not_started',
-                    },
-                ],
-                actions: [
-                    {
-                        action: 'Enroll in certification course',
-                        dueDate: '2025-02-01',
-                        status: 'completed',
-                    },
-                    {
-                        action: 'Complete course modules',
-                        dueDate: '2025-05-31',
-                        status: 'in_progress',
-                    },
-                    {
-                        action: 'Schedule mentoring sessions',
-                        dueDate: '2025-03-01',
-                        status: 'not_started',
-                    },
-                ],
-                resources: {
-                    budget: 2000,
-                    currency: 'USD',
-                    materials: ['Online certification', 'Books', 'Conference attendance'],
-                },
-                status: 'ACTIVE',
+        const planCode = `DEV-PLAN-${employee.id.slice(0, 8).toUpperCase()}`;
+        await prisma.developmentPlan.upsert({
+            where: { code: planCode },
+            update: {},
+            create: {
+                code: planCode,
+                name: `${new Date().getFullYear()} Professional Development Plan — ${employee.firstName}`,
+                description: `Development plan for ${employee.firstName} ${employee.lastName}`,
+                type: 'Individual',
+                targetType: 'Employee',
+                targetId: employee.id,
+                status: 'Active',
                 startDate: new Date('2025-01-01'),
-                targetDate: new Date('2025-12-31'),
-                progress: 30,
-                tenantId,
-                createdBy: employee.managerId || employee.id,
+                endDate: new Date('2025-12-31'),    // was `targetDate`
+                budget: 2000,
+                createdBy: employee.managerId ?? employee.id,
             },
         });
     }
-    console.log(`✅ Created ${employees.slice(0, 4).length} development plans`);
+    console.log(`Created ${employees.slice(0, 4).length} development plans`);
 
-    // Create Calibration Sessions
-    const managers = employees.filter(e => e.managerId === null || employees.some(emp => emp.managerId === e.id));
+    // -----------------------------------------------------------------------
+    // 7. Calibration Sessions  →  CalibrationSession
+    //    Field renames:
+    //      name        → sessionName
+    //      cycleId     → reviewCycleId
+    //      meetingDate → scheduledDate
+    //      decisions   → adjustments (Json)
+    // -----------------------------------------------------------------------
+    const managers = employees.filter(
+        (e) => e.managerId === null || employees.some((emp) => emp.managerId === e.id)
+    );
+
     if (managers.length >= 2) {
-        await prisma.calibration.create({
+        await prisma.calibrationSession.create({
             data: {
-                cycleId: cycles[1].id, // Q4 2024
-                name: 'Q4 2024 Performance Calibration Session',
-                participants: managers.slice(0, 3).map(m => m.id),
-                status: 'COMPLETED',
-                meetingDate: new Date('2024-12-28'),
-                decisions: {
+                sessionName: 'Q4 2024 Performance Calibration Session', // was `name`
+                reviewCycleId: 'cycle-2024-q4',                        // was `cycleId`
+                status: 'completed',
+                scheduledDate: new Date('2024-12-28'),                  // was `meetingDate`
+                completedDate: new Date('2024-12-28'),
+                facilitatorId: managers[0].id,
+                department: 'Engineering',
+                participants: managers.slice(0, 3).map((m) => m.id),
+                adjustments: {                                          // was `decisions`
                     adjustments: [
                         { employeeId: employees[0].id, originalRating: 4, calibratedRating: 4.5, reason: 'Exceptional performance on critical project' },
-                        { employeeId: employees[1].id, originalRating: 3.5, calibratedRating: 3.5, reason: 'Rating confirmed as appropriate' },
+                        { employeeId: employees[1]?.id, originalRating: 3.5, calibratedRating: 3.5, reason: 'Rating confirmed as appropriate' },
                     ],
                 },
-                notes: 'Calibration session completed successfully. All ratings reviewed and adjusted where appropriate.',
+                notes: 'Calibration session completed successfully.',
+                createdBy: managers[0].id,
                 tenantId,
             },
         });
-        console.log('✅ Created 1 calibration session');
+        console.log('Created 1 calibration session');
     }
 
-    // Create One-on-One Meetings
+    // -----------------------------------------------------------------------
+    // 8. One-on-One Meetings  →  OneOnOneMeeting
+    //    Field renames:
+    //      scheduledDate → scheduledAt
+    //    Removed fields not in schema: agenda, notes, actionItems, nextSteps
+    //    (those belong to OneOnOneNote / OneOnOneActionItem relations)
+    // -----------------------------------------------------------------------
     let meetingCount = 0;
     for (const employee of employees.slice(0, 5)) {
         if (!employee.managerId) continue;
 
-        // Past meeting
+        // Past completed meeting
         await prisma.oneOnOneMeeting.create({
             data: {
                 employeeId: employee.id,
                 managerId: employee.managerId,
-                scheduledDate: new Date('2024-12-15T10:00:00'),
+                scheduledAt: new Date('2024-12-15T10:00:00'), // was `scheduledDate`
                 duration: 60,
                 status: 'COMPLETED',
-                agenda: [
-                    { topic: 'Q4 Goals Review', duration: 20 },
-                    { topic: 'Career Development Discussion', duration: 25 },
-                    { topic: 'Feedback and Questions', duration: 15 },
-                ],
-                notes: 'Good progress on quarterly goals. Discussed career aspirations and identified training opportunities.',
-                actionItems: [
-                    { action: 'Enroll in leadership training', owner: employee.id, dueDate: '2025-01-15' },
-                    { action: 'Review Q1 goal proposals', owner: employee.managerId, dueDate: '2025-01-05' },
-                ],
-                nextSteps: 'Follow up on training enrollment and schedule next 1:1 for mid-January.',
                 completedAt: new Date('2024-12-15T11:00:00'),
                 tenantId,
             },
@@ -356,20 +372,16 @@ export async function performanceSeed(tenantId: string) {
             data: {
                 employeeId: employee.id,
                 managerId: employee.managerId,
-                scheduledDate: new Date('2025-01-20T14:00:00'),
+                scheduledAt: new Date('2025-01-20T14:00:00'), // was `scheduledDate`
                 duration: 60,
                 status: 'SCHEDULED',
-                agenda: [
-                    { topic: 'Q1 Goals Planning', duration: 30 },
-                    { topic: 'Development Plan Update', duration: 20 },
-                    { topic: 'Team Collaboration', duration: 10 },
-                ],
                 tenantId,
             },
         });
+
         meetingCount += 2;
     }
-    console.log(`✅ Created ${meetingCount} one-on-one meetings`);
+    console.log(`Created ${meetingCount} one-on-one meetings`);
 
-    console.log('✅ Performance Management seed data completed successfully');
+    console.log('Performance Management seed data completed successfully');
 }

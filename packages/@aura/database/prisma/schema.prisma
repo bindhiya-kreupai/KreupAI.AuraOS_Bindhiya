@@ -34,12 +34,16 @@ model Tenant {
 }
 
 model Company {
-  id       String  @id @default(uuid())
-  tenantId String
-  tenant   Tenant  @relation(fields: [tenantId], references: [id])
-  code     String // e.g., "US_HQ"
-  name     String
-  taxId    String? // EIN, VAT, etc.
+  id        String    @id @default(uuid())
+  tenantId  String
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  code      String    // e.g., "US_HQ"
+  name      String
+  taxId     String?   // EIN, VAT, etc.
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
 
   locations   Location[]
   departments Department[]
@@ -71,9 +75,17 @@ model Department {
   newEmploymentHistory      EmploymentHistory[] @relation("NewDepartment")
   Position                  Position[]
 
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedAt DateTime?
+  isDeleted Boolean   @default(false)
+
   @@unique([companyId, code])
   @@index([companyId])
   @@index([parentId])
+  @@index([isDeleted])
 }
 
 model CostCenter {
@@ -154,8 +166,16 @@ model Location {
   newEmploymentHistory      EmploymentHistory[] @relation("NewLocation")
   Position                  Position[]
 
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedAt DateTime?
+  isDeleted Boolean   @default(false)
+
   @@index([companyId])
   @@index([type])
+  @@index([isDeleted])
 }
 
 enum LocationType {
@@ -213,10 +233,14 @@ model JobProfile {
 }
 
 model Grade {
-  id    String @id @default(uuid())
-  code  String // e.g., "L4"
-  name  String // e.g., "Level 4"
-  level Int // Numeric level for hierarchy comparison
+  id        String    @id @default(uuid())
+  code      String    // e.g., "L4"
+  name      String    // e.g., "Level 4"
+  level     Int       // Numeric level for hierarchy comparison
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
 
   employees                 Employee[]
   profiles                  JobProfile[]
@@ -297,8 +321,12 @@ model Employee {
   sharedServiceRequests SharedServiceRequest[] @relation("ServiceRequestor")
   assignedServices     SharedServiceRequest[] @relation("ServiceAssignee")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedAt DateTime?
+  isDeleted Boolean   @default(false)
 
   @@index([companyId])
   @@index([departmentId])
@@ -309,6 +337,10 @@ model Employee {
   @@index([gradeId])
   @@index([companyId, statusId])
   @@index([joiningDate])
+  @@index([isDeleted])
+  @@index([email])
+  @@index([employeeCode])
+  @@index([companyId, isDeleted])
 }
 
 model EmployeeStatus {
@@ -363,8 +395,12 @@ model User {
   passwordResetTokens PasswordResetToken[]
   mfaSecret           MFASecret?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
 
   // Role assignments
   roles UserRole[]
@@ -373,6 +409,7 @@ model User {
   @@index([email, tenantId])
   @@index([status])
   @@index([tenantId, status])
+  @@index([email])
 }
 
 // ============================================================================
@@ -388,8 +425,12 @@ model Role {
   description String?
   isSystem    Boolean  @default(false) // System roles cannot be deleted
   isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+  createdBy   String?
+  updatedBy   String?
 
   // Relations
   userRoles   UserRole[]
@@ -426,7 +467,11 @@ model Permission {
   resource    String // users, employees, departments, etc.
   action      String // create, read, update, delete, manage
   description String?
-  createdAt   DateTime @default(now())
+  createdAt DateTime  @default(now())
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
 
   roles RolePermission[]
 
@@ -553,12 +598,16 @@ model Designation {
 // ============================================================================
 
 model Skill {
-  id          String  @id @default(uuid())
-  code        String  @unique
+  id          String    @id @default(uuid())
+  code        String    @unique
   name        String
   category    String?
   description String?
-  status      String  @default("Active")
+  status      String    @default("Active")
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+  createdBy   String?
+  updatedBy   String?
 }
 
 model Competency {
@@ -574,11 +623,15 @@ model Competency {
 // ============================================================================
 
 model LeaveType {
-  id     String  @id @default(uuid())
-  code   String  @unique
-  name   String
-  isPaid Boolean @default(true)
-  status String  @default("Active")
+  id        String    @id @default(uuid())
+  code      String    @unique
+  name      String
+  isPaid    Boolean   @default(true)
+  status    String    @default("Active")
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
 }
 
 model ShiftType {
@@ -626,13 +679,19 @@ model AttendancePunch {
   regularizedBy        String?
   regularizationReason String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
 
   @@index([tenantId])
   @@index([employeeId])
   @@index([punchDate])
   @@index([punchType])
+  @@index([punchTime])
+  @@index([employeeId, punchTime])
 }
 
 // Daily Attendance Summary
@@ -672,14 +731,19 @@ model AttendanceRecord {
 
   remarks String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
 
   @@unique([tenantId, employeeId, date])
   @@index([tenantId])
   @@index([employeeId])
   @@index([date])
   @@index([status])
+  @@index([employeeId, date])
 }
 
 // Shift Definitions
@@ -961,11 +1025,15 @@ model Bank {
 // Note: Role model moved to section 5B (RBAC) for better organization
 
 model SystemSetting {
-  id          String  @id @default(uuid())
-  key         String  @unique
+  id          String    @id @default(uuid())
+  key         String    @unique
   value       String
   group       String
   description String?
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+  createdBy   String?
+  updatedBy   String?
 }
 
 // ============================================================================
@@ -1050,17 +1118,21 @@ model UserSession {
   @@index([lastActive])
 }
 model AuditLog {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   tenantId   String
   userId     String?
-  user       User?    @relation(fields: [userId], references: [id])
-  action     String   // LOGIN, CREATE, UPDATE, DELETE
+  user       User?     @relation(fields: [userId], references: [id])
+  action     String    // LOGIN, CREATE, UPDATE, DELETE
   entityType String
   entityId   String?
   metadata   Json?
   details    String?
   ipAddress  String?
-  timestamp  DateTime @default(now())
+  timestamp  DateTime  @default(now())
+  isDeleted  Boolean   @default(false)
+  deletedAt  DateTime?
+  createdBy  String?
+  updatedBy  String?
 
   @@index([tenantId])
   @@index([userId])
@@ -1068,6 +1140,7 @@ model AuditLog {
   @@index([action])
   @@index([entityType])
   @@index([userId, timestamp])
+  @@index([entityType, entityId])
 }
 
 model UserDelegation {
@@ -1143,8 +1216,12 @@ model JobPosting {
   // Channels (Stored as JSON)
   channels Json?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedAt DateTime?
+  isDeleted Boolean   @default(false)
 
   candidateApplications CandidateApplication[]
 
@@ -1152,6 +1229,7 @@ model JobPosting {
   @@index([department])
   @@index([location])
   @@index([postedDate])
+  @@index([isDeleted])
 }
 
 // ============================================================================
@@ -2233,8 +2311,11 @@ model PayrollRun {
 
   notes     String?
   createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedBy String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
 
   payslips Payslip[]
 
@@ -2242,6 +2323,7 @@ model PayrollRun {
   @@index([tenantId])
   @@index([payrollMonth])
   @@index([status])
+  @@index([configId])
 }
 
 model Payslip {
@@ -2292,12 +2374,17 @@ model Payslip {
   status PayslipStatus @default(DRAFT)
   pdfUrl String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
 
   @@index([payrollRunId])
   @@index([employeeId])
   @@index([status])
+  @@index([employeeId, payrollRunId])
 }
 
 enum PayrollRunStatus {
@@ -2631,8 +2718,12 @@ model LeaveBalance {
   lastAccrualDate DateTime?
   lastUpdated     DateTime  @default(now())
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
 
   @@unique([employeeId, policyId, leaveYear])
   @@index([tenantId])
@@ -2693,8 +2784,12 @@ model LeaveRequest {
   balanceDeducted Boolean @default(false)
   balanceId       String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedAt DateTime?
+  isDeleted Boolean   @default(false)
 
   @@index([tenantId])
   @@index([employeeId])
@@ -2702,6 +2797,9 @@ model LeaveRequest {
   @@index([startDate])
   @@index([endDate])
   @@index([appliedAt])
+  @@index([isDeleted])
+  @@index([employeeId, status])
+  @@index([startDate, endDate])
 }
 
 // Leave Encashment Request
@@ -3422,6 +3520,8 @@ model EmployeeDocument {
   @@index([category])
   @@index([expiryDate])
   @@index([status])
+  @@index([employeeId, category])
+  @@index([employeeId, documentTypeId])
 }
 
 // ========================================
@@ -3623,15 +3723,20 @@ model EmploymentHistory {
   status      String    @default("COMPLETED") // PENDING, APPROVED, REJECTED, COMPLETED
 
   // Metadata
-  isAutoGenerated Boolean  @default(false) // True if created by system trigger
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  isAutoGenerated Boolean   @default(false) // True if created by system trigger
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean   @default(false)
 
   @@index([tenantId])
   @@index([employeeId])
   @@index([changeType])
   @@index([effectiveDate])
   @@index([status])
+  @@index([isDeleted])
 }
 
 // ========================================
@@ -3690,8 +3795,12 @@ model Position {
   isActive Boolean @default(true)
   notes    String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedAt DateTime?
+  isDeleted Boolean   @default(false)
 
   // Advanced Budgeting & Simulations
   budgetCommitted Decimal? @db.Decimal(15, 2)
@@ -3713,6 +3822,7 @@ model Position {
   @@index([departmentId])
   @@index([status])
   @@index([reportsToPositionId])
+  @@index([isDeleted])
 }
 
 // ========================================
@@ -4513,6 +4623,10 @@ model BenefitPlan {
   displayOrder           Int               @default(0)
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt
+  isDeleted              Boolean           @default(false)
+  deletedAt              DateTime?
+  createdBy              String?
+  updatedBy              String?
 
   enrollments  BenefitEnrollment[]
   premiumRates PremiumRate[]
@@ -4555,6 +4669,10 @@ model BenefitEnrollment {
   notes               String?                 @db.Text
   createdAt           DateTime                @default(now())
   updatedAt           DateTime                @updatedAt
+  isDeleted           Boolean                 @default(false)
+  deletedAt           DateTime?
+  createdBy           String?
+  updatedBy           String?
 
   plan              BenefitPlan        @relation(fields: [planId], references: [id])
   claims            BenefitClaim[]
@@ -5060,19 +5178,22 @@ model CustomReport {
 
 // Workflow Definitions
 model WorkflowDefinition {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   tenantId    String
   name        String
   description String?
-  trigger     String   // MANUAL, EVENT, SCHEDULED
-  triggerEvent String? // employee.created, leave.requested, etc.
-  nodes       Json     // [{ id, type, config, position }]
-  edges       Json     // [{ source, target, condition }]
-  isActive    Boolean  @default(true)
-  version     Int      @default(1)
+  trigger     String    // MANUAL, EVENT, SCHEDULED
+  triggerEvent String?  // employee.created, leave.requested, etc.
+  nodes       Json      // [{ id, type, config, position }]
+  edges       Json      // [{ source, target, condition }]
+  isActive    Boolean   @default(true)
+  version     Int       @default(1)
   createdBy   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
 
   instances WorkflowInstance[]
 
@@ -5093,6 +5214,10 @@ model WorkflowInstance {
   completedAt  DateTime?
   error        String?   @db.Text
   triggeredBy  String
+  isDeleted    Boolean   @default(false)
+  deletedAt    DateTime?
+  createdBy    String?
+  updatedBy    String?
 
   definition WorkflowDefinition @relation(fields: [definitionId], references: [id])
 
@@ -5297,10 +5422,10 @@ model HSAFSATransaction {
 // ============================================================================
 
 model Candidate {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   firstName   String
   lastName    String
-  email       String   @unique
+  email       String    @unique
   phone       String?
   location    String?
   linkedinUrl String?
@@ -5310,8 +5435,12 @@ model Candidate {
   experience  Json?
   education   Json?
   notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+  createdBy   String?
+  updatedBy   String?
 
   applications CandidateApplication[]
 }
@@ -5690,6 +5819,10 @@ model SalaryComponent {
   description     String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
+  createdBy       String?
+  updatedBy       String?
 
   @@unique([tenantId, componentCode])
   @@index([tenantId])
@@ -5750,8 +5883,11 @@ model Notification {
   openedCount  Int       @default(0)
   metadata     Json?
   createdBy    String
+  updatedBy    String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  isDeleted    Boolean   @default(false)
+  deletedAt    DateTime?
 
   recipients   NotificationRecipient[]
 
@@ -5768,13 +5904,18 @@ model NotificationRecipient {
   status         String    @default("pending")
   deliveredAt    DateTime?
   readAt         DateTime?
+  isRead         Boolean   @default(false)
   channel        String    @default("push")
+  createdAt      DateTime  @default(now())
 
   notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
 
   @@index([notificationId])
   @@index([userId])
   @@index([status])
+  @@index([isRead])
+  @@index([userId, isRead])
+  @@index([createdAt])
 }
 
 model NotificationTemplate {
@@ -5868,8 +6009,11 @@ model TrainingSession {
   status       String   @default("scheduled")
   materials    Json?
   createdBy    String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  updatedBy    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  isDeleted    Boolean   @default(false)
+  deletedAt    DateTime?
 
   attendees    SessionAttendee[]
 

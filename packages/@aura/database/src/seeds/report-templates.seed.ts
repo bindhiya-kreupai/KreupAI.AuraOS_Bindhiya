@@ -164,24 +164,25 @@ export const reportTemplates: ReportTemplate[] = [
   },
 ];
 
+/**
+ * NOTE: ReportTemplate is not a dedicated Prisma model.
+ * Templates are stored in SystemSetting under the `report_templates` group.
+ * ReportDefinition model is the correct home for custom reports; these seed
+ * entries serve as default templates that can be imported at runtime.
+ */
 export async function seed(prisma: PrismaClient): Promise<void> {
   console.log('Seeding report templates...');
 
   for (const report of reportTemplates) {
-    await prisma.reportTemplate.upsert({
-      where: { name: report.name },
-      update: {
-        category: report.category,
-        columns: JSON.stringify(report.columns),
-        defaultFilters: JSON.stringify(report.defaultFilters),
-        chartType: report.chartType ?? null,
-      },
+    const key = `report_template.${report.name.toLowerCase().replace(/\s+/g, '_')}`;
+    await prisma.systemSetting.upsert({
+      where: { key },
+      update: { value: JSON.stringify(report) },
       create: {
-        name: report.name,
-        category: report.category,
-        columns: JSON.stringify(report.columns),
-        defaultFilters: JSON.stringify(report.defaultFilters),
-        chartType: report.chartType ?? null,
+        key,
+        value: JSON.stringify(report),
+        group: 'report_templates',
+        description: `Report template: ${report.name}`,
       },
     });
   }

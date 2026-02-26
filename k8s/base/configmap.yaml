@@ -1,0 +1,70 @@
+---
+# AuraOS Shared Configuration
+# Non-sensitive environment variables shared across all services.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aura-config
+  namespace: aura-system
+  labels:
+    app.kubernetes.io/name: aura-config
+    app.kubernetes.io/part-of: aura-system
+data:
+  # Database
+  DB_HOST: "postgres.aura-system.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_NAME: "aura_hcm"
+  DB_POOL_MIN: "2"
+  DB_POOL_MAX: "20"
+  DB_POOL_IDLE_TIMEOUT_MS: "30000"
+
+  # Redis
+  REDIS_HOST: "redis.aura-system.svc.cluster.local"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  REDIS_KEY_PREFIX: "aura:"
+
+  # RabbitMQ
+  RABBITMQ_HOST: "rabbitmq.aura-system.svc.cluster.local"
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_VHOST: "aura"
+  RABBITMQ_MANAGEMENT_PORT: "15672"
+
+  # Application
+  NODE_ENV: "production"
+  APP_PORT: "3000"
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+  CORS_ORIGINS: "https://app.aura-hcm.com,https://admin.aura-hcm.com"
+
+  # Feature flags
+  FEATURE_MFA_ENABLED: "true"
+  FEATURE_AI_SUGGESTIONS: "true"
+  FEATURE_AUDIT_LOG: "true"
+
+  # Service URLs (internal cluster DNS)
+  PAYROLL_SERVICE_URL: "http://payroll-service.aura-system.svc.cluster.local:3001"
+  NOTIFICATION_SERVICE_URL: "http://notification-service.aura-system.svc.cluster.local:3002"
+  ATTENDANCE_SERVICE_URL: "http://attendance-service.aura-system.svc.cluster.local:3003"
+  RECRUITMENT_SERVICE_URL: "http://recruitment-service.aura-system.svc.cluster.local:3004"
+  COMPLIANCE_SERVICE_URL: "http://compliance-service.aura-system.svc.cluster.local:3005"
+  ANALYTICS_SERVICE_URL: "http://analytics-service.aura-system.svc.cluster.local:3006"
+  LEARNING_SERVICE_URL: "http://learning-service.aura-system.svc.cluster.local:3007"
+  PERFORMANCE_SERVICE_URL: "http://performance-service.aura-system.svc.cluster.local:3008"
+
+  # Observability
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.aura-system.svc.cluster.local:4317"
+  METRICS_PATH: "/metrics"
+  HEALTH_PATH: "/health"
+
+  # Session / Auth
+  SESSION_TIMEOUT_MINUTES: "480"
+  JWT_EXPIRY: "8h"
+  REFRESH_TOKEN_EXPIRY: "7d"
+  MFA_TOKEN_TTL_SECONDS: "300"
+
+  # Storage
+  S3_REGION: "us-east-1"
+  S3_BUCKET_DOCUMENTS: "aura-hcm-documents"
+  S3_BUCKET_AVATARS: "aura-hcm-avatars"
+  CDN_BASE_URL: "https://cdn.aura-hcm.com"

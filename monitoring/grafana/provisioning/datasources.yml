@@ -1,0 +1,36 @@
+# Grafana Datasource Provisioning — AuraOS
+# Auto-provisions the Prometheus datasource so no manual configuration is needed.
+# Reference: https://grafana.com/docs/grafana/latest/administration/provisioning/#datasources
+
+apiVersion: 1
+
+deleteDatasources:
+  - name: AuraOS-Prometheus
+    orgId: 1
+
+datasources:
+  - name: AuraOS-Prometheus
+    type: prometheus
+    uid: DS_PROMETHEUS
+    orgId: 1
+    url: "${PROMETHEUS_URL:-http://prometheus:9090}"
+    access: proxy
+    isDefault: true
+    version: 1
+    editable: false
+    jsonData:
+      httpMethod: POST
+      # Align with Grafana's $__rate_interval variable
+      timeInterval: "15s"
+      # Enable Prometheus exemplars (requires Prometheus 2.26+)
+      exemplarTraceIdDestinations:
+        - name: traceID
+          datasourceUid: DS_TEMPO
+          urlDisplayLabel: "View in Tempo"
+      # Query caching (Grafana 9.2+)
+      cacheLevel: "Low"
+      # Increment timeout for complex dashboard queries
+      queryTimeout: "60s"
+    secureJsonData:
+      # Uncomment if Prometheus is behind authentication
+      # basicAuthPassword: "${PROMETHEUS_PASSWORD}"

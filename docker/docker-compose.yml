@@ -1,0 +1,387 @@
+# =============================================================================
+# AuraOS — Full Local Development Environment
+#
+# Services:
+#   Infrastructure : postgres, redis, rabbitmq, minio (file storage)
+#   Web            : Next.js (apps/web)
+#   Microservices  : 10 services (ports 3001–3010)
+#
+# Usage:
+#   cp .env.example .env       # fill in secrets
+#   docker compose up          # start everything
+#   docker compose up web      # start only web + infra
+#   docker compose logs -f payroll-service
+#
+# Health checks ensure services wait for their dependencies before starting.
+# =============================================================================
+
+version: "3.9"
+
+# ---------------------------------------------------------------------------
+# Shared network
+# ---------------------------------------------------------------------------
+networks:
+  auraos-net:
+    driver: bridge
+
+# ---------------------------------------------------------------------------
+# Persistent volumes
+# ---------------------------------------------------------------------------
+volumes:
+  postgres-data:
+  redis-data:
+  rabbitmq-data:
+  minio-data:
+
+# ---------------------------------------------------------------------------
+# Re-usable configuration fragments
+# ---------------------------------------------------------------------------
+x-common-env: &common-env
+  NODE_ENV: development
+  DATABASE_URL: postgresql://${POSTGRES_USER:-auraos}:${POSTGRES_PASSWORD:-auraos_dev}@postgres:5432/${POSTGRES_DB:-auraos_dev}?schema=public
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+  RABBITMQ_URL: amqp://${RABBITMQ_USER:-auraos}:${RABBITMQ_PASSWORD:-auraos_dev}@rabbitmq:5672
+  JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_minimum_32_characters_here}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+
+x-service-defaults: &service-defaults
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile.service
+  networks: [auraos-net]
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    rabbitmq:
+      condition: service_healthy
+
+# ---------------------------------------------------------------------------
+# Infrastructure services
+# ---------------------------------------------------------------------------
+services:
+  # --------------------------------------------------------------------------
+  # PostgreSQL 16
+  # --------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: auraos-postgres
+    networks: [auraos-net]
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-auraos_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-auraos}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-auraos_dev}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-auraos} -d ${POSTGRES_DB:-auraos_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # Redis 7
+  # --------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: auraos-redis
+    networks: [auraos-net]
+    volumes:
+      - redis-data:/data
+    command: >
+      redis-server
+      --requirepass "${REDIS_PASSWORD:-}"
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # RabbitMQ 3.12 (management UI on :15672)
+  # --------------------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: auraos-rabbitmq
+    networks: [auraos-net]
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-auraos}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-auraos_dev}
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MGMT_PORT:-15672}:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # MinIO (S3-compatible object storage for documents/payslips)
+  # --------------------------------------------------------------------------
+  minio:
+    image: minio/minio:latest
+    container_name: auraos-minio
+    networks: [auraos-net]
+    volumes:
+      - minio-data:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-auraos}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-auraos_minio_dev}
+    command: server /data --console-address ":9001"
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # Database migrations & seed (one-shot init container)
+  # --------------------------------------------------------------------------
+  db-migrate:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.service
+    container_name: auraos-db-migrate
+    networks: [auraos-net]
+    command: ["sh", "-c", "pnpm --filter @aura/database prisma migrate deploy && pnpm --filter @aura/database db:seed"]
+    environment:
+      <<: *common-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  # ---------------------------------------------------------------------------
+  # Web Application (Next.js)
+  # ---------------------------------------------------------------------------
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+    container_name: auraos-web
+    networks: [auraos-net]
+    environment:
+      <<: *common-env
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev_nextauth_secret_minimum_32_chars}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3000}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Microservices
+  # ---------------------------------------------------------------------------
+
+  auth-service:
+    <<: *service-defaults
+    container_name: auraos-auth-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: auth-service
+      PORT: 3001
+    ports:
+      - "${AUTH_SERVICE_PORT:-3001}:3001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  employee-service:
+    <<: *service-defaults
+    container_name: auraos-employee-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: employee-service
+      PORT: 3002
+    ports:
+      - "${EMPLOYEE_SERVICE_PORT:-3002}:3002"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  payroll-service:
+    <<: *service-defaults
+    container_name: auraos-payroll-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: payroll-service
+      PORT: 3003
+    ports:
+      - "${PAYROLL_SERVICE_PORT:-3003}:3003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  notification-service:
+    <<: *service-defaults
+    container_name: auraos-notification-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: notification-service
+      PORT: 3004
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+    ports:
+      - "${NOTIFICATION_SERVICE_PORT:-3004}:3004"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  document-service:
+    <<: *service-defaults
+    container_name: auraos-document-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: document-service
+      PORT: 3005
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-auraos}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-auraos_minio_dev}
+      MINIO_USE_SSL: "false"
+    ports:
+      - "${DOCUMENT_SERVICE_PORT:-3005}:3005"
+    depends_on:
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  workflow-service:
+    <<: *service-defaults
+    container_name: auraos-workflow-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: workflow-service
+      PORT: 3006
+    ports:
+      - "${WORKFLOW_SERVICE_PORT:-3006}:3006"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  analytics-service:
+    <<: *service-defaults
+    container_name: auraos-analytics-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: analytics-service
+      PORT: 3007
+    ports:
+      - "${ANALYTICS_SERVICE_PORT:-3007}:3007"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ai-service:
+    <<: *service-defaults
+    container_name: auraos-ai-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: ai-service
+      PORT: 3008
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    ports:
+      - "${AI_SERVICE_PORT:-3008}:3008"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  scheduling-service:
+    <<: *service-defaults
+    container_name: auraos-scheduling-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: scheduling-service
+      PORT: 3009
+    ports:
+      - "${SCHEDULING_SERVICE_PORT:-3009}:3009"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3009/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  integration-service:
+    <<: *service-defaults
+    container_name: auraos-integration-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: integration-service
+      PORT: 3010
+    ports:
+      - "${INTEGRATION_SERVICE_PORT:-3010}:3010"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

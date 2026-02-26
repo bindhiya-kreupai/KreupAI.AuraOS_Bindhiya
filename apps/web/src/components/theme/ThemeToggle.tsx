@@ -1,17 +1,18 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { Sun, Moon, Monitor } from 'lucide-react';
-import { useThemeStore, ThemeMode } from '@/stores/theme-store';
+import type { Theme } from '@/stores/theme-store';
+import { useTheme } from '@/stores/theme-store';
 
-const options: { mode: ThemeMode; icon: React.FC<{ className?: string }>; label: string }[] = [
+const options: { mode: Theme; icon: React.FC<{ className?: string }>; label: string }[] = [
   { mode: 'light', icon: Sun, label: 'Light' },
   { mode: 'dark', icon: Moon, label: 'Dark' },
   { mode: 'system', icon: Monitor, label: 'System' },
 ];
 
 export function ThemeToggle() {
-  const { mode, setMode } = useThemeStore();
+  const { theme: mode, setTheme: setMode } = useTheme();
 
   return (
     <div className="flex items-center gap-1 bg-slate-100 dark:bg-deep-cosmos rounded-lg p-1">

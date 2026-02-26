@@ -247,25 +247,51 @@ export const holidays: Holiday[] = [
   ...japanHolidays,
 ];
 
+/**
+ * NOTE: HolidayCalendar is not a dedicated Prisma model.
+ * The `Holiday` model only stores basic holiday info without country/calculation.
+ * Full calendar data is stored in SystemSetting under the `holiday_calendars` group.
+ *
+ * Basic holidays (national/regional) are also stored in the Holiday model
+ * for payroll/leave computation.
+ */
 export async function seed(prisma: PrismaClient): Promise<void> {
   console.log('Seeding holiday calendars...');
 
   for (const holiday of holidays) {
-    await prisma.holidayCalendar.upsert({
-      where: {
-        name_country: { name: holiday.name, country: holiday.country },
-      },
-      update: {
-        date: holiday.date,
-        type: holiday.type,
-        calculation: holiday.calculation ?? null,
-      },
+    // Store full calendar data in SystemSetting
+    const key = `holiday_calendar.${holiday.country}.${holiday.name.toLowerCase().replace(/\s+/g, '_')}.${holiday.date}`;
+    await prisma.systemSetting.upsert({
+      where: { key },
+      update: { value: JSON.stringify(holiday) },
       create: {
-        name: holiday.name,
+        key,
+        value: JSON.stringify(holiday),
+        group: 'holiday_calendars',
+        description: `Holiday: ${holiday.name} (${holiday.country}) – ${holiday.date}`,
+      },
+    });
+
+    // Also upsert into Holiday model for basic payroll/leave references
+    await prisma.holiday.upsert({
+      where: {
+        // Holiday has no unique constraint; use a deterministic composite key
+        // stored as the holiday name which must be unique enough
+        id: Buffer.from(`${holiday.country}::${holiday.name}::${holiday.date}`)
+          .toString('base64')
+          .slice(0, 36)
+          .replace(/[^a-zA-Z0-9-]/g, '0'),
+      },
+      update: { type: holiday.type },
+      create: {
+        id: Buffer.from(`${holiday.country}::${holiday.name}::${holiday.date}`)
+          .toString('base64')
+          .slice(0, 36)
+          .replace(/[^a-zA-Z0-9-]/g, '0'),
+        name: `${holiday.name} (${holiday.country})`,
         date: holiday.date,
-        country: holiday.country,
         type: holiday.type,
-        calculation: holiday.calculation ?? null,
+        status: 'Active',
       },
     });
   }

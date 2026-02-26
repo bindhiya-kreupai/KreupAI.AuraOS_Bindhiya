@@ -289,81 +289,45 @@ export const taxJurisdictions: TaxJurisdiction[] = [
   uaeCorporateTax,
 ];
 
+/**
+ * NOTE: TaxJurisdiction is not a dedicated Prisma model.
+ * Data is stored in SystemSetting under the `tax_jurisdictions` group.
+ */
 export async function seed(prisma: PrismaClient): Promise<void> {
   console.log('Seeding tax jurisdictions...');
 
+  const upsertJurisdiction = async (key: string, data: unknown) => {
+    const settingKey = `tax_jurisdiction.${key}`;
+    await prisma.systemSetting.upsert({
+      where: { key: settingKey },
+      update: { value: JSON.stringify(data) },
+      create: {
+        key: settingKey,
+        value: JSON.stringify(data),
+        group: 'tax_jurisdictions',
+        description: `Tax jurisdiction: ${key}`,
+      },
+    });
+  };
+
   for (const jurisdiction of taxJurisdictions) {
     const key = `${jurisdiction.country}_${jurisdiction.type}_${jurisdiction.filingStatus ?? 'default'}_${jurisdiction.year}`;
-    await prisma.taxJurisdiction.upsert({
-      where: { key },
-      update: {
-        country: jurisdiction.country,
-        type: jurisdiction.type,
-        filingStatus: jurisdiction.filingStatus ?? null,
-        year: jurisdiction.year,
-        brackets: JSON.stringify(jurisdiction.brackets),
-      },
-      create: {
-        key,
-        country: jurisdiction.country,
-        type: jurisdiction.type,
-        filingStatus: jurisdiction.filingStatus ?? null,
-        year: jurisdiction.year,
-        brackets: JSON.stringify(jurisdiction.brackets),
-      },
-    });
+    await upsertJurisdiction(key, jurisdiction);
   }
 
-  // Seed US state income tax rates (all 50 states + DC)
   for (const stateRate of usStateIncomeTaxRates) {
     const key = `US_state_income_tax_${stateRate.stateCode}_2024`;
-    await prisma.taxJurisdiction.upsert({
-      where: { key },
-      update: {
-        country: 'US',
-        type: `state_income_tax`,
-        filingStatus: stateRate.stateCode,
-        year: 2024,
-        brackets: JSON.stringify(stateRate.brackets),
-      },
-      create: {
-        key,
-        country: 'US',
-        type: `state_income_tax`,
-        filingStatus: stateRate.stateCode,
-        year: 2024,
-        brackets: JSON.stringify(stateRate.brackets),
-      },
-    });
+    await upsertJurisdiction(key, { country: 'US', type: 'state_income_tax', filingStatus: stateRate.stateCode, year: 2024, brackets: stateRate.brackets });
   }
 
-  // Seed US state unemployment (SUTA) rates
   for (const sutaRate of usStateSutaRates) {
     const key = `US_suta_${sutaRate.stateCode}_2024`;
-    await prisma.taxJurisdiction.upsert({
-      where: { key },
-      update: {
-        country: 'US',
-        type: 'suta',
-        filingStatus: sutaRate.stateCode,
-        year: 2024,
-        brackets: JSON.stringify([
-          { min: 0, max: sutaRate.wageBase, rate: sutaRate.newEmployerRate },
-        ]),
-      },
-      create: {
-        key,
-        country: 'US',
-        type: 'suta',
-        filingStatus: sutaRate.stateCode,
-        year: 2024,
-        brackets: JSON.stringify([
-          { min: 0, max: sutaRate.wageBase, rate: sutaRate.newEmployerRate },
-        ]),
-      },
+    await upsertJurisdiction(key, {
+      country: 'US', type: 'suta', filingStatus: sutaRate.stateCode, year: 2024,
+      brackets: [{ min: 0, max: sutaRate.wageBase, rate: sutaRate.newEmployerRate }],
     });
   }
 
   const totalSeeded = taxJurisdictions.length + usStateIncomeTaxRates.length + usStateSutaRates.length;
-  console.log(`Seeded ${totalSeeded} tax jurisdictions (${taxJurisdictions.length} federal/international + ${usStateIncomeTaxRates.length} state income tax + ${usStateSutaRates.length} SUTA rates).`);
+  console.log(`Seeded ${totalSeeded} tax jurisdictions.`);
 }

@@ -3,11 +3,24 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, DollarSign, Calendar, TrendingUp, Clock, Award, Briefcase, Activity } from 'lucide-react';
+import {
+  Users,
+  DollarSign,
+  Calendar,
+  TrendingUp,
+  Clock,
+  Award,
+  Briefcase,
+  Activity,
+} from 'lucide-react';
+import AnalyticsDashboard from '@/components/analytics/AnalyticsDashboard';
+
+type View = 'overview' | 'people';
 
 export default function HRAnalyticsDashboardPage() {
+  const [view, setView] = useState<View>('overview');
   const [stats, setStats] = useState<any>(null);
-  const [widgets, setWidgets] = useState<any[]>([]);
+  const [_widgets, setWidgets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,7 +44,7 @@ export default function HRAnalyticsDashboardPage() {
         const widgetsData = await widgetsRes.json();
         setWidgets(widgetsData.data || []);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
@@ -163,8 +176,54 @@ export default function HRAnalyticsDashboardPage() {
     );
   }
 
+  if (view === 'people') {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <div className="border-b border-slate-200 flex-1">
+            <div className="flex gap-0">
+              {(['overview', 'people'] as View[]).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                    view === v
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  {v === 'overview' ? 'KPI Overview' : 'People Analytics'}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <AnalyticsDashboard />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
+      {/* View toggle */}
+      <div className="border-b border-slate-200">
+        <div className="flex gap-0">
+          {(['overview', 'people'] as View[]).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                view === v
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              {v === 'overview' ? 'KPI Overview' : 'People Analytics'}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -200,7 +259,9 @@ export default function HRAnalyticsDashboardPage() {
               <CardContent>
                 <div className="flex items-baseline justify-between">
                   <div className="text-2xl font-bold">{kpi.value}</div>
-                  <div className={`text-sm ${kpi.change.startsWith('+') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  <div
+                    className={`text-sm ${kpi.change.startsWith('+') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
+                  >
                     {kpi.change}
                   </div>
                 </div>
@@ -234,13 +295,15 @@ export default function HRAnalyticsDashboardPage() {
                     <td className="py-3 px-4 text-right">{dept.headcount}</td>
                     <td className="py-3 px-4 text-right">{dept.budget}</td>
                     <td className="py-3 px-4 text-right">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        parseInt(dept.utilization) >= 90
-                          ? 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-400'
-                          : parseInt(dept.utilization) >= 85
-                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-400'
-                          : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-400'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          parseInt(dept.utilization) >= 90
+                            ? 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-400'
+                            : parseInt(dept.utilization) >= 85
+                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-400'
+                              : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-400'
+                        }`}
+                      >
                         {dept.utilization}
                       </span>
                     </td>
@@ -264,18 +327,18 @@ export default function HRAnalyticsDashboardPage() {
                 key={index}
                 className="flex items-start gap-3 p-4 rounded-lg border hover:bg-muted/50"
               >
-                <div className={`w-2 h-2 rounded-full mt-2 ${
-                  insight.severity === 'high'
-                    ? 'bg-red-500'
-                    : insight.severity === 'medium'
-                    ? 'bg-yellow-500'
-                    : 'bg-green-500'
-                }`}></div>
+                <div
+                  className={`w-2 h-2 rounded-full mt-2 ${
+                    insight.severity === 'high'
+                      ? 'bg-red-500'
+                      : insight.severity === 'medium'
+                        ? 'bg-yellow-500'
+                        : 'bg-green-500'
+                  }`}
+                ></div>
                 <div className="flex-1">
                   <h4 className="font-semibold">{insight.title}</h4>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {insight.description}
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">{insight.description}</p>
                 </div>
                 <Button variant="outline" size="sm">
                   {insight.action}
@@ -306,9 +369,7 @@ export default function HRAnalyticsDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.predictions || 0}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                From {stats.models || 0} models
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">From {stats.models || 0} models</p>
             </CardContent>
           </Card>
           <Card>
@@ -317,9 +378,7 @@ export default function HRAnalyticsDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.conversations || 0}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stats.messages || 0} messages
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">{stats.messages || 0} messages</p>
             </CardContent>
           </Card>
         </div>
@@ -327,4 +386,3 @@ export default function HRAnalyticsDashboardPage() {
     </div>
   );
 }
-

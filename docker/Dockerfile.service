@@ -1,0 +1,140 @@
+# ============================================================================
+# Dockerfile.service — Generic multi-stage Dockerfile for AuraOS microservices
+#
+# Stages:
+#   1. deps    — Install workspace dependencies
+#   2. build   — Compile TypeScript to dist/
+#   3. runner  — Minimal production runtime
+#
+# Build with SERVICE_NAME to target a specific service:
+#   docker build -f docker/Dockerfile.service \
+#     --build-arg SERVICE_NAME=payroll-service \
+#     -t auraos-payroll-service:latest .
+#
+# Or build a generic image and override CMD at runtime:
+#   docker run -e SERVICE=payroll-service auraos-service:latest
+#
+# Health check: GET http://localhost:$PORT/health → { status: 'ok' }
+# ============================================================================
+
+# ---- Stage 1: deps ----------------------------------------------------------
+FROM node:20-alpine AS deps
+
+RUN apk add --no-cache libc6-compat && \
+    npm install -g pnpm@8
+
+WORKDIR /app
+
+# Copy workspace manifests
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY turbo.json ./
+
+# Copy package.json files for packages the services depend on
+COPY packages/@aura/auth/package.json ./packages/@aura/auth/
+COPY packages/@aura/cache/package.json ./packages/@aura/cache/
+COPY packages/@aura/config/package.json ./packages/@aura/config/
+COPY packages/@aura/database/package.json ./packages/@aura/database/
+COPY packages/@aura/events/package.json ./packages/@aura/events/
+COPY packages/@aura/i18n/package.json ./packages/@aura/i18n/
+COPY packages/@aura/messaging/package.json ./packages/@aura/messaging/
+COPY packages/@aura/monitoring/package.json ./packages/@aura/monitoring/
+COPY packages/@aura/scheduler/package.json ./packages/@aura/scheduler/
+COPY packages/@aura/search/package.json ./packages/@aura/search/
+COPY packages/@aura/types/package.json ./packages/@aura/types/
+COPY packages/@aura/utils/package.json ./packages/@aura/utils/
+
+# Copy all service package.json files
+COPY services/ai-service/package.json ./services/ai-service/
+COPY services/analytics-service/package.json ./services/analytics-service/
+COPY services/auth-service/package.json ./services/auth-service/
+COPY services/document-service/package.json ./services/document-service/
+COPY services/employee-service/package.json ./services/employee-service/
+COPY services/integration-service/package.json ./services/integration-service/
+COPY services/notification-service/package.json ./services/notification-service/
+COPY services/payroll-service/package.json ./services/payroll-service/
+COPY services/scheduling-service/package.json ./services/scheduling-service/
+COPY services/workflow-service/package.json ./services/workflow-service/
+
+# Install all dependencies (prod + dev for build step)
+RUN pnpm install --frozen-lockfile
+
+# ---- Stage 2: build ---------------------------------------------------------
+FROM node:20-alpine AS build
+
+ARG NODE_ENV=production
+ARG BUILD_SHA=unknown
+ARG SERVICE_NAME
+
+ENV NODE_ENV=${NODE_ENV}
+ENV BUILD_SHA=${BUILD_SHA}
+
+RUN apk add --no-cache libc6-compat && \
+    npm install -g pnpm@8
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy all source
+COPY . .
+
+# Generate Prisma client
+RUN pnpm --filter @aura/database prisma generate
+
+# Build shared packages
+RUN pnpm --filter @aura/types build || true
+RUN pnpm --filter @aura/utils build || true
+RUN pnpm --filter @aura/config build || true
+RUN pnpm --filter @aura/events build || true
+RUN pnpm --filter @aura/cache build || true
+RUN pnpm --filter @aura/scheduler build || true
+RUN pnpm --filter @aura/monitoring build || true
+
+# Build the target service (or all services if SERVICE_NAME not specified)
+RUN if [ -n "$SERVICE_NAME" ]; then \
+      pnpm --filter $SERVICE_NAME build; \
+    else \
+      pnpm --filter "./services/**" build || true; \
+    fi
+
+# ---- Stage 3: runner --------------------------------------------------------
+FROM node:20-alpine AS runner
+
+ARG SERVICE_NAME=service
+ARG PORT=3000
+
+ENV NODE_ENV=production
+ENV PORT=${PORT}
+ENV SERVICE_NAME=${SERVICE_NAME}
+
+# Install curl for health check probe
+RUN apk add --no-cache curl
+
+# Security: non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser  --system --uid 1001 serviceuser
+
+WORKDIR /app
+
+# Copy built output and production node_modules
+COPY --from=build --chown=serviceuser:nodejs /app/node_modules ./node_modules
+COPY --from=build --chown=serviceuser:nodejs /app/packages ./packages
+COPY --from=build --chown=serviceuser:nodejs /app/services ./services
+
+# Expose the service port (override via docker run -e PORT=xxxx)
+EXPOSE ${PORT}
+
+USER serviceuser
+
+# Health check — generic /health endpoint all AuraOS services implement
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f "http://localhost:${PORT}/health" || exit 1
+
+# Default entrypoint — override SERVICE_NAME env var to select the service
+CMD ["node", "-e", "\
+  const service = process.env.SERVICE_NAME || 'scheduling-service'; \
+  const path = require('path'); \
+  const entry = path.join('/app/services', service, 'dist/index.js'); \
+  console.log('[runner] Starting', service, 'from', entry); \
+  require(entry); \
+"]

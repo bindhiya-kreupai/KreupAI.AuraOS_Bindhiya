@@ -1,4 +1,5 @@
 {
+  "root": true,
   "extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended", "prettier"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -10,7 +11,7 @@
   },
   "plugins": ["@typescript-eslint"],
   "rules": {
-    "no-console": "error",
+    "no-console": ["error", { "allow": ["error", "warn"] }],
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/no-unused-vars": [
       "error",
@@ -40,6 +41,13 @@
     "quote-props": ["warn", "as-needed"]
   },
   "overrides": [
+    {
+      "files": ["src/app/api/**/*.ts"],
+      "rules": {
+        "no-console": ["error", { "allow": ["error", "warn", "info"] }],
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    },
     {
       "files": ["*.test.ts", "*.test.tsx", "*.spec.ts", "*.spec.tsx"],
       "rules": {

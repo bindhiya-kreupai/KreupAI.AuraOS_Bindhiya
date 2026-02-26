@@ -1,0 +1,13 @@
+---
+# AuraOS System Namespace
+# All AuraOS microservices and infrastructure run in this namespace.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aura-system
+  labels:
+    app.kubernetes.io/name: aura-system
+    app.kubernetes.io/managed-by: kustomize
+    environment: production
+  annotations:
+    description: "AuraOS Enterprise HCM Platform namespace"
