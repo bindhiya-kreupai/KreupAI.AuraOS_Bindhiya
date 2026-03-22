@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { ServiceProxy } from '@/lib/services/service-proxy';
+import { auditMiddleware } from '@/lib/middleware/audit.middleware';
 import { z } from 'zod';
 
 // API Response Standard
@@ -120,7 +121,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
  * POST /api/v1/employees
  * Create a new employee
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+export const POST = auditMiddleware.createEmployee(withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const { user } = context;
     const body = await request.json();
@@ -199,4 +200,4 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
 
     return NextResponse.json(response, { status: 500 });
   }
-});
+}));

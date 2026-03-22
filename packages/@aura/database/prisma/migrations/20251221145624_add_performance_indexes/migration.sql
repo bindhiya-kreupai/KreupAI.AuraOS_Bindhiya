@@ -2,29 +2,60 @@
 -- Based on QA Review Recommendations
 -- This migration adds indexes to frequently queried fields to improve query performance
 
+CREATE OR REPLACE FUNCTION pg_temp.create_index_if_columns_exist(
+	target_index_name TEXT,
+	target_table_name TEXT,
+	target_columns TEXT[]
+) RETURNS VOID AS $$
+DECLARE
+	matched_columns INTEGER;
+	quoted_columns TEXT;
+BEGIN
+	SELECT COUNT(*)
+	INTO matched_columns
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+	  AND table_name = target_table_name
+	  AND column_name = ANY(target_columns);
+
+	IF matched_columns = array_length(target_columns, 1) THEN
+		SELECT string_agg(format('%I', column_name), ', ' ORDER BY ordinality)
+		INTO quoted_columns
+		FROM unnest(target_columns) WITH ORDINALITY AS columns(column_name, ordinality);
+
+		EXECUTE format(
+			'CREATE INDEX IF NOT EXISTS %I ON %I(%s)',
+			target_index_name,
+			target_table_name,
+			quoted_columns
+		);
+	END IF;
+END;
+$$ LANGUAGE plpgsql;
+
 -- User table indexes
-CREATE INDEX IF NOT EXISTS "User_email_idx" ON "User"("email");
-CREATE INDEX IF NOT EXISTS "User_tenantId_status_idx" ON "User"("tenantId", "status");
-CREATE INDEX IF NOT EXISTS "User_lastLogin_idx" ON "User"("lastLogin");
+SELECT pg_temp.create_index_if_columns_exist('User_email_idx', 'User', ARRAY['email']);
+SELECT pg_temp.create_index_if_columns_exist('User_tenantId_status_idx', 'User', ARRAY['tenantId', 'status']);
+SELECT pg_temp.create_index_if_columns_exist('User_lastLogin_idx', 'User', ARRAY['lastLogin']);
 
 -- Employee table indexes
-CREATE INDEX IF NOT EXISTS "Employee_companyId_idx" ON "Employee"("companyId");
-CREATE INDEX IF NOT EXISTS "Employee_departmentId_idx" ON "Employee"("departmentId");
-CREATE INDEX IF NOT EXISTS "Employee_managerId_idx" ON "Employee"("managerId");
-CREATE INDEX IF NOT EXISTS "Employee_tenantId_status_idx" ON "Employee"("tenantId", "employmentStatus");
-CREATE INDEX IF NOT EXISTS "Employee_employmentStatus_idx" ON "Employee"("employmentStatus");
+SELECT pg_temp.create_index_if_columns_exist('Employee_companyId_idx', 'Employee', ARRAY['companyId']);
+SELECT pg_temp.create_index_if_columns_exist('Employee_departmentId_idx', 'Employee', ARRAY['departmentId']);
+SELECT pg_temp.create_index_if_columns_exist('Employee_managerId_idx', 'Employee', ARRAY['managerId']);
+SELECT pg_temp.create_index_if_columns_exist('Employee_tenantId_status_idx', 'Employee', ARRAY['tenantId', 'employmentStatus']);
+SELECT pg_temp.create_index_if_columns_exist('Employee_employmentStatus_idx', 'Employee', ARRAY['employmentStatus']);
 
 -- UserSession table indexes
-CREATE INDEX IF NOT EXISTS "UserSession_userId_idx" ON "UserSession"("userId");
-CREATE INDEX IF NOT EXISTS "UserSession_status_idx" ON "UserSession"("status");
-CREATE INDEX IF NOT EXISTS "UserSession_expiresAt_idx" ON "UserSession"("expiresAt");
-CREATE INDEX IF NOT EXISTS "UserSession_lastActive_idx" ON "UserSession"("lastActive");
+SELECT pg_temp.create_index_if_columns_exist('UserSession_userId_idx', 'UserSession', ARRAY['userId']);
+SELECT pg_temp.create_index_if_columns_exist('UserSession_status_idx', 'UserSession', ARRAY['status']);
+SELECT pg_temp.create_index_if_columns_exist('UserSession_expiresAt_idx', 'UserSession', ARRAY['expiresAt']);
+SELECT pg_temp.create_index_if_columns_exist('UserSession_lastActive_idx', 'UserSession', ARRAY['lastActive']);
 
 -- AuditLog table indexes
-CREATE INDEX IF NOT EXISTS "AuditLog_userId_idx" ON "AuditLog"("userId");
-CREATE INDEX IF NOT EXISTS "AuditLog_timestamp_idx" ON "AuditLog"("timestamp");
-CREATE INDEX IF NOT EXISTS "AuditLog_action_idx" ON "AuditLog"("action");
-CREATE INDEX IF NOT EXISTS "AuditLog_module_idx" ON "AuditLog"("module");
+SELECT pg_temp.create_index_if_columns_exist('AuditLog_userId_idx', 'AuditLog', ARRAY['userId']);
+SELECT pg_temp.create_index_if_columns_exist('AuditLog_timestamp_idx', 'AuditLog', ARRAY['timestamp']);
+SELECT pg_temp.create_index_if_columns_exist('AuditLog_action_idx', 'AuditLog', ARRAY['action']);
+SELECT pg_temp.create_index_if_columns_exist('AuditLog_module_idx', 'AuditLog', ARRAY['module']);
 
 -- Attendance table indexes (if exists)
 -- CREATE INDEX IF NOT EXISTS "Attendance_employeeId_idx" ON "Attendance"("employeeId");
@@ -50,13 +81,13 @@ CREATE INDEX IF NOT EXISTS "AuditLog_module_idx" ON "AuditLog"("module");
 -- CREATE INDEX IF NOT EXISTS "JobOpening_departmentId_idx" ON "JobOpening"("departmentId");
 
 -- Department table indexes
-CREATE INDEX IF NOT EXISTS "Department_companyId_idx" ON "Department"("companyId");
-CREATE INDEX IF NOT EXISTS "Department_parentId_idx" ON "Department"("parentId");
+SELECT pg_temp.create_index_if_columns_exist('Department_companyId_idx', 'Department', ARRAY['companyId']);
+SELECT pg_temp.create_index_if_columns_exist('Department_parentId_idx', 'Department', ARRAY['parentId']);
 
 -- Company table indexes
-CREATE INDEX IF NOT EXISTS "Company_tenantId_idx" ON "Company"("tenantId");
+SELECT pg_temp.create_index_if_columns_exist('Company_tenantId_idx', 'Company', ARRAY['tenantId']);
 
 -- Composite indexes for common query patterns
-CREATE INDEX IF NOT EXISTS "User_tenantId_email_idx" ON "User"("tenantId", "email");
-CREATE INDEX IF NOT EXISTS "Employee_companyId_departmentId_idx" ON "Employee"("companyId", "departmentId");
-CREATE INDEX IF NOT EXISTS "UserSession_userId_status_idx" ON "UserSession"("userId", "status");
+SELECT pg_temp.create_index_if_columns_exist('User_tenantId_email_idx', 'User', ARRAY['tenantId', 'email']);
+SELECT pg_temp.create_index_if_columns_exist('Employee_companyId_departmentId_idx', 'Employee', ARRAY['companyId', 'departmentId']);
+SELECT pg_temp.create_index_if_columns_exist('UserSession_userId_status_idx', 'UserSession', ARRAY['userId', 'status']);

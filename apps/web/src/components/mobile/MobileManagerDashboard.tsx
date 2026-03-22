@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Users,
   UserCheck,
@@ -68,176 +68,21 @@ interface Notification {
   message: string;
   timestamp: string;
   read: boolean;
-  icon: React.ElementType;
-  iconColor: string;
 }
 
-// ── Mock Data ─────────────────────────────────────────────────────────────────
+// ── API Helpers ──────────────────────────────────────────────────────────────
 
-const PENDING_APPROVALS: PendingApproval[] = [
-  {
-    id: 'ap-001',
-    type: 'leave',
-    employeeName: 'Jane Doe',
-    employeeInitials: 'JD',
-    employeeColor: 'bg-blue-500',
-    description: 'Annual Leave: Mar 3–7 (5 days)',
-    requestedAt: '2 hours ago',
-    urgency: 'normal',
-    status: 'pending',
-  },
-  {
-    id: 'ap-002',
-    type: 'expense',
-    employeeName: 'Tom Johnson',
-    employeeInitials: 'TJ',
-    employeeColor: 'bg-amber-500',
-    description: 'Travel Expense: $842 — NYC client visit',
-    requestedAt: '4 hours ago',
-    urgency: 'normal',
-    status: 'pending',
-  },
-  {
-    id: 'ap-003',
-    type: 'overtime',
-    employeeName: 'Kevin Park',
-    employeeInitials: 'KP',
-    employeeColor: 'bg-violet-500',
-    description: 'Overtime: 8hrs last Saturday — Sprint deadline',
-    requestedAt: '1 day ago',
-    urgency: 'high',
-    status: 'pending',
-  },
-  {
-    id: 'ap-004',
-    type: 'wfh',
-    employeeName: 'Olivia Brown',
-    employeeInitials: 'OB',
-    employeeColor: 'bg-emerald-500',
-    description: 'WFH Request: Feb 27 (Child care)',
-    requestedAt: '3 hours ago',
-    urgency: 'high',
-    status: 'pending',
-  },
-  {
-    id: 'ap-005',
-    type: 'leave',
-    employeeName: 'Daniel Taylor',
-    employeeInitials: 'DT',
-    employeeColor: 'bg-cyan-500',
-    description: 'Sick Leave: Feb 27 (Medical appointment)',
-    requestedAt: '30 min ago',
-    urgency: 'high',
-    status: 'pending',
-  },
-];
+const AVATAR_COLORS = ['bg-blue-500', 'bg-amber-500', 'bg-violet-500', 'bg-emerald-500', 'bg-cyan-500', 'bg-indigo-500', 'bg-teal-500', 'bg-rose-500'];
 
-const NOTIFICATIONS: Notification[] = [
-  {
-    id: 'n-001',
-    type: 'approval',
-    title: 'Leave Approved',
-    message: "You approved Jane Doe's annual leave request",
-    timestamp: '2 hrs ago',
-    read: false,
-    icon: CheckCircle,
-    iconColor: 'text-emerald-500',
-  },
-  {
-    id: 'n-002',
-    type: 'alert',
-    title: 'Attendance Alert',
-    message: 'Mia Nguyen missed check-in today. No prior leave approved.',
-    timestamp: '3 hrs ago',
-    read: false,
-    icon: AlertCircle,
-    iconColor: 'text-red-500',
-  },
-  {
-    id: 'n-003',
-    type: 'calendar',
-    title: 'Team Sync Tomorrow',
-    message: 'Engineering weekly standup at 9:00 AM — 6 attendees confirmed',
-    timestamp: '5 hrs ago',
-    read: true,
-    icon: Calendar,
-    iconColor: 'text-blue-500',
-  },
-  {
-    id: 'n-004',
-    type: 'info',
-    title: 'Performance Review Due',
-    message: 'Mid-year performance reviews due by March 15. 2 of 8 complete.',
-    timestamp: '1 day ago',
-    read: true,
-    icon: Activity,
-    iconColor: 'text-purple-500',
-  },
-  {
-    id: 'n-005',
-    type: 'approval',
-    title: 'New Expense Submitted',
-    message: 'Tom Johnson submitted a $842 travel expense for your review',
-    timestamp: '4 hrs ago',
-    read: false,
-    icon: DollarSign,
-    iconColor: 'text-amber-500',
-  },
-];
-
-const CALENDAR_WEEK: CalendarDay[] = [
-  {
-    date: 24,
-    dayLabel: 'Mon',
-    isToday: false,
-    members: [
-      { initials: 'JD', color: 'bg-blue-500', status: 'present' },
-      { initials: 'TJ', color: 'bg-amber-500', status: 'present' },
-      { initials: 'DT', color: 'bg-cyan-500', status: 'wfh' },
-    ],
-  },
-  {
-    date: 25,
-    dayLabel: 'Tue',
-    isToday: false,
-    members: [
-      { initials: 'JD', color: 'bg-blue-500', status: 'present' },
-      { initials: 'KP', color: 'bg-violet-500', status: 'on_leave' },
-      { initials: 'OB', color: 'bg-emerald-500', status: 'wfh' },
-    ],
-  },
-  {
-    date: 26,
-    dayLabel: 'Wed',
-    isToday: true,
-    members: [
-      { initials: 'JD', color: 'bg-blue-500', status: 'present' },
-      { initials: 'TJ', color: 'bg-amber-500', status: 'present' },
-      { initials: 'DT', color: 'bg-cyan-500', status: 'absent' },
-      { initials: 'LW', color: 'bg-indigo-500', status: 'wfh' },
-    ],
-  },
-  {
-    date: 27,
-    dayLabel: 'Thu',
-    isToday: false,
-    members: [
-      { initials: 'OB', color: 'bg-emerald-500', status: 'wfh' },
-      { initials: 'KP', color: 'bg-violet-500', status: 'on_leave' },
-      { initials: 'TJ', color: 'bg-amber-500', status: 'present' },
-    ],
-  },
-  {
-    date: 28,
-    dayLabel: 'Fri',
-    isToday: false,
-    members: [
-      { initials: 'JD', color: 'bg-blue-500', status: 'present' },
-      { initials: 'TJ', color: 'bg-amber-500', status: 'present' },
-      { initials: 'LW', color: 'bg-indigo-500', status: 'present' },
-    ],
-  },
-];
+function notifIconConfig(type: string): { icon: React.ElementType; color: string } {
+  const map: Record<string, { icon: React.ElementType; color: string }> = {
+    approval: { icon: CheckCircle, color: 'text-emerald-500' },
+    alert: { icon: AlertCircle, color: 'text-red-500' },
+    calendar: { icon: Calendar, color: 'text-blue-500' },
+    info: { icon: Activity, color: 'text-purple-500' },
+  };
+  return map[type] || { icon: Bell, color: 'text-gray-500' };
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -301,24 +146,12 @@ function QuickActionsBar() {
   );
 }
 
-function TeamOverviewSection() {
+function TeamOverviewSection({ teamSize, present, onLeave, pendingCount }: { teamSize: number; present: number; onLeave: number; pendingCount: number }) {
   const stats: TeamStat[] = [
-    { label: 'Team Size', value: 8, icon: Users, color: 'text-blue-600', bgColor: 'bg-blue-50' },
-    {
-      label: 'Present Today',
-      value: 5,
-      icon: UserCheck,
-      color: 'text-emerald-600',
-      bgColor: 'bg-emerald-50',
-    },
-    { label: 'On Leave', value: 1, icon: UserX, color: 'text-amber-600', bgColor: 'bg-amber-50' },
-    {
-      label: 'Pending Approvals',
-      value: 5,
-      icon: Clock,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-    },
+    { label: 'Team Size', value: teamSize, icon: Users, color: 'text-blue-600', bgColor: 'bg-blue-50' },
+    { label: 'Present Today', value: present, icon: UserCheck, color: 'text-emerald-600', bgColor: 'bg-emerald-50' },
+    { label: 'On Leave', value: onLeave, icon: UserX, color: 'text-amber-600', bgColor: 'bg-amber-50' },
+    { label: 'Pending Approvals', value: pendingCount, icon: Clock, color: 'text-red-600', bgColor: 'bg-red-50' },
   ];
 
   return (
@@ -343,10 +176,15 @@ function TeamOverviewSection() {
   );
 }
 
-function PendingApprovalsSection() {
-  const [approvals, setApprovals] = useState<PendingApproval[]>(PENDING_APPROVALS);
+function PendingApprovalsSection({ initialApprovals }: { initialApprovals: PendingApproval[] }) {
+  const [approvals, setApprovals] = useState<PendingApproval[]>(initialApprovals);
 
-  const handleAction = (id: string, action: 'approved' | 'rejected') => {
+  useEffect(() => { setApprovals(initialApprovals); }, [initialApprovals]);
+
+  const handleAction = async (id: string, action: 'approved' | 'rejected') => {
+    try {
+      await fetch(`/api/v1/approvals/${id}/${action === 'approved' ? 'approve' : 'reject'}`, { method: 'POST' });
+    } catch { /* silent */ }
     setApprovals((prev) => prev.map((a) => (a.id === id ? { ...a, status: action } : a)));
   };
 
@@ -423,7 +261,7 @@ function PendingApprovalsSection() {
   );
 }
 
-function TeamCalendarSection() {
+function TeamCalendarSection({ calendarWeek }: { calendarWeek: CalendarDay[] }) {
   const statusLabels: Record<MemberStatus, string> = {
     present: 'Office',
     absent: 'Absent',
@@ -436,7 +274,7 @@ function TeamCalendarSection() {
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
       <h3 className="font-semibold text-gray-800 text-sm mb-3">Team Calendar — This Week</h3>
       <div className="grid grid-cols-5 gap-2">
-        {CALENDAR_WEEK.map((day) => (
+        {calendarWeek.map((day) => (
           <div
             key={day.date}
             className={`rounded-xl p-2 text-center ${day.isToday ? 'bg-blue-50 border-2 border-blue-300' : 'bg-gray-50 border border-gray-100'}`}
@@ -489,8 +327,10 @@ function TeamCalendarSection() {
   );
 }
 
-function NotificationsSection() {
-  const [notifications, setNotifications] = useState<Notification[]>(NOTIFICATIONS);
+function NotificationsSection({ initialNotifications }: { initialNotifications: Notification[] }) {
+  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+
+  useEffect(() => { setNotifications(initialNotifications); }, [initialNotifications]);
   const [showAll, setShowAll] = useState(false);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -520,14 +360,14 @@ function NotificationsSection() {
       </div>
       <div className="divide-y divide-gray-50">
         {displayed.map((n) => {
-          const Icon = n.icon;
+          const { icon: Icon, color: iconColor } = notifIconConfig(n.type);
           return (
             <div
               key={n.id}
               onClick={() => markRead(n.id)}
               className={`flex items-start gap-3 p-4 cursor-pointer hover:bg-gray-50 transition-colors ${!n.read ? 'bg-blue-50' : ''}`}
             >
-              <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${n.iconColor}`} />
+              <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${iconColor}`} />
               <div className="flex-1 min-w-0">
                 <p className={`text-sm font-medium ${!n.read ? 'text-gray-900' : 'text-gray-700'}`}>
                   {n.title}
@@ -562,22 +402,86 @@ function NotificationsSection() {
 export default function MobileManagerDashboard() {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [approvals, setApprovals] = useState<PendingApproval[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [calendarWeek, setCalendarWeek] = useState<CalendarDay[]>([]);
+  const [teamStats, setTeamStats] = useState({ teamSize: 0, present: 0, onLeave: 0, pendingCount: 0 });
 
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setLoading(false);
-      setLastUpdated(new Date().toLocaleTimeString());
-    }, 600);
-    return () => clearTimeout(t);
+  const fetchData = useCallback(async () => {
+    try {
+      const [appRes, notifRes, calRes, statsRes] = await Promise.allSettled([
+        fetch('/api/v1/approvals/pending'),
+        fetch('/api/v1/notifications'),
+        fetch('/api/v1/attendance/team/calendar'),
+        fetch('/api/v1/team/stats'),
+      ]);
+
+      if (appRes.status === 'fulfilled') {
+        const json = await appRes.value.json();
+        const list = json.data || [];
+        setApprovals(list.map((a: any, idx: number) => ({
+          id: a.id || String(idx),
+          type: a.type || 'leave',
+          employeeName: a.employeeName || a.name || '',
+          employeeInitials: (a.employeeName || a.name || '').split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2),
+          employeeColor: AVATAR_COLORS[idx % AVATAR_COLORS.length],
+          description: a.description || a.subtitle || '',
+          requestedAt: a.requestedAt || a.submittedDate || '',
+          urgency: a.urgency || 'normal',
+          status: a.status || 'pending',
+        })));
+      }
+
+      if (notifRes.status === 'fulfilled') {
+        const json = await notifRes.value.json();
+        setNotifications((json.data || []).map((n: any) => ({
+          id: n.id,
+          type: n.type || 'info',
+          title: n.title || '',
+          message: n.message || '',
+          timestamp: n.timestamp || n.createdAt || '',
+          read: n.read ?? false,
+        })));
+      }
+
+      if (calRes.status === 'fulfilled') {
+        const json = await calRes.value.json();
+        const today = new Date().getDate();
+        setCalendarWeek((json.data || []).map((d: any) => ({
+          date: d.date,
+          dayLabel: d.dayLabel || d.day || '',
+          isToday: d.date === today,
+          members: (d.members || []).map((m: any, mi: number) => ({
+            initials: m.initials || '',
+            color: m.color || AVATAR_COLORS[mi % AVATAR_COLORS.length],
+            status: m.status || 'present',
+          })),
+        })));
+      }
+
+      if (statsRes.status === 'fulfilled') {
+        const json = await statsRes.value.json();
+        const d = json.data || json;
+        setTeamStats({
+          teamSize: d.total ?? d.teamSize ?? 0,
+          present: d.present ?? 0,
+          onLeave: d.onLeave ?? 0,
+          pendingCount: d.pendingApprovals ?? d.pendingCount ?? 0,
+        });
+      }
+    } catch { /* silent */ }
+    setLastUpdated(new Date().toLocaleTimeString());
   }, []);
 
-  const refresh = () => {
+  useEffect(() => {
+    fetchData().finally(() => setLoading(false));
+  }, [fetchData]);
+
+  const refresh = useCallback(async () => {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setLastUpdated(new Date().toLocaleTimeString());
-    }, 600);
-  };
+    await fetchData();
+    setLoading(false);
+  }, [fetchData]);
 
   if (loading) {
     return (
@@ -615,16 +519,16 @@ export default function MobileManagerDashboard() {
       <QuickActionsBar />
 
       {/* Team Overview */}
-      <TeamOverviewSection />
+      <TeamOverviewSection teamSize={teamStats.teamSize} present={teamStats.present} onLeave={teamStats.onLeave} pendingCount={teamStats.pendingCount} />
 
       {/* Pending Approvals */}
-      <PendingApprovalsSection />
+      <PendingApprovalsSection initialApprovals={approvals} />
 
       {/* Team Calendar */}
-      <TeamCalendarSection />
+      <TeamCalendarSection calendarWeek={calendarWeek} />
 
       {/* Notifications */}
-      <NotificationsSection />
+      <NotificationsSection initialNotifications={notifications} />
 
       {/* Bottom nav hint */}
       <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-between text-xs text-gray-400">

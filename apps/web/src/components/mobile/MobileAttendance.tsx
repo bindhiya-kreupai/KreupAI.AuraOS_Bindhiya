@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Clock,
   MapPin,
@@ -41,48 +41,7 @@ interface DayAttendance {
   status: AttendanceStatus;
 }
 
-// ── Mock Data ──────────────────────────────────────────────────────────────────
-
-const TIMELINE: TimelineEntry[] = [
-  { time: '09:05', label: 'Checked In', type: 'in' },
-  { time: '13:00', label: 'Break Start', type: 'break_start' },
-  { time: '14:00', label: 'Break End', type: 'break_end' },
-];
-
-const WEEKLY_HOURS = [7.5, 8.2, 7.8, 8.5, 6.0, 0, 0]; // Mon–Sun
 const WEEK_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
-// Feb 2026 calendar data
-const CALENDAR_DATA: DayAttendance[] = [
-  { date: 1, status: 'weekend' },
-  { date: 2, status: 'present' },
-  { date: 3, status: 'present' },
-  { date: 4, status: 'present' },
-  { date: 5, status: 'present' },
-  { date: 6, status: 'present' },
-  { date: 7, status: 'weekend' },
-  { date: 8, status: 'weekend' },
-  { date: 9, status: 'late' },
-  { date: 10, status: 'present' },
-  { date: 11, status: 'present' },
-  { date: 12, status: 'present' },
-  { date: 13, status: 'present' },
-  { date: 14, status: 'weekend' },
-  { date: 15, status: 'weekend' },
-  { date: 16, status: 'leave' },
-  { date: 17, status: 'present' },
-  { date: 18, status: 'present' },
-  { date: 19, status: 'present' },
-  { date: 20, status: 'present' },
-  { date: 21, status: 'weekend' },
-  { date: 22, status: 'weekend' },
-  { date: 23, status: 'present' },
-  { date: 24, status: 'present' },
-  { date: 25, status: 'present' },
-  { date: 26, status: 'absent' },
-  { date: 27, status: 'present' },
-  { date: 28, status: 'weekend' },
-];
 
 const STATUS_DOT: Record<AttendanceStatus, string> = {
   present: 'bg-emerald-400',
@@ -136,19 +95,69 @@ function WeeklyBarChart({ data, labels }: { data: number[]; labels: string[] }) 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function MobileAttendance() {
-  const [isClockedIn, setIsClockedIn] = useState(true);
-  const [currentTime] = useState('15:42');
-  const [_showCalendar, _setShowCalendar] = useState(false);
+  const [isClockedIn, setIsClockedIn] = useState(false);
+  const [currentTime, setCurrentTime] = useState('--:--');
   const [showRegularize, setShowRegularize] = useState(false);
+  const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
+  const [weeklyHours, setWeeklyHours] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+  const [calendarData, setCalendarData] = useState<DayAttendance[]>([]);
+  const [clockInTime, setClockInTime] = useState('');
+  const [location, setLocation] = useState('');
+  const [shift, setShift] = useState('');
 
-  const totalHours = WEEKLY_HOURS.reduce((a, b) => a + b, 0);
+  const fetchAttendance = useCallback(async () => {
+    try {
+      const res = await fetch('/api/v1/attendance/today');
+      const json = await res.json();
+      const rec = json.data;
+      if (rec) {
+        setIsClockedIn(!!rec.clockIn && !rec.clockOut);
+        if (rec.clockIn) {
+          const d = new Date(rec.clockIn);
+          setClockInTime(d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+        }
+        if (rec.timeline) setTimeline(rec.timeline);
+        if (rec.location) setLocation(rec.location);
+        if (rec.shift) setShift(rec.shift);
+      }
+    } catch { /* silent */ }
+    try {
+      const res = await fetch('/api/v1/attendance/summary?month=' + (new Date().getMonth() + 1) + '&year=' + new Date().getFullYear());
+      const json = await res.json();
+      if (json.data?.weeklyHours) setWeeklyHours(json.data.weeklyHours);
+      if (json.data?.calendar) setCalendarData(json.data.calendar);
+    } catch { /* silent */ }
+  }, []);
+
+  useEffect(() => {
+    fetchAttendance();
+    const interval = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }));
+    }, 1000);
+    setCurrentTime(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }));
+    return () => clearInterval(interval);
+  }, [fetchAttendance]);
+
+  const handleClockToggle = async () => {
+    try {
+      const endpoint = isClockedIn ? '/api/v1/attendance/check-out' : '/api/v1/attendance/check-in';
+      await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ method: 'app' }) });
+      setIsClockedIn(!isClockedIn);
+      fetchAttendance();
+    } catch { /* silent */ }
+  };
+
+  const totalHours = weeklyHours.reduce((a, b) => a + b, 0);
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const monthStr = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   return (
     <div className="flex flex-col bg-gray-50 min-h-full">
       {/* Header */}
       <div className="bg-white border-b border-gray-100 px-4 py-4">
         <h1 className="text-xl font-bold text-gray-900">Attendance</h1>
-        <p className="text-sm text-gray-500">Wednesday, 25 February 2026</p>
+        <p className="text-sm text-gray-500">{dateStr}</p>
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -158,7 +167,7 @@ export function MobileAttendance() {
           <p className="text-sm text-gray-400 mb-5">Current time</p>
 
           <button
-            onClick={() => setIsClockedIn((prev) => !prev)}
+            onClick={handleClockToggle}
             className={`w-36 h-36 rounded-full flex flex-col items-center justify-center font-bold text-lg shadow-lg transition-all active:scale-95 ${
               isClockedIn
                 ? 'bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-red-200'
@@ -172,21 +181,21 @@ export function MobileAttendance() {
           {isClockedIn && (
             <div className="mt-4 flex items-center gap-2 text-emerald-600">
               <CheckCircle className="w-4 h-4" />
-              <p className="text-sm font-medium">Clocked in at 09:05 AM</p>
+              <p className="text-sm font-medium">Clocked in at {clockInTime || currentTime}</p>
             </div>
           )}
 
           {/* GPS */}
           <div className="mt-3 flex items-center gap-2 text-gray-500">
             <MapPin className="w-4 h-4 text-indigo-400" />
-            <p className="text-xs">Office HQ — San Francisco, CA</p>
+            <p className="text-xs">{location || 'Fetching location...'}</p>
           </div>
 
           {/* Shift */}
           <div className="mt-3 bg-gray-50 rounded-xl px-4 py-2.5 w-full text-center">
             <p className="text-xs text-gray-500">Current Shift</p>
             <p className="text-sm font-semibold text-gray-800 mt-0.5">
-              General Shift · 09:00 AM – 06:00 PM
+              {shift || 'General Shift'}
             </p>
           </div>
         </div>
@@ -201,7 +210,7 @@ export function MobileAttendance() {
             {/* Line */}
             <div className="absolute left-2 top-2 bottom-0 w-0.5 bg-gray-100" />
             <div className="space-y-4">
-              {TIMELINE.map((entry, i) => (
+              {timeline.map((entry, i) => (
                 <div key={i} className="relative flex items-start gap-3">
                   <div
                     className={`absolute -left-3 w-3 h-3 rounded-full border-2 border-white ${
@@ -239,7 +248,7 @@ export function MobileAttendance() {
             <span className="text-sm font-bold text-indigo-600">{totalHours.toFixed(1)}h</span>
           </div>
           <p className="text-xs text-gray-500 mb-2">Standard: 40h</p>
-          <WeeklyBarChart data={WEEKLY_HOURS} labels={WEEK_LABELS} />
+          <WeeklyBarChart data={weeklyHours} labels={WEEK_LABELS} />
         </div>
 
         {/* Monthly Calendar */}
@@ -247,7 +256,7 @@ export function MobileAttendance() {
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-indigo-500" />
-              February 2026
+              {monthStr}
             </h3>
             <div className="flex gap-1">
               <button className="p-1 rounded hover:bg-gray-100">
@@ -270,9 +279,9 @@ export function MobileAttendance() {
 
           {/* Calendar Grid — Feb 2026 starts on Sunday */}
           <div className="grid grid-cols-7 gap-1">
-            {CALENDAR_DATA.map(({ date, status }) => {
+            {calendarData.map(({ date, status }) => {
               const dotColor = STATUS_DOT[status];
-              const isToday = date === 25;
+              const isToday = date === today.getDate();
               return (
                 <div
                   key={date}

@@ -10,7 +10,7 @@ import {
   Gauge, UserCheck, GitBranch,
   Lightbulb, ThumbsUp, Eye
 } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 import Link from 'next/link';
 
 // ── Mock Data ──────────────────────────────────────────────────────────

@@ -7,6 +7,9 @@ import { logger } from '../logger';
 import { queueService } from '../queue/queue.service';
 import { QUEUE_NAMES } from '../queue/rabbitmq';
 import { auditService, AuditAction } from '../audit/audit.service';
+import { prisma } from '@aura/database';
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
 
 export enum ExportFormat {
   CSV = 'CSV',
@@ -54,6 +57,8 @@ export interface ExportResult {
   completedAt?: string;
   errorMessage?: string;
 }
+
+const EXPORT_DIR = join(process.cwd(), 'public', 'exports');
 
 /**
  * Export Service
@@ -122,29 +127,16 @@ export class ExportService {
     try {
       logger.info({ entity: request.entity, format: request.format }, 'Exporting employees');
 
-      // Fetch employee data
       const employees = await this.fetchEmployeeData(request.filters || {});
-
-      // Generate file
       const file = await this.generateFile(
         request.format,
         employees,
         request.columns || this.getDefaultEmployeeColumns()
       );
-
-      // Upload file
-      const fileUrl = await this.uploadFile(file);
-
+      const fileUrl = await this.uploadFile(file, `employees-${Date.now()}`);
       const duration = Math.round(performance.now() - startTime);
 
-      logger.info(
-        {
-          recordCount: employees.length,
-          fileSize: file.size,
-          duration,
-        },
-        'Employee export completed'
-      );
+      logger.info({ recordCount: employees.length, fileSize: file.size, duration }, 'Employee export completed');
 
       return {
         exportId: crypto.randomUUID(),
@@ -172,29 +164,16 @@ export class ExportService {
     try {
       logger.info({ filters: request.filters }, 'Exporting attendance');
 
-      // Fetch attendance data
       const attendance = await this.fetchAttendanceData(request.filters || {});
-
-      // Generate file
       const file = await this.generateFile(
         request.format,
         attendance,
         request.columns || this.getDefaultAttendanceColumns()
       );
-
-      // Upload file
-      const fileUrl = await this.uploadFile(file);
-
+      const fileUrl = await this.uploadFile(file, `attendance-${Date.now()}`);
       const duration = Math.round(performance.now() - startTime);
 
-      logger.info(
-        {
-          recordCount: attendance.length,
-          fileSize: file.size,
-          duration,
-        },
-        'Attendance export completed'
-      );
+      logger.info({ recordCount: attendance.length, fileSize: file.size, duration }, 'Attendance export completed');
 
       return {
         exportId: crypto.randomUUID(),
@@ -222,29 +201,16 @@ export class ExportService {
     try {
       logger.info({ filters: request.filters }, 'Exporting payroll');
 
-      // Fetch payroll data
       const payroll = await this.fetchPayrollData(request.filters || {});
-
-      // Generate file
       const file = await this.generateFile(
         request.format,
         payroll,
         request.columns || this.getDefaultPayrollColumns()
       );
-
-      // Upload file
-      const fileUrl = await this.uploadFile(file);
-
+      const fileUrl = await this.uploadFile(file, `payroll-${Date.now()}`);
       const duration = Math.round(performance.now() - startTime);
 
-      logger.info(
-        {
-          recordCount: payroll.length,
-          fileSize: file.size,
-          duration,
-        },
-        'Payroll export completed'
-      );
+      logger.info({ recordCount: payroll.length, fileSize: file.size, duration }, 'Payroll export completed');
 
       return {
         exportId: crypto.randomUUID(),
@@ -264,67 +230,113 @@ export class ExportService {
   }
 
   /**
-   * Fetch employee data
+   * Fetch employee data from database
    */
   private async fetchEmployeeData(filters: any): Promise<any[]> {
-    // TODO: Implement with Prisma
-    // return await prisma.employee.findMany({
-    //   where: {
-    //     companyId: filters.companyId,
-    //     departmentId: filters.departmentId,
-    //     status: filters.status,
-    //   },
-    //   include: {
-    //     department: true,
-    //     position: true,
-    //     reportingManager: true,
-    //   },
-    // });
+    const where: Record<string, unknown> = {};
+    if (filters.companyId) where.companyId = filters.companyId;
+    if (filters.departmentId) where.departmentId = filters.departmentId;
+    if (filters.employeeIds?.length) where.id = { in: filters.employeeIds };
 
-    // Mock data
-    return Array.from({ length: 100 }, (_, i) => ({
-      employeeCode: `EMP${(i + 1).toString().padStart(3, '0')}`,
-      firstName: `Employee ${i + 1}`,
-      lastName: `Last ${i + 1}`,
-      email: `employee${i + 1}@company.com`,
-      department: 'Engineering',
-      position: 'Developer',
-      hireDate: new Date(2020, 0, 1).toISOString(),
-      status: 'ACTIVE',
+    const employees = await prisma.employee.findMany({
+      where,
+      include: {
+        department: { select: { name: true } },
+        jobProfile: { select: { title: true } },
+        status: { select: { name: true } },
+        company: { select: { name: true, tenantId: true } },
+      },
+      orderBy: { employeeCode: 'asc' },
+    });
+
+    return employees.map(e => ({
+      employeeCode: e.employeeCode,
+      firstName: e.firstName,
+      lastName: e.lastName,
+      email: e.email,
+      department: (e.department as any)?.name || '',
+      position: (e.jobProfile as any)?.title || '',
+      hireDate: e.joiningDate?.toISOString().split('T')[0] || '',
+      status: (e.status as any)?.name || '',
+      company: (e.company as any)?.name || '',
     }));
   }
 
   /**
-   * Fetch attendance data
+   * Fetch attendance data from database
    */
   private async fetchAttendanceData(filters: any): Promise<any[]> {
-    // TODO: Implement with Prisma
-    // Mock data
-    return Array.from({ length: 500 }, (_, i) => ({
-      employeeCode: `EMP${((i % 50) + 1).toString().padStart(3, '0')}`,
-      employeeName: `Employee ${(i % 50) + 1}`,
-      date: new Date(2024, 11, (i % 22) + 1).toISOString().split('T')[0],
-      clockIn: '09:00:00',
-      clockOut: '18:00:00',
-      workHours: 9,
-      status: 'PRESENT',
-    }));
+    const where: Record<string, unknown> = {};
+    if (filters.tenantId) where.tenantId = filters.tenantId;
+    if (filters.employeeIds?.length) where.employeeId = { in: filters.employeeIds };
+    if (filters.status) where.status = filters.status;
+    if (filters.startDate || filters.endDate) {
+      where.date = {};
+      if (filters.startDate) (where.date as any).gte = new Date(filters.startDate);
+      if (filters.endDate) (where.date as any).lte = new Date(filters.endDate);
+    }
+
+    const records = await prisma.attendanceRecord.findMany({
+      where,
+      orderBy: [{ date: 'desc' }, { employeeId: 'asc' }],
+      take: 10000,
+    });
+
+    // Batch-fetch employee names
+    const employeeIds = [...new Set(records.map(r => r.employeeId))];
+    const employees = await prisma.employee.findMany({
+      where: { id: { in: employeeIds } },
+      select: { id: true, employeeCode: true, firstName: true, lastName: true },
+    });
+    const empMap = new Map(employees.map(e => [e.id, e]));
+
+    return records.map(r => {
+      const emp = empMap.get(r.employeeId);
+      return {
+        employeeCode: emp?.employeeCode || r.employeeId,
+        employeeName: emp ? `${emp.firstName} ${emp.lastName}` : r.employeeId,
+        date: r.date.toISOString().split('T')[0],
+        clockIn: r.clockIn ? r.clockIn.toISOString().substring(11, 19) : '',
+        clockOut: r.clockOut ? r.clockOut.toISOString().substring(11, 19) : '',
+        workHours: r.workHours,
+        status: r.status,
+      };
+    });
   }
 
   /**
-   * Fetch payroll data
+   * Fetch payroll data from database
    */
   private async fetchPayrollData(filters: any): Promise<any[]> {
-    // TODO: Implement with Prisma
-    // Mock data
-    return Array.from({ length: 100 }, (_, i) => ({
-      employeeCode: `EMP${(i + 1).toString().padStart(3, '0')}`,
-      employeeName: `Employee ${i + 1}`,
-      month: filters.startDate || '2024-12',
-      basicSalary: 5000 + i * 100,
-      grossPay: 7000 + i * 150,
-      deductions: 1000 + i * 20,
-      netPay: 6000 + i * 130,
+    const where: Record<string, unknown> = {};
+    if (filters.employeeIds?.length) where.employeeId = { in: filters.employeeIds };
+
+    // Filter by payroll run period if dates provided
+    if (filters.startDate || filters.endDate) {
+      where.payrollRun = {};
+      if (filters.startDate) (where.payrollRun as any).periodStart = { gte: new Date(filters.startDate) };
+      if (filters.endDate) (where.payrollRun as any).periodEnd = { lte: new Date(filters.endDate) };
+    }
+
+    const payslips = await prisma.payslip.findMany({
+      where,
+      include: {
+        payrollRun: { select: { periodStart: true, periodEnd: true, month: true, year: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10000,
+    });
+
+    return payslips.map(p => ({
+      employeeCode: p.employeeCode,
+      employeeName: p.employeeName,
+      month: p.payrollRun?.month && p.payrollRun?.year
+        ? `${p.payrollRun.year}-${String(p.payrollRun.month).padStart(2, '0')}`
+        : p.payrollRun?.periodStart?.toISOString().substring(0, 7) || '',
+      basicSalary: Number(p.basicSalary),
+      grossPay: Number(p.grossSalary),
+      deductions: Number(p.totalDeductions),
+      netPay: Number(p.netSalary),
     }));
   }
 
@@ -335,7 +347,7 @@ export class ExportService {
     format: ExportFormat,
     data: any[],
     columns: string[]
-  ): Promise<{ content: Buffer; size: number; mimeType: string }> {
+  ): Promise<{ content: Buffer; size: number; mimeType: string; ext: string }> {
     switch (format) {
       case ExportFormat.CSV:
         return this.generateCSV(data, columns);
@@ -353,36 +365,77 @@ export class ExportService {
   /**
    * Generate CSV file
    */
-  private generateCSV(data: any[], columns: string[]): { content: Buffer; size: number; mimeType: string } {
-    const headers = columns.join(',');
-    const rows = data.map((row) => columns.map((col) => row[col] || '').join(','));
-    const csv = [headers, ...rows].join('\n');
-    const content = Buffer.from(csv);
-
-    return {
-      content,
-      size: content.length,
-      mimeType: 'text/csv',
+  private generateCSV(data: any[], columns: string[]): { content: Buffer; size: number; mimeType: string; ext: string } {
+    const escapeCsv = (val: any) => {
+      const str = String(val ?? '');
+      return str.includes(',') || str.includes('"') || str.includes('\n')
+        ? `"${str.replace(/"/g, '""')}"`
+        : str;
     };
+    const headers = columns.map(escapeCsv).join(',');
+    const rows = data.map((row) => columns.map((col) => escapeCsv(row[col])).join(','));
+    const csv = [headers, ...rows].join('\n');
+    const content = Buffer.from(csv, 'utf-8');
+
+    return { content, size: content.length, mimeType: 'text/csv', ext: 'csv' };
   }
 
   /**
-   * Generate Excel file (mock)
+   * Generate Excel file using exceljs
    */
-  private generateExcel(data: any[], columns: string[]): { content: Buffer; size: number; mimeType: string } {
-    // TODO: Use exceljs library
-    const content = Buffer.from(JSON.stringify(data, null, 2));
-    return {
-      content,
-      size: content.length,
-      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    };
+  private async generateExcel(data: any[], columns: string[]): Promise<{ content: Buffer; size: number; mimeType: string; ext: string }> {
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = 'AuraOS Export Service';
+      workbook.created = new Date();
+
+      const sheet = workbook.addWorksheet('Export');
+
+      // Add header row with formatting
+      sheet.columns = columns.map(col => ({
+        header: col.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim(),
+        key: col,
+        width: Math.max(col.length + 5, 15),
+      }));
+
+      const headerRow = sheet.getRow(1);
+      headerRow.font = { bold: true, size: 11 };
+      headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4472C4' } };
+      headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+
+      // Add data rows
+      for (const row of data) {
+        const values: Record<string, any> = {};
+        for (const col of columns) {
+          values[col] = row[col] ?? '';
+        }
+        sheet.addRow(values);
+      }
+
+      // Auto-filter
+      sheet.autoFilter = { from: 'A1', to: `${String.fromCharCode(64 + columns.length)}1` };
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const content = Buffer.from(buffer);
+
+      return {
+        content,
+        size: content.length,
+        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ext: 'xlsx',
+      };
+    } catch {
+      // Fallback to CSV if exceljs not available
+      logger.warn('exceljs not available, falling back to CSV format');
+      return this.generateCSV(data, columns);
+    }
   }
 
   /**
    * Generate JSON file
    */
-  private generateJSON(data: any[], columns: string[]): { content: Buffer; size: number; mimeType: string } {
+  private generateJSON(data: any[], columns: string[]): { content: Buffer; size: number; mimeType: string; ext: string } {
     const filtered = data.map((row) => {
       const obj: any = {};
       columns.forEach((col) => {
@@ -392,51 +445,79 @@ export class ExportService {
     });
 
     const content = Buffer.from(JSON.stringify(filtered, null, 2));
-    return {
-      content,
-      size: content.length,
-      mimeType: 'application/json',
-    };
+    return { content, size: content.length, mimeType: 'application/json', ext: 'json' };
   }
 
   /**
-   * Generate PDF file (mock)
+   * Generate PDF file as HTML table document (print-ready)
    */
-  private generatePDF(data: any[], columns: string[]): { content: Buffer; size: number; mimeType: string } {
-    // TODO: Use pdfkit or puppeteer
-    const content = Buffer.from(JSON.stringify(data, null, 2));
-    return {
-      content,
-      size: content.length,
-      mimeType: 'application/pdf',
-    };
+  private generatePDF(data: any[], columns: string[]): { content: Buffer; size: number; mimeType: string; ext: string } {
+    const headerLabels = columns.map(col =>
+      col.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()
+    );
+
+    const rows = data.map(row =>
+      `<tr>${columns.map(col => `<td>${String(row[col] ?? '')}</td>`).join('')}</tr>`
+    ).join('\n');
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>AuraOS Data Export</title>
+<style>
+  @media print { body { margin: 0; } }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 10px; color: #1a1a1a; padding: 20px; }
+  h1 { font-size: 16px; color: #1e3a5f; margin-bottom: 4px; }
+  .meta { color: #666; font-size: 9px; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #4472c4; color: white; padding: 6px 8px; text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { padding: 5px 8px; border-bottom: 1px solid #e0e0e0; font-size: 9px; }
+  tr:nth-child(even) { background: #f8f9fa; }
+  .footer { margin-top: 16px; font-size: 8px; color: #999; text-align: center; }
+</style>
+</head>
+<body>
+<h1>AuraOS Data Export</h1>
+<div class="meta">Generated: ${new Date().toISOString()} | Records: ${data.length}</div>
+<table>
+<thead><tr>${headerLabels.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+<tbody>${rows}</tbody>
+</table>
+<div class="footer">Generated by AuraOS Export Service</div>
+</body>
+</html>`;
+
+    const content = Buffer.from(html, 'utf-8');
+    return { content, size: content.length, mimeType: 'text/html', ext: 'html' };
   }
 
   /**
-   * Upload file to storage
+   * Save file to local exports directory and return download URL
    */
-  private async uploadFile(file: { content: Buffer; mimeType: string }): Promise<string> {
-    // TODO: Upload to S3/Azure Blob/GCS
+  private async uploadFile(file: { content: Buffer; mimeType: string; ext?: string }, name?: string): Promise<string> {
     const fileId = crypto.randomUUID();
-    const mockUrl = `https://storage.auraos.com/exports/${fileId}`;
-    logger.info({ fileId, url: mockUrl }, 'File uploaded');
-    return mockUrl;
+    const ext = (file as any).ext || 'bin';
+    const fileName = `${name || fileId}.${ext}`;
+
+    try {
+      await mkdir(EXPORT_DIR, { recursive: true });
+      const filePath = join(EXPORT_DIR, fileName);
+      await writeFile(filePath, file.content);
+      const downloadUrl = `/exports/${fileName}`;
+      logger.info({ fileId, path: filePath, url: downloadUrl }, 'Export file saved');
+      return downloadUrl;
+    } catch (error) {
+      logger.error({ error, fileId }, 'Failed to save export file, returning in-memory reference');
+      return `/api/v1/export/${fileId}`;
+    }
   }
 
   /**
    * Get default columns for employee export
    */
   private getDefaultEmployeeColumns(): string[] {
-    return [
-      'employeeCode',
-      'firstName',
-      'lastName',
-      'email',
-      'department',
-      'position',
-      'hireDate',
-      'status',
-    ];
+    return ['employeeCode', 'firstName', 'lastName', 'email', 'department', 'position', 'hireDate', 'status'];
   }
 
   /**

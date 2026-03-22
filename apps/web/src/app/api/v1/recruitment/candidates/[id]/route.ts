@@ -1,9 +1,20 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { prisma } from '@/lib/database';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
+import { prisma } from '@aura/database';
 
 export const dynamic = 'force-dynamic';
+
+async function getTenantUserIds(tenantId: string): Promise<string[]> {
+  const users = await prisma.user.findMany({
+    where: { tenantId },
+    select: { id: true },
+  });
+
+  return users.map(user => user.id);
+}
 
 /**
  * GET /api/v1/recruitment/candidates/[id]
@@ -11,20 +22,30 @@ export const dynamic = 'force-dynamic';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
+    const { _user } = context;
     const { id } = context.params;
+    const tenantUserIds = await getTenantUserIds(_user.tenantId);
+    const tenantCreatedBy = { in: tenantUserIds.length > 0 ? tenantUserIds : ['__no_tenant_users__'] };
 
-    const candidate = await prisma.candidate.findUnique({
-      where: { id },
+    const candidate = await prisma.candidate.findFirst({
+      where: {
+        id,
+        applications: {
+          some: {
+            jobPosting: { createdBy: tenantCreatedBy },
+          },
+        },
+      },
       include: {
         applications: {
           include: {
             jobPosting: { select: { id: true, title: true, department: true } },
             interviews: {
-              select: { id: true, scheduledAt: true, status: true, interviewType: true },
-              orderBy: { scheduledAt: 'desc' },
+              select: { id: true, scheduledDate: true, status: true, type: true },
+              orderBy: { scheduledDate: 'desc' },
             },
           },
-          orderBy: { appliedAt: 'desc' },
+          orderBy: { appliedDate: 'desc' },
         },
       },
     });
@@ -57,13 +78,24 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
  * PUT /api/v1/recruitment/candidates/[id]
  * Update candidate information
  */
-export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
+export const PUT = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user } = context;
     const { id } = context.params;
     const body = await request.json();
+    const tenantUserIds = await getTenantUserIds(user.tenantId);
+    const tenantCreatedBy = { in: tenantUserIds.length > 0 ? tenantUserIds : ['__no_tenant_users__'] };
 
-    const candidate = await prisma.candidate.findUnique({ where: { id } });
+    const candidate = await prisma.candidate.findFirst({
+      where: {
+        id,
+        applications: {
+          some: {
+            jobPosting: { createdBy: tenantCreatedBy },
+          },
+        },
+      },
+    });
 
     if (!candidate) {
       return NextResponse.json(
@@ -79,16 +111,14 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
         lastName: body.lastName,
         email: body.email,
         phone: body.phone,
-        currentTitle: body.currentTitle,
-        currentCompany: body.currentCompany,
-        experienceYears: body.experienceYears,
+        location: body.location,
         skills: body.skills,
         linkedinUrl: body.linkedinUrl,
-        portfolioUrl: body.portfolioUrl,
-        expectedSalary: body.expectedSalary,
-        noticePeriodDays: body.noticePeriodDays,
+        resumeUrl: body.resumeUrl,
+        source: body.source,
+        experience: body.experience,
+        education: body.education,
         notes: body.notes,
-        tags: body.tags,
         updatedAt: new Date(),
         updatedBy: user.id,
       },
@@ -103,10 +133,15 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (_error) {
+  } catch (error) {
+    console.error('[Candidate API] PUT Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to update candidate' } },
       { status: 500 }
     );
   }
+}), {
+  action: AuditAction.EMPLOYEE_UPDATED,
+  resourceType: 'candidate',
+  captureRequestBody: true,
 });

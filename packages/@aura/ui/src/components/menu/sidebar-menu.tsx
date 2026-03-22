@@ -106,7 +106,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
   return (
     <aside
       className={cn(
-        'flex flex-col h-full bg-gradient-to-b from-[#001529] via-[#001529] to-white/20 border-r border-white/10 transition-all duration-300 shadow-xl',
+        'flex flex-col h-full bg-gradient-to-b from-[#0a1e3d] via-[#0f2a52] to-[#132f5e] border-r border-white/10 transition-all duration-300 shadow-xl',
         collapsed ? 'w-16' : 'w-72',
         className
       )}

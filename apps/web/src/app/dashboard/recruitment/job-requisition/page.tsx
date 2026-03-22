@@ -18,28 +18,46 @@ import {
     Loader2
 } from 'lucide-react';
 import { JobRequisitionService } from '../services';
+import type { JobRequisition as RecruitmentJobRequisition } from '../types';
 
-interface JobRequisition {
-    id: string;
-    jobTitle?: string;
-    title?: string;
-    department: string;
-    location: string;
-    employmentType?: string;
-    type?: string;
-    salaryRange: any;
-    status: string;
-    priority: string;
-    requestedBy?: string;
-    hiringManager?: string;
-    requestedDate?: string;
-    postedDate?: string;
-    numberOfPositions?: number;
+function getStatusLabel(status: RecruitmentJobRequisition['status'] | string): string {
+    switch (status) {
+        case 'open': return 'Open';
+        case 'pending_approval': return 'Pending Approval';
+        case 'draft': return 'Draft';
+        case 'on_hold': return 'Frozen';
+        case 'filled':
+        case 'cancelled':
+        case 'rejected':
+            return 'Closed';
+        default:
+            return String(status || '')
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, character => character.toUpperCase());
+    }
+}
+
+function getPriorityLabel(priority: RecruitmentJobRequisition['priority'] | string): string {
+    return String(priority || 'medium').replace(/\b\w/g, character => character.toUpperCase());
+}
+
+function getDisplayType(req: RecruitmentJobRequisition): string {
+    return String(req.jobType || 'full_time').replace(/_/g, ' ');
+}
+
+function getDisplaySalary(req: RecruitmentJobRequisition): string {
+    if (!req.salaryRange) return 'Not specified';
+    if (typeof req.salaryRange === 'string') return req.salaryRange;
+    if (req.salaryRange.min && req.salaryRange.max) {
+        const currency = req.salaryRange.currency || 'USD';
+        return `${currency} ${req.salaryRange.min.toLocaleString()} - ${req.salaryRange.max.toLocaleString()}`;
+    }
+    return 'Not specified';
 }
 
 export default function JobRequisitionsPage() {
     const [filterStatus, setFilterStatus] = useState<string>('All');
-    const [requisitions, setRequisitions] = useState<JobRequisition[]>([]);
+    const [requisitions, setRequisitions] = useState<RecruitmentJobRequisition[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -78,22 +96,12 @@ export default function JobRequisitionsPage() {
         }
     };
 
-    const getDisplayTitle = (req: JobRequisition) => req.jobTitle || req.title || 'Untitled';
-    const getDisplayType = (req: JobRequisition) => req.employmentType || req.type || 'Full-time';
-    const getDisplayManager = (req: JobRequisition) => req.requestedBy || req.hiringManager || 'Unknown';
-    const getDisplaySalary = (req: JobRequisition) => {
-        if (!req.salaryRange) return 'Not specified';
-        if (typeof req.salaryRange === 'string') return req.salaryRange;
-        if (req.salaryRange.min && req.salaryRange.max) {
-            const currency = req.salaryRange.currency || 'USD';
-            return `${currency} ${req.salaryRange.min.toLocaleString()} - ${req.salaryRange.max.toLocaleString()}`;
-        }
-        return 'Not specified';
-    };
+    const getDisplayTitle = (req: RecruitmentJobRequisition) => req.jobTitle || 'Untitled';
+    const getDisplayManager = (req: RecruitmentJobRequisition) => req.hiringManagerName || 'Unknown';
 
     const filteredRequisitions = filterStatus === 'All'
         ? requisitions
-        : requisitions.filter(r => r.status.toLowerCase().includes(filterStatus.toLowerCase()));
+        : requisitions.filter(requisition => getStatusLabel(requisition.status).toLowerCase().includes(filterStatus.toLowerCase()));
 
     if (loading) {
         return (
@@ -127,13 +135,13 @@ export default function JobRequisitionsPage() {
                 <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <div className="text-silver-mist text-xs font-bold uppercase">Total Open Roles</div>
                     <div className="text-2xl font-bold text-ink-black dark:text-pearl mt-1">
-                        {requisitions.filter(r => r.status === 'Open').length}
+                        {requisitions.filter(requisition => requisition.status === 'open').length}
                     </div>
                 </div>
                 <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <div className="text-silver-mist text-xs font-bold uppercase">Pending Approval</div>
                     <div className="text-2xl font-bold text-amber-500 mt-1">
-                        {requisitions.filter(r => r.approvalStatus === 'Pending' || r.status === 'Pending Approval').length}
+                        {requisitions.filter(requisition => requisition.status === 'pending_approval').length}
                     </div>
                 </div>
                 <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
@@ -143,7 +151,7 @@ export default function JobRequisitionsPage() {
                 <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
                     <div className="text-silver-mist text-xs font-bold uppercase">Closed</div>
                     <div className="text-2xl font-bold text-emerald-500 mt-1">
-                        {requisitions.filter(r => r.status === 'Closed').length}
+                        {requisitions.filter(requisition => ['filled', 'cancelled', 'rejected'].includes(requisition.status)).length}
                     </div>
                 </div>
             </div>
@@ -197,15 +205,15 @@ export default function JobRequisitionsPage() {
                                     <div className="flex items-center gap-2 mb-1">
                                         <h3 className="font-bold text-lg text-ink-black dark:text-pearl group-hover:text-celestial-indigo transition-colors cursor-pointer">{getDisplayTitle(req)}</h3>
                                         <div className="flex items-center gap-1 text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                                            {getPriorityIcon(req.priority)} {req.priority}
+                                            {getPriorityIcon(getPriorityLabel(req.priority))} {getPriorityLabel(req.priority)}
                                         </div>
                                     </div>
                                     <div className="text-xs text-silver-mist flex items-center gap-2">
                                         <span>{req.id.substring(0, 8)}</span>
                                         <span>•</span>
-                                        <span>{req.department}</span>
+                                        <span>{req.departmentName}</span>
                                         <span>•</span>
-                                        <span className={`px-1.5 py-0.5 rounded ${getStatusColor(req.status)} font-bold`}>{req.status}</span>
+                                        <span className={`px-1.5 py-0.5 rounded ${getStatusColor(getStatusLabel(req.status))} font-bold`}>{getStatusLabel(req.status)}</span>
                                     </div>
                                 </div>
                                 <button className="text-silver-mist hover:text-ink-black dark:hover:text-pearl">
@@ -217,7 +225,7 @@ export default function JobRequisitionsPage() {
                             <div className="grid grid-cols-2 gap-y-3 gap-x-6 mb-6 text-sm">
                                 <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                                     <MapPin className="w-4 h-4 text-silver-mist" />
-                                    {req.location || 'Not specified'}
+                                    {req.locationName || 'Not specified'}
                                 </div>
                                 <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                                     <DollarSign className="w-4 h-4 text-silver-mist" />
@@ -235,11 +243,11 @@ export default function JobRequisitionsPage() {
 
                             {/* Status Info */}
                             <div className="bg-slate-50 dark:bg-deep-cosmos/50 rounded-xl p-3 flex items-center justify-center gap-2 text-sm text-silver-mist border border-cloud dark:border-nebula-purple/20">
-                                {req.status === 'Open' && <><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Positions: {req.numberOfPositions || 1}</>}
-                                {(req.status === 'Pending Approval' || req.status === 'Pending') && <><Clock className="w-4 h-4" /> Awaiting Approval</>}
-                                {req.status === 'Draft' && <><Briefcase className="w-4 h-4" /> Draft - Resume Editing</>}
-                                {req.status === 'Closed' && <><CheckCircle2 className="w-4 h-4" /> Closed</>}
-                                {!['Open', 'Pending Approval', 'Pending', 'Draft', 'Closed'].includes(req.status) && <>{req.status}</>}
+                                {req.status === 'open' && <><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Positions: {req.numberOfPositions || 1}</>}
+                                {req.status === 'pending_approval' && <><Clock className="w-4 h-4" /> Awaiting Approval</>}
+                                {req.status === 'draft' && <><Briefcase className="w-4 h-4" /> Draft - Resume Editing</>}
+                                {['filled', 'cancelled', 'rejected'].includes(req.status) && <><CheckCircle2 className="w-4 h-4" /> Closed</>}
+                                {!['open', 'pending_approval', 'draft', 'filled', 'cancelled', 'rejected'].includes(req.status) && <>{getStatusLabel(req.status)}</>}
                             </div>
                         </div>
 

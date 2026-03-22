@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { DollarSign, AlertCircle, CheckCircle2, TrendingDown } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 
 export function BudgetHealth() {
     const data = {

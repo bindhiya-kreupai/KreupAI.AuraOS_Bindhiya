@@ -332,23 +332,84 @@ export class ShiftManagementService {
     if (!swap) throw new Error('Swap request not found');
     if (swap.swapWithApproval !== 'APPROVED') throw new Error('Peer approval required first');
 
-    // Update the swap request
-    await prisma.shiftSwapRequest.update({
-      where: { id },
-      data: {
-        managerApproval: 'APPROVED',
-        status: 'APPROVED_BY_MANAGER',
-        approvedBy,
-        approvedAt: new Date(),
-      },
-    });
+    // Transactional roster swap — atomic success or failure
+    return prisma.$transaction(async (tx) => {
+      // Mark manager approval
+      await tx.shiftSwapRequest.update({
+        where: { id },
+        data: {
+          managerApproval: 'APPROVED',
+          status: 'APPROVED_BY_MANAGER',
+          approvedBy,
+          approvedAt: new Date(),
+        },
+      });
 
-    // TODO: Actually swap the roster entries
-    // This would involve updating the shiftRoster table
+      // Find requestor's roster entry for the swap date
+      const requestorRoster = await tx.shiftRoster.findFirst({
+        where: {
+          tenantId,
+          employeeId: swap.requestorId,
+          rosterDate: swap.requestorDate,
+        },
+      });
 
-    return prisma.shiftSwapRequest.update({
-      where: { id },
-      data: { status: 'COMPLETED' },
+      // Find swapWith's roster entry for the swap date
+      const swapWithRoster = await tx.shiftRoster.findFirst({
+        where: {
+          tenantId,
+          employeeId: swap.swapWithId,
+          rosterDate: swap.swapWithDate,
+        },
+      });
+
+      // Swap the shift assignments in the roster
+      if (requestorRoster && swapWithRoster) {
+        await tx.shiftRoster.update({
+          where: { id: requestorRoster.id },
+          data: { shiftId: swap.swapWithShiftId, status: 'SWAPPED' },
+        });
+        await tx.shiftRoster.update({
+          where: { id: swapWithRoster.id },
+          data: { shiftId: swap.requestorShiftId, status: 'SWAPPED' },
+        });
+      } else if (requestorRoster) {
+        // Only requestor has a roster entry — create one for swapWith
+        await tx.shiftRoster.update({
+          where: { id: requestorRoster.id },
+          data: { shiftId: swap.swapWithShiftId, status: 'SWAPPED' },
+        });
+        await tx.shiftRoster.create({
+          data: {
+            tenantId,
+            employeeId: swap.swapWithId,
+            shiftId: swap.requestorShiftId,
+            rosterDate: swap.swapWithDate,
+            status: 'SWAPPED',
+          },
+        });
+      } else if (swapWithRoster) {
+        // Only swapWith has a roster entry — create one for requestor
+        await tx.shiftRoster.update({
+          where: { id: swapWithRoster.id },
+          data: { shiftId: swap.requestorShiftId, status: 'SWAPPED' },
+        });
+        await tx.shiftRoster.create({
+          data: {
+            tenantId,
+            employeeId: swap.requestorId,
+            shiftId: swap.swapWithShiftId,
+            rosterDate: swap.requestorDate,
+            status: 'SWAPPED',
+          },
+        });
+      }
+
+      // Mark swap as completed
+      return tx.shiftSwapRequest.update({
+        where: { id },
+        data: { status: 'COMPLETED' },
+      });
     });
   }
 

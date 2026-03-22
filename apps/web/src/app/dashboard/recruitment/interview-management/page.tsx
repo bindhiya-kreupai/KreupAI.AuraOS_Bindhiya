@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { InterviewService } from '../services';
+import type { Interview } from '../types';
 import {
     Calendar as CalendarIcon,
     Clock,
@@ -20,9 +21,46 @@ const TIME_SLOTS = [
     '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'
 ];
 
+function getInterviewDisplayName(interview: Interview): string {
+    return interview.candidateName || 'Interview';
+}
+
+function getInterviewTime(interview: Interview): string {
+    if (interview.scheduledDate) {
+        return new Date(interview.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    return 'TBD';
+}
+
+function getInterviewDate(interview: Interview): string {
+    if (!interview.scheduledDate) {
+        return 'Not scheduled';
+    }
+
+    const date = new Date(interview.scheduledDate);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (date.toDateString() === today.toDateString()) return 'Today';
+    if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
+    return date.toLocaleDateString();
+}
+
+function getInterviewLocation(interview: Interview): string {
+    return interview.location || interview.meetingLink || 'TBD';
+}
+
+function formatInterviewType(type: Interview['type']): string {
+    return String(type || 'Interview')
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, character => character.toUpperCase());
+}
+
 export default function InterviewSchedulingPage() {
     const [view, setView] = useState<'Day' | 'Week'>('Day');
-    const [interviews, setInterviews] = useState<any[]>([]);
+    const [interviews, setInterviews] = useState<Interview[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -41,44 +79,13 @@ export default function InterviewSchedulingPage() {
         }
     };
 
-    const handleSchedule = async (interviewData: any) => {
+    const handleSchedule = async (interviewData: Interview) => {
         try {
             await InterviewService.scheduleInterview(interviewData);
             await fetchInterviews();
         } catch (error) {
             console.error('Error:', error);
         }
-    };
-
-    const getInterviewDisplayName = (interview: any) => {
-        return interview.candidate || interview.title || 'Interview';
-    };
-
-    const getInterviewTime = (interview: any) => {
-        if (interview.time) return interview.time;
-        if (interview.scheduledDate) {
-            return new Date(interview.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-        return 'TBD';
-    };
-
-    const getInterviewDate = (interview: any) => {
-        if (interview.date) return interview.date;
-        if (interview.scheduledDate) {
-            const date = new Date(interview.scheduledDate);
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-
-            if (date.toDateString() === today.toDateString()) return 'Today';
-            if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
-            return date.toLocaleDateString();
-        }
-        return 'Not scheduled';
-    };
-
-    const getInterviewLocation = (interview: any) => {
-        return interview.location || interview.meetingLink || 'TBD';
     };
 
     if (loading) {
@@ -139,7 +146,7 @@ export default function InterviewSchedulingPage() {
                                     <p className="text-xs">No upcoming interviews</p>
                                 </div>
                             )}
-                            {interviews.map((interview: any) => {
+                            {interviews.map(interview => {
                                 const loc = getInterviewLocation(interview);
                                 const isRemote = loc.includes('Meet') || loc.includes('Zoom') || loc.includes('http');
 
@@ -157,7 +164,7 @@ export default function InterviewSchedulingPage() {
                                             </div>
                                             <div className="text-sm font-bold text-ink-black dark:text-pearl truncate">{getInterviewDisplayName(interview)}</div>
                                         </div>
-                                        <div className="text-xs text-silver-mist mb-2">{interview.type || interview.role || ''}</div>
+                                        <div className="text-xs text-silver-mist mb-2">{formatInterviewType(interview.type)}</div>
 
                                         <div className="flex items-center gap-2 text-[10px] text-slate-500 font-medium">
                                             <span className="flex items-center gap-1 bg-white dark:bg-stellar-blue px-1.5 py-0.5 rounded border border-slate-100 dark:border-slate-800">

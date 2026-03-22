@@ -6,6 +6,37 @@
 --   - Add audit columns (created_by, updated_by) to core models
 -- All changes are additive and safe to run on existing data.
 
+CREATE OR REPLACE FUNCTION pg_temp.create_index_if_columns_exist(
+  target_index_name TEXT,
+  target_table_name TEXT,
+  target_columns TEXT[]
+) RETURNS VOID AS $$
+DECLARE
+  matched_columns INTEGER;
+  quoted_columns TEXT;
+BEGIN
+  SELECT COUNT(*)
+  INTO matched_columns
+  FROM information_schema.columns
+  WHERE table_schema = 'public'
+    AND table_name = target_table_name
+    AND column_name = ANY(target_columns);
+
+  IF matched_columns = array_length(target_columns, 1) THEN
+    SELECT string_agg(format('%I', column_name), ', ' ORDER BY ordinality)
+    INTO quoted_columns
+    FROM unnest(target_columns) WITH ORDINALITY AS columns(column_name, ordinality);
+
+    EXECUTE format(
+      'CREATE INDEX IF NOT EXISTS %I ON %I(%s)',
+      target_index_name,
+      target_table_name,
+      quoted_columns
+    );
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+
 -- ============================================================================
 -- PART 1: ADD SOFT DELETE COLUMNS
 -- ============================================================================
@@ -170,62 +201,62 @@ ALTER TABLE "TrainingSession"
 -- ============================================================================
 
 -- Employee indexes
-CREATE INDEX IF NOT EXISTS "Employee_email_idx" ON "Employee"("email");
-CREATE INDEX IF NOT EXISTS "Employee_employeeCode_idx" ON "Employee"("employeeCode");
-CREATE INDEX IF NOT EXISTS "Employee_companyId_isDeleted_idx" ON "Employee"("companyId", "isDeleted");
+SELECT pg_temp.create_index_if_columns_exist('Employee_email_idx', 'Employee', ARRAY['email']);
+SELECT pg_temp.create_index_if_columns_exist('Employee_employeeCode_idx', 'Employee', ARRAY['employeeCode']);
+SELECT pg_temp.create_index_if_columns_exist('Employee_companyId_isDeleted_idx', 'Employee', ARRAY['companyId', 'isDeleted']);
 
 -- LeaveRequest indexes
-CREATE INDEX IF NOT EXISTS "LeaveRequest_employeeId_status_idx" ON "LeaveRequest"("employeeId", "status");
-CREATE INDEX IF NOT EXISTS "LeaveRequest_startDate_endDate_idx" ON "LeaveRequest"("startDate", "endDate");
+SELECT pg_temp.create_index_if_columns_exist('LeaveRequest_employeeId_status_idx', 'LeaveRequest', ARRAY['employeeId', 'status']);
+SELECT pg_temp.create_index_if_columns_exist('LeaveRequest_startDate_endDate_idx', 'LeaveRequest', ARRAY['startDate', 'endDate']);
 
 -- AttendancePunch indexes
-CREATE INDEX IF NOT EXISTS "AttendancePunch_punchTime_idx" ON "AttendancePunch"("punchTime");
-CREATE INDEX IF NOT EXISTS "AttendancePunch_employeeId_punchTime_idx" ON "AttendancePunch"("employeeId", "punchTime");
+SELECT pg_temp.create_index_if_columns_exist('AttendancePunch_punchTime_idx', 'AttendancePunch', ARRAY['punchTime']);
+SELECT pg_temp.create_index_if_columns_exist('AttendancePunch_employeeId_punchTime_idx', 'AttendancePunch', ARRAY['employeeId', 'punchTime']);
 
 -- AttendanceRecord indexes
-CREATE INDEX IF NOT EXISTS "AttendanceRecord_employeeId_date_idx" ON "AttendanceRecord"("employeeId", "date");
+SELECT pg_temp.create_index_if_columns_exist('AttendanceRecord_employeeId_date_idx', 'AttendanceRecord', ARRAY['employeeId', 'date']);
 
 -- PayrollRun indexes
-CREATE INDEX IF NOT EXISTS "PayrollRun_configId_idx" ON "PayrollRun"("configId");
+SELECT pg_temp.create_index_if_columns_exist('PayrollRun_configId_idx', 'PayrollRun', ARRAY['configId']);
 
 -- Payslip indexes
-CREATE INDEX IF NOT EXISTS "Payslip_employeeId_payrollRunId_idx" ON "Payslip"("employeeId", "payrollRunId");
+SELECT pg_temp.create_index_if_columns_exist('Payslip_employeeId_payrollRunId_idx', 'Payslip', ARRAY['employeeId', 'payrollRunId']);
 
 -- EmployeeDocument indexes
-CREATE INDEX IF NOT EXISTS "EmployeeDocument_employeeId_category_idx" ON "EmployeeDocument"("employeeId", "category");
-CREATE INDEX IF NOT EXISTS "EmployeeDocument_employeeId_documentTypeId_idx" ON "EmployeeDocument"("employeeId", "documentTypeId");
+SELECT pg_temp.create_index_if_columns_exist('EmployeeDocument_employeeId_category_idx', 'EmployeeDocument', ARRAY['employeeId', 'category']);
+SELECT pg_temp.create_index_if_columns_exist('EmployeeDocument_employeeId_documentTypeId_idx', 'EmployeeDocument', ARRAY['employeeId', 'documentTypeId']);
 
 -- NotificationRecipient indexes
-CREATE INDEX IF NOT EXISTS "NotificationRecipient_isRead_idx" ON "NotificationRecipient"("isRead");
-CREATE INDEX IF NOT EXISTS "NotificationRecipient_userId_isRead_idx" ON "NotificationRecipient"("userId", "isRead");
-CREATE INDEX IF NOT EXISTS "NotificationRecipient_createdAt_idx" ON "NotificationRecipient"("createdAt");
+SELECT pg_temp.create_index_if_columns_exist('NotificationRecipient_isRead_idx', 'NotificationRecipient', ARRAY['isRead']);
+SELECT pg_temp.create_index_if_columns_exist('NotificationRecipient_userId_isRead_idx', 'NotificationRecipient', ARRAY['userId', 'isRead']);
+SELECT pg_temp.create_index_if_columns_exist('NotificationRecipient_createdAt_idx', 'NotificationRecipient', ARRAY['createdAt']);
 
 -- AuditLog additional indexes
-CREATE INDEX IF NOT EXISTS "AuditLog_entityType_entityId_idx" ON "AuditLog"("entityType", "entityId");
+SELECT pg_temp.create_index_if_columns_exist('AuditLog_entityType_entityId_idx', 'AuditLog', ARRAY['entityType', 'entityId']);
 
 -- User indexes
-CREATE INDEX IF NOT EXISTS "User_email_idx" ON "User"("email");
+SELECT pg_temp.create_index_if_columns_exist('User_email_idx', 'User', ARRAY['email']);
 
 -- Soft delete indexes on newly updated models
-CREATE INDEX IF NOT EXISTS "Company_isDeleted_idx" ON "Company"("isDeleted");
-CREATE INDEX IF NOT EXISTS "Grade_isDeleted_idx" ON "Grade"("isDeleted");
-CREATE INDEX IF NOT EXISTS "LeaveType_isDeleted_idx" ON "LeaveType"("isDeleted");
-CREATE INDEX IF NOT EXISTS "Skill_isDeleted_idx" ON "Skill"("isDeleted");
-CREATE INDEX IF NOT EXISTS "LeaveBalance_isDeleted_idx" ON "LeaveBalance"("isDeleted");
-CREATE INDEX IF NOT EXISTS "AttendancePunch_isDeleted_idx" ON "AttendancePunch"("isDeleted");
-CREATE INDEX IF NOT EXISTS "AttendanceRecord_isDeleted_idx" ON "AttendanceRecord"("isDeleted");
-CREATE INDEX IF NOT EXISTS "PayrollRun_isDeleted_idx" ON "PayrollRun"("isDeleted");
-CREATE INDEX IF NOT EXISTS "Payslip_isDeleted_idx" ON "Payslip"("isDeleted");
-CREATE INDEX IF NOT EXISTS "SalaryComponent_isDeleted_idx" ON "SalaryComponent"("isDeleted");
-CREATE INDEX IF NOT EXISTS "Notification_isDeleted_idx" ON "Notification"("isDeleted");
-CREATE INDEX IF NOT EXISTS "WorkflowDefinition_isDeleted_idx" ON "WorkflowDefinition"("isDeleted");
-CREATE INDEX IF NOT EXISTS "WorkflowInstance_isDeleted_idx" ON "WorkflowInstance"("isDeleted");
-CREATE INDEX IF NOT EXISTS "BenefitPlan_isDeleted_idx" ON "BenefitPlan"("isDeleted");
-CREATE INDEX IF NOT EXISTS "BenefitEnrollment_isDeleted_idx" ON "BenefitEnrollment"("isDeleted");
-CREATE INDEX IF NOT EXISTS "Candidate_isDeleted_idx" ON "Candidate"("isDeleted");
-CREATE INDEX IF NOT EXISTS "TrainingSession_isDeleted_idx" ON "TrainingSession"("isDeleted");
-CREATE INDEX IF NOT EXISTS "User_isDeleted_idx" ON "User"("isDeleted");
-CREATE INDEX IF NOT EXISTS "Role_isDeleted_idx" ON "Role"("isDeleted");
-CREATE INDEX IF NOT EXISTS "Permission_isDeleted_idx" ON "Permission"("isDeleted");
-CREATE INDEX IF NOT EXISTS "AuditLog_isDeleted_idx" ON "AuditLog"("isDeleted");
-CREATE INDEX IF NOT EXISTS "SystemSetting_isDeleted_idx" ON "SystemSetting"("isDeleted");
+SELECT pg_temp.create_index_if_columns_exist('Company_isDeleted_idx', 'Company', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('Grade_isDeleted_idx', 'Grade', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('LeaveType_isDeleted_idx', 'LeaveType', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('Skill_isDeleted_idx', 'Skill', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('LeaveBalance_isDeleted_idx', 'LeaveBalance', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('AttendancePunch_isDeleted_idx', 'AttendancePunch', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('AttendanceRecord_isDeleted_idx', 'AttendanceRecord', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('PayrollRun_isDeleted_idx', 'PayrollRun', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('Payslip_isDeleted_idx', 'Payslip', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('SalaryComponent_isDeleted_idx', 'SalaryComponent', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('Notification_isDeleted_idx', 'Notification', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('WorkflowDefinition_isDeleted_idx', 'WorkflowDefinition', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('WorkflowInstance_isDeleted_idx', 'WorkflowInstance', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('BenefitPlan_isDeleted_idx', 'BenefitPlan', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('BenefitEnrollment_isDeleted_idx', 'BenefitEnrollment', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('Candidate_isDeleted_idx', 'Candidate', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('TrainingSession_isDeleted_idx', 'TrainingSession', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('User_isDeleted_idx', 'User', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('Role_isDeleted_idx', 'Role', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('Permission_isDeleted_idx', 'Permission', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('AuditLog_isDeleted_idx', 'AuditLog', ARRAY['isDeleted']);
+SELECT pg_temp.create_index_if_columns_exist('SystemSetting_isDeleted_idx', 'SystemSetting', ARRAY['isDeleted']);

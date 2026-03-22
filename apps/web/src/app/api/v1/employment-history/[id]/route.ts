@@ -7,6 +7,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { EmploymentHistoryService } from '@/lib/services/employment-history.service';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 import { z } from 'zod';
 
 // API Response Standard
@@ -91,7 +93,7 @@ export const GET = withEnhancedAuth(
  * PUT /api/v1/employment-history/:id
  * Update employment history record
  */
-export const PUT = withEnhancedAuth(
+export const PUT = withAudit(withEnhancedAuth(
   async (request: NextRequest, context: any) => {
     try {
       const { id } = context.params;
@@ -138,13 +140,18 @@ export const PUT = withEnhancedAuth(
       return NextResponse.json(response, { status: statusCode });
     }
   }
-);
+), {
+  action: AuditAction.EMPLOYEE_UPDATED,
+  resourceType: 'employment_history',
+  captureRequestBody: true,
+  extractResourceId: (req, ctx) => ctx?.params?.id,
+});
 
 /**
  * DELETE /api/v1/employment-history/:id
  * Delete employment history record
  */
-export const DELETE = withEnhancedAuth(
+export const DELETE = withAudit(withEnhancedAuth(
   async (request: NextRequest, context: any) => {
     try {
       const { id } = context.params;
@@ -185,4 +192,8 @@ export const DELETE = withEnhancedAuth(
       return NextResponse.json(response, { status: statusCode });
     }
   }
-);
+), {
+  action: AuditAction.EMPLOYEE_DELETED,
+  resourceType: 'employment_history',
+  extractResourceId: (req, ctx) => ctx?.params?.id,
+});

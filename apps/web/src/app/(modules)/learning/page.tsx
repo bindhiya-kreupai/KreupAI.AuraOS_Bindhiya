@@ -10,7 +10,7 @@ import {
     Smartphone, Globe, Shield, Clock,
     Star, Video, Puzzle, Route
 } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 
 // ── Mock Data ──────────────────────────────────────────────────────────
 const LMS_STATS = [
@@ -424,7 +424,7 @@ function CertificationsTab() {
                         </div>
                         <div className="p-5 bg-amber-50/50 dark:bg-amber-900/10 rounded-2xl border border-amber-200/50 text-center">
                             <p className="text-3xl font-black text-amber-600">49</p>
-                            <p className="text-[9px] font-black text-silver-mist uppercase tracking-widest">Expiring < 90 Days</p>
+                            <p className="text-[9px] font-black text-silver-mist uppercase tracking-widest">Expiring &lt; 90 Days</p>
                         </div>
                         <div className="p-5 bg-rose-50/50 dark:bg-rose-900/10 rounded-2xl border border-rose-200/50 text-center">
                             <p className="text-3xl font-black text-rose-600">8</p>

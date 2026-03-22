@@ -1,73 +1,78 @@
+/**
+ * Leave Accrual Job
+ * Processes monthly leave accruals for all active employees
+ */
+
+import { LeaveAccrualService } from '@/lib/services/leave/leave-accrual.service';
+import { prisma } from '@aura/database';
+
 export interface JobResult {
   success: boolean;
   processedCount: number;
   errors: string[];
 }
 
-interface LeaveAccrualRecord {
-  employeeId: string;
-  leaveType: "annual" | "sick" | "personal";
-  hoursAccrued: number;
-  newBalance: number;
-}
-
-export async function processLeaveAccruals(): Promise<JobResult> {
+export async function processLeaveAccruals(tenantId?: string): Promise<JobResult> {
   const errors: string[] = [];
   let processedCount = 0;
 
-  console.log("[LeaveAccrualJob] Starting leave accrual processing...");
+  console.log('[LeaveAccrualJob] Starting leave accrual processing...');
 
-  // Step 1: Fetch all eligible employees
-  console.log("[LeaveAccrualJob] Fetching eligible employees...");
-  const employeeCount = 55;
-  console.log(`[LeaveAccrualJob] Found ${employeeCount} eligible employees`);
+  try {
+    // Resolve tenant IDs to process
+    const tenantIds = tenantId
+      ? [tenantId]
+      : await prisma.company
+          .findMany({ select: { tenantId: true }, distinct: ['tenantId'] })
+          .then(rows => rows.map(r => r.tenantId));
 
-  // Step 2: Determine accrual rates
-  console.log("[LeaveAccrualJob] Loading accrual policies...");
-  const policies = {
-    annual: { hoursPerPeriod: 6.67, maxBalance: 240 },
-    sick: { hoursPerPeriod: 4.0, maxBalance: 120 },
-    personal: { hoursPerPeriod: 2.0, maxBalance: 48 },
-  };
-  console.log("[LeaveAccrualJob] Policies loaded: annual, sick, personal");
-
-  // Step 3: Process accruals for each employee
-  console.log("[LeaveAccrualJob] Processing accruals...");
-  const accrualRecords: LeaveAccrualRecord[] = [];
-
-  for (let i = 1; i <= employeeCount; i++) {
-    const empId = `emp-${String(i).padStart(3, "0")}`;
-
-    for (const [leaveType, policy] of Object.entries(policies)) {
-      const currentBalance = Math.random() * policy.maxBalance;
-      const newBalance = Math.min(currentBalance + policy.hoursPerPeriod, policy.maxBalance);
-
-      if (newBalance >= policy.maxBalance && currentBalance < policy.maxBalance) {
-        console.log(`[LeaveAccrualJob] ${empId}: ${leaveType} balance capped at max (${policy.maxBalance}h)`);
-      }
-
-      accrualRecords.push({
-        employeeId: empId,
-        leaveType: leaveType as LeaveAccrualRecord["leaveType"],
-        hoursAccrued: policy.hoursPerPeriod,
-        newBalance: Math.round(newBalance * 100) / 100,
-      });
+    if (tenantIds.length === 0) {
+      console.log('[LeaveAccrualJob] No tenants found. Skipping.');
+      return { success: true, processedCount: 0, errors: [] };
     }
-    processedCount++;
+
+    console.log(`[LeaveAccrualJob] Processing ${tenantIds.length} tenant(s)`);
+
+    const processDate = new Date();
+
+    for (const tid of tenantIds) {
+      try {
+        const result = await LeaveAccrualService.processMonthlyAccrual({
+          tenantId: tid,
+          processDate,
+        });
+
+        processedCount += result.totalEmployees;
+
+        if (result.errors.length > 0) {
+          for (const err of result.errors) {
+            errors.push(`[${tid}] ${err.employeeName}: ${err.message}`);
+          }
+        }
+
+        console.log(
+          `[LeaveAccrualJob] Tenant ${tid}: ${result.totalEmployees} employees, ` +
+          `${result.totalAccrued.toFixed(1)} days accrued, status=${result.status}`
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Unknown error';
+        errors.push(`[${tid}] Tenant processing failed: ${msg}`);
+        console.error(`[LeaveAccrualJob] Tenant ${tid} failed:`, msg);
+      }
+    }
+
+    console.log(
+      `[LeaveAccrualJob] Complete. ${processedCount} employees processed, ${errors.length} errors.`
+    );
+
+    return {
+      success: errors.length === 0,
+      processedCount,
+      errors,
+    };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[LeaveAccrualJob] Fatal error:', msg);
+    return { success: false, processedCount, errors: [msg] };
   }
-
-  // Step 4: Handle probationary employees
-  console.log("[LeaveAccrualJob] Checking probationary period exclusions...");
-  const probationaryCount = 3;
-  console.log(`[LeaveAccrualJob] ${probationaryCount} employees excluded (probation period)`);
-
-  // Step 5: Save records
-  console.log(`[LeaveAccrualJob] Saving ${accrualRecords.length} accrual records...`);
-  console.log("[LeaveAccrualJob] Records saved successfully");
-
-  // Step 6: Send notifications for capped balances
-  console.log("[LeaveAccrualJob] Sending balance cap notifications...");
-
-  console.log(`[LeaveAccrualJob] Accrual processing complete. ${processedCount} employees processed.`);
-  return { success: true, processedCount, errors };
 }

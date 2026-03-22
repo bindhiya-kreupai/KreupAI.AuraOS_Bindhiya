@@ -13,9 +13,16 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
-  Palmtree,
   Receipt,
-  Briefcase,
+  Shuffle,
+  ArrowRightLeft,
+  Award,
+  ArrowLeftRight,
+  Palmtree,
+  TimerReset,
+  LogOut,
+  ClipboardCheck,
+  Gift,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useApprovals } from '@/hooks/useApprovals';
@@ -55,7 +62,6 @@ export const UnifiedApprovalCenter: React.FC = () => {
     selectedIds,
     approve,
     reject,
-    escalate,
     bulkApprove,
     bulkReject,
     addComment,
@@ -150,12 +156,30 @@ export const UnifiedApprovalCenter: React.FC = () => {
   return (
     <div className="space-y-5">
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-6 xl:grid-cols-12 gap-3">
         <StatCard
           icon={Clock}
           label="Pending"
           value={summary.total}
           color="bg-sunset-amber/10 text-sunset-amber"
+        />
+        <StatCard
+          icon={Receipt}
+          label="Expense"
+          value={summary.expense}
+          color="bg-quantum-rose/10 text-quantum-rose"
+        />
+        <StatCard
+          icon={Shuffle}
+          label="Employment"
+          value={summary['employment-history']}
+          color="bg-orbit-gold/10 text-orbit-gold"
+        />
+        <StatCard
+          icon={ArrowRightLeft}
+          label="Transfers"
+          value={summary['inter-company-transfer']}
+          color="bg-celestial-indigo/10 text-celestial-indigo"
         />
         <StatCard
           icon={Palmtree}
@@ -164,16 +188,40 @@ export const UnifiedApprovalCenter: React.FC = () => {
           color="bg-celestial-indigo/10 text-celestial-indigo"
         />
         <StatCard
-          icon={Receipt}
-          label="Expense"
-          value={summary.expense}
+          icon={TimerReset}
+          label="Overtime"
+          value={summary.overtime}
           color="bg-sunset-amber/10 text-sunset-amber"
         />
         <StatCard
-          icon={Briefcase}
-          label="Requisition"
-          value={summary.requisition}
-          color="bg-quantum-rose/10 text-quantum-rose"
+          icon={Gift}
+          label="Comp-Off"
+          value={summary['comp-off']}
+          color="bg-neural-mint/10 text-neural-mint"
+        />
+        <StatCard
+          icon={Award}
+          label="Confirmation"
+          value={summary.confirmation}
+          color="bg-sky-azure/10 text-sky-azure"
+        />
+        <StatCard
+          icon={ArrowLeftRight}
+          label="Shift Swap"
+          value={summary['shift-swap']}
+          color="bg-aurora-teal/10 text-aurora-teal"
+        />
+        <StatCard
+          icon={LogOut}
+          label="Exit"
+          value={summary.exit}
+          color="bg-coral-alert/10 text-coral-alert"
+        />
+        <StatCard
+          icon={ClipboardCheck}
+          label="Attendance"
+          value={summary.attendance}
+          color="bg-nebula-purple/10 text-nebula-purple"
         />
         <StatCard
           icon={AlertTriangle}
@@ -244,7 +292,6 @@ export const UnifiedApprovalCenter: React.FC = () => {
                   onToggleSelect={toggleSelect}
                   onApprove={approve}
                   onReject={reject}
-                  onEscalate={escalate}
                   onComment={addComment}
                 />
               ))}

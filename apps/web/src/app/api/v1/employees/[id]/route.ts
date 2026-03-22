@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { ServiceProxy } from '@/lib/services/service-proxy';
+import { auditMiddleware } from '@/lib/middleware/audit.middleware';
 import { z } from 'zod';
 
 // API Response Standard
@@ -99,7 +100,7 @@ export const GET = withEnhancedAuth(
  * PUT /api/v1/employees/:id
  * Update employee by ID
  */
-export const PUT = withEnhancedAuth(
+export const PUT = auditMiddleware.updateEmployee(withEnhancedAuth(
   async (request: NextRequest, { params }: { params: { id: string } }) => {
     try {
       const { id } = params;
@@ -198,13 +199,13 @@ export const PUT = withEnhancedAuth(
       return NextResponse.json(response, { status: 500 });
     }
   }
-);
+));
 
 /**
  * DELETE /api/v1/employees/:id
  * Soft delete employee by updating status to TERMINATED
  */
-export const DELETE = withEnhancedAuth(
+export const DELETE = auditMiddleware.deleteEmployee(withEnhancedAuth(
   async (request: NextRequest, { params }: { params: { id: string } }) => {
     try {
       const { id } = params;
@@ -285,4 +286,4 @@ export const DELETE = withEnhancedAuth(
       return NextResponse.json(response, { status: 500 });
     }
   }
-);
+));

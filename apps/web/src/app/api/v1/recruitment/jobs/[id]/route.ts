@@ -1,7 +1,9 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { prisma } from '@/lib/database';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
+import { prisma } from '@aura/database';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +13,7 @@ export const dynamic = 'force-dynamic';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
 
     const job = await prisma.jobPosting.findFirst({
       where: { id, isDeleted: false },
@@ -20,11 +22,11 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           select: {
             id: true,
             status: true,
-            appliedAt: true,
+            appliedDate: true,
             candidate: { select: { id: true, firstName: true, lastName: true } },
           },
           take: 10,
-          orderBy: { appliedAt: 'desc' },
+          orderBy: { appliedDate: 'desc' },
         },
         _count: { select: { candidateApplications: true } },
       },
@@ -40,13 +42,10 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     return NextResponse.json({
       success: true,
       data: job,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
     });
-  } catch (_error) {
+  } catch (error) {
+    console.error('[Job Posting API] GET Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch job posting' } },
       { status: 500 }
@@ -58,10 +57,10 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
  * PUT /api/v1/recruitment/jobs/[id]
  * Update a job posting
  */
-export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
+export const PUT = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user } = context;
-    const { id } = context.params;
+    const { id } = await context.params;
     const body = await request.json();
 
     const job = await prisma.jobPosting.findFirst({ where: { id, isDeleted: false } });
@@ -91,16 +90,17 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     return NextResponse.json({
       success: true,
       data: updated,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
     });
-  } catch (_error) {
+  } catch (error) {
+    console.error('[Job Posting API] PUT Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to update job posting' } },
       { status: 500 }
     );
   }
+}), {
+  action: AuditAction.EMPLOYEE_UPDATED,
+  resourceType: 'job_posting',
+  captureRequestBody: true,
 });

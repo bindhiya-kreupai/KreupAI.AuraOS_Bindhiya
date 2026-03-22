@@ -34,6 +34,11 @@ export type OfferStatus = 'draft' | 'pending_approval' | 'approved' | 'sent' | '
 export type BackgroundCheckStatus = 'not_started' | 'in_progress' | 'clear' | 'flagged' | 'failed';
 export type BackgroundCheckType = 'criminal' | 'employment' | 'education' | 'credit' | 'drug_test' | 'reference';
 
+// Recruitment Vendor Types
+export type RecruitmentVendorCategory = 'staffing' | 'recruitment_agency' | 'background_check' | 'assessment' | 'contractor_management' | 'other';
+export type RecruitmentVendorStatus = 'active' | 'under_review' | 'inactive';
+export type RecruitmentVendorComplianceStatus = 'not_reviewed' | 'compliant' | 'expiring' | 'non_compliant';
+
 export interface JobRequisition {
     id: string;
     requisitionNumber: string;
@@ -255,6 +260,32 @@ export interface BackgroundCheck {
     requestedDate: string;
     completedDate?: string;
     overallResult?: 'clear' | 'flagged' | 'failed';
+    notes?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface RecruitmentVendor {
+    id: string;
+    vendorCode: string;
+    name: string;
+    category: RecruitmentVendorCategory;
+    status: RecruitmentVendorStatus;
+    contactPersonName?: string;
+    contactEmail?: string;
+    contactPhone?: string;
+    location?: string;
+    rating?: number;
+    activePlacements: number;
+    totalPlacements: number;
+    totalHires: number;
+    averageTimeToFillDays?: number;
+    monthlySpend: number;
+    currency: string;
+    complianceStatus: RecruitmentVendorComplianceStatus;
+    contractStartDate?: string;
+    contractEndDate?: string;
+    specialties: string[];
     notes?: string;
     createdAt: string;
     updatedAt: string;

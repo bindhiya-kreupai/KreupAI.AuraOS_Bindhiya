@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { LeaveService } from '@/lib/services/leave.service';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
@@ -23,7 +25,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
   }
 });
 
-export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
+export const PUT = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user, params } = context;
     const body = await request.json();
@@ -41,9 +43,14 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
       { status: 400 }
     );
   }
+}), {
+  action: AuditAction.LEAVE_REQUEST_CREATED,
+  resourceType: 'leave_request',
+  captureRequestBody: true,
+  extractResourceId: (req, ctx) => ctx?.params?.id,
 });
 
-export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any) => {
+export const DELETE = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user, params } = context;
     await LeaveService.deleteRequest(params.id, user.tenantId);
@@ -58,4 +65,8 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
       { status: 400 }
     );
   }
+}), {
+  action: AuditAction.LEAVE_REQUEST_CANCELLED,
+  resourceType: 'leave_request',
+  extractResourceId: (req, ctx) => ctx?.params?.id,
 });

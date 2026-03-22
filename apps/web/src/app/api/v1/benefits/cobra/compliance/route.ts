@@ -1,7 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-// Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
+// Tenant isolation is enforced via tenantId extracted from auth context
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -10,15 +11,16 @@ interface ApiResponse<T = any> {
   meta?: any;
 }
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    // Simulated tenant isolation: tenantId would come from validated JWT
+    const { user } = context;
+    const tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
     const asOf = searchParams.get('asOf') || new Date().toISOString().split('T')[0];
 
     // Mock COBRA compliance audit result
     const auditResult = {
-      tenantId: 'tenant-1',
+      tenantId,
       auditDate: new Date().toISOString(),
       asOfDate: asOf,
       overallStatus: 'COMPLIANT_WITH_WARNINGS',
@@ -115,4 +117,4 @@ export async function GET(request: NextRequest) {
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});

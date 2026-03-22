@@ -108,7 +108,7 @@ export const ApprovalHistory: React.FC<ApprovalHistoryProps> = ({ requests }) =>
           />
         </div>
         <div className="flex items-center gap-1">
-          {(['all', 'leave', 'expense', 'timesheet', 'requisition', 'document'] as const).map(
+          {(['all', 'expense', 'employment-history', 'inter-company-transfer', 'leave', 'overtime', 'comp-off', 'confirmation', 'shift-swap', 'exit', 'attendance'] as const).map(
             (t) => (
               <button
                 key={t}

@@ -8,7 +8,7 @@ import {
   Settings2, Plus, Search, Filter,
   Layers, Bot, Share2, History
 } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 import { WorkflowService, WorkflowExecutionService } from '@/app/dashboard/workflow-engine/services';
 
 export default function WorkflowEnginePage() {

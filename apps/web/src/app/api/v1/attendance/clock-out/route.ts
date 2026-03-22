@@ -2,6 +2,8 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 
@@ -42,7 +44,7 @@ const clockOutSchema = z.object({
  * POST /api/v1/attendance/clock-out
  * Record employee clock-out time
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const body = await request.json();
     const tenantId = context.user.tenantId;
@@ -370,4 +372,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
 
     return NextResponse.json(response, { status: 500 });
   }
+}), {
+  action: AuditAction.ATTENDANCE_MARKED,
+  resourceType: 'attendance_punch',
+  captureRequestBody: true,
 });

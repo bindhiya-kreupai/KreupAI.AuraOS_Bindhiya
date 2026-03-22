@@ -1,21 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 
-// API Response Standard
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: Record<string, unknown>;
-  };
-  meta?: {
-    timestamp: string;
-    requestId: string;
-    apiVersion: string;
-  };
-}
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/v1/statutory/esi/returns
@@ -25,91 +12,164 @@ interface ApiResponse<T = any> {
  * - month (required): Month in YYYY-MM format
  * - companyId (required): Company ID
  */
-export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
+    const { user } = context;
     const { searchParams } = new URL(request.url);
     const month = searchParams.get('month');
     const companyId = searchParams.get('companyId');
 
     if (!month || !companyId) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'month and companyId are required in query parameters',
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'E2001', message: 'month and companyId are required in query parameters' },
+          meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 400 });
+        { status: 400 }
+      );
     }
 
-    // TODO: Implement actual ESI calculation from database
-    const mockESIReturn = {
-      month,
-      companyId,
-      establishment: {
-        name: 'Tech Company Ltd',
-        esiNumber: 'MH/123456/789',
-        addressLine1: 'Plot 123, Sector 5',
-        city: 'Mumbai',
-        state: 'Maharashtra',
-        pincode: '400001',
-      },
-      summary: {
-        totalEmployees: 85, // Only employees with gross < 21000
-        totalWages: 510000,
-        employeeContribution: 7650, // 0.75% of gross (employees < 21k)
-        employerContribution: 12750, // 3.25% of gross (employees < 21k)
-        totalContribution: 20400,
-      },
-      employees: [
-        {
-          employeeCode: 'EMP001',
-          employeeName: 'John Doe',
-          esiNumber: '1234567890',
-          grossWages: 6000,
-          employeeESI: 45, // 0.75%
-          employerESI: 195, // 3.25%
-          totalESI: 240,
+    // Get ESI configuration for this company
+    const esiConfig = await prisma.indiaESIConfiguration.findFirst({
+      where: { tenantId: user.tenantId, companyId, isActive: true },
+    });
+
+    // Query ESI submission for this month
+    const submission = esiConfig
+      ? await prisma.indiaESISubmission.findFirst({
+          where: { tenantId: user.tenantId, configId: esiConfig.id, contributionMonth: month },
+          include: {
+            records: {
+              select: {
+                employeeId: true,
+                esiNumber: true,
+                employeeName: true,
+                grossWages: true,
+                workingDays: true,
+                employeeContribution: true,
+                employerContribution: true,
+                totalContribution: true,
+                status: true,
+              },
+            },
+            _count: { select: { records: true } },
+          },
+        })
+      : null;
+
+    // If no submission exists, aggregate from payslips directly
+    if (!submission) {
+      const payrollRuns = await prisma.payrollRun.findMany({
+        where: {
+          tenantId: user.tenantId,
+          payrollMonth: month,
+          config: { companyId },
+          status: { in: ['CALCULATED', 'APPROVED', 'PAID'] },
+          isDeleted: false,
         },
-        // ... more employees (only those eligible - gross < 21k)
-      ],
-      generatedAt: new Date().toISOString(),
-    };
+        select: { id: true },
+      });
 
-    const response: ApiResponse = {
+      const runIds = payrollRuns.map(r => r.id);
+
+      if (runIds.length === 0) {
+        return NextResponse.json({
+          success: true,
+          data: { month, companyId, summary: { totalEmployees: 0, totalWages: 0, employeeContribution: 0, employerContribution: 0, totalContribution: 0 }, employees: [] },
+          meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+        });
+      }
+
+      // Get payslips with ESI deductions (ESI applies only when gross <= 21000)
+      const payslips = await prisma.payslip.findMany({
+        where: {
+          payrollRunId: { in: runIds },
+          employeeESI: { gt: 0 },
+        },
+        select: {
+          employeeId: true,
+          employeeCode: true,
+          employeeName: true,
+          grossSalary: true,
+          employeeESI: true,
+          employerESI: true,
+          workingDays: true,
+        },
+      });
+
+      const totalWages = payslips.reduce((sum, p) => sum + Number(p.grossSalary), 0);
+      const totalEmployeeContribution = payslips.reduce((sum, p) => sum + Number(p.employeeESI), 0);
+      const totalEmployerContribution = payslips.reduce((sum, p) => sum + Number(p.employerESI), 0);
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          month,
+          companyId,
+          establishment: esiConfig ? { esicCode: esiConfig.esicCode, esicSubCode: esiConfig.esicSubCode } : null,
+          summary: {
+            totalEmployees: payslips.length,
+            totalWages,
+            employeeContribution: totalEmployeeContribution,
+            employerContribution: totalEmployerContribution,
+            totalContribution: totalEmployeeContribution + totalEmployerContribution,
+          },
+          employees: payslips.map(p => ({
+            employeeCode: p.employeeCode,
+            employeeName: p.employeeName,
+            grossWages: Number(p.grossSalary),
+            employeeESI: Number(p.employeeESI),
+            employerESI: Number(p.employerESI),
+            totalESI: Number(p.employeeESI) + Number(p.employerESI),
+          })),
+          generatedAt: new Date().toISOString(),
+        },
+        meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      });
+    }
+
+    return NextResponse.json({
       success: true,
-      data: mockESIReturn,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
+      data: {
+        month,
+        companyId,
+        establishment: esiConfig ? { esicCode: esiConfig.esicCode, esicSubCode: esiConfig.esicSubCode } : null,
+        submission: {
+          id: submission.id,
+          status: submission.status,
+          totalEmployees: submission.totalEmployees,
+          totalWages: Number(submission.totalWages),
+          totalEmployeeContribution: Number(submission.totalEmployeeContribution),
+          totalEmployerContribution: Number(submission.totalEmployerContribution),
+          grandTotal: Number(submission.grandTotal),
+          challanNumber: submission.challanNumber,
+          fileName: submission.fileName,
+        },
+        employees: submission.records.map(r => ({
+          employeeId: r.employeeId,
+          esiNumber: r.esiNumber,
+          employeeName: r.employeeName,
+          grossWages: Number(r.grossWages),
+          workingDays: r.workingDays,
+          employeeContribution: Number(r.employeeContribution),
+          employerContribution: Number(r.employerContribution),
+          totalContribution: Number(r.totalContribution),
+          status: r.status,
+        })),
+        generatedAt: new Date().toISOString(),
       },
-    };
-
-    return NextResponse.json(response, { status: 200 });
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+    });
   } catch (error) {
     console.error('[ESI Returns API] GET Error:', error);
-
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to fetch ESI returns',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'E5001', message: 'Failed to fetch ESI returns', details: { error: error instanceof Error ? error.message : 'Unknown error' } },
+        meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
       },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 500 });
+      { status: 500 }
+    );
   }
 });

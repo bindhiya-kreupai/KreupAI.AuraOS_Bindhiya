@@ -17,13 +17,16 @@ import type {
   EncashmentCalculation,
   CarryForwardRun,
   CarryForwardResult,
-  CarryForwardError} from './types';
+  CarryForwardError,
+  AccrualFrequency,
+  EncashmentTrigger} from './types';
 import {
   LeaveBalance,
   LeaveType
 } from './types';
 import type { SupportedCountryCode } from '../compliance/types';
 import { LabourLawService } from '../compliance/labour-law.service';
+import { prisma } from '@aura/database';
 
 // ============================================================================
 // LEAVE ACCRUAL SERVICE
@@ -574,23 +577,149 @@ export class LeaveAccrualService {
   }
 
   // ============================================================================
-  // DATABASE OPERATIONS (Stubs - to be connected to actual database)
+  // DATABASE OPERATIONS
   // ============================================================================
 
   private static async getActiveEmployees(
     tenantId: string,
     employeeIds?: string[]
   ): Promise<EmployeeData[]> {
-    // Would fetch from database
-    return [];
+    const employees = await prisma.employee.findMany({
+      where: {
+        isDeleted: false,
+        company: { tenantId },
+        ...(employeeIds?.length ? { id: { in: employeeIds } } : {}),
+      },
+      include: {
+        location: {
+          include: {
+            address: { include: { country: true } },
+          },
+        },
+        probationTrackings: {
+          where: { status: 'ACTIVE' },
+          take: 1,
+        },
+      },
+    });
+
+    // Batch-fetch active salary structures
+    const salaries = employees.length > 0
+      ? await prisma.employeeSalaryStructure.findMany({
+          where: {
+            employeeId: { in: employees.map(e => e.id) },
+            isActive: true,
+          },
+          orderBy: { effectiveFrom: 'desc' },
+        })
+      : [];
+
+    const salaryMap = new Map<string, { basicSalary: number; grossSalary: number }>();
+    for (const s of salaries) {
+      if (!salaryMap.has(s.employeeId)) {
+        salaryMap.set(s.employeeId, {
+          basicSalary: Number(s.basicSalary),
+          grossSalary: Number(s.grossSalary),
+        });
+      }
+    }
+
+    return employees.map(e => {
+      const salary = salaryMap.get(e.id) || { basicSalary: 0, grossSalary: 0 };
+      const countryCode = (e as any).location?.address?.country?.isoCode || 'AE';
+      return {
+        id: e.id,
+        name: `${e.firstName} ${e.lastName}`,
+        countryCode: countryCode as SupportedCountryCode,
+        joiningDate: e.joiningDate,
+        isOnProbation: ((e as any).probationTrackings?.length ?? 0) > 0,
+        lopDays: 0,
+        basicSalary: salary.basicSalary,
+        grossSalary: salary.grossSalary,
+      };
+    });
   }
+
+  private static readonly ACCRUAL_TYPE_MAP: Record<string, AccrualFrequency> = {
+    ANNUAL: 'ANNUALLY',
+    MONTHLY: 'MONTHLY',
+    QUARTERLY: 'QUARTERLY',
+    TENURE: 'MONTHLY',
+  };
 
   private static async getLeavePolicies(
     tenantId: string,
     leaveTypeIds?: string[]
   ): Promise<LeavePolicy[]> {
-    // Would fetch from database
-    return [];
+    const rows = await prisma.leavePolicy.findMany({
+      where: {
+        tenantId,
+        isActive: true,
+        ...(leaveTypeIds?.length ? { leaveTypeId: { in: leaveTypeIds } } : {}),
+      },
+    });
+
+    // Resolve leave type codes in batch
+    const ltIds = [...new Set(rows.map(r => r.leaveTypeId))];
+    const leaveTypes = await prisma.leaveType.findMany({
+      where: { id: { in: ltIds } },
+    });
+    const ltMap = new Map(leaveTypes.map(lt => [lt.id, lt]));
+
+    return rows.map(row => {
+      const lt = ltMap.get(row.leaveTypeId);
+      const annualDays = Number(row.annualEntitlement);
+      return {
+        id: row.id,
+        tenantId: row.tenantId,
+        policyName: row.name,
+        policyNameAr: row.nameAr || row.name,
+        countryCode: (row.countryCode || 'AE') as SupportedCountryCode,
+        leaveTypeId: row.leaveTypeId,
+        leaveTypeCode: (lt?.code || 'ANNUAL') as LeaveTypeCode,
+        accrualType: this.ACCRUAL_TYPE_MAP[row.accrualType] || 'MONTHLY',
+        accrualStartDay: 1,
+        accrualRoundingType: 'NEAREST' as const,
+        entitlements: [{
+          fromYears: 0,
+          toYears: 100,
+          daysPerYear: annualDays,
+          daysPerMonth: annualDays / 12,
+        }],
+        carryForward: {
+          isAllowed: row.allowCarryForward,
+          maxDays: Number(row.maxCarryForwardDays || 0),
+          expiryMonths: row.carryForwardExpiryMonths || 3,
+          useFirstRule: 'FIFO' as const,
+        },
+        encashment: {
+          isAllowed: row.allowEncashment,
+          triggers: ['YEAR_END', 'ON_RESIGNATION'] as EncashmentTrigger[],
+          maxDays: Number(row.maxEncashmentDays || 0),
+          minBalanceToRetain: 0,
+          encashmentRate: Number(row.encashmentRate),
+          basis: 'BASIC' as const,
+        },
+        accrualDuringProbation: false,
+        usageDuringProbation: false,
+        proRataOnJoining: row.proRataOnJoining,
+        proRataOnExit: row.proRataOnExit,
+        allowNegativeBalance: row.allowNegativeBalance,
+        maxNegativeBalance: Number(row.maxNegativeDays || 0),
+        sandwichRuleEnabled: false,
+        blackoutDates: [],
+        isActive: row.isActive,
+        effectiveFrom: row.effectiveFrom,
+        effectiveTo: row.effectiveTo || undefined,
+      };
+    });
+  }
+
+  private static async resolveLeaveTypeId(leaveTypeCode: LeaveTypeCode): Promise<string | null> {
+    const leaveType = await prisma.leaveType.findUnique({
+      where: { code: leaveTypeCode },
+    });
+    return leaveType?.id || null;
   }
 
   private static async getCurrentBalance(
@@ -598,8 +727,19 @@ export class LeaveAccrualService {
     leaveTypeCode: LeaveTypeCode,
     year: number
   ): Promise<number> {
-    // Would fetch from database
-    return 0;
+    const leaveTypeId = await this.resolveLeaveTypeId(leaveTypeCode);
+    if (!leaveTypeId) return 0;
+
+    const balance = await prisma.leaveBalance.findFirst({
+      where: {
+        employeeId,
+        leaveYear: year,
+        isDeleted: false,
+        policy: { leaveTypeId },
+      },
+    });
+
+    return balance ? Number(balance.currentBalance) : 0;
   }
 
   private static async getYearEndBalance(
@@ -607,8 +747,7 @@ export class LeaveAccrualService {
     leaveTypeCode: LeaveTypeCode,
     year: number
   ): Promise<number> {
-    // Would fetch from database
-    return 0;
+    return this.getCurrentBalance(employeeId, leaveTypeCode, year);
   }
 
   private static async updateLeaveBalance(
@@ -617,7 +756,66 @@ export class LeaveAccrualService {
     result: AccrualResult,
     processDate: Date
   ): Promise<void> {
-    // Would update database
+    const leaveTypeId = await this.resolveLeaveTypeId(leaveTypeCode);
+    if (!leaveTypeId) return;
+
+    const policy = await prisma.leavePolicy.findFirst({
+      where: { leaveTypeId, isActive: true },
+    });
+    if (!policy) return;
+
+    const { tenantId } = policy;
+
+    // Upsert the balance
+    const existing = await prisma.leaveBalance.findFirst({
+      where: {
+        employeeId,
+        policyId: policy.id,
+        leaveYear: processDate.getFullYear(),
+        isDeleted: false,
+      },
+    });
+
+    if (existing) {
+      await prisma.leaveBalance.update({
+        where: { id: existing.id },
+        data: {
+          accrued: { increment: result.accrued },
+          currentBalance: { increment: result.accrued },
+          lastAccrualDate: processDate,
+          lastUpdated: new Date(),
+        },
+      });
+    } else {
+      await prisma.leaveBalance.create({
+        data: {
+          tenantId,
+          employeeId,
+          policyId: policy.id,
+          leaveYear: processDate.getFullYear(),
+          accrued: result.accrued,
+          currentBalance: result.accrued,
+          lastAccrualDate: processDate,
+          lastUpdated: new Date(),
+        },
+      });
+    }
+
+    // Create accrual audit record
+    await prisma.leaveAccrual.create({
+      data: {
+        tenantId,
+        employeeId,
+        policyId: policy.id,
+        leaveYear: processDate.getFullYear(),
+        accrualMonth: processDate.getMonth() + 1,
+        accrualDate: processDate,
+        accruedDays: result.accrued,
+        daysWorked: result.daysWorked,
+        proRataFactor: result.proRataFactor,
+        calculationNote: result.notes.join('; '),
+      },
+    });
   }
 
   private static async createNewYearBalance(
@@ -626,7 +824,44 @@ export class LeaveAccrualService {
     year: number,
     carryForward: { carriedForward: number; expiryDate: Date }
   ): Promise<void> {
-    // Would create in database
+    const leaveTypeId = await this.resolveLeaveTypeId(leaveTypeCode);
+    if (!leaveTypeId) return;
+
+    const policy = await prisma.leavePolicy.findFirst({
+      where: { leaveTypeId, isActive: true },
+    });
+    if (!policy) return;
+
+    const { tenantId } = policy;
+
+    await prisma.leaveBalance.create({
+      data: {
+        tenantId,
+        employeeId,
+        policyId: policy.id,
+        leaveYear: year,
+        openingBalance: carryForward.carriedForward,
+        carriedForward: carryForward.carriedForward,
+        currentBalance: carryForward.carriedForward,
+        lastUpdated: new Date(),
+      },
+    });
+
+    await prisma.leaveCarryForward.create({
+      data: {
+        tenantId,
+        employeeId,
+        policyId: policy.id,
+        fromYear: year - 1,
+        toYear: year,
+        previousYearBalance: carryForward.carriedForward,
+        carryForwardEligible: carryForward.carriedForward,
+        carryForwardApplied: carryForward.carriedForward,
+        lapsed: 0,
+        expiryDate: carryForward.expiryDate,
+        processedAt: new Date(),
+      },
+    });
   }
 
   private static async deductLeaveBalance(
@@ -635,20 +870,135 @@ export class LeaveAccrualService {
     days: number,
     reason: string
   ): Promise<void> {
-    // Would update database
+    const leaveTypeId = await this.resolveLeaveTypeId(leaveTypeCode);
+    if (!leaveTypeId) return;
+
+    const balance = await prisma.leaveBalance.findFirst({
+      where: {
+        employeeId,
+        leaveYear: new Date().getFullYear(),
+        isDeleted: false,
+        policy: { leaveTypeId },
+      },
+    });
+    if (!balance) return;
+
+    const updateData: Record<string, any> = {
+      currentBalance: { decrement: days },
+      lastUpdated: new Date(),
+    };
+
+    if (reason === 'ENCASHMENT') {
+      updateData.encashed = { increment: days };
+    } else {
+      updateData.taken = { increment: days };
+    }
+
+    await prisma.leaveBalance.update({
+      where: { id: balance.id },
+      data: updateData,
+    });
   }
 
   private static async getEmployee(employeeId: string): Promise<EmployeeData | null> {
-    // Would fetch from database
-    return null;
+    const employee = await prisma.employee.findFirst({
+      where: { id: employeeId, isDeleted: false },
+      include: {
+        location: {
+          include: {
+            address: { include: { country: true } },
+          },
+        },
+        probationTrackings: {
+          where: { status: 'ACTIVE' },
+          take: 1,
+        },
+      },
+    });
+    if (!employee) return null;
+
+    const salary = await prisma.employeeSalaryStructure.findFirst({
+      where: { employeeId, isActive: true },
+      orderBy: { effectiveFrom: 'desc' },
+    });
+
+    const countryCode = (employee as any).location?.address?.country?.isoCode || 'AE';
+
+    return {
+      id: employee.id,
+      name: `${employee.firstName} ${employee.lastName}`,
+      countryCode: countryCode as SupportedCountryCode,
+      joiningDate: employee.joiningDate,
+      isOnProbation: ((employee as any).probationTrackings?.length ?? 0) > 0,
+      lopDays: 0,
+      basicSalary: salary ? Number(salary.basicSalary) : 0,
+      grossSalary: salary ? Number(salary.grossSalary) : 0,
+    };
   }
 
   private static async getPolicyForEmployee(
     employee: EmployeeData,
     leaveTypeCode: LeaveTypeCode
   ): Promise<LeavePolicy | null> {
-    // Would fetch from database
-    return null;
+    const leaveTypeId = await this.resolveLeaveTypeId(leaveTypeCode);
+    if (!leaveTypeId) return null;
+
+    const row = await prisma.leavePolicy.findFirst({
+      where: {
+        leaveTypeId,
+        isActive: true,
+        countryCode: employee.countryCode,
+      },
+      orderBy: { effectiveFrom: 'desc' },
+    });
+    if (!row) return null;
+
+    const lt = await prisma.leaveType.findUnique({ where: { id: row.leaveTypeId } });
+    const annualDays = Number(row.annualEntitlement);
+
+    return {
+      id: row.id,
+      tenantId: row.tenantId,
+      policyName: row.name,
+      policyNameAr: row.nameAr || row.name,
+      countryCode: (row.countryCode || 'AE') as SupportedCountryCode,
+      leaveTypeId: row.leaveTypeId,
+      leaveTypeCode: (lt?.code || leaveTypeCode) as LeaveTypeCode,
+      accrualType: this.ACCRUAL_TYPE_MAP[row.accrualType] || 'MONTHLY',
+      accrualStartDay: 1,
+      accrualRoundingType: 'NEAREST' as const,
+      entitlements: [{
+        fromYears: 0,
+        toYears: 100,
+        daysPerYear: annualDays,
+        daysPerMonth: annualDays / 12,
+      }],
+      carryForward: {
+        isAllowed: row.allowCarryForward,
+        maxDays: Number(row.maxCarryForwardDays || 0),
+        expiryMonths: row.carryForwardExpiryMonths || 3,
+        useFirstRule: 'FIFO' as const,
+      },
+      encashment: {
+        isAllowed: row.allowEncashment,
+        triggers: ['YEAR_END', 'ON_RESIGNATION'] as EncashmentTrigger[],
+        maxDays: Number(row.maxEncashmentDays || 0),
+        minBalanceToRetain: 0,
+        encashmentRate: Number(row.encashmentRate),
+        basis: 'BASIC' as const,
+      },
+      accrualDuringProbation: false,
+      usageDuringProbation: false,
+      proRataOnJoining: row.proRataOnJoining,
+      proRataOnExit: row.proRataOnExit,
+      allowNegativeBalance: row.allowNegativeBalance,
+      maxNegativeBalance: Number(row.maxNegativeDays || 0),
+      sandwichRuleEnabled: false,
+      blackoutDates: [],
+      isActive: row.isActive,
+      effectiveFrom: row.effectiveFrom,
+      effectiveTo: row.effectiveTo || undefined,
+    };
   }
 }
 

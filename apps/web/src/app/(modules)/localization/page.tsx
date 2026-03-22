@@ -6,9 +6,10 @@ import {
   Map, ShieldCheck, FileText, Calendar,
   ArrowLeftRight, CheckCircle2, AlertCircle,
   Plus, Settings2, Download, RefreshCw,
-  Search, Bot, Sparkles, ChevronRight
+  Search, Bot, Sparkles, ChevronRight,
+  Clock, Layers
 } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 
 const COMPLIANCE_REGIMES = [
   { name: 'WPS (Wage Protection System)', jurisdiction: 'UAE/KSA', status: 'Active', color: 'emerald' },

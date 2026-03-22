@@ -9,7 +9,7 @@ import {
   ArrowUpRight, Bot, Sparkles, RefreshCw,
   FileText, Network, Globe, Calculator
 } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 import Link from 'next/link';
 import {
   PayrollAnalyticsService,

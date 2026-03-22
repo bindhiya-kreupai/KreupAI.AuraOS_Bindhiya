@@ -627,7 +627,7 @@ export interface AnniversarySettings {
 export interface AutoNumberSequence {
   sequenceId: string;
   sequenceName: string;
-  entityType: 'employee' | 'position' | 'document' | 'letter' | 'exit' | 'custom';
+  entityType: 'employee' | 'position' | 'document' | 'letter' | 'exit' | 'asset' | 'id_card' | 'custom';
   prefix: string;
   suffix?: string;
   currentNumber: number;

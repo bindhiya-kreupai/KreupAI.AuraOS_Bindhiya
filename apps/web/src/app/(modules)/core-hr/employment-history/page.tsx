@@ -39,7 +39,13 @@ import { toast } from 'sonner';
 interface EmploymentHistory {
   id: string;
   employeeId: string;
-  changeType: 'PROMOTION' | 'DEMOTION' | 'TRANSFER' | 'LATERAL_MOVE' | 'NEW_HIRE' | 'TERMINATION' | 'REHIRE';
+  changeType:
+    | 'PROMOTION' | 'DEMOTION' | 'TRANSFER' | 'LATERAL_MOVE'
+    | 'NEW_HIRE' | 'TERMINATION' | 'REHIRE' | 'HIRE'
+    | 'PROBATION_START' | 'PROBATION_CONFIRMATION'
+    | 'DEPARTMENT_TRANSFER' | 'POSITION_CHANGE' | 'GRADE_CHANGE'
+    | 'COMPENSATION_CHANGE' | 'MANAGER_CHANGE' | 'LOCATION_CHANGE'
+    | 'LEAVE_OF_ABSENCE' | 'RETURN_FROM_LEAVE' | 'STATUS_CHANGE';
   effectiveDate: string;
   reason?: string;
   notes?: string;
@@ -91,6 +97,18 @@ const CHANGE_TYPES = [
   { value: 'NEW_HIRE', label: 'New Hire', icon: User, color: 'bg-green-100 text-green-700 border-green-500' },
   { value: 'TERMINATION', label: 'Termination', icon: XCircle, color: 'bg-gray-100 text-gray-700 border-gray-500' },
   { value: 'REHIRE', label: 'Rehire', icon: CheckCircle, color: 'bg-indigo-100 text-indigo-700 border-indigo-500' },
+  { value: 'HIRE', label: 'Hire', icon: User, color: 'bg-green-100 text-green-700 border-green-500' },
+  { value: 'PROBATION_START', label: 'Probation Start', icon: Clock, color: 'bg-amber-100 text-amber-700 border-amber-500' },
+  { value: 'PROBATION_CONFIRMATION', label: 'Confirmed', icon: Award, color: 'bg-emerald-100 text-emerald-700 border-emerald-500' },
+  { value: 'DEPARTMENT_TRANSFER', label: 'Dept Transfer', icon: Building, color: 'bg-blue-100 text-blue-700 border-blue-500' },
+  { value: 'POSITION_CHANGE', label: 'Position Change', icon: Briefcase, color: 'bg-violet-100 text-violet-700 border-violet-500' },
+  { value: 'GRADE_CHANGE', label: 'Grade Change', icon: Award, color: 'bg-orange-100 text-orange-700 border-orange-500' },
+  { value: 'COMPENSATION_CHANGE', label: 'Compensation', icon: DollarSign, color: 'bg-yellow-100 text-yellow-700 border-yellow-500' },
+  { value: 'MANAGER_CHANGE', label: 'Manager Change', icon: User, color: 'bg-cyan-100 text-cyan-700 border-cyan-500' },
+  { value: 'LOCATION_CHANGE', label: 'Location Change', icon: MapPin, color: 'bg-teal-100 text-teal-700 border-teal-500' },
+  { value: 'LEAVE_OF_ABSENCE', label: 'Leave of Absence', icon: Calendar, color: 'bg-slate-100 text-slate-700 border-slate-500' },
+  { value: 'RETURN_FROM_LEAVE', label: 'Return from Leave', icon: CheckCircle, color: 'bg-lime-100 text-lime-700 border-lime-500' },
+  { value: 'STATUS_CHANGE', label: 'Status Change', icon: History, color: 'bg-pink-100 text-pink-700 border-pink-500' },
 ];
 
 const STATUS_CONFIG = [

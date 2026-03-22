@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 
@@ -30,7 +32,7 @@ const assignShiftSchema = z.object({
  * POST /api/v1/shifts/assign
  * Assign shift to employees
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const { user } = context;
     const body = await request.json();
@@ -276,4 +278,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       { status: 500 }
     );
   }
+}), {
+  action: AuditAction.EMPLOYEE_UPDATED,
+  resourceType: 'shift_assignment',
+  captureRequestBody: true,
 });

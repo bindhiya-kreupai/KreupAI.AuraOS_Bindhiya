@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CandidateApplicationService } from '../services';
+import type { CandidateApplication } from '../types';
 import {
     Users,
     Search,
@@ -12,8 +13,33 @@ import {
     Loader2
 } from 'lucide-react';
 
+function getCandidateName(candidate: CandidateApplication, index: number): string {
+    const fullName = `${candidate.firstName || ''} ${candidate.lastName || ''}`.trim();
+    return fullName || (candidate as any).candidateName || `Candidate ${index + 1}`;
+}
+
+function getCandidateTitle(candidate: CandidateApplication): string {
+    return candidate.currentTitle || candidate.jobTitle || candidate.currentStage || 'N/A';
+}
+
+function getStatusLabel(candidate: CandidateApplication): string {
+    if (candidate.status === 'hired') {
+        return 'Hired';
+    }
+
+    if (candidate.status === 'rejected') {
+        return 'Do Not Contact';
+    }
+
+    if (candidate.status === 'offer' || candidate.status === 'interview' || candidate.status === 'screening' || candidate.status === 'phone_screen') {
+        return 'Considering';
+    }
+
+    return 'Available';
+}
+
 export default function TalentPoolPage() {
-    const [candidates, setCandidates] = useState<any[]>([]);
+    const [candidates, setCandidates] = useState<CandidateApplication[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -80,18 +106,12 @@ export default function TalentPoolPage() {
                             <p className="text-sm text-slate-400 dark:text-slate-500">Add candidates to build your talent pipeline.</p>
                         </div>
                     )}
-                    {candidates.map((person: any, i: number) => {
-                        const name = person.candidateName || person.candidate?.firstName
-                            ? `${person.candidate?.firstName || ''} ${person.candidate?.lastName || ''}`.trim()
-                            : `Candidate ${i + 1}`;
-                        const title = person.positionAppliedFor || person.currentStage || 'N/A';
-                        const loc = person.location || person.candidate?.location || 'Unknown';
-                        const skills = person.candidate?.skills || [];
-                        const status = person.status || 'applied';
-
-                        const statusLabel = status === 'hired' ? 'Hired' :
-                            status === 'rejected' ? 'Do Not Contact' :
-                                status === 'offer' ? 'Considering' : 'Available';
+                    {candidates.map((person, i) => {
+                        const name = getCandidateName(person, i);
+                        const title = getCandidateTitle(person);
+                        const loc = person.location || 'Unknown';
+                        const skills = person.skills || [];
+                        const statusLabel = getStatusLabel(person);
 
                         return (
                             <div key={person.id || i} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-300 transition-all group cursor-pointer shadow-sm hover:shadow-md">

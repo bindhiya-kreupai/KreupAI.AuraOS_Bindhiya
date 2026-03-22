@@ -1,6 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 import { prisma } from '@/lib/database';
 
 export const dynamic = 'force-dynamic';
@@ -9,7 +11,7 @@ export const dynamic = 'force-dynamic';
  * POST /api/v1/attendance/[id]/regularize
  * Submit a regularization request for an attendance record
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user } = context;
     const { id } = context.params;
@@ -71,7 +73,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       { status: 201 }
     );
   } catch (_error) {
-    console.error('[Attendance Regularize API] POST Error:', error);
+    console.error('[Attendance Regularize API] POST Error:', _error);
     return NextResponse.json(
       {
         success: false,
@@ -80,4 +82,9 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       { status: 500 }
     );
   }
+}), {
+  action: AuditAction.ATTENDANCE_REGULARIZED,
+  resourceType: 'attendance_regularization',
+  captureRequestBody: true,
+  extractResourceId: (req, ctx) => ctx?.params?.id,
 });

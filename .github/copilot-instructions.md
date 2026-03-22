@@ -114,6 +114,44 @@ Branch naming: `feature/`, `fix/`, `hotfix/`, `refactor/`, `docs/` prefixes.
 | `services/*/src/` | Fastify microservice source (`routes/`, `services/`, `middleware/`) |
 | `docs/aura-architecture.md` | Canonical architecture & configuration guidelines |
 
+## Copilot Work Allocation With Claude
+
+When Claude AI is also involved in the task, use this split by default.
+
+### Copilot Owns
+
+1. Repository code implementation
+2. File edits and refactors
+3. API route creation and updates
+4. Service-layer completion
+5. Prisma schema and migration work
+6. Tests and validation
+7. Repo-local implementation documentation updates
+
+### Claude Should Own
+
+1. Gap analysis and work decomposition
+2. Architecture review and sequencing
+3. API contract review
+4. Acceptance criteria and test strategy design
+5. Executive summaries and management-facing planning
+6. Review of completed implementation work when requested
+
+### Required Reading For Copilot On Feature Completion Work
+
+Before implementing feature-completion work, read:
+
+1. `/CLAUDE.md`
+2. `/docs/implementation/AI-AGENT-WORKSPLIT.md`
+3. `/docs/implementation/FEATURE-COMPLETION-MASTER-PLAN.md`
+4. `/docs/implementation/FEATURE-COMPLETION-TRACKER.md`
+5. `/docs/implementation/FEATURE-COMPLETION-API-CONTRACTS.md`
+6. The relevant workstream guide under `/docs/implementation/`
+
+### Coordination Rule
+
+If Claude has already defined scope, acceptance criteria, or risks for a workstream, implement against that plan instead of re-planning the same work unless the repository state proves the plan is incorrect.
+
 ## Creating a New Fastify Microservice
 
 Follow the `services/auth-service/` structure (the most mature service):

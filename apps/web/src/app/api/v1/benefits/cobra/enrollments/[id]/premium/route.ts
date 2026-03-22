@@ -1,7 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-// Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
+// Tenant isolation is enforced via tenantId extracted from auth context
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -12,9 +13,11 @@ interface ApiResponse<T = any> {
 
 const VALID_PAYMENT_METHODS = ['ACH', 'CHECK', 'CREDIT_CARD', 'DEBIT_CARD', 'MONEY_ORDER'];
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { id } = params;
+    const { user } = context;
+    const tenantId = user.tenantId;
+    const { id } = context.params as { id: string };
     const body = await request.json();
     const { amount, paymentMethod, paymentDate } = body;
 
@@ -90,7 +93,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const payment = {
       id: `pmt-${crypto.randomUUID().slice(0, 8)}`,
       enrollmentId: id,
-      tenantId: 'tenant-1', // from auth context in production
+      tenantId,
       amount,
       paymentMethod,
       paymentDate,
@@ -129,4 +132,4 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});

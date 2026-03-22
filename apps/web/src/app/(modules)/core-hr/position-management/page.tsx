@@ -8,7 +8,7 @@ import {
   ThumbsUp, Snowflake, Lock, Briefcase,
   MapPin, BarChart3, Network
 } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 import { BudgetHealth } from './BudgetHealth';
 import { VacancyOrchestration } from './VacancyOrchestration';
 

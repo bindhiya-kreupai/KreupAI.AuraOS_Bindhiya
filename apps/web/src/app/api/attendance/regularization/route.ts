@@ -49,26 +49,38 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
 
     switch (action) {
       case 'submit': {
-        const required = ['employeeId', 'date', 'reason', 'category'];
-        for (const field of required) {
-          if (!body[field]) {
+        const employeeId =
+          body.employeeId && body.employeeId !== 'current-user' && body.employeeId !== 'current-user-id'
+            ? body.employeeId
+            : user.employeeId;
+        const regularizationType =
+          body.regularizationType || body.category || body.type;
+        const required = [employeeId, body.date, body.reason, regularizationType];
+        if (required.some((field) => !field)) {
             return NextResponse.json(
-              { error: `${field} is required` },
+              { error: 'employeeId, date, reason, and regularizationType are required' },
               { status: 400 }
             );
-          }
         }
 
         const regularization = await prisma.attendanceRegularization.create({
           data: {
             tenantId: user.tenantId,
-            employeeId: body.employeeId,
+            employeeId,
             date: new Date(body.date),
-            regularizationType: body.category,
-            requestedClockIn: body.requestedCheckIn ? new Date(body.requestedCheckIn) : null,
-            requestedClockOut: body.requestedCheckOut ? new Date(body.requestedCheckOut) : null,
+            regularizationType,
+            requestedClockIn: body.requestedClockIn || body.requestedCheckIn || body.requestedInTime
+              ? new Date(body.requestedClockIn || body.requestedCheckIn || body.requestedInTime)
+              : null,
+            requestedClockOut: body.requestedClockOut || body.requestedCheckOut || body.requestedOutTime
+              ? new Date(body.requestedClockOut || body.requestedCheckOut || body.requestedOutTime)
+              : null,
             reason: body.reason,
-            attachments: body.supportingDocument ? [body.supportingDocument] : [],
+            attachments: Array.isArray(body.attachments)
+              ? body.attachments
+              : body.supportingDocument
+                ? [body.supportingDocument]
+                : [],
             status: 'PENDING',
           },
         });
@@ -80,18 +92,33 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       }
 
       case 'approve': {
-        if (!body.regularizationId || !body.approverId) {
+        const approverId = body.approverId || user.id;
+        if (!body.regularizationId) {
           return NextResponse.json(
-            { error: 'regularizationId and approverId are required' },
+            { error: 'regularizationId is required' },
             { status: 400 }
           );
         }
 
+        const existing = await prisma.attendanceRegularization.findFirst({
+          where: {
+            id: body.regularizationId,
+            tenantId: user.tenantId,
+          },
+        });
+
+        if (!existing) {
+          return NextResponse.json(
+            { error: 'Regularization request not found' },
+            { status: 404 }
+          );
+        }
+
         const approved = await prisma.attendanceRegularization.update({
-          where: { id: body.regularizationId },
+          where: { id: existing.id },
           data: {
             status: 'APPROVED',
-            approvedBy: body.approverId,
+            approvedBy: approverId,
             approvedAt: new Date(),
           },
         });
@@ -103,18 +130,34 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       }
 
       case 'reject': {
-        if (!body.regularizationId || !body.approverId) {
+        const approverId = body.approverId || user.id;
+        if (!body.regularizationId) {
           return NextResponse.json(
-            { error: 'regularizationId and approverId are required' },
+            { error: 'regularizationId is required' },
             { status: 400 }
           );
         }
 
+        const existing = await prisma.attendanceRegularization.findFirst({
+          where: {
+            id: body.regularizationId,
+            tenantId: user.tenantId,
+          },
+        });
+
+        if (!existing) {
+          return NextResponse.json(
+            { error: 'Regularization request not found' },
+            { status: 404 }
+          );
+        }
+
         const rejected = await prisma.attendanceRegularization.update({
-          where: { id: body.regularizationId },
+          where: { id: existing.id },
           data: {
             status: 'REJECTED',
-            approvedBy: body.approverId,
+            approvedBy: approverId,
+            approvedAt: new Date(),
             rejectionReason: body.comments || '',
           },
         });

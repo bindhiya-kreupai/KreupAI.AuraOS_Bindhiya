@@ -55,7 +55,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       },
     });
   } catch (_error) {
-    console.error('[HR Transfers API] GET Error:', error);
+    console.error('[HR Transfers API] GET Error:', _error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch transfer requests' } },
       { status: 500 }
@@ -102,15 +102,9 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
         fromCompanyId: body.fromCompanyId,
         toCompanyId: body.toCompanyId,
         effectiveDate: new Date(body.effectiveDate),
-        reason: body.reason || null,
         transferType: body.transferType || 'PERMANENT',
-        newDepartmentId: body.newDepartmentId || null,
-        newJobProfileId: body.newJobProfileId || null,
-        newGradeId: body.newGradeId || null,
-        salaryChange: body.salaryChange || null,
         status: 'PENDING',
-        initiatedBy: user.id,
-        notes: body.notes || null,
+        requestedBy: user.userId,
       },
       include: {
         employee: { select: { id: true, firstName: true, lastName: true, employeeCode: true } },
@@ -133,14 +127,14 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       { status: 201 }
     );
   } catch (_error) {
-    console.error('[HR Transfers API] POST Error:', error);
+    console.error('[HR Transfers API] POST Error:', _error);
     return NextResponse.json(
       {
         success: false,
         error: {
           code: 'E5001',
           message: 'Failed to create transfer request',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+          details: { error: _error instanceof Error ? _error.message : 'Unknown error' },
         },
       },
       { status: 500 }

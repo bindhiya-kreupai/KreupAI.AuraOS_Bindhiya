@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CandidateApplicationService } from '../services';
+import type { CandidateApplication } from '../types';
 import {
     FileText,
     UploadCloud,
@@ -11,9 +12,14 @@ import {
     Loader2
 } from 'lucide-react';
 
+function getCandidateName(application: CandidateApplication, index: number): string {
+    const fullName = `${application.firstName || ''} ${application.lastName || ''}`.trim();
+    return fullName || (application as any).candidateName || `Candidate ${index + 1}`;
+}
+
 export default function ResumeParsingPage() {
     const [isParsing, setIsParsing] = useState(false);
-    const [parsedResumes, setParsedResumes] = useState<any[]>([]);
+    const [parsedResumes, setParsedResumes] = useState<CandidateApplication[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -25,7 +31,7 @@ export default function ResumeParsingPage() {
             setLoading(true);
             const data = await CandidateApplicationService.getApplications();
             // Filter applications that have resume data
-            const withResumes = data.filter((app: any) => app.resumeUrl);
+            const withResumes = data.filter((app: CandidateApplication) => app.resumeUrl);
             setParsedResumes(withResumes);
         } catch (error) {
             console.error('Error:', error);
@@ -97,12 +103,10 @@ export default function ResumeParsingPage() {
                                     <p className="text-sm">No parsed resumes yet. Upload a resume to get started.</p>
                                 </div>
                             )}
-                            {parsedResumes.map((resume: any, i: number) => {
-                                const name = resume.candidateName || resume.candidate?.firstName
-                                    ? `${resume.candidate?.firstName || ''} ${resume.candidate?.lastName || ''}`.trim()
-                                    : `Candidate ${i + 1}`;
-                                const email = resume.candidate?.email || '';
-                                const skills = resume.candidate?.skills || [];
+                            {parsedResumes.map((resume, i) => {
+                                const name = getCandidateName(resume, i);
+                                const email = resume.email || '';
+                                const skills = resume.skills || [];
 
                                 return (
                                     <div key={resume.id || i} className="p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800 relative overflow-hidden">

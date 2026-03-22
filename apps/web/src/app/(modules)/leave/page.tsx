@@ -10,7 +10,7 @@ import {
   TrendingUp, Timer, FileText, Settings2,
   Calculator, Layers, MapPin
 } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 import Link from 'next/link';
 
 // ── Mock Data ──────────────────────────────────────────────────────────

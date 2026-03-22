@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { InterviewService } from '../services';
+import { InterviewFeedbackService, InterviewService } from '../services';
+import type { Interview, InterviewFeedback } from '../types';
 import {
     MessageCircle,
     Star,
@@ -12,8 +13,63 @@ import {
     Loader2
 } from 'lucide-react';
 
+type FeedbackEntry = {
+    interview: Interview;
+    feedback: InterviewFeedback;
+};
+
+function getNumericRating(feedback: InterviewFeedback): number {
+    const values = [
+        feedback.technicalSkills,
+        feedback.communicationSkills,
+        feedback.problemSolving,
+        feedback.cultureFit,
+    ].filter((value): value is number => typeof value === 'number' && !Number.isNaN(value));
+
+    if (values.length === 0) {
+        if (feedback.recommendation === 'hire') {
+            return 4;
+        }
+
+        if (feedback.recommendation === 'no_hire') {
+            return 2;
+        }
+
+        return 0;
+    }
+
+    return Math.round((values.reduce((sum, value) => sum + value, 0) / values.length) * 10) / 10;
+}
+
+function getRecommendationLabel(recommendation: InterviewFeedback['recommendation']): 'Hire' | 'Hold' | 'Reject' {
+    if (recommendation === 'hire') {
+        return 'Hire';
+    }
+
+    if (recommendation === 'no_hire') {
+        return 'Reject';
+    }
+
+    return 'Hold';
+}
+
+function getFeedbackComment(feedback: InterviewFeedback): string {
+    if (feedback.notes?.trim()) {
+        return feedback.notes;
+    }
+
+    const detail = [feedback.strengths, feedback.concerns].filter(Boolean).join(' ');
+    return detail || 'No feedback comments provided yet.';
+}
+
+function formatInterviewType(type: Interview['type']): string {
+    return String(type || 'Interview')
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, character => character.toUpperCase());
+}
+
 export default function InterviewFeedbackPage() {
-    const [interviews, setInterviews] = useState<any[]>([]);
+    const [entries, setEntries] = useState<FeedbackEntry[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -23,9 +79,19 @@ export default function InterviewFeedbackPage() {
     const fetchInterviewsWithFeedback = async () => {
         try {
             setLoading(true);
-            const data = await InterviewService.getInterviews();
-            // Filter to interviews that have been completed and may have feedback
-            setInterviews(data);
+            const interviews = await InterviewService.getInterviews();
+            const feedbackLists = await Promise.all(
+                interviews.map(async interview => ({
+                    interview,
+                    feedback: await InterviewFeedbackService.getFeedback(interview.id),
+                }))
+            );
+
+            setEntries(
+                feedbackLists.flatMap(({ interview, feedback }) =>
+                    feedback.map(item => ({ interview, feedback: item }))
+                )
+            );
         } catch (error) {
             console.error('Error:', error);
         } finally {
@@ -60,28 +126,28 @@ export default function InterviewFeedbackPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Feedback Stream */}
                 <div className="lg:col-span-2 space-y-4">
-                    {interviews.length === 0 && (
+                    {entries.length === 0 && (
                         <div className="bg-white dark:bg-slate-900 p-12 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
                             <MessageCircle className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
                             <h3 className="text-lg font-bold text-slate-500 dark:text-slate-400 mb-2">No feedback yet</h3>
                             <p className="text-sm text-slate-400 dark:text-slate-500">Interview feedback will appear here after interviews are completed.</p>
                         </div>
                     )}
-                    {interviews.map((interview: any, i: number) => {
-                        const candidateName = interview.candidate || interview.title || `Interview ${i + 1}`;
-                        const role = interview.role || interview.type || 'N/A';
-                        const interviewerName = interview.interviewer || (interview.interviewerNames && interview.interviewerNames[0]) || 'Unknown';
-                        const rating = interview.overallRating || 0;
-                        const recommendation = rating >= 4 ? 'Hire' : rating >= 3 ? 'Hold' : rating > 0 ? 'Reject' : 'Pending';
-                        const comment = interview.notes || 'No feedback comments provided yet.';
-                        const time = interview.scheduledDate
-                            ? new Date(interview.scheduledDate).toLocaleDateString()
-                            : interview.updatedAt
-                                ? new Date(interview.updatedAt).toLocaleDateString()
+                    {entries.map(({ interview, feedback }, index) => {
+                        const candidateName = interview.candidateName || `Interview ${index + 1}`;
+                        const role = interview.jobTitle || formatInterviewType(interview.type);
+                        const interviewerName = feedback.interviewerName || interview.interviewers[0]?.name || 'Unknown';
+                        const rating = getNumericRating(feedback);
+                        const recommendation = getRecommendationLabel(feedback.recommendation);
+                        const comment = getFeedbackComment(feedback);
+                        const time = feedback.submittedDate
+                            ? new Date(feedback.submittedDate).toLocaleDateString()
+                            : interview.scheduledDate
+                                ? new Date(interview.scheduledDate).toLocaleDateString()
                                 : '';
 
                         return (
-                            <div key={interview.id || i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            <div key={feedback.id || interview.id || index} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex gap-3">
                                         <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500 text-lg">
@@ -92,7 +158,7 @@ export default function InterviewFeedbackPage() {
                                             <div className="text-xs text-slate-500 flex items-center gap-2">
                                                 <span>{role}</span>
                                                 <span>•</span>
-                                                <span className="text-indigo-500 font-bold">{interview.type || 'Interview'}</span>
+                                                <span className="text-indigo-500 font-bold">{formatInterviewType(interview.type)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -109,7 +175,7 @@ export default function InterviewFeedbackPage() {
                                 <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800 mb-4">
                                     <div className="flex gap-1 mb-2">
                                         {[1, 2, 3, 4, 5].map(star => (
-                                            <Star key={star} className={`w-4 h-4 ${star <= rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
+                                            <Star key={star} className={`w-4 h-4 ${star <= Math.round(rating) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
                                         ))}
                                     </div>
                                     <p className="text-sm text-slate-700 dark:text-slate-300 italic">&quot;{comment}&quot;</p>

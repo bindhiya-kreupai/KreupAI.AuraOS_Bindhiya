@@ -9,7 +9,7 @@ import {
     CreditCard, Scale
 } from 'lucide-react';
 import Link from 'next/link';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 
 export default function IndiaStatutoryHub() {
     const [activeTab, setActiveTab] = useState<'pf' | 'esi' | 'tds' | 'pt'>('pf');

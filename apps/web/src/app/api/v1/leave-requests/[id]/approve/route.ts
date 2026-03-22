@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { LeaveService } from '@/lib/services/leave.service';
+import { auditMiddleware } from '@/lib/middleware/audit.middleware';
 
-export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+export const POST = auditMiddleware.approveLeaveRequest(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user, params } = context;
 
@@ -23,4 +24,4 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       { status: 400 }
     );
   }
-});
+}));

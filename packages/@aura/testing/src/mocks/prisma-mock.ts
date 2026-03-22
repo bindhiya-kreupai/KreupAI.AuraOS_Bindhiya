@@ -178,7 +178,7 @@ export function createPrismaMock(): PrismaMock {
 
   // Auto-init transaction to pass through
   (mock.$transaction as MockFn).mockImplementation(
-    async (fn: (p: PrismaMock) => Promise<unknown>) => fn(mock)
+    (async (fn: (p: PrismaMock) => Promise<unknown>) => fn(mock)) as (...args: unknown[]) => unknown
   );
 
   // Create model mocks

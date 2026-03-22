@@ -6,7 +6,7 @@
 console.log('Payroll Service - Starting...');
 
 // Placeholder server
-const PORT = process.env.PORT || 3005;
+const PORT = process.env.PORT || 3015;
 
 import { createServer } from 'http';
 

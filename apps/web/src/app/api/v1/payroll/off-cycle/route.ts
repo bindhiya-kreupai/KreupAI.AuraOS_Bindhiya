@@ -2,6 +2,8 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 
@@ -22,7 +24,7 @@ const offCycleSchema = z.object({
  * POST /api/v1/payroll/off-cycle
  * Create an off-cycle payroll run (bonus, commission, correction, termination, etc.)
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const { user } = context;
     const tenantId = user.tenantId;
@@ -132,4 +134,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       },
     }, { status: 500 });
   }
+}), {
+  action: AuditAction.PAYROLL_RUN_INITIATED,
+  resourceType: 'payroll_run',
+  captureRequestBody: true,
 });

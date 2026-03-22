@@ -3,24 +3,92 @@
  * View goals and performance reviews
  */
 
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
 import { useThemeStore } from '@/stores/theme.store';
+import { apiService } from '@/services/api.service';
+
+interface Goal {
+  id: string;
+  title: string;
+  progress: number;
+  status: string;
+}
+
+interface PerformanceData {
+  rating: number;
+  ratingLabel: string;
+  totalGoals: number;
+  completedGoals: number;
+  reviewDue: string;
+  goals: Goal[];
+  upcomingReview: {
+    title: string;
+    dueDate: string;
+    status: string;
+  } | null;
+}
 
 export function PerformanceScreen() {
   const { t } = useTranslation();
   const { theme } = useThemeStore();
+  const [data, setData] = useState<PerformanceData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Mock data for goals
-  const goals = [
-    { id: '1', title: 'Complete Q4 Project', progress: 75, status: 'in_progress' },
-    { id: '2', title: 'Improve Customer Satisfaction', progress: 50, status: 'in_progress' },
-    { id: '3', title: 'Team Training Initiative', progress: 100, status: 'completed' },
-    { id: '4', title: 'Process Documentation', progress: 25, status: 'in_progress' },
-  ];
+  const fetchPerformance = useCallback(async () => {
+    try {
+      const [goalsRes, ratingRes, reviewsRes] = await Promise.allSettled([
+        apiService.get<{ data: Goal[] }>('/performance/goals'),
+        apiService.get<{ data: any }>('/performance/rating'),
+        apiService.get<{ data: any[] }>('/performance/reviews'),
+      ]);
+
+      const goals = goalsRes.status === 'fulfilled' ? (goalsRes.value.data || []) : [];
+      const rating = ratingRes.status === 'fulfilled' ? goalsRes.value.data : null;
+      const reviews = reviewsRes.status === 'fulfilled' ? (reviewsRes.value.data || []) : [];
+
+      const completedGoals = goals.filter((g: Goal) => g.status === 'completed').length;
+      const upcomingReview = reviews.find((r: any) => r.status === 'pending' || r.status === 'upcoming') || null;
+
+      setData({
+        rating: rating?.rating ?? 0,
+        ratingLabel: rating?.label || 'Not Rated',
+        totalGoals: goals.length,
+        completedGoals,
+        reviewDue: rating?.reviewDue || '',
+        goals,
+        upcomingReview: upcomingReview ? {
+          title: upcomingReview.title || upcomingReview.name || 'Performance Review',
+          dueDate: upcomingReview.dueDate || upcomingReview.deadline || '',
+          status: upcomingReview.status || 'Pending',
+        } : null,
+      });
+    } catch {
+      // Keep existing data
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPerformance().finally(() => setLoading(false));
+  }, [fetchPerformance]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchPerformance();
+    setRefreshing(false);
+  }, [fetchPerformance]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -35,31 +103,42 @@ export function PerformanceScreen() {
     }
   };
 
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  const goals = data?.goals || [];
+
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       contentContainerStyle={styles.content}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       {/* Overview Card */}
       <View style={[styles.overviewCard, { backgroundColor: theme.colors.primary }]}>
         <Text style={styles.overviewTitle}>{t('performance.currentRating')}</Text>
         <View style={styles.ratingRow}>
-          <Text style={styles.ratingValue}>4.2</Text>
+          <Text style={styles.ratingValue}>{data?.rating || '--'}</Text>
           <Text style={styles.ratingMax}>/5</Text>
         </View>
-        <Text style={styles.ratingLabel}>Meets Expectations</Text>
+        <Text style={styles.ratingLabel}>{data?.ratingLabel || 'Not Rated'}</Text>
 
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>4</Text>
+            <Text style={styles.statValue}>{data?.totalGoals || 0}</Text>
             <Text style={styles.statLabel}>{t('performance.goals')}</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>1</Text>
+            <Text style={styles.statValue}>{data?.completedGoals || 0}</Text>
             <Text style={styles.statLabel}>{t('performance.completed')}</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>Q4</Text>
+            <Text style={styles.statValue}>{data?.reviewDue || '--'}</Text>
             <Text style={styles.statLabel}>{t('performance.reviewDue')}</Text>
           </View>
         </View>
@@ -77,70 +156,82 @@ export function PerformanceScreen() {
         </TouchableOpacity>
       </View>
 
-      {goals.map((goal) => (
-        <TouchableOpacity
-          key={goal.id}
-          style={[styles.goalCard, { backgroundColor: theme.colors.surface }]}
-        >
-          <View style={styles.goalHeader}>
-            <Text style={[styles.goalTitle, { color: theme.colors.text }]}>
-              {goal.title}
-            </Text>
-            <View
-              style={[
-                styles.statusBadge,
-                { backgroundColor: getStatusColor(goal.status) + '20' },
-              ]}
-            >
-              <Text style={[styles.statusText, { color: getStatusColor(goal.status) }]}>
-                {t(`performance.status.${goal.status}`)}
+      {goals.length === 0 ? (
+        <View style={[styles.goalCard, { backgroundColor: theme.colors.surface, alignItems: 'center', paddingVertical: 24 }]}>
+          <Text style={{ color: theme.colors.textSecondary, fontSize: 14 }}>No goals set yet</Text>
+        </View>
+      ) : (
+        goals.map((goal) => (
+          <TouchableOpacity
+            key={goal.id}
+            style={[styles.goalCard, { backgroundColor: theme.colors.surface }]}
+          >
+            <View style={styles.goalHeader}>
+              <Text style={[styles.goalTitle, { color: theme.colors.text }]}>
+                {goal.title}
               </Text>
-            </View>
-          </View>
-
-          <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { backgroundColor: theme.colors.border }]}>
               <View
                 style={[
-                  styles.progressFill,
-                  {
-                    width: `${goal.progress}%`,
-                    backgroundColor: getStatusColor(goal.status),
-                  },
+                  styles.statusBadge,
+                  { backgroundColor: getStatusColor(goal.status) + '20' },
                 ]}
-              />
+              >
+                <Text style={[styles.statusText, { color: getStatusColor(goal.status) }]}>
+                  {t(`performance.status.${goal.status}`)}
+                </Text>
+              </View>
             </View>
-            <Text style={[styles.progressText, { color: theme.colors.textSecondary }]}>
-              {goal.progress}%
-            </Text>
-          </View>
-        </TouchableOpacity>
-      ))}
+
+            <View style={styles.progressContainer}>
+              <View style={[styles.progressBar, { backgroundColor: theme.colors.border }]}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    {
+                      width: `${goal.progress}%`,
+                      backgroundColor: getStatusColor(goal.status),
+                    },
+                  ]}
+                />
+              </View>
+              <Text style={[styles.progressText, { color: theme.colors.textSecondary }]}>
+                {goal.progress}%
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))
+      )}
 
       {/* Upcoming Reviews */}
       <Text style={[styles.sectionTitle, { color: theme.colors.text, marginTop: 24 }]}>
         {t('performance.upcomingReviews')}
       </Text>
-      <View style={[styles.reviewCard, { backgroundColor: theme.colors.surface }]}>
-        <View style={[styles.reviewIcon, { backgroundColor: theme.colors.primaryLight }]}>
-          <Ionicons name="calendar" size={24} color={theme.colors.primary} />
+      {data?.upcomingReview ? (
+        <View style={[styles.reviewCard, { backgroundColor: theme.colors.surface }]}>
+          <View style={[styles.reviewIcon, { backgroundColor: theme.colors.primaryLight }]}>
+            <Ionicons name="calendar" size={24} color={theme.colors.primary} />
+          </View>
+          <View style={styles.reviewContent}>
+            <Text style={[styles.reviewTitle, { color: theme.colors.text }]}>
+              {data.upcomingReview.title}
+            </Text>
+            <Text style={[styles.reviewDate, { color: theme.colors.textSecondary }]}>
+              Due: {data.upcomingReview.dueDate}
+            </Text>
+          </View>
+          <View
+            style={[styles.reviewBadge, { backgroundColor: theme.colors.warning + '20' }]}
+          >
+            <Text style={[styles.reviewBadgeText, { color: theme.colors.warning }]}>
+              {data.upcomingReview.status}
+            </Text>
+          </View>
         </View>
-        <View style={styles.reviewContent}>
-          <Text style={[styles.reviewTitle, { color: theme.colors.text }]}>
-            Q4 2024 Performance Review
-          </Text>
-          <Text style={[styles.reviewDate, { color: theme.colors.textSecondary }]}>
-            Due: December 31, 2024
-          </Text>
+      ) : (
+        <View style={[styles.reviewCard, { backgroundColor: theme.colors.surface, justifyContent: 'center' }]}>
+          <Text style={{ color: theme.colors.textSecondary, fontSize: 14 }}>No upcoming reviews</Text>
         </View>
-        <View
-          style={[styles.reviewBadge, { backgroundColor: theme.colors.warning + '20' }]}
-        >
-          <Text style={[styles.reviewBadgeText, { color: theme.colors.warning }]}>
-            Pending
-          </Text>
-        </View>
-      </View>
+      )}
 
       {/* Quick Actions */}
       <View style={styles.actionsRow}>
@@ -168,6 +259,10 @@ export function PerformanceScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     padding: 16,

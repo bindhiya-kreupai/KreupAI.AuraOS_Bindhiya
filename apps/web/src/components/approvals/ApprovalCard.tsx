@@ -13,27 +13,35 @@ import {
   ChevronDown,
   ChevronUp,
   Calendar,
-  DollarSign,
   Clock,
   Paperclip,
   MessageSquare,
   AlertTriangle,
   Send,
+  Award,
+  ArrowLeftRight,
   Palmtree,
-  Receipt,
   FileText,
-  Briefcase,
+  Receipt,
+  Shuffle,
+  ArrowRightLeft,
   Users,
-  ArrowUpRight,
+  ClipboardCheck,
+  Gift,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type {
   ApprovalRequest,
-  LeaveDetails,
   ExpenseDetails,
-  TimesheetDetails,
-  RequisitionDetails,
-  DocumentDetails,
+  EmploymentHistoryDetails,
+  InterCompanyTransferDetails,
+  LeaveDetails,
+  OvertimeDetails,
+  ExitDetails,
+  AttendanceDetails,
+  CompOffDetails,
+  ConfirmationDetails,
+  ShiftSwapDetails,
 } from '@/services/approvalService';
 import { APPROVAL_TYPE_CONFIG, PRIORITY_CONFIG } from '@/services/approvalService';
 
@@ -43,7 +51,6 @@ interface ApprovalCardProps {
   onToggleSelect: (id: string) => void;
   onApprove: (id: string, remarks?: string) => void;
   onReject: (id: string, remarks: string) => void;
-  onEscalate?: (id: string, remarks?: string) => void;
   onComment: (id: string, text: string) => void;
 }
 
@@ -53,7 +60,6 @@ export const ApprovalCard: React.FC<ApprovalCardProps> = ({
   onToggleSelect,
   onApprove,
   onReject,
-  onEscalate,
   onComment,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -81,8 +87,7 @@ export const ApprovalCard: React.FC<ApprovalCardProps> = ({
     if (!commentText.trim()) return;
     onComment(request.id, commentText.trim());
     setCommentText('');
-    setShowComment(false);
-  }, [request.id, commentText, onComment]);
+  }, [commentText, onComment, request.id]);
 
   return (
     <div
@@ -241,14 +246,29 @@ export const ApprovalCard: React.FC<ApprovalCardProps> = ({
           {request.type === 'expense' && (
             <ExpenseDetailsView details={request.details as ExpenseDetails} />
           )}
-          {request.type === 'timesheet' && (
-            <TimesheetDetailsView details={request.details as TimesheetDetails} />
+          {request.type === 'employment-history' && (
+            <EmploymentHistoryDetailsView details={request.details as EmploymentHistoryDetails} />
           )}
-          {request.type === 'requisition' && (
-            <RequisitionDetailsView details={request.details as RequisitionDetails} />
+          {request.type === 'inter-company-transfer' && (
+            <InterCompanyTransferDetailsView details={request.details as InterCompanyTransferDetails} />
           )}
-          {request.type === 'document' && (
-            <DocumentDetailsView details={request.details as DocumentDetails} />
+          {request.type === 'overtime' && (
+            <OvertimeDetailsView details={request.details as OvertimeDetails} />
+          )}
+          {request.type === 'comp-off' && (
+            <CompOffDetailsView details={request.details as CompOffDetails} />
+          )}
+          {request.type === 'confirmation' && (
+            <ConfirmationDetailsView details={request.details as ConfirmationDetails} />
+          )}
+          {request.type === 'shift-swap' && (
+            <ShiftSwapDetailsView details={request.details as ShiftSwapDetails} />
+          )}
+          {request.type === 'exit' && (
+            <ExitDetailsView details={request.details as ExitDetails} />
+          )}
+          {request.type === 'attendance' && (
+            <AttendanceDetailsView details={request.details as AttendanceDetails} />
           )}
 
           {/* Attachments */}
@@ -297,7 +317,6 @@ export const ApprovalCard: React.FC<ApprovalCardProps> = ({
             </div>
           )}
 
-          {/* Add comment */}
           {isPending && (
             <div className="flex items-center gap-2">
               <input
@@ -318,20 +337,12 @@ export const ApprovalCard: React.FC<ApprovalCardProps> = ({
             </div>
           )}
 
-          {/* Escalate & workflow info */}
+          {/* Workflow info */}
           {isPending && request.totalLevels > 1 && (
             <div className="flex items-center justify-between pt-1">
               <span className="text-[9px] text-silver-mist">
                 Level {request.currentLevel} of {request.totalLevels}
               </span>
-              {onEscalate && (
-                <button
-                  onClick={() => onEscalate(request.id)}
-                  className="flex items-center gap-0.5 text-[10px] text-nebula-purple hover:text-nebula-purple/80 transition-colors"
-                >
-                  <ArrowUpRight className="w-3 h-3" /> Escalate
-                </button>
-              )}
             </div>
           )}
         </div>
@@ -358,7 +369,11 @@ const LeaveDetailsView: React.FC<{ details: LeaveDetails }> = ({ details }) => (
     <DetailCell
       icon={Users}
       label="Balance After"
-      value={`${details.leaveBalance - details.totalDays} days`}
+      value={
+        details.leaveBalance === undefined
+          ? 'Not available'
+          : `${details.leaveBalance - details.totalDays} days`
+      }
     />
     {details.reason && (
       <div className="col-span-full">
@@ -377,103 +392,350 @@ const LeaveDetailsView: React.FC<{ details: LeaveDetails }> = ({ details }) => (
   </div>
 );
 
+const OvertimeDetailsView: React.FC<{ details: OvertimeDetails }> = ({ details }) => (
+  <div className="space-y-2">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <DetailCell
+        icon={Calendar}
+        label="Overtime Date"
+        value={new Date(details.overtimeDate).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })}
+      />
+      <DetailCell
+        icon={Clock}
+        label="Total Hours"
+        value={`${details.totalHours}h`}
+      />
+      <DetailCell
+        icon={AlertTriangle}
+        label="Type"
+        value={details.overtimeType}
+      />
+    </div>
+    {details.reason && (
+      <p className="text-[10px] text-silver-mist">
+        Reason: <span className="text-ink-black dark:text-pearl">{details.reason}</span>
+      </p>
+    )}
+  </div>
+);
+
 const ExpenseDetailsView: React.FC<{ details: ExpenseDetails }> = ({ details }) => (
   <div className="space-y-2">
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-      <DetailCell icon={Receipt} label="Category" value={details.category} />
-      <DetailCell
-        icon={DollarSign}
-        label="Total"
-        value={`${details.currency} ${details.totalAmount.toLocaleString()}`}
-      />
       <DetailCell
         icon={Calendar}
-        label="Date"
+        label="Expense Date"
         value={new Date(details.expenseDate).toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
         })}
       />
-      <DetailCell icon={Paperclip} label="Receipts" value={`${details.receiptCount} attached`} />
+      <DetailCell icon={Receipt} label="Category" value={details.expenseCategory} />
+      <DetailCell
+        icon={Receipt}
+        label="Amount"
+        value={`${details.currency} ${details.totalAmount.toLocaleString()}`}
+      />
+      <DetailCell icon={ClipboardCheck} label="Purpose" value={details.businessPurpose} />
     </div>
-    {details.lineItems.length > 0 && (
-      <div className="space-y-1">
-        {details.lineItems.map((item, i) => (
-          <div
-            key={i}
-            className="flex items-center justify-between text-[10px] px-2 py-1 rounded-lg bg-pearl/20 dark:bg-deep-cosmos/10"
-          >
-            <span className="text-ink-black dark:text-pearl">{item.description}</span>
-            <span className="font-semibold text-ink-black dark:text-pearl">
-              ${item.amount.toLocaleString()}
-            </span>
-          </div>
-        ))}
-      </div>
+    {details.description && (
+      <p className="text-[10px] text-silver-mist">
+        Description: <span className="text-ink-black dark:text-pearl">{details.description}</span>
+      </p>
+    )}
+    {details.receiptUrl && (
+      <p className="text-[10px] text-silver-mist">
+        Receipt: <span className="text-ink-black dark:text-pearl">Attached</span>
+      </p>
+    )}
+    {details.rejectionReason && (
+      <p className="text-[10px] text-coral-alert">
+        Rejection reason:{' '}
+        <span className="text-ink-black dark:text-pearl">{details.rejectionReason}</span>
+      </p>
     )}
   </div>
 );
 
-const TimesheetDetailsView: React.FC<{ details: TimesheetDetails }> = ({ details }) => (
+const EmploymentHistoryDetailsView: React.FC<{ details: EmploymentHistoryDetails }> = ({ details }) => (
   <div className="space-y-2">
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <DetailCell icon={Shuffle} label="Change Type" value={details.changeType.replace(/_/g, ' ')} />
       <DetailCell
         icon={Calendar}
-        label="Period"
-        value={`${new Date(details.periodStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${new Date(details.periodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+        label="Effective Date"
+        value={new Date(details.effectiveDate).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })}
       />
-      <DetailCell icon={Clock} label="Total Hours" value={`${details.totalHours}h`} />
-      <DetailCell icon={Clock} label="Overtime" value={`${details.overtimeHours}h`} />
-      <DetailCell icon={AlertTriangle} label="Violations" value={`${details.violations}`} />
+      <DetailCell
+        icon={Users}
+        label="Department"
+        value={`${details.previousDepartment || 'Current'} -> ${details.newDepartment || 'Current'}`}
+      />
+      <DetailCell
+        icon={ClipboardCheck}
+        label="Employment Type"
+        value={`${details.previousEmploymentType || 'Current'} -> ${details.newEmploymentType || 'Current'}`}
+      />
     </div>
-    {details.projects.length > 0 && (
-      <div className="space-y-1">
-        {details.projects.map((p, i) => (
-          <div
-            key={i}
-            className="flex items-center justify-between text-[10px] px-2 py-1 rounded-lg bg-pearl/20 dark:bg-deep-cosmos/10"
-          >
-            <span className="text-ink-black dark:text-pearl">{p.name}</span>
-            <span className="font-semibold text-ink-black dark:text-pearl">{p.hours}h</span>
-          </div>
-        ))}
-      </div>
+    {(details.previousGrade || details.newGrade) && (
+      <p className="text-[10px] text-silver-mist">
+        Grade: <span className="text-ink-black dark:text-pearl">{details.previousGrade || 'Current'} → {details.newGrade || 'Current'}</span>
+      </p>
+    )}
+    {(details.previousJobProfile || details.newJobProfile) && (
+      <p className="text-[10px] text-silver-mist">
+        Job profile: <span className="text-ink-black dark:text-pearl">{details.previousJobProfile || 'Current'} → {details.newJobProfile || 'Current'}</span>
+      </p>
+    )}
+    {(details.previousSalary !== undefined || details.newSalary !== undefined) && (
+      <p className="text-[10px] text-silver-mist">
+        Salary: <span className="text-ink-black dark:text-pearl">{details.previousSalary ?? 'Current'} → {details.newSalary ?? 'Current'}</span>
+      </p>
+    )}
+    {details.reason && (
+      <p className="text-[10px] text-silver-mist">
+        Reason: <span className="text-ink-black dark:text-pearl">{details.reason}</span>
+      </p>
+    )}
+    {details.notes && (
+      <p className="text-[10px] text-silver-mist">
+        Notes: <span className="text-ink-black dark:text-pearl whitespace-pre-wrap">{details.notes}</span>
+      </p>
     )}
   </div>
 );
 
-const RequisitionDetailsView: React.FC<{ details: RequisitionDetails }> = ({ details }) => (
+const InterCompanyTransferDetailsView: React.FC<{ details: InterCompanyTransferDetails }> = ({ details }) => (
   <div className="space-y-2">
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-      <DetailCell icon={Briefcase} label="Position" value={details.positionTitle} />
-      <DetailCell icon={Users} label="Headcount" value={`${details.headcount}`} />
+      <DetailCell icon={ArrowRightLeft} label="Transfer Type" value={details.transferType.replace(/_/g, ' ')} />
       <DetailCell
-        icon={DollarSign}
-        label="Salary Range"
-        value={`${details.salaryRange.currency} ${details.salaryRange.min.toLocaleString()} – ${details.salaryRange.max.toLocaleString()}`}
+        icon={Calendar}
+        label="Effective Date"
+        value={new Date(details.effectiveDate).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })}
       />
-      <DetailCell icon={Clock} label="Type" value={details.employmentType} />
+      <DetailCell icon={Users} label="From" value={details.fromCompanyName} />
+      <DetailCell icon={Users} label="To" value={details.toCompanyName} />
     </div>
     <p className="text-[10px] text-silver-mist">
-      Justification: <span className="text-ink-black dark:text-pearl">{details.justification}</span>
+      Route: <span className="text-ink-black dark:text-pearl">{details.fromCompanyId} → {details.toCompanyId}</span>
     </p>
   </div>
 );
 
-const DocumentDetailsView: React.FC<{ details: DocumentDetails }> = ({ details }) => (
+const CompOffDetailsView: React.FC<{ details: CompOffDetails }> = ({ details }) => (
+  <div className="space-y-2">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <DetailCell
+        icon={Calendar}
+        label="Worked Date"
+        value={new Date(details.workedDate).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })}
+      />
+      <DetailCell icon={Clock} label="Worked Hours" value={`${details.workedHours}h`} />
+      <DetailCell icon={Gift} label="Credited" value={`${details.creditedDays} day${details.creditedDays > 1 ? 's' : ''}`} />
+      <DetailCell
+        icon={Calendar}
+        label="Expires"
+        value={new Date(details.expiryDate).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })}
+      />
+    </div>
+    {details.reason && (
+      <p className="text-[10px] text-silver-mist">
+        Reason: <span className="text-ink-black dark:text-pearl">{details.reason}</span>
+      </p>
+    )}
+    {details.projectCode && (
+      <p className="text-[10px] text-silver-mist">
+        Project: <span className="text-ink-black dark:text-pearl">{details.projectCode}</span>
+      </p>
+    )}
+    {details.remainingDays !== undefined && (
+      <p className="text-[10px] text-silver-mist">
+        Remaining: <span className="text-ink-black dark:text-pearl">{details.remainingDays} day{details.remainingDays > 1 ? 's' : ''}</span>
+      </p>
+    )}
+  </div>
+);
+
+const ExitDetailsView: React.FC<{ details: ExitDetails }> = ({ details }) => (
   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-    <DetailCell icon={FileText} label="Document" value={details.documentName} />
-    <DetailCell icon={FileText} label="Type" value={details.documentType} />
-    <DetailCell icon={Clock} label="Version" value={details.version} />
+    <DetailCell icon={FileText} label="Exit Type" value={details.exitType} />
     <DetailCell
-      icon={Check}
-      label="Signature"
-      value={details.requiresSignature ? 'Required' : 'Not required'}
+      icon={Calendar}
+      label="Resignation Date"
+      value={new Date(details.resignationDate).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      })}
     />
-    {details.description && (
+    <DetailCell
+      icon={Clock}
+      label="Last Working Day"
+      value={new Date(details.lastWorkingDate).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      })}
+    />
+    {details.reason && (
       <div className="col-span-full">
-        <p className="text-[10px] text-silver-mist">{details.description}</p>
+        <p className="text-[10px] text-silver-mist">
+          Reason: <span className="text-ink-black dark:text-pearl">{details.reason}</span>
+        </p>
       </div>
+    )}
+  </div>
+);
+
+const ConfirmationDetailsView: React.FC<{ details: ConfirmationDetails }> = ({ details }) => (
+  <div className="space-y-2">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <DetailCell
+        icon={Calendar}
+        label="Eligible Date"
+        value={new Date(details.eligibleDate).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })}
+      />
+      <DetailCell
+        icon={Calendar}
+        label="Requested Date"
+        value={new Date(details.requestedDate).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })}
+      />
+      <DetailCell icon={Award} label="Manager" value={details.managerApproval} />
+      <DetailCell icon={ClipboardCheck} label="HR" value={details.hrApproval} />
+    </div>
+    {details.newSalary !== undefined && (
+      <p className="text-[10px] text-silver-mist">
+        Recommended salary:{' '}
+        <span className="text-ink-black dark:text-pearl">{details.newSalary}</span>
+      </p>
+    )}
+    {details.confirmationDate && (
+      <p className="text-[10px] text-silver-mist">
+        Confirmed on:{' '}
+        <span className="text-ink-black dark:text-pearl">
+          {new Date(details.confirmationDate).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })}
+        </span>
+      </p>
+    )}
+  </div>
+);
+
+const ShiftSwapDetailsView: React.FC<{ details: ShiftSwapDetails }> = ({ details }) => (
+  <div className="space-y-2">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <DetailCell
+        icon={Calendar}
+        label="My Shift"
+        value={new Date(details.requestorDate).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })}
+      />
+      <DetailCell
+        icon={Calendar}
+        label="Swap Date"
+        value={new Date(details.swapWithDate).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })}
+      />
+      <DetailCell icon={ArrowLeftRight} label="Peer" value={details.peerApproval} />
+      <DetailCell icon={ClipboardCheck} label="Manager" value={details.managerApproval} />
+    </div>
+    <p className="text-[10px] text-silver-mist">
+      Swap with: <span className="text-ink-black dark:text-pearl">{details.swapWithId}</span>
+    </p>
+    <p className="text-[10px] text-silver-mist">
+      Shift refs:{' '}
+      <span className="text-ink-black dark:text-pearl">
+        {details.requestorShiftId} → {details.swapWithShiftId}
+      </span>
+    </p>
+    {details.reason && (
+      <p className="text-[10px] text-silver-mist">
+        Reason: <span className="text-ink-black dark:text-pearl">{details.reason}</span>
+      </p>
+    )}
+    {details.rejectionReason && (
+      <p className="text-[10px] text-coral-alert">
+        Rejection reason:{' '}
+        <span className="text-ink-black dark:text-pearl">{details.rejectionReason}</span>
+      </p>
+    )}
+  </div>
+);
+
+const AttendanceDetailsView: React.FC<{ details: AttendanceDetails }> = ({ details }) => (
+  <div className="space-y-2">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <DetailCell
+        icon={Calendar}
+        label="Attendance Date"
+        value={new Date(details.attendanceDate).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })}
+      />
+      <DetailCell icon={ClipboardCheck} label="Request Type" value={details.regularizationType} />
+      <DetailCell
+        icon={Clock}
+        label="Clock In"
+        value={
+          details.requestedClockIn
+            ? new Date(details.requestedClockIn).toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+              })
+            : 'No change'
+        }
+      />
+      <DetailCell
+        icon={Clock}
+        label="Clock Out"
+        value={
+          details.requestedClockOut
+            ? new Date(details.requestedClockOut).toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+              })
+            : 'No change'
+        }
+      />
+    </div>
+    {details.reason && (
+      <p className="text-[10px] text-silver-mist">
+        Reason: <span className="text-ink-black dark:text-pearl">{details.reason}</span>
+      </p>
+    )}
+    {details.rejectionReason && (
+      <p className="text-[10px] text-coral-alert">
+        Rejection reason:{' '}
+        <span className="text-ink-black dark:text-pearl">{details.rejectionReason}</span>
+      </p>
     )}
   </div>
 );

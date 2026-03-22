@@ -2,27 +2,39 @@
 
 import React, { useState, useEffect } from 'react';
 import { RecruitmentSettingsService } from '../services';
+import type { EmailTemplate } from '../types';
 import {
     Mail,
     Plus,
-    Clock,
-    CheckCircle2,
-    XCircle,
-    Copy,
     Edit3,
     Eye,
     MessageSquare,
     Send
 } from 'lucide-react';
 
-const EMAIL_TEMPLATES = [
-    { id: 1, name: 'Interview Invitation', subject: 'Interview with AuraOS - {{role}}', type: 'Scheduling', usage: 125 },
-    { id: 2, name: 'Rejection Email', subject: 'Update on your application', type: 'Status Update', usage: 450 },
-    { id: 3, name: 'Technical Test Link', subject: 'Coding Assessment for {{role}}', type: 'Assessment', usage: 89 },
-];
+type EmailTemplateCard = EmailTemplate & {
+    usage: number;
+    label: string;
+};
+
+const EMAIL_TEMPLATE_LABELS: Record<EmailTemplate['type'], string> = {
+    application_received: 'Application Received',
+    interview_scheduled: 'Interview Scheduled',
+    offer_sent: 'Offer Sent',
+    rejection: 'Rejection',
+    other: 'Other',
+};
+
+function mapEmailTemplates(templates: EmailTemplate[]): EmailTemplateCard[] {
+    return templates.map((template) => ({
+        ...template,
+        usage: 0,
+        label: EMAIL_TEMPLATE_LABELS[template.type] || EMAIL_TEMPLATE_LABELS.other,
+    }));
+}
 
 export default function RecruitmentEmailsPage() {
-    const [templates, setTemplates] = useState<any[]>(EMAIL_TEMPLATES);
+    const [templates, setTemplates] = useState<EmailTemplateCard[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -33,14 +45,11 @@ export default function RecruitmentEmailsPage() {
         try {
             setLoading(true);
             const data = await RecruitmentSettingsService.getSettings();
-            if (data) {
-                // Email templates would be part of recruitment settings
-                // For now keeping mock data
-                setTemplates(EMAIL_TEMPLATES);
-            }
+            setTemplates(mapEmailTemplates(data?.emailTemplates || []));
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+            setTemplates([]);
+        } finally {
             setLoading(false);
         }
     };
@@ -62,6 +71,13 @@ export default function RecruitmentEmailsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-y-auto pb-20">
+                {!loading && templates.length === 0 && (
+                    <div className="md:col-span-2 bg-white dark:bg-slate-900 p-8 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 text-center">
+                        <p className="text-base font-semibold text-slate-700 dark:text-slate-200">No email templates configured</p>
+                        <p className="mt-2 text-sm text-slate-500">Recruitment email templates will appear here once they are added to recruitment settings.</p>
+                    </div>
+                )}
+
                 {templates.map(tpl => (
                     <div key={tpl.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-all">
                         <div className="flex justify-between items-start mb-4">
@@ -71,7 +87,7 @@ export default function RecruitmentEmailsPage() {
                                 </div>
                                 <div>
                                     <h3 className="font-bold">{tpl.name}</h3>
-                                    <span className="text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">{tpl.type}</span>
+                                    <span className="text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">{tpl.label}</span>
                                 </div>
                             </div>
                             <div className="flex items-center gap-1 text-xs text-slate-500">

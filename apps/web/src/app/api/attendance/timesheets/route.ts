@@ -13,7 +13,7 @@ export const GET = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const { searchParams } = new URL(request.url);
-      const employeeId = searchParams.get('employeeId');
+      const employeeId = searchParams.get('employeeId') || user.employeeId || user.userId;
       const startDate = searchParams.get('startDate');
       const endDate = searchParams.get('endDate');
       const status = searchParams.get('status');
@@ -139,7 +139,11 @@ export const POST = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const body = await request.json();
-      const { employeeId, weekEnding, entries } = body;
+      const employeeId =
+        body.employeeId && body.employeeId !== 'current-user' && body.employeeId !== 'current-user-id'
+          ? body.employeeId
+          : user.employeeId || user.userId;
+      const { weekEnding, entries } = body;
 
       if (!employeeId || !weekEnding || !entries) {
         return NextResponse.json(
@@ -190,6 +194,7 @@ export const POST = withEnhancedAuth(
       const newTimesheet = {
         id: `ts-${Date.now()}`,
         employeeId,
+        employeeName: '',
         weekEnding,
         totalHours,
         regularHours,

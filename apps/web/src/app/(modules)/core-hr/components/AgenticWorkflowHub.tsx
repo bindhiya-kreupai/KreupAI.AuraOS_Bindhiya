@@ -12,7 +12,7 @@ import {
     ShieldAlert,
     Search
 } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 
 const ANOMALIES = [
     { id: 'AN-22', type: 'Velocity Anomaly', detail: 'Bulk transfer (8 employees) between Aura Dubai and Riyadh initiated outside office hours.', severity: 'High', color: 'text-rose-600 bg-rose-50' },

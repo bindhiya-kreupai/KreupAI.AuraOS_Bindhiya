@@ -7,6 +7,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { EmploymentHistoryService } from '@/lib/services/employment-history.service';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 import { z } from 'zod';
 
 // API Response Standard
@@ -92,7 +94,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
  * POST /api/v1/employment-history
  * Create a new employment history record
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const { user } = context;
     const body = await request.json();
@@ -145,4 +147,9 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
 
     return NextResponse.json(response, { status: statusCode });
   }
+}), {
+  action: AuditAction.EMPLOYEE_UPDATED,
+  resourceType: 'employment_history',
+  captureRequestBody: true,
+  captureResponseBody: true,
 });

@@ -60,6 +60,12 @@ export const GET = withEnhancedAuth(
       if (employeeId) {
         filteredData = mockRosters.filter(r => r.employeeId === employeeId);
       }
+      if (startDate) {
+        filteredData = filteredData.filter(r => !r.endDate || r.endDate >= startDate);
+      }
+      if (endDate) {
+        filteredData = filteredData.filter(r => !r.startDate || r.startDate <= endDate);
+      }
 
       return NextResponse.json({
         success: true,
@@ -84,7 +90,14 @@ export const POST = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const body = await request.json();
-      const data = RosterSchema.parse(body);
+      const data = RosterSchema.parse({
+        employeeId: body.employeeId,
+        shiftId: body.shiftId,
+        startDate: body.startDate || body.date,
+        endDate: body.endDate || body.date || body.startDate,
+        isRecurring: body.isRecurring,
+        recurringDays: body.recurringDays,
+      });
 
       const newRoster = {
         id: Math.random().toString(36).substr(2, 9),

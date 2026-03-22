@@ -136,3 +136,87 @@ export const GET = withEnhancedAuth(
     }
   }
 );
+
+// POST - Resolve attendance exceptions
+export const POST = withEnhancedAuth(
+  async (request: NextRequest, { user, permissions }) => {
+    try {
+      const permissionError = requirePermission(Resource.ATTENDANCE, Action.UPDATE, permissions);
+      if (permissionError) return permissionError;
+
+      const body = await request.json();
+      const { id, action, remarks } = body as {
+        id?: string;
+        action?: 'regularize' | 'deduct';
+        remarks?: string;
+      };
+
+      if (!id || !action || !['regularize', 'deduct'].includes(action)) {
+        return NextResponse.json(
+          { success: false, error: 'id and a valid action are required' },
+          { status: 400 }
+        );
+      }
+
+      const existing = await prisma.attendanceRecord.findFirst({
+        where: { id, tenantId: user.tenantId },
+      });
+
+      if (!existing) {
+        return NextResponse.json(
+          { success: false, error: 'Attendance exception not found' },
+          { status: 404 }
+        );
+      }
+
+      const updated = await prisma.attendanceRecord.update({
+        where: { id },
+        data: {
+          approvalStatus: action === 'regularize' ? 'APPROVED' : 'REJECTED',
+          isRegularized: action === 'regularize',
+          remarks:
+            remarks ||
+            (action === 'regularize'
+              ? 'Regularized from attendance exceptions dashboard'
+              : 'Marked for leave deduction from attendance exceptions dashboard'),
+        },
+      });
+
+      const employee = await prisma.employee.findUnique({
+        where: { id: updated.employeeId },
+        select: { firstName: true, lastName: true },
+      });
+
+      let exceptionType = 'ABSENT';
+      if (updated.isLate) exceptionType = 'LATE_ARRIVAL';
+      else if (updated.isEarlyOut) exceptionType = 'EARLY_DEPARTURE';
+      else if (updated.status === 'HALF_DAY') exceptionType = 'SHORT_DURATION';
+      else if ((updated.clockIn && !updated.clockOut) || (!updated.clockIn && updated.clockOut)) {
+        exceptionType = 'MISSING_PUNCH';
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: updated.id,
+          employeeId: updated.employeeId,
+          employeeName: employee ? `${employee.firstName} ${employee.lastName}` : 'Unknown Employee',
+          date: updated.date.toISOString().split('T')[0],
+          type: exceptionType,
+          checkIn: updated.clockIn ? updated.clockIn.toISOString() : null,
+          checkOut: updated.clockOut ? updated.clockOut.toISOString() : null,
+          workHours: updated.workHours,
+          status: updated.approvalStatus,
+          isRegularized: updated.isRegularized,
+          remarks: updated.remarks,
+        },
+      });
+    } catch (error) {
+      logger.error({ error }, 'Error resolving exceptions:');
+      return NextResponse.json(
+        { success: false, error: 'Failed to resolve attendance exception' },
+        { status: 500 }
+      );
+    }
+  }
+);

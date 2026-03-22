@@ -11,7 +11,22 @@
 import { AsyncLocalStorage } from 'async_hooks';
 import { v4 as uuidv4 }     from 'uuid';
 import { getCurrentTraceContext } from './tracer';
-import type { Request, Response, NextFunction } from 'express';
+// Minimal Express types to avoid requiring @types/express as a dependency
+interface Request {
+  method: string;
+  url: string;
+  headers: Record<string, string | string[] | undefined>;
+  ip?: string;
+  socket: { remoteAddress?: string };
+}
+
+interface Response {
+  statusCode: number;
+  setHeader(name: string, value: string): void;
+  on(event: string, listener: (...args: unknown[]) => void): void;
+}
+
+type NextFunction = (err?: unknown) => void;
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -118,9 +133,10 @@ export function createLogger(
       hostname,
       ...baseContext,
       ...store,
-      correlationId: store?.correlationId ?? '', // ensure not overwritten
       ...context,
     };
+    // Ensure correlationId is not overwritten by spread
+    entry.correlationId = store?.correlationId ?? '';
 
     // Remove non-serializable fields from store leakage
     const { correlationId: _cid, ...storeRest } = store ?? {};

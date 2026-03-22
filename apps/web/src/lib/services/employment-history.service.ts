@@ -18,7 +18,14 @@ export const createEmploymentHistorySchema = z.object({
   employeeId: z.string(),
 
   // Change Details
-  changeType: z.enum(['PROMOTION', 'DEMOTION', 'TRANSFER', 'LATERAL_MOVE', 'NEW_HIRE', 'TERMINATION', 'REHIRE']),
+  changeType: z.enum([
+    'PROMOTION', 'DEMOTION', 'TRANSFER', 'LATERAL_MOVE',
+    'NEW_HIRE', 'TERMINATION', 'REHIRE', 'HIRE',
+    'PROBATION_START', 'PROBATION_CONFIRMATION',
+    'DEPARTMENT_TRANSFER', 'POSITION_CHANGE', 'GRADE_CHANGE',
+    'COMPENSATION_CHANGE', 'MANAGER_CHANGE', 'LOCATION_CHANGE',
+    'LEAVE_OF_ABSENCE', 'RETURN_FROM_LEAVE', 'STATUS_CHANGE',
+  ]),
   effectiveDate: z.string(),
   reason: z.string().optional(),
   notes: z.string().optional(),

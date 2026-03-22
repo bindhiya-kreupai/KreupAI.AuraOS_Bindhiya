@@ -1,6 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
 
 interface ApiResponse<T = any> {

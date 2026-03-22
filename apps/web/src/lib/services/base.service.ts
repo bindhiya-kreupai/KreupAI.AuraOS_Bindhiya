@@ -25,6 +25,10 @@ export abstract class BaseService {
     module: string;
     details: string;
     ipAddress?: string;
+    tenantId?: string;
+    resourceId?: string;
+    beforeValues?: Record<string, unknown>;
+    afterValues?: Record<string, unknown>;
   }) {
     try {
       // Log to application logger
@@ -40,11 +44,18 @@ export abstract class BaseService {
       // Create database audit log
       return await this.prisma.auditLog.create({
         data: {
+          tenantId: params.tenantId || 'system',
           userId: params.userId,
           action: params.action,
-          module: params.module,
+          resourceType: params.module,
+          resourceId: params.resourceId || null,
           details: params.details,
           ipAddress: params.ipAddress || 'unknown',
+          beforeValues: params.beforeValues || undefined,
+          afterValues: params.afterValues || undefined,
+          // Backward compatibility (deprecated)
+          entityType: params.module,
+          module: params.module,
         },
       });
     } catch (error) {

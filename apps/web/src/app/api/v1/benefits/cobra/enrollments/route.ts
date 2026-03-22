@@ -1,7 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-// Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
+// Tenant isolation is enforced via tenantId extracted from auth context
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -79,9 +80,10 @@ const mockEnrollments = [
   },
 ];
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    // Simulated tenant isolation: tenantId would come from validated JWT
+    const { user } = context;
+    const tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || undefined;
     const eventType = searchParams.get('eventType') || undefined;
@@ -123,4 +125,4 @@ export async function GET(request: NextRequest) {
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});

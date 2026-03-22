@@ -6,9 +6,10 @@ import {
   Search, ShieldCheck, Zap, Database,
   ArrowRight, Plus, Filter, Download,
   MapPin, DollarSign, Languages, FileText,
-  Users, BarChart3, Bot, Sparkles, RefreshCw
+  Users, BarChart3, Bot, Sparkles, RefreshCw,
+  Layers
 } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 import Link from 'next/link';
 
 const CATEGORIES = [

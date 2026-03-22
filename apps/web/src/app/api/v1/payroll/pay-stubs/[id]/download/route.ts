@@ -1,123 +1,202 @@
 /**
- * @api GET /api/v1/payroll/pay-stubs/:id/download
- * @description Download PDF pay stub for a specific pay period
+ * GET /api/v1/payroll/pay-stubs/:id/download
+ * Download payslip as a printable HTML document
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
+import { PayslipPDFGenerator } from '@/lib/services/payroll/payslip-pdf.service';
+import type { Payslip as ServicePayslip } from '@/lib/services/payroll/types';
+
+export const dynamic = 'force-dynamic';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-export async function GET(request: NextRequest, context: RouteContext) {
-  const { id } = await context.params;
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user } = context;
+    const { id } = await (context as RouteContext).params;
 
-  // In production, this would:
-  // 1. Fetch pay stub data from database
-  // 2. Generate PDF using a library (e.g., PDFKit, Puppeteer, or jsPDF)
-  // 3. Return the PDF binary
+    // Fetch payslip with payroll run (for tenant check + month + config)
+    const payslip = await prisma.payslip.findFirst({
+      where: { id },
+      include: {
+        payrollRun: {
+          include: { config: true },
+        },
+      },
+    });
 
-  const mockPayStubData = {
-    id,
-    employeeId: 'emp-001',
-    employeeName: 'John Smith',
-    employeeAddress: '123 Main Street, San Francisco, CA 94102',
-    ssn: '***-**-1234',
-    companyName: 'Aura Technologies Inc.',
-    companyAddress: '456 Market Street, San Francisco, CA 94105',
-    ein: '12-3456789',
-    payPeriod: {
-      start: '2026-01-01',
-      end: '2026-01-15',
-      payDate: '2026-01-20',
-    },
-    earnings: {
-      regular: { hours: 80, rate: 62.5, amount: 5000 },
-      overtime: { hours: 4, rate: 93.75, amount: 375 },
-      bonus: { amount: 500 },
-      grossPay: 5875,
-    },
-    deductions: {
-      federalTax: 882.75,
-      stateTax: 411.25,
-      socialSecurity: 364.25,
-      medicare: 85.19,
-      health: 140,
-      dental: 0,
-      vision: 0,
-      retirement401k: 470,
-      hsa: 200,
-      totalDeductions: 2553.44,
-    },
-    netPay: 3321.56,
-    ytd: {
-      grossPay: 5875,
-      federalTax: 882.75,
-      stateTax: 411.25,
-      socialSecurity: 364.25,
-      medicare: 85.19,
-      retirement401k: 470,
-      netPay: 3321.56,
-    },
-    directDeposit: {
-      bankName: 'Chase Bank',
-      accountLast4: '4567',
-      routingLast4: '0021',
-      amount: 3321.56,
-    },
-  };
+    if (!payslip) {
+      return NextResponse.json(
+        { success: false, error: { code: 'E4001', message: 'Payslip not found' } },
+        { status: 404 }
+      );
+    }
 
-  // Generate mock PDF content
-  const pdfContent = generateMockPDF(mockPayStubData);
+    // Tenant isolation via payrollRun
+    if (payslip.payrollRun.tenantId !== user.tenantId) {
+      return NextResponse.json(
+        { success: false, error: { code: 'E4003', message: 'Access denied' } },
+        { status: 403 }
+      );
+    }
 
-  return new NextResponse(pdfContent, {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="pay-stub-${id}.pdf"`,
-      'Content-Length': pdfContent.length.toString(),
-      'X-Pay-Stub-Id': id,
-      'X-Pay-Period': `${mockPayStubData.payPeriod.start} to ${mockPayStubData.payPeriod.end}`,
-    },
-  });
-}
+    // Get employee details for bank info and department
+    const [employee, complianceDetails] = await Promise.all([
+      prisma.employee.findFirst({
+        where: { id: payslip.employeeId, tenantId: user.tenantId },
+        select: {
+          departmentId: true,
+          designationId: true,
+          department: { select: { name: true } },
+          designation: { select: { name: true } },
+        },
+      }),
+      prisma.employeeComplianceDetails.findFirst({
+        where: { employeeId: payslip.employeeId, tenantId: user.tenantId },
+        select: { bankName: true, bankAccountNumber: true, bankIBAN: true },
+      }),
+    ]);
 
-function generateMockPDF(data: any): Buffer {
-  // In production, use PDFKit or similar:
-  // const doc = new PDFDocument();
-  // doc.text(`PAY STUB - ${data.companyName}`);
-  // doc.text(`Employee: ${data.employeeName}`);
-  // doc.text(`Pay Period: ${data.payPeriod.start} - ${data.payPeriod.end}`);
-  // ...
+    // Parse earnings and deductions JSON
+    const earningsJson = (payslip.earnings as Array<{ code: string; name: string; nameAr?: string; amount: number }>) || [];
+    const deductionsJson = (payslip.deductions as Array<{ code: string; name: string; nameAr?: string; amount: number }>) || [];
 
-  const textContent = [
-    `%PDF-1.4 (Mock PDF)`,
-    `PAY STUB`,
-    `Company: ${data.companyName}`,
-    `Employee: ${data.employeeName}`,
-    `Pay Period: ${data.payPeriod.start} to ${data.payPeriod.end}`,
-    `Pay Date: ${data.payPeriod.payDate}`,
-    ``,
-    `EARNINGS:`,
-    `  Regular: ${data.earnings.regular.hours}hrs @ $${data.earnings.regular.rate}/hr = $${data.earnings.regular.amount.toFixed(2)}`,
-    `  Overtime: ${data.earnings.overtime.hours}hrs @ $${data.earnings.overtime.rate}/hr = $${data.earnings.overtime.amount.toFixed(2)}`,
-    `  Bonus: $${data.earnings.bonus.amount.toFixed(2)}`,
-    `  Gross Pay: $${data.earnings.grossPay.toFixed(2)}`,
-    ``,
-    `DEDUCTIONS:`,
-    `  Federal Tax: $${data.deductions.federalTax.toFixed(2)}`,
-    `  State Tax: $${data.deductions.stateTax.toFixed(2)}`,
-    `  Social Security: $${data.deductions.socialSecurity.toFixed(2)}`,
-    `  Medicare: $${data.deductions.medicare.toFixed(2)}`,
-    `  Health Insurance: $${data.deductions.health.toFixed(2)}`,
-    `  401(k): $${data.deductions.retirement401k.toFixed(2)}`,
-    `  HSA: $${data.deductions.hsa.toFixed(2)}`,
-    `  Total Deductions: $${data.deductions.totalDeductions.toFixed(2)}`,
-    ``,
-    `NET PAY: $${data.netPay.toFixed(2)}`,
-    ``,
-    `Direct Deposit: ${data.directDeposit.bankName} ****${data.directDeposit.accountLast4}`,
-  ].join('\n');
+    // Build statutory deductions from individual fields
+    const statutoryDeductions: ServicePayslip['statutoryDeductions'] = [];
+    const countryCode = payslip.payrollRun.config.countryCode;
 
-  return Buffer.from(textContent, 'utf-8');
-}
+    if (countryCode === 'IN') {
+      if (Number(payslip.employeePF) > 0 || Number(payslip.employerPF) > 0) {
+        statutoryDeductions.push({
+          code: 'PF', name: 'Provident Fund', nameAr: 'صندوق التوفير',
+          employeeAmount: Number(payslip.employeePF), employerAmount: Number(payslip.employerPF),
+          totalAmount: Number(payslip.employeePF) + Number(payslip.employerPF),
+          basis: Number(payslip.basicSalary), rate: 12,
+        });
+      }
+      if (Number(payslip.employeeESI) > 0 || Number(payslip.employerESI) > 0) {
+        statutoryDeductions.push({
+          code: 'ESI', name: 'Employee State Insurance', nameAr: 'التأمين الصحي',
+          employeeAmount: Number(payslip.employeeESI), employerAmount: Number(payslip.employerESI),
+          totalAmount: Number(payslip.employeeESI) + Number(payslip.employerESI),
+          basis: Number(payslip.grossSalary), rate: 0.75,
+        });
+      }
+    } else if (countryCode === 'SA') {
+      if (Number(payslip.employeePension) > 0 || Number(payslip.employerGOSI) > 0) {
+        statutoryDeductions.push({
+          code: 'GOSI', name: 'GOSI Contribution', nameAr: 'اشتراك التأمينات',
+          employeeAmount: Number(payslip.employeePension) + Number(payslip.employeeSaned),
+          employerAmount: Number(payslip.employerGOSI),
+          totalAmount: Number(payslip.employeePension) + Number(payslip.employeeSaned) + Number(payslip.employerGOSI),
+          basis: Number(payslip.basicSalary), rate: 9.75,
+        });
+      }
+    }
+
+    // Map Prisma Payslip → service Payslip type
+    const servicePayslip: ServicePayslip = {
+      id: payslip.id,
+      payrollRunId: payslip.payrollRunId,
+      employeeId: payslip.employeeId,
+      employeeName: payslip.employeeName,
+      employeeCode: payslip.employeeCode,
+      department: employee?.department?.name || 'N/A',
+      designation: employee?.designation?.name || 'N/A',
+      month: payslip.payrollRun.payrollMonth,
+      countryCode: countryCode as any,
+      currency: payslip.payrollRun.currency,
+      totalWorkingDays: payslip.workingDays,
+      daysWorked: Number(payslip.paidDays),
+      paidLeaveDays: 0,
+      unpaidLeaveDays: 0,
+      lopDays: Number(payslip.lopDays),
+      basicSalary: Number(payslip.basicSalary),
+      earnings: earningsJson.map(e => ({
+        componentCode: e.code,
+        componentName: e.name,
+        componentNameAr: e.nameAr || e.name,
+        type: 'EARNING' as const,
+        category: 'ALLOWANCE' as const,
+        calculatedAmount: e.amount,
+        isTaxable: true,
+      })),
+      totalEarnings: Number(payslip.totalEarnings),
+      deductions: deductionsJson.map(d => ({
+        componentCode: d.code,
+        componentName: d.name,
+        componentNameAr: d.nameAr || d.name,
+        type: 'DEDUCTION' as const,
+        category: 'OTHER_DEDUCTION' as const,
+        calculatedAmount: d.amount,
+        isTaxable: false,
+      })),
+      totalDeductions: Number(payslip.totalDeductions),
+      statutoryDeductions,
+      totalStatutory: Number(payslip.totalStatutoryEmployee),
+      grossSalary: Number(payslip.grossSalary),
+      netSalary: Number(payslip.netSalary),
+      ytdGross: 0,
+      ytdDeductions: 0,
+      ytdTax: 0,
+      ytdNet: 0,
+      bankName: complianceDetails?.bankName || undefined,
+      bankAccountNumber: complianceDetails?.bankAccountNumber || undefined,
+      bankIBAN: complianceDetails?.bankIBAN || undefined,
+      status: payslip.status as any,
+      createdAt: payslip.createdAt,
+      updatedAt: payslip.updatedAt,
+    };
+
+    // Generate HTML/CSS using PayslipPDFGenerator
+    const { searchParams } = new URL(request.url);
+    const language = (searchParams.get('language') as 'en' | 'ar' | 'bilingual') || 'en';
+
+    const { html, css } = PayslipPDFGenerator.generate(servicePayslip, {
+      language,
+      showYTD: false,
+      showBankDetails: !!complianceDetails?.bankAccountNumber,
+      showStatutoryBreakdown: statutoryDeductions.length > 0,
+      showTaxDetails: Number(payslip.employeeTDS) > 0,
+      companyName: 'AuraOS',
+    });
+
+    // Build complete HTML document
+    const fullDocument = `<!DOCTYPE html>
+<html lang="${language === 'ar' ? 'ar' : 'en'}" dir="${language === 'ar' ? 'rtl' : 'ltr'}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payslip - ${payslip.employeeName} - ${payslip.payrollRun.payrollMonth}</title>
+  <style>${css}</style>
+</head>
+<body>${html}</body>
+</html>`;
+
+    const contentBuffer = Buffer.from(fullDocument, 'utf-8');
+
+    return new NextResponse(contentBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Content-Disposition': `inline; filename="payslip-${payslip.employeeCode}-${payslip.payrollRun.payrollMonth}.html"`,
+        'Content-Length': contentBuffer.length.toString(),
+        'X-Payslip-Id': payslip.id,
+        'X-Pay-Period': payslip.payrollRun.payrollMonth,
+        'Cache-Control': 'private, no-cache',
+      },
+    });
+  } catch (error) {
+    console.error('[Pay Stub Download API] GET Error:', error);
+    return NextResponse.json(
+      { success: false, error: { code: 'E5001', message: 'Failed to generate payslip' } },
+      { status: 500 }
+    );
+  }
+});

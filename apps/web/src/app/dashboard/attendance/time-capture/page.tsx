@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AttendanceCheckService } from '../services';
+import type { AttendanceCheck } from '../types';
 import {
     MapPin,
     Camera,
@@ -47,8 +48,13 @@ export default function TimeCapturePage() {
         try {
             const today = new Date().toISOString().split('T')[0];
             const result = await AttendanceCheckService.getChecks({ date: today });
-            const capturesArr = (result || []) as any[];
-            setCaptures(capturesArr as any);
+            const capturesArr = (result || []).map((check: AttendanceCheck) => ({
+                id: check.id,
+                type: check.checkType.toUpperCase() as TimeCapture['type'],
+                timestamp: check.checkTime,
+                location: check.location ? { address: check.location } : undefined,
+            }));
+            setCaptures(capturesArr);
             // Determine current status from latest check
             if (capturesArr.length > 0) {
                 const latestCheck = capturesArr[capturesArr.length - 1];

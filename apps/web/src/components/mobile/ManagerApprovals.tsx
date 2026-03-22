@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   CheckCircle,
   XCircle,
@@ -50,127 +50,9 @@ interface ApprovalRequest {
   requestedDays?: number;
 }
 
-// ── Mock Data ──────────────────────────────────────────────────────────────────
+// ── Constants ─────────────────────────────────────────────────────────────────
 
-const MOCK_APPROVALS: ApprovalRequest[] = [
-  {
-    id: 'apr-001',
-    type: 'leave',
-    employeeId: 'emp-001',
-    employeeName: 'Jane Doe',
-    employeeDept: 'Engineering',
-    avatarInitials: 'JD',
-    avatarColor: 'bg-blue-500',
-    title: 'Annual Leave',
-    subtitle: 'March 10 – March 14 (5 days)',
-    startDate: '2026-03-10',
-    endDate: '2026-03-14',
-    requestedDays: 5,
-    urgency: 'normal',
-    submittedDate: '2026-02-24',
-  },
-  {
-    id: 'apr-002',
-    type: 'expense',
-    employeeId: 'emp-002',
-    employeeName: 'John Smith',
-    employeeDept: 'Sales',
-    avatarInitials: 'JS',
-    avatarColor: 'bg-emerald-500',
-    title: 'Client Entertainment',
-    subtitle: 'February Business Dinner',
-    amount: 485.5,
-    urgency: 'normal',
-    submittedDate: '2026-02-22',
-  },
-  {
-    id: 'apr-003',
-    type: 'overtime',
-    employeeId: 'emp-003',
-    employeeName: 'Sarah Lee',
-    employeeDept: 'HR',
-    avatarInitials: 'SL',
-    avatarColor: 'bg-violet-500',
-    title: 'Overtime Claim',
-    subtitle: 'Feb 20 – 8 extra hours',
-    amount: 320,
-    urgency: 'low',
-    submittedDate: '2026-02-20',
-  },
-  {
-    id: 'apr-004',
-    type: 'profile_change',
-    employeeId: 'emp-004',
-    employeeName: 'Michael Zhang',
-    employeeDept: 'Finance',
-    avatarInitials: 'MZ',
-    avatarColor: 'bg-amber-500',
-    title: 'Bank Details Change',
-    subtitle: 'New account ending **4521',
-    urgency: 'high',
-    submittedDate: '2026-02-23',
-  },
-  {
-    id: 'apr-005',
-    type: 'leave',
-    employeeId: 'emp-005',
-    employeeName: 'Priya Patel',
-    employeeDept: 'Operations',
-    avatarInitials: 'PP',
-    avatarColor: 'bg-rose-500',
-    title: 'Sick Leave',
-    subtitle: 'Feb 26 – Feb 27 (2 days)',
-    startDate: '2026-02-26',
-    endDate: '2026-02-27',
-    requestedDays: 2,
-    urgency: 'critical',
-    submittedDate: '2026-02-25',
-  },
-  {
-    id: 'apr-006',
-    type: 'expense',
-    employeeId: 'emp-006',
-    employeeName: 'David Kim',
-    employeeDept: 'Product',
-    avatarInitials: 'DK',
-    avatarColor: 'bg-cyan-500',
-    title: 'Conference Registration',
-    subtitle: 'ProductCon 2026 — San Francisco',
-    amount: 1200,
-    urgency: 'normal',
-    submittedDate: '2026-02-21',
-  },
-  {
-    id: 'apr-007',
-    type: 'leave',
-    employeeId: 'emp-007',
-    employeeName: 'Lisa Wang',
-    employeeDept: 'Marketing',
-    avatarInitials: 'LW',
-    avatarColor: 'bg-indigo-500',
-    title: 'Parental Leave',
-    subtitle: 'March 1 – May 31 (65 days)',
-    startDate: '2026-03-01',
-    endDate: '2026-05-31',
-    requestedDays: 65,
-    urgency: 'high',
-    submittedDate: '2026-02-18',
-  },
-  {
-    id: 'apr-008',
-    type: 'overtime',
-    employeeId: 'emp-008',
-    employeeName: 'Tom Johnson',
-    employeeDept: 'Engineering',
-    avatarInitials: 'TJ',
-    avatarColor: 'bg-teal-500',
-    title: 'Weekend Overtime',
-    subtitle: 'Feb 22 – 6 hours (production incident)',
-    amount: 240,
-    urgency: 'low',
-    submittedDate: '2026-02-22',
-  },
-];
+const AVATAR_COLORS = ['bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-amber-500', 'bg-rose-500', 'bg-cyan-500', 'bg-indigo-500', 'bg-teal-500'];
 
 const TABS: { key: ActiveTab; label: string; type?: ApprovalType }[] = [
   { key: 'all', label: 'All' },
@@ -198,12 +80,43 @@ const TYPE_ICON: Record<ApprovalType, React.ElementType> = {
 
 export function ManagerApprovals() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('all');
-  const [approvals, _setApprovals] = useState<ApprovalRequest[]>(MOCK_APPROVALS);
+  const [approvals, setApprovals] = useState<ApprovalRequest[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [processed, setProcessed] = useState<Set<string>>(new Set());
+
+  const fetchApprovals = useCallback(async () => {
+    try {
+      const res = await fetch('/api/v1/approvals/pending');
+      const json = await res.json();
+      const list = json.data || [];
+      setApprovals(list.map((a: any, idx: number) => {
+        const name = a.employeeName || a.name || '';
+        const initials = name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+        return {
+          id: a.id || String(idx),
+          type: a.type || 'leave',
+          employeeId: a.employeeId || '',
+          employeeName: name,
+          employeeDept: a.department || a.employeeDept || '',
+          avatarInitials: initials,
+          avatarColor: AVATAR_COLORS[idx % AVATAR_COLORS.length],
+          title: a.title || '',
+          subtitle: a.subtitle || a.description || '',
+          amount: a.amount,
+          startDate: a.startDate,
+          endDate: a.endDate,
+          urgency: a.urgency || 'normal',
+          submittedDate: a.submittedDate || a.createdAt || '',
+          requestedDays: a.requestedDays,
+        };
+      }));
+    } catch { /* silent */ }
+  }, []);
+
+  useEffect(() => { fetchApprovals(); }, [fetchApprovals]);
 
   const filtered = activeTab === 'all' ? approvals : approvals.filter((a) => a.type === activeTab);
 
@@ -214,7 +127,10 @@ export function ManagerApprovals() {
     return approvals.filter((a) => a.type === tab && !processed.has(a.id)).length;
   };
 
-  const handleApprove = useCallback((id: string) => {
+  const handleApprove = useCallback(async (id: string) => {
+    try {
+      await fetch(`/api/v1/approvals/${id}/approve`, { method: 'POST' });
+    } catch { /* silent */ }
     setProcessed((prev) => new Set([...prev, id]));
   }, []);
 
@@ -223,8 +139,15 @@ export function ManagerApprovals() {
     setRejectReason('');
   }, []);
 
-  const confirmReject = () => {
+  const confirmReject = async () => {
     if (rejectId) {
+      try {
+        await fetch(`/api/v1/approvals/${rejectId}/reject`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: rejectReason }),
+        });
+      } catch { /* silent */ }
       setProcessed((prev) => new Set([...prev, rejectId]));
       setRejectId(null);
     }
@@ -244,13 +167,12 @@ export function ManagerApprovals() {
     setSelected(new Set());
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    setTimeout(() => {
-      setProcessed(new Set());
-      setRefreshing(false);
-    }, 1200);
-  };
+    await fetchApprovals();
+    setProcessed(new Set());
+    setRefreshing(false);
+  }, [fetchApprovals]);
 
   return (
     <div className="flex flex-col h-full bg-gray-50">

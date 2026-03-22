@@ -5,7 +5,7 @@
     "scripts": {
         "verify": "node verify-setup.js",
         "build": "turbo run build",
-        "dev": "turbo run dev --concurrency=25",
+        "dev": "turbo run dev --concurrency=30",
         "lint": "turbo run lint",
         "test": "turbo run test",
         "nav:check": "node scripts/nav-smoke.js",

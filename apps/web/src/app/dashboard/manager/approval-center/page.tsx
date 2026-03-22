@@ -5,14 +5,18 @@ import {
     CheckCircle2,
     XCircle,
     Clock,
-    Filter,
     Search,
     FileText,
     Calendar,
-    DollarSign,
-    MoreHorizontal,
     ArrowRight,
-    Loader2
+    Loader2,
+    ClipboardCheck,
+    Gift,
+    Award,
+    ArrowLeftRight,
+    Receipt,
+    Shuffle,
+    ArrowRightLeft,
 } from 'lucide-react';
 
 interface ApprovalItem {
@@ -30,9 +34,16 @@ interface ApprovalItem {
 
 interface ApprovalSummary {
     total: number;
+    expense: number;
+    'employment-history': number;
+    'inter-company-transfer': number;
     leave: number;
     overtime: number;
     exit: number;
+    attendance: number;
+    'comp-off': number;
+    confirmation: number;
+    'shift-swap': number;
 }
 
 export default function ApprovalCenterPage() {
@@ -42,6 +53,20 @@ export default function ApprovalCenterPage() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [processing, setProcessing] = useState<string | null>(null);
+
+    const filterOptions: Array<{ label: string; key?: keyof ApprovalSummary }> = [
+        { label: 'All' },
+        { label: 'Expense', key: 'expense' },
+        { label: 'Employment History', key: 'employment-history' },
+        { label: 'Company Transfer', key: 'inter-company-transfer' },
+        { label: 'Leave', key: 'leave' },
+        { label: 'Overtime', key: 'overtime' },
+        { label: 'Comp-Off', key: 'comp-off' },
+        { label: 'Confirmation', key: 'confirmation' },
+        { label: 'Shift Swap', key: 'shift-swap' },
+        { label: 'Attendance', key: 'attendance' },
+        { label: 'Exit', key: 'exit' },
+    ];
 
     useEffect(() => {
         fetchApprovals();
@@ -89,8 +114,15 @@ export default function ApprovalCenterPage() {
 
     const filteredApprovals = approvals.filter(item => {
         const matchesFilter = filter === 'All' ||
+            (filter === 'Expense' && item.requestType === 'expense') ||
+            (filter === 'Employment History' && item.requestType === 'employment-history') ||
+            (filter === 'Company Transfer' && item.requestType === 'inter-company-transfer') ||
             (filter === 'Leave' && item.requestType === 'leave') ||
             (filter === 'Overtime' && item.requestType === 'overtime') ||
+            (filter === 'Comp-Off' && item.requestType === 'comp-off') ||
+            (filter === 'Confirmation' && item.requestType === 'confirmation') ||
+            (filter === 'Shift Swap' && item.requestType === 'shift-swap') ||
+            (filter === 'Attendance' && item.requestType === 'attendance') ||
             (filter === 'Exit' && item.requestType === 'exit');
         const matchesSearch = searchQuery === '' ||
             item.requestedByName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -99,25 +131,60 @@ export default function ApprovalCenterPage() {
     });
 
     const getTypeIcon = (type: string) => {
+        if (type === 'expense') return <Receipt className="w-6 h-6" />;
+        if (type === 'employment-history') return <Shuffle className="w-6 h-6" />;
+        if (type === 'inter-company-transfer') return <ArrowRightLeft className="w-6 h-6" />;
         if (type === 'leave') return <Calendar className="w-6 h-6" />;
         if (type === 'overtime') return <Clock className="w-6 h-6" />;
+        if (type === 'comp-off') return <Gift className="w-6 h-6" />;
+        if (type === 'confirmation') return <Award className="w-6 h-6" />;
+        if (type === 'shift-swap') return <ArrowLeftRight className="w-6 h-6" />;
+        if (type === 'attendance') return <ClipboardCheck className="w-6 h-6" />;
         if (type === 'exit') return <FileText className="w-6 h-6" />;
         return <FileText className="w-6 h-6" />;
     };
 
     const getTypeStyle = (type: string) => {
+        if (type === 'expense') return 'bg-pink-50 text-pink-500 dark:bg-pink-900/20';
+        if (type === 'employment-history') return 'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/20';
+        if (type === 'inter-company-transfer') return 'bg-indigo-50 text-indigo-500 dark:bg-indigo-900/20';
         if (type === 'leave') return 'bg-amber-50 text-amber-500 dark:bg-amber-900/20';
         if (type === 'overtime') return 'bg-blue-50 text-blue-500 dark:bg-blue-900/20';
+        if (type === 'comp-off') return 'bg-emerald-50 text-emerald-500 dark:bg-emerald-900/20';
+        if (type === 'confirmation') return 'bg-sky-50 text-sky-500 dark:bg-sky-900/20';
+        if (type === 'shift-swap') return 'bg-teal-50 text-teal-500 dark:bg-teal-900/20';
+        if (type === 'attendance') return 'bg-violet-50 text-violet-500 dark:bg-violet-900/20';
         if (type === 'exit') return 'bg-rose-50 text-rose-500 dark:bg-rose-900/20';
         return 'bg-indigo-50 text-indigo-500 dark:bg-indigo-900/20';
     };
 
     const getDetailMeta = (item: ApprovalItem) => {
+        if (item.requestType === 'expense') {
+            return `${item.details?.currency || ''} ${item.details?.totalAmount || 0}`.trim();
+        }
+        if (item.requestType === 'employment-history') {
+            return item.details?.changeType?.replaceAll('_', ' ') || 'Employment Change';
+        }
+        if (item.requestType === 'inter-company-transfer') {
+            return `${item.details?.fromCompanyName || item.details?.fromCompanyId || ''} → ${item.details?.toCompanyName || item.details?.toCompanyId || ''}`.trim();
+        }
         if (item.requestType === 'leave') {
             return `${item.details?.totalDays || 0} Days`;
         }
         if (item.requestType === 'overtime') {
             return `${item.details?.totalHours || 0} Hours`;
+        }
+        if (item.requestType === 'comp-off') {
+            return `${item.details?.creditedDays || 0} Day Credit`;
+        }
+        if (item.requestType === 'attendance') {
+            return item.details?.regularizationType || 'Regularization';
+        }
+        if (item.requestType === 'confirmation') {
+            return item.details?.managerApproval || 'Confirmation';
+        }
+        if (item.requestType === 'shift-swap') {
+            return item.details?.peerApproval || 'Shift Swap';
         }
         if (item.requestType === 'exit') {
             return item.details?.exitType || 'Exit';
@@ -142,7 +209,7 @@ export default function ApprovalCenterPage() {
                         <CheckCircle2 className="w-6 h-6 text-indigo-500" />
                         Approval Center
                     </h1>
-                    <p className="text-slate-500 text-sm">Review and act on pending requests from your team.</p>
+                    <p className="text-slate-500 text-sm">Review and act on pending expense, employment history, company transfer, leave, overtime, attendance, comp-off, confirmation, shift swap, and exit requests from your team.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <span className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
@@ -153,15 +220,15 @@ export default function ApprovalCenterPage() {
 
             <div className="flex flex-col md:flex-row gap-3 justify-between items-center bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800">
                 <div className="flex gap-1 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto text-sm">
-                    {['All', 'Leave', 'Overtime', 'Exit'].map(f => (
+                    {filterOptions.map(({ label, key }) => (
                         <button
-                            key={f}
-                            onClick={() => setFilter(f)}
-                            className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${filter === f ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                            key={label}
+                            onClick={() => setFilter(label)}
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${filter === label ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                         >
-                            {f}
-                            {f !== 'All' && summary && (
-                                <span className="ml-1 text-xs">({(summary as any)[f.toLowerCase()] || 0})</span>
+                            {label}
+                            {key && summary && (
+                                <span className="ml-1 text-xs">({summary[key] || 0})</span>
                             )}
                         </button>
                     ))}

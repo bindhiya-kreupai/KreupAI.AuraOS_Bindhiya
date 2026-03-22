@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { user } = context;
+  const tenantId = user.tenantId;
+
   const forms = [
     {
       id: 'form-001',
@@ -74,9 +78,12 @@ export async function GET(request: NextRequest) {
     data: forms,
     meta: { total: forms.length, published: 4, draft: 1 },
   });
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { user } = context;
+  const tenantId = user.tenantId;
+
   const body = await request.json();
 
   const newForm = {
@@ -104,4 +111,4 @@ export async function POST(request: NextRequest) {
     { success: true, data: newForm, message: 'Form created successfully' },
     { status: 201 }
   );
-}
+});

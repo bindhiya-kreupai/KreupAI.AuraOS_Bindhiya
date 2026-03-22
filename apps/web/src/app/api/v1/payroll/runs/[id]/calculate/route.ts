@@ -1,168 +1,175 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { prisma } from '@/lib/database';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
+import { prisma } from '@aura/database';
+import { PayrollService } from '@/lib/services/payroll/payroll.service';
+import type { SupportedCountryCode } from '@/lib/services/compliance/types';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * POST /api/v1/payroll/runs/[id]/calculate
- * Trigger payroll calculation for a run
+ * Trigger payroll calculation for a run — transitions DRAFT → CALCULATED
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user } = context;
-    const { id } = context.params;
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { user } = context;
+  const { id } = context.params;
 
+  try {
+    const body = await request.json().catch(() => ({}));
+
+    // Find run with its configuration
     const run = await prisma.payrollRun.findFirst({
-      where: { id, tenantId: user.tenantId },
+      where: { id, tenantId: user.tenantId, isDeleted: false },
+      include: { config: true },
     });
 
     if (!run) {
       return NextResponse.json(
-        { success: false, error: { code: 'E4001', message: 'Payroll run not found' } },
+        {
+          success: false,
+          error: { code: 'E4001', message: 'Payroll run not found' },
+          meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+        },
         { status: 404 }
       );
     }
 
-    if (!['DRAFT', 'CALCULATION_FAILED'].includes(run.status)) {
+    if (run.status !== 'DRAFT') {
       return NextResponse.json(
         {
           success: false,
-          error: {
-            code: 'E4003',
-            message: `Cannot calculate payroll run with status: ${run.status}`,
-          },
+          error: { code: 'E4003', message: `Cannot calculate payroll run with status: ${run.status}. Must be DRAFT.` },
+          meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
         },
         { status: 422 }
       );
     }
 
-    // Update status to CALCULATING
+    // Mark as PROCESSING
     await prisma.payrollRun.update({
       where: { id },
-      data: {
-        status: 'CALCULATING',
-        calculationStartedAt: new Date(),
-        calculatedBy: user.id,
-      },
+      data: { status: 'PROCESSING' },
     });
 
-    // Fetch all active employees for this company
-    const employees = await prisma.employee.findMany({
-      where: {
-        companyId: run.companyId,
-        isDeleted: false,
-      },
-      include: {
-        salaryStructure: true,
-      },
+    // Determine country code
+    const countryCode = (body.countryCode || 'AE') as SupportedCountryCode;
+
+    // Run the real calculation engine
+    const result = await PayrollService.processPayroll({
+      tenantId: user.tenantId,
+      companyId: run.config.companyId,
+      month: run.payrollMonth,
+      countryCode,
+      employeeIds: body.employeeIds,
     });
 
-    let totalGross = 0;
-    let totalNet = 0;
-    let totalDeductions = 0;
-    let processedCount = 0;
-    let errorCount = 0;
-    const errors: string[] = [];
+    // Clear existing payslips for this run (supports recalculation)
+    await prisma.payslip.deleteMany({ where: { payrollRunId: id } });
 
-    // Process each employee's payslip
-    for (const employee of employees) {
-      try {
-        const grossSalary = employee.salaryStructure?.grossSalary || 0;
-        const deductions = grossSalary * 0.1; // Simplified: 10% deductions
-        const netSalary = grossSalary - deductions;
-
-        // Upsert payslip
-        await prisma.payslip.upsert({
-          where: {
-            payrollRunId_employeeId: { payrollRunId: id, employeeId: employee.id },
-          },
-          create: {
-            tenantId: user.tenantId,
-            payrollRunId: id,
-            employeeId: employee.id,
-            payrollMonth: run.payrollMonth,
-            grossSalary,
-            totalDeductions: deductions,
-            netSalary,
-            status: 'CALCULATED',
-            currency: run.currency || 'USD',
-          },
-          update: {
-            grossSalary,
-            totalDeductions: deductions,
-            netSalary,
-            status: 'CALCULATED',
-            calculatedAt: new Date(),
-          },
-        });
-
-        totalGross += grossSalary;
-        totalNet += netSalary;
-        totalDeductions += deductions;
-        processedCount++;
-      } catch (empError) {
-        errorCount++;
-        errors.push(
-          `Employee ${employee.employeeCode}: ${empError instanceof Error ? empError.message : 'Unknown error'}`
-        );
-      }
+    // Persist calculated payslips
+    if (result.payslips.length > 0) {
+      await prisma.payslip.createMany({
+        data: result.payslips.map(p => ({
+          payrollRunId: id,
+          employeeId: p.employeeId,
+          employeeCode: p.employeeCode,
+          employeeName: p.employeeName,
+          basicSalary: p.basicSalary,
+          earnings: p.earnings as any,
+          totalEarnings: p.totalEarnings,
+          deductions: p.deductions as any,
+          totalDeductions: p.totalDeductions,
+          employeePF: p.statutoryDeductions.find(s => s.code === 'PF_EMPLOYEE')?.employeeAmount || 0,
+          employeeESI: p.statutoryDeductions.find(s => s.code === 'ESI')?.employeeAmount || 0,
+          employeeTDS: p.taxDetails?.monthlyTds || 0,
+          employeeSaned: p.statutoryDeductions.find(s => s.code === 'GOSI_SANED')?.employeeAmount || 0,
+          employeePension: p.statutoryDeductions.find(s => s.code === 'GOSI_PENSION')?.employeeAmount || 0,
+          totalStatutoryEmployee: p.totalStatutory,
+          employerPF: p.statutoryDeductions.find(s => s.code === 'PF_EMPLOYEE')?.employerAmount || 0,
+          employerESI: p.statutoryDeductions.find(s => s.code === 'ESI')?.employerAmount || 0,
+          employerGOSI:
+            (p.statutoryDeductions.find(s => s.code === 'GOSI_PENSION')?.employerAmount || 0) +
+            (p.statutoryDeductions.find(s => s.code === 'GOSI_SANED')?.employerAmount || 0) +
+            (p.statutoryDeductions.find(s => s.code === 'GOSI_OCC_HAZARDS')?.employerAmount || 0),
+          employerPension: p.statutoryDeductions.find(s => s.code === 'GOSI_PENSION')?.employerAmount || 0,
+          totalStatutoryEmployer: p.statutoryDeductions.reduce((sum, s) => sum + s.employerAmount, 0),
+          grossSalary: p.grossSalary,
+          netSalary: p.netSalary,
+          workingDays: p.totalWorkingDays,
+          paidDays: p.daysWorked + p.paidLeaveDays,
+          lopDays: p.lopDays,
+          overtimeHours: 0,
+          overtimeAmount: 0,
+          status: 'CALCULATED',
+          createdBy: user.userId,
+        })),
+      });
     }
 
-    const finalStatus = errorCount === 0 ? 'CALCULATED' : 'CALCULATION_FAILED';
-
+    // Update run with calculated totals
     const updated = await prisma.payrollRun.update({
       where: { id },
       data: {
-        status: finalStatus,
-        totalGrossPay: totalGross,
-        totalNetPay: totalNet,
-        totalDeductions,
-        employeeCount: processedCount,
-        calculationCompletedAt: new Date(),
-        calculationErrors: errors.length > 0 ? errors : undefined,
+        status: 'CALCULATED',
+        processedAt: new Date(),
+        totalEmployees: result.totalEmployees,
+        totalGrossSalary: result.totalGross,
+        totalDeductions: result.totalDeductions,
+        totalNetSalary: result.totalNet,
+        totalEmployerCost: result.totalStatutory + result.totalNet,
+        currency: result.currency,
       },
     });
 
     return NextResponse.json({
-      success: finalStatus === 'CALCULATED',
+      success: true,
       data: {
-        run: updated,
+        run: {
+          id: updated.id,
+          status: updated.status,
+          payrollMonth: updated.payrollMonth,
+          totalEmployees: updated.totalEmployees,
+          totalGrossSalary: Number(updated.totalGrossSalary),
+          totalDeductions: Number(updated.totalDeductions),
+          totalNetSalary: Number(updated.totalNetSalary),
+          processedAt: updated.processedAt?.toISOString(),
+        },
         summary: {
-          totalEmployees: employees.length,
-          processedCount,
-          errorCount,
-          totalGrossPay: totalGross,
-          totalNetPay: totalNet,
-          totalDeductions,
-          errors: errors.slice(0, 10), // Return first 10 errors
+          totalEmployees: result.totalEmployees,
+          payslipsCreated: result.payslips.length,
+          totalGross: result.totalGross,
+          totalNet: result.totalNet,
+          totalDeductions: result.totalDeductions,
+          totalStatutory: result.totalStatutory,
         },
       },
-      message:
-        finalStatus === 'CALCULATED'
-          ? 'Payroll calculated successfully'
-          : 'Payroll calculation completed with errors',
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('[Payroll Calculate API] POST Error:', error);
 
     // Reset run status on failure
     try {
       await prisma.payrollRun.update({
-        where: { id: context.params.id },
-        data: { status: 'CALCULATION_FAILED' },
+        where: { id },
+        data: { status: 'DRAFT', notes: `Calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}` },
       });
-    } catch {}
+    } catch { /* ignore recovery errors */ }
 
     return NextResponse.json(
-      { success: false, error: { code: 'E5001', message: 'Failed to calculate payroll run' } },
+      {
+        success: false,
+        error: { code: 'E5001', message: error instanceof Error ? error.message : 'Failed to calculate payroll run' },
+        meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      },
       { status: 500 }
     );
   }
+}), {
+  action: AuditAction.PAYROLL_RUN_INITIATED,
+  resourceType: 'payroll_run',
+  extractResourceId: (req: any, ctx: any) => ctx?.params?.id,
 });

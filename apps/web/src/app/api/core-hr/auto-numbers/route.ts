@@ -65,6 +65,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     return NextResponse.json(
       {
         entityType: validated.entityType.toUpperCase(),
+        number: nextNumber,
         generatedNumber: nextNumber,
       },
       { status: 201 }

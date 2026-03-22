@@ -1,6 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 import { prisma } from '@/lib/database';
 
 export const dynamic = 'force-dynamic';
@@ -63,7 +65,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
  * POST /api/v1/payroll/runs
  * Create a new payroll run
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user } = context;
     const body = await request.json();
@@ -138,4 +140,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       { status: 500 }
     );
   }
+}), {
+  action: AuditAction.PAYROLL_RUN_INITIATED,
+  resourceType: 'payroll_run',
+  captureRequestBody: true,
 });

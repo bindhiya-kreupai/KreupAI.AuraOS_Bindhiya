@@ -68,8 +68,8 @@ export default function AttendanceExceptionsPage() {
     const handleResolve = async (id: string | number, action: 'regularize' | 'deduct') => {
         setLoading(true);
         try {
-            // TODO: Implement exception resolution via API
-                        await fetchExceptions();
+            await AttendanceAnalyticsService.resolveException(id, action);
+            await fetchExceptions();
         } catch (error) {
             console.error('Error:', error);
                     } finally {

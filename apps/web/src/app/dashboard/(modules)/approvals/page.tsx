@@ -20,7 +20,7 @@ export default function ApprovalsPage() {
           Approval Center
         </h1>
         <p className="text-sm text-silver-mist mt-0.5">
-          Review and manage leave, expense, timesheet, requisition, and document approvals.
+          Review and manage expense, employment change, company transfer, leave, overtime, comp-off, confirmation, shift swap, attendance regularization, and exit approvals.
         </p>
       </div>
 

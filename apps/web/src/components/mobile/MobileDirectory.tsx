@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import {
   Search,
   Phone,
@@ -38,335 +38,8 @@ interface DirectoryEntry {
   isFavorite: boolean;
 }
 
-// ── Mock Data ──────────────────────────────────────────────────────────────────
-
-const MOCK_DIRECTORY: DirectoryEntry[] = [
-  {
-    id: 'e1',
-    name: 'Alex Mercer',
-    firstName: 'Alex',
-    designation: 'CEO',
-    department: 'Executive',
-    location: 'San Francisco',
-    email: 'alex.mercer@company.com',
-    phone: '+1 555 220 4020',
-    avatarInitials: 'AM',
-    avatarColor: 'bg-amber-500',
-    isFavorite: false,
-  },
-  {
-    id: 'e2',
-    name: 'Anna Rodriguez',
-    firstName: 'Anna',
-    designation: 'Chief Product Officer',
-    department: 'Product',
-    location: 'San Francisco',
-    email: 'anna.rodriguez@company.com',
-    phone: '+1 555 216 4016',
-    avatarInitials: 'AR',
-    avatarColor: 'bg-teal-500',
-    isFavorite: false,
-  },
-  {
-    id: 'e3',
-    name: 'Ben Harris',
-    firstName: 'Ben',
-    designation: 'VP Customer Success',
-    department: 'Customer Success',
-    location: 'San Francisco',
-    email: 'ben.harris@company.com',
-    phone: '+1 555 217 4017',
-    avatarInitials: 'BH',
-    avatarColor: 'bg-blue-500',
-    isFavorite: false,
-  },
-  {
-    id: 'e4',
-    name: 'Daniel Taylor',
-    firstName: 'Daniel',
-    designation: 'Data Scientist',
-    department: 'Engineering',
-    location: 'San Francisco',
-    email: 'daniel.taylor@company.com',
-    phone: '+1 555 222 4022',
-    avatarInitials: 'DT',
-    avatarColor: 'bg-cyan-500',
-    isFavorite: true,
-  },
-  {
-    id: 'e5',
-    name: 'David Kim',
-    firstName: 'David',
-    designation: 'Senior Product Manager',
-    department: 'Product',
-    location: 'San Francisco',
-    email: 'david.kim@company.com',
-    phone: '+1 555 206 4006',
-    avatarInitials: 'DK',
-    avatarColor: 'bg-cyan-600',
-    isFavorite: false,
-  },
-  {
-    id: 'e6',
-    name: 'Diana Foster',
-    firstName: 'Diana',
-    designation: 'Chief People Officer',
-    department: 'Human Resources',
-    location: 'San Francisco',
-    email: 'diana.foster@company.com',
-    phone: '+1 555 213 4013',
-    avatarInitials: 'DF',
-    avatarColor: 'bg-pink-500',
-    isFavorite: true,
-  },
-  {
-    id: 'e7',
-    name: 'Emily Chen',
-    firstName: 'Emily',
-    designation: 'Customer Success Manager',
-    department: 'Customer Success',
-    location: 'San Francisco',
-    email: 'emily.chen@company.com',
-    phone: '+1 555 209 4009',
-    avatarInitials: 'EC',
-    avatarColor: 'bg-rose-500',
-    isFavorite: false,
-  },
-  {
-    id: 'e8',
-    name: 'Ethan Scott',
-    firstName: 'Ethan',
-    designation: 'DevOps Engineer',
-    department: 'Engineering',
-    location: 'Austin',
-    email: 'ethan.scott@company.com',
-    phone: '+1 555 224 4024',
-    avatarInitials: 'ES',
-    avatarColor: 'bg-teal-500',
-    isFavorite: false,
-  },
-  {
-    id: 'e9',
-    name: 'James Wilson',
-    firstName: 'James',
-    designation: 'VP Operations',
-    department: 'Operations',
-    location: 'Austin',
-    email: 'james.wilson@company.com',
-    phone: '+1 555 215 4015',
-    avatarInitials: 'JW',
-    avatarColor: 'bg-indigo-500',
-    isFavorite: false,
-  },
-  {
-    id: 'e10',
-    name: 'Jane Doe',
-    firstName: 'Jane',
-    designation: 'Sr. Software Engineer',
-    department: 'Engineering',
-    location: 'San Francisco',
-    email: 'jane.doe@company.com',
-    phone: '+1 555 201 4001',
-    avatarInitials: 'JD',
-    avatarColor: 'bg-blue-500',
-    isFavorite: true,
-  },
-  {
-    id: 'e11',
-    name: 'John Smith',
-    firstName: 'John',
-    designation: 'Sales Manager',
-    department: 'Sales & Marketing',
-    location: 'New York',
-    email: 'john.smith@company.com',
-    phone: '+1 555 202 4002',
-    avatarInitials: 'JS',
-    avatarColor: 'bg-emerald-500',
-    isFavorite: false,
-  },
-  {
-    id: 'e12',
-    name: 'Karen White',
-    firstName: 'Karen',
-    designation: 'VP Engineering',
-    department: 'Engineering',
-    location: 'San Francisco',
-    email: 'karen.white@company.com',
-    phone: '+1 555 211 4011',
-    avatarInitials: 'KW',
-    avatarColor: 'bg-violet-500',
-    isFavorite: false,
-  },
-  {
-    id: 'e13',
-    name: 'Kevin Park',
-    firstName: 'Kevin',
-    designation: 'Software Engineer',
-    department: 'Engineering',
-    location: 'Austin',
-    email: 'kevin.park@company.com',
-    phone: '+1 555 219 4019',
-    avatarInitials: 'KP',
-    avatarColor: 'bg-violet-600',
-    isFavorite: false,
-  },
-  {
-    id: 'e14',
-    name: 'Lisa Wang',
-    firstName: 'Lisa',
-    designation: 'Marketing Specialist',
-    department: 'Sales & Marketing',
-    location: 'New York',
-    email: 'lisa.wang@company.com',
-    phone: '+1 555 207 4007',
-    avatarInitials: 'LW',
-    avatarColor: 'bg-indigo-600',
-    isFavorite: false,
-  },
-  {
-    id: 'e15',
-    name: 'Michael Zhang',
-    firstName: 'Michael',
-    designation: 'Sr. Financial Analyst',
-    department: 'Finance',
-    location: 'New York',
-    email: 'michael.zhang@company.com',
-    phone: '+1 555 204 4004',
-    avatarInitials: 'MZ',
-    avatarColor: 'bg-amber-500',
-    isFavorite: false,
-  },
-  {
-    id: 'e16',
-    name: 'Mia Nguyen',
-    firstName: 'Mia',
-    designation: 'Account Executive',
-    department: 'Sales & Marketing',
-    location: 'New York',
-    email: 'mia.nguyen@company.com',
-    phone: '+1 555 223 4023',
-    avatarInitials: 'MN',
-    avatarColor: 'bg-rose-600',
-    isFavorite: false,
-  },
-  {
-    id: 'e17',
-    name: 'Olivia Brown',
-    firstName: 'Olivia',
-    designation: 'UX Designer',
-    department: 'Product',
-    location: 'San Francisco',
-    email: 'olivia.brown@company.com',
-    phone: '+1 555 221 4021',
-    avatarInitials: 'OB',
-    avatarColor: 'bg-emerald-600',
-    isFavorite: false,
-  },
-  {
-    id: 'e18',
-    name: 'Patricia Moore',
-    firstName: 'Patricia',
-    designation: 'Chief Financial Officer',
-    department: 'Finance',
-    location: 'New York',
-    email: 'patricia.moore@company.com',
-    phone: '+1 555 214 4014',
-    avatarInitials: 'PM',
-    avatarColor: 'bg-cyan-700',
-    isFavorite: false,
-  },
-  {
-    id: 'e19',
-    name: 'Priya Patel',
-    firstName: 'Priya',
-    designation: 'Operations Analyst',
-    department: 'Operations',
-    location: 'Austin',
-    email: 'priya.patel@company.com',
-    phone: '+1 555 205 4005',
-    avatarInitials: 'PP',
-    avatarColor: 'bg-rose-500',
-    isFavorite: false,
-  },
-  {
-    id: 'e20',
-    name: 'Robert Brown',
-    firstName: 'Robert',
-    designation: 'Legal Counsel',
-    department: 'Legal',
-    location: 'New York',
-    email: 'robert.brown@company.com',
-    phone: '+1 555 210 4010',
-    avatarInitials: 'RB',
-    avatarColor: 'bg-blue-700',
-    isFavorite: false,
-  },
-  {
-    id: 'e21',
-    name: 'Robert Chen',
-    firstName: 'Robert',
-    designation: 'VP Sales',
-    department: 'Sales & Marketing',
-    location: 'New York',
-    email: 'robert.chen@company.com',
-    phone: '+1 555 212 4012',
-    avatarInitials: 'RC',
-    avatarColor: 'bg-amber-600',
-    isFavorite: false,
-  },
-  {
-    id: 'e22',
-    name: 'Samantha Mills',
-    firstName: 'Samantha',
-    designation: 'General Counsel',
-    department: 'Legal',
-    location: 'New York',
-    email: 'samantha.mills@company.com',
-    phone: '+1 555 218 4018',
-    avatarInitials: 'SM',
-    avatarColor: 'bg-teal-600',
-    isFavorite: false,
-  },
-  {
-    id: 'e23',
-    name: 'Sarah Lee',
-    firstName: 'Sarah',
-    designation: 'HR Business Partner',
-    department: 'Human Resources',
-    location: 'San Francisco',
-    email: 'sarah.lee@company.com',
-    phone: '+1 555 203 4003',
-    avatarInitials: 'SL',
-    avatarColor: 'bg-violet-600',
-    isFavorite: false,
-  },
-  {
-    id: 'e24',
-    name: 'Sophia Adams',
-    firstName: 'Sophia',
-    designation: 'HR Coordinator',
-    department: 'Human Resources',
-    location: 'San Francisco',
-    email: 'sophia.adams@company.com',
-    phone: '+1 555 225 4025',
-    avatarInitials: 'SA',
-    avatarColor: 'bg-blue-600',
-    isFavorite: false,
-  },
-  {
-    id: 'e25',
-    name: 'Tom Johnson',
-    firstName: 'Tom',
-    designation: 'Lead Engineer',
-    department: 'Engineering',
-    location: 'Austin',
-    email: 'tom.johnson@company.com',
-    phone: '+1 555 208 4008',
-    avatarInitials: 'TJ',
-    avatarColor: 'bg-amber-600',
-    isFavorite: true,
-  },
-];
+// ── Avatar colors for consistent assignment ──────────────────────────────────
+const AVATAR_COLORS = ['bg-amber-500', 'bg-teal-500', 'bg-blue-500', 'bg-cyan-500', 'bg-pink-500', 'bg-rose-500', 'bg-indigo-500', 'bg-violet-500', 'bg-emerald-500', 'bg-cyan-600'];
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -376,9 +49,36 @@ export function MobileDirectory() {
   const [deptFilter, setDeptFilter] = useState<string>('all');
   const [locationFilter, setLocationFilter] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
-  const [directory, setDirectory] = useState(MOCK_DIRECTORY);
+  const [directory, setDirectory] = useState<DirectoryEntry[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<DirectoryEntry | null>(null);
   const debounceTimer = useRef<NodeJS.Timeout>();
+
+  const fetchDirectory = useCallback(async () => {
+    try {
+      const res = await fetch('/api/v1/directory');
+      const json = await res.json();
+      const list = json.data || [];
+      setDirectory(list.map((e: any, idx: number) => {
+        const name = e.name || `${e.firstName || ''} ${e.lastName || ''}`.trim();
+        const initials = name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+        return {
+          id: e.id || String(idx),
+          name,
+          firstName: e.firstName || name.split(' ')[0],
+          designation: e.designation || e.jobTitle || e.position || '',
+          department: e.department || e.departmentName || '',
+          location: e.location || e.city || '',
+          email: e.email || '',
+          phone: e.phone || e.phoneNumber || '',
+          avatarInitials: initials,
+          avatarColor: AVATAR_COLORS[idx % AVATAR_COLORS.length],
+          isFavorite: e.isFavorite ?? false,
+        };
+      }));
+    } catch { /* silent */ }
+  }, []);
+
+  useEffect(() => { fetchDirectory(); }, [fetchDirectory]);
 
   // Debounce search
   useEffect(() => {
@@ -388,12 +88,12 @@ export function MobileDirectory() {
   }, [rawQuery]);
 
   const departments = useMemo(
-    () => ['all', ...Array.from(new Set(MOCK_DIRECTORY.map((e) => e.department))).sort()],
-    []
+    () => ['all', ...Array.from(new Set(directory.map((e) => e.department).filter(Boolean))).sort()],
+    [directory]
   );
   const locations = useMemo(
-    () => ['all', ...Array.from(new Set(MOCK_DIRECTORY.map((e) => e.location))).sort()],
-    []
+    () => ['all', ...Array.from(new Set(directory.map((e) => e.location).filter(Boolean))).sort()],
+    [directory]
   );
 
   const filtered = useMemo(() => {

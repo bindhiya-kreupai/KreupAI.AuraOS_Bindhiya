@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { CandidateApplicationService } from '../services';
 import type {
+    CandidateApplication,
     DragStartEvent,
     DragOverEvent,
     DragEndEvent} from '@dnd-kit/core';
@@ -66,6 +67,27 @@ const EMPTY_BOARD: Record<string, Candidate[]> = {
     offer: [],
 };
 
+function mapApplicationToCandidate(app: CandidateApplication): Candidate {
+    return {
+        id: app.id,
+        name: `${app.firstName || ''} ${app.lastName || ''}`.trim() || 'Unknown',
+        role: app.jobTitle || 'N/A',
+        matchScore: app.rating ? Math.round(app.rating * 20) : 0,
+        rating: app.rating || 0,
+        location: app.location || 'Unknown',
+        avatar: `https://i.pravatar.cc/150?u=${app.id}`,
+    };
+}
+
+function normalizeStage(app: CandidateApplication): keyof typeof EMPTY_BOARD {
+    const stage = String(app.currentStage || app.status || 'applied').toLowerCase();
+
+    if (stage.includes('screen')) return 'screening';
+    if (stage.includes('interview')) return 'interview';
+    if (stage.includes('offer')) return 'offer';
+    return 'applied';
+}
+
 export default function ApplicationTrackingPage() {
     const [items, setItems] = useState<Record<string, Candidate[]>>(EMPTY_BOARD);
     const [activeId, setActiveId] = useState<string | null>(null);
@@ -87,23 +109,9 @@ export default function ApplicationTrackingPage() {
                 offer: []
             };
 
-            data.forEach((app: any) => {
-                const candidate = {
-                    id: app.id,
-                    name: app.candidateName || app.candidate?.firstName ? `${app.candidate?.firstName} ${app.candidate?.lastName}` : 'Unknown',
-                    role: app.positionAppliedFor || 'N/A',
-                    matchScore: app.overallRating ? Math.round(app.overallRating * 20) : 0,
-                    rating: app.overallRating || 0,
-                    location: app.location || 'Unknown',
-                    avatar: `https://i.pravatar.cc/150?u=${app.id}`
-                };
-
-                const stage = (app.currentStage || app.status || 'applied').toLowerCase();
-                if (grouped[stage]) {
-                    grouped[stage].push(candidate);
-                } else {
-                    grouped['applied'].push(candidate);
-                }
+            data.forEach((app) => {
+                const candidate = mapApplicationToCandidate(app as CandidateApplication);
+                grouped[normalizeStage(app as CandidateApplication)].push(candidate);
             });
 
             setItems(grouped);

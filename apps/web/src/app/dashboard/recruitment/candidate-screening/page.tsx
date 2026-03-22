@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CandidateApplicationService } from '../services';
+import type { CandidateApplication } from '../types';
 import {
     Filter,
     CheckSquare,
@@ -12,8 +13,21 @@ import {
     Loader2
 } from 'lucide-react';
 
+function getCandidateName(candidate: CandidateApplication, index: number): string {
+    const fullName = `${candidate.firstName || ''} ${candidate.lastName || ''}`.trim();
+    return fullName || (candidate as any).candidateName || `Candidate ${index + 1}`;
+}
+
+function getCandidateRole(candidate: CandidateApplication): string {
+    return candidate.jobTitle || (candidate as any).positionAppliedFor || 'N/A';
+}
+
+function getMatchScore(candidate: CandidateApplication): number {
+    return candidate.rating ? Math.round(candidate.rating * 20) : 0;
+}
+
 export default function CandidateScreeningPage() {
-    const [candidates, setCandidates] = useState<any[]>([]);
+    const [candidates, setCandidates] = useState<CandidateApplication[]>([]);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ pending: 0, shortlisted: 0, rejected: 0 });
 
@@ -28,9 +42,9 @@ export default function CandidateScreeningPage() {
             setCandidates(data);
 
             // Calculate stats from real data
-            const pending = data.filter((c: any) => !c.screeningStatus || c.screeningStatus === 'pending').length;
-            const shortlisted = data.filter((c: any) => c.screeningStatus === 'shortlisted').length;
-            const rejected = data.filter((c: any) => c.screeningStatus === 'rejected' || c.status === 'rejected').length;
+            const pending = data.filter((candidate: any) => !candidate.screeningStatus || candidate.screeningStatus === 'pending').length;
+            const shortlisted = data.filter((candidate: any) => candidate.screeningStatus === 'shortlisted').length;
+            const rejected = data.filter((candidate: any) => candidate.screeningStatus === 'rejected' || candidate.status === 'rejected').length;
             setStats({ pending, shortlisted, rejected });
         } catch (error) {
             console.error('Error:', error);
@@ -112,10 +126,10 @@ export default function CandidateScreeningPage() {
                             <p className="text-sm text-slate-400 dark:text-slate-500">Candidates will appear here when they move to the screening stage.</p>
                         </div>
                     )}
-                    {candidates.map((candidate: any, i: number) => {
-                        const name = candidate.candidateName || candidate.candidate?.firstName ? `${candidate.candidate?.firstName || ''} ${candidate.candidate?.lastName || ''}`.trim() : `Candidate ${i + 1}`;
-                        const role = candidate.positionAppliedFor || 'N/A';
-                        const matchScore = candidate.overallRating ? Math.round(candidate.overallRating * 20) : 0;
+                    {candidates.map((candidate, i) => {
+                        const name = getCandidateName(candidate, i);
+                        const role = getCandidateRole(candidate);
+                        const matchScore = getMatchScore(candidate);
 
                         return (
                             <div key={candidate.id || i} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">

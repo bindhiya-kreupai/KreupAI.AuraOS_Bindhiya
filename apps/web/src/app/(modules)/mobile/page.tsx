@@ -10,7 +10,7 @@ import {
   MonitorSmartphone, Tablet, Watch,
   AppWindow, ChevronRight
 } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 
 // ── Mock Data ──────────────────────────────────────────────────────────
 const MOBILE_STATS = [

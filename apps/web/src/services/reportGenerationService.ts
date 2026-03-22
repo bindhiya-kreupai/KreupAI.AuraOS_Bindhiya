@@ -432,208 +432,8 @@ const REPORT_TEMPLATES: ReportTemplate[] = [
 ];
 
 // ============================================================================
-// MOCK DATA — Report History
+// (Mock history, scheduled, and preview data removed — all data from API)
 // ============================================================================
-
-const MOCK_HISTORY: GeneratedReport[] = [
-  {
-    id: 'gen-001',
-    templateId: 'rpt-headcount',
-    templateName: 'Headcount Report',
-    category: 'hr',
-    title: 'Headcount Report — Q4 2025',
-    parameters: {
-      templateId: 'rpt-headcount',
-      dateRange: { start: '2025-10-01', end: '2025-12-31' },
-      format: 'excel',
-    },
-    status: 'ready',
-    format: 'excel',
-    rowCount: 48,
-    fileSize: 45056,
-    downloadUrl: '/reports/gen-001.xlsx',
-    generatedAt: '2026-01-05T10:23:00Z',
-    expiresAt: '2026-04-05T10:23:00Z',
-    generatedBy: 'hr-admin',
-  },
-  {
-    id: 'gen-002',
-    templateId: 'rpt-payroll-summary',
-    templateName: 'Payroll Summary',
-    category: 'payroll',
-    title: 'Payroll Summary — January 2026',
-    parameters: {
-      templateId: 'rpt-payroll-summary',
-      dateRange: { start: '2026-01-01', end: '2026-01-31' },
-      format: 'pdf',
-    },
-    status: 'ready',
-    format: 'pdf',
-    rowCount: 62,
-    fileSize: 128000,
-    downloadUrl: '/reports/gen-002.pdf',
-    generatedAt: '2026-02-02T09:00:00Z',
-    expiresAt: '2026-05-02T09:00:00Z',
-    generatedBy: 'payroll-admin',
-  },
-  {
-    id: 'gen-003',
-    templateId: 'rpt-attendance-summary',
-    templateName: 'Attendance Summary',
-    category: 'attendance',
-    title: 'Attendance Summary — February 2026',
-    parameters: {
-      templateId: 'rpt-attendance-summary',
-      dateRange: { start: '2026-02-01', end: '2026-02-28' },
-      format: 'excel',
-    },
-    status: 'generating',
-    format: 'excel',
-    generatedAt: '2026-02-25T08:50:00Z',
-    expiresAt: '2026-05-25T08:50:00Z',
-    generatedBy: 'hr-manager',
-  },
-];
-
-const MOCK_SCHEDULED: ScheduledReport[] = [
-  {
-    id: 'sched-001',
-    templateId: 'rpt-headcount',
-    templateName: 'Headcount Report',
-    category: 'hr',
-    parameters: { templateId: 'rpt-headcount', format: 'excel' },
-    schedule: {
-      frequency: 'monthly',
-      dayOfMonth: 1,
-      time: '08:00',
-      timezone: 'America/New_York',
-    },
-    recipients: ['hr-director@company.com', 'ceo@company.com'],
-    isActive: true,
-    lastRunAt: '2026-02-01T08:00:00Z',
-    nextRunAt: '2026-03-01T08:00:00Z',
-    createdBy: 'hr-admin',
-    createdAt: '2025-12-01T00:00:00Z',
-  },
-  {
-    id: 'sched-002',
-    templateId: 'rpt-attendance-summary',
-    templateName: 'Attendance Summary',
-    category: 'attendance',
-    parameters: { templateId: 'rpt-attendance-summary', format: 'excel' },
-    schedule: {
-      frequency: 'weekly',
-      dayOfWeek: 1, // Monday
-      time: '07:30',
-      timezone: 'America/New_York',
-    },
-    recipients: ['operations@company.com'],
-    isActive: true,
-    lastRunAt: '2026-02-24T07:30:00Z',
-    nextRunAt: '2026-03-03T07:30:00Z',
-    createdBy: 'operations-manager',
-    createdAt: '2026-01-01T00:00:00Z',
-  },
-];
-
-// ============================================================================
-// SAMPLE PREVIEW DATA (per template)
-// ============================================================================
-
-const PREVIEW_DATA: Record<string, ReportPreviewData> = {
-  'rpt-headcount': {
-    columns: [
-      {
-        field: 'department',
-        label: 'Department',
-        type: 'string',
-        sortable: true,
-        filterable: true,
-      },
-      { field: 'active', label: 'Active', type: 'number', sortable: true, filterable: false },
-      { field: 'onLeave', label: 'On Leave', type: 'number', sortable: true, filterable: false },
-      { field: 'total', label: 'Total', type: 'number', sortable: true, filterable: false },
-      {
-        field: 'changePercent',
-        label: 'vs Last Month',
-        type: 'string',
-        sortable: false,
-        filterable: false,
-      },
-    ],
-    rows: [
-      { department: 'Engineering', active: 48, onLeave: 3, total: 51, changePercent: '+2.0%' },
-      {
-        department: 'Sales & Marketing',
-        active: 32,
-        onLeave: 1,
-        total: 33,
-        changePercent: '+0.0%',
-      },
-      { department: 'Human Resources', active: 12, onLeave: 0, total: 12, changePercent: '+8.3%' },
-      { department: 'Finance', active: 10, onLeave: 0, total: 10, changePercent: '0.0%' },
-      { department: 'Product', active: 15, onLeave: 1, total: 16, changePercent: '+6.7%' },
-    ],
-    totalRows: 8,
-    sampleNote: 'Showing 5 of 8 departments. Generate report for full data.',
-  },
-  'rpt-payroll-summary': {
-    columns: [
-      {
-        field: 'department',
-        label: 'Department',
-        type: 'string',
-        sortable: true,
-        filterable: true,
-      },
-      { field: 'employees', label: 'Employees', type: 'number', sortable: true, filterable: false },
-      {
-        field: 'grossPay',
-        label: 'Gross Pay',
-        type: 'currency',
-        sortable: true,
-        filterable: false,
-      },
-      {
-        field: 'deductions',
-        label: 'Deductions',
-        type: 'currency',
-        sortable: true,
-        filterable: false,
-      },
-      { field: 'tax', label: 'Tax', type: 'currency', sortable: true, filterable: false },
-      { field: 'netPay', label: 'Net Pay', type: 'currency', sortable: true, filterable: false },
-    ],
-    rows: [
-      {
-        department: 'Engineering',
-        employees: 51,
-        grossPay: 510000,
-        deductions: 25500,
-        tax: 127500,
-        netPay: 357000,
-      },
-      {
-        department: 'Sales & Marketing',
-        employees: 33,
-        grossPay: 396000,
-        deductions: 19800,
-        tax: 99000,
-        netPay: 277200,
-      },
-      {
-        department: 'Human Resources',
-        employees: 12,
-        grossPay: 120000,
-        deductions: 6000,
-        tax: 30000,
-        netPay: 84000,
-      },
-    ],
-    totalRows: 8,
-    sampleNote: 'Showing 3 of 8 departments (sample data).',
-  },
-};
 
 // ============================================================================
 // SERVICE CLASS
@@ -667,46 +467,7 @@ export class ReportGenerationService {
    * Generate a report (async — returns immediately with queued status)
    */
   static async generateReport(params: ReportParameters): Promise<GeneratedReport> {
-    try {
-      return await APIClient.post<GeneratedReport>('/v1/reports/generate', params);
-    } catch {
-      const template = REPORT_TEMPLATES.find((t) => t.id === params.templateId);
-      const report: GeneratedReport = {
-        id: `gen-${Date.now()}`,
-        templateId: params.templateId,
-        templateName: template?.name ?? 'Custom Report',
-        category: template?.category ?? 'hr',
-        title:
-          params.title ??
-          `${template?.name ?? 'Report'} — ${new Date().toLocaleDateString('en-US', {
-            month: 'long',
-            year: 'numeric',
-          })}`,
-        parameters: params,
-        status: 'generating',
-        format: params.format,
-        generatedAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-        generatedBy: 'current-user',
-      };
-
-      // Simulate async generation
-      MOCK_HISTORY.unshift(report);
-      setTimeout(() => {
-        const idx = MOCK_HISTORY.findIndex((r) => r.id === report.id);
-        if (idx >= 0) {
-          MOCK_HISTORY[idx] = {
-            ...MOCK_HISTORY[idx],
-            status: 'ready',
-            rowCount: Math.floor(Math.random() * 200) + 10,
-            fileSize: Math.floor(Math.random() * 500000) + 10000,
-            downloadUrl: `/reports/${report.id}.${params.format}`,
-          };
-        }
-      }, 3000);
-
-      return report;
-    }
+    return await APIClient.post<GeneratedReport>('/v1/reports/generate', params);
   }
 
   /**
@@ -716,12 +477,7 @@ export class ReportGenerationService {
     try {
       return await APIClient.get<GeneratedReport[]>('/v1/reports/history', filters);
     } catch {
-      let results = [...MOCK_HISTORY];
-      if (filters.category) results = results.filter((r) => r.category === filters.category);
-      if (filters.status) results = results.filter((r) => r.status === filters.status);
-      if (filters.startDate) results = results.filter((r) => r.generatedAt >= filters.startDate!);
-      if (filters.endDate) results = results.filter((r) => r.generatedAt <= filters.endDate!);
-      return results;
+      return [];
     }
   }
 
@@ -732,7 +488,7 @@ export class ReportGenerationService {
     try {
       return await APIClient.get<GeneratedReport>(`/v1/reports/history/${id}`);
     } catch {
-      return MOCK_HISTORY.find((r) => r.id === id) ?? null;
+      return null;
     }
   }
 
@@ -743,7 +499,7 @@ export class ReportGenerationService {
     try {
       return await APIClient.get<ReportPreviewData>(`/v1/reports/templates/${templateId}/preview`);
     } catch {
-      return PREVIEW_DATA[templateId] ?? null;
+      return null;
     }
   }
 
@@ -751,29 +507,7 @@ export class ReportGenerationService {
    * Schedule a recurring report
    */
   static async scheduleReport(input: ScheduleReportInput): Promise<ScheduledReport> {
-    try {
-      return await APIClient.post<ScheduledReport>('/v1/reports/schedules', input);
-    } catch {
-      const template = REPORT_TEMPLATES.find((t) => t.id === input.templateId);
-      const now = new Date();
-      const nextRun = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-      const scheduled: ScheduledReport = {
-        id: `sched-${Date.now()}`,
-        templateId: input.templateId,
-        templateName: template?.name ?? 'Custom Report',
-        category: template?.category ?? 'hr',
-        parameters: { templateId: input.templateId, ...input.parameters },
-        schedule: input.schedule,
-        recipients: input.recipients,
-        isActive: true,
-        nextRunAt: nextRun.toISOString(),
-        createdBy: 'current-user',
-        createdAt: now.toISOString(),
-      };
-      MOCK_SCHEDULED.push(scheduled);
-      return scheduled;
-    }
+    return await APIClient.post<ScheduledReport>('/v1/reports/schedules', input);
   }
 
   /**
@@ -783,7 +517,7 @@ export class ReportGenerationService {
     try {
       return await APIClient.get<ScheduledReport[]>('/v1/reports/schedules');
     } catch {
-      return MOCK_SCHEDULED;
+      return [];
     }
   }
 
@@ -791,24 +525,14 @@ export class ReportGenerationService {
    * Delete or deactivate a scheduled report
    */
   static async deleteScheduledReport(scheduleId: string): Promise<void> {
-    try {
-      await APIClient.delete(`/v1/reports/schedules/${scheduleId}`);
-    } catch {
-      const idx = MOCK_SCHEDULED.findIndex((s) => s.id === scheduleId);
-      if (idx >= 0) MOCK_SCHEDULED.splice(idx, 1);
-    }
+    await APIClient.delete(`/v1/reports/schedules/${scheduleId}`);
   }
 
   /**
    * Toggle a template's favorite status
    */
   static async toggleFavorite(templateId: string): Promise<void> {
-    try {
-      await APIClient.post(`/v1/reports/templates/${templateId}/favorite`, {});
-    } catch {
-      const tpl = REPORT_TEMPLATES.find((t) => t.id === templateId);
-      if (tpl) tpl.isFavorite = !tpl.isFavorite;
-    }
+    await APIClient.post(`/v1/reports/templates/${templateId}/favorite`, {});
   }
 
   /**

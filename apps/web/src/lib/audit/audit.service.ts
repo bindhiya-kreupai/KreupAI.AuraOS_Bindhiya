@@ -5,6 +5,8 @@
 
 import { logger } from '../logger';
 import { redis } from '../cache/redis';
+import { prisma } from '@aura/database';
+import type { AuditAction as PrismaAuditAction, AuditSeverity as PrismaAuditSeverity } from '@prisma/client';
 
 export enum AuditAction {
   // Employee actions
@@ -110,42 +112,68 @@ export interface AuditSearchFilters {
 }
 
 /**
- * Audit Service
+ * Audit Service — persists to PostgreSQL via Prisma, caches in Redis
  */
 export class AuditService {
-  private readonly AUDIT_RETENTION_DAYS = 90; // Keep audit logs for 90 days
+  private readonly AUDIT_RETENTION_DAYS = 90;
 
   /**
-   * Log an audit entry
+   * Log an audit entry — primary write to PostgreSQL, secondary cache to Redis
    */
   async log(entry: Omit<AuditLogEntry, 'id' | 'timestamp'>): Promise<string> {
-    const auditEntry: AuditLogEntry = {
-      id: crypto.randomUUID(),
-      ...entry,
-      timestamp: new Date().toISOString(),
-    };
+    const id = crypto.randomUUID();
+    const timestamp = new Date();
 
     try {
-      // Store in database (TODO: Implement with Prisma)
-      // await prisma.auditLog.create({ data: auditEntry });
+      // Primary: persist to PostgreSQL
+      await prisma.auditLog.create({
+        data: {
+          id,
+          tenantId: entry.tenantId,
+          companyId: entry.companyId || null,
+          userId: entry.userId || null,
+          userEmail: entry.userEmail || null,
+          action: entry.action as unknown as PrismaAuditAction,
+          severity: (entry.severity || AuditSeverity.LOW) as unknown as PrismaAuditSeverity,
+          resourceType: entry.resourceType,
+          resourceId: entry.resourceId || null,
+          success: entry.success ?? true,
+          errorMessage: entry.errorMessage || null,
+          beforeValues: entry.changes?.before || undefined,
+          afterValues: entry.changes?.after || undefined,
+          ipAddress: entry.metadata?.ipAddress || null,
+          userAgent: entry.metadata?.userAgent || null,
+          metadata: entry.metadata || undefined,
+          timestamp,
+          // Backward compatibility (deprecated)
+          entityType: entry.resourceType,
+          entityId: entry.resourceId || null,
+        },
+      });
 
-      // Store in Redis for quick access (last 1000 entries per tenant)
-      await this.storeInRedis(auditEntry);
+      // Secondary: cache in Redis for real-time dashboard
+      const auditEntry: AuditLogEntry = {
+        id,
+        ...entry,
+        timestamp: timestamp.toISOString(),
+      };
+      await this.storeInRedis(auditEntry).catch(() => {
+        // Redis failure should not break audit logging
+      });
 
-      // Log to file for compliance
       logger.info(
         {
-          auditId: auditEntry.id,
-          action: auditEntry.action,
-          userId: auditEntry.userId,
-          resourceType: auditEntry.resourceType,
-          resourceId: auditEntry.resourceId,
-          severity: auditEntry.severity,
+          auditId: id,
+          action: entry.action,
+          userId: entry.userId,
+          resourceType: entry.resourceType,
+          resourceId: entry.resourceId,
+          severity: entry.severity,
         },
         'Audit log entry created'
       );
 
-      return auditEntry.id;
+      return id;
     } catch (error) {
       logger.error({ error, entry }, 'Failed to create audit log entry');
       throw error;
@@ -301,52 +329,53 @@ export class AuditService {
   }
 
   /**
-   * Search audit logs
+   * Search audit logs with pagination and filters
    */
   async search(filters: AuditSearchFilters): Promise<{
-    entries: AuditLogEntry[];
+    items: AuditLogEntry[];
     total: number;
     page: number;
-    totalPages: number;
+    pageSize: number;
+    hasNextPage: boolean;
   }> {
-    // TODO: Implement with Prisma
-    // const where = {
-    //   tenantId: filters.tenantId,
-    //   companyId: filters.companyId,
-    //   userId: filters.userId,
-    //   action: filters.action,
-    //   resourceType: filters.resourceType,
-    //   resourceId: filters.resourceId,
-    //   severity: filters.severity,
-    //   success: filters.success,
-    //   timestamp: {
-    //     gte: filters.startDate,
-    //     lte: filters.endDate,
-    //   },
-    // };
-
-    // const [entries, total] = await Promise.all([
-    //   prisma.auditLog.findMany({
-    //     where,
-    //     orderBy: { timestamp: 'desc' },
-    //     skip: (filters.page - 1) * filters.limit,
-    //     take: filters.limit,
-    //   }),
-    //   prisma.auditLog.count({ where }),
-    // ]);
-
     const page = filters.page || 1;
-    const limit = filters.limit || 20;
+    const pageSize = filters.limit || 20;
+    const skip = (page - 1) * pageSize;
 
-    // Mock data
-    const entries: AuditLogEntry[] = [];
-    const total = 0;
+    const where: Record<string, unknown> = {};
+    if (filters.tenantId) where.tenantId = filters.tenantId;
+    if (filters.companyId) where.companyId = filters.companyId;
+    if (filters.userId) where.userId = filters.userId;
+    if (filters.action) where.action = filters.action;
+    if (filters.resourceType) where.resourceType = filters.resourceType;
+    if (filters.resourceId) where.resourceId = filters.resourceId;
+    if (filters.severity) where.severity = filters.severity;
+    if (filters.success !== undefined) where.success = filters.success;
+    if (filters.startDate || filters.endDate) {
+      where.timestamp = {
+        ...(filters.startDate ? { gte: new Date(filters.startDate) } : {}),
+        ...(filters.endDate ? { lte: new Date(filters.endDate) } : {}),
+      };
+    }
+
+    const [rows, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        orderBy: { timestamp: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      prisma.auditLog.count({ where }),
+    ]);
+
+    const items: AuditLogEntry[] = rows.map((row) => this.mapRowToEntry(row));
 
     return {
-      entries,
+      items,
       total,
       page,
-      totalPages: Math.ceil(total / limit),
+      pageSize,
+      hasNextPage: skip + pageSize < total,
     };
   }
 
@@ -354,45 +383,47 @@ export class AuditService {
    * Get audit trail for a specific resource
    */
   async getResourceAuditTrail(
+    tenantId: string,
     resourceType: string,
     resourceId: string,
     options?: { limit?: number }
   ): Promise<AuditLogEntry[]> {
-    // TODO: Implement with Prisma
-    // return await prisma.auditLog.findMany({
-    //   where: { resourceType, resourceId },
-    //   orderBy: { timestamp: 'desc' },
-    //   take: options?.limit || 50,
-    // });
+    const rows = await prisma.auditLog.findMany({
+      where: { tenantId, resourceType, resourceId },
+      orderBy: { timestamp: 'desc' },
+      take: options?.limit || 50,
+    });
 
-    return [];
+    return rows.map((row) => this.mapRowToEntry(row));
   }
 
   /**
    * Get user activity
    */
   async getUserActivity(
+    tenantId: string,
     userId: string,
     options?: { startDate?: string; endDate?: string; limit?: number }
   ): Promise<AuditLogEntry[]> {
-    // TODO: Implement with Prisma
-    // return await prisma.auditLog.findMany({
-    //   where: {
-    //     userId,
-    //     timestamp: {
-    //       gte: options?.startDate,
-    //       lte: options?.endDate,
-    //     },
-    //   },
-    //   orderBy: { timestamp: 'desc' },
-    //   take: options?.limit || 100,
-    // });
+    const where: Record<string, unknown> = { tenantId, userId };
+    if (options?.startDate || options?.endDate) {
+      where.timestamp = {
+        ...(options?.startDate ? { gte: new Date(options.startDate) } : {}),
+        ...(options?.endDate ? { lte: new Date(options.endDate) } : {}),
+      };
+    }
 
-    return [];
+    const rows = await prisma.auditLog.findMany({
+      where,
+      orderBy: { timestamp: 'desc' },
+      take: options?.limit || 100,
+    });
+
+    return rows.map((row) => this.mapRowToEntry(row));
   }
 
   /**
-   * Generate compliance report
+   * Generate compliance report with aggregated data
    */
   async generateComplianceReport(
     tenantId: string,
@@ -405,18 +436,122 @@ export class AuditService {
     failedActions: number;
     topUsers: Array<{ userId: string; userEmail: string; actionCount: number }>;
   }> {
-    // TODO: Implement with Prisma aggregations
+    const dateFilter = {
+      tenantId,
+      timestamp: { gte: new Date(startDate), lte: new Date(endDate) },
+    };
+
+    const [totalActions, failedActions, byAction, bySeverity, topUsersRaw] = await Promise.all([
+      prisma.auditLog.count({ where: dateFilter }),
+      prisma.auditLog.count({ where: { ...dateFilter, success: false } }),
+      prisma.auditLog.groupBy({
+        by: ['action'],
+        where: dateFilter,
+        _count: { action: true },
+      }),
+      prisma.auditLog.groupBy({
+        by: ['severity'],
+        where: dateFilter,
+        _count: { severity: true },
+      }),
+      prisma.auditLog.groupBy({
+        by: ['userId', 'userEmail'],
+        where: dateFilter,
+        _count: { userId: true },
+        orderBy: { _count: { userId: 'desc' } },
+        take: 10,
+      }),
+    ]);
+
+    const actionsByType: Record<string, number> = {};
+    for (const row of byAction) {
+      actionsByType[row.action] = row._count.action;
+    }
+
+    const actionsBySeverity: Record<string, number> = {};
+    for (const row of bySeverity) {
+      actionsBySeverity[row.severity] = row._count.severity;
+    }
+
+    const topUsers = topUsersRaw
+      .filter((r) => r.userId)
+      .map((r) => ({
+        userId: r.userId!,
+        userEmail: r.userEmail || '',
+        actionCount: r._count.userId,
+      }));
+
     return {
-      totalActions: 0,
-      actionsByType: {},
-      actionsBySeverity: {},
-      failedActions: 0,
-      topUsers: [],
+      totalActions,
+      actionsByType,
+      actionsBySeverity,
+      failedActions,
+      topUsers,
     };
   }
 
   /**
-   * Store audit entry in Redis for quick access
+   * Cleanup old audit logs — archive then delete
+   */
+  async cleanup(): Promise<number> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - this.AUDIT_RETENTION_DAYS);
+
+    // Find records to archive
+    const recordsToArchive = await prisma.auditLog.findMany({
+      where: { timestamp: { lt: cutoffDate } },
+      take: 5000, // Process in batches
+    });
+
+    if (recordsToArchive.length === 0) {
+      logger.info('No audit logs to archive');
+      return 0;
+    }
+
+    // Archive then delete in a transaction
+    const archivedCount = await prisma.$transaction(async (tx) => {
+      // Insert into archive
+      await tx.auditLogArchive.createMany({
+        data: recordsToArchive.map((row) => ({
+          id: row.id,
+          tenantId: row.tenantId,
+          companyId: row.companyId,
+          userId: row.userId,
+          userEmail: row.userEmail,
+          action: row.action,
+          severity: row.severity,
+          resourceType: row.resourceType || '',
+          resourceId: row.resourceId,
+          success: row.success,
+          errorMessage: row.errorMessage,
+          beforeValues: row.beforeValues || undefined,
+          afterValues: row.afterValues || undefined,
+          ipAddress: row.ipAddress,
+          userAgent: row.userAgent,
+          metadata: row.metadata || undefined,
+          timestamp: row.timestamp,
+          createdBy: row.createdBy,
+        })),
+        skipDuplicates: true,
+      });
+
+      // Delete archived records from main table
+      const ids = recordsToArchive.map((r) => r.id);
+      await tx.auditLog.deleteMany({ where: { id: { in: ids } } });
+
+      return recordsToArchive.length;
+    });
+
+    logger.info(
+      { cutoffDate: cutoffDate.toISOString(), archivedCount },
+      'Audit logs archived and cleaned up'
+    );
+
+    return archivedCount;
+  }
+
+  /**
+   * Store audit entry in Redis for quick access (secondary cache)
    */
   private async storeInRedis(entry: AuditLogEntry): Promise<void> {
     const key = `audit:${entry.tenantId}:recent`;
@@ -430,6 +565,35 @@ export class AuditService {
     }
 
     await redis.set(key, entries, 86400 * 7); // 7 days TTL
+  }
+
+  /**
+   * Map a Prisma row to an AuditLogEntry interface
+   */
+  private mapRowToEntry(row: any): AuditLogEntry {
+    return {
+      id: row.id,
+      action: row.action as AuditAction,
+      severity: row.severity as AuditSeverity,
+      userId: row.userId || '',
+      userEmail: row.userEmail || '',
+      tenantId: row.tenantId,
+      companyId: row.companyId || '',
+      resourceType: row.resourceType || row.entityType || '',
+      resourceId: row.resourceId || row.entityId || undefined,
+      changes: {
+        before: row.beforeValues || undefined,
+        after: row.afterValues || undefined,
+      },
+      metadata: {
+        ipAddress: row.ipAddress || undefined,
+        userAgent: row.userAgent || undefined,
+        ...(row.metadata && typeof row.metadata === 'object' ? row.metadata : {}),
+      },
+      timestamp: row.timestamp instanceof Date ? row.timestamp.toISOString() : row.timestamp,
+      success: row.success ?? true,
+      errorMessage: row.errorMessage || undefined,
+    };
   }
 
   /**
@@ -469,30 +633,6 @@ export class AuditService {
     } else {
       return AuditSeverity.LOW;
     }
-  }
-
-  /**
-   * Cleanup old audit logs (run as scheduled job)
-   */
-  async cleanup(): Promise<number> {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - this.AUDIT_RETENTION_DAYS);
-
-    // TODO: Implement with Prisma
-    // const result = await prisma.auditLog.deleteMany({
-    //   where: {
-    //     timestamp: {
-    //       lt: cutoffDate.toISOString(),
-    //     },
-    //   },
-    // });
-
-    logger.info(
-      { cutoffDate: cutoffDate.toISOString(), deletedCount: 0 },
-      'Audit logs cleanup completed'
-    );
-
-    return 0;
   }
 }
 

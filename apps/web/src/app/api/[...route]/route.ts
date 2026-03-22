@@ -1,56 +1,82 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { getMockData } from '@/lib/mock-registry';
+
+const isDev = process.env.NODE_ENV === 'development';
 
 /**
- * Universal Mock Handler
- * Intercepts all unhandled API requests and attempts to serve data from the Mock Registry.
+ * Catch-all route handler for unmatched API paths.
+ *
+ * PRODUCTION: Returns 501 Not Implemented. Never serves mock data.
+ * DEVELOPMENT: Returns 501 Not Implemented with diagnostic information.
+ *
+ * This handler exists to surface missing API implementations explicitly
+ * rather than silently failing or returning fake data.
  */
-export async function GET(request: NextRequest, { params }: { params: { route: string[] } }) {
-  const routePath = params.route;
-  const mockData = getMockData(routePath);
+function buildErrorResponse(method: string, routePath: string[]) {
+  const path = `/api/${routePath.join('/')}`;
+  const timestamp = new Date().toISOString();
 
-  if (mockData) {
-    console.warn(`[Mock API] Serving mock data for: /api/${routePath.join('/')}`);
-    return NextResponse.json(mockData);
+  const body: Record<string, unknown> = {
+    error: 'Not Implemented',
+    message: `API endpoint not implemented: ${method} ${path}`,
+    messageAr: `نقطة نهاية API غير مطبقة: ${method} ${path}`,
+    status: 501,
+    path,
+    method,
+    timestamp,
+  };
+
+  if (isDev) {
+    body.hint =
+      'This path has no dedicated route handler. Create a route.ts file in the corresponding app/api/ directory.';
   }
 
-  // Fallback for completely unknown routes
-  console.warn(`[Mock API] No mock data found for: /api/${routePath.join('/')}`);
-  return NextResponse.json(
-    { error: `Mock endpoint not found: /api/${routePath.join('/')}`, valid: false },
-    { status: 404 }
+  // Structured logging for observability
+  console.warn(
+    JSON.stringify({
+      level: 'warn',
+      msg: `Unimplemented API hit: ${method} ${path}`,
+      method,
+      path,
+      timestamp,
+      environment: process.env.NODE_ENV,
+    })
   );
+
+  return NextResponse.json(body, { status: 501 });
 }
 
-export async function POST(request: NextRequest, { params }: { params: { route: string[] } }) {
-  const routePath = params.route;
-  const body = await request.json().catch(() => ({}));
-
-  console.warn(`[Mock API] POST received for: /api/${routePath.join('/')}`, body);
-
-  // Generic success response for write operations
-  return NextResponse.json(
-    { success: true, message: 'Mock action completed', data: body },
-    { status: 201 }
-  );
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: { route: string[] } }
+) {
+  return buildErrorResponse('GET', params.route);
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { route: string[] } }) {
-  const routePath = params.route;
-  const body = await request.json().catch(() => ({}));
-
-  console.warn(`[Mock API] PUT received for: /api/${routePath.join('/')}`, body);
-
-  return NextResponse.json(
-    { success: true, message: 'Mock update completed', data: body },
-    { status: 200 }
-  );
+export async function POST(
+  _request: NextRequest,
+  { params }: { params: { route: string[] } }
+) {
+  return buildErrorResponse('POST', params.route);
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { route: string[] } }) {
-  const routePath = params.route;
-  console.warn(`[Mock API] DELETE received for: /api/${routePath.join('/')}`);
+export async function PUT(
+  _request: NextRequest,
+  { params }: { params: { route: string[] } }
+) {
+  return buildErrorResponse('PUT', params.route);
+}
 
-  return NextResponse.json({ success: true, message: 'Mock deletion completed' }, { status: 200 });
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: { route: string[] } }
+) {
+  return buildErrorResponse('DELETE', params.route);
+}
+
+export async function PATCH(
+  _request: NextRequest,
+  { params }: { params: { route: string[] } }
+) {
+  return buildErrorResponse('PATCH', params.route);
 }

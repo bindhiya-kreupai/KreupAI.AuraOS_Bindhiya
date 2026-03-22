@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { JobOfferService } from '../services';
+import type { JobOffer } from '../types';
 import {
     FileSignature,
     Send,
@@ -12,8 +13,45 @@ import {
     Loader2
 } from 'lucide-react';
 
+function getOfferStageLabel(status: JobOffer['status'] | string) {
+    switch (status) {
+        case 'draft': return 'Draft';
+        case 'pending_approval': return 'Pending Approval';
+        case 'approved': return 'Approved';
+        case 'sent': return 'Sent to Candidate';
+        case 'accepted': return 'Accepted';
+        case 'declined': return 'Declined';
+        case 'withdrawn': return 'Withdrawn';
+        case 'expired': return 'Expired';
+        default:
+            return String(status || '')
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, character => character.toUpperCase());
+    }
+}
+
+function getOfferStatusStyle(status: JobOffer['status'] | string) {
+    switch (status) {
+        case 'accepted': return 'bg-emerald-100 text-emerald-600';
+        case 'pending_approval':
+        case 'draft':
+        case 'approved':
+            return 'bg-amber-100 text-amber-600';
+        case 'declined':
+        case 'withdrawn':
+        case 'expired':
+            return 'bg-rose-100 text-rose-600';
+        default:
+            return 'bg-indigo-100 text-indigo-600';
+    }
+}
+
+function getOfferValue(offer: JobOffer): string {
+    return `${offer.currency || 'USD'} ${Number(offer.salary || 0).toLocaleString()}`;
+}
+
 export default function OfferManagementPage() {
-    const [offers, setOffers] = useState<any[]>([]);
+    const [offers, setOffers] = useState<JobOffer[]>([]);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ pending: 0, accepted: 0, awaitingSignature: 0 });
 
@@ -27,23 +65,14 @@ export default function OfferManagementPage() {
             const data = await JobOfferService.getOffers();
             setOffers(data);
 
-            const awaitingSignature = data.filter((o: any) => o.status === 'sent').length;
-            const accepted = data.filter((o: any) => o.status === 'accepted').length;
-            const pending = data.filter((o: any) => o.status === 'pending' || o.status === 'draft').length;
+            const awaitingSignature = data.filter((offer) => offer.status === 'sent').length;
+            const accepted = data.filter((offer) => offer.status === 'accepted').length;
+            const pending = data.filter((offer) => offer.status === 'pending_approval' || offer.status === 'draft').length;
             setStats({ pending, accepted, awaitingSignature });
         } catch (error) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleCreateOffer = async (offerData: any) => {
-        try {
-            await JobOfferService.createOffer(offerData);
-            await fetchOffers();
-        } catch (error) {
-            console.error('Error:', error);
         }
     };
 
@@ -53,27 +82,6 @@ export default function OfferManagementPage() {
             await fetchOffers();
         } catch (error) {
             console.error('Error:', error);
-        }
-    };
-
-    const getOfferStageLabel = (status: string) => {
-        switch (status) {
-            case 'draft': return 'Draft';
-            case 'pending': return 'Pending Approval';
-            case 'approved': return 'Approved';
-            case 'sent': return 'Sent to Candidate';
-            case 'accepted': return 'Accepted';
-            case 'declined': return 'Declined';
-            default: return status;
-        }
-    };
-
-    const getOfferStatusStyle = (status: string) => {
-        switch (status) {
-            case 'accepted': return 'bg-emerald-100 text-emerald-600';
-            case 'pending': case 'draft': case 'approved': return 'bg-amber-100 text-amber-600';
-            case 'declined': return 'bg-rose-100 text-rose-600';
-            default: return 'bg-indigo-100 text-indigo-600';
         }
     };
 
@@ -133,26 +141,35 @@ export default function OfferManagementPage() {
                             <p className="text-sm text-slate-400 dark:text-slate-500">Create your first offer to get started.</p>
                         </div>
                     )}
-                    {offers.map((offer: any) => (
+                    {offers.map((offer) => (
                         <div key={offer.id} className="p-4 flex items-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                             <div className="w-1/3">
                                 <div className="font-bold flex items-center gap-2">
                                     <User className="w-4 h-4 text-slate-400" />
-                                    {offer.jobTitle || 'Untitled Position'}
+                                    {offer.candidateName || 'Candidate'}
                                 </div>
-                                <div className="text-xs text-slate-500 ml-6">{offer.department || 'No department'}</div>
+                                <div className="text-xs text-slate-500 ml-6">{offer.jobTitle || 'Untitled Position'} • {offer.departmentName || 'No department'}</div>
                             </div>
                             <div className="w-1/3">
                                 <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold ${getOfferStatusStyle(offer.status)}`}>
                                     {offer.status === 'accepted' && <CheckCircle className="w-3 h-3" />}
-                                    {(offer.status === 'pending' || offer.status === 'draft') && <Clock className="w-3 h-3" />}
+                                    {(offer.status === 'pending_approval' || offer.status === 'draft') && <Clock className="w-3 h-3" />}
                                     {getOfferStageLabel(offer.status)}
                                 </div>
+                                <div className="mt-2 text-xs text-slate-500">{getOfferValue(offer)} • Starts {offer.startDate ? new Date(offer.startDate).toLocaleDateString() : 'TBD'}</div>
                             </div>
                             <div className="w-1/3 flex justify-end gap-2">
                                 <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                                     <Download className="w-4 h-4" />
                                 </button>
+                                {offer.status === 'approved' && (
+                                    <button
+                                        onClick={() => handleSendOffer(offer.id)}
+                                        className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700"
+                                    >
+                                        Send Offer
+                                    </button>
+                                )}
                                 <button className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700">
                                     View Details
                                 </button>

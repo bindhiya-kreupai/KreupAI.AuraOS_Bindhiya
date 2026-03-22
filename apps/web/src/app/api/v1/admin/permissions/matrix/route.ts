@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { user } = context;
+  const tenantId = user.tenantId;
+
   const permissionMatrix = {
     roles: [
       { id: 'role-001', name: 'Super Admin', level: 0, userCount: 3 },
@@ -57,27 +63,38 @@ export async function GET(request: NextRequest) {
   };
 
   return NextResponse.json({ success: true, data: permissionMatrix });
-}
+});
 
-export async function PUT(request: NextRequest) {
-  const body = await request.json();
+export const PUT = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    const { user } = context;
+    const tenantId = user.tenantId;
 
-  const updatedPermissions = {
-    roleId: body.roleId || 'role-004',
-    moduleId: body.moduleId || 'mod-analytics',
-    permissions: body.permissions || ['read', 'export'],
-    updatedAt: new Date().toISOString(),
-    updatedBy: 'admin-001',
-    changelog: {
-      previous: ['read'],
-      current: ['read', 'export'],
-      reason: body.reason || 'Granting export access to department managers',
-    },
-  };
+    const body = await request.json();
 
-  return NextResponse.json({
-    success: true,
-    data: updatedPermissions,
-    message: 'Permissions updated successfully',
-  });
-}
+    const updatedPermissions = {
+      roleId: body.roleId || 'role-004',
+      moduleId: body.moduleId || 'mod-analytics',
+      permissions: body.permissions || ['read', 'export'],
+      updatedAt: new Date().toISOString(),
+      updatedBy: 'admin-001',
+      changelog: {
+        previous: ['read'],
+        current: ['read', 'export'],
+        reason: body.reason || 'Granting export access to department managers',
+      },
+    };
+
+    return NextResponse.json({
+      success: true,
+      data: updatedPermissions,
+      message: 'Permissions updated successfully',
+    });
+  }),
+  {
+    action: AuditAction.PERMISSION_GRANTED,
+    resourceType: 'permission_matrix',
+    captureRequestBody: true,
+    captureResponseBody: true,
+  }
+);

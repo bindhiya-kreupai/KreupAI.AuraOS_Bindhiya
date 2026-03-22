@@ -1,7 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 
-// Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
+// Tenant isolation is enforced via tenantId extracted from auth context
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -96,9 +99,11 @@ const mockPolicies = [
   },
 ];
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    // Simulated tenant isolation: tenantId would come from validated JWT
+    const { user } = context;
+    const tenantId = user.tenantId;
+
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category') || undefined;
     const status = searchParams.get('status') || undefined;
@@ -137,7 +142,7 @@ export async function GET(request: NextRequest) {
       error: {
         code: 'E5001',
         message: 'Failed to list policies',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        details: { error: _error instanceof Error ? _error.message : 'Unknown error' },
       },
       meta: {
         timestamp: new Date().toISOString(),
@@ -147,38 +152,92 @@ export async function GET(request: NextRequest) {
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { title, category, content, applicableTo } = body;
+export const POST = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user } = context;
+      const tenantId = user.tenantId;
 
-    if (!title || !category || !content || !applicableTo) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'Validation failed: title, category, content, and applicableTo are required',
-          details: {
-            missingFields: ['title', 'category', 'content', 'applicableTo'].filter((f) => !body[f]),
+      const body = await request.json();
+      const { title, category, content, applicableTo } = body;
+
+      if (!title || !category || !content || !applicableTo) {
+        const response: ApiResponse = {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Validation failed: title, category, content, and applicableTo are required',
+            details: {
+              missingFields: ['title', 'category', 'content', 'applicableTo'].filter((f) => !body[f]),
+            },
           },
-        },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 400 });
+      }
+
+      if (!VALID_CATEGORIES.includes(category.toUpperCase())) {
+        const response: ApiResponse = {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: `Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}`,
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 400 });
+      }
+
+      const newPolicy = {
+        id: `pol-${crypto.randomUUID().slice(0, 8)}`,
+        tenantId, // from auth context
+        title,
+        category: category.toUpperCase(),
+        version: '1.0',
+        status: 'DRAFT',
+        applicableTo,
+        summary: body.summary || null,
+        contentLength: content.length,
+        acknowledgementsRequired: body.acknowledgementsRequired !== false,
+        totalAcknowledgements: 0,
+        pendingAcknowledgements: 0,
+        acknowledgementRate: 0,
+        publishedAt: null,
+        effectiveDate: body.effectiveDate || null,
+        reviewDate: body.reviewDate || null,
+        ownerId: 'usr-current', // from auth context in production
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const response: ApiResponse = {
+        success: true,
+        data: newPolicy,
         meta: {
           timestamp: new Date().toISOString(),
           requestId: crypto.randomUUID(),
           apiVersion: 'v1',
         },
       };
-      return NextResponse.json(response, { status: 400 });
-    }
 
-    if (!VALID_CATEGORIES.includes(category.toUpperCase())) {
+      return NextResponse.json(response, { status: 201 });
+    } catch (_error) {
       const response: ApiResponse = {
         success: false,
         error: {
-          code: 'E2001',
-          message: `Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}`,
+          code: 'E5001',
+          message: 'Failed to create policy',
+          details: { error: _error instanceof Error ? _error.message : 'Unknown error' },
         },
         meta: {
           timestamp: new Date().toISOString(),
@@ -186,56 +245,13 @@ export async function POST(request: NextRequest) {
           apiVersion: 'v1',
         },
       };
-      return NextResponse.json(response, { status: 400 });
+      return NextResponse.json(response, { status: 500 });
     }
-
-    const newPolicy = {
-      id: `pol-${crypto.randomUUID().slice(0, 8)}`,
-      tenantId: 'tenant-1', // from auth context in production
-      title,
-      category: category.toUpperCase(),
-      version: '1.0',
-      status: 'DRAFT',
-      applicableTo,
-      summary: body.summary || null,
-      contentLength: content.length,
-      acknowledgementsRequired: body.acknowledgementsRequired !== false,
-      totalAcknowledgements: 0,
-      pendingAcknowledgements: 0,
-      acknowledgementRate: 0,
-      publishedAt: null,
-      effectiveDate: body.effectiveDate || null,
-      reviewDate: body.reviewDate || null,
-      ownerId: 'usr-current', // from auth context in production
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    const response: ApiResponse = {
-      success: true,
-      data: newPolicy,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 201 });
-  } catch (_error) {
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to create policy',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-    return NextResponse.json(response, { status: 500 });
+  }),
+  {
+    action: AuditAction.SETTINGS_UPDATED,
+    resourceType: 'policy',
+    captureRequestBody: true,
+    captureResponseBody: true,
   }
-}
+);

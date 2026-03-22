@@ -1,9 +1,39 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { prisma } from '@/lib/database';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
+import { prisma } from '@aura/database';
 
 export const dynamic = 'force-dynamic';
+
+function normalizeStage(stage?: string): string | undefined {
+  if (!stage) {
+    return undefined;
+  }
+
+  const stageMap: Record<string, string> = {
+    applied: 'APPLIED',
+    screening: 'SCREENING',
+    phone_screen: 'PHONE_INTERVIEW',
+    technical: 'TECHNICAL_INTERVIEW',
+    hr_interview: 'HIRING_MANAGER_INTERVIEW',
+    offer: 'OFFER',
+    hired: 'HIRED',
+    rejected: 'REJECTED',
+  };
+
+  return stageMap[stage] || stage.toUpperCase();
+}
+
+async function getTenantUserIds(tenantId: string): Promise<string[]> {
+  const users = await prisma.user.findMany({
+    where: { tenantId },
+    select: { id: true },
+  });
+
+  return users.map(user => user.id);
+}
 
 const PIPELINE_STAGES = [
   'APPLIED',
@@ -23,13 +53,16 @@ const PIPELINE_STAGES = [
  * PUT /api/v1/recruitment/candidates/[id]/stage
  * Move a candidate to a different pipeline stage
  */
-export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
+export const PUT = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user } = context;
     const { id } = context.params; // This is the candidateApplication ID
     const body = await request.json();
+    const normalizedStage = normalizeStage(body.stage);
+    const tenantUserIds = await getTenantUserIds(user.tenantId);
+    const tenantCreatedBy = { in: tenantUserIds.length > 0 ? tenantUserIds : ['__no_tenant_users__'] };
 
-    if (!body.stage) {
+    if (!normalizedStage) {
       return NextResponse.json(
         {
           success: false,
@@ -42,7 +75,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
       );
     }
 
-    if (!PIPELINE_STAGES.includes(body.stage as any)) {
+    if (!PIPELINE_STAGES.includes(normalizedStage as any)) {
       return NextResponse.json(
         {
           success: false,
@@ -55,7 +88,12 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
       );
     }
 
-    const application = await prisma.candidateApplication.findUnique({ where: { id } });
+    const application = await prisma.candidateApplication.findFirst({
+      where: {
+        OR: [{ id }, { candidateId: id }],
+        jobPosting: { createdBy: tenantCreatedBy },
+      },
+    });
 
     if (!application) {
       return NextResponse.json(
@@ -65,7 +103,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     }
 
     const terminalStages = ['HIRED', 'REJECTED', 'WITHDRAWN', 'OFFER_ACCEPTED'];
-    if (terminalStages.includes(application.currentStage)) {
+    if (terminalStages.includes(application.currentStage.toUpperCase())) {
       return NextResponse.json(
         {
           success: false,
@@ -79,15 +117,17 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     }
 
     const updated = await prisma.candidateApplication.update({
-      where: { id },
+      where: { id: application.id },
       data: {
-        currentStage: body.stage,
-        previousStage: application.currentStage,
-        stageChangedAt: new Date(),
-        stageChangedBy: user.id,
-        stageChangeReason: body.reason || null,
+        currentStage: normalizedStage,
         status:
-          body.stage === 'HIRED' ? 'HIRED' : body.stage === 'REJECTED' ? 'REJECTED' : 'IN_PROGRESS',
+          normalizedStage === 'HIRED'
+            ? 'HIRED'
+            : normalizedStage === 'REJECTED'
+              ? 'REJECTED'
+              : 'IN_PROGRESS',
+        rejectionReason: normalizedStage === 'REJECTED' ? body.reason || application.rejectionReason : null,
+        notes: body.reason || application.notes,
       },
       include: {
         candidate: { select: { id: true, firstName: true, lastName: true, email: true } },
@@ -98,18 +138,22 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     return NextResponse.json({
       success: true,
       data: updated,
-      message: `Candidate moved to ${body.stage} stage`,
+      message: `Candidate moved to ${normalizedStage} stage`,
       meta: {
         timestamp: new Date().toISOString(),
         requestId: crypto.randomUUID(),
         apiVersion: 'v1',
       },
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('[Candidate Stage API] PUT Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to update candidate stage' } },
       { status: 500 }
     );
   }
+}), {
+  action: AuditAction.EMPLOYEE_UPDATED,
+  resourceType: 'candidate_application',
+  captureRequestBody: true,
 });

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CandidateApplicationService, JobPostingService } from '../services';
+import type { CandidateApplication, JobPosting } from '../types';
 import {
     Gift,
     Briefcase,
@@ -20,8 +21,8 @@ import {
 
 export default function ReferralsPage() {
     const [searchTerm, setSearchTerm] = useState('');
-    const [jobs, setJobs] = useState<any[]>([]);
-    const [referrals, setReferrals] = useState<any[]>([]);
+    const [jobs, setJobs] = useState<JobPosting[]>([]);
+    const [referrals, setReferrals] = useState<CandidateApplication[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -50,8 +51,8 @@ export default function ReferralsPage() {
     };
 
     const getReferralStats = () => {
-        const hired = referrals.filter((r: any) => r.status === 'hired' || r.currentStage === 'hired').length;
-        const active = referrals.filter((r: any) => !['hired', 'rejected'].includes(r.status)).length;
+        const hired = referrals.filter((r) => r.status === 'hired' || r.currentStage === 'hired').length;
+        const active = referrals.filter((r) => !['hired', 'rejected'].includes(r.status)).length;
         return {
             totalReferrals: referrals.length,
             successfulHires: hired,
@@ -135,11 +136,9 @@ export default function ReferralsPage() {
                                     <p className="text-xs">No referrals yet. Refer a friend to get started.</p>
                                 </div>
                             )}
-                            {referrals.map((ref: any) => {
-                                const name = ref.candidateName || ref.candidate?.firstName
-                                    ? `${ref.candidate?.firstName || ''} ${ref.candidate?.lastName || ''}`.trim()
-                                    : 'Unknown';
-                                const role = ref.positionAppliedFor || 'N/A';
+                            {referrals.map((ref) => {
+                                const name = `${ref.firstName || ''} ${ref.lastName || ''}`.trim() || 'Unknown';
+                                const role = ref.jobTitle || 'N/A';
                                 const status = ref.status || ref.currentStage || 'applied';
                                 const statusLabel = status === 'hired' ? 'Hired' :
                                     status === 'offer' ? 'Offer' :
@@ -208,9 +207,10 @@ export default function ReferralsPage() {
                             {jobs.filter(job => {
                                 if (!searchTerm) return true;
                                 const term = searchTerm.toLowerCase();
-                                return (job.title || '').toLowerCase().includes(term) ||
-                                    (job.department || '').toLowerCase().includes(term);
-                            }).map((job: any) => (
+                                return (job.jobTitle || '').toLowerCase().includes(term) ||
+                                    (job.departmentName || '').toLowerCase().includes(term) ||
+                                    (job.locationName || '').toLowerCase().includes(term);
+                            }).map((job) => (
                                 <div key={job.id} className="p-5 border border-cloud dark:border-slate-800 rounded-xl hover:border-indigo-300 hover:shadow-lg dark:hover:border-indigo-500/50 hover:-translate-y-1 transition-all bg-white dark:bg-slate-900/40 group">
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="p-2 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg">
@@ -218,11 +218,11 @@ export default function ReferralsPage() {
                                         </div>
                                     </div>
 
-                                    <h4 className="font-bold text-ink-black dark:text-pearl mb-1">{job.title}</h4>
+                                    <h4 className="font-bold text-ink-black dark:text-pearl mb-1">{job.jobTitle}</h4>
                                     <div className="flex text-xs text-silver-mist gap-2 mb-4">
-                                        <span>{job.department}</span>
+                                        <span>{job.departmentName}</span>
                                         <span>-</span>
-                                        <span>{job.location}</span>
+                                        <span>{job.locationName}</span>
                                     </div>
 
                                     <div className="flex gap-2 mt-auto">

@@ -107,3 +107,112 @@ export const GET = withEnhancedAuth(
     }
   }
 );
+
+// POST - Request / approve / reject comp-off management actions
+export const POST = withEnhancedAuth(
+  async (request: NextRequest, { user, permissions }) => {
+    try {
+      const body = await request.json();
+      const action = body.action || 'request';
+      const requiredAction = action === 'request' ? Action.CREATE : Action.UPDATE;
+      const permissionError = requirePermission(Resource.ATTENDANCE, requiredAction, permissions);
+      if (permissionError) return permissionError;
+
+      if (action === 'request') {
+        const employeeId =
+          !body.employeeId || ['current-user', 'current-user-id'].includes(body.employeeId)
+            ? user.employeeId || user.userId
+            : body.employeeId;
+
+        if (!employeeId || !body.date || !body.hours) {
+          return NextResponse.json(
+            { success: false, error: 'employeeId, date, and hours are required' },
+            { status: 400 }
+          );
+        }
+
+        const expiryDate = new Date(body.date);
+        expiryDate.setDate(expiryDate.getDate() + 60);
+
+        const created = await prisma.compOffRequest.create({
+          data: {
+            tenantId: user.tenantId,
+            employeeId,
+            earnedDate: new Date(body.date),
+            earnedHours: Number(body.hours),
+            status: 'PENDING',
+            expiryDate,
+            remarks: body.reason || null,
+          },
+        });
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            id: created.id,
+            employeeId: created.employeeId,
+            earnedDate: created.earnedDate.toISOString().split('T')[0],
+            earnedHours: created.earnedHours,
+            status: created.status,
+            expiryDate: created.expiryDate.toISOString().split('T')[0],
+            remarks: created.remarks,
+            createdAt: created.createdAt.toISOString(),
+          },
+        }, { status: 201 });
+      }
+
+      if (!body.id || !body.approverId) {
+        return NextResponse.json(
+          { success: false, error: 'id and approverId are required' },
+          { status: 400 }
+        );
+      }
+
+      const existing = await prisma.compOffRequest.findFirst({
+        where: { id: body.id, tenantId: user.tenantId },
+      });
+
+      if (!existing) {
+        return NextResponse.json(
+          { success: false, error: 'Comp-off record not found' },
+          { status: 404 }
+        );
+      }
+
+      const updated = await prisma.compOffRequest.update({
+        where: { id: body.id },
+        data: {
+          status: action === 'approve' ? 'APPROVED' : 'CANCELLED',
+          approvedBy: body.approverId,
+          approvedAt: new Date(),
+          rejectionReason: action === 'reject' ? body.reason || 'Rejected' : null,
+          remarks: body.comments || body.reason || existing.remarks,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: updated.id,
+          employeeId: updated.employeeId,
+          earnedDate: updated.earnedDate.toISOString().split('T')[0],
+          earnedHours: updated.earnedHours,
+          status: updated.status,
+          appliedDate: updated.appliedDate ? updated.appliedDate.toISOString().split('T')[0] : null,
+          expiryDate: updated.expiryDate.toISOString().split('T')[0],
+          approvedBy: updated.approvedBy,
+          approvedAt: updated.approvedAt ? updated.approvedAt.toISOString() : null,
+          rejectionReason: updated.rejectionReason,
+          remarks: updated.remarks,
+          createdAt: updated.createdAt.toISOString(),
+        },
+      });
+    } catch (error) {
+      logger.error({ error }, 'Error updating comp-off management data:');
+      return NextResponse.json(
+        { success: false, error: 'Failed to update comp-off management data' },
+        { status: 500 }
+      );
+    }
+  }
+);

@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
 /**
  * GET /api/v1/admin/ai-config
  * Retrieve the current AI Copilot configuration
  */
-export async function GET() {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { user } = context;
+  const tenantId = user.tenantId;
+
   try {
     // In production this would read from a database or config store.
     // For now we return a sensible default that the admin page can load and modify.
@@ -39,13 +43,16 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * PUT /api/v1/admin/ai-config
  * Update the AI Copilot configuration
  */
-export async function PUT(request: NextRequest) {
+export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { user } = context;
+  const tenantId = user.tenantId;
+
   try {
     const body = await request.json();
 
@@ -67,4 +74,4 @@ export async function PUT(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

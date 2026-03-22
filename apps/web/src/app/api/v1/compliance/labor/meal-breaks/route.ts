@@ -1,37 +1,36 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 
-// Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
+export const dynamic = 'force-dynamic';
 
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: { code: string; message: string; details?: Record<string, unknown> };
-  meta?: any;
-}
-
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/v1/compliance/labor/meal-breaks
+ * Check meal/rest break compliance for a shift
+ */
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
+    const { user } = context;
     const body = await request.json();
     const { employeeId, shiftData, jurisdiction } = body;
 
     if (!employeeId || !shiftData || !jurisdiction) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'Validation failed: employeeId, shiftData, and jurisdiction are required',
-          details: {
-            missingFields: ['employeeId', 'shiftData', 'jurisdiction'].filter((f) => !body[f]),
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Validation failed: employeeId, shiftData, and jurisdiction are required',
+            details: {
+              missingFields: ['employeeId', 'shiftData', 'jurisdiction'].filter((f) => !body[f]),
+            },
           },
+          meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 400 });
+        { status: 400 }
+      );
     }
 
     // Jurisdiction-based meal break rules
@@ -67,13 +66,12 @@ export async function POST(request: NextRequest) {
 
     const rules = jurisdictionRules[jurisdiction.toUpperCase()] || jurisdictionRules['FEDERAL'];
 
-    // Mock violation detection
     const shiftHours = shiftData.hours || 8;
     const mealBreaksTaken = shiftData.mealBreaks || [];
     const restBreaksTaken = shiftData.restBreaks || [];
 
-    const violations = [];
-    const penalties = [];
+    const violations: Array<{ type: string; severity: string; count: number; description: string; rule: string }> = [];
+    const penalties: Array<{ type: string; hoursOwed: number; description: string }> = [];
 
     if (
       rules.mealBreak &&
@@ -100,8 +98,33 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (
+      rules.restBreak &&
+      rules.restBreak.requiredEveryHours &&
+      shiftHours >= rules.restBreak.requiredEveryHours
+    ) {
+      const expectedRestBreaks = Math.floor(shiftHours / rules.restBreak.requiredEveryHours);
+      if (restBreaksTaken.length < expectedRestBreaks) {
+        const missedRest = expectedRestBreaks - restBreaksTaken.length;
+        violations.push({
+          type: 'MISSED_REST_BREAK',
+          severity: 'MEDIUM',
+          count: missedRest,
+          description: `${missedRest} required rest break(s) not taken. Required every ${rules.restBreak.requiredEveryHours} hours.`,
+          rule: `${jurisdiction} Labor Code`,
+        });
+        if (rules.restBreak.paidPenaltyIfMissed) {
+          penalties.push({
+            type: 'REST_BREAK_PREMIUM',
+            hoursOwed: missedRest * (rules.restBreak.penaltyHours || 1),
+            description: `${missedRest} rest break premium payment(s) owed at regular rate`,
+          });
+        }
+      }
+    }
+
     const result = {
-      tenantId: 'tenant-1',
+      tenantId: user.tenantId,
       employeeId,
       jurisdiction,
       rulesApplied: rules,
@@ -113,35 +136,32 @@ export async function POST(request: NextRequest) {
       complianceStatus: violations.length === 0 ? 'COMPLIANT' : 'VIOLATION',
       violations,
       penalties,
-      totalPenaltyHours: penalties.reduce((sum: number, p: any) => sum + (p.hoursOwed || 0), 0),
+      totalPenaltyHours: penalties.reduce((sum, p) => sum + (p.hoursOwed || 0), 0),
       checkedAt: new Date().toISOString(),
     };
 
-    const response: ApiResponse = {
+    return NextResponse.json({
       success: true,
       data: result,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+    });
+  } catch (error) {
+    console.error('[Meal Breaks API] POST Error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E5001',
+          message: 'Failed to detect meal break violations',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        },
+        meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
       },
-    };
-
-    return NextResponse.json(response, { status: 200 });
-  } catch (_error) {
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to detect meal break violations',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-    return NextResponse.json(response, { status: 500 });
+      { status: 500 }
+    );
   }
-}
+}), {
+  action: AuditAction.REPORT_GENERATED,
+  resourceType: 'meal_break_compliance',
+  captureRequestBody: true,
+});

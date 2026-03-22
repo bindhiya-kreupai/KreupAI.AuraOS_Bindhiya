@@ -1,12 +1,15 @@
 /**
  * Payroll Processing Job
- * Handles async payroll calculation and processing
+ * Handles async payroll calculation and processing via PayrollService
  */
 
 import { Job, JobResult, queueService } from '../queue.service';
 import { QUEUE_NAMES } from '../rabbitmq';
 import { logger } from '@/lib/logger';
 import { apiCache } from '@/lib/middleware/cache.middleware';
+import { PayrollService } from '@/lib/services/payroll/payroll.service';
+import { prisma } from '@aura/database';
+import type { SupportedCountryCode } from '@/lib/services/compliance/types';
 
 export interface PayrollJobData {
   tenantId: string;
@@ -42,73 +45,134 @@ export async function processPayrollJob(job: Job<PayrollJobData>): Promise<JobRe
       'Starting payroll processing'
     );
 
-    // TODO: Implement actual payroll calculation
-    // This is a mock implementation showing the structure
+    // Step 1: Validate payroll configuration exists
+    const config = await prisma.payrollConfiguration.findFirst({
+      where: { tenantId, companyId },
+    });
 
-    // Step 1: Get employees to process
-    const employees = await getEmployeesForPayroll(companyId, employeeIds);
-    logger.info({ jobId: job.id, employeeCount: employees.length }, 'Employees loaded');
-
-    // Step 2: Calculate payroll for each employee
-    const calculations: any[] = [];
-    let successCount = 0;
-    let failCount = 0;
-    let totalGross = 0;
-    let totalNet = 0;
-    let totalDeductions = 0;
-
-    for (const employee of employees) {
-      try {
-        const calculation = await calculateEmployeePayroll(
-          employee,
-          month,
-          countryCode
-        );
-
-        calculations.push(calculation);
-        successCount++;
-        totalGross += calculation.grossPay;
-        totalNet += calculation.netPay;
-        totalDeductions += calculation.totalDeductions;
-
-        logger.debug(
-          { employeeId: employee.id, grossPay: calculation.grossPay },
-          'Employee payroll calculated'
-        );
-      } catch (error) {
-        failCount++;
-        logger.error(
-          { error, employeeId: employee.id },
-          'Failed to calculate employee payroll'
-        );
-      }
+    if (!config) {
+      throw new Error(`No payroll configuration found for company ${companyId}`);
     }
 
-    // Step 3: Create payroll run record
-    const runId = crypto.randomUUID();
-    await createPayrollRun({
-      runId,
+    // Step 2: Check for duplicate runs (idempotency)
+    const existingRun = await prisma.payrollRun.findFirst({
+      where: {
+        tenantId,
+        configId: config.id,
+        payrollMonth: month,
+        isDeleted: false,
+        status: { notIn: ['CANCELLED'] },
+      },
+    });
+
+    if (existingRun) {
+      throw new Error(
+        `Payroll run already exists for ${month} (ID: ${existingRun.id}, status: ${existingRun.status})`
+      );
+    }
+
+    // Step 3: Run the calculation engine
+    logger.info({ jobId: job.id }, 'Running payroll calculation engine');
+
+    const payrollResult = await PayrollService.processPayroll({
       tenantId,
       companyId,
       month,
-      employeeCount: employees.length,
-      calculations,
-      userId,
+      countryCode: countryCode as SupportedCountryCode,
+      employeeIds,
     });
 
-    // Step 4: Invalidate caches
+    logger.info(
+      {
+        jobId: job.id,
+        employeeCount: payrollResult.totalEmployees,
+        totalGross: payrollResult.totalGross,
+        totalNet: payrollResult.totalNet,
+      },
+      'Payroll calculation complete'
+    );
+
+    // Step 4: Persist PayrollRun and Payslips to database
+    const run = await prisma.payrollRun.create({
+      data: {
+        tenantId,
+        configId: config.id,
+        payrollMonth: month,
+        status: 'CALCULATED',
+        processedAt: new Date(),
+        totalEmployees: payrollResult.totalEmployees,
+        totalGrossSalary: payrollResult.totalGross,
+        totalDeductions: payrollResult.totalDeductions,
+        totalNetSalary: payrollResult.totalNet,
+        totalEmployerCost: payrollResult.totalStatutory + payrollResult.totalNet,
+        currency: payrollResult.currency,
+        createdBy: userId,
+      },
+    });
+
+    // Persist individual payslips
+    if (payrollResult.payslips.length > 0) {
+      await prisma.payslip.createMany({
+        data: payrollResult.payslips.map(p => ({
+          payrollRunId: run.id,
+          employeeId: p.employeeId,
+          employeeCode: p.employeeCode,
+          employeeName: p.employeeName,
+          basicSalary: p.basicSalary,
+          earnings: p.earnings as any,
+          totalEarnings: p.totalEarnings,
+          deductions: p.deductions as any,
+          totalDeductions: p.totalDeductions,
+          // Statutory — employee
+          employeePF: p.statutoryDeductions.find(s => s.code === 'PF_EMPLOYEE')?.employeeAmount || 0,
+          employeeESI: p.statutoryDeductions.find(s => s.code === 'ESI')?.employeeAmount || 0,
+          employeeTDS: p.taxDetails?.monthlyTds || 0,
+          employeeSaned: p.statutoryDeductions.find(s => s.code === 'GOSI_SANED')?.employeeAmount || 0,
+          employeePension: p.statutoryDeductions.find(s => s.code === 'GOSI_PENSION')?.employeeAmount || 0,
+          totalStatutoryEmployee: p.totalStatutory,
+          // Statutory — employer
+          employerPF: p.statutoryDeductions.find(s => s.code === 'PF_EMPLOYEE')?.employerAmount || 0,
+          employerESI: p.statutoryDeductions.find(s => s.code === 'ESI')?.employerAmount || 0,
+          employerGOSI:
+            (p.statutoryDeductions.find(s => s.code === 'GOSI_PENSION')?.employerAmount || 0) +
+            (p.statutoryDeductions.find(s => s.code === 'GOSI_SANED')?.employerAmount || 0) +
+            (p.statutoryDeductions.find(s => s.code === 'GOSI_OCC_HAZARDS')?.employerAmount || 0),
+          employerPension: p.statutoryDeductions.find(s => s.code === 'GOSI_PENSION')?.employerAmount || 0,
+          totalStatutoryEmployer: p.statutoryDeductions.reduce((sum, s) => sum + s.employerAmount, 0),
+          // Totals
+          grossSalary: p.grossSalary,
+          netSalary: p.netSalary,
+          // Working days
+          workingDays: p.totalWorkingDays,
+          paidDays: p.daysWorked + p.paidLeaveDays,
+          lopDays: p.lopDays,
+          overtimeHours: 0,
+          overtimeAmount: 0,
+          // Status
+          status: 'CALCULATED',
+          createdBy: userId,
+        })),
+      });
+    }
+
+    logger.info(
+      { jobId: job.id, runId: run.id, payslipCount: payrollResult.payslips.length },
+      'Payroll run and payslips persisted'
+    );
+
+    // Step 5: Invalidate caches
     await apiCache.invalidatePayrollCaches(companyId);
 
-    // Step 5: Send notifications
+    // Step 6: Send completion notification
     await queueService.enqueue(QUEUE_NAMES.EMAIL_NOTIFICATIONS, 'PAYROLL_COMPLETED', {
-      runId,
+      runId: run.id,
       userId,
       companyId,
       month,
       summary: {
-        totalEmployees: employees.length,
-        successfulCalculations: successCount,
-        failedCalculations: failCount,
+        totalEmployees: payrollResult.totalEmployees,
+        successfulCalculations: payrollResult.payslips.length,
+        failedCalculations: payrollResult.totalEmployees - payrollResult.payslips.length,
       },
     });
 
@@ -117,24 +181,23 @@ export async function processPayrollJob(job: Job<PayrollJobData>): Promise<JobRe
     logger.info(
       {
         jobId: job.id,
-        runId,
-        employeeCount: employees.length,
-        successCount,
-        failCount,
+        runId: run.id,
+        employeeCount: payrollResult.totalEmployees,
+        payslipCount: payrollResult.payslips.length,
         duration,
       },
       'Payroll processing completed'
     );
 
     const result: PayrollJobResult = {
-      runId,
+      runId: run.id,
       month,
-      totalEmployees: employees.length,
-      successfulCalculations: successCount,
-      failedCalculations: failCount,
-      totalGrossPay: totalGross,
-      totalNetPay: totalNet,
-      totalDeductions: totalDeductions,
+      totalEmployees: payrollResult.totalEmployees,
+      successfulCalculations: payrollResult.payslips.length,
+      failedCalculations: payrollResult.totalEmployees - payrollResult.payslips.length,
+      totalGrossPay: payrollResult.totalGross,
+      totalNetPay: payrollResult.totalNet,
+      totalDeductions: payrollResult.totalDeductions,
       completedAt: new Date().toISOString(),
     };
 
@@ -157,111 +220,6 @@ export async function processPayrollJob(job: Job<PayrollJobData>): Promise<JobRe
       duration,
     };
   }
-}
-
-/**
- * Mock: Get employees for payroll processing
- */
-async function getEmployeesForPayroll(
-  companyId: string,
-  employeeIds?: string[]
-): Promise<any[]> {
-  // TODO: Replace with actual database query
-  // const employees = await prisma.employee.findMany({
-  //   where: {
-  //     companyId,
-  //     id: employeeIds ? { in: employeeIds } : undefined,
-  //     status: 'ACTIVE',
-  //   },
-  //   include: {
-  //     salaryStructure: true,
-  //     attendanceRecords: true,
-  //     leaveRecords: true,
-  //   },
-  // });
-
-  // Mock data
-  return Array.from({ length: 50 }, (_, i) => ({
-    id: crypto.randomUUID(),
-    employeeCode: `EMP${(i + 1).toString().padStart(3, '0')}`,
-    firstName: `Employee ${i + 1}`,
-    basicSalary: 5000 + i * 100,
-  }));
-}
-
-/**
- * Mock: Calculate payroll for single employee
- */
-async function calculateEmployeePayroll(
-  employee: any,
-  month: string,
-  countryCode: string
-): Promise<any> {
-  // TODO: Use actual payroll service
-  // const calculation = await payrollService.calculateEmployeePayroll({
-  //   employee,
-  //   month,
-  //   countryCode,
-  // });
-
-  // Simulate processing delay
-  await new Promise((resolve) => setTimeout(resolve, 100));
-
-  // Mock calculation
-  const basicSalary = employee.basicSalary || 5000;
-  const hra = basicSalary * 0.4;
-  const ta = 300;
-  const ma = 200;
-  const grossPay = basicSalary + hra + ta + ma;
-
-  const pf = basicSalary * 0.12;
-  const esi = grossPay * 0.0075;
-  const pt = grossPay > 10000 ? 200 : 0;
-  const totalDeductions = pf + esi + pt;
-
-  const netPay = grossPay - totalDeductions;
-
-  return {
-    employeeId: employee.id,
-    employeeCode: employee.employeeCode,
-    month,
-    basicSalary,
-    earnings: {
-      hra,
-      ta,
-      ma,
-    },
-    grossPay,
-    deductions: {
-      pf,
-      esi,
-      pt,
-    },
-    totalDeductions,
-    netPay,
-    calculatedAt: new Date().toISOString(),
-  };
-}
-
-/**
- * Mock: Create payroll run record
- */
-async function createPayrollRun(data: any): Promise<void> {
-  // TODO: Replace with actual database insert
-  // await prisma.payrollRun.create({
-  //   data: {
-  //     id: data.runId,
-  //     tenantId: data.tenantId,
-  //     companyId: data.companyId,
-  //     month: data.month,
-  //     employeeCount: data.employeeCount,
-  //     status: 'PENDING_APPROVAL',
-  //     calculations: data.calculations,
-  //     createdBy: data.userId,
-  //   },
-  // });
-
-  logger.info({ runId: data.runId }, 'Payroll run created');
 }
 
 // Register the job handler

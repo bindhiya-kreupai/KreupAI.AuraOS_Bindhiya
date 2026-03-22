@@ -33,17 +33,6 @@ import {
     RecruitmentSettingsService,
     RecruitmentAnalyticsService,
 } from '../services';
-import {
-    generateSampleJobRequisitions,
-    generateSampleJobPostings,
-    generateSampleApplications,
-    generateSampleInterviews,
-    generateSampleInterviewFeedback,
-    generateSampleJobOffers,
-    generateSampleBackgroundChecks,
-    generateSampleHiringPipelines,
-    generateSampleRecruitmentSettings,
-} from '../data';
 import { useToast } from './useToast';
 
 export const useRecruitment = () => {
@@ -85,7 +74,7 @@ export const useRecruitment = () => {
                 JobPostingService.getPostings(),
                 CandidateApplicationService.getApplications(),
                 InterviewService.getInterviews(),
-                Promise.resolve(generateSampleInterviewFeedback()),
+                Promise.resolve([] as InterviewFeedback[]),
                 JobOfferService.getOffers(),
                 BackgroundCheckService.getBackgroundChecks(),
                 HiringPipelineService.getPipelines(),
@@ -93,82 +82,15 @@ export const useRecruitment = () => {
                 RecruitmentAnalyticsService.getStats(),
             ]);
 
-            // Initialize with sample data if empty
-            if (requisitionsData.length === 0) {
-                const sampleReqs = generateSampleJobRequisitions();
-                for (const req of sampleReqs) {
-                    await JobRequisitionService.createRequisition(req);
-                }
-                setJobRequisitions(sampleReqs);
-            } else {
-                setJobRequisitions(requisitionsData);
-            }
-
-            if (postingsData.length === 0) {
-                const samplePostings = generateSampleJobPostings();
-                for (const posting of samplePostings) {
-                    await JobPostingService.createPosting(posting);
-                }
-                setJobPostings(samplePostings);
-            } else {
-                setJobPostings(postingsData);
-            }
-
-            if (applicationsData.length === 0) {
-                const sampleApps = generateSampleApplications();
-                for (const app of sampleApps) {
-                    await CandidateApplicationService.createApplication(app);
-                }
-                setApplications(sampleApps);
-            } else {
-                setApplications(applicationsData);
-            }
-
-            if (interviewsData.length === 0) {
-                const sampleInterviews = generateSampleInterviews();
-                for (const interview of sampleInterviews) {
-                    await InterviewService.scheduleInterview(interview);
-                }
-                setInterviews(sampleInterviews);
-            } else {
-                setInterviews(interviewsData);
-            }
-
+            setJobRequisitions(requisitionsData);
+            setJobPostings(postingsData);
+            setApplications(applicationsData);
+            setInterviews(interviewsData);
             setInterviewFeedback(feedbackData);
-
-            if (offersData.length === 0) {
-                const sampleOffers = generateSampleJobOffers();
-                for (const offer of sampleOffers) {
-                    await JobOfferService.createOffer(offer);
-                }
-                setJobOffers(sampleOffers);
-            } else {
-                setJobOffers(offersData);
-            }
-
-            if (checksData.length === 0) {
-                const sampleChecks = generateSampleBackgroundChecks();
-                for (const check of sampleChecks) {
-                    await BackgroundCheckService.initiateBackgroundCheck(check);
-                }
-                setBackgroundChecks(sampleChecks);
-            } else {
-                setBackgroundChecks(checksData);
-            }
-
-            if (pipelinesData.length === 0) {
-                const samplePipelines = generateSampleHiringPipelines();
-                setHiringPipelines(samplePipelines);
-            } else {
-                setHiringPipelines(pipelinesData);
-            }
-
-            if (!settingsData) {
-                const sampleSettings = generateSampleRecruitmentSettings();
-                setSettings(sampleSettings);
-            } else {
-                setSettings(settingsData);
-            }
+            setJobOffers(offersData);
+            setBackgroundChecks(checksData);
+            setHiringPipelines(pipelinesData);
+            setSettings(settingsData);
 
             setStats(statsData);
         } catch (error) {

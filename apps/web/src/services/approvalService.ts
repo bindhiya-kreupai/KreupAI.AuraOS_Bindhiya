@@ -1,92 +1,30 @@
 /**
  * @module approvalService
- * @description Unified Approval service — CRUD for leave, expense, timesheet, requisition, document approvals
+ * @description Unified Approval service backed by real manager approval APIs
  * @project AURA HCM Platform
  */
 
 import { APIClient } from '@/lib/api-client';
 
-// ── Types ──────────────────────────────────────────────────────────────────────
-
-export type ApprovalType = 'leave' | 'expense' | 'timesheet' | 'requisition' | 'document';
-export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'escalated' | 'withdrawn';
+export type ApprovalType =
+  | 'expense'
+  | 'employment-history'
+  | 'inter-company-transfer'
+  | 'leave'
+  | 'overtime'
+  | 'exit'
+  | 'attendance'
+  | 'comp-off'
+  | 'confirmation'
+  | 'shift-swap';
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'withdrawn' | 'escalated';
 export type Priority = 'low' | 'medium' | 'high' | 'critical';
 
-export interface ApprovalRequest {
+export interface ApprovalAttachment {
   id: string;
-  type: ApprovalType;
-  title: string;
-  description: string;
-  requestedBy: string;
-  requestedByName: string;
-  requestedByDept: string;
-  requestedByAvatar?: string;
-  requestDate: string;
-  status: ApprovalStatus;
-  priority: Priority;
-  dueDate?: string;
-  amount?: number;
-  currency?: string;
-
-  // Type-specific details
-  details: LeaveDetails | ExpenseDetails | TimesheetDetails | RequisitionDetails | DocumentDetails;
-
-  // Workflow
-  currentLevel: number;
-  totalLevels: number;
-  comments: ApprovalComment[];
-  history: ApprovalHistoryEntry[];
-  attachments: { id: string; name: string; size: string; type: string }[];
-}
-
-export interface LeaveDetails {
-  leaveType: string;
-  fromDate: string;
-  toDate: string;
-  totalDays: number;
-  reason: string;
-  leaveBalance: number;
-  handoverTo?: string;
-}
-
-export interface ExpenseDetails {
-  category: string;
-  totalAmount: number;
-  currency: string;
-  expenseDate: string;
-  purpose: string;
-  project?: string;
-  receiptCount: number;
-  lineItems: { description: string; amount: number }[];
-}
-
-export interface TimesheetDetails {
-  periodStart: string;
-  periodEnd: string;
-  totalHours: number;
-  regularHours: number;
-  overtimeHours: number;
-  projects: { name: string; hours: number }[];
-  violations: number;
-}
-
-export interface RequisitionDetails {
-  positionTitle: string;
-  department: string;
-  headcount: number;
-  employmentType: string;
-  salaryRange: { min: number; max: number; currency: string };
-  justification: string;
-  urgency: Priority;
-  isReplacement: boolean;
-}
-
-export interface DocumentDetails {
-  documentName: string;
-  documentType: string;
-  version: string;
-  description: string;
-  requiresSignature: boolean;
+  name: string;
+  size: string;
+  type: string;
 }
 
 export interface ApprovalComment {
@@ -108,21 +46,237 @@ export interface ApprovalHistoryEntry {
   level?: number;
 }
 
-// ── Constants ──────────────────────────────────────────────────────────────────
+export interface LeaveDetails {
+  leaveType: string;
+  fromDate: string;
+  toDate: string;
+  totalDays: number;
+  reason: string;
+  leaveBalance?: number;
+  handoverTo?: string;
+}
+
+export interface OvertimeDetails {
+  overtimeDate: string;
+  totalHours: number;
+  overtimeType: string;
+  reason: string;
+}
+
+export interface ExitDetails {
+  exitType: string;
+  resignationDate: string;
+  lastWorkingDate: string;
+  reason: string;
+}
+
+export interface AttendanceDetails {
+  attendanceDate: string;
+  regularizationType: string;
+  requestedClockIn?: string;
+  requestedClockOut?: string;
+  reason: string;
+  rejectionReason?: string;
+}
+
+export interface ExpenseDetails {
+  expenseDate: string;
+  expenseCategory: string;
+  totalAmount: number;
+  currency: string;
+  businessPurpose: string;
+  description?: string;
+  receiptUrl?: string;
+  rejectionReason?: string;
+}
+
+export interface EmploymentHistoryDetails {
+  changeType: string;
+  effectiveDate: string;
+  reason?: string;
+  notes?: string;
+  previousDepartment?: string;
+  newDepartment?: string;
+  previousJobProfile?: string;
+  newJobProfile?: string;
+  previousGrade?: string;
+  newGrade?: string;
+  previousLocation?: string;
+  newLocation?: string;
+  previousManagerId?: string;
+  newManagerId?: string;
+  previousSalary?: number;
+  newSalary?: number;
+  previousEmploymentType?: string;
+  newEmploymentType?: string;
+}
+
+export interface InterCompanyTransferDetails {
+  transferType: string;
+  effectiveDate: string;
+  fromCompanyId: string;
+  fromCompanyName: string;
+  toCompanyId: string;
+  toCompanyName: string;
+  requestedBy: string;
+  approvedBy?: string;
+  status: string;
+}
+
+export interface CompOffDetails {
+  workedDate: string;
+  workedHours: number;
+  creditedDays: number;
+  expiryDate: string;
+  reason: string;
+  projectCode?: string;
+  remainingDays?: number;
+}
+
+export interface ConfirmationDetails {
+  eligibleDate: string;
+  requestedDate: string;
+  managerApproval: string;
+  hrApproval: string;
+  confirmationDate?: string;
+  newSalary?: number;
+}
+
+export interface ShiftSwapDetails {
+  requestorDate: string;
+  swapWithDate: string;
+  requestorShiftId: string;
+  swapWithShiftId: string;
+  swapWithId: string;
+  peerApproval: string;
+  managerApproval: string;
+  reason: string;
+  rejectionReason?: string;
+}
+
+export interface ApprovalRequest {
+  id: string;
+  type: ApprovalType;
+  title: string;
+  description: string;
+  requestedBy: string;
+  requestedByName: string;
+  requestedByDept: string;
+  requestedByAvatar?: string;
+  requestDate: string;
+  status: ApprovalStatus;
+  priority: Priority;
+  dueDate?: string;
+  details:
+    | ExpenseDetails
+    | EmploymentHistoryDetails
+    | InterCompanyTransferDetails
+    | LeaveDetails
+    | OvertimeDetails
+    | ExitDetails
+    | AttendanceDetails
+    | CompOffDetails
+    | ConfirmationDetails
+    | ShiftSwapDetails;
+  currentLevel: number;
+  totalLevels: number;
+  comments: ApprovalComment[];
+  history: ApprovalHistoryEntry[];
+  attachments: ApprovalAttachment[];
+}
+
+export interface ApprovalSummary {
+  expense: number;
+  'employment-history': number;
+  'inter-company-transfer': number;
+  leave: number;
+  overtime: number;
+  exit: number;
+  attendance: number;
+  'comp-off': number;
+  confirmation: number;
+  'shift-swap': number;
+  total: number;
+}
+
+interface ManagerApprovalResponseItem {
+  requestId: string;
+  requestType: ApprovalType;
+  requestTitle: string;
+  requestDate: string;
+  requestedBy: string;
+  requestedByName: string;
+  requestedByDepartment: string;
+  approvalStatus: ApprovalStatus;
+  priority?: Priority;
+  dueDate?: string;
+  details?: Record<string, unknown>;
+  comments?: ApprovalComment[];
+  history?: ApprovalHistoryEntry[];
+  attachments?: ApprovalAttachment[];
+  currentApproverLevel?: number;
+  totalApproverLevels?: number;
+}
+
+interface ManagerApprovalsResponse {
+  approvals: ManagerApprovalResponseItem[];
+  summary: ApprovalSummary;
+}
 
 export const APPROVAL_TYPE_CONFIG: Record<
   ApprovalType,
   { label: string; color: string; bgColor: string }
 > = {
+  expense: {
+    label: 'Expense Claim',
+    color: 'text-quantum-rose',
+    bgColor: 'bg-quantum-rose/10',
+  },
+  'employment-history': {
+    label: 'Employment Change',
+    color: 'text-orbit-gold',
+    bgColor: 'bg-orbit-gold/10',
+  },
+  'inter-company-transfer': {
+    label: 'Company Transfer',
+    color: 'text-celestial-indigo',
+    bgColor: 'bg-celestial-indigo/10',
+  },
   leave: {
     label: 'Leave Request',
     color: 'text-celestial-indigo',
     bgColor: 'bg-celestial-indigo/10',
   },
-  expense: { label: 'Expense Claim', color: 'text-sunset-amber', bgColor: 'bg-sunset-amber/10' },
-  timesheet: { label: 'Timesheet', color: 'text-nebula-purple', bgColor: 'bg-nebula-purple/10' },
-  requisition: { label: 'Requisition', color: 'text-quantum-rose', bgColor: 'bg-quantum-rose/10' },
-  document: { label: 'Document', color: 'text-neural-mint', bgColor: 'bg-neural-mint/10' },
+  overtime: {
+    label: 'Overtime Request',
+    color: 'text-sunset-amber',
+    bgColor: 'bg-sunset-amber/10',
+  },
+  exit: {
+    label: 'Exit Request',
+    color: 'text-coral-alert',
+    bgColor: 'bg-coral-alert/10',
+  },
+  attendance: {
+    label: 'Attendance Regularization',
+    color: 'text-nebula-purple',
+    bgColor: 'bg-nebula-purple/10',
+  },
+  'comp-off': {
+    label: 'Comp-Off Request',
+    color: 'text-neural-mint',
+    bgColor: 'bg-neural-mint/10',
+  },
+  confirmation: {
+    label: 'Confirmation Request',
+    color: 'text-sky-azure',
+    bgColor: 'bg-sky-azure/10',
+  },
+  'shift-swap': {
+    label: 'Shift Swap Request',
+    color: 'text-aurora-teal',
+    bgColor: 'bg-aurora-teal/10',
+  },
 };
 
 export const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; bgColor: string }> =
@@ -144,405 +298,389 @@ export const STATUS_CONFIG: Record<
   withdrawn: { label: 'Withdrawn', color: 'text-silver-mist', bgColor: 'bg-silver-mist/10' },
 };
 
-// ── Mock Data ─────────────────────────────────────────────────────────────────
+function toISODate(value: unknown): string | undefined {
+  if (!value) return undefined;
+  if (typeof value === 'string') return value;
+  if (value instanceof Date) return value.toISOString();
+  return undefined;
+}
 
-const MOCK_REQUESTS: ApprovalRequest[] = [
-  {
-    id: 'apr-001',
-    type: 'leave',
-    title: 'Annual Leave - 5 days',
-    description: 'Family vacation',
-    requestedBy: 'emp-001',
-    requestedByName: 'Sarah Johnson',
-    requestedByDept: 'Engineering',
-    requestDate: '2026-02-20',
-    status: 'pending',
-    priority: 'medium',
-    dueDate: '2026-02-25',
-    currentLevel: 1,
-    totalLevels: 1,
-    details: {
-      leaveType: 'Annual',
-      fromDate: '2026-03-10',
-      toDate: '2026-03-14',
-      totalDays: 5,
-      reason: 'Family vacation',
-      leaveBalance: 12,
-      handoverTo: 'Michael Chen',
-    },
-    comments: [],
-    history: [
-      { id: 'h1', action: 'submitted', by: 'emp-001', byName: 'Sarah Johnson', date: '2026-02-20' },
-    ],
-    attachments: [],
-  },
-  {
-    id: 'apr-002',
-    type: 'expense',
-    title: 'Client Meeting Expenses - $1,250',
-    description: 'Q1 client engagement dinner',
-    requestedBy: 'emp-004',
-    requestedByName: 'David Kim',
-    requestedByDept: 'Product',
-    requestDate: '2026-02-18',
-    status: 'pending',
-    priority: 'medium',
-    amount: 1250,
-    currency: 'USD',
-    dueDate: '2026-02-26',
-    currentLevel: 1,
-    totalLevels: 2,
-    details: {
-      category: 'Client Entertainment',
-      totalAmount: 1250,
-      currency: 'USD',
-      expenseDate: '2026-02-15',
-      purpose: 'Q1 client engagement dinner with Acme Corp',
-      project: 'PRJ-042',
-      receiptCount: 3,
-      lineItems: [
-        { description: 'Dinner at Nobu', amount: 850 },
-        { description: 'Transportation', amount: 120 },
-        { description: 'Parking', amount: 280 },
-      ],
-    },
-    comments: [
-      {
-        id: 'c1',
-        by: 'emp-004',
-        byName: 'David Kim',
-        date: '2026-02-18',
-        text: 'Receipts attached. Meeting was pre-approved by VP Sales.',
-        isInternal: false,
-      },
-    ],
-    history: [
-      { id: 'h2', action: 'submitted', by: 'emp-004', byName: 'David Kim', date: '2026-02-18' },
-    ],
-    attachments: [
-      { id: 'att-1', name: 'receipt-nobu.pdf', size: '245 KB', type: 'pdf' },
-      { id: 'att-2', name: 'receipt-uber.pdf', size: '128 KB', type: 'pdf' },
-    ],
-  },
-  {
-    id: 'apr-003',
-    type: 'timesheet',
-    title: 'Weekly Timesheet - Feb 10-16',
-    description: 'Regular weekly timesheet',
-    requestedBy: 'emp-003',
-    requestedByName: 'Emily Rodriguez',
-    requestedByDept: 'Engineering',
-    requestDate: '2026-02-17',
-    status: 'pending',
-    priority: 'low',
-    dueDate: '2026-02-24',
-    currentLevel: 1,
-    totalLevels: 1,
-    details: {
-      periodStart: '2026-02-10',
-      periodEnd: '2026-02-16',
-      totalHours: 42,
-      regularHours: 40,
-      overtimeHours: 2,
-      projects: [
-        { name: 'AuraOS Frontend', hours: 32 },
-        { name: 'Tech Debt Sprint', hours: 10 },
-      ],
-      violations: 0,
-    },
-    comments: [],
-    history: [
-      {
-        id: 'h3',
-        action: 'submitted',
-        by: 'emp-003',
-        byName: 'Emily Rodriguez',
-        date: '2026-02-17',
-      },
-    ],
-    attachments: [],
-  },
-  {
-    id: 'apr-004',
-    type: 'requisition',
-    title: 'Senior Backend Engineer',
-    description: 'New headcount for payments team',
-    requestedBy: 'emp-006',
-    requestedByName: 'Alex Rivera',
-    requestedByDept: 'Engineering',
-    requestDate: '2026-02-15',
-    status: 'pending',
-    priority: 'high',
-    dueDate: '2026-02-28',
-    currentLevel: 1,
-    totalLevels: 3,
-    details: {
-      positionTitle: 'Senior Backend Engineer',
-      department: 'Engineering - Payments',
-      headcount: 1,
-      employmentType: 'Full-time',
-      salaryRange: { min: 11000, max: 15000, currency: 'USD' },
-      justification:
-        'Increased payment processing volume requires additional backend capacity. Current team at 95% utilization.',
-      urgency: 'high' as Priority,
-      isReplacement: false,
-    },
-    comments: [],
-    history: [
-      { id: 'h4', action: 'submitted', by: 'emp-006', byName: 'Alex Rivera', date: '2026-02-15' },
-    ],
-    attachments: [],
-  },
-  {
-    id: 'apr-005',
-    type: 'document',
-    title: 'Remote Work Policy v3.0',
-    description: 'Updated remote work guidelines',
-    requestedBy: 'emp-008',
-    requestedByName: 'Marcus Johnson',
-    requestedByDept: 'HR',
-    requestDate: '2026-02-22',
-    status: 'pending',
-    priority: 'medium',
-    currentLevel: 1,
-    totalLevels: 2,
-    details: {
-      documentName: 'Remote Work Policy',
-      documentType: 'Policy Document',
-      version: '3.0',
-      description:
-        'Updated remote work guidelines with hybrid schedule requirements and equipment allowance changes.',
-      requiresSignature: true,
-    },
-    comments: [],
-    history: [
-      {
-        id: 'h5',
-        action: 'submitted',
-        by: 'emp-008',
-        byName: 'Marcus Johnson',
-        date: '2026-02-22',
-      },
-    ],
-    attachments: [{ id: 'att-3', name: 'remote-work-policy-v3.pdf', size: '1.2 MB', type: 'pdf' }],
-  },
-  {
-    id: 'apr-006',
-    type: 'leave',
-    title: 'Sick Leave - 2 days',
-    description: 'Medical appointment and recovery',
-    requestedBy: 'emp-005',
-    requestedByName: 'Jessica Martinez',
-    requestedByDept: 'Design',
-    requestDate: '2026-02-23',
-    status: 'pending',
-    priority: 'high',
-    dueDate: '2026-02-24',
-    currentLevel: 1,
-    totalLevels: 1,
-    details: {
-      leaveType: 'Sick',
-      fromDate: '2026-02-24',
-      toDate: '2026-02-25',
-      totalDays: 2,
-      reason: 'Medical appointment and recovery',
-      leaveBalance: 8,
-    },
-    comments: [],
-    history: [
-      {
-        id: 'h6',
-        action: 'submitted',
-        by: 'emp-005',
-        byName: 'Jessica Martinez',
-        date: '2026-02-23',
-      },
-    ],
-    attachments: [{ id: 'att-4', name: 'doctor-note.pdf', size: '85 KB', type: 'pdf' }],
-  },
-  {
-    id: 'apr-007',
-    type: 'expense',
-    title: 'AWS Training Course - $499',
-    description: 'Online certification course',
-    requestedBy: 'emp-002',
-    requestedByName: 'Michael Chen',
-    requestedByDept: 'Engineering',
-    requestDate: '2026-02-10',
-    status: 'approved',
-    priority: 'low',
-    amount: 499,
-    currency: 'USD',
-    currentLevel: 1,
-    totalLevels: 1,
-    details: {
-      category: 'Training & Development',
-      totalAmount: 499,
-      currency: 'USD',
-      expenseDate: '2026-02-08',
-      purpose: 'AWS Solutions Architect Professional preparation course',
-      receiptCount: 1,
-      lineItems: [{ description: 'Udemy - AWS SAP Course', amount: 499 }],
-    },
-    comments: [
-      {
-        id: 'c2',
-        by: 'mgr-001',
-        byName: 'Sarah Chen',
-        date: '2026-02-12',
-        text: 'Approved. Aligns with career development plan.',
-        isInternal: false,
-      },
-    ],
-    history: [
-      { id: 'h7', action: 'submitted', by: 'emp-002', byName: 'Michael Chen', date: '2026-02-10' },
-      {
-        id: 'h8',
-        action: 'approved',
-        by: 'mgr-001',
-        byName: 'Sarah Chen',
-        date: '2026-02-12',
-        remarks: 'Aligns with career development plan',
-        level: 1,
-      },
-    ],
-    attachments: [],
-  },
-  {
-    id: 'apr-008',
-    type: 'leave',
-    title: 'Annual Leave - 3 days',
-    description: 'Personal time off',
-    requestedBy: 'emp-007',
-    requestedByName: 'Priya Sharma',
-    requestedByDept: 'Engineering',
-    requestDate: '2026-02-05',
-    status: 'rejected',
-    priority: 'medium',
-    currentLevel: 1,
-    totalLevels: 1,
-    details: {
-      leaveType: 'Annual',
-      fromDate: '2026-02-28',
-      toDate: '2026-03-02',
-      totalDays: 3,
-      reason: 'Personal time off',
-      leaveBalance: 14,
-    },
-    comments: [
-      {
-        id: 'c3',
-        by: 'mgr-001',
-        byName: 'Sarah Chen',
-        date: '2026-02-07',
-        text: 'Sprint deadline conflict. Please reschedule to the following week.',
-        isInternal: false,
-      },
-    ],
-    history: [
-      { id: 'h9', action: 'submitted', by: 'emp-007', byName: 'Priya Sharma', date: '2026-02-05' },
-      {
-        id: 'h10',
-        action: 'rejected',
-        by: 'mgr-001',
-        byName: 'Sarah Chen',
-        date: '2026-02-07',
-        remarks: 'Sprint deadline conflict',
-        level: 1,
-      },
-    ],
-    attachments: [],
-  },
-];
+function toNumber(value: unknown): number {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+}
 
-// ── Service ────────────────────────────────────────────────────────────────────
+function mapApproval(item: ManagerApprovalResponseItem): ApprovalRequest {
+  const details = item.details || {};
+
+  if (item.requestType === 'expense') {
+    return {
+      id: item.requestId,
+      type: 'expense',
+      title: item.requestTitle,
+      description: String(details.description || details.businessPurpose || 'Expense approval request'),
+      requestedBy: item.requestedBy,
+      requestedByName: item.requestedByName,
+      requestedByDept: item.requestedByDepartment,
+      requestDate: item.requestDate,
+      status: item.approvalStatus,
+      priority: item.priority || 'medium',
+      dueDate: toISODate(item.dueDate),
+      details: {
+        expenseDate: toISODate(details.expenseDate) || item.requestDate,
+        expenseCategory: String(details.expenseCategory || 'GENERAL'),
+        totalAmount: toNumber(details.totalAmount),
+        currency: String(details.currency || 'USD'),
+        businessPurpose: String(details.businessPurpose || item.requestTitle),
+        description: details.description ? String(details.description) : undefined,
+        receiptUrl: details.receiptUrl ? String(details.receiptUrl) : undefined,
+        rejectionReason: details.rejectionReason ? String(details.rejectionReason) : undefined,
+      },
+      currentLevel: item.currentApproverLevel || 1,
+      totalLevels: item.totalApproverLevels || 1,
+      comments: item.comments || [],
+      history: item.history || [],
+      attachments: item.attachments || [],
+    };
+  }
+
+  if (item.requestType === 'employment-history') {
+    return {
+      id: item.requestId,
+      type: 'employment-history',
+      title: item.requestTitle,
+      description: String(details.reason || details.notes || 'Employment change approval request'),
+      requestedBy: item.requestedBy,
+      requestedByName: item.requestedByName,
+      requestedByDept: item.requestedByDepartment,
+      requestDate: item.requestDate,
+      status: item.approvalStatus,
+      priority: item.priority || 'medium',
+      dueDate: toISODate(item.dueDate),
+      details: {
+        changeType: String(details.changeType || 'CHANGE'),
+        effectiveDate: toISODate(details.effectiveDate) || item.requestDate,
+        reason: details.reason ? String(details.reason) : undefined,
+        notes: details.notes ? String(details.notes) : undefined,
+        previousDepartment: details.previousDepartment ? String(details.previousDepartment) : undefined,
+        newDepartment: details.newDepartment ? String(details.newDepartment) : undefined,
+        previousJobProfile: details.previousJobProfile ? String(details.previousJobProfile) : undefined,
+        newJobProfile: details.newJobProfile ? String(details.newJobProfile) : undefined,
+        previousGrade: details.previousGrade ? String(details.previousGrade) : undefined,
+        newGrade: details.newGrade ? String(details.newGrade) : undefined,
+        previousLocation: details.previousLocation ? String(details.previousLocation) : undefined,
+        newLocation: details.newLocation ? String(details.newLocation) : undefined,
+        previousManagerId: details.previousManagerId ? String(details.previousManagerId) : undefined,
+        newManagerId: details.newManagerId ? String(details.newManagerId) : undefined,
+        previousSalary:
+          details.previousSalary === undefined ? undefined : toNumber(details.previousSalary),
+        newSalary: details.newSalary === undefined ? undefined : toNumber(details.newSalary),
+        previousEmploymentType: details.previousEmploymentType ? String(details.previousEmploymentType) : undefined,
+        newEmploymentType: details.newEmploymentType ? String(details.newEmploymentType) : undefined,
+      },
+      currentLevel: item.currentApproverLevel || 1,
+      totalLevels: item.totalApproverLevels || 1,
+      comments: item.comments || [],
+      history: item.history || [],
+      attachments: item.attachments || [],
+    };
+  }
+
+  if (item.requestType === 'inter-company-transfer') {
+    return {
+      id: item.requestId,
+      type: 'inter-company-transfer',
+      title: item.requestTitle,
+      description: `Transfer to ${String(details.toCompanyName || details.toCompanyId || 'target company')}`,
+      requestedBy: item.requestedBy,
+      requestedByName: item.requestedByName,
+      requestedByDept: item.requestedByDepartment,
+      requestDate: item.requestDate,
+      status: item.approvalStatus,
+      priority: item.priority || 'medium',
+      dueDate: toISODate(item.dueDate),
+      details: {
+        transferType: String(details.transferType || 'PERMANENT'),
+        effectiveDate: toISODate(details.effectiveDate) || item.requestDate,
+        fromCompanyId: String(details.fromCompanyId || ''),
+        fromCompanyName: String(details.fromCompanyName || details.fromCompanyId || ''),
+        toCompanyId: String(details.toCompanyId || ''),
+        toCompanyName: String(details.toCompanyName || details.toCompanyId || ''),
+        requestedBy: String(details.requestedBy || ''),
+        approvedBy: details.approvedBy ? String(details.approvedBy) : undefined,
+        status: String(details.status || item.approvalStatus),
+      },
+      currentLevel: item.currentApproverLevel || 1,
+      totalLevels: item.totalApproverLevels || 1,
+      comments: item.comments || [],
+      history: item.history || [],
+      attachments: item.attachments || [],
+    };
+  }
+
+  if (item.requestType === 'leave') {
+    return {
+      id: item.requestId,
+      type: 'leave',
+      title: item.requestTitle,
+      description: String(details.reason || 'Leave approval request'),
+      requestedBy: item.requestedBy,
+      requestedByName: item.requestedByName,
+      requestedByDept: item.requestedByDepartment,
+      requestDate: item.requestDate,
+      status: item.approvalStatus,
+      priority: item.priority || 'medium',
+      dueDate: toISODate(item.dueDate),
+      details: {
+        leaveType: String(details.leaveType || 'Leave'),
+        fromDate: toISODate(details.startDate) || item.requestDate,
+        toDate: toISODate(details.endDate) || item.requestDate,
+        totalDays: toNumber(details.totalDays),
+        reason: String(details.reason || ''),
+        leaveBalance:
+          details.leaveBalance === undefined ? undefined : toNumber(details.leaveBalance),
+        handoverTo: details.handoverTo ? String(details.handoverTo) : undefined,
+      },
+      currentLevel: item.currentApproverLevel || 1,
+      totalLevels: item.totalApproverLevels || 1,
+      comments: item.comments || [],
+      history: item.history || [],
+      attachments: item.attachments || [],
+    };
+  }
+
+  if (item.requestType === 'overtime') {
+    return {
+      id: item.requestId,
+      type: 'overtime',
+      title: item.requestTitle,
+      description: String(details.reason || 'Overtime approval request'),
+      requestedBy: item.requestedBy,
+      requestedByName: item.requestedByName,
+      requestedByDept: item.requestedByDepartment,
+      requestDate: item.requestDate,
+      status: item.approvalStatus,
+      priority: item.priority || 'medium',
+      dueDate: toISODate(item.dueDate),
+      details: {
+        overtimeDate: toISODate(details.overtimeDate) || item.requestDate,
+        totalHours: toNumber(details.totalHours),
+        overtimeType: String(details.overtimeType || 'REGULAR'),
+        reason: String(details.reason || ''),
+      },
+      currentLevel: item.currentApproverLevel || 1,
+      totalLevels: item.totalApproverLevels || 1,
+      comments: item.comments || [],
+      history: item.history || [],
+      attachments: item.attachments || [],
+    };
+  }
+
+  if (item.requestType === 'attendance') {
+    return {
+      id: item.requestId,
+      type: 'attendance',
+      title: item.requestTitle,
+      description: String(details.reason || 'Attendance regularization approval request'),
+      requestedBy: item.requestedBy,
+      requestedByName: item.requestedByName,
+      requestedByDept: item.requestedByDepartment,
+      requestDate: item.requestDate,
+      status: item.approvalStatus,
+      priority: item.priority || 'medium',
+      dueDate: toISODate(item.dueDate),
+      details: {
+        attendanceDate: toISODate(details.attendanceDate) || item.requestDate,
+        regularizationType: String(details.regularizationType || 'MISSED_PUNCH'),
+        requestedClockIn: toISODate(details.requestedClockIn),
+        requestedClockOut: toISODate(details.requestedClockOut),
+        reason: String(details.reason || ''),
+        rejectionReason: details.rejectionReason ? String(details.rejectionReason) : undefined,
+      },
+      currentLevel: item.currentApproverLevel || 1,
+      totalLevels: item.totalApproverLevels || 1,
+      comments: item.comments || [],
+      history: item.history || [],
+      attachments: item.attachments || [],
+    };
+  }
+
+  if (item.requestType === 'comp-off') {
+    return {
+      id: item.requestId,
+      type: 'comp-off',
+      title: item.requestTitle,
+      description: String(details.reason || 'Comp-off approval request'),
+      requestedBy: item.requestedBy,
+      requestedByName: item.requestedByName,
+      requestedByDept: item.requestedByDepartment,
+      requestDate: item.requestDate,
+      status: item.approvalStatus,
+      priority: item.priority || 'medium',
+      dueDate: toISODate(item.dueDate),
+      details: {
+        workedDate: toISODate(details.workedDate) || item.requestDate,
+        workedHours: toNumber(details.workedHours),
+        creditedDays: toNumber(details.creditedDays),
+        expiryDate: toISODate(details.expiryDate) || item.requestDate,
+        reason: String(details.reason || ''),
+        projectCode: details.projectCode ? String(details.projectCode) : undefined,
+        remainingDays:
+          details.remainingDays === undefined ? undefined : toNumber(details.remainingDays),
+      },
+      currentLevel: item.currentApproverLevel || 1,
+      totalLevels: item.totalApproverLevels || 1,
+      comments: item.comments || [],
+      history: item.history || [],
+      attachments: item.attachments || [],
+    };
+  }
+
+  if (item.requestType === 'confirmation') {
+    return {
+      id: item.requestId,
+      type: 'confirmation',
+      title: item.requestTitle,
+      description: 'Employee confirmation approval request',
+      requestedBy: item.requestedBy,
+      requestedByName: item.requestedByName,
+      requestedByDept: item.requestedByDepartment,
+      requestDate: item.requestDate,
+      status: item.approvalStatus,
+      priority: item.priority || 'medium',
+      dueDate: toISODate(item.dueDate),
+      details: {
+        eligibleDate: toISODate(details.eligibleDate) || item.requestDate,
+        requestedDate: toISODate(details.requestedDate) || item.requestDate,
+        managerApproval: String(details.managerApproval || 'PENDING'),
+        hrApproval: String(details.hrApproval || 'PENDING'),
+        confirmationDate: toISODate(details.confirmationDate),
+        newSalary:
+          details.newSalary === undefined ? undefined : toNumber(details.newSalary),
+      },
+      currentLevel: item.currentApproverLevel || 1,
+      totalLevels: item.totalApproverLevels || 1,
+      comments: item.comments || [],
+      history: item.history || [],
+      attachments: item.attachments || [],
+    };
+  }
+
+  if (item.requestType === 'shift-swap') {
+    return {
+      id: item.requestId,
+      type: 'shift-swap',
+      title: item.requestTitle,
+      description: String(details.reason || 'Shift swap approval request'),
+      requestedBy: item.requestedBy,
+      requestedByName: item.requestedByName,
+      requestedByDept: item.requestedByDepartment,
+      requestDate: item.requestDate,
+      status: item.approvalStatus,
+      priority: item.priority || 'medium',
+      dueDate: toISODate(item.dueDate),
+      details: {
+        requestorDate: toISODate(details.requestorDate) || item.requestDate,
+        swapWithDate: toISODate(details.swapWithDate) || item.requestDate,
+        requestorShiftId: String(details.requestorShiftId || ''),
+        swapWithShiftId: String(details.swapWithShiftId || ''),
+        swapWithId: String(details.swapWithId || ''),
+        peerApproval: String(details.peerApproval || 'PENDING'),
+        managerApproval: String(details.managerApproval || 'PENDING'),
+        reason: String(details.reason || ''),
+        rejectionReason: details.rejectionReason ? String(details.rejectionReason) : undefined,
+      },
+      currentLevel: item.currentApproverLevel || 1,
+      totalLevels: item.totalApproverLevels || 1,
+      comments: item.comments || [],
+      history: item.history || [],
+      attachments: item.attachments || [],
+    };
+  }
+
+  return {
+    id: item.requestId,
+    type: 'exit',
+    title: item.requestTitle,
+    description: String(details.reason || 'Exit approval request'),
+    requestedBy: item.requestedBy,
+    requestedByName: item.requestedByName,
+    requestedByDept: item.requestedByDepartment,
+    requestDate: item.requestDate,
+    status: item.approvalStatus,
+    priority: item.priority || 'high',
+    dueDate: toISODate(item.dueDate),
+    details: {
+      exitType: String(details.exitType || 'Exit'),
+      resignationDate: toISODate(details.resignationDate) || item.requestDate,
+      lastWorkingDate: toISODate(details.lastWorkingDate) || item.requestDate,
+      reason: String(details.reason || ''),
+    },
+    currentLevel: item.currentApproverLevel || 1,
+    totalLevels: item.totalApproverLevels || 1,
+    comments: item.comments || [],
+    history: item.history || [],
+    attachments: item.attachments || [],
+  };
+}
+
+async function fetchApprovals(): Promise<ManagerApprovalsResponse> {
+  return APIClient.get<ManagerApprovalsResponse>('/manager/approvals', { includeHistory: true });
+}
+
+async function getRequestType(id: string): Promise<ApprovalType> {
+  const request = await ApprovalService.getRequest(id);
+  if (!request) {
+    throw new Error('Approval request not found');
+  }
+
+  return request.type;
+}
 
 export class ApprovalService {
   static async getRequests(status?: ApprovalStatus): Promise<ApprovalRequest[]> {
-    try {
-      return await APIClient.get<ApprovalRequest[]>('/v1/approvals', { status });
-    } catch {
-      return status ? MOCK_REQUESTS.filter((r) => r.status === status) : MOCK_REQUESTS;
-    }
+    const response = await fetchApprovals();
+    const items = response.approvals.map(mapApproval);
+    return status ? items.filter((item) => item.status === status) : items;
   }
 
   static async getRequest(id: string): Promise<ApprovalRequest | null> {
-    try {
-      return await APIClient.get<ApprovalRequest>(`/v1/approvals/${id}`);
-    } catch {
-      return MOCK_REQUESTS.find((r) => r.id === id) || null;
-    }
+    const requests = await this.getRequests();
+    return requests.find((request) => request.id === id) || null;
   }
 
   static async approve(id: string, remarks?: string): Promise<ApprovalRequest> {
-    const idx = MOCK_REQUESTS.findIndex((r) => r.id === id);
-    if (idx >= 0) {
-      MOCK_REQUESTS[idx] = {
-        ...MOCK_REQUESTS[idx],
-        status: 'approved',
-        history: [
-          ...MOCK_REQUESTS[idx].history,
-          {
-            id: `h-${Date.now()}`,
-            action: 'approved',
-            by: 'mgr-001',
-            byName: 'Sarah Chen',
-            date: new Date().toISOString(),
-            remarks,
-            level: MOCK_REQUESTS[idx].currentLevel,
-          },
-        ],
-      };
-      return MOCK_REQUESTS[idx];
+    await APIClient.post<{ message: string; messageAr?: string }>('/manager/approvals', {
+      requestId: id,
+      requestType: await getRequestType(id),
+      action: 'approve',
+      comments: remarks,
+    });
+
+    const updated = await this.getRequest(id);
+    if (!updated) {
+      throw new Error('Updated approval request not found');
     }
-    throw new Error('Not found');
+    return updated;
   }
 
   static async reject(id: string, remarks: string): Promise<ApprovalRequest> {
-    const idx = MOCK_REQUESTS.findIndex((r) => r.id === id);
-    if (idx >= 0) {
-      MOCK_REQUESTS[idx] = {
-        ...MOCK_REQUESTS[idx],
-        status: 'rejected',
-        history: [
-          ...MOCK_REQUESTS[idx].history,
-          {
-            id: `h-${Date.now()}`,
-            action: 'rejected',
-            by: 'mgr-001',
-            byName: 'Sarah Chen',
-            date: new Date().toISOString(),
-            remarks,
-            level: MOCK_REQUESTS[idx].currentLevel,
-          },
-        ],
-      };
-      return MOCK_REQUESTS[idx];
-    }
-    throw new Error('Not found');
-  }
+    await APIClient.post<{ message: string; messageAr?: string }>('/manager/approvals', {
+      requestId: id,
+      requestType: await getRequestType(id),
+      action: 'reject',
+      comments: remarks,
+    });
 
-  static async escalate(id: string, remarks?: string): Promise<ApprovalRequest> {
-    const idx = MOCK_REQUESTS.findIndex((r) => r.id === id);
-    if (idx >= 0) {
-      MOCK_REQUESTS[idx] = {
-        ...MOCK_REQUESTS[idx],
-        status: 'escalated',
-        history: [
-          ...MOCK_REQUESTS[idx].history,
-          {
-            id: `h-${Date.now()}`,
-            action: 'escalated',
-            by: 'mgr-001',
-            byName: 'Sarah Chen',
-            date: new Date().toISOString(),
-            remarks,
-          },
-        ],
-      };
-      return MOCK_REQUESTS[idx];
+    const updated = await this.getRequest(id);
+    if (!updated) {
+      throw new Error('Updated approval request not found');
     }
-    throw new Error('Not found');
+    return updated;
   }
 
   static async bulkApprove(ids: string[], remarks?: string): Promise<void> {
@@ -558,27 +696,16 @@ export class ApprovalService {
   }
 
   static async addComment(id: string, text: string): Promise<void> {
-    const idx = MOCK_REQUESTS.findIndex((r) => r.id === id);
-    if (idx >= 0) {
-      MOCK_REQUESTS[idx].comments.push({
-        id: `c-${Date.now()}`,
-        by: 'mgr-001',
-        byName: 'Sarah Chen',
-        date: new Date().toISOString(),
-        text,
-        isInternal: false,
-      });
-    }
+    await APIClient.post<{ message: string; messageAr?: string }>('/manager/approvals', {
+      requestId: id,
+      requestType: await getRequestType(id),
+      action: 'comment',
+      comments: text,
+    });
   }
 
-  static async getSummary(): Promise<Record<ApprovalType, number>> {
-    const pending = MOCK_REQUESTS.filter((r) => r.status === 'pending');
-    return {
-      leave: pending.filter((r) => r.type === 'leave').length,
-      expense: pending.filter((r) => r.type === 'expense').length,
-      timesheet: pending.filter((r) => r.type === 'timesheet').length,
-      requisition: pending.filter((r) => r.type === 'requisition').length,
-      document: pending.filter((r) => r.type === 'document').length,
-    };
+  static async getSummary(): Promise<ApprovalSummary> {
+    const response = await fetchApprovals();
+    return response.summary;
   }
 }

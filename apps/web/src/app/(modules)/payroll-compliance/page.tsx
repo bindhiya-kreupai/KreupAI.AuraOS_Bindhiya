@@ -9,7 +9,7 @@ import {
     ArrowUpRight, Bot, Sparkles, Scale,
     Building2, Users, Calculator, Network
 } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 import Link from 'next/link';
 
 const COMPLIANCE_ITEMS = [

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { ChevronDown, Globe, Building2, Check, LayoutGrid } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 
 const ENTITIES = [
     { id: 'global', name: 'Global Group View', icon: Globe, color: 'text-indigo-500' },

@@ -42,8 +42,10 @@ export default function CompOffManagementPage() {
             setLoading(true);
             const result = await CompOffManagementService.getCompOffData();
             setData({
-                ...data,
-                transactions: result || []
+                balance: result?.balance || 0,
+                expiringDays: result?.expiringDays || 60,
+                expiringSoon: result?.expiringSoon || 0,
+                transactions: result?.transactions || []
             });
         } catch (error) {
             console.error('Error:', error);

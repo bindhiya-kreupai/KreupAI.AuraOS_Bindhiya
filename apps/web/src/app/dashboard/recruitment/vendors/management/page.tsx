@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { RecruitmentSettingsService } from '../../services';
+import React from 'react';
+import { RecruitmentVendorRegistry } from '../_components/recruitment-vendor-registry';
 
 export default function VendorsManagementPage() {
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold">Vendor Management</h1>
-            <p className="text-gray-500">Coming soon...</p>
-        </div>
+        <RecruitmentVendorRegistry
+            title="Vendor Management"
+            description="Review vendor onboarding and relationship status from the live recruitment vendor registry."
+        />
     );
 }
 

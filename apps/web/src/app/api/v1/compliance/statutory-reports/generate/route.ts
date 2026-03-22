@@ -1,6 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,7 +10,7 @@ export const dynamic = 'force-dynamic';
  * POST /api/v1/compliance/statutory-reports/generate
  * Generate a specific statutory report
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user } = context;
     const body = await request.json();
@@ -47,18 +49,17 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       );
     }
 
-    // Simulate report generation (in production would trigger actual generation)
     const generatedReport = {
       jobId: crypto.randomUUID(),
       reportId,
       companyId,
       period: period || new Date().toISOString().substring(0, 7),
       status: 'PROCESSING',
-      estimatedCompletionTime: new Date(Date.now() + 30000).toISOString(), // 30 seconds
+      estimatedCompletionTime: new Date(Date.now() + 30000).toISOString(),
       parameters: parameters || {},
       requestedBy: user.id,
       requestedAt: new Date().toISOString(),
-      downloadUrl: null, // Will be available after processing
+      downloadUrl: null,
     };
 
     return NextResponse.json(
@@ -74,11 +75,15 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       },
       { status: 202 }
     );
-  } catch (_error) {
+  } catch (error) {
     console.error('[Statutory Reports Generate API] POST Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to initiate report generation' } },
       { status: 500 }
     );
   }
+}), {
+  action: AuditAction.PAYROLL_RUN_INITIATED,
+  resourceType: 'statutory_report',
+  captureRequestBody: true,
 });

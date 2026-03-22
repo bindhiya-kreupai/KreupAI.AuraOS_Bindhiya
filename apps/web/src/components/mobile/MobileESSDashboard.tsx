@@ -78,126 +78,96 @@ interface PendingRequest {
   status: RequestStatus;
 }
 
-// ── Mock Data ─────────────────────────────────────────────────────────────────
+// ── Data Context (fetched from API) ──────────────────────────────────────────
 
-const EMPLOYEE_PROFILE = {
-  name: 'Jane Doe',
-  initials: 'JD',
-  employeeId: 'EMP-001',
-  department: 'Engineering',
-  designation: 'Sr. Software Engineer',
-  location: 'San Francisco, CA',
-  reportingTo: 'Tom Johnson',
-  joinDate: 'Mar 2022',
+const LEAVE_COLOR_MAP: Record<string, { color: string; bgColor: string; iconColor: string }> = {
+  annual: { color: 'text-blue-600', bgColor: 'bg-blue-50', iconColor: 'text-blue-500' },
+  sick: { color: 'text-red-600', bgColor: 'bg-red-50', iconColor: 'text-red-500' },
+  casual: { color: 'text-emerald-600', bgColor: 'bg-emerald-50', iconColor: 'text-emerald-500' },
+  wfh: { color: 'text-purple-600', bgColor: 'bg-purple-50', iconColor: 'text-purple-500' },
 };
 
-const LEAVE_BALANCES: LeaveBalance[] = [
-  {
-    type: 'annual',
-    label: 'Annual Leave',
-    total: 21,
-    used: 8,
-    remaining: 13,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
-    iconColor: 'text-blue-500',
-  },
-  {
-    type: 'sick',
-    label: 'Sick Leave',
-    total: 12,
-    used: 2,
-    remaining: 10,
-    color: 'text-red-600',
-    bgColor: 'bg-red-50',
-    iconColor: 'text-red-500',
-  },
-  {
-    type: 'casual',
-    label: 'Casual Leave',
-    total: 8,
-    used: 3,
-    remaining: 5,
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-50',
-    iconColor: 'text-emerald-500',
-  },
-  {
-    type: 'wfh',
-    label: 'WFH Days',
-    total: 52,
-    used: 18,
-    remaining: 34,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50',
-    iconColor: 'text-purple-500',
-  },
-];
+interface ESSData {
+  profile: { name: string; initials: string; employeeId: string; department: string; designation: string; location: string; reportingTo: string; joinDate: string };
+  leaveBalances: LeaveBalance[];
+  payslipPreview: PayslipPreview;
+  attendanceSummary: AttendanceSummary;
+  pendingRequests: PendingRequest[];
+}
 
-const PAYSLIP_PREVIEW: PayslipPreview = {
-  month: 'January',
-  year: '2026',
-  grossPay: 12833,
-  deductions: 2580,
-  netPay: 10253,
-  taxDeducted: 1840,
-  pfDeducted: 740,
-  bonusIncluded: false,
-};
-
-const ATTENDANCE_SUMMARY: AttendanceSummary = {
-  workingDays: 21,
-  daysPresent: 19,
-  lateArrivals: 2,
-  earlyDepartures: 1,
-  avgCheckIn: '09:08',
-  avgCheckOut: '18:22',
-  hoursWorked: 152,
-  requiredHours: 168,
-};
-
-const PENDING_REQUESTS: PendingRequest[] = [
-  {
-    id: 'req-001',
-    type: 'leave',
-    title: 'Annual Leave',
-    description: 'Mar 3–7, 2026 (5 days)',
-    submittedAt: '2 days ago',
-    status: 'pending',
-  },
-  {
-    id: 'req-002',
-    type: 'expense',
-    title: 'Conference Expense',
-    description: 'AWS re:Invent 2026 — $1,240',
-    submittedAt: '1 week ago',
-    status: 'approved',
-  },
-  {
-    id: 'req-003',
-    type: 'overtime',
-    title: 'Overtime Claim',
-    description: 'Feb 22 — 6 hrs sprint work',
-    submittedAt: '3 days ago',
-    status: 'processing',
-  },
-  {
-    id: 'req-004',
-    type: 'profile-change',
-    title: 'Address Update',
-    description: '456 Market St, San Francisco',
-    submittedAt: '5 days ago',
-    status: 'approved',
-  },
-  {
-    id: 'req-005',
-    type: 'wfh',
-    title: 'WFH Request',
-    description: 'Feb 27 (Child care)',
-    submittedAt: '3 hours ago',
-    status: 'pending',
-  },
-];
+async function fetchESSData(): Promise<ESSData> {
+  const defaults: ESSData = {
+    profile: { name: '', initials: '', employeeId: '', department: '', designation: '', location: '', reportingTo: '', joinDate: '' },
+    leaveBalances: [],
+    payslipPreview: { month: '', year: '', grossPay: 0, deductions: 0, netPay: 0, taxDeducted: 0, pfDeducted: 0, bonusIncluded: false },
+    attendanceSummary: { workingDays: 0, daysPresent: 0, lateArrivals: 0, earlyDepartures: 0, avgCheckIn: '--:--', avgCheckOut: '--:--', hoursWorked: 0, requiredHours: 0 },
+    pendingRequests: [],
+  };
+  const results = await Promise.allSettled([
+    fetch('/api/v1/ess/profile').then(r => r.json()),
+    fetch('/api/v1/leave/balances').then(r => r.json()),
+    fetch('/api/v1/payroll/payslips?limit=1').then(r => r.json()),
+    fetch('/api/v1/attendance/summary?month=' + (new Date().getMonth() + 1) + '&year=' + new Date().getFullYear()).then(r => r.json()),
+    fetch('/api/v1/ess/requests').then(r => r.json()),
+  ]);
+  if (results[0].status === 'fulfilled') {
+    const p = results[0].value?.data || results[0].value;
+    const name = p?.name || `${p?.firstName || ''} ${p?.lastName || ''}`.trim() || '';
+    defaults.profile = {
+      name,
+      initials: name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2),
+      employeeId: p?.employeeCode || p?.employeeId || '',
+      department: p?.department || p?.departmentName || '',
+      designation: p?.designation || p?.jobTitle || p?.position || '',
+      location: p?.location || '',
+      reportingTo: p?.managerName || p?.reportingTo || '',
+      joinDate: p?.joiningDate ? new Date(p.joiningDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '',
+    };
+  }
+  if (results[1].status === 'fulfilled') {
+    const list = results[1].value?.data || results[1].value || [];
+    defaults.leaveBalances = (Array.isArray(list) ? list : []).map((b: any) => {
+      const type = (b.leaveType || b.type || 'annual').toLowerCase();
+      const colors = LEAVE_COLOR_MAP[type] || LEAVE_COLOR_MAP.annual;
+      return { type: type as LeaveType, label: b.label || (type.charAt(0).toUpperCase() + type.slice(1) + ' Leave'), total: b.total || b.entitlement || 0, used: b.used || 0, remaining: b.remaining ?? (b.total - b.used) ?? 0, ...colors };
+    });
+  }
+  if (results[2].status === 'fulfilled') {
+    const slip = (results[2].value?.data || [])[0];
+    if (slip) {
+      defaults.payslipPreview = {
+        month: slip.month || new Date(slip.periodStart || slip.createdAt).toLocaleString('en-US', { month: 'long' }),
+        year: String(slip.year || new Date(slip.periodStart || slip.createdAt).getFullYear()),
+        grossPay: Number(slip.grossSalary || slip.grossPay || 0),
+        deductions: Number(slip.totalDeductions || 0),
+        netPay: Number(slip.netSalary || slip.netPay || 0),
+        taxDeducted: Number(slip.incomeTax || slip.taxDeducted || 0),
+        pfDeducted: Number(slip.providentFund || slip.pfDeducted || 0),
+        bonusIncluded: !!slip.bonusIncluded,
+      };
+    }
+  }
+  if (results[3].status === 'fulfilled') {
+    const s = results[3].value?.data || results[3].value;
+    if (s) {
+      defaults.attendanceSummary = {
+        workingDays: s.workingDays || 0, daysPresent: s.daysPresent || s.presentDays || 0,
+        lateArrivals: s.lateArrivals || s.lateDays || 0, earlyDepartures: s.earlyDepartures || 0,
+        avgCheckIn: s.avgCheckIn || '--:--', avgCheckOut: s.avgCheckOut || '--:--',
+        hoursWorked: s.hoursWorked || s.totalHours || 0, requiredHours: s.requiredHours || s.expectedHours || 0,
+      };
+    }
+  }
+  if (results[4].status === 'fulfilled') {
+    const list = results[4].value?.data || results[4].value || [];
+    defaults.pendingRequests = (Array.isArray(list) ? list : []).map((r: any) => ({
+      id: r.id, type: r.type || 'leave', title: r.title || r.name || '',
+      description: r.description || '', submittedAt: r.submittedAt || r.createdAt || '',
+      status: r.status || 'pending',
+    }));
+  }
+  return defaults;
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -299,41 +269,41 @@ function QuickActionsBar() {
   );
 }
 
-function ProfileSummaryCard() {
+function ProfileSummaryCard({ profile }: { profile: ESSData['profile'] }) {
   return (
     <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-4 text-white">
       <div className="flex items-center gap-3 mb-3">
         <div className="w-14 h-14 bg-white bg-opacity-20 rounded-xl flex items-center justify-center text-xl font-bold">
-          {EMPLOYEE_PROFILE.initials}
+          {profile.initials || '?'}
         </div>
         <div>
-          <h2 className="font-bold text-lg leading-tight">{EMPLOYEE_PROFILE.name}</h2>
-          <p className="text-blue-100 text-xs">{EMPLOYEE_PROFILE.designation}</p>
+          <h2 className="font-bold text-lg leading-tight">{profile.name || 'Employee'}</h2>
+          <p className="text-blue-100 text-xs">{profile.designation}</p>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div className="flex items-center gap-1.5 text-xs text-blue-100">
           <Briefcase className="w-3.5 h-3.5 shrink-0" />
-          <span>{EMPLOYEE_PROFILE.department}</span>
+          <span>{profile.department}</span>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-blue-100">
           <Hash className="w-3.5 h-3.5 shrink-0" />
-          <span>{EMPLOYEE_PROFILE.employeeId}</span>
+          <span>{profile.employeeId}</span>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-blue-100">
           <MapPin className="w-3.5 h-3.5 shrink-0" />
-          <span>{EMPLOYEE_PROFILE.location}</span>
+          <span>{profile.location}</span>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-blue-100">
           <User className="w-3.5 h-3.5 shrink-0" />
-          <span>{EMPLOYEE_PROFILE.reportingTo}</span>
+          <span>{profile.reportingTo}</span>
         </div>
       </div>
     </div>
   );
 }
 
-function LeaveBalanceSection() {
+function LeaveBalanceSection({ balances }: { balances: LeaveBalance[] }) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
       <div className="flex items-center justify-between mb-3">
@@ -343,7 +313,7 @@ function LeaveBalanceSection() {
         </button>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        {LEAVE_BALANCES.map((lb) => {
+        {balances.map((lb) => {
           const usedPct = Math.round((lb.used / lb.total) * 100);
           return (
             <div key={lb.type} className={`${lb.bgColor} rounded-xl p-3`}>
@@ -371,8 +341,8 @@ function LeaveBalanceSection() {
   );
 }
 
-function PayslipPreviewSection() {
-  const { month, year, grossPay, deductions, netPay, taxDeducted, pfDeducted } = PAYSLIP_PREVIEW;
+function PayslipPreviewSection({ payslip }: { payslip: PayslipPreview }) {
+  const { month, year, grossPay, deductions, netPay, taxDeducted, pfDeducted } = payslip;
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
@@ -415,7 +385,7 @@ function PayslipPreviewSection() {
   );
 }
 
-function AttendanceSummarySection() {
+function AttendanceSummarySection({ summary }: { summary: AttendanceSummary }) {
   const {
     workingDays,
     daysPresent,
@@ -425,7 +395,7 @@ function AttendanceSummarySection() {
     avgCheckOut,
     hoursWorked,
     requiredHours,
-  } = ATTENDANCE_SUMMARY;
+  } = summary;
   const presentPct = Math.round((daysPresent / workingDays) * 100);
   const hoursPct = Math.round((hoursWorked / requiredHours) * 100);
 
@@ -512,17 +482,17 @@ function AttendanceSummarySection() {
   );
 }
 
-function PendingRequestsSection() {
+function PendingRequestsSection({ requests }: { requests: PendingRequest[] }) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
       <div className="px-4 pt-4 pb-3 flex items-center justify-between">
         <h3 className="font-semibold text-gray-800 text-sm">My Requests</h3>
         <span className="text-xs text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full font-medium">
-          {PENDING_REQUESTS.filter((r) => r.status === 'pending').length} pending
+          {requests.filter((r) => r.status === 'pending').length} pending
         </span>
       </div>
       <div className="divide-y divide-gray-50">
-        {PENDING_REQUESTS.map((req) => {
+        {requests.map((req) => {
           const {
             label: statusLabel,
             color: statusColor,
@@ -569,22 +539,21 @@ function PendingRequestsSection() {
 export default function MobileESSDashboard() {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState('');
+  const [data, setData] = useState<ESSData | null>(null);
 
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setLoading(false);
-      setLastUpdated(new Date().toLocaleTimeString());
-    }, 600);
-    return () => clearTimeout(t);
-  }, []);
-
-  const refresh = () => {
+  const loadData = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setLastUpdated(new Date().toLocaleTimeString());
-    }, 600);
+    try {
+      const d = await fetchESSData();
+      setData(d);
+    } catch { /* silent */ }
+    setLoading(false);
+    setLastUpdated(new Date().toLocaleTimeString());
   };
+
+  useEffect(() => { loadData(); }, []);
+
+  const refresh = () => { loadData(); };
 
   if (loading) {
     return (
@@ -620,28 +589,28 @@ export default function MobileESSDashboard() {
       </div>
 
       {/* Profile Card */}
-      <ProfileSummaryCard />
+      {data && <ProfileSummaryCard profile={data.profile} />}
 
       {/* Quick Actions + Clock */}
       <QuickActionsBar />
 
       {/* Leave Balances */}
-      <LeaveBalanceSection />
+      {data && <LeaveBalanceSection balances={data.leaveBalances} />}
 
       {/* Payslip Preview */}
-      <PayslipPreviewSection />
+      {data && <PayslipPreviewSection payslip={data.payslipPreview} />}
 
       {/* Attendance Summary */}
-      <AttendanceSummarySection />
+      {data && <AttendanceSummarySection summary={data.attendanceSummary} />}
 
       {/* Pending Requests */}
-      <PendingRequestsSection />
+      {data && <PendingRequestsSection requests={data.pendingRequests} />}
 
       {/* Footer hint */}
       <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-between text-xs text-gray-400">
-        <span>Employee Mode · {EMPLOYEE_PROFILE.employeeId}</span>
+        <span>Employee Mode · {data?.profile.employeeId}</span>
         <span className="flex items-center gap-1">
-          <Activity className="w-3 h-3" /> Since {EMPLOYEE_PROFILE.joinDate}
+          <Activity className="w-3 h-3" /> Since {data?.profile.joinDate}
         </span>
       </div>
     </div>

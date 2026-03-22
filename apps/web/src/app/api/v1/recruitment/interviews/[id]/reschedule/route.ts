@@ -1,24 +1,86 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
+import { prisma } from '@aura/database';
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
-  const body = await request.json();
+export const dynamic = 'force-dynamic';
 
-  return NextResponse.json({
-    success: true,
-    data: {
-      id,
-      previousDate: '2026-01-27',
-      previousTime: '09:00',
-      newDate: body.date || '2026-01-30',
-      newTime: body.startTime || '14:00',
-      duration: body.duration || 45,
-      reason: body.reason || 'Scheduling conflict',
-      status: 'rescheduled',
-      updatedAt: new Date().toISOString(),
-    },
-  });
-}
+/**
+ * PUT /api/v1/recruitment/interviews/[id]/reschedule
+ * Reschedule an existing interview
+ */
+export const PUT = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { id } = await context.params;
+    const body = await request.json();
+
+    if (!body.scheduledDate) {
+      return NextResponse.json(
+        { success: false, error: { code: 'E2001', message: 'scheduledDate is required' } },
+        { status: 400 }
+      );
+    }
+
+    const interview = await prisma.interview.findUnique({ where: { id } });
+
+    if (!interview) {
+      return NextResponse.json(
+        { success: false, error: { code: 'E4001', message: 'Interview not found' } },
+        { status: 404 }
+      );
+    }
+
+    if (['completed', 'cancelled'].includes(interview.status)) {
+      return NextResponse.json(
+        { success: false, error: { code: 'E4003', message: `Cannot reschedule a ${interview.status} interview` } },
+        { status: 422 }
+      );
+    }
+
+    const previousDate = interview.scheduledDate;
+
+    const updated = await prisma.interview.update({
+      where: { id },
+      data: {
+        scheduledDate: new Date(body.scheduledDate),
+        duration: body.duration || interview.duration,
+        location: body.location !== undefined ? body.location : interview.location,
+        meetingLink: body.meetingLink !== undefined ? body.meetingLink : interview.meetingLink,
+        notes: body.reason
+          ? `${interview.notes ? interview.notes + '\n' : ''}Rescheduled: ${body.reason}`
+          : interview.notes,
+        status: 'scheduled',
+      },
+      include: {
+        application: {
+          include: {
+            candidate: { select: { firstName: true, lastName: true, email: true } },
+            jobPosting: { select: { title: true } },
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...updated,
+        previousScheduledDate: previousDate,
+      },
+      message: 'Interview rescheduled successfully',
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+    });
+  } catch (error) {
+    console.error('[Interview Reschedule API] PUT Error:', error);
+    return NextResponse.json(
+      { success: false, error: { code: 'E5001', message: 'Failed to reschedule interview' } },
+      { status: 500 }
+    );
+  }
+}), {
+  action: AuditAction.EMPLOYEE_UPDATED,
+  resourceType: 'interview',
+  captureRequestBody: true,
+});

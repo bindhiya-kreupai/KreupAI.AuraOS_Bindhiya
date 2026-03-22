@@ -9,7 +9,7 @@ import {
   MessageSquare, Calendar, Sparkles,
   ArrowUpRight, AlertCircle, UserCheck
 } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@/lib/utils';
 import {
   RecruitmentAnalyticsService,
   CandidateApplicationService,
@@ -51,14 +51,6 @@ export default function RecruitmentPage() {
 
     } catch (error) {
       console.error('Failed to load recruitment data:', error);
-      // Mock data for dev/demo if service fails
-      setStats({
-        totalRequisitions: 24,
-        openRequisitions: 12,
-        totalApplications: 450,
-        averageTimeToHire: 18,
-        offerAcceptanceRate: 92
-      });
     } finally {
       setIsLoading(false);
     }
@@ -171,10 +163,23 @@ export default function RecruitmentPage() {
               <TrendingUp className="w-5 h-5 text-indigo-500" /> Sourcing Funnel Tracking
             </h2>
             <div className="space-y-6">
-              <SourcingBar label="LinkedIn Recruiter" percentage={45} color="blue" count={142} />
-              <SourcingBar label="Internal Referrals" percentage={28} color="indigo" count={89} />
-              <SourcingBar label="Direct Career Site" percentage={18} color="emerald" count={56} />
-              <SourcingBar label="Agency Partners" percentage={9} color="rose" count={28} />
+              {(() => {
+                const sourceMap = stats?.applicationsBySource || {};
+                const entries = Object.entries(sourceMap).sort(([,a]: any, [,b]: any) => b - a);
+                const total = entries.reduce((sum, [, count]: any) => sum + count, 0) || 1;
+                const colors = ['blue', 'indigo', 'emerald', 'rose'];
+                return entries.length > 0 ? entries.slice(0, 4).map(([source, count]: any, i) => (
+                  <SourcingBar
+                    key={source}
+                    label={source.charAt(0).toUpperCase() + source.slice(1).replace(/_/g, ' ')}
+                    percentage={Math.round((count / total) * 100)}
+                    color={colors[i % colors.length]}
+                    count={count}
+                  />
+                )) : (
+                  <p className="text-sm text-silver-mist text-center py-4">No sourcing data available yet</p>
+                );
+              })()}
             </div>
           </div>
         </div>

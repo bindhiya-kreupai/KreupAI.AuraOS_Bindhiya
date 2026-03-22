@@ -1,109 +1,92 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
+import { prisma } from '@aura/database';
 
-// Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
-
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: { code: string; message: string; details?: Record<string, unknown> };
-  meta?: any;
-}
-
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+/**
+ * POST /api/v1/shifts/open/[id]/claim
+ * Claim an open shift roster slot by assigning the requesting employee.
+ */
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
+    const { user, params } = context;
     const { id } = params;
     const body = await request.json();
     const { employeeId } = body;
 
     if (!employeeId) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'Validation failed: employeeId is required',
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'E2001', message: 'Validation failed: employeeId is required' },
+          meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 400 });
+        { status: 400 }
+      );
     }
 
-    // Simulated open shift lookup with tenant isolation
-    const openShiftIds = ['open-001', 'open-002'];
-    const claimedShiftIds = ['open-003'];
+    // Find the open shift roster entry
+    const roster = await prisma.shiftRoster.findFirst({
+      where: { id, tenantId: user.tenantId },
+      include: { shift: true },
+    });
 
-    if (![...openShiftIds, ...claimedShiftIds].includes(id)) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E4001',
-          message: `Open shift with id '${id}' not found`,
+    if (!roster) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'E4001', message: `Open shift with id '${id}' not found` },
+          meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 404 });
+        { status: 404 }
+      );
     }
 
-    if (claimedShiftIds.includes(id)) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E3001',
-          message: 'This open shift has already been claimed by another employee',
+    if (roster.status !== 'OPEN') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'E3001', message: 'This shift has already been claimed or is not open' },
+          meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 409 });
+        { status: 409 }
+      );
     }
 
-    const claimedShift = {
-      id,
-      tenantId: 'tenant-1',
-      status: 'CLAIMED',
-      claimedBy: employeeId,
-      claimedAt: new Date().toISOString(),
-      requiresManagerApproval: true,
-      approvalStatus: 'PENDING',
-      updatedAt: new Date().toISOString(),
-    };
+    // Claim the shift by updating the roster entry
+    const updated = await prisma.shiftRoster.update({
+      where: { id },
+      data: {
+        employeeId,
+        status: 'CLAIMED',
+      },
+      include: { shift: true },
+    });
 
-    const response: ApiResponse = {
+    return NextResponse.json({
       success: true,
-      data: claimedShift,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
+      data: {
+        id: updated.id,
+        tenantId: updated.tenantId,
+        employeeId: updated.employeeId,
+        shiftId: updated.shiftId,
+        shiftName: updated.shift.name,
+        rosterDate: updated.rosterDate,
+        status: updated.status,
+        claimedAt: new Date().toISOString(),
       },
-    };
-
-    return NextResponse.json(response, { status: 200 });
-  } catch (_error) {
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to claim open shift',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-    return NextResponse.json(response, { status: 500 });
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+    });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: { code: 'E5001', message: error.message } },
+      { status: 500 }
+    );
   }
-}
+}), {
+  action: AuditAction.EMPLOYEE_UPDATED,
+  resourceType: 'shift_roster',
+  captureRequestBody: true,
+  extractResourceId: (req, ctx) => ctx?.params?.id,
+});

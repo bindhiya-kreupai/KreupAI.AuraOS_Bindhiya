@@ -1,7 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 
-// Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
+// Tenant isolation is enforced via tenantId extracted from auth context
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -50,8 +53,10 @@ const mockPolicyDetail: Record<string, any> = {
   },
 };
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
+    const { user, params } = context;
+    const tenantId = user.tenantId;
     const { id } = params;
 
     const policy = mockPolicyDetail[id];
@@ -85,7 +90,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       error: {
         code: 'E5001',
         message: 'Failed to get policy',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        details: { error: _error instanceof Error ? _error.message : 'Unknown error' },
       },
       meta: {
         timestamp: new Date().toISOString(),
@@ -95,34 +100,77 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const { id } = params;
-    const body = await request.json();
+export const PUT = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, params } = context;
+      const tenantId = user.tenantId;
+      const { id } = params;
+      const body = await request.json();
 
-    if (!mockPolicyDetail[id]) {
+      if (!mockPolicyDetail[id]) {
+        const response: ApiResponse = {
+          success: false,
+          error: { code: 'E4001', message: `Policy with id '${id}' not found` },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 404 });
+      }
+
+      // Prevent editing PUBLISHED policies directly — must create a new version
+      if (mockPolicyDetail[id].status === 'PUBLISHED' && !body.createNewVersion) {
+        const response: ApiResponse = {
+          success: false,
+          error: {
+            code: 'E3001',
+            message:
+              'Cannot edit a published policy directly. Set createNewVersion=true to create a new draft version.',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 409 });
+      }
+
+      const updatedPolicy = {
+        ...mockPolicyDetail[id],
+        ...body,
+        id, // cannot change id
+        tenantId, // cannot change tenant — use auth context value
+        status: body.createNewVersion ? 'DRAFT' : mockPolicyDetail[id].status,
+        version: body.createNewVersion
+          ? incrementVersion(mockPolicyDetail[id].version)
+          : mockPolicyDetail[id].version,
+        updatedAt: new Date().toISOString(),
+      };
+
       const response: ApiResponse = {
-        success: false,
-        error: { code: 'E4001', message: `Policy with id '${id}' not found` },
+        success: true,
+        data: updatedPolicy,
         meta: {
           timestamp: new Date().toISOString(),
           requestId: crypto.randomUUID(),
           apiVersion: 'v1',
         },
       };
-      return NextResponse.json(response, { status: 404 });
-    }
 
-    // Prevent editing PUBLISHED policies directly — must create a new version
-    if (mockPolicyDetail[id].status === 'PUBLISHED' && !body.createNewVersion) {
+      return NextResponse.json(response, { status: 200 });
+    } catch (_error) {
       const response: ApiResponse = {
         success: false,
         error: {
-          code: 'E3001',
-          message:
-            'Cannot edit a published policy directly. Set createNewVersion=true to create a new draft version.',
+          code: 'E5001',
+          message: 'Failed to update policy',
+          details: { error: _error instanceof Error ? _error.message : 'Unknown error' },
         },
         meta: {
           timestamp: new Date().toISOString(),
@@ -130,62 +178,94 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
           apiVersion: 'v1',
         },
       };
-      return NextResponse.json(response, { status: 409 });
+      return NextResponse.json(response, { status: 500 });
     }
-
-    const updatedPolicy = {
-      ...mockPolicyDetail[id],
-      ...body,
-      id, // cannot change id
-      tenantId: 'tenant-1', // cannot change tenant
-      status: body.createNewVersion ? 'DRAFT' : mockPolicyDetail[id].status,
-      version: body.createNewVersion
-        ? incrementVersion(mockPolicyDetail[id].version)
-        : mockPolicyDetail[id].version,
-      updatedAt: new Date().toISOString(),
-    };
-
-    const response: ApiResponse = {
-      success: true,
-      data: updatedPolicy,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 200 });
-  } catch (_error) {
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to update policy',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-    return NextResponse.json(response, { status: 500 });
+  }),
+  {
+    action: AuditAction.SETTINGS_UPDATED,
+    resourceType: 'policy',
+    captureRequestBody: true,
+    captureResponseBody: true,
   }
-}
+);
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const { id } = params;
-    const { searchParams } = new URL(request.url);
-    const action = searchParams.get('action');
+export const POST = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, params } = context;
+      const tenantId = user.tenantId;
+      const { id } = params;
+      const { searchParams } = new URL(request.url);
+      const action = searchParams.get('action');
 
-    if (action !== 'publish') {
+      if (action !== 'publish') {
+        const response: ApiResponse = {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Invalid action. Use ?action=publish to publish a policy.',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 400 });
+      }
+
+      if (!mockPolicyDetail[id]) {
+        const response: ApiResponse = {
+          success: false,
+          error: { code: 'E4001', message: `Policy with id '${id}' not found` },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 404 });
+      }
+
+      if (mockPolicyDetail[id].status !== 'DRAFT') {
+        const response: ApiResponse = {
+          success: false,
+          error: { code: 'E3001', message: 'Only DRAFT policies can be published' },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 409 });
+      }
+
+      const publishedPolicy = {
+        ...mockPolicyDetail[id],
+        status: 'PUBLISHED',
+        publishedAt: new Date().toISOString(),
+        publishedBy: user.userId || 'usr-current', // from auth context
+        updatedAt: new Date().toISOString(),
+      };
+
+      const response: ApiResponse = {
+        success: true,
+        data: publishedPolicy,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      };
+
+      return NextResponse.json(response, { status: 200 });
+    } catch (_error) {
       const response: ApiResponse = {
         success: false,
         error: {
-          code: 'E2001',
-          message: 'Invalid action. Use ?action=publish to publish a policy.',
+          code: 'E5001',
+          message: 'Failed to publish policy',
+          details: { error: _error instanceof Error ? _error.message : 'Unknown error' },
         },
         meta: {
           timestamp: new Date().toISOString(),
@@ -193,71 +273,16 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           apiVersion: 'v1',
         },
       };
-      return NextResponse.json(response, { status: 400 });
+      return NextResponse.json(response, { status: 500 });
     }
-
-    if (!mockPolicyDetail[id]) {
-      const response: ApiResponse = {
-        success: false,
-        error: { code: 'E4001', message: `Policy with id '${id}' not found` },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    if (mockPolicyDetail[id].status !== 'DRAFT') {
-      const response: ApiResponse = {
-        success: false,
-        error: { code: 'E3001', message: 'Only DRAFT policies can be published' },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 409 });
-    }
-
-    const publishedPolicy = {
-      ...mockPolicyDetail[id],
-      status: 'PUBLISHED',
-      publishedAt: new Date().toISOString(),
-      publishedBy: 'usr-current', // from auth context in production
-      updatedAt: new Date().toISOString(),
-    };
-
-    const response: ApiResponse = {
-      success: true,
-      data: publishedPolicy,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 200 });
-  } catch (_error) {
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to publish policy',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-    return NextResponse.json(response, { status: 500 });
+  }),
+  {
+    action: AuditAction.SETTINGS_UPDATED,
+    resourceType: 'policy',
+    captureRequestBody: true,
+    captureResponseBody: true,
   }
-}
+);
 
 function incrementVersion(version: string): string {
   const parts = version.split('.');

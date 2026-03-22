@@ -1,7 +1,8 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-
-// Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
+import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { OvertimeService } from '@/lib/services/overtime.service';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -12,8 +13,9 @@ interface ApiResponse<T = any> {
 
 const VALID_DECISIONS = ['APPROVED', 'DENIED', 'CONDITIONAL'];
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export const PUT = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
+    const { user, params } = context;
     const { id } = params;
     const body = await request.json();
     const { decision, notes } = body;
@@ -66,38 +68,16 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json(response, { status: 400 });
     }
 
-    // Simulated approval lookup with tenant isolation
-    const knownApprovals = ['ota-001', 'ota-002', 'ota-003'];
-    if (!knownApprovals.includes(id)) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E4001',
-          message: `OT approval request with id '${id}' not found`,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 404 });
+    let record;
+    if (decision === 'APPROVED' || decision === 'CONDITIONAL') {
+      record = await OvertimeService.approve(id, user.tenantId, user.userId);
+    } else {
+      record = await OvertimeService.reject(id, user.tenantId, user.userId, notes);
     }
-
-    const updatedApproval = {
-      id,
-      tenantId: 'tenant-1',
-      status: decision,
-      decisionBy: 'mgr-current', // from auth context in production
-      decisionNotes: notes || null,
-      conditionalHours: decision === 'CONDITIONAL' ? body.conditionalHours : null,
-      decisionAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
 
     const response: ApiResponse = {
       success: true,
-      data: updatedApproval,
+      data: record,
       meta: {
         timestamp: new Date().toISOString(),
         requestId: crypto.randomUUID(),
@@ -106,13 +86,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (_error) {
+  } catch (error) {
+    const statusCode = error instanceof Error && error.message.includes('not found') ? 404 : 500;
+    const errorCode = statusCode === 404 ? 'E4001' : 'E5001';
+
     const response: ApiResponse = {
       success: false,
       error: {
-        code: 'E5001',
-        message: 'Failed to update OT approval request',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        code: errorCode,
+        message: error instanceof Error ? error.message : 'Failed to update OT approval request',
       },
       meta: {
         timestamp: new Date().toISOString(),
@@ -120,6 +102,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         apiVersion: 'v1',
       },
     };
-    return NextResponse.json(response, { status: 500 });
+    return NextResponse.json(response, { status: statusCode });
   }
-}
+}), {
+  action: AuditAction.EMPLOYEE_UPDATED,
+  resourceType: 'overtime_request',
+  captureRequestBody: true,
+  extractResourceId: (req, ctx) => ctx?.params?.id,
+});

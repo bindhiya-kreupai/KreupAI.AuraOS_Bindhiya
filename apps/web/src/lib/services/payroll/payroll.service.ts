@@ -36,6 +36,7 @@ import {
 import type { SupportedCountryCode } from '../compliance/types';
 import { GOSIService } from '../compliance/gosi.service';
 import { LabourLawService } from '../compliance/labour-law.service';
+import { prisma } from '@aura/database';
 
 // ============================================================================
 // PAYROLL SERVICE
@@ -49,8 +50,8 @@ export class PayrollService {
     const { tenantId, companyId, month, countryCode, employeeIds } = input;
     const currency = COUNTRY_CURRENCIES[countryCode];
 
-    // Get employees to process
-    const employees = await this.getEmployeesToProcess(tenantId, companyId, employeeIds);
+    // Get employees to process (with leave/attendance data for the month)
+    const employees = await this.getEmployeesToProcess(tenantId, companyId, month, employeeIds);
 
     // Validate before processing
     const validation = await this.validatePayroll(employees, countryCode, month);
@@ -882,11 +883,258 @@ export class PayrollService {
   private static async getEmployeesToProcess(
     tenantId: string,
     companyId: string,
+    month: string,
     employeeIds?: string[]
   ): Promise<EmployeeData[]> {
-    // This would fetch from database
-    // For now, return empty array - will be connected to actual employee data
-    return [];
+    // Parse payroll month for date range queries
+    const [year, monthNum] = month.split('-').map(Number);
+    const monthStart = new Date(year, monthNum - 1, 1);
+    const monthEnd = new Date(year, monthNum, 0, 23, 59, 59);
+
+    // Fetch active employees for the company
+    const employees = await prisma.employee.findMany({
+      where: {
+        companyId,
+        company: { tenantId },
+        isDeleted: false,
+        ...(employeeIds?.length ? { id: { in: employeeIds } } : {}),
+      },
+      include: {
+        department: true,
+        jobProfile: true,
+      },
+    });
+
+    if (employees.length === 0) return [];
+
+    const employeeIdList = employees.map(e => e.id);
+
+    // Batch fetch all related data in parallel (including leave/attendance)
+    const [salaryStructures, complianceDetails, taxDeclarations, loanAdjustments, tenantComponents, leaveRequests, attendanceAgg, holidayCount, ytdPayslips] = await Promise.all([
+      prisma.employeeSalaryStructure.findMany({
+        where: { tenantId, employeeId: { in: employeeIdList }, isActive: true },
+      }),
+      prisma.employeeComplianceDetails.findMany({
+        where: { tenantId, employeeId: { in: employeeIdList } },
+      }),
+      prisma.taxDeclaration.findMany({
+        where: {
+          tenantId,
+          employeeId: { in: employeeIdList },
+          status: { in: ['SUBMITTED', 'VERIFIED', 'APPROVED'] },
+        },
+      }),
+      prisma.payrollAdjustment.findMany({
+        where: {
+          tenantId,
+          employeeId: { in: employeeIdList },
+          isProcessed: false,
+          approvalStatus: 'APPROVED',
+          category: 'RECOVERY',
+        },
+      }),
+      prisma.salaryComponent.findMany({
+        where: { tenantId, isActive: true, isDeleted: false },
+      }),
+      // Leave requests overlapping this month (APPROVED only)
+      prisma.leaveRequest.findMany({
+        where: {
+          tenantId,
+          employeeId: { in: employeeIdList },
+          status: 'APPROVED',
+          startDate: { lte: monthEnd },
+          endDate: { gte: monthStart },
+        },
+        select: {
+          employeeId: true,
+          numberOfDays: true,
+          leaveType: { select: { code: true } },
+        },
+      }),
+      // Attendance records for overtime aggregation
+      prisma.attendanceRecord.groupBy({
+        by: ['employeeId'],
+        where: {
+          tenantId,
+          employeeId: { in: employeeIdList },
+          date: { gte: monthStart, lte: monthEnd },
+        },
+        _sum: { overtimeHours: true },
+      }),
+      // Holidays in this month
+      prisma.holiday.count({
+        where: {
+          tenantId,
+          date: { gte: monthStart, lte: monthEnd },
+        },
+      }),
+      // YTD payslips for TDS calculation (prior months in same FY)
+      prisma.payslip.groupBy({
+        by: ['employeeId'],
+        where: {
+          employeeId: { in: employeeIdList },
+          status: { in: ['CALCULATED', 'APPROVED', 'PAID'] },
+          payrollRun: {
+            tenantId,
+            payrollMonth: { lt: month },
+          },
+        },
+        _sum: { employeeTDS: true },
+      }),
+    ]);
+
+    // Index by employeeId for O(1) lookups
+    const salaryMap = new Map(salaryStructures.map(s => [s.employeeId, s]));
+    const complianceMap = new Map(complianceDetails.map(c => [c.employeeId, c]));
+    const taxMap = new Map(taxDeclarations.map(t => [t.employeeId, t]));
+    const componentMaster = new Map(tenantComponents.map(c => [c.componentCode, c]));
+
+    // Sum loan recovery amounts per employee
+    const loanMap = new Map<string, number>();
+    for (const adj of loanAdjustments) {
+      loanMap.set(adj.employeeId, (loanMap.get(adj.employeeId) || 0) + Number(adj.amount));
+    }
+
+    // Aggregate leave days per employee (paid vs LOP/unpaid)
+    const lopCodes = ['LOP', 'UNPAID', 'LOSS_OF_PAY'];
+    const leaveMap = new Map<string, { paidDays: number; lopDays: number }>();
+    for (const lr of leaveRequests) {
+      const entry = leaveMap.get(lr.employeeId) || { paidDays: 0, lopDays: 0 };
+      const days = Number(lr.numberOfDays || 0);
+      if (lopCodes.includes((lr as any).leaveType?.code?.toUpperCase() || '')) {
+        entry.lopDays += days;
+      } else {
+        entry.paidDays += days;
+      }
+      leaveMap.set(lr.employeeId, entry);
+    }
+
+    // Overtime hours per employee
+    const overtimeMap = new Map(attendanceAgg.map(a => [a.employeeId, a._sum.overtimeHours || 0]));
+
+    // YTD TDS per employee
+    const ytdTdsMap = new Map(ytdPayslips.map(p => [p.employeeId, Number(p._sum.employeeTDS || 0)]));
+
+    // Map to EmployeeData — only employees with an active salary structure
+    return employees
+      .filter(e => salaryMap.has(e.id))
+      .map(e => {
+        const salary = salaryMap.get(e.id)!;
+        const compliance = complianceMap.get(e.id);
+        const tax = taxMap.get(e.id);
+        const countryCode = (compliance?.countryCode || 'AE') as SupportedCountryCode;
+
+        // Build salary components from Prisma flat fields → TypeScript interface
+        const components: SalaryComponent[] = [];
+
+        if (Number(salary.houseRentAllowance) > 0) {
+          const master = componentMaster.get('HRA');
+          components.push({
+            componentId: master?.id || 'HRA',
+            componentCode: 'HRA',
+            nameEn: master?.componentName || 'House Rent Allowance',
+            nameAr: 'بدل السكن',
+            type: 'EARNING',
+            category: 'ALLOWANCE',
+            calculationType: 'FIXED',
+            value: Number(salary.houseRentAllowance),
+            isTaxable: master?.isTaxable !== false,
+          });
+        }
+
+        if (Number(salary.transportAllowance) > 0) {
+          const master = componentMaster.get('TA');
+          components.push({
+            componentId: master?.id || 'TA',
+            componentCode: 'TA',
+            nameEn: master?.componentName || 'Transport Allowance',
+            nameAr: 'بدل النقل',
+            type: 'EARNING',
+            category: 'ALLOWANCE',
+            calculationType: 'FIXED',
+            value: Number(salary.transportAllowance),
+            isTaxable: master?.isTaxable !== false,
+          });
+        }
+
+        // Parse otherAllowances JSON array
+        const otherAllowances = (salary.otherAllowances as any[]) || [];
+        for (const allowance of otherAllowances) {
+          const code = allowance.code || allowance.name;
+          const master = componentMaster.get(code);
+          components.push({
+            componentId: master?.id || code,
+            componentCode: code,
+            nameEn: master?.componentName || allowance.name || code,
+            nameAr: allowance.nameAr || '',
+            type: (master?.componentType?.toUpperCase() === 'DEDUCTION' ? 'DEDUCTION' : 'EARNING') as any,
+            category: (allowance.category || 'ALLOWANCE') as any,
+            calculationType: (master?.calculationType?.toUpperCase() || 'FIXED') as any,
+            value: Number(allowance.amount || 0),
+            percentage: master?.percentage || undefined,
+            isTaxable: master?.isTaxable !== false,
+          });
+        }
+
+        const salaryStructure: EmployeeSalaryStructure = {
+          employeeId: e.id,
+          tenantId,
+          effectiveFrom: salary.effectiveFrom,
+          effectiveTo: salary.effectiveTo || undefined,
+          countryCode,
+          currency: COUNTRY_CURRENCIES[countryCode] || 'AED',
+          basicSalary: Number(salary.basicSalary),
+          components,
+          totalGross: Number(salary.grossSalary),
+          isActive: true,
+        };
+
+        return {
+          id: e.id,
+          code: e.employeeCode,
+          name: `${e.firstName} ${e.lastName}`,
+          department: (e as any).department?.name || 'Unknown',
+          designation: (e as any).jobProfile?.title || (e as any).jobProfile?.name || 'Unknown',
+          salaryStructure,
+          countryCode,
+          joiningDate: e.joiningDate,
+          basicSalary: Number(salary.basicSalary),
+
+          // Banking
+          bankName: compliance?.bankName || undefined,
+          bankAccountNumber: compliance?.bankAccountNumber || undefined,
+          bankIBAN: compliance?.bankIBAN || undefined,
+
+          // Leave/Attendance (real data from LeaveRequest + AttendanceRecord)
+          paidLeaveDays: leaveMap.get(e.id)?.paidDays || 0,
+          unpaidLeaveDays: 0,
+          lopDays: leaveMap.get(e.id)?.lopDays || 0,
+          holidays: holidayCount,
+
+          // Compliance
+          isSaudi: compliance?.isLocalNational === true && compliance?.countryCode === 'SA',
+          isLocalNational: compliance?.isLocalNational || false,
+          nationalId: compliance?.nationalId || undefined,
+          iqamaNumber: compliance?.iqamaNumber || undefined,
+          labourCardNumber: compliance?.labourCardNumber || undefined,
+          panNumber: compliance?.panNumber || undefined,
+
+          // Housing
+          housingAllowance: Number(salary.houseRentAllowance) || undefined,
+
+          // Loans
+          loanRecovery: loanMap.get(e.id) || undefined,
+
+          // Tax (India)
+          taxRegime: (tax?.taxRegime as TaxRegime) || undefined,
+          section80C: tax ? Number(tax.section80C) : undefined,
+          section80D: tax ? Number(tax.section80D) : undefined,
+          hraReceived: Number(salary.houseRentAllowance) || undefined,
+          rentPaid: tax ? Number(tax.rentPaid) : undefined,
+          isMetroCity: undefined,
+          ytdTds: ytdTdsMap.get(e.id) || 0,
+        } as EmployeeData;
+      });
   }
 }
 

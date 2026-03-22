@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { user } = context;
+  const tenantId = user.tenantId;
+
   const apiKeys = [
     {
       id: 'key-001',
@@ -68,30 +74,41 @@ export async function GET(request: NextRequest) {
     data: apiKeys,
     meta: { total: apiKeys.length, active: 3, revoked: 1 },
   });
-}
+});
 
-export async function POST(request: NextRequest) {
-  const body = await request.json();
+export const POST = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    const { user } = context;
+    const tenantId = user.tenantId;
 
-  const newKey = {
-    id: 'key-005',
-    name: body.name || 'New API Key',
-    key: 'aura_live_' + Math.random().toString(36).substring(2, 34),
-    prefix: 'aura_live_' + Math.random().toString(36).substring(2, 6) + '...',
-    status: 'active',
-    permissions: body.permissions || ['employees:read'],
-    createdAt: new Date().toISOString(),
-    lastUsed: null,
-    expiresAt: body.expiresAt || null,
-    usageCount: 0,
-    rateLimit: body.rateLimit || { requests: 1000, window: '1 hour' },
-    createdBy: 'admin-001',
-    ipWhitelist: body.ipWhitelist || [],
-    note: 'Store this key securely. It will not be shown again.',
-  };
+    const body = await request.json();
 
-  return NextResponse.json(
-    { success: true, data: newKey, message: 'API key generated successfully. Store it securely.' },
-    { status: 201 }
-  );
-}
+    const newKey = {
+      id: 'key-005',
+      name: body.name || 'New API Key',
+      key: 'aura_live_' + Math.random().toString(36).substring(2, 34),
+      prefix: 'aura_live_' + Math.random().toString(36).substring(2, 6) + '...',
+      status: 'active',
+      permissions: body.permissions || ['employees:read'],
+      createdAt: new Date().toISOString(),
+      lastUsed: null,
+      expiresAt: body.expiresAt || null,
+      usageCount: 0,
+      rateLimit: body.rateLimit || { requests: 1000, window: '1 hour' },
+      createdBy: 'admin-001',
+      ipWhitelist: body.ipWhitelist || [],
+      note: 'Store this key securely. It will not be shown again.',
+    };
+
+    return NextResponse.json(
+      { success: true, data: newKey, message: 'API key generated successfully. Store it securely.' },
+      { status: 201 }
+    );
+  }),
+  {
+    action: AuditAction.API_KEY_CREATED,
+    resourceType: 'api_key',
+    captureRequestBody: true,
+    captureResponseBody: true,
+  }
+);

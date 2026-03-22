@@ -9,7 +9,7 @@ import {
     ArrowUpRight, Landmark, Search, Filter
 } from 'lucide-react';
 import Link from 'next/link';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 
 export default function UAEWPSWorkspace() {
     const [activeTab, setActiveTab] = useState<'orchestra' | 'validation' | 'agents'>('orchestra');

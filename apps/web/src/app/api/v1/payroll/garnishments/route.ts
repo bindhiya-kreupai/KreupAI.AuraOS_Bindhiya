@@ -2,6 +2,8 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 
@@ -128,7 +130,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
  * POST /api/v1/payroll/garnishments
  * Create a new garnishment
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const { user } = context;
     const tenantId = user.tenantId;
@@ -235,4 +237,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       },
     }, { status: 500 });
   }
+}), {
+  action: AuditAction.EMPLOYEE_UPDATED,
+  resourceType: 'garnishment',
+  captureRequestBody: true,
 });

@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="77" failures="0" errors="0" time="6.579086669">
+    <testsuite name="src/__tests__/api/recruitment-core-routes.test.ts" timestamp="2026-03-22T18:28:42.878Z" hostname="MacBookPro" tests="3" failures="0" errors="0" skipped="0" time="0.010419042">
+        <testcase classname="src/__tests__/api/recruitment-core-routes.test.ts" name="recruitment core routes &gt; scopes candidate applications through tenant user ownership and orders by appliedDate" time="0.005455291">
+        </testcase>
+        <testcase classname="src/__tests__/api/recruitment-core-routes.test.ts" name="recruitment core routes &gt; supports stage updates by candidate id while normalizing the stage payload" time="0.002542792">
+        </testcase>
+        <testcase classname="src/__tests__/api/recruitment-core-routes.test.ts" name="recruitment core routes &gt; returns direct Prisma-backed recruitment stats instead of proxying to another service" time="0.001349875">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/api/recruitment-vendors-route.test.ts" timestamp="2026-03-22T18:28:42.879Z" hostname="MacBookPro" tests="3" failures="0" errors="0" skipped="0" time="0.01018125">
+        <testcase classname="src/__tests__/api/recruitment-vendors-route.test.ts" name="recruitment vendors routes &gt; lists tenant-scoped vendors with filters" time="0.005313833">
+        </testcase>
+        <testcase classname="src/__tests__/api/recruitment-vendors-route.test.ts" name="recruitment vendors routes &gt; creates a tenant-scoped recruitment vendor" time="0.001986292">
+        </testcase>
+        <testcase classname="src/__tests__/api/recruitment-vendors-route.test.ts" name="recruitment vendors routes &gt; updates only the current tenant vendor" time="0.00135175">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/services/recruitment-dashboard.service.test.ts" timestamp="2026-03-22T18:28:42.879Z" hostname="MacBookPro" tests="20" failures="0" errors="0" skipped="0" time="0.027882084">
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; loads dashboard job postings from the v1 recruitment jobs route" time="0.014353125">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; maps requisitions from the v1 requisitions route into dashboard requisition types" time="0.000770667">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; unwraps requisition create responses and maps the returned record" time="0.001016208">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; maps v1 recruitment candidate payloads into dashboard applications" time="0.000772458">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; translates screening updates into the legacy application update contract" time="0.000703125">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; uses the dedicated v1 stage route for dashboard stage moves" time="0.000435291">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; loads dashboard interviews from the v1 recruitment interviews route" time="0.000478959">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; schedules dashboard interviews through the v1 recruitment interviews route" time="0.000468084">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; keeps dashboard interview status updates on the legacy mutation route" time="0.000883917">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; loads dashboard interview feedback from the legacy feedback route" time="0.000778583">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; maps dashboard offers from the legacy offers route into dashboard offer types" time="0.000658708">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; maps dashboard background checks from the v1 singular route into page-friendly fields" time="0.000504584">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; maps hiring pipelines from the pipeline items envelope" time="0.001103667">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; maps recruitment settings payloads into the flattened dashboard settings shape" time="0.000670792">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; maps updated recruitment settings responses into the same flattened shape" time="0.000415584">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; initiates background checks through the v1 singular route with mapped payloads" time="0.000444167">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; updates background checks through the v1 item route with normalized payloads" time="0.00044025">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; uses the v1 offer e-sign action route for offer status updates" time="0.000590917">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; submits dashboard interview feedback through the v1 per-interview route" time="0.0005715">
+        </testcase>
+        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; loads dashboard analytics from the v1 recruitment stats route" time="0.000367542">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/services/recruitment-vendors.service.test.ts" timestamp="2026-03-22T18:28:42.881Z" hostname="MacBookPro" tests="1" failures="0" errors="0" skipped="0" time="0.014935541">
+        <testcase classname="src/__tests__/services/recruitment-vendors.service.test.ts" name="recruitment vendor service &gt; maps vendor registry rows from the v1 recruitment vendors route" time="0.01348675">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/agency-portal/page.test.tsx" timestamp="2026-03-22T18:28:42.881Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.480091459">
+        <testcase classname="src/app/dashboard/recruitment/agency-portal/page.test.tsx" name="AgencyPortalPage &gt; renders live agency-shareable jobs from posting fields" time="0.127632917">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/agency-portal/page.test.tsx" name="AgencyPortalPage &gt; shows explicit empty states for unsupported submissions and agencies tabs" time="0.350921416">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/assessment-tests/page.test.tsx" timestamp="2026-03-22T18:28:42.882Z" hostname="MacBookPro" tests="1" failures="0" errors="0" skipped="0" time="0.188668791">
+        <testcase classname="src/app/dashboard/recruitment/assessment-tests/page.test.tsx" name="AssessmentsPage &gt; shows an explicit unsupported state instead of synthetic assessment tests" time="0.186926583">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/application-tracking/page.test.tsx" timestamp="2026-03-22T18:28:42.882Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.411096459">
+        <testcase classname="src/app/dashboard/recruitment/application-tracking/page.test.tsx" name="ApplicationTrackingPage &gt; renders live application fields and normalizes stages into board columns" time="0.364266792">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/application-tracking/page.test.tsx" name="ApplicationTrackingPage &gt; renders empty columns when no applications are returned" time="0.042505708">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/background-verification/page.test.tsx" timestamp="2026-03-22T18:28:42.882Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.160298333">
+        <testcase classname="src/app/dashboard/recruitment/background-verification/page.test.tsx" name="BackgroundVerificationPage &gt; renders live background checks and derives connected vendors from them" time="0.124281208">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/background-verification/page.test.tsx" name="BackgroundVerificationPage &gt; shows truthful empty states when there are no checks or vendors" time="0.032583791">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/candidate-screening/page.test.tsx" timestamp="2026-03-22T18:28:42.883Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.673002083">
+        <testcase classname="src/app/dashboard/recruitment/candidate-screening/page.test.tsx" name="CandidateScreeningPage &gt; renders live application fields and updates screening actions" time="0.653647125">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/candidate-screening/page.test.tsx" name="CandidateScreeningPage &gt; shows an empty state when there are no screening candidates" time="0.015801125">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/career-site/page.test.tsx" timestamp="2026-03-22T18:28:42.883Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.230583875">
+        <testcase classname="src/app/dashboard/recruitment/career-site/page.test.tsx" name="CareerSitePage &gt; renders company and open roles from live settings and postings" time="0.200426375">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/career-site/page.test.tsx" name="CareerSitePage &gt; shows an empty roles state when there are no active postings" time="0.024126666">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/emails/page.test.tsx" timestamp="2026-03-22T18:28:42.883Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.070639708">
+        <testcase classname="src/app/dashboard/recruitment/emails/page.test.tsx" name="RecruitmentEmailsPage &gt; renders email templates from recruitment settings" time="0.0584435">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/emails/page.test.tsx" name="RecruitmentEmailsPage &gt; shows an empty state when no templates are configured" time="0.010626334">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/integrations/page.test.tsx" timestamp="2026-03-22T18:28:42.883Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.09028875">
+        <testcase classname="src/app/dashboard/recruitment/integrations/page.test.tsx" name="JobBoardsPage &gt; derives the connected board from recruitment settings and active postings" time="0.080273125">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/integrations/page.test.tsx" name="JobBoardsPage &gt; shows a real empty state when no job board is configured" time="0.008321">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/interview-feedback/page.test.tsx" timestamp="2026-03-22T18:28:42.883Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.157365959">
+        <testcase classname="src/app/dashboard/recruitment/interview-feedback/page.test.tsx" name="InterviewFeedbackPage &gt; renders feedback cards from joined interview and interview feedback services" time="0.136039958">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/interview-feedback/page.test.tsx" name="InterviewFeedbackPage &gt; shows an empty state when no interview feedback exists" time="0.019111292">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/interview-management/page.test.tsx" timestamp="2026-03-22T18:28:42.884Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.588102709">
+        <testcase classname="src/app/dashboard/recruitment/interview-management/page.test.tsx" name="InterviewSchedulingPage &gt; renders upcoming interviews from the live interview contract" time="0.478848708">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/interview-management/page.test.tsx" name="InterviewSchedulingPage &gt; shows an empty state when there are no interviews" time="0.092385542">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/job-posting/page.test.tsx" timestamp="2026-03-22T18:28:42.884Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.242866958">
+        <testcase classname="src/app/dashboard/recruitment/job-posting/page.test.tsx" name="JobPostingsPage &gt; renders live job posting fields from the recruitment posting service" time="0.225144042">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/job-posting/page.test.tsx" name="JobPostingsPage &gt; shows an empty state when there are no job postings" time="0.011611625">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/portal/page.test.tsx" timestamp="2026-03-22T18:28:42.884Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.363794583">
+        <testcase classname="src/app/dashboard/recruitment/portal/page.test.tsx" name="CandidatePortalPage &gt; renders live application cards in the Applications tab" time="0.097824042">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/portal/page.test.tsx" name="CandidatePortalPage &gt; shows explicit unsupported states for Documents and Offers tabs" time="0.263479">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/job-requisition/page.test.tsx" timestamp="2026-03-22T18:28:42.884Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.180002042">
+        <testcase classname="src/app/dashboard/recruitment/job-requisition/page.test.tsx" name="JobRequisitionsPage &gt; renders requisitions from the live requisition contract" time="0.157710917">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/job-requisition/page.test.tsx" name="JobRequisitionsPage &gt; shows an empty state when there are no requisitions" time="0.018988584">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/offer-management/page.test.tsx" timestamp="2026-03-22T18:28:42.884Z" hostname="MacBookPro" tests="3" failures="0" errors="0" skipped="0" time="0.659550209">
+        <testcase classname="src/app/dashboard/recruitment/offer-management/page.test.tsx" name="OfferManagementPage &gt; renders live offer fields from the normalized job offer contract" time="0.415519458">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/offer-management/page.test.tsx" name="OfferManagementPage &gt; sends an approved offer and refreshes the list" time="0.220937459">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/offer-management/page.test.tsx" name="OfferManagementPage &gt; shows an empty state when there are no offers" time="0.020034125">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/ratings/page.test.tsx" timestamp="2026-03-22T18:28:42.885Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.278007166">
+        <testcase classname="src/app/dashboard/recruitment/ratings/page.test.tsx" name="InterviewRatingsPage &gt; derives rating rows and summary metrics from live interview feedback data" time="0.24356775">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/ratings/page.test.tsx" name="InterviewRatingsPage &gt; shows an empty state when no interview ratings exist" time="0.032736458">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/referrals/page.test.tsx" timestamp="2026-03-22T18:28:42.885Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.249654042">
+        <testcase classname="src/app/dashboard/recruitment/referrals/page.test.tsx" name="ReferralsPage &gt; renders referral applications and open jobs from live recruitment fields" time="0.206096958">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/referrals/page.test.tsx" name="ReferralsPage &gt; shows empty states when there are no referrals or jobs" time="0.040713917">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/resume-parsing/page.test.tsx" timestamp="2026-03-22T18:28:42.885Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.092444834">
+        <testcase classname="src/app/dashboard/recruitment/resume-parsing/page.test.tsx" name="ResumeParsingPage &gt; renders parsed resumes from live candidate application fields" time="0.075334209">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/resume-parsing/page.test.tsx" name="ResumeParsingPage &gt; shows an empty state when no resumes are available" time="0.015518167">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/talent-pool/page.test.tsx" timestamp="2026-03-22T18:28:42.885Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.173738875">
+        <testcase classname="src/app/dashboard/recruitment/talent-pool/page.test.tsx" name="TalentPoolPage &gt; renders live candidate application fields in the talent pool" time="0.138120667">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/talent-pool/page.test.tsx" name="TalentPoolPage &gt; shows an empty state when there are no candidates" time="0.0320905">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/vendors/page.test.tsx" timestamp="2026-03-22T18:28:42.886Z" hostname="MacBookPro" tests="13" failures="0" errors="0" skipped="0" time="0.964435917">
+        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; shows a live empty vendor registry for function VendorManagementPage() {
+  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
+    (0,__vite_ssr_import_1__.RecruitmentVendorRegistry),
+    {
+      title: &quot;Vendor Management&quot;,
+      description: &quot;Manage recruitment vendors, agencies, and service providers from the live tenant-scoped vendor registry.&quot;
+    },
+    void 0,
+    false,
+    {
+      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/page.tsx&quot;,
+      lineNumber: 8,
+      columnNumber: 9
+    },
+    this
+  );
+}" time="0.2402905">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; shows a live empty vendor registry for function VendorsManagementPage() {
+  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
+    (0,__vite_ssr_import_1__.RecruitmentVendorRegistry),
+    {
+      title: &quot;Vendor Management&quot;,
+      description: &quot;Review vendor onboarding and relationship status from the live recruitment vendor registry.&quot;
+    },
+    void 0,
+    false,
+    {
+      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/management/page.tsx&quot;,
+      lineNumber: 8,
+      columnNumber: 9
+    },
+    this
+  );
+}" time="0.094569958">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; shows a live empty vendor registry for function VendorManagementPage() {
+  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
+    (0,__vite_ssr_import_1__.RecruitmentVendorRegistry),
+    {
+      title: &quot;Vendor Management&quot;,
+      description: &quot;Manage preferred staffing suppliers and agency partners from the live recruitment vendor registry.&quot;
+    },
+    void 0,
+    false,
+    {
+      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/vendor-management/page.tsx&quot;,
+      lineNumber: 8,
+      columnNumber: 9
+    },
+    this
+  );
+}" time="0.090515958">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; renders live vendor data for function VendorManagementPage() {
+  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
+    (0,__vite_ssr_import_1__.RecruitmentVendorRegistry),
+    {
+      title: &quot;Vendor Management&quot;,
+      description: &quot;Manage recruitment vendors, agencies, and service providers from the live tenant-scoped vendor registry.&quot;
+    },
+    void 0,
+    false,
+    {
+      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/page.tsx&quot;,
+      lineNumber: 8,
+      columnNumber: 9
+    },
+    this
+  );
+}" time="0.115844708">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; renders live vendor data for function VendorsManagementPage() {
+  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
+    (0,__vite_ssr_import_1__.RecruitmentVendorRegistry),
+    {
+      title: &quot;Vendor Management&quot;,
+      description: &quot;Review vendor onboarding and relationship status from the live recruitment vendor registry.&quot;
+    },
+    void 0,
+    false,
+    {
+      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/management/page.tsx&quot;,
+      lineNumber: 8,
+      columnNumber: 9
+    },
+    this
+  );
+}" time="0.056477584">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; renders live vendor data for function VendorManagementPage() {
+  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
+    (0,__vite_ssr_import_1__.RecruitmentVendorRegistry),
+    {
+      title: &quot;Vendor Management&quot;,
+      description: &quot;Manage preferred staffing suppliers and agency partners from the live recruitment vendor registry.&quot;
+    },
+    void 0,
+    false,
+    {
+      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/vendor-management/page.tsx&quot;,
+      lineNumber: 8,
+      columnNumber: 9
+    },
+    this
+  );
+}" time="0.059411417">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; keeps unsupported vendor subdomains explicit for function ComplianceDocsPage() {
+  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
+    (0,__vite_ssr_import_2__.VendorUnsupportedState),
+    {
+      title: &quot;Vendor Compliance&quot;,
+      description: &quot;Track mandatory legal and security documents once vendor compliance data is backed by recruitment services.&quot;,
+      unavailableTitle: &quot;Vendor compliance not yet connected&quot;,
+      buttonLabel: &quot;Request Document&quot;,
+      requirement: &quot;Add vendor document storage, expiry tracking, and audit metadata to a dedicated recruitment vendor contract before enabling compliance review.&quot;,
+      scope: &quot;Compliance status, document lists, and request actions remain unavailable because there is no validated vendor compliance integration in the current dashboard layer.&quot;,
+      statusLabel: &quot;Awaiting vendor compliance contract&quot;,
+      Icon: __vite_ssr_import_1__.ShieldCheck
+    },
+    void 0,
+    false,
+    {
+      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/compliance-docs/page.tsx&quot;,
+      lineNumber: 9,
+      columnNumber: 9
+    },
+    this
+  );
+}" time="0.0413145">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; keeps unsupported vendor subdomains explicit for function ContractRenewalPage() {
+  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
+    (0,__vite_ssr_import_2__.VendorUnsupportedState),
+    {
+      title: &quot;Contract Renewals&quot;,
+      description: &quot;Manage expiring contractor agreements and extensions once vendor contract lifecycle data is integrated.&quot;,
+      unavailableTitle: &quot;Vendor renewals not yet connected&quot;,
+      buttonLabel: &quot;Review Renewals&quot;,
+      requirement: &quot;Add contract terms, renewal decisions, and renewal history to the recruitment vendor domain before surfacing lifecycle actions here.&quot;,
+      scope: &quot;This route no longer shows synthetic contractor renewals or negotiation events because there is no validated vendor renewal contract in recruitment.&quot;,
+      statusLabel: &quot;Awaiting vendor renewal contract&quot;,
+      Icon: __vite_ssr_import_1__.RefreshCw
+    },
+    void 0,
+    false,
+    {
+      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/contract-renewal/page.tsx&quot;,
+      lineNumber: 9,
+      columnNumber: 9
+    },
+    this
+  );
+}" time="0.070296875">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; keeps unsupported vendor subdomains explicit for function ContractTypesPage() {
+  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
+    (0,__vite_ssr_import_2__.VendorUnsupportedState),
+    {
+      title: &quot;Contract Configurations&quot;,
+      description: &quot;Define engagement models and standard terms after vendor contract types are sourced from a real recruitment configuration service.&quot;,
+      unavailableTitle: &quot;Vendor contract types not yet connected&quot;,
+      buttonLabel: &quot;Configure Types&quot;,
+      requirement: &quot;Expose vendor engagement models, notice periods, and payment terms through a normalized vendor configuration contract before enabling rate or term setup.&quot;,
+      scope: &quot;This page intentionally avoids fabricated contract templates and commercial defaults because vendor contracting is not part of the validated recruitment dashboard surface yet.&quot;,
+      statusLabel: &quot;Awaiting vendor contract configuration&quot;,
+      Icon: __vite_ssr_import_1__.FileText
+    },
+    void 0,
+    false,
+    {
+      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/contract-types/page.tsx&quot;,
+      lineNumber: 9,
+      columnNumber: 9
+    },
+    this
+  );
+}" time="0.060268709">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; keeps unsupported vendor subdomains explicit for function InvoiceProcessingPage() {
+  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
+    (0,__vite_ssr_import_2__.VendorUnsupportedState),
+    {
+      title: &quot;Vendor Invoices&quot;,
+      description: &quot;Process payments and reconcile vendor charges once invoices and timesheets are exposed through a real vendor finance contract.&quot;,
+      unavailableTitle: &quot;Vendor invoices not yet connected&quot;,
+      buttonLabel: &quot;Approve Invoices&quot;,
+      requirement: &quot;Add invoice intake, approval status, and vendor payment reconciliation to the recruitment vendor domain before enabling finance workflows here.&quot;,
+      scope: &quot;Invoice queues, payable totals, and payment history have been removed because they were synthetic and are not backed by a validated recruitment vendor integration.&quot;,
+      statusLabel: &quot;Awaiting vendor finance contract&quot;,
+      Icon: __vite_ssr_import_1__.FileText
+    },
+    void 0,
+    false,
+    {
+      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/invoice-processing/page.tsx&quot;,
+      lineNumber: 9,
+      columnNumber: 9
+    },
+    this
+  );
+}" time="0.037258209">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; keeps unsupported vendor subdomains explicit for function VendorPerformancePage() {
+  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
+    (0,__vite_ssr_import_2__.VendorUnsupportedState),
+    {
+      title: &quot;Vendor Performance&quot;,
+      description: &quot;Review staffing partner scorecards once vendor performance metrics are sourced from a dedicated recruitment service.&quot;,
+      unavailableTitle: &quot;Vendor performance not yet connected&quot;,
+      buttonLabel: &quot;Review Ratings&quot;,
+      requirement: &quot;Expose vendor scorecards, trend metrics, and review notes through a normalized vendor analytics contract before enabling partner reviews.&quot;,
+      scope: &quot;This page no longer displays fabricated ratings or trend bars because vendor performance data is not part of the validated recruitment dashboard contract today.&quot;,
+      statusLabel: &quot;Awaiting vendor analytics contract&quot;,
+      Icon: __vite_ssr_import_1__.Award
+    },
+    void 0,
+    false,
+    {
+      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/performance-rating/page.tsx&quot;,
+      lineNumber: 9,
+      columnNumber: 9
+    },
+    this
+  );
+}" time="0.027012708">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; keeps unsupported vendor subdomains explicit for function RateCardsPage() {
+  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
+    (0,__vite_ssr_import_2__.VendorUnsupportedState),
+    {
+      title: &quot;Vendor Rate Cards&quot;,
+      description: &quot;Standardize pricing by role, location, and experience once commercial rate data is backed by a real vendor contract.&quot;,
+      unavailableTitle: &quot;Vendor rate cards not yet connected&quot;,
+      buttonLabel: &quot;Update Rates&quot;,
+      requirement: &quot;Add vendor-specific rate cards, pricing dimensions, and commercial history to the recruitment vendor domain before enabling rate management here.&quot;,
+      scope: &quot;Rate tables and pricing trends were removed because they were hardcoded and are not backed by a validated recruitment vendor integration.&quot;,
+      statusLabel: &quot;Awaiting vendor pricing contract&quot;,
+      Icon: __vite_ssr_import_1__.DollarSign
+    },
+    void 0,
+    false,
+    {
+      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/rate-cards/page.tsx&quot;,
+      lineNumber: 9,
+      columnNumber: 9
+    },
+    this
+  );
+}" time="0.042224">
+        </testcase>
+        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; keeps unsupported vendor subdomains explicit for function AgencyTimesheetPage() {
+  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
+    (0,__vite_ssr_import_2__.VendorUnsupportedState),
+    {
+      title: &quot;Contractor Timesheets&quot;,
+      description: &quot;Review and approve weekly hours from vendors after timesheet submission data is integrated into recruitment.&quot;,
+      unavailableTitle: &quot;Vendor timesheets not yet connected&quot;,
+      buttonLabel: &quot;Approve Timesheets&quot;,
+      requirement: &quot;Add vendor worker assignments, timesheet submissions, and approval state to a dedicated vendor operations contract before enabling timesheet review.&quot;,
+      scope: &quot;Timesheet rows, weekly totals, and approval actions have been removed because they were synthetic and are not backed by a validated recruitment vendor workflow.&quot;,
+      statusLabel: &quot;Awaiting vendor timesheet contract&quot;,
+      Icon: __vite_ssr_import_1__.Clock
+    },
+    void 0,
+    false,
+    {
+      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/timesheet/page.tsx&quot;,
+      lineNumber: 9,
+      columnNumber: 9
+    },
+    this
+  );
+}" time="0.026945959">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/dashboard/recruitment/offer-management/templates/page.test.tsx" timestamp="2026-03-22T18:28:42.886Z" hostname="MacBookPro" tests="1" failures="0" errors="0" skipped="0" time="0.261036">
+        <testcase classname="src/app/dashboard/recruitment/offer-management/templates/page.test.tsx" name="OfferTemplatesPage &gt; shows an explicit unsupported state instead of hardcoded templates" time="0.258879083">
+        </testcase>
+    </testsuite>
+</testsuites>

@@ -2,18 +2,51 @@
 
 import React, { useState, useEffect } from 'react';
 import { BackgroundCheckService } from '../services';
+import type { BackgroundCheck } from '../types';
 import {
     ShieldCheck,
     AlertCircle,
     CheckCircle,
     Clock,
-    User,
-    FileText,
     Loader2
 } from 'lucide-react';
 
+function getStatusStyle(status: string) {
+    switch (status) {
+        case 'completed': return 'bg-emerald-100 text-emerald-600';
+        case 'flagged': return 'bg-rose-100 text-rose-600';
+        default: return 'bg-indigo-100 text-indigo-600';
+    }
+}
+
+function getStatusLabel(status: string) {
+    switch (status) {
+        case 'pending': return 'Pending';
+        case 'in-progress': return 'In Progress';
+        case 'completed': return 'Completed';
+        case 'flagged': return 'Flagged';
+        default: return status;
+    }
+}
+
+function getProgress(check: BackgroundCheck & Record<string, any>) {
+    if (check.status === 'completed' || check.status === 'flagged') {
+        return 100;
+    }
+
+    if (check.status === 'in-progress') {
+        return 50;
+    }
+
+    return 10;
+}
+
+function getVendorName(check: BackgroundCheck & Record<string, any>) {
+    return check.vendorName || check.provider || 'Unknown Provider';
+}
+
 export default function BackgroundVerificationPage() {
-    const [checks, setChecks] = useState<any[]>([]);
+    const [checks, setChecks] = useState<Array<BackgroundCheck & Record<string, any>>>([]);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ inProgress: 0, completed: 0, flagged: 0 });
 
@@ -27,9 +60,9 @@ export default function BackgroundVerificationPage() {
             const data = await BackgroundCheckService.getBackgroundChecks();
             setChecks(data);
 
-            const inProgress = data.filter((c: any) => c.status === 'in-progress' || c.status === 'pending').length;
-            const completed = data.filter((c: any) => c.status === 'completed').length;
-            const flagged = data.filter((c: any) => c.status === 'flagged' || c.result === 'flagged').length;
+            const inProgress = data.filter(check => check.status === 'in-progress' || check.status === 'pending').length;
+            const completed = data.filter(check => check.status === 'completed').length;
+            const flagged = data.filter(check => check.status === 'flagged' || check.result === 'flagged').length;
             setStats({ inProgress, completed, flagged });
         } catch (error) {
             console.error('Error:', error);
@@ -38,7 +71,7 @@ export default function BackgroundVerificationPage() {
         }
     };
 
-    const handleInitiateCheck = async (data: any) => {
+    const handleInitiateCheck = async (data: Partial<BackgroundCheck>) => {
         try {
             await BackgroundCheckService.initiateBackgroundCheck(data);
             await fetchChecks();
@@ -47,23 +80,7 @@ export default function BackgroundVerificationPage() {
         }
     };
 
-    const getStatusStyle = (status: string) => {
-        switch (status) {
-            case 'completed': return 'bg-emerald-100 text-emerald-600';
-            case 'flagged': return 'bg-rose-100 text-rose-600';
-            default: return 'bg-indigo-100 text-indigo-600';
-        }
-    };
-
-    const getStatusLabel = (status: string) => {
-        switch (status) {
-            case 'pending': return 'Pending';
-            case 'in-progress': return 'In Progress';
-            case 'completed': return 'Completed';
-            case 'flagged': return 'Flagged';
-            default: return status;
-        }
-    };
+    const vendors = Array.from(new Set(checks.map(check => getVendorName(check)).filter(Boolean))).sort();
 
     if (loading) {
         return (
@@ -102,10 +119,8 @@ export default function BackgroundVerificationPage() {
                             <p className="text-sm text-slate-400 dark:text-slate-500">Initiate a new background check to get started.</p>
                         </div>
                     )}
-                    {checks.map((check: any) => {
-                        const progress = check.status === 'completed' ? 100 :
-                            check.status === 'flagged' ? 100 :
-                                check.status === 'in-progress' ? 50 : 10;
+                    {checks.map(check => {
+                        const progress = getProgress(check);
 
                         return (
                             <div key={check.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
@@ -117,7 +132,7 @@ export default function BackgroundVerificationPage() {
                                             {check.status === 'completed' && <CheckCircle className="w-5 h-5 text-emerald-500" />}
                                         </h3>
                                         <div className="text-sm text-slate-500">
-                                            {check.provider || 'Unknown Provider'} {check.candidateId && `- Candidate: ${check.candidateId.substring(0, 8)}`}
+                                            {getVendorName(check)} {check.candidateId && `- Candidate: ${check.candidateId.substring(0, 8)}`}
                                         </div>
                                     </div>
                                     <div className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusStyle(check.status)}`}>
@@ -157,18 +172,17 @@ export default function BackgroundVerificationPage() {
                     <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-xl">
                         <h3 className="font-bold flex items-center gap-2 mb-4"><ShieldCheck className="w-5 h-5" /> Connected Vendors</h3>
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between p-3 bg-white/10 rounded-xl border border-white/10">
-                                <div className="font-bold">Checkr</div>
-                                <div className="w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
-                            </div>
-                            <div className="flex items-center justify-between p-3 bg-white/10 rounded-xl border border-white/10">
-                                <div className="font-bold">Hireright</div>
-                                <div className="w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
-                            </div>
-                            <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 opacity-50">
-                                <div className="font-bold">FirstAdvantage</div>
-                                <div className="text-[10px] uppercase font-bold border border-white/20 px-1 rounded">Connect</div>
-                            </div>
+                            {vendors.length === 0 && (
+                                <div className="p-4 bg-white/5 rounded-xl border border-white/5 text-sm text-white/60">
+                                    No connected vendors available from live background check data yet.
+                                </div>
+                            )}
+                            {vendors.map(vendor => (
+                                <div key={vendor} className="flex items-center justify-between p-3 bg-white/10 rounded-xl border border-white/10">
+                                    <div className="font-bold">{vendor}</div>
+                                    <div className="w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 

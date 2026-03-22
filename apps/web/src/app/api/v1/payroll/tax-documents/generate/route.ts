@@ -2,6 +2,8 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 
@@ -15,7 +17,7 @@ const generateSchema = z.object({
  * POST /api/v1/payroll/tax-documents/generate
  * Queue tax document generation for a specific year and type
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const { user } = context;
     const tenantId = user.tenantId;
@@ -137,4 +139,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       },
     }, { status: 500 });
   }
+}), {
+  action: AuditAction.PAYROLL_RUN_INITIATED,
+  resourceType: 'tax_document',
+  captureRequestBody: true,
 });

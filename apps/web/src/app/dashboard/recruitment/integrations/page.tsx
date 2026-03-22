@@ -1,27 +1,67 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { RecruitmentSettingsService } from '../services';
+import { JobPostingService, RecruitmentSettingsService } from '../services';
+import type { RecruitmentSettings } from '../types';
 import {
     Share2,
     Globe,
     CheckCircle2,
-    ToggleRight,
-    ToggleLeft,
-    ExternalLink,
     RefreshCw,
     Linkedin,
     Building
 } from 'lucide-react';
 
-const INTEGRATIONS = [
-    { id: 'LI-001', name: 'LinkedIn Jobs', icon: Linkedin, status: 'Connected', posts: 12, lastSync: '10 mins ago' },
-    { id: 'IND-002', name: 'Indeed', icon: Building, status: 'Connected', posts: 8, lastSync: '1 hour ago' },
-    { id: 'GL-003', name: 'Glassdoor', icon: Share2, status: 'Disconnected', posts: 0, lastSync: 'Never' },
+type IntegrationCard = {
+    id: string;
+    name: string;
+    icon: typeof Linkedin;
+    status: 'Connected' | 'Disconnected';
+    posts: number;
+    lastSync: string;
+};
+
+const JOB_BOARD_CATALOG: Array<{ id: string; name: string; icon: typeof Linkedin }> = [
+    { id: 'linkedin', name: 'LinkedIn', icon: Linkedin },
+    { id: 'indeed', name: 'Indeed', icon: Building },
+    { id: 'glassdoor', name: 'Glassdoor', icon: Share2 },
 ];
 
+function formatLastSync(updatedDate?: string): string {
+    if (!updatedDate) return 'Never';
+
+    const timestamp = new Date(updatedDate).getTime();
+    if (Number.isNaN(timestamp)) return 'Never';
+
+    const elapsedMinutes = Math.max(0, Math.round((Date.now() - timestamp) / 60000));
+    if (elapsedMinutes < 1) return 'Just now';
+    if (elapsedMinutes < 60) return `${elapsedMinutes} mins ago`;
+
+    const elapsedHours = Math.round(elapsedMinutes / 60);
+    if (elapsedHours < 24) return `${elapsedHours} hour${elapsedHours === 1 ? '' : 's'} ago`;
+
+    const elapsedDays = Math.round(elapsedHours / 24);
+    return `${elapsedDays} day${elapsedDays === 1 ? '' : 's'} ago`;
+}
+
+function mapIntegrations(settings: RecruitmentSettings | null, activePostingCount: number): IntegrationCard[] {
+    const defaultJobBoard = String((settings as any)?.general?.defaultJobBoard || '').trim().toLowerCase();
+    const updatedDate = (settings as any)?.updatedDate as string | undefined;
+
+    if (!defaultJobBoard) return [];
+
+    return JOB_BOARD_CATALOG.map((board) => ({
+        id: board.id,
+        name: board.name,
+        icon: board.icon,
+        status: board.id === defaultJobBoard ? 'Connected' : 'Disconnected',
+        posts: board.id === defaultJobBoard ? activePostingCount : 0,
+        lastSync: board.id === defaultJobBoard ? formatLastSync(updatedDate) : 'Never',
+    }));
+}
+
 export default function JobBoardsPage() {
-    const [integrations, setIntegrations] = useState<any[]>(INTEGRATIONS);
+    const [integrations, setIntegrations] = useState<IntegrationCard[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -31,15 +71,16 @@ export default function JobBoardsPage() {
     const fetchIntegrations = async () => {
         try {
             setLoading(true);
-            const data = await RecruitmentSettingsService.getSettings();
-            if (data) {
-                // Integration settings would be part of recruitment settings
-                // For now keeping mock data
-                setIntegrations(INTEGRATIONS);
-            }
+            const [settings, activePostings] = await Promise.all([
+                RecruitmentSettingsService.getSettings(),
+                JobPostingService.getPostings({ isActive: true }),
+            ]);
+
+            setIntegrations(mapIntegrations(settings, activePostings.length));
         } catch (error) {
             console.error('Error:', error);
-                    } finally {
+            setIntegrations([]);
+        } finally {
             setLoading(false);
         }
     };
@@ -58,6 +99,13 @@ export default function JobBoardsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto pb-20">
+                {!loading && integrations.length === 0 && (
+                    <div className="lg:col-span-3 bg-white dark:bg-slate-900 p-8 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 text-center">
+                        <p className="text-base font-semibold text-slate-700 dark:text-slate-200">No job board integrations configured</p>
+                        <p className="mt-2 text-sm text-slate-500">Choose a default external job board in recruitment settings to expose a connected integration here.</p>
+                    </div>
+                )}
+
                 {integrations.map(board => (
                     <div key={board.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col items-center text-center hover:shadow-lg transition-all">
                         <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 
@@ -101,12 +149,13 @@ export default function JobBoardsPage() {
                     </div>
                 ))}
 
-                {/* Coming Soon Card */}
-                <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center text-slate-400 min-h-[300px]">
-                    <Globe className="w-8 h-8 mb-4 opacity-50" />
-                    <span className="font-bold">More Coming Soon</span>
-                    <span className="text-xs mt-1">ZipRecruiter, Monster, etc.</span>
-                </div>
+                {integrations.length > 0 && (
+                    <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center text-slate-400 min-h-[300px]">
+                        <Globe className="w-8 h-8 mb-4 opacity-50" />
+                        <span className="font-bold">Compatibility View</span>
+                        <span className="text-xs mt-1">Connection state is derived from the current default job board setting.</span>
+                    </div>
+                )}
             </div>
         </div>
     );

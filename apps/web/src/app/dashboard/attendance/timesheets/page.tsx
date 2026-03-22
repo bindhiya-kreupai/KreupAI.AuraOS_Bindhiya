@@ -2,17 +2,32 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-    Table,
     FileText,
-    CheckCircle,
     XCircle,
     Clock,
     Download,
     Send
 } from 'lucide-react';
-import { AttendanceRecordService } from '../services';
+import { TimesheetService, type DashboardTimesheet } from '../services';
 
-const WEEK_DAYS = ['Mon 01', 'Tue 02', 'Wed 03', 'Thu 04', 'Fri 05', 'Sat 06', 'Sun 07'];
+function getWeekDates(baseDate = new Date()) {
+    const date = new Date(baseDate);
+    const day = date.getDay();
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    const monday = new Date(date);
+    monday.setDate(date.getDate() + diffToMonday);
+
+    return Array.from({ length: 7 }, (_, index) => {
+        const current = new Date(monday);
+        current.setDate(monday.getDate() + index);
+        return current;
+    });
+}
+
+const WEEK_DATES = getWeekDates();
+const WEEK_DAYS = WEEK_DATES.map((date) =>
+    date.toLocaleDateString([], { weekday: 'short', day: '2-digit' })
+);
 
 interface TimesheetEntry {
     project: string;
@@ -32,6 +47,7 @@ export default function TimesheetsPage() {
     const [timesheetData, setTimesheetData] = useState<TimesheetEntry[]>([]);
     const [summary, setSummary] = useState<TimesheetSummary | null>(null);
     const [loading, setLoading] = useState(true);
+    const [activeTimesheet, setActiveTimesheet] = useState<DashboardTimesheet | null>(null);
 
     useEffect(() => {
         fetchTimesheets();
@@ -39,20 +55,24 @@ export default function TimesheetsPage() {
 
     const fetchTimesheets = async () => {
         try {
-            const records = await AttendanceRecordService.getRecords({ type: 'summary' });
-            // Transform attendance records to timesheet entries
-            const entries: TimesheetEntry[] = (records as any[]).map((record: any) => ({
-                project: record.project || 'Default Project',
-                task: record.task || 'Daily Work',
-                hours: record.dailyHours || [0, 0, 0, 0, 0, 0, 0],
-                total: record.workingHours || 0,
-            }));
+            const records = await TimesheetService.getTimesheets();
+            const currentWeekEnd = new Date(WEEK_DATES[6]).toISOString().split('T')[0];
+            const current = records.find((record) => record.weekEnding === currentWeekEnd) || records[0] || null;
+            setActiveTimesheet(current);
+
+            const hoursByDate = new Map((current?.entries || []).map((entry) => [entry.date, entry.hours]));
+            const entries: TimesheetEntry[] = [{
+                project: 'Attendance Timesheet',
+                task: 'Daily Work',
+                hours: WEEK_DATES.map((date) => hoursByDate.get(date.toISOString().split('T')[0]) || 0),
+                total: current?.totalHours || 0,
+            }];
+
             setTimesheetData(entries);
-            // Calculate summary from actual data
             const totalHours = entries.reduce((sum, e) => sum + e.total, 0);
-            const billableHours = entries.reduce((sum, e) => sum + (e.total * 0.875), 0); // Estimate billable
+            const billableHours = entries.reduce((sum, e) => sum + (e.total * 0.875), 0);
             setSummary({
-                status: 'Draft',
+                status: current?.status || 'DRAFT',
                 totalHours,
                 billableHours: Math.round(billableHours * 10) / 10,
                 nonBillableHours: Math.round((totalHours - billableHours) * 10) / 10,
@@ -67,13 +87,22 @@ export default function TimesheetsPage() {
     const handleSubmit = async () => {
         setLoading(true);
         try {
-            // Create attendance record for timesheet submission
-            await AttendanceRecordService.createRecord({
+            const totalsByDay = WEEK_DATES.map((date, dayIndex) => ({
+                date: date.toISOString().split('T')[0],
+                hours: timesheetData.reduce((sum, row) => sum + (row.hours[dayIndex] || 0), 0),
+            }));
+
+            await TimesheetService.submitTimesheet({
                 employeeId: 'current-user',
-                date: new Date().toISOString().split('T')[0],
-                status: 'PRESENT',
-                workingHours: summary?.totalHours || 0,
-            } as any);
+                weekEnding: WEEK_DATES[6].toISOString().split('T')[0],
+                entries: totalsByDay.map((entry) => ({
+                    date: entry.date,
+                    hours: entry.hours,
+                    status: entry.hours > 0 ? 'PRESENT' : 'ABSENT',
+                    checkIn: null,
+                    checkOut: null,
+                })),
+            });
             await fetchTimesheets();
         } catch (error) {
             console.error('Error:', error);
@@ -81,6 +110,37 @@ export default function TimesheetsPage() {
             setLoading(false);
         }
     };
+
+    const updateHours = (rowIndex: number, dayIndex: number, value: string) => {
+        const nextValue = value === '' ? 0 : Number(value);
+        setTimesheetData((previous) => previous.map((row, currentIndex) => {
+            if (currentIndex !== rowIndex) {
+                return row;
+            }
+
+            const nextHours = row.hours.map((hours, currentDayIndex) =>
+                currentDayIndex === dayIndex ? nextValue : hours
+            );
+
+            return {
+                ...row,
+                hours: nextHours,
+                total: Math.round(nextHours.reduce((sum, hours) => sum + hours, 0) * 10) / 10,
+            };
+        }));
+    };
+
+    useEffect(() => {
+        const totalHours = timesheetData.reduce((sum, row) => sum + row.total, 0);
+        const billableHours = Math.round(totalHours * 0.875 * 10) / 10;
+        setSummary((previous) => ({
+            status: previous?.status || activeTimesheet?.status || 'DRAFT',
+            totalHours,
+            billableHours,
+            nonBillableHours: Math.round((totalHours - billableHours) * 10) / 10,
+        }));
+    }, [activeTimesheet?.status, timesheetData]);
+
     return (
         <div className="space-y-4 pb-6">
             {/* Header */}
@@ -108,10 +168,10 @@ export default function TimesheetsPage() {
             {/* Status Bar */}
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex justify-between items-center text-amber-800 text-sm">
                 <div className="flex items-center gap-2 font-bold">
-                    <Clock className="w-4 h-4" /> Status: Draft (Not Submitted)
+                    <Clock className="w-4 h-4" /> Status: {summary?.status || 'DRAFT'}
                 </div>
                 <div>
-                    Submission Deadline: <strong>Friday, 05 Apr 2025</strong>
+                    Week Ending: <strong>{WEEK_DATES[6].toLocaleDateString()}</strong>
                 </div>
             </div>
 
@@ -152,7 +212,8 @@ export default function TimesheetsPage() {
                                     <td key={dayIdx} className="p-2 text-center">
                                         <input
                                             type="number"
-                                            defaultValue={h === 0 ? '' : h}
+                                            value={h === 0 ? '' : h}
+                                            onChange={(event) => updateHours(i, dayIdx, event.target.value)}
                                             placeholder="-"
                                             className="w-12 py-1 text-center border border-slate-200 dark:border-slate-700 rounded bg-transparent focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder:text-slate-300"
                                         />

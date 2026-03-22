@@ -257,7 +257,7 @@ export class DistributedScheduler {
   async acquireLock(jobName: string, ttlSeconds: number): Promise<boolean> {
     const key = this.lockKey(jobName);
     // SET key value NX EX ttl — returns 'OK' on success, null on failure
-    const result = await this.redis.set(key, '1', 'NX', 'EX', ttlSeconds);
+    const result = await this.redis.set(key, '1', 'EX', ttlSeconds, 'NX');
     return result === 'OK';
   }
 

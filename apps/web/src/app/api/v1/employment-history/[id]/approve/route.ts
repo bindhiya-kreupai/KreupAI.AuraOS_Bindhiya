@@ -7,6 +7,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { EmploymentHistoryService } from '@/lib/services/employment-history.service';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 
 // API Response Standard
 interface ApiResponse<T = any> {
@@ -28,7 +30,7 @@ interface ApiResponse<T = any> {
  * POST /api/v1/employment-history/:id/approve
  * Approve pending employment history change
  */
-export const POST = withEnhancedAuth(
+export const POST = withAudit(withEnhancedAuth(
   async (request: NextRequest, context: any) => {
     try {
       const { id } = context.params;
@@ -69,4 +71,9 @@ export const POST = withEnhancedAuth(
       return NextResponse.json(response, { status: statusCode });
     }
   }
-);
+), {
+  action: AuditAction.EMPLOYEE_UPDATED,
+  resourceType: 'employment_history',
+  captureResponseBody: true,
+  extractResourceId: (req, ctx) => ctx?.params?.id,
+});

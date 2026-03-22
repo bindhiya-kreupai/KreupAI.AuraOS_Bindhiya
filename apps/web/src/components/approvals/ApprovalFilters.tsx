@@ -11,11 +11,16 @@ import {
   Search,
   Filter,
   Calendar,
-  Palmtree,
   Receipt,
-  Clock,
-  Briefcase,
+  Shuffle,
+  ArrowRightLeft,
+  Award,
+  ArrowLeftRight,
+  Palmtree,
+  TimerReset,
   FileText,
+  ClipboardCheck,
+  Gift,
   X,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -36,11 +41,16 @@ interface ApprovalFiltersProps {
 
 const TYPE_OPTIONS: { key: ApprovalType | 'all'; label: string; icon: LucideIcon }[] = [
   { key: 'all', label: 'All', icon: Filter },
-  { key: 'leave', label: 'Leave', icon: Palmtree },
   { key: 'expense', label: 'Expense', icon: Receipt },
-  { key: 'timesheet', label: 'Timesheet', icon: Clock },
-  { key: 'requisition', label: 'Requisition', icon: Briefcase },
-  { key: 'document', label: 'Document', icon: FileText },
+  { key: 'employment-history', label: 'Employment Change', icon: Shuffle },
+  { key: 'inter-company-transfer', label: 'Company Transfer', icon: ArrowRightLeft },
+  { key: 'leave', label: 'Leave', icon: Palmtree },
+  { key: 'overtime', label: 'Overtime', icon: TimerReset },
+  { key: 'comp-off', label: 'Comp-Off', icon: Gift },
+  { key: 'confirmation', label: 'Confirmation', icon: Award },
+  { key: 'shift-swap', label: 'Shift Swap', icon: ArrowLeftRight },
+  { key: 'exit', label: 'Exit', icon: FileText },
+  { key: 'attendance', label: 'Attendance', icon: ClipboardCheck },
 ];
 
 const DATE_OPTIONS: { key: FilterState['dateRange']; label: string }[] = [

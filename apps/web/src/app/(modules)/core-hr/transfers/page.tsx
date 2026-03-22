@@ -1,4 +1,8 @@
-import { cn } from '@aura/ui/src/lib/utils';
+'use client';
+
+import React from 'react';
+import { Globe, Filter, Plus, ArrowRightLeft, TrendingUp, Search, MoreHorizontal, ChevronRight, Building2 } from 'lucide-react';
+import { cn } from '@aura/ui/utils';
 import { InterCompanyTransferService } from '@/app/dashboard/core-hr/services';
 import { InterCompanyTransfer } from '@/app/dashboard/core-hr/types';
 import { format } from 'date-fns';

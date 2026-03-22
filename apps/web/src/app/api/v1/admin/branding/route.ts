@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { user } = context;
+  const tenantId = user.tenantId;
+
   const brandingConfig = {
     companyName: 'KreupAI Technologies',
     tagline: 'Empowering People, Driving Growth',
@@ -56,9 +60,12 @@ export async function GET(request: NextRequest) {
   };
 
   return NextResponse.json({ success: true, data: brandingConfig });
-}
+});
 
-export async function PUT(request: NextRequest) {
+export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { user } = context;
+  const tenantId = user.tenantId;
+
   const body = await request.json();
 
   const updatedBranding = {
@@ -84,4 +91,4 @@ export async function PUT(request: NextRequest) {
     data: updatedBranding,
     message: 'Branding configuration updated successfully',
   });
-}
+});

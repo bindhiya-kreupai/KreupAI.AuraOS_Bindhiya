@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -42,104 +42,7 @@ interface MonthlyPayslip {
   ytdTax: number;
 }
 
-// ── Mock Data ──────────────────────────────────────────────────────────────────
-
-const PAYSLIPS: MonthlyPayslip[] = [
-  {
-    month: 'February',
-    year: 2026,
-    grossPay: 10500,
-    netPay: 7820,
-    totalDeductions: 2680,
-    employerContributions: 1850,
-    earnings: [
-      { label: 'Basic Salary', amount: 8000 },
-      { label: 'House Rent Allowance', amount: 1600 },
-      { label: 'Transport Allowance', amount: 500 },
-      { label: 'Special Allowance', amount: 400 },
-    ],
-    deductions: [
-      { label: 'Federal Income Tax', amount: 1580, isHighlighted: true },
-      { label: 'Social Security (FICA)', amount: 651 },
-      { label: 'Medicare', amount: 152.25 },
-      { label: 'Health Insurance Premium', amount: 225 },
-      { label: 'Dental & Vision', amount: 45 },
-      { label: '401(k) Employee Contribution', amount: 800 },
-    ],
-    employerContributionItems: [
-      { label: 'Social Security Match', amount: 651 },
-      { label: 'Medicare Match', amount: 152.25 },
-      { label: '401(k) Employer Match', amount: 800 },
-      { label: 'Health Insurance (Employer)', amount: 550 },
-    ],
-    ytdGross: 21000,
-    ytdNet: 15640,
-    ytdTax: 3160,
-  },
-  {
-    month: 'January',
-    year: 2026,
-    grossPay: 10500,
-    netPay: 7820,
-    totalDeductions: 2680,
-    employerContributions: 1850,
-    earnings: [
-      { label: 'Basic Salary', amount: 8000 },
-      { label: 'House Rent Allowance', amount: 1600 },
-      { label: 'Transport Allowance', amount: 500 },
-      { label: 'Special Allowance', amount: 400 },
-    ],
-    deductions: [
-      { label: 'Federal Income Tax', amount: 1580 },
-      { label: 'Social Security (FICA)', amount: 651 },
-      { label: 'Medicare', amount: 152.25 },
-      { label: 'Health Insurance Premium', amount: 225 },
-      { label: 'Dental & Vision', amount: 45 },
-      { label: '401(k) Employee Contribution', amount: 800 },
-    ],
-    employerContributionItems: [
-      { label: 'Social Security Match', amount: 651 },
-      { label: 'Medicare Match', amount: 152.25 },
-      { label: '401(k) Employer Match', amount: 800 },
-      { label: 'Health Insurance (Employer)', amount: 550 },
-    ],
-    ytdGross: 10500,
-    ytdNet: 7820,
-    ytdTax: 1580,
-  },
-  {
-    month: 'December',
-    year: 2025,
-    grossPay: 11800,
-    netPay: 8750,
-    totalDeductions: 3050,
-    employerContributions: 1850,
-    earnings: [
-      { label: 'Basic Salary', amount: 8000 },
-      { label: 'House Rent Allowance', amount: 1600 },
-      { label: 'Transport Allowance', amount: 500 },
-      { label: 'Annual Bonus', amount: 1200, isHighlighted: true },
-      { label: 'Special Allowance', amount: 500 },
-    ],
-    deductions: [
-      { label: 'Federal Income Tax', amount: 1900 },
-      { label: 'Social Security (FICA)', amount: 731.6 },
-      { label: 'Medicare', amount: 171.1 },
-      { label: 'Health Insurance Premium', amount: 225 },
-      { label: 'Dental & Vision', amount: 45 },
-      { label: '401(k) Employee Contribution', amount: 800 },
-    ],
-    employerContributionItems: [
-      { label: 'Social Security Match', amount: 651 },
-      { label: 'Medicare Match', amount: 152.25 },
-      { label: '401(k) Employer Match', amount: 800 },
-      { label: 'Health Insurance (Employer)', amount: 550 },
-    ],
-    ytdGross: 126000,
-    ytdNet: 93840,
-    ytdTax: 19200,
-  },
-];
+// ── Data is fetched from API ─────────────────────────────────────────────────
 
 const fmt = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
@@ -147,6 +50,7 @@ const fmt = (n: number) =>
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function MobilePayslip() {
+  const [payslips, setPayslips] = useState<MonthlyPayslip[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     earnings: true,
@@ -155,9 +59,43 @@ export function MobilePayslip() {
     ytd: false,
   });
 
-  const slip = PAYSLIPS[currentIndex];
-  const prevSlip = PAYSLIPS[currentIndex + 1];
-  const netTrend = prevSlip ? slip.netPay - prevSlip.netPay : 0;
+  const fetchPayslips = useCallback(async () => {
+    try {
+      const res = await fetch('/api/v1/payroll/payslips');
+      const json = await res.json();
+      const list = json.data || [];
+      if (list.length > 0) {
+        setPayslips(list.map((p: any) => ({
+          month: p.month || new Date(p.periodStart || p.createdAt).toLocaleString('en-US', { month: 'long' }),
+          year: p.year || new Date(p.periodStart || p.createdAt).getFullYear(),
+          grossPay: Number(p.grossSalary || p.grossPay || 0),
+          netPay: Number(p.netSalary || p.netPay || 0),
+          totalDeductions: Number(p.totalDeductions || 0),
+          employerContributions: Number(p.employerContributions || 0),
+          earnings: Array.isArray(p.earnings) ? p.earnings.map((e: any) => ({ label: e.label || e.name, amount: Number(e.amount || 0), isHighlighted: e.isHighlighted })) : [{ label: 'Basic Salary', amount: Number(p.basicSalary || p.grossPay || 0) }],
+          deductions: Array.isArray(p.deductions) ? p.deductions.map((d: any) => ({ label: d.label || d.name, amount: Number(d.amount || 0), isHighlighted: d.isHighlighted })) : [],
+          employerContributionItems: Array.isArray(p.employerContributionItems) ? p.employerContributionItems : [],
+          ytdGross: Number(p.ytdGross || 0),
+          ytdNet: Number(p.ytdNet || 0),
+          ytdTax: Number(p.ytdTax || 0),
+        })));
+      }
+    } catch { /* silent */ }
+  }, []);
+
+  useEffect(() => { fetchPayslips(); }, [fetchPayslips]);
+
+  const slip = payslips[currentIndex];
+  const prevSlip = payslips[currentIndex + 1];
+  const netTrend = prevSlip && slip ? slip.netPay - prevSlip.netPay : 0;
+
+  if (!slip) {
+    return (
+      <div className="flex items-center justify-center min-h-96 text-gray-400">
+        <p>Loading payslips...</p>
+      </div>
+    );
+  }
 
   const toggle = (key: string) => setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
 
@@ -167,8 +105,8 @@ export function MobilePayslip() {
       <div className="bg-white border-b border-gray-100 px-4 py-4">
         <div className="flex items-center justify-between">
           <button
-            onClick={() => setCurrentIndex(Math.min(currentIndex + 1, PAYSLIPS.length - 1))}
-            disabled={currentIndex >= PAYSLIPS.length - 1}
+            onClick={() => setCurrentIndex(Math.min(currentIndex + 1, payslips.length - 1))}
+            disabled={currentIndex >= payslips.length - 1}
             className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-30"
           >
             <ChevronLeft className="w-5 h-5 text-gray-600" />
@@ -190,7 +128,7 @@ export function MobilePayslip() {
 
         {/* Month dots */}
         <div className="flex justify-center gap-1.5 mt-2">
-          {PAYSLIPS.map((_, i) => (
+          {payslips.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrentIndex(i)}

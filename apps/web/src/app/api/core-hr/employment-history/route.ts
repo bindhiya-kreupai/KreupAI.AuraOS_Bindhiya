@@ -7,7 +7,14 @@ import { z } from 'zod';
 const createHistorySchema = z.object({
   tenantId: z.string().min(1, 'Tenant ID is required'),
   employeeId: z.string().uuid('Valid employee ID is required'),
-  changeType: z.string().min(1, 'Change type is required'), // PROMOTION, DEMOTION, TRANSFER, LATERAL_MOVE, NEW_HIRE, TERMINATION, REHIRE
+  changeType: z.enum([
+    'PROMOTION', 'DEMOTION', 'TRANSFER', 'LATERAL_MOVE',
+    'NEW_HIRE', 'TERMINATION', 'REHIRE', 'HIRE',
+    'PROBATION_START', 'PROBATION_CONFIRMATION',
+    'DEPARTMENT_TRANSFER', 'POSITION_CHANGE', 'GRADE_CHANGE',
+    'COMPENSATION_CHANGE', 'MANAGER_CHANGE', 'LOCATION_CHANGE',
+    'LEAVE_OF_ABSENCE', 'RETURN_FROM_LEAVE', 'STATUS_CHANGE',
+  ]),
   effectiveDate: z.string().or(z.date()),
   reason: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),

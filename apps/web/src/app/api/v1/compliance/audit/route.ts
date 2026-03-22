@@ -1,46 +1,49 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 import { ServiceProxy } from '@/lib/services/service-proxy';
 
-export const GET = withEnhancedAuth(async (request, context) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user } = context;
-    const tenantId = user.tenantId;
 
-    // Proxy to analytics-service
     const result = await ServiceProxy.get('analytics', '/api/v1/compliance/audit', {
-      tenantId,
+      tenantId: user.tenantId,
     });
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('[ComplianceAudit API] Error:', error);
+    console.error('[ComplianceAudit API] GET Error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch compliance audit data' },
+      { success: false, error: { code: 'E5001', message: 'Failed to fetch compliance audit data' } },
       { status: 500 }
     );
   }
 });
 
-export const POST = withEnhancedAuth(async (request, context) => {
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const body = await request.json();
     const { user } = context;
+    const body = await request.json();
 
-    // Proxy to analytics-service or a specialized compliance service
-    // For now, assuming analytics-service handles compliance reporting/auditing metrics
     const result = await ServiceProxy.post('analytics', '/api/v1/compliance/audit', {
       ...body,
       tenantId: user.tenantId,
-      performedBy: user.id
+      performedBy: user.id,
     });
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('[ComplianceAudit POST API] Error:', error);
+    console.error('[ComplianceAudit API] POST Error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to report violation' },
+      { success: false, error: { code: 'E5001', message: 'Failed to report violation' } },
       { status: 500 }
     );
   }
+}), {
+  action: AuditAction.REPORT_GENERATED,
+  resourceType: 'compliance_audit',
+  captureRequestBody: true,
 });

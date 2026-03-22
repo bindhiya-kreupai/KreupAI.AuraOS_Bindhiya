@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
+import { auditMiddleware } from '@/lib/middleware/audit.middleware';
 import { z } from 'zod';
 
 // Validation schema
@@ -21,7 +22,7 @@ const runPayrollSchema = z.object({
  * This endpoint creates a new payroll run and calculates payslips for all employees
  * (or specific employees if employeeIds are provided)
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+export const POST = auditMiddleware.runPayroll(withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const { user } = context;
     const body = await request.json();
@@ -156,4 +157,4 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       },
     }, { status: 500 });
   }
-});
+}));

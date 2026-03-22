@@ -7,7 +7,11 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const { user } = context;
     const { searchParams } = new URL(request.url);
-    const employeeId = searchParams.get('employeeId');
+    const requestedEmployeeId = searchParams.get('employeeId');
+    const employeeId =
+      !requestedEmployeeId || ['current-user', 'current-user-id'].includes(requestedEmployeeId)
+        ? user.employeeId || user.userId
+        : requestedEmployeeId;
     const status = searchParams.get('status');
 
     const where: Record<string, unknown> = { tenantId: user.tenantId };
@@ -47,7 +51,12 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
 
     switch (action) {
       case 'submit': {
-        if (!body.employeeId || !body.date || !body.overtimeMinutes) {
+        const employeeId =
+          !body.employeeId || ['current-user', 'current-user-id'].includes(body.employeeId)
+            ? user.employeeId || user.userId
+            : body.employeeId;
+
+        if (!employeeId || !body.date || !body.overtimeMinutes) {
           return NextResponse.json(
             { error: 'employeeId, date, and overtimeMinutes are required' },
             { status: 400 }
@@ -57,7 +66,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
         const record = await prisma.overtimeRequest.create({
           data: {
             tenantId: user.tenantId,
-            employeeId: body.employeeId,
+            employeeId,
             overtimeDate: new Date(body.date),
             startTime: body.startTime ? new Date(body.startTime) : new Date(body.date),
             endTime: body.endTime ? new Date(body.endTime) : new Date(body.date),

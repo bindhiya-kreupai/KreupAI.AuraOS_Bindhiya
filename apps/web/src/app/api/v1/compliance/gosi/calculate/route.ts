@@ -1,21 +1,25 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { prisma } from '@/lib/database';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
+import { prisma } from '@aura/database';
 
 export const dynamic = 'force-dynamic';
 
-// GOSI contribution rates for KSA (Saudi Arabia)
+// GOSI contribution rates for KSA (Saudi Arabia) — 2024
 const GOSI_RATES = {
   SAUDI: {
-    employeePension: 0.0975, // 9.75% employee pension
-    employerPension: 0.0975, // 9.75% employer pension
-    employeeSaned: 0.0075, // 0.75% SANED (unemployment)
+    employeePension: 0.0975, // 9.75% employee pension/annuity
+    employerPension: 0.0975, // 9.75% employer pension/annuity
+    employeeSaned: 0.0075, // 0.75% SANED (unemployment insurance)
     employerSaned: 0.0075, // 0.75% SANED
     employerOccHazards: 0.02, // 2% occupational hazards (employer only)
   },
   NON_SAUDI: {
-    employerOccHazards: 0.02, // 2% occupational hazards only
+    employeeSaned: 0.02, // 2% SANED only
+    employerSaned: 0.02, // 2% SANED only
+    employerOccHazards: 0.02, // 2% occupational hazards (employer only)
   },
   MAX_CONTRIBUTABLE_SALARY: 45000, // SAR cap
 };
@@ -24,12 +28,12 @@ const GOSI_RATES = {
  * POST /api/v1/compliance/gosi/calculate
  * Calculate GOSI contributions for a company/payroll period
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user } = context;
     const body = await request.json();
 
-    const { contributionMonth, companyId, _payrollRunId } = body;
+    const { contributionMonth, companyId, payrollRunId } = body;
 
     if (!contributionMonth || !companyId) {
       return NextResponse.json(
@@ -69,7 +73,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       },
     });
 
-    // Get employees from payroll run or active employees
+    // Get active employees for this company
     const employees = await prisma.employee.findMany({
       where: { companyId, isDeleted: false },
       select: {
@@ -77,11 +81,24 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
         firstName: true,
         lastName: true,
         employeeCode: true,
-        salaryStructure: true,
       },
     });
 
-    const totalEmployees = employees.length;
+    const employeeIds = employees.map(e => e.id);
+
+    // Fetch salary structures and compliance details in parallel
+    const [salaryStructures, complianceDetails] = await Promise.all([
+      prisma.employeeSalaryStructure.findMany({
+        where: { employeeId: { in: employeeIds }, tenantId: user.tenantId, isActive: true },
+      }),
+      prisma.employeeComplianceDetails.findMany({
+        where: { employeeId: { in: employeeIds }, tenantId: user.tenantId },
+      }),
+    ]);
+
+    const salaryMap = new Map(salaryStructures.map(s => [s.employeeId, s]));
+    const complianceMap = new Map(complianceDetails.map(c => [c.employeeId, c]));
+
     let totalSaudis = 0;
     let totalNonSaudis = 0;
     let totalEmployeeContribution = 0;
@@ -91,27 +108,37 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     let totalOccupationalHazards = 0;
 
     for (const employee of employees) {
-      const grossSalary = Number(employee.salaryStructure?.grossSalary || 0);
-      const basicSalary = Number(employee.salaryStructure?.basicSalary || grossSalary * 0.7);
-      const housingAllowance = grossSalary - basicSalary;
+      const salary = salaryMap.get(employee.id);
+      const compliance = complianceMap.get(employee.id);
 
-      // Contributable salary capped at 45,000 SAR
-      const contributableSalary = Math.min(grossSalary, GOSI_RATES.MAX_CONTRIBUTABLE_SALARY);
+      const basicSalary = Number(salary?.basicSalary || 0);
+      const housingAllowance = Number(salary?.houseRentAllowance || basicSalary * 0.25);
+      const grossForGosi = basicSalary + housingAllowance;
 
-      // Simplified: assume non-Saudi for demonstration (real implementation would check nationality)
-      const isSaudi = false;
+      // Apply 45K SAR salary cap
+      const contributableSalary = Math.min(grossForGosi, GOSI_RATES.MAX_CONTRIBUTABLE_SALARY);
+
+      // Determine nationality from compliance details
+      const isSaudi = compliance?.isLocalNational === true;
+      const nationality = compliance?.nationality || 'XX';
+      const nationalId = compliance?.iqamaNumber || '';
 
       let employeeContrib = 0;
       let employerContrib = 0;
       let pensionContrib = 0;
       let sanedContrib = 0;
+      let empPension = 0;
+      let emplrPension = 0;
+      let empSaned = 0;
+      let emplrSaned = 0;
       const occHazards = contributableSalary * GOSI_RATES.NON_SAUDI.employerOccHazards;
 
       if (isSaudi) {
-        const empPension = contributableSalary * GOSI_RATES.SAUDI.employeePension;
-        const emplrPension = contributableSalary * GOSI_RATES.SAUDI.employerPension;
-        const empSaned = contributableSalary * GOSI_RATES.SAUDI.employeeSaned;
-        const emplrSaned = contributableSalary * GOSI_RATES.SAUDI.employerSaned;
+        // Saudi: Pension (9.75% each) + SANED (0.75% each) + Occ Hazards (2% employer)
+        empPension = contributableSalary * GOSI_RATES.SAUDI.employeePension;
+        emplrPension = contributableSalary * GOSI_RATES.SAUDI.employerPension;
+        empSaned = contributableSalary * GOSI_RATES.SAUDI.employeeSaned;
+        emplrSaned = contributableSalary * GOSI_RATES.SAUDI.employerSaned;
 
         employeeContrib = empPension + empSaned;
         employerContrib = emplrPension + emplrSaned + occHazards;
@@ -119,7 +146,13 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
         sanedContrib = empSaned + emplrSaned;
         totalSaudis++;
       } else {
-        employerContrib = occHazards;
+        // Non-Saudi: SANED (2% each) + Occ Hazards (2% employer), NO pension
+        empSaned = contributableSalary * GOSI_RATES.NON_SAUDI.employeeSaned;
+        emplrSaned = contributableSalary * GOSI_RATES.NON_SAUDI.employerSaned;
+
+        employeeContrib = empSaned;
+        employerContrib = emplrSaned + occHazards;
+        sanedContrib = empSaned + emplrSaned;
         totalNonSaudis++;
       }
 
@@ -127,15 +160,17 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
         data: {
           submissionId: submission.id,
           employeeId: employee.id,
-          nationality: 'IN',
+          iqamaNumber: !isSaudi ? nationalId : null,
+          nationalId: isSaudi ? nationalId : null,
+          nationality,
           isSaudi,
           contributableSalary,
           basicSalary,
           housingAllowance,
-          employeePension: isSaudi ? contributableSalary * GOSI_RATES.SAUDI.employeePension : 0,
-          employerPension: isSaudi ? contributableSalary * GOSI_RATES.SAUDI.employerPension : 0,
-          sanedEmployee: isSaudi ? contributableSalary * GOSI_RATES.SAUDI.employeeSaned : 0,
-          sanedEmployer: isSaudi ? contributableSalary * GOSI_RATES.SAUDI.employerSaned : 0,
+          employeePension: empPension,
+          employerPension: emplrPension,
+          sanedEmployee: empSaned,
+          sanedEmployer: emplrSaned,
           occupationalHazards: occHazards,
           totalEmployee: employeeContrib,
           totalEmployer: employerContrib,
@@ -156,7 +191,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       where: { id: submission.id },
       data: {
         status: 'VALIDATED',
-        totalEmployees,
+        totalEmployees: employees.length,
         totalSaudis,
         totalNonSaudis,
         totalEmployeeContribution,
@@ -172,15 +207,26 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       {
         success: true,
         data: {
-          submission: updated,
-          summary: {
-            totalEmployees,
-            totalSaudis,
-            totalNonSaudis,
-            totalEmployeeContribution,
-            totalEmployerContribution,
-            grandTotal,
-            contributionMonth,
+          submission: {
+            id: updated.id,
+            status: updated.status,
+            contributionMonth: updated.contributionMonth,
+            totalEmployees: updated.totalEmployees,
+            totalSaudis: updated.totalSaudis,
+            totalNonSaudis: updated.totalNonSaudis,
+            totalEmployeeContribution: Number(updated.totalEmployeeContribution),
+            totalEmployerContribution: Number(updated.totalEmployerContribution),
+            totalPensionContribution: Number(updated.totalPensionContribution),
+            totalSanedContribution: Number(updated.totalSanedContribution),
+            totalOccupationalHazards: Number(updated.totalOccupationalHazards),
+            grandTotal: Number(updated.grandTotal),
+          },
+          rates: {
+            saudiEmployee: '10.50% (9.75% pension + 0.75% SANED)',
+            saudiEmployer: '12.50% (9.75% pension + 0.75% SANED + 2% hazards)',
+            nonSaudiEmployee: '2.00% (SANED)',
+            nonSaudiEmployer: '4.00% (2% SANED + 2% hazards)',
+            salaryCap: GOSI_RATES.MAX_CONTRIBUTABLE_SALARY,
           },
         },
         message: 'GOSI contributions calculated successfully',
@@ -192,7 +238,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       },
       { status: 201 }
     );
-  } catch (_error) {
+  } catch (error) {
     console.error('[GOSI Calculate API] POST Error:', error);
     return NextResponse.json(
       {
@@ -206,4 +252,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       { status: 500 }
     );
   }
+}), {
+  action: AuditAction.PAYROLL_RUN_INITIATED,
+  resourceType: 'gosi_submission',
+  captureRequestBody: true,
 });

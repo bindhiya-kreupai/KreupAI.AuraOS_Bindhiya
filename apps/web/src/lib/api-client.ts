@@ -21,11 +21,19 @@ interface FetchOptions extends RequestInit {
 export class APIClient {
   private static baseURL = '/api';
 
+  private static getRequestOrigin(): string {
+    if (typeof window !== 'undefined' && window.location?.origin) {
+      return window.location.origin;
+    }
+
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
+  }
+
   /**
    * Build URL with query parameters
    */
   private static buildURL(endpoint: string, params?: Record<string, any>): string {
-    const url = new URL(`${this.baseURL}${endpoint}`, window.location.origin);
+    const url = new URL(`${this.baseURL}${endpoint}`, this.getRequestOrigin());
 
     if (params) {
       Object.entries(params).forEach(([key, value]) => {

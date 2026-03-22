@@ -1,7 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-// Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
+// Tenant isolation is enforced via tenantId extracted from auth context
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -68,9 +69,11 @@ const mockCampaigns = [
   },
 ];
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    // Simulated tenant isolation: tenantId would come from validated JWT
+    const { user } = context;
+    const tenantId = user.tenantId;
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || undefined;
     const page = parseInt(searchParams.get('page') || '1');
@@ -100,7 +103,7 @@ export async function GET(request: NextRequest) {
       error: {
         code: 'E5001',
         message: 'Failed to list access certification campaigns',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        details: { error: _error instanceof Error ? _error.message : 'Unknown error' },
       },
       meta: {
         timestamp: new Date().toISOString(),
@@ -110,10 +113,13 @@ export async function GET(request: NextRequest) {
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
+    const { user } = context;
+    const tenantId = user.tenantId;
+
     const body = await request.json();
     const { name, scope, reviewerType } = body;
 
@@ -171,7 +177,7 @@ export async function POST(request: NextRequest) {
 
     const newCampaign = {
       id: `cert-${crypto.randomUUID().slice(0, 8)}`,
-      tenantId: 'tenant-1', // from auth context in production
+      tenantId, // from auth context
       name,
       description: body.description || null,
       scope: scope.toUpperCase(),
@@ -188,7 +194,7 @@ export async function POST(request: NextRequest) {
       escalatedCount: 0,
       completionRate: 0,
       riskItemsFound: 0,
-      createdBy: 'usr-current', // from auth context in production
+      createdBy: user.userId || 'usr-current', // from auth context
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -210,7 +216,7 @@ export async function POST(request: NextRequest) {
       error: {
         code: 'E5001',
         message: 'Failed to create access certification campaign',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        details: { error: _error instanceof Error ? _error.message : 'Unknown error' },
       },
       meta: {
         timestamp: new Date().toISOString(),
@@ -220,4 +226,4 @@ export async function POST(request: NextRequest) {
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});

@@ -1,7 +1,9 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { prisma } from '@/lib/database';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
+import { prisma } from '@aura/database';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +13,6 @@ export const dynamic = 'force-dynamic';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { _user } = context;
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get('page') || '1');
@@ -27,11 +28,11 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     const where: Record<string, unknown> = {};
     if (status) where.status = status;
     if (applicationId) where.applicationId = applicationId;
-    if (interviewerId) where.interviewers = { has: interviewerId };
+    if (interviewerId) where.interviewerIds = { has: interviewerId };
     if (startDate || endDate) {
-      where.scheduledAt = {};
-      if (startDate) (where.scheduledAt as Record<string, unknown>).gte = new Date(startDate);
-      if (endDate) (where.scheduledAt as Record<string, unknown>).lte = new Date(endDate);
+      where.scheduledDate = {};
+      if (startDate) (where.scheduledDate as Record<string, unknown>).gte = new Date(startDate);
+      if (endDate) (where.scheduledDate as Record<string, unknown>).lte = new Date(endDate);
     }
 
     const [data, total] = await Promise.all([
@@ -39,7 +40,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         where,
         skip,
         take: limit,
-        orderBy: { scheduledAt: 'asc' },
+        orderBy: { scheduledDate: 'asc' },
         include: {
           application: {
             include: {
@@ -62,7 +63,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('[Interviews API] GET Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch interviews' } },
@@ -75,19 +76,16 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
  * POST /api/v1/recruitment/interviews
  * Schedule a new interview
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user } = context;
     const body = await request.json();
 
-    if (!body.applicationId || !body.scheduledAt || !body.interviewType) {
+    if (!body.applicationId || !body.scheduledDate || !body.type) {
       return NextResponse.json(
         {
           success: false,
-          error: {
-            code: 'E2001',
-            message: 'applicationId, scheduledAt and interviewType are required',
-          },
+          error: { code: 'E2001', message: 'applicationId, scheduledDate and type are required' },
         },
         { status: 400 }
       );
@@ -108,16 +106,16 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     const interview = await prisma.interview.create({
       data: {
         applicationId: body.applicationId,
-        scheduledAt: new Date(body.scheduledAt),
-        durationMinutes: body.durationMinutes || 60,
-        interviewType: body.interviewType,
-        format: body.format || 'VIDEO', // VIDEO, IN_PERSON, PHONE
-        interviewers: body.interviewers || [user.id],
+        title: body.title || `${body.type} Interview`,
+        scheduledDate: new Date(body.scheduledDate),
+        duration: body.duration || body.durationMinutes || 60,
+        type: body.type,
+        interviewerIds: body.interviewerIds || body.interviewers || [user.id],
+        interviewerNames: body.interviewerNames || [],
         location: body.location || null,
-        meetingUrl: body.meetingUrl || null,
-        instructions: body.instructions || null,
-        status: 'SCHEDULED',
-        scheduledBy: user.id,
+        meetingLink: body.meetingLink || body.meetingUrl || null,
+        notes: body.notes || body.instructions || null,
+        status: 'scheduled',
       },
       include: {
         application: {
@@ -134,26 +132,22 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
         success: true,
         data: interview,
         message: 'Interview scheduled successfully',
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
+        meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
       },
       { status: 201 }
     );
-  } catch (_error) {
+  } catch (error) {
     console.error('[Interviews API] POST Error:', error);
     return NextResponse.json(
       {
         success: false,
-        error: {
-          code: 'E5001',
-          message: 'Failed to schedule interview',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        },
+        error: { code: 'E5001', message: 'Failed to schedule interview', details: { error: error instanceof Error ? error.message : 'Unknown error' } },
       },
       { status: 500 }
     );
   }
+}), {
+  action: AuditAction.EMPLOYEE_CREATED,
+  resourceType: 'interview',
+  captureRequestBody: true,
 });

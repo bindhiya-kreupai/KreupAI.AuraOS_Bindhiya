@@ -1,9 +1,20 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { prisma } from '@/lib/database';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
+import { prisma } from '@aura/database';
 
 export const dynamic = 'force-dynamic';
+
+async function getTenantUserIds(tenantId: string): Promise<string[]> {
+  const users = await prisma.user.findMany({
+    where: { tenantId },
+    select: { id: true },
+  });
+
+  return users.map(user => user.id);
+}
 
 /**
  * GET /api/v1/recruitment/jobs
@@ -24,7 +35,12 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     const type = searchParams.get('type') || undefined;
     const search = searchParams.get('search') || undefined;
 
-    const where: Record<string, unknown> = { isDeleted: false };
+    const tenantUserIds = await getTenantUserIds(_user.tenantId);
+
+    const where: Record<string, unknown> = {
+      isDeleted: false,
+      createdBy: { in: tenantUserIds.length > 0 ? tenantUserIds : ['__no_tenant_users__'] },
+    };
     if (status) where.status = status;
     if (department) where.department = { contains: department, mode: 'insensitive' };
     if (location) where.location = { contains: location, mode: 'insensitive' };
@@ -59,7 +75,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('[Recruitment Jobs API] GET Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch job postings' } },
@@ -72,7 +88,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
  * POST /api/v1/recruitment/jobs
  * Create a new job posting
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user } = context;
     const body = await request.json();
@@ -114,7 +130,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       },
       { status: 201 }
     );
-  } catch (_error) {
+  } catch (error) {
     console.error('[Recruitment Jobs API] POST Error:', error);
     return NextResponse.json(
       {
@@ -128,4 +144,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       { status: 500 }
     );
   }
+}), {
+  action: AuditAction.EMPLOYEE_CREATED,
+  resourceType: 'job_posting',
+  captureRequestBody: true,
 });

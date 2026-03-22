@@ -6,6 +6,7 @@
 import { Job, JobResult, queueService } from '../queue.service';
 import { QUEUE_NAMES } from '../rabbitmq';
 import { logger } from '@/lib/logger';
+import { prisma } from '@aura/database';
 
 export enum ReportType {
   ATTENDANCE_SUMMARY = 'ATTENDANCE_SUMMARY',
@@ -132,11 +133,6 @@ export async function processReportJob(job: Job<ReportJobData>): Promise<JobResu
  * Fetch report data based on type
  */
 async function fetchReportData(reportType: ReportType, filters: any): Promise<any[]> {
-  // Simulate data fetching delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  const { companyId, startDate, endDate, employeeIds } = filters;
-
   switch (reportType) {
     case ReportType.ATTENDANCE_SUMMARY:
       return await fetchAttendanceData(filters);
@@ -159,91 +155,134 @@ async function fetchReportData(reportType: ReportType, filters: any): Promise<an
 }
 
 /**
- * Mock: Fetch attendance data
+ * Fetch attendance data from database
  */
 async function fetchAttendanceData(filters: any): Promise<any[]> {
-  // TODO: Replace with actual database query
-  // const data = await prisma.attendance.findMany({
-  //   where: {
-  //     companyId: filters.companyId,
-  //     date: {
-  //       gte: new Date(filters.startDate),
-  //       lte: new Date(filters.endDate),
-  //     },
-  //   },
-  //   include: { employee: true },
-  // });
+  const where: any = {};
+  if (filters.companyId) where.companyId = filters.companyId;
+  if (filters.startDate || filters.endDate) {
+    where.date = {};
+    if (filters.startDate) where.date.gte = new Date(filters.startDate);
+    if (filters.endDate) where.date.lte = new Date(filters.endDate);
+  }
+  if (filters.employeeIds?.length) where.employeeId = { in: filters.employeeIds };
 
-  return Array.from({ length: 1000 }, (_, i) => ({
-    employeeCode: `EMP${(i % 50 + 1).toString().padStart(3, '0')}`,
-    employeeName: `Employee ${i % 50 + 1}`,
-    date: new Date(2024, 11, (i % 22) + 1).toISOString(),
-    clockIn: '09:00:00',
-    clockOut: '18:00:00',
-    workHours: 9,
-    status: 'PRESENT',
+  const records = await prisma.attendance.findMany({
+    where,
+    include: { employee: { select: { employeeCode: true, firstName: true, lastName: true } } },
+    orderBy: { date: 'asc' },
+  });
+
+  return records.map((r: any) => ({
+    employeeCode: r.employee?.employeeCode ?? r.employeeId,
+    employeeName: r.employee ? `${r.employee.firstName} ${r.employee.lastName}` : r.employeeId,
+    date: r.date?.toISOString?.() ?? r.date,
+    clockIn: r.clockIn,
+    clockOut: r.clockOut,
+    workHours: r.workHours ?? null,
+    status: r.status,
   }));
 }
 
 /**
- * Mock: Fetch payroll data
+ * Fetch payroll data from database
  */
 async function fetchPayrollData(filters: any): Promise<any[]> {
-  return Array.from({ length: 100 }, (_, i) => ({
-    employeeCode: `EMP${(i + 1).toString().padStart(3, '0')}`,
-    employeeName: `Employee ${i + 1}`,
-    month: filters.startDate,
-    basicSalary: 5000 + i * 100,
-    grossPay: 7000 + i * 150,
-    deductions: 1000 + i * 20,
-    netPay: 6000 + i * 130,
+  const where: any = {};
+  if (filters.companyId) where.companyId = filters.companyId;
+  if (filters.startDate) where.periodStart = { gte: new Date(filters.startDate) };
+  if (filters.endDate) where.periodEnd = { lte: new Date(filters.endDate) };
+  if (filters.employeeIds?.length) where.employeeId = { in: filters.employeeIds };
+
+  const records = await prisma.payrollItem.findMany({
+    where,
+    include: { employee: { select: { employeeCode: true, firstName: true, lastName: true } } },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return records.map((r: any) => ({
+    employeeCode: r.employee?.employeeCode ?? r.employeeId,
+    employeeName: r.employee ? `${r.employee.firstName} ${r.employee.lastName}` : r.employeeId,
+    basicSalary: Number(r.basicSalary ?? 0),
+    grossPay: Number(r.grossPay ?? 0),
+    deductions: Number(r.totalDeductions ?? 0),
+    netPay: Number(r.netPay ?? 0),
   }));
 }
 
 /**
- * Mock: Fetch leave data
+ * Fetch leave data from database
  */
 async function fetchLeaveData(filters: any): Promise<any[]> {
-  return Array.from({ length: 200 }, (_, i) => ({
-    employeeCode: `EMP${(i % 50 + 1).toString().padStart(3, '0')}`,
-    employeeName: `Employee ${i % 50 + 1}`,
-    leaveType: ['Annual Leave', 'Sick Leave', 'Casual Leave'][i % 3],
-    startDate: new Date(2024, 11, (i % 20) + 1).toISOString(),
-    endDate: new Date(2024, 11, (i % 20) + 3).toISOString(),
-    days: 3,
-    status: ['APPROVED', 'PENDING', 'REJECTED'][i % 3],
+  const where: any = {};
+  if (filters.companyId) where.tenantId = filters.companyId;
+  if (filters.startDate) where.startDate = { gte: new Date(filters.startDate) };
+  if (filters.endDate) where.endDate = { lte: new Date(filters.endDate) };
+  if (filters.employeeIds?.length) where.employeeId = { in: filters.employeeIds };
+
+  const records = await prisma.leaveRequest.findMany({
+    where,
+    include: { employee: { select: { employeeCode: true, firstName: true, lastName: true } } },
+    orderBy: { appliedAt: 'desc' },
+  });
+
+  return records.map((r: any) => ({
+    employeeCode: r.employee?.employeeCode ?? r.employeeId,
+    employeeName: r.employee ? `${r.employee.firstName} ${r.employee.lastName}` : r.employeeId,
+    leaveType: r.leaveTypeId,
+    startDate: r.startDate?.toISOString?.() ?? r.startDate,
+    endDate: r.endDate?.toISOString?.() ?? r.endDate,
+    days: Number(r.totalDays),
+    status: r.status,
   }));
 }
 
 /**
- * Mock: Fetch employee directory
+ * Fetch employee directory from database
  */
 async function fetchEmployeeDirectory(filters: any): Promise<any[]> {
-  return Array.from({ length: 150 }, (_, i) => ({
-    employeeCode: `EMP${(i + 1).toString().padStart(3, '0')}`,
-    firstName: `Employee`,
-    lastName: `${i + 1}`,
-    email: `employee${i + 1}@company.com`,
-    department: ['Engineering', 'Sales', 'HR', 'Finance'][i % 4],
-    position: ['Developer', 'Manager', 'Specialist'][i % 3],
-    hireDate: new Date(2020 + (i % 5), i % 12, 1).toISOString(),
-    status: 'ACTIVE',
+  const where: any = {};
+  if (filters.companyId) where.companyId = filters.companyId;
+  if (filters.employeeIds?.length) where.id = { in: filters.employeeIds };
+
+  const records = await prisma.employee.findMany({
+    where,
+    orderBy: { firstName: 'asc' },
+  });
+
+  return records.map((r: any) => ({
+    employeeCode: r.employeeCode,
+    firstName: r.firstName,
+    lastName: r.lastName,
+    email: r.workEmail ?? r.personalEmail,
+    department: r.departmentId,
+    position: r.designationId,
+    hireDate: r.dateOfJoining?.toISOString?.() ?? r.dateOfJoining,
+    status: r.employmentStatus,
   }));
 }
 
 /**
- * Mock: Fetch statutory data
+ * Fetch statutory data from database
  */
 async function fetchStatutoryData(filters: any): Promise<any[]> {
-  return Array.from({ length: 100 }, (_, i) => ({
-    employeeCode: `EMP${(i + 1).toString().padStart(3, '0')}`,
-    employeeName: `Employee ${i + 1}`,
-    pfNumber: `PF${(i + 1).toString().padStart(6, '0')}`,
-    esiNumber: `ESI${(i + 1).toString().padStart(8, '0')}`,
-    employeePF: 600,
-    employerPF: 600,
-    employeeESI: 97.5,
-    employerESI: 162.5,
+  const where: any = {};
+  if (filters.companyId) where.companyId = filters.companyId;
+  if (filters.employeeIds?.length) where.employeeId = { in: filters.employeeIds };
+
+  const records = await prisma.statutoryComponent.findMany({
+    where,
+    include: { employee: { select: { employeeCode: true, firstName: true, lastName: true } } },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return records.map((r: any) => ({
+    employeeCode: r.employee?.employeeCode ?? r.employeeId,
+    employeeName: r.employee ? `${r.employee.firstName} ${r.employee.lastName}` : r.employeeId,
+    componentType: r.componentType,
+    registrationNumber: r.registrationNumber,
+    employeeContribution: Number(r.employeeContribution ?? 0),
+    employerContribution: Number(r.employerContribution ?? 0),
   }));
 }
 
@@ -255,9 +294,6 @@ async function generateReportFile(
   format: ReportFormat,
   data: any[]
 ): Promise<{ id: string; content: Buffer; size: number; mimeType: string }> {
-  // Simulate file generation delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
   const id = crypto.randomUUID();
 
   switch (format) {

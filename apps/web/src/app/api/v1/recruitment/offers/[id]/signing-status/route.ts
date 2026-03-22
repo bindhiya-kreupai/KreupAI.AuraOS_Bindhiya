@@ -1,24 +1,63 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
+export const dynamic = 'force-dynamic';
 
-  return NextResponse.json({
-    success: true,
-    data: {
-      offerId: id,
-      status: 'pending',
-      candidateName: 'John Doe',
-      documentTitle: 'Employment Offer Letter',
-      sentAt: '2026-01-20T10:00:00Z',
-      viewedAt: '2026-01-20T14:30:00Z',
-      signedAt: null,
-      declinedAt: null,
-      expiresAt: '2026-02-03T23:59:59Z',
-      lastActivity: '2026-01-20T14:30:00Z',
-    },
-  });
-}
+/**
+ * GET /api/v1/recruitment/offers/[id]/signing-status
+ * Get the signing/acceptance status of a job offer
+ */
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { id } = await context.params;
+
+    const offer = await prisma.jobOffer.findUnique({
+      where: { id },
+      include: {
+        application: {
+          include: {
+            candidate: { select: { id: true, firstName: true, lastName: true, email: true } },
+            jobPosting: { select: { title: true, department: true } },
+          },
+        },
+      },
+    });
+
+    if (!offer) {
+      return NextResponse.json(
+        { success: false, error: { code: 'E4001', message: 'Offer not found' } },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        offerId: offer.id,
+        candidateName: `${offer.application.candidate.firstName} ${offer.application.candidate.lastName}`,
+        candidateEmail: offer.application.candidate.email,
+        jobTitle: offer.jobTitle,
+        department: offer.department,
+        status: offer.status,
+        salary: Number(offer.salary),
+        currency: offer.currency,
+        sentDate: offer.sentDate,
+        acceptedDate: offer.acceptedDate,
+        declinedDate: offer.declinedDate,
+        declineReason: offer.declineReason,
+        expiryDate: offer.expiryDate,
+        offerLetterUrl: offer.offerLetterUrl,
+        isExpired: offer.expiryDate ? new Date() > offer.expiryDate : false,
+      },
+      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+    });
+  } catch (error) {
+    console.error('[Offer Signing Status API] GET Error:', error);
+    return NextResponse.json(
+      { success: false, error: { code: 'E5001', message: 'Failed to fetch offer status' } },
+      { status: 500 }
+    );
+  }
+});

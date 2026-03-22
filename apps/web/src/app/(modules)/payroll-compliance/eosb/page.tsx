@@ -9,7 +9,7 @@ import {
     AlertCircle, History
 } from 'lucide-react';
 import Link from 'next/link';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 
 export default function EOSBCommandCenter() {
     const [activeCountry, setActiveCountry] = useState<'UAE' | 'KSA' | 'India'>('UAE');

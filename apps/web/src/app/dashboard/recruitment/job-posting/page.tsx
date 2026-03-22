@@ -17,8 +17,9 @@ import {
 } from 'lucide-react';
 import CreateJobModal from '@/components/recruitment/create-job-modal';
 import { JobPostingService } from '../services';
+import type { JobPosting as RecruitmentJobPosting } from '../types';
 
-interface JobPosting {
+interface JobPostingCard {
     id: string;
     title: string;
     department: string;
@@ -39,8 +40,38 @@ interface JobPosting {
     };
 }
 
+function toDisplayLabel(value?: string): string {
+    if (!value) return '-';
+    return value.replace(/_/g, ' ');
+}
+
+function mapJobPosting(job: RecruitmentJobPosting): JobPostingCard {
+    const boards = job.externalBoards || [];
+
+    return {
+        id: job.id,
+        title: job.jobTitle,
+        department: job.departmentName,
+        location: job.locationName,
+        type: toDisplayLabel(job.jobType),
+        status: job.isActive ? 'Active' : 'Draft',
+        postedDate: job.publishedDate ? new Date(job.publishedDate).toLocaleDateString() : '-',
+        metrics: {
+            views: job.viewCount || 0,
+            clicks: 0,
+            applies: job.applicationCount || 0,
+        },
+        channels: {
+            linkedin: boards.includes('LinkedIn'),
+            indeed: boards.includes('Indeed'),
+            website: true,
+            glassdoor: boards.includes('Glassdoor'),
+        },
+    };
+}
+
 export default function JobPostingsPage() {
-    const [jobs, setJobs] = useState<JobPosting[]>([]);
+    const [jobs, setJobs] = useState<JobPostingCard[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -51,16 +82,7 @@ export default function JobPostingsPage() {
         const fetchJobs = async () => {
             try {
                 const data = await JobPostingService.getPostings();
-
-                const transformed = data.map((job: any) => ({
-                    ...job,
-                    postedDate: job.postedDate ? new Date(job.postedDate).toLocaleDateString() : '-',
-                    status: job.isActive ? 'Active' : 'Draft',
-                    metrics: job.metrics || { views: 0, clicks: 0, applies: 0 },
-                    channels: job.channels || { linkedin: false, indeed: false, website: false, glassdoor: false }
-                }));
-
-                setJobs(transformed);
+                setJobs(data.map(mapJobPosting));
             } catch (error) {
                 console.error('Error:', error);
                 setError('Could not load job postings. Please try again later.');
@@ -153,6 +175,13 @@ export default function JobPostingsPage() {
 
             {/* Postings Grid */}
             <div className="grid grid-cols-1 gap-3">
+                {jobs.length === 0 && (
+                    <div className="bg-white dark:bg-stellar-blue rounded-2xl border border-dashed border-cloud dark:border-nebula-purple/50 shadow-sm p-8 text-center">
+                        <p className="text-base font-semibold text-ink-black dark:text-pearl">No job postings available</p>
+                        <p className="mt-2 text-sm text-silver-mist">Create a posting to start tracking reach, applications, and publishing channels.</p>
+                    </div>
+                )}
+
                 {jobs.map(job => (
                     <div key={job.id} className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm p-6 hover:shadow-md transition-all group">
                         <div className="flex flex-col lg:flex-row gap-3">

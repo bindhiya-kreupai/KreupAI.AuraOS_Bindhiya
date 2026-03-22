@@ -10,7 +10,7 @@ import {
   FileText, Lightbulb, Target, Shield,
   ChevronRight, Plus, RefreshCw
 } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 
 // ── Mock Data ──────────────────────────────────────────────────────────
 const AI_STATS = [

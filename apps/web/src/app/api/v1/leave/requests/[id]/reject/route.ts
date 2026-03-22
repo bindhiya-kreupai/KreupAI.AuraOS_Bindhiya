@@ -1,161 +1,73 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { z } from 'zod';
-
-// API Response Standard
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: Record<string, unknown>;
-  };
-  meta?: {
-    timestamp: string;
-    requestId: string;
-    apiVersion: string;
-  };
-}
-
-// Validation schema
-const rejectLeaveSchema = z.object({
-  approverId: z.string().uuid(),
-  reason: z.string().min(10).max(500),
-  comments: z.string().max(500).optional().nullable(),
-});
+import { LeaveService } from '@/lib/services/leave.service';
+import { auditMiddleware } from '@/lib/middleware/audit.middleware';
 
 /**
  * PUT /api/v1/leave/requests/:id/reject
- * Reject a leave request
+ * Reject a leave request (legacy endpoint — delegates to LeaveService)
  */
-export const PUT = withEnhancedAuth(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const PUT = auditMiddleware.rejectLeaveRequest(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
     try {
-      const { id } = params;
+      const { user, params } = context;
       const body = await request.json();
 
-      // Validate request body
-      const validationResult = rejectLeaveSchema.safeParse(body);
-      if (!validationResult.success) {
-        const response: ApiResponse = {
-          success: false,
-          error: {
-            code: 'E2001',
-            message: 'Validation failed',
-            details: { errors: validationResult.error.errors },
-          },
-          meta: {
-            timestamp: new Date().toISOString(),
-            requestId: crypto.randomUUID(),
-            apiVersion: 'v1',
-          },
-        };
-
-        return NextResponse.json(response, { status: 400 });
-      }
-
-      const data = validationResult.data;
-
-      // TODO: Implement actual leave rejection logic
-      // 1. Check if approver has permission
-      // 2. Verify leave request exists and is in PENDING status
-      // 3. Update leave request status to REJECTED
-      // 4. Send notification to employee with rejection reason
-      // 5. Update calendar entries
-      // 6. Log rejection in audit trail
-
-      const mockRejectedLeave = {
-        id,
-        applicationNumber: 'LA-2024-1234',
-        employeeId: crypto.randomUUID(),
-        employeeName: 'John Doe',
-        leavePolicyId: crypto.randomUUID(),
-        leaveType: 'Annual Leave',
-        startDate: '2024-12-27',
-        endDate: '2024-12-29',
-        totalDays: 3,
-        status: 'REJECTED',
-        rejectedBy: data.approverId,
-        rejectedAt: new Date().toISOString(),
-        rejectionReason: data.reason,
-        rejectionComments: data.comments,
-        approvalHistory: [
+      const { reason } = body;
+      if (!reason || reason.length < 10) {
+        return NextResponse.json(
           {
-            level: 1,
-            approverName: 'Direct Manager',
-            status: 'REJECTED',
-            rejectedAt: new Date().toISOString(),
-            reason: data.reason,
-            comments: data.comments,
+            success: false,
+            error: {
+              code: 'E2001',
+              message: 'Rejection reason is required (minimum 10 characters)',
+            },
+            meta: {
+              timestamp: new Date().toISOString(),
+              requestId: crypto.randomUUID(),
+              apiVersion: 'v1',
+            },
           },
-        ],
-        updatedAt: new Date().toISOString(),
-      };
+          { status: 400 }
+        );
+      }
 
-      const response: ApiResponse = {
+      const leaveRequest = await LeaveService.rejectRequest(
+        params.id,
+        user.tenantId,
+        user.id,
+        reason
+      );
+
+      return NextResponse.json({
         success: true,
-        data: mockRejectedLeave,
+        data: leaveRequest,
         meta: {
           timestamp: new Date().toISOString(),
           requestId: crypto.randomUUID(),
           apiVersion: 'v1',
         },
-      };
+      });
+    } catch (error: any) {
+      const status = error.message?.includes('not found') ? 404
+        : error.message?.includes('already processed') ? 409
+        : 400;
 
-      return NextResponse.json(response, { status: 200 });
-    } catch (error) {
-      console.error('[Leave Rejection API] PUT Error:', error);
-
-      if (error instanceof Error && error.message.includes('not found')) {
-        const response: ApiResponse = {
+      return NextResponse.json(
+        {
           success: false,
           error: {
-            code: 'E3001',
-            message: 'Leave request not found',
+            code: status === 404 ? 'E3001' : 'E5001',
+            message: error.message || 'Failed to reject leave request',
           },
           meta: {
             timestamp: new Date().toISOString(),
             requestId: crypto.randomUUID(),
             apiVersion: 'v1',
           },
-        };
-
-        return NextResponse.json(response, { status: 404 });
-      }
-
-      if (error instanceof Error && error.message.includes('permission')) {
-        const response: ApiResponse = {
-          success: false,
-          error: {
-            code: 'E4001',
-            message: 'Insufficient permissions to reject this leave request',
-          },
-          meta: {
-            timestamp: new Date().toISOString(),
-            requestId: crypto.randomUUID(),
-            apiVersion: 'v1',
-          },
-        };
-
-        return NextResponse.json(response, { status: 403 });
-      }
-
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E5001',
-          message: 'Failed to reject leave request',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 500 });
+        { status }
+      );
     }
-  }
+  })
 );

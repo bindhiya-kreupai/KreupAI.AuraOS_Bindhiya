@@ -19,10 +19,15 @@ export function useApprovals() {
     let cancelled = false;
     async function load() {
       setLoading(true);
-      const data = await ApprovalService.getRequests();
-      if (!cancelled) {
-        setRequests(data);
-        setLoading(false);
+      try {
+        const data = await ApprovalService.getRequests();
+        if (!cancelled) {
+          setRequests(data);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
     load();
@@ -38,11 +43,16 @@ export function useApprovals() {
   const summary = useMemo(() => {
     const p = pending;
     return {
-      leave: p.filter((r) => r.type === 'leave').length,
       expense: p.filter((r) => r.type === 'expense').length,
-      timesheet: p.filter((r) => r.type === 'timesheet').length,
-      requisition: p.filter((r) => r.type === 'requisition').length,
-      document: p.filter((r) => r.type === 'document').length,
+      'employment-history': p.filter((r) => r.type === 'employment-history').length,
+      'inter-company-transfer': p.filter((r) => r.type === 'inter-company-transfer').length,
+      leave: p.filter((r) => r.type === 'leave').length,
+      overtime: p.filter((r) => r.type === 'overtime').length,
+      exit: p.filter((r) => r.type === 'exit').length,
+      attendance: p.filter((r) => r.type === 'attendance').length,
+      'comp-off': p.filter((r) => r.type === 'comp-off').length,
+      confirmation: p.filter((r) => r.type === 'confirmation').length,
+      'shift-swap': p.filter((r) => r.type === 'shift-swap').length,
       total: p.length,
     };
   }, [pending]);
@@ -66,11 +76,6 @@ export function useApprovals() {
       next.delete(id);
       return next;
     });
-  }, []);
-
-  const escalate = useCallback(async (id: string, remarks?: string) => {
-    const updated = await ApprovalService.escalate(id, remarks);
-    setRequests((prev) => prev.map((r) => (r.id === id ? updated : r)));
   }, []);
 
   const bulkApprove = useCallback(
@@ -128,7 +133,6 @@ export function useApprovals() {
     selectedIds,
     approve,
     reject,
-    escalate,
     bulkApprove,
     bulkReject,
     addComment,

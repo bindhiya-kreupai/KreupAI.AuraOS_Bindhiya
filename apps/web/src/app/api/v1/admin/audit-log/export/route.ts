@@ -1,131 +1,129 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const startDate = searchParams.get('startDate') || '2026-01-01';
-  const endDate = searchParams.get('endDate') || '2026-01-23';
-  const format = searchParams.get('format') || 'json';
+export const dynamic = 'force-dynamic';
 
-  const auditLogExport = {
-    exportId: 'audit-export-' + Date.now(),
-    generatedAt: new Date().toISOString(),
-    dateRange: { startDate, endDate },
-    format,
-    totalEntries: 2847,
-    filters: {
-      startDate,
-      endDate,
-      actions: searchParams.get('actions')?.split(',') || ['all'],
-      users: searchParams.get('users')?.split(',') || ['all'],
-      modules: searchParams.get('modules')?.split(',') || ['all'],
-    },
-    summary: {
-      totalEvents: 2847,
-      byAction: [
-        { action: 'login', count: 1245 },
-        { action: 'data_view', count: 634 },
-        { action: 'data_update', count: 412 },
-        { action: 'data_create', count: 234 },
-        { action: 'data_delete', count: 45 },
-        { action: 'permission_change', count: 23 },
-        { action: 'settings_update', count: 67 },
-        { action: 'export', count: 89 },
-        { action: 'failed_login', count: 56 },
-        { action: 'password_reset', count: 42 },
-      ],
-      byModule: [
-        { module: 'Authentication', count: 1343 },
-        { module: 'Employee Management', count: 523 },
-        { module: 'Leave Management', count: 312 },
-        { module: 'Payroll', count: 245 },
-        { module: 'Admin Settings', count: 189 },
-        { module: 'Analytics', count: 156 },
-        { module: 'Learning', count: 79 },
-      ],
-      uniqueUsers: 456,
-      suspiciousActivities: 3,
-    },
-    entries: [
-      {
-        id: 'log-001',
-        timestamp: '2026-01-23T09:15:32Z',
-        userId: 'user-042',
-        userName: 'John Smith',
-        action: 'data_update',
-        module: 'Employee Management',
-        resource: 'employee/emp-156',
-        details: 'Updated salary field',
-        ipAddress: '192.168.1.45',
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-        status: 'success',
-        changes: { field: 'salary', before: '120000', after: '130000' },
-      },
-      {
-        id: 'log-002',
-        timestamp: '2026-01-23T09:12:18Z',
-        userId: 'user-089',
-        userName: 'Sarah Johnson',
-        action: 'login',
-        module: 'Authentication',
-        resource: 'auth/session',
-        details: 'Successful login via SSO',
-        ipAddress: '10.0.5.23',
-        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-        status: 'success',
-        changes: null,
-      },
-      {
-        id: 'log-003',
-        timestamp: '2026-01-23T08:45:01Z',
-        userId: 'unknown',
-        userName: null,
-        action: 'failed_login',
-        module: 'Authentication',
-        resource: 'auth/login',
-        details: 'Failed login attempt - invalid credentials',
-        ipAddress: '203.45.67.89',
-        userAgent: 'Mozilla/5.0 (Linux; Android 12)',
-        status: 'failed',
-        changes: null,
-        flagged: true,
-        flagReason: 'Multiple failed attempts from same IP',
-      },
-      {
-        id: 'log-004',
-        timestamp: '2026-01-23T08:30:00Z',
-        userId: 'admin-001',
-        userName: 'Admin User',
-        action: 'permission_change',
-        module: 'Admin Settings',
-        resource: 'permissions/role-004',
-        details: 'Updated Department Manager permissions',
-        ipAddress: '192.168.1.10',
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-        status: 'success',
-        changes: { role: 'Department Manager', added: ['analytics:export'], removed: [] },
-      },
-      {
-        id: 'log-005',
-        timestamp: '2026-01-23T08:15:45Z',
-        userId: 'user-156',
-        userName: 'Mike Chen',
-        action: 'export',
-        module: 'Analytics',
-        resource: 'reports/rpt-001',
-        details: 'Exported Monthly Headcount Summary report',
-        ipAddress: '10.0.3.78',
-        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-        status: 'success',
-        changes: null,
-      },
-    ],
-    downloadUrl: format !== 'json' ? `/api/v1/admin/audit-log/export/download?id=audit-export-001&format=${format}` : null,
-    retentionPolicy: {
-      currentRetention: '365 days',
-      oldestEntry: '2025-01-23T00:00:00Z',
-      complianceStandard: 'SOC2',
-    },
-  };
+/**
+ * GET /api/v1/admin/audit-log/export
+ * Export audit logs with filtering, aggregation, and summary
+ */
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user } = context;
+    const { searchParams } = new URL(request.url);
 
-  return NextResponse.json({ success: true, data: auditLogExport });
-}
+    const startDate = searchParams.get('startDate') || new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+    const endDate = searchParams.get('endDate') || new Date().toISOString().split('T')[0];
+    const format = searchParams.get('format') || 'json';
+    const actions = searchParams.get('actions')?.split(',').filter(Boolean);
+    const users = searchParams.get('users')?.split(',').filter(Boolean);
+    const modules = searchParams.get('modules')?.split(',').filter(Boolean);
+    const limit = Math.min(parseInt(searchParams.get('limit') || '500', 10), 5000);
+
+    const where: Record<string, unknown> = {
+      tenantId: user.tenantId,
+      isDeleted: false,
+      timestamp: {
+        gte: new Date(startDate),
+        lte: new Date(`${endDate}T23:59:59.999Z`),
+      },
+    };
+
+    if (actions?.length) where.action = { in: actions };
+    if (users?.length) where.userId = { in: users };
+    if (modules?.length) where.resourceType = { in: modules };
+
+    const [entries, totalEvents, actionAgg, resourceTypeAgg, uniqueUsersResult] = await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        orderBy: { timestamp: 'desc' },
+        take: limit,
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+        },
+      }),
+      prisma.auditLog.count({ where }),
+      prisma.auditLog.groupBy({
+        by: ['action'],
+        where,
+        _count: { id: true },
+        orderBy: { _count: { id: 'desc' } },
+      }),
+      prisma.auditLog.groupBy({
+        by: ['resourceType'],
+        where,
+        _count: { id: true },
+        orderBy: { _count: { id: 'desc' } },
+      }),
+      prisma.auditLog.groupBy({
+        by: ['userId'],
+        where: { ...where, userId: { not: null } },
+      }),
+    ]);
+
+    const byAction = actionAgg.map(a => ({ action: a.action, count: a._count.id }));
+    const byModule = resourceTypeAgg
+      .filter(r => r.resourceType)
+      .map(r => ({ module: r.resourceType, count: r._count.id }));
+
+    const suspiciousActivities = entries.filter(e => !e.success).length;
+
+    const formattedEntries = entries.map(e => ({
+      id: e.id,
+      timestamp: e.timestamp.toISOString(),
+      userId: e.userId,
+      userName: (e.user as any)?.name || null,
+      action: e.action,
+      module: e.resourceType || e.module,
+      resource: e.resourceId ? `${e.resourceType}/${e.resourceId}` : e.resourceType,
+      details: e.details || null,
+      ipAddress: e.ipAddress,
+      userAgent: e.userAgent,
+      status: e.success ? 'success' : 'failed',
+      changes: e.beforeValues || e.afterValues
+        ? { before: e.beforeValues, after: e.afterValues }
+        : null,
+    }));
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        exportId: `audit-export-${Date.now()}`,
+        generatedAt: new Date().toISOString(),
+        dateRange: { startDate, endDate },
+        format,
+        totalEntries: totalEvents,
+        filters: {
+          startDate,
+          endDate,
+          actions: actions || ['all'],
+          users: users || ['all'],
+          modules: modules || ['all'],
+        },
+        summary: {
+          totalEvents,
+          byAction,
+          byModule,
+          uniqueUsers: uniqueUsersResult.length,
+          suspiciousActivities,
+        },
+        entries: formattedEntries,
+        downloadUrl: format !== 'json'
+          ? `/api/v1/admin/audit-log/export/download?format=${format}&startDate=${startDate}&endDate=${endDate}`
+          : null,
+        retentionPolicy: {
+          currentRetention: '365 days',
+          complianceStandard: 'SOC2',
+        },
+      },
+    });
+  } catch (error) {
+    console.error('[Audit Log Export] Error:', error);
+    return NextResponse.json(
+      { success: false, error: { code: 'E5001', message: 'Failed to export audit logs' } },
+      { status: 500 }
+    );
+  }
+});

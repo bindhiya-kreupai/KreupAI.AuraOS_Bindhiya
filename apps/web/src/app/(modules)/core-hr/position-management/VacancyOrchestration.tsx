@@ -10,7 +10,7 @@ import {
     ChevronRight,
     TrendingUp
 } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 
 const ACTIVE_VACANCIES = [
     { id: 'VC-882', title: 'VP of Engineering', dept: 'Technology', entity: 'Aura Dubai', status: 'In Approval (Finance)', urgency: 'High' },

@@ -1,9 +1,20 @@
 /**
- * @api POST /api/v1/payroll/direct-deposit/verify
- * @description Verify bank account for direct deposit using Plaid integration
+ * POST /api/v1/payroll/direct-deposit/verify
+ * Verify bank account for direct deposit
+ *
+ * Supports:
+ * - Micro-deposit verification (submit amounts to verify)
+ * - Instant verification via Plaid public token exchange
+ * - Initiate micro-deposit flow
+ * - Generate Plaid Link token
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
+import { prisma } from '@aura/database';
 
 interface PlaidVerificationResult {
   id: string;
@@ -26,65 +37,96 @@ interface PlaidLinkRequest {
   employeeId: string;
   verificationMethod?: 'instant' | 'micro_deposit';
   microDepositAmounts?: [number, number];
+  bankName?: string;
+  accountType?: 'checking' | 'savings';
+  accountNumberLast4?: string;
+  routingNumber?: string;
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
+    const { user } = context;
     const body: PlaidLinkRequest = await request.json();
-    const { publicToken, accountId, employeeId, verificationMethod, microDepositAmounts } = body;
+    const { publicToken, employeeId, verificationMethod, microDepositAmounts } = body;
 
     if (!employeeId) {
       return NextResponse.json(
-        { error: 'Bad Request', message: 'employeeId is required' },
+        { success: false, error: { code: 'E2001', message: 'employeeId is required' } },
         { status: 400 }
       );
     }
+
+    // Verify employee belongs to tenant
+    const employee = await prisma.employee.findFirst({
+      where: { id: employeeId, tenantId: user.tenantId },
+      select: { id: true },
+    });
+
+    if (!employee) {
+      return NextResponse.json(
+        { success: false, error: { code: 'E4001', message: 'Employee not found' } },
+        { status: 404 }
+      );
+    }
+
+    // Get existing bank details from compliance
+    const compliance = await prisma.employeeComplianceDetails.findFirst({
+      where: { employeeId, tenantId: user.tenantId },
+      select: { bankName: true, bankAccountNumber: true, bankIBAN: true },
+    });
+
+    const bankName = compliance?.bankName || body.bankName || 'Unknown Bank';
+    const accountLast4 = compliance?.bankAccountNumber
+      ? compliance.bankAccountNumber.slice(-4)
+      : (body.accountNumberLast4 || '****');
 
     // Case 1: Verify micro-deposit amounts
     if (microDepositAmounts) {
       if (!Array.isArray(microDepositAmounts) || microDepositAmounts.length !== 2) {
         return NextResponse.json(
-          { error: 'Validation Error', message: 'microDepositAmounts must be an array of exactly 2 amounts' },
+          { success: false, error: { code: 'E2001', message: 'microDepositAmounts must be an array of exactly 2 amounts' } },
           { status: 422 }
         );
       }
 
-      // Simulate micro-deposit verification
-      const correctAmounts = [0.12, 0.34]; // Mock expected amounts
-      const isCorrect = microDepositAmounts[0] === correctAmounts[0] && microDepositAmounts[1] === correctAmounts[1];
+      // In production: validate amounts against stored micro-deposit values from Plaid/ACH processor
+      // For now, simulate verification (amounts would be stored in a VerificationAttempt table)
+      const isCorrect = microDepositAmounts[0] > 0 && microDepositAmounts[1] > 0
+        && microDepositAmounts[0] < 1 && microDepositAmounts[1] < 1;
 
       const result: PlaidVerificationResult = {
-        id: 'dd-verify-' + Date.now().toString(36),
+        id: crypto.randomUUID(),
         employeeId,
         status: isCorrect ? 'verified' : 'failed',
-        bankName: 'Chase Bank',
-        accountType: 'checking',
-        accountNumberLast4: '4567',
-        routingNumber: '021000021',
+        bankName,
+        accountType: body.accountType || 'checking',
+        accountNumberLast4: accountLast4,
+        routingNumber: body.routingNumber || '000000000',
         verificationMethod: 'micro_deposit',
         verifiedAt: isCorrect ? new Date().toISOString() : null,
         expiresAt: null,
         error: isCorrect ? undefined : 'Micro-deposit amounts do not match',
       };
 
-      return NextResponse.json({ data: result }, { status: isCorrect ? 200 : 422 });
+      return NextResponse.json(
+        { success: isCorrect, data: result },
+        { status: isCorrect ? 200 : 422 }
+      );
     }
 
     // Case 2: Instant verification via Plaid public token exchange
     if (publicToken) {
       // In production: exchange public_token for access_token via Plaid API
       // const response = await plaidClient.itemPublicTokenExchange({ public_token: publicToken });
-      // const accessToken = response.data.access_token;
-      // const authResponse = await plaidClient.authGet({ access_token: accessToken });
 
       const result: PlaidVerificationResult = {
-        id: 'dd-verify-' + Date.now().toString(36),
+        id: crypto.randomUUID(),
         employeeId,
         status: 'verified',
-        bankName: 'Chase Bank',
-        accountType: 'checking',
-        accountNumberLast4: '4567',
-        routingNumber: '021000021',
+        bankName,
+        accountType: body.accountType || 'checking',
+        accountNumberLast4: accountLast4,
+        routingNumber: body.routingNumber || '000000000',
         verificationMethod: 'instant',
         verifiedAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
@@ -92,30 +134,31 @@ export async function POST(request: NextRequest) {
       };
 
       return NextResponse.json({
+        success: true,
         data: result,
         message: 'Bank account verified successfully via Plaid instant verification.',
-      }, { status: 200 });
+      });
     }
 
     // Case 3: Initiate micro-deposit verification
     if (verificationMethod === 'micro_deposit') {
-      // In production: initiate micro-deposits via Plaid or direct ACH
       const result: PlaidVerificationResult = {
-        id: 'dd-verify-' + Date.now().toString(36),
+        id: crypto.randomUUID(),
         employeeId,
         status: 'pending_micro_deposits',
-        bankName: body.bankName || 'Unknown Bank',
-        accountType: (body as any).accountType || 'checking',
-        accountNumberLast4: (body as any).accountNumberLast4 || '****',
-        routingNumber: (body as any).routingNumber || '000000000',
+        bankName,
+        accountType: body.accountType || 'checking',
+        accountNumberLast4: accountLast4,
+        routingNumber: body.routingNumber || '000000000',
         verificationMethod: 'micro_deposit',
         verifiedAt: null,
         expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
       };
 
       return NextResponse.json({
+        success: true,
         data: result,
-        message: 'Micro-deposits initiated. Two small deposits will appear in your account within 1-3 business days. Please verify the amounts to complete verification.',
+        message: 'Micro-deposits initiated. Two small deposits will appear in your account within 1-3 business days.',
         nextStep: 'POST /api/v1/payroll/direct-deposit/verify with microDepositAmounts',
       }, { status: 202 });
     }
@@ -125,6 +168,7 @@ export async function POST(request: NextRequest) {
     const linkToken = 'link-sandbox-' + Date.now().toString(36);
 
     return NextResponse.json({
+      success: true,
       data: {
         linkToken,
         expiration: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
@@ -132,10 +176,15 @@ export async function POST(request: NextRequest) {
       },
       message: 'Use this link token with Plaid Link to verify your bank account.',
     });
-  } catch {
+  } catch (error) {
+    console.error('[Direct Deposit Verify API] POST Error:', error);
     return NextResponse.json(
-      { error: 'Invalid request body' },
-      { status: 400 }
+      { success: false, error: { code: 'E5001', message: 'Failed to verify bank account' } },
+      { status: 500 }
     );
   }
-}
+}), {
+  action: AuditAction.EMPLOYEE_UPDATED,
+  resourceType: 'direct_deposit',
+  captureRequestBody: true,
+});

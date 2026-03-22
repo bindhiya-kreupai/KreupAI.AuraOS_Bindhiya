@@ -28,6 +28,7 @@ import {
 } from './types';
 import type { SupportedCountryCode } from '../compliance/types';
 import { LabourLawService } from '../compliance/labour-law.service';
+import { prisma } from '@aura/database';
 
 // ============================================================================
 // ATTENDANCE SERVICE
@@ -733,25 +734,77 @@ export class AttendanceService {
   }
 
   // ============================================================================
-  // DATABASE OPERATIONS (Stubs)
+  // DATABASE OPERATIONS
   // ============================================================================
 
   private static async getActiveEmployees(
     tenantId: string,
     employeeIds?: string[]
   ): Promise<EmployeeData[]> {
-    return [];
+    const employees = await prisma.employee.findMany({
+      where: {
+        isDeleted: false,
+        company: { tenantId },
+        ...(employeeIds?.length ? { id: { in: employeeIds } } : {}),
+      },
+      include: {
+        company: true,
+        department: true,
+        location: {
+          include: { address: { include: { country: true } } },
+        },
+      },
+    });
+
+    return employees.map(e => ({
+      id: e.id,
+      name: `${e.firstName} ${e.lastName}`,
+      code: e.employeeCode,
+      department: (e as any).department?.name || '',
+      tenantId: (e as any).company?.tenantId || tenantId,
+      countryCode: ((e as any).location?.address?.country?.isoCode || 'AE') as SupportedCountryCode,
+      locationId: e.locationId,
+    }));
   }
 
   private static async getHolidays(tenantId: string, date: string): Promise<Holiday[]> {
-    return [];
+    const rows = await prisma.holiday.findMany({
+      where: { date, status: 'Active' },
+    });
+
+    return rows.map(h => ({
+      date: h.date,
+      name: h.name,
+    }));
   }
 
   private static async getApprovedLeaves(
     tenantId: string,
     date: string
   ): Promise<LeaveRecord[]> {
-    return [];
+    const targetDate = new Date(date);
+    const rows = await prisma.leaveRequest.findMany({
+      where: {
+        tenantId,
+        status: 'APPROVED',
+        isDeleted: false,
+        startDate: { lte: targetDate },
+        endDate: { gte: targetDate },
+      },
+      select: {
+        employeeId: true,
+        leaveTypeId: true,
+        startDate: true,
+        endDate: true,
+      },
+    });
+
+    return rows.map(r => ({
+      employeeId: r.employeeId,
+      leaveType: r.leaveTypeId,
+      startDate: r.startDate.toISOString().substring(0, 10),
+      endDate: r.endDate.toISOString().substring(0, 10),
+    }));
   }
 
   private static async getEmployeeShift(
@@ -759,6 +812,88 @@ export class AttendanceService {
     date: string,
     countryCode: SupportedCountryCode
   ): Promise<ShiftType | null> {
+    const targetDate = new Date(date);
+
+    // Check roster first (takes priority over assignment)
+    const roster = await prisma.shiftRoster.findFirst({
+      where: {
+        employeeId,
+        rosterDate: targetDate,
+        status: 'SCHEDULED',
+      },
+      include: { shift: true },
+    });
+
+    if (roster) {
+      const s = roster.shift;
+      return {
+        id: s.id,
+        name: s.name,
+        startTime: roster.customStartTime || s.startTime,
+        endTime: roster.customEndTime || s.endTime,
+        graceMinutesIn: s.graceInMinutes,
+        graceMinutesOut: s.graceOutMinutes,
+        workingHours: s.workHours,
+        minHoursForFullDay: s.workHours * 0.75,
+        minHoursForHalfDay: s.workHours * 0.4,
+        overtimeAfterMinutes: 30,
+        minOvertimeMinutes: 15,
+      };
+    }
+
+    // Fall back to active shift assignment
+    const assignment = await prisma.shiftAssignment.findFirst({
+      where: {
+        employeeId,
+        isActive: true,
+        effectiveFrom: { lte: targetDate },
+        OR: [
+          { effectiveTo: null },
+          { effectiveTo: { gte: targetDate } },
+        ],
+      },
+      include: { shift: true },
+      orderBy: { effectiveFrom: 'desc' },
+    });
+
+    if (assignment) {
+      const s = assignment.shift;
+      return {
+        id: s.id,
+        name: s.name,
+        startTime: s.startTime,
+        endTime: s.endTime,
+        graceMinutesIn: s.graceInMinutes,
+        graceMinutesOut: s.graceOutMinutes,
+        workingHours: s.workHours,
+        minHoursForFullDay: s.workHours * 0.75,
+        minHoursForHalfDay: s.workHours * 0.4,
+        overtimeAfterMinutes: 30,
+        minOvertimeMinutes: 15,
+      };
+    }
+
+    // Fall back to default shift
+    const defaultShift = await prisma.shift.findFirst({
+      where: { isDefault: true, isActive: true },
+    });
+
+    if (defaultShift) {
+      return {
+        id: defaultShift.id,
+        name: defaultShift.name,
+        startTime: defaultShift.startTime,
+        endTime: defaultShift.endTime,
+        graceMinutesIn: defaultShift.graceInMinutes,
+        graceMinutesOut: defaultShift.graceOutMinutes,
+        workingHours: defaultShift.workHours,
+        minHoursForFullDay: defaultShift.workHours * 0.75,
+        minHoursForHalfDay: defaultShift.workHours * 0.4,
+        overtimeAfterMinutes: 30,
+        minOvertimeMinutes: 15,
+      };
+    }
+
     return null;
   }
 
@@ -766,15 +901,130 @@ export class AttendanceService {
     employeeId: string,
     date: string
   ): Promise<AttendancePunch[]> {
-    return [];
+    const targetDate = new Date(date);
+    const nextDate = new Date(targetDate);
+    nextDate.setDate(nextDate.getDate() + 1);
+
+    const rows = await prisma.attendancePunch.findMany({
+      where: {
+        employeeId,
+        isDeleted: false,
+        punchDate: {
+          gte: targetDate,
+          lt: nextDate,
+        },
+      },
+      orderBy: { punchTime: 'asc' },
+    });
+
+    return rows.map(p => {
+      const timeStr = p.punchTime.toTimeString().substring(0, 8);
+      const typeMap: Record<string, PunchType> = {
+        CLOCK_IN: 'CHECK_IN',
+        CLOCK_OUT: 'CHECK_OUT',
+        BREAK_START: 'BREAK_START',
+        BREAK_END: 'BREAK_END',
+      };
+      return {
+        id: p.id,
+        type: (typeMap[p.punchType] || 'CHECK_IN') as PunchType,
+        time: timeStr,
+        timestamp: p.punchTime,
+        source: (p.device || 'WEB') as PunchSource,
+        latitude: undefined,
+        longitude: undefined,
+        locationName: p.location || undefined,
+        isWithinGeofence: true,
+        deviceId: p.device || undefined,
+        photoUrl: p.photo || undefined,
+        isValid: true,
+      };
+    });
   }
 
-  private static async saveAttendanceRecord(record: AttendanceRecord): Promise<void> {}
+  private static async saveAttendanceRecord(record: AttendanceRecord): Promise<void> {
+    const dateObj = new Date(record.date);
+    await prisma.attendanceRecord.upsert({
+      where: {
+        tenantId_employeeId_date: {
+          tenantId: record.tenantId,
+          employeeId: record.employeeId,
+          date: dateObj,
+        },
+      },
+      create: {
+        tenantId: record.tenantId,
+        employeeId: record.employeeId,
+        date: dateObj,
+        shiftId: record.shiftId,
+        clockIn: record.firstCheckIn ? new Date(`${record.date}T${record.firstCheckIn}`) : null,
+        clockOut: record.lastCheckOut ? new Date(`${record.date}T${record.lastCheckOut}`) : null,
+        workHours: record.effectiveWorkedMinutes / 60,
+        breakHours: record.totalBreakMinutes / 60,
+        overtimeHours: record.overtimeMinutes / 60,
+        status: record.status,
+        isLate: record.isLate,
+        isEarlyOut: record.isEarlyOut,
+      },
+      update: {
+        shiftId: record.shiftId,
+        clockIn: record.firstCheckIn ? new Date(`${record.date}T${record.firstCheckIn}`) : null,
+        clockOut: record.lastCheckOut ? new Date(`${record.date}T${record.lastCheckOut}`) : null,
+        workHours: record.effectiveWorkedMinutes / 60,
+        breakHours: record.totalBreakMinutes / 60,
+        overtimeHours: record.overtimeMinutes / 60,
+        status: record.status,
+        isLate: record.isLate,
+        isEarlyOut: record.isEarlyOut,
+      },
+    });
+  }
 
-  private static async savePunch(employeeId: string, punch: AttendancePunch): Promise<void> {}
+  private static async savePunch(employeeId: string, punch: AttendancePunch): Promise<void> {
+    const punchTypeMap: Record<string, string> = {
+      CHECK_IN: 'CLOCK_IN',
+      CHECK_OUT: 'CLOCK_OUT',
+      BREAK_START: 'BREAK_START',
+      BREAK_END: 'BREAK_END',
+    };
+
+    await prisma.attendancePunch.create({
+      data: {
+        tenantId: '', // Set by caller context
+        employeeId,
+        punchDate: new Date(punch.timestamp.toISOString().substring(0, 10)),
+        punchTime: punch.timestamp,
+        punchType: punchTypeMap[punch.type] || 'CLOCK_IN',
+        location: punch.locationName || null,
+        device: punch.source || 'Web',
+        photo: punch.photoUrl || null,
+      },
+    });
+  }
 
   private static async getEmployeeLocations(employeeId: string): Promise<WorkLocation[]> {
-    return [];
+    // Get employee's tenant to find geofence locations
+    const employee = await prisma.employee.findFirst({
+      where: { id: employeeId, isDeleted: false },
+      include: { company: true },
+    });
+    if (!employee) return [];
+
+    const locations = await prisma.geofenceLocation.findMany({
+      where: {
+        tenantId: (employee as any).company?.tenantId,
+        isActive: true,
+      },
+    });
+
+    return locations.map(l => ({
+      name: l.name,
+      nameAr: l.name,
+      latitude: l.latitude,
+      longitude: l.longitude,
+      radiusMeters: l.radius,
+      allowRemotePunch: false,
+    }));
   }
 
   private static async createHolidayRecord(
@@ -782,45 +1032,266 @@ export class AttendanceService {
     employeeId: string,
     date: string,
     holidays: Holiday[]
-  ): Promise<void> {}
+  ): Promise<void> {
+    const dateObj = new Date(date);
+    const holiday = holidays.find(h => h.date === date);
+    await prisma.attendanceRecord.upsert({
+      where: {
+        tenantId_employeeId_date: { tenantId, employeeId, date: dateObj },
+      },
+      create: {
+        tenantId,
+        employeeId,
+        date: dateObj,
+        status: 'HOLIDAY',
+        remarks: holiday?.name || 'Holiday',
+      },
+      update: {
+        status: 'HOLIDAY',
+        remarks: holiday?.name || 'Holiday',
+      },
+    });
+  }
 
   private static async createWeekendRecord(
     tenantId: string,
     employeeId: string,
     date: string
-  ): Promise<void> {}
+  ): Promise<void> {
+    const dateObj = new Date(date);
+    await prisma.attendanceRecord.upsert({
+      where: {
+        tenantId_employeeId_date: { tenantId, employeeId, date: dateObj },
+      },
+      create: {
+        tenantId,
+        employeeId,
+        date: dateObj,
+        status: 'WEEK_OFF',
+        remarks: 'Weekend',
+      },
+      update: {
+        status: 'WEEK_OFF',
+        remarks: 'Weekend',
+      },
+    });
+  }
 
   private static async createLeaveRecord(
     tenantId: string,
     employeeId: string,
     date: string,
     leave: LeaveRecord
-  ): Promise<void> {}
+  ): Promise<void> {
+    const dateObj = new Date(date);
+    await prisma.attendanceRecord.upsert({
+      where: {
+        tenantId_employeeId_date: { tenantId, employeeId, date: dateObj },
+      },
+      create: {
+        tenantId,
+        employeeId,
+        date: dateObj,
+        status: 'ON_LEAVE',
+        remarks: `Leave: ${leave.leaveType}`,
+      },
+      update: {
+        status: 'ON_LEAVE',
+        remarks: `Leave: ${leave.leaveType}`,
+      },
+    });
+  }
 
   private static async getAttendanceRecords(
     employeeId: string,
     month: string
   ): Promise<AttendanceRecord[]> {
-    return [];
+    const [year, monthNum] = month.split('-').map(Number);
+    const startDate = new Date(year, monthNum - 1, 1);
+    const endDate = new Date(year, monthNum, 0, 23, 59, 59);
+
+    const rows = await prisma.attendanceRecord.findMany({
+      where: {
+        employeeId,
+        isDeleted: false,
+        date: { gte: startDate, lte: endDate },
+      },
+      orderBy: { date: 'asc' },
+    });
+
+    return rows.map(r => ({
+      id: r.id,
+      tenantId: r.tenantId,
+      employeeId: r.employeeId,
+      employeeName: '',
+      employeeCode: '',
+      department: '',
+      date: r.date.toISOString().substring(0, 10),
+      shiftId: r.shiftId || '',
+      shiftName: '',
+      scheduledIn: r.shiftStartTime?.toTimeString().substring(0, 8) || '',
+      scheduledOut: r.shiftEndTime?.toTimeString().substring(0, 8) || '',
+      punches: [],
+      firstCheckIn: r.clockIn?.toTimeString().substring(0, 8),
+      lastCheckOut: r.clockOut?.toTimeString().substring(0, 8),
+      totalWorkedMinutes: (r.workHours + r.breakHours) * 60,
+      totalBreakMinutes: r.breakHours * 60,
+      effectiveWorkedMinutes: r.workHours * 60,
+      overtimeMinutes: r.overtimeHours * 60,
+      status: r.status as AttendanceStatus,
+      isLate: r.isLate,
+      isEarlyOut: r.isEarlyOut,
+      lateMinutes: 0,
+      earlyOutMinutes: 0,
+      isRemote: false,
+      isRegularized: r.isRegularized,
+      remarks: r.remarks || undefined,
+      leaveType: r.status === 'ON_LEAVE' ? r.remarks?.replace('Leave: ', '') : undefined,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+    }));
   }
 
   private static async getEmployee(employeeId: string): Promise<EmployeeData | null> {
-    return null;
+    const employee = await prisma.employee.findFirst({
+      where: { id: employeeId, isDeleted: false },
+      include: {
+        company: true,
+        department: true,
+        location: {
+          include: { address: { include: { country: true } } },
+        },
+      },
+    });
+    if (!employee) return null;
+
+    return {
+      id: employee.id,
+      name: `${employee.firstName} ${employee.lastName}`,
+      code: employee.employeeCode,
+      department: (employee as any).department?.name || '',
+      tenantId: (employee as any).company?.tenantId || '',
+      countryCode: ((employee as any).location?.address?.country?.isoCode || 'AE') as SupportedCountryCode,
+      locationId: employee.locationId,
+    };
   }
 
   private static async getRegularizationApprovers(
     employeeId: string
   ): Promise<{ id: string; name: string }[]> {
-    return [];
+    const employee = await prisma.employee.findFirst({
+      where: { id: employeeId, isDeleted: false },
+      include: {
+        manager: true,
+      },
+    });
+
+    if (!employee || !employee.managerId) return [];
+
+    const manager = (employee as any).manager;
+    if (!manager) return [];
+
+    return [{
+      id: manager.id,
+      name: `${manager.firstName} ${manager.lastName}`,
+    }];
   }
 
-  private static async saveRegularization(request: RegularizationRequest): Promise<void> {}
+  private static async saveRegularization(request: RegularizationRequest): Promise<void> {
+    const existing = await prisma.attendanceRegularization.findUnique({
+      where: { id: request.id },
+    });
+
+    if (existing) {
+      await prisma.attendanceRegularization.update({
+        where: { id: request.id },
+        data: {
+          status: request.status,
+          approvedBy: request.approvers.find(a => a.action)?.approverId || null,
+          approvedAt: request.approvers.find(a => a.action === 'APPROVED')?.actionAt || null,
+          rejectionReason: request.approvers.find(a => a.action === 'REJECTED')?.comments || null,
+        },
+      });
+    } else {
+      await prisma.attendanceRegularization.create({
+        data: {
+          id: request.id,
+          tenantId: request.tenantId || '',
+          employeeId: request.employeeId,
+          date: new Date(request.date),
+          regularizationType: request.type || 'MISSED_PUNCH',
+          requestedClockIn: request.correctedCheckIn ? new Date(`${request.date}T${request.correctedCheckIn}`) : null,
+          requestedClockOut: request.correctedCheckOut ? new Date(`${request.date}T${request.correctedCheckOut}`) : null,
+          reason: request.reason,
+          status: request.status,
+        },
+      });
+    }
+  }
 
   private static async getRegularization(id: string): Promise<RegularizationRequest | null> {
-    return null;
+    const row = await prisma.attendanceRegularization.findUnique({
+      where: { id },
+    });
+    if (!row) return null;
+
+    return {
+      id: row.id,
+      tenantId: row.tenantId,
+      employeeId: row.employeeId,
+      date: row.date.toISOString().substring(0, 10),
+      type: row.regularizationType,
+      correctedCheckIn: row.requestedClockIn?.toTimeString().substring(0, 8),
+      correctedCheckOut: row.requestedClockOut?.toTimeString().substring(0, 8),
+      reason: row.reason,
+      status: row.status as 'PENDING' | 'APPROVED' | 'REJECTED',
+      approvers: row.approvedBy ? [{
+        level: 1,
+        approverId: row.approvedBy,
+        approverName: '',
+        action: row.status === 'APPROVED' ? 'APPROVED' : row.status === 'REJECTED' ? 'REJECTED' : undefined,
+        comments: row.rejectionReason || undefined,
+        actionAt: row.approvedAt || undefined,
+      }] : [],
+      currentApproverLevel: 1,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
   }
 
-  private static async applyRegularization(request: RegularizationRequest): Promise<void> {}
+  private static async applyRegularization(request: RegularizationRequest): Promise<void> {
+    const dateObj = new Date(request.date);
+
+    const updateData: Record<string, any> = {
+      isRegularized: true,
+      regularizationId: request.id,
+    };
+
+    if (request.correctedCheckIn) {
+      updateData.clockIn = new Date(`${request.date}T${request.correctedCheckIn}`);
+    }
+    if (request.correctedCheckOut) {
+      updateData.clockOut = new Date(`${request.date}T${request.correctedCheckOut}`);
+    }
+
+    // Recalculate work hours if both times available
+    if (updateData.clockIn && updateData.clockOut) {
+      const diffMs = updateData.clockOut.getTime() - updateData.clockIn.getTime();
+      updateData.workHours = diffMs / (1000 * 60 * 60);
+      updateData.status = 'PRESENT';
+      updateData.isLate = false;
+      updateData.isEarlyOut = false;
+    }
+
+    await prisma.attendanceRecord.updateMany({
+      where: {
+        employeeId: request.employeeId,
+        date: dateObj,
+        isDeleted: false,
+      },
+      data: updateData,
+    });
+  }
 }
 
 // ============================================================================

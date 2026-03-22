@@ -24,14 +24,7 @@ export interface MetricConfig {
   unit?: string;
 }
 
-export interface AlertRule {
-  name: string;
-  metric: string;
-  condition: string;
-  threshold: number;
-  severity: 'critical' | 'warning' | 'info';
-  recipients: string[];
-}
+import type { AlertRule } from '../alerts/alert-types';
 
 /**
  * Get APM configuration from environment
@@ -125,52 +118,58 @@ export const BUSINESS_METRICS: MetricConfig[] = [
  */
 export const ALERT_RULES: AlertRule[] = [
   {
+    id: 'api-error-rate',
     name: 'High API Error Rate',
     metric: 'aura.api.error.rate',
     condition: '>',
     threshold: 1.0,
     severity: 'critical',
-    recipients: ['platform-oncall@kreupai.com'],
+    channels: ['email'],
   },
   {
+    id: 'api-latency-p95',
     name: 'High API Latency (P95)',
     metric: 'aura.api.latency.p95',
     condition: '>',
     threshold: 500,
     severity: 'warning',
-    recipients: ['platform-team@kreupai.com'],
+    channels: ['slack'],
   },
   {
+    id: 'db-pool-exhaustion',
     name: 'Database Connection Pool Exhaustion',
     metric: 'aura.db.connections.used',
     condition: '>',
     threshold: 80,
     severity: 'critical',
-    recipients: ['platform-oncall@kreupai.com'],
+    channels: ['pagerduty', 'email'],
   },
   {
+    id: 'cache-hit-rate-low',
     name: 'Low Cache Hit Rate',
     metric: 'aura.cache.hit.rate',
     condition: '<',
     threshold: 70,
     severity: 'warning',
-    recipients: ['platform-team@kreupai.com'],
+    channels: ['slack'],
   },
   {
+    id: 'queue-backlog',
     name: 'Queue Backlog',
     metric: 'aura.queue.messages.pending',
     condition: '>',
     threshold: 1000,
     severity: 'warning',
-    recipients: ['platform-team@kreupai.com'],
+    channels: ['slack'],
   },
   {
+    id: 'memory-high',
     name: 'Memory Usage High',
     metric: 'aura.system.memory.usage',
     condition: '>',
     threshold: 85,
     severity: 'critical',
-    recipients: ['platform-oncall@kreupai.com'],
+    channels: ['pagerduty', 'email'],
   },
 ];
 

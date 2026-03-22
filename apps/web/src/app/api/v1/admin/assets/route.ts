@@ -1,7 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-// Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
+// Tenant isolation is enforced via tenantId extracted from auth context
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -95,9 +96,10 @@ const mockAssets = [
   },
 ];
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    // Simulated tenant isolation: tenantId would come from validated JWT
+    const { user } = context;
+    const tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category') || undefined;
     const status = searchParams.get('status') || undefined;
@@ -151,10 +153,12 @@ export async function GET(request: NextRequest) {
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
+    const { user } = context;
+    const tenantId = user.tenantId;
     const body = await request.json();
     const { name, category, serialNumber, purchaseDate, value } = body;
 
@@ -201,7 +205,7 @@ export async function POST(request: NextRequest) {
 
     const newAsset = {
       id: `asset-${crypto.randomUUID().slice(0, 8)}`,
-      tenantId: 'tenant-1', // from auth context in production
+      tenantId,
       name,
       category: category.toUpperCase(),
       serialNumber,
@@ -250,4 +254,4 @@ export async function POST(request: NextRequest) {
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});

@@ -144,8 +144,9 @@ export class RabbitMQEventBus {
 
       this.connection = await amqp.connect(this.options.url);
 
-      this.connection!.on('error', (err: Error) => {
-        console.error('[RabbitMQEventBus] Connection error:', err.message);
+      this.connection!.on('error', (...args: unknown[]) => {
+        const err = args[0] as Error;
+        console.error('[RabbitMQEventBus] Connection error:', err?.message);
         this.scheduleReconnect();
       });
 

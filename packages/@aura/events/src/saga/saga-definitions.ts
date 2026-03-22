@@ -19,6 +19,7 @@ import { SagaStep, SagaOrchestrator, getSagaOrchestrator } from './saga-orchestr
 // ---------------------------------------------------------------------------
 
 export interface EmployeeOnboardingContext {
+  [key: string]: unknown;
   tenantId: string;
   employeeId: string;
   employeeName: string;
@@ -35,6 +36,7 @@ export interface EmployeeOnboardingContext {
 }
 
 export interface PayrollRunContext {
+  [key: string]: unknown;
   tenantId: string;
   payrollRunId: string;
   month: number;
@@ -49,6 +51,7 @@ export interface PayrollRunContext {
 }
 
 export interface EmployeeTerminationContext {
+  [key: string]: unknown;
   tenantId: string;
   employeeId: string;
   employeeName: string;

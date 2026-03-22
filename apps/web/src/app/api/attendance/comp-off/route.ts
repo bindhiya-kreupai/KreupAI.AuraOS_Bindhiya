@@ -7,7 +7,7 @@ import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
 const CompOffSchema = z.object({
-  employeeId: z.string(),
+  employeeId: z.string().optional(),
   workDate: z.string(),
   workHours: z.number(),
   reason: z.string().min(1),
@@ -23,7 +23,11 @@ export const GET = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const { searchParams } = new URL(request.url);
-      const employeeId = searchParams.get('employeeId') || user.userId;
+      const requestedEmployeeId = searchParams.get('employeeId');
+      const employeeId =
+        !requestedEmployeeId || ['current-user', 'current-user-id'].includes(requestedEmployeeId)
+          ? user.employeeId || user.userId
+          : requestedEmployeeId;
       const status = searchParams.get('status');
 
       const mockCompOffs = [
@@ -108,7 +112,18 @@ export const POST = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const body = await request.json();
-      const data = CompOffSchema.parse(body);
+      const data = CompOffSchema.parse({
+        employeeId: body.employeeId,
+        workDate: body.workDate || body.date,
+        workHours: body.workHours || body.hours,
+        reason: body.reason,
+        approvedBy: body.approvedBy,
+        expiryDate: body.expiryDate,
+      });
+      const employeeId =
+        !data.employeeId || ['current-user', 'current-user-id'].includes(data.employeeId)
+          ? user.employeeId || user.userId
+          : data.employeeId;
 
       // Calculate expiry (90 days from approval)
       const expiryDate = new Date();
@@ -117,6 +132,7 @@ export const POST = withEnhancedAuth(
       const newCompOff = {
         id: Math.random().toString(36).substr(2, 9),
         ...data,
+        employeeId,
         status: 'PENDING',
         requestedAt: new Date().toISOString(),
         expiryDate: data.expiryDate || expiryDate.toISOString().split('T')[0],

@@ -790,19 +790,17 @@ async function handleReportGeneration(): Promise<void> {
 
 // ── Job definitions ───────────────────────────────────────────────────────────
 
-/**
- * All enterprise HCM cron jobs with real DB-wired handlers.
- *
- * Cron expressions (5-field: minute hour dom month dow):
- *   "0 9 1 * *"    — 09:00 on the 1st of every month
- *   "0 0 1 * *"    — midnight on the 1st of every month
- *   "*/15 * * * *" — every 15 minutes
- *   "0 6 * * 1"    — every Monday at 06:00
- *   "0 2 * * *"    — every day at 02:00
- *   "0 3 * * *"    — every day at 03:00
- *   "0 8 * * *"    — every day at 08:00
- *   "0 9 * * *"    — every day at 09:00
- */
+// All enterprise HCM cron jobs with real DB-wired handlers.
+//
+// Cron expressions (5-field: minute hour dom month dow):
+//   "0 9 1 * *"      09:00 on the 1st of every month
+//   "0 0 1 * *"      midnight on the 1st of every month
+//   every-15-min     every 15 minutes
+//   "0 6 * * 1"      every Monday at 06:00
+//   "0 2 * * *"      every day at 02:00
+//   "0 3 * * *"      every day at 03:00
+//   "0 8 * * *"      every day at 08:00
+//   "0 9 * * *"      every day at 09:00
 export const CRON_JOBS: ScheduledJob[] = [
   {
     name:           'payroll-reminder',

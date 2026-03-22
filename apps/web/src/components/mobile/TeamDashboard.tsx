@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Users,
   UserCheck,
@@ -53,113 +53,9 @@ interface SpecialEvent {
   avatarColor: string;
 }
 
-// ── Mock Data ──────────────────────────────────────────────────────────────────
+// ── Constants ─────────────────────────────────────────────────────────────────
 
-const MOCK_TEAM: TeamMember[] = [
-  {
-    id: 'emp-001',
-    name: 'Jane Doe',
-    designation: 'Sr. Software Engineer',
-    department: 'Engineering',
-    avatarInitials: 'JD',
-    avatarColor: 'bg-blue-500',
-    status: 'present',
-    checkInTime: '09:05',
-  },
-  {
-    id: 'emp-007',
-    name: 'Lisa Wang',
-    designation: 'Marketing Specialist',
-    department: 'Marketing',
-    avatarInitials: 'LW',
-    avatarColor: 'bg-indigo-500',
-    status: 'wfh',
-    checkInTime: '09:30',
-  },
-  {
-    id: 'emp-019',
-    name: 'Kevin Park',
-    designation: 'Software Engineer',
-    department: 'Engineering',
-    avatarInitials: 'KP',
-    avatarColor: 'bg-violet-500',
-    status: 'on_leave',
-    leaveType: 'Annual Leave',
-  },
-  {
-    id: 'emp-022',
-    name: 'Daniel Taylor',
-    designation: 'Data Scientist',
-    department: 'Engineering',
-    avatarInitials: 'DT',
-    avatarColor: 'bg-cyan-500',
-    status: 'present',
-    checkInTime: '08:55',
-  },
-  {
-    id: 'emp-024',
-    name: 'Ethan Scott',
-    designation: 'DevOps Engineer',
-    department: 'Engineering',
-    avatarInitials: 'ES',
-    avatarColor: 'bg-teal-500',
-    status: 'wfh',
-    checkInTime: '10:00',
-  },
-  {
-    id: 'emp-008',
-    name: 'Tom Johnson',
-    designation: 'Lead Engineer',
-    department: 'Engineering',
-    avatarInitials: 'TJ',
-    avatarColor: 'bg-amber-500',
-    status: 'present',
-    checkInTime: '08:45',
-  },
-  {
-    id: 'emp-023',
-    name: 'Mia Nguyen',
-    designation: 'Account Executive',
-    department: 'Sales',
-    avatarInitials: 'MN',
-    avatarColor: 'bg-rose-500',
-    status: 'absent',
-  },
-  {
-    id: 'emp-021',
-    name: 'Olivia Brown',
-    designation: 'UX Designer',
-    department: 'Product',
-    avatarInitials: 'OB',
-    avatarColor: 'bg-emerald-500',
-    status: 'late',
-    checkInTime: '10:22',
-  },
-];
-
-const STATS: TeamStats = { total: 8, present: 3, onLeave: 1, wfh: 2, absent: 1 };
-
-const SPECIAL_EVENTS: SpecialEvent[] = [
-  {
-    employeeId: 'emp-022',
-    name: 'Daniel Taylor',
-    type: 'birthday',
-    details: 'Today!',
-    avatarInitials: 'DT',
-    avatarColor: 'bg-cyan-500',
-  },
-  {
-    employeeId: 'emp-001',
-    name: 'Jane Doe',
-    type: 'anniversary',
-    details: '5 Years — Tomorrow',
-    avatarInitials: 'JD',
-    avatarColor: 'bg-blue-500',
-  },
-];
-
-// Last 7 days attendance percentages
-const SPARKLINE_DATA = [72, 85, 90, 78, 88, 75, 88];
+const AVATAR_COLORS = ['bg-blue-500', 'bg-indigo-500', 'bg-violet-500', 'bg-cyan-500', 'bg-teal-500', 'bg-amber-500', 'bg-rose-500', 'bg-emerald-500'];
 
 const STATUS_CONFIG: Record<
   MemberStatus,
@@ -237,8 +133,90 @@ function Sparkline({ data }: { data: number[] }) {
 
 export function TeamDashboard() {
   const [filter, setFilter] = useState<MemberStatus | 'all'>('all');
+  const [team, setTeam] = useState<TeamMember[]>([]);
+  const [stats, setStats] = useState<TeamStats>({ total: 0, present: 0, onLeave: 0, wfh: 0, absent: 0 });
+  const [specialEvents, setSpecialEvents] = useState<SpecialEvent[]>([]);
+  const [sparklineData, setSparklineData] = useState<number[]>([]);
+  const [upcomingLeaves, setUpcomingLeaves] = useState<{ name: string; type: string; dates: string; days: number }[]>([]);
 
-  const filtered = filter === 'all' ? MOCK_TEAM : MOCK_TEAM.filter((m) => m.status === filter);
+  const fetchTeamData = useCallback(async () => {
+    try {
+      const [teamRes, statsRes, eventsRes, trendRes, leavesRes] = await Promise.allSettled([
+        fetch('/api/v1/team/members'),
+        fetch('/api/v1/team/stats'),
+        fetch('/api/v1/team/events'),
+        fetch('/api/v1/attendance/trend'),
+        fetch('/api/v1/team/upcoming-leaves'),
+      ]);
+
+      if (teamRes.status === 'fulfilled') {
+        const json = await teamRes.value.json();
+        const list = json.data || [];
+        setTeam(list.map((m: any, idx: number) => {
+          const initials = (m.name || '').split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+          return {
+            id: m.id || String(idx),
+            name: m.name || '',
+            designation: m.designation || m.jobTitle || '',
+            department: m.department || '',
+            avatarInitials: initials,
+            avatarColor: AVATAR_COLORS[idx % AVATAR_COLORS.length],
+            status: m.status || 'present',
+            checkInTime: m.checkInTime,
+            leaveType: m.leaveType,
+            upcomingLeave: m.upcomingLeave,
+          };
+        }));
+      }
+
+      if (statsRes.status === 'fulfilled') {
+        const json = await statsRes.value.json();
+        const d = json.data || json;
+        setStats({
+          total: d.total ?? 0,
+          present: d.present ?? 0,
+          onLeave: d.onLeave ?? 0,
+          wfh: d.wfh ?? 0,
+          absent: d.absent ?? 0,
+        });
+      }
+
+      if (eventsRes.status === 'fulfilled') {
+        const json = await eventsRes.value.json();
+        const list = json.data || [];
+        setSpecialEvents(list.map((ev: any, idx: number) => {
+          const initials = (ev.name || '').split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+          return {
+            employeeId: ev.employeeId || ev.id || '',
+            name: ev.name || '',
+            type: ev.type || 'birthday',
+            details: ev.details || '',
+            avatarInitials: initials,
+            avatarColor: AVATAR_COLORS[idx % AVATAR_COLORS.length],
+          };
+        }));
+      }
+
+      if (trendRes.status === 'fulfilled') {
+        const json = await trendRes.value.json();
+        setSparklineData(json.data || []);
+      }
+
+      if (leavesRes.status === 'fulfilled') {
+        const json = await leavesRes.value.json();
+        setUpcomingLeaves((json.data || []).map((l: any) => ({
+          name: l.name || l.employeeName || '',
+          type: l.leaveType || l.type || '',
+          dates: l.dates || `${l.startDate || ''} – ${l.endDate || ''}`,
+          days: l.days ?? l.requestedDays ?? 0,
+        })));
+      }
+    } catch { /* silent */ }
+  }, []);
+
+  useEffect(() => { fetchTeamData(); }, [fetchTeamData]);
+
+  const filtered = filter === 'all' ? team : team.filter((m) => m.status === filter);
 
   return (
     <div className="flex flex-col bg-gray-50 min-h-full">
@@ -249,28 +227,28 @@ export function TeamDashboard() {
           {[
             {
               label: 'Total',
-              value: STATS.total,
+              value: stats.total,
               icon: Users,
               color: 'text-gray-600',
               bg: 'bg-gray-50',
             },
             {
               label: 'Present',
-              value: STATS.present + STATS.wfh,
+              value: stats.present + stats.wfh,
               icon: UserCheck,
               color: 'text-emerald-600',
               bg: 'bg-emerald-50',
             },
             {
               label: 'On Leave',
-              value: STATS.onLeave,
+              value: stats.onLeave,
               icon: Calendar,
               color: 'text-amber-600',
               bg: 'bg-amber-50',
             },
             {
               label: 'Absent',
-              value: STATS.absent,
+              value: stats.absent,
               icon: UserX,
               color: 'text-red-500',
               bg: 'bg-red-50',
@@ -292,26 +270,26 @@ export function TeamDashboard() {
             <h3 className="font-semibold text-gray-900">Attendance Trend</h3>
             <span className="text-xs text-gray-500">Last 7 days</span>
           </div>
-          <Sparkline data={SPARKLINE_DATA} />
+          <Sparkline data={sparklineData} />
           <div className="flex justify-between mt-1">
             {DAYS.map((day, i) => (
               <div key={day} className="text-center">
                 <span className="text-xs text-gray-400">{day}</span>
-                <p className="text-xs font-medium text-gray-700">{SPARKLINE_DATA[i]}%</p>
+                <p className="text-xs font-medium text-gray-700">{sparklineData[i]}%</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Special Events */}
-        {SPECIAL_EVENTS.length > 0 && (
+        {specialEvents.length > 0 && (
           <div className="mx-4 mt-4 bg-gradient-to-r from-amber-50 to-rose-50 rounded-2xl p-4 border border-amber-100">
             <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
               <Gift className="w-4 h-4 text-amber-500" />
               Today&apos;s Highlights
             </h3>
             <div className="space-y-2">
-              {SPECIAL_EVENTS.map((ev) => (
+              {specialEvents.map((ev) => (
                 <div key={ev.employeeId} className="flex items-center gap-3">
                   <div
                     className={`w-9 h-9 rounded-full ${ev.avatarColor} flex items-center justify-center flex-shrink-0`}
@@ -409,10 +387,7 @@ export function TeamDashboard() {
             Upcoming Leaves
           </h3>
           <div className="space-y-2">
-            {[
-              { name: 'Kevin Park', type: 'Annual Leave', dates: 'Mar 4 – Mar 7', days: 4 },
-              { name: 'Lisa Wang', type: 'Parental Leave', dates: 'Mar 1 – May 31', days: 65 },
-            ].map((leave) => (
+            {upcomingLeaves.map((leave) => (
               <div
                 key={leave.name}
                 className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0"

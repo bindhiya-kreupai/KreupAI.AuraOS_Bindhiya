@@ -10,7 +10,7 @@ import {
     Globe
 } from 'lucide-react';
 import Link from 'next/link';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 
 export default function KSAGOSIWorkspace() {
     const [activeTab, setActiveTab] = useState<'calculator' | 'registry' | 'rates'>('calculator');

@@ -8,7 +8,7 @@ import {
     ArrowUpRight, Globe, Building2, Search, Filter,
     TrendingUp, AlertCircle, FileText, Banknote
 } from 'lucide-react';
-import { cn } from '@aura/ui/src/lib/utils';
+import { cn } from '@aura/ui/utils';
 
 export default function DisbursementHub() {
     const [activeBank, setActiveBank] = useState('Enbd');

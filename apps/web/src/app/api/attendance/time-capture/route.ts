@@ -7,7 +7,7 @@ import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
 const TimeCaptureSchema = z.object({
-  employeeId: z.string(),
+  employeeId: z.string().optional(),
   type: z.enum(['CHECK_IN', 'CHECK_OUT', 'BREAK_START', 'BREAK_END']),
   timestamp: z.string().optional(),
   location: z.object({
@@ -24,6 +24,77 @@ const TimeCaptureSchema = z.object({
   }).optional(),
 });
 
+function buildLocationString(location?: {
+  latitude?: number;
+  longitude?: number;
+  address?: string;
+}): string | null {
+  if (!location) {
+    return null;
+  }
+
+  const parts: string[] = [];
+  if (location.latitude != null && location.longitude != null) {
+    parts.push(`${location.latitude},${location.longitude}`);
+  }
+  if (location.address) {
+    parts.push(location.address);
+  }
+
+  return parts.length > 0 ? parts.join(' - ') : null;
+}
+
+function parseLocation(location?: string | null) {
+  if (!location) {
+    return undefined;
+  }
+
+  const [coordinates, ...addressParts] = location.split(' - ');
+  const [latitude, longitude] = coordinates.split(',').map(Number);
+  const hasCoordinates = Number.isFinite(latitude) && Number.isFinite(longitude);
+
+  return {
+    latitude: hasCoordinates ? latitude : undefined,
+    longitude: hasCoordinates ? longitude : undefined,
+    address: addressParts.length > 0 ? addressParts.join(' - ') : location,
+  };
+}
+
+function mapCapture(
+  punch: {
+    id: string;
+    employeeId: string;
+    punchType: string;
+    punchTime: Date;
+    location?: string | null;
+    photo?: string | null;
+    ipAddress?: string | null;
+    device?: string | null;
+    notes?: string | null;
+    isVerified?: boolean;
+    createdAt: Date;
+  },
+  employeeName?: string
+) {
+  return {
+    id: punch.id,
+    employeeId: punch.employeeId,
+    employeeName: employeeName || 'Unknown Employee',
+    type: punch.punchType,
+    timestamp: punch.punchTime.toISOString(),
+    location: parseLocation(punch.location),
+    photo: punch.photo || null,
+    ipAddress: punch.ipAddress || null,
+    deviceInfo: {
+      deviceType: punch.device || null,
+    },
+    isValid: punch.isVerified ?? false,
+    validationStatus: punch.isVerified ? 'APPROVED' : 'PENDING',
+    createdAt: punch.createdAt.toISOString(),
+    notes: punch.notes || null,
+  };
+}
+
 // GET - Fetch time capture records
 export const GET = withEnhancedAuth(
   async (request: NextRequest, { user, permissions }) => {
@@ -32,102 +103,47 @@ export const GET = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const { searchParams } = new URL(request.url);
-      const employeeId = searchParams.get('employeeId') || user.userId;
+      const employeeId = searchParams.get('employeeId') || user.employeeId || user.userId;
       const date = searchParams.get('date');
       const type = searchParams.get('type');
 
-      const mockTimeCaptures = [
-        {
-          id: '1',
-          employeeId,
-          employeeName: 'John Doe',
-          type: 'CHECK_IN',
-          timestamp: '2024-08-26T09:05:00',
-          location: {
-            latitude: 28.6139,
-            longitude: 77.2090,
-            address: 'Connaught Place, New Delhi',
-          },
-          photo: 'checkin_photo_1.jpg',
-          ipAddress: '192.168.1.100',
-          deviceInfo: {
-            deviceId: 'DEV-123',
-            deviceType: 'Mobile',
-            osVersion: 'iOS 17.0',
-          },
-          isValid: true,
-          validationStatus: 'APPROVED',
-          createdAt: '2024-08-26T09:05:00',
-        },
-        {
-          id: '2',
-          employeeId,
-          employeeName: 'John Doe',
-          type: 'BREAK_START',
-          timestamp: '2024-08-26T13:00:00',
-          location: {
-            latitude: 28.6139,
-            longitude: 77.2090,
-            address: 'Connaught Place, New Delhi',
-          },
-          ipAddress: '192.168.1.100',
-          deviceInfo: {
-            deviceId: 'DEV-123',
-            deviceType: 'Mobile',
-            osVersion: 'iOS 17.0',
-          },
-          isValid: true,
-          validationStatus: 'APPROVED',
-          createdAt: '2024-08-26T13:00:00',
-        },
-        {
-          id: '3',
-          employeeId,
-          employeeName: 'John Doe',
-          type: 'BREAK_END',
-          timestamp: '2024-08-26T14:00:00',
-          location: {
-            latitude: 28.6139,
-            longitude: 77.2090,
-            address: 'Connaught Place, New Delhi',
-          },
-          ipAddress: '192.168.1.100',
-          deviceInfo: {
-            deviceId: 'DEV-123',
-            deviceType: 'Mobile',
-            osVersion: 'iOS 17.0',
-          },
-          isValid: true,
-          validationStatus: 'APPROVED',
-          createdAt: '2024-08-26T14:00:00',
-        },
-        {
-          id: '4',
-          employeeId,
-          employeeName: 'John Doe',
-          type: 'CHECK_OUT',
-          timestamp: '2024-08-26T18:10:00',
-          location: {
-            latitude: 28.6139,
-            longitude: 77.2090,
-            address: 'Connaught Place, New Delhi',
-          },
-          photo: 'checkout_photo_1.jpg',
-          ipAddress: '192.168.1.100',
-          deviceInfo: {
-            deviceId: 'DEV-123',
-            deviceType: 'Mobile',
-            osVersion: 'iOS 17.0',
-          },
-          isValid: true,
-          validationStatus: 'APPROVED',
-          createdAt: '2024-08-26T18:10:00',
-        },
-      ];
+      const where: Record<string, unknown> = {
+        tenantId: user.tenantId,
+        isDeleted: false,
+      };
 
-      let filteredData = mockTimeCaptures.filter(t => t.employeeId === employeeId);
-      if (date) filteredData = filteredData.filter(t => t.timestamp.startsWith(date));
-      if (type) filteredData = filteredData.filter(t => t.type === type);
+      if (employeeId) {
+        where.employeeId = employeeId;
+      }
+
+      if (date) {
+        const start = new Date(date);
+        const end = new Date(date);
+        end.setDate(end.getDate() + 1);
+        where.punchDate = { gte: start, lt: end };
+      }
+
+      if (type) {
+        where.punchType = type;
+      }
+
+      const punches = await prisma.attendancePunch.findMany({
+        where,
+        orderBy: { punchTime: 'asc' },
+      });
+
+      const employeeIds = [...new Set(punches.map((p) => p.employeeId))];
+      const employees = employeeIds.length
+        ? await prisma.employee.findMany({
+            where: { id: { in: employeeIds } },
+            select: { id: true, firstName: true, lastName: true },
+          })
+        : [];
+      const employeeMap = new Map(
+        employees.map((employee) => [employee.id, `${employee.firstName} ${employee.lastName}`])
+      );
+
+      const filteredData = punches.map((punch) => mapCapture(punch, employeeMap.get(punch.employeeId)));
 
       // Calculate summary
       const checkIns = filteredData.filter(t => t.type === 'CHECK_IN');
@@ -172,20 +188,88 @@ export const POST = withEnhancedAuth(
       const timestamp = data.timestamp || new Date().toISOString();
       const ipAddress = data.ipAddress || request.headers.get('x-forwarded-for') || 'unknown';
 
-      const newCapture = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data,
-        timestamp,
-        ipAddress,
-        isValid: true,
-        validationStatus: 'APPROVED',
-        createdAt: new Date().toISOString(),
-      };
+      const employeeId =
+        data.employeeId && data.employeeId !== 'current-user' && data.employeeId !== 'current-user-id'
+          ? data.employeeId
+          : user.employeeId || user.userId;
+
+      if (!employeeId) {
+        return NextResponse.json(
+          { success: false, error: 'employeeId is required' },
+          { status: 400 }
+        );
+      }
+
+      const punchTime = new Date(timestamp);
+      const punchDate = new Date(
+        punchTime.getFullYear(),
+        punchTime.getMonth(),
+        punchTime.getDate()
+      );
+
+      const created = await prisma.attendancePunch.create({
+        data: {
+          tenantId: user.tenantId,
+          employeeId,
+          punchDate,
+          punchTime,
+          punchType: data.type,
+          location: buildLocationString(data.location),
+          device: data.deviceInfo?.deviceType || 'WEB',
+          ipAddress,
+          photo: data.photo || null,
+          notes: null,
+          isVerified: true,
+          createdBy: user.id || user.userId || null,
+        },
+      });
+
+      if (data.type === 'CHECK_IN' || data.type === 'CHECK_OUT') {
+        const existingRecord = await prisma.attendanceRecord.findFirst({
+          where: {
+            tenantId: user.tenantId,
+            employeeId,
+            date: punchDate,
+          },
+        });
+
+        if (existingRecord) {
+          await prisma.attendanceRecord.update({
+            where: { id: existingRecord.id },
+            data: {
+              ...(data.type === 'CHECK_IN' && !existingRecord.clockIn ? { clockIn: punchTime } : {}),
+              ...(data.type === 'CHECK_OUT' ? { clockOut: punchTime } : {}),
+              status: 'PRESENT',
+            },
+          });
+        } else if (data.type === 'CHECK_IN') {
+          await prisma.attendanceRecord.create({
+            data: {
+              tenantId: user.tenantId,
+              employeeId,
+              date: punchDate,
+              clockIn: punchTime,
+              status: 'PRESENT',
+              approvalStatus: 'PENDING',
+            },
+          });
+        }
+      }
+
+      const employee = await prisma.employee.findUnique({
+        where: { id: employeeId },
+        select: { firstName: true, lastName: true },
+      });
+
+      const newCapture = mapCapture(
+        created,
+        employee ? `${employee.firstName} ${employee.lastName}` : undefined
+      );
 
       await prisma.auditLog.create({
         data: {
           tenantId: user.tenantId,
-          userId: user.userId,
+          userId: user.id || user.userId,
           action: 'CREATE',
           entityType: 'Attendance - Time Capture',
           details: `Captured time: ${data.type} at ${timestamp}`,
@@ -231,13 +315,13 @@ export const PUT = withEnhancedAuth(
         id,
         ...updates,
         updatedAt: new Date().toISOString(),
-        updatedBy: user.userId,
+        updatedBy: user.id || user.userId,
       };
 
       await prisma.auditLog.create({
         data: {
           tenantId: user.tenantId,
-          userId: user.userId,
+          userId: user.id || user.userId,
           action: 'UPDATE',
           entityType: 'Attendance - Time Capture',
           details: `Updated time capture: ${id}`,
@@ -276,7 +360,7 @@ export const DELETE = withEnhancedAuth(
       await prisma.auditLog.create({
         data: {
           tenantId: user.tenantId,
-          userId: user.userId,
+          userId: user.id || user.userId,
           action: 'DELETE',
           entityType: 'Attendance - Time Capture',
           details: `Deleted time capture: ${id}`,
