@@ -22,29 +22,21 @@ import {
 } from 'lucide-react';
 import { cn } from '@aura/ui/utils';
 import Link from 'next/link';
-import { PayrollAnalyticsService, PayrollRunService } from '@/app/dashboard/payroll/services';
+import { PayrollAnalyticsService } from '@/app/dashboard/payroll/services';
 
 export default function PayrollPage() {
-  const [stats, setStats] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [stats, setStats] = useState<any>(null);
   useEffect(() => {
     loadPayrollData();
   }, []);
 
   const loadPayrollData = async () => {
     try {
-      setIsLoading(true);
-      const [analytics, runs] = await Promise.all([
-        PayrollAnalyticsService.getStats(),
-        PayrollRunService.getPayrollRuns(),
-      ]);
-
+      const analytics = await PayrollAnalyticsService.getStats();
       setStats(analytics);
-      setActiveRuns(runs.slice(0, 3));
     } catch (error) {
       console.error('Failed to load payroll data:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
