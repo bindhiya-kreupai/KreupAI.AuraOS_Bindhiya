@@ -38,6 +38,16 @@ import { learningSeed } from '../src/seeds/20-learning.seed';
 import { compensationSeed } from '../src/seeds/21-compensation.seed';
 import { benefitsSeed } from '../src/seeds/22-benefits.seed';
 import { seedPositions } from '../src/seeds/21-positions.seed';
+import { seedExtendedEmployees } from '../src/seeds/23-employees-extended.seed';
+import { seedEmployeeLifecycle } from '../src/seeds/24-employee-lifecycle.seed';
+import { seedAttendanceTime } from '../src/seeds/25-attendance-time.seed';
+import { seedLeaveManagement } from '../src/seeds/26-leave-management.seed';
+import { seedPayrollProcessing } from '../src/seeds/27-payroll-processing.seed';
+import { seedRecruitmentOnboarding } from '../src/seeds/28-recruitment-onboarding.seed';
+import { seedComplianceStatutory } from '../src/seeds/29-compliance-statutory.seed';
+import { seedSystemIntegration } from '../src/seeds/30-system-integration.seed';
+import { seedAssetDocumentMisc } from '../src/seeds/31-asset-document-misc.seed';
+import { seedRemainingCoverage } from '../src/seeds/32-remaining-coverage.seed';
 
 // ============================================================
 // Phase 2 — Enterprise Seed Modules (GAP Closure)
@@ -935,29 +945,29 @@ async function main() {
     // ============================================
     // POSITIONS
     // ============================================
-    await seedPositions();
+    await seedPositions(prisma);
     console.log('✅ Positions seeded successfully!');
 
     // ============================================
     // PERFORMANCE MANAGEMENT MODULE
     // ============================================
     console.log('\n🎯 Seeding Performance Management Module...');
-    await performanceSeed(tenant.id);
+    await performanceSeed(prisma, tenant.id);
 
     // ============================================
     // LEARNING & DEVELOPMENT MODULE
     // ============================================
     console.log('\n📚 Seeding Learning & Development Module...');
-    await learningSeed(tenant.id);
+    await learningSeed(prisma, tenant.id);
 
     // ============================================
     // COMPENSATION MANAGEMENT MODULE
     // ============================================
     console.log('\n💰 Seeding Compensation Management Module...');
-    await compensationSeed(tenant.id);
+    await compensationSeed(prisma, tenant.id);
 
     console.log('\n💊 Seeding Benefits Management Module...');
-    await benefitsSeed(tenant.id);
+    await benefitsSeed(prisma, tenant.id);
 
     // ============================================
     // GCC STATUTORY RATES (WPS, GOSI, EOSB, SIO, PASI)
@@ -1011,6 +1021,56 @@ async function main() {
     await runSeedStep('approval-chains', () => seedApprovalChains(prisma));
 
     console.log('\n Phase 2 Enterprise Seed Data completed.');
+
+    // ============================================================
+    // PHASE 3 — COMPREHENSIVE TABLE SEEDS (A-Z Coverage)
+    // All remaining models seeded in dependency order.
+    // ============================================================
+    console.log('\n========================================');
+    console.log(' PHASE 3 — Comprehensive Table Seeds (A-Z)');
+    console.log('========================================\n');
+
+    // Step P3-1: Extended Employees (20 additional employees + emergency contacts, compliance, dependents)
+    console.log('[P3-1] Extended Employees...');
+    await runSeedStep('extended-employees', () => seedExtendedEmployees(prisma, tenant.id));
+
+    // Step P3-2: Employee Lifecycle (employment history, life events, letters, ID cards, exits, probation)
+    console.log('[P3-2] Employee Lifecycle...');
+    await runSeedStep('employee-lifecycle', () => seedEmployeeLifecycle(prisma, tenant.id));
+
+    // Step P3-3: Attendance & Time (shifts, rosters, punches, records, regularizations, overtime, comp-off, swaps)
+    console.log('[P3-3] Attendance & Time...');
+    await runSeedStep('attendance-time', () => seedAttendanceTime(prisma, tenant.id));
+
+    // Step P3-4: Leave Management (policies, balances, requests, accruals, carry-forward, encashment)
+    console.log('[P3-4] Leave Management...');
+    await runSeedStep('leave-management', () => seedLeaveManagement(prisma, tenant.id));
+
+    // Step P3-5: Payroll Processing (configs, runs, payslips, adjustments, statutory, tax, garnishments, HSA/FSA)
+    console.log('[P3-5] Payroll Processing...');
+    await runSeedStep('payroll-processing', () => seedPayrollProcessing(prisma, tenant.id));
+
+    // Step P3-6: Recruitment & Onboarding (requisitions, candidates, applications, interviews, offers, vendors, programs)
+    console.log('[P3-6] Recruitment & Onboarding...');
+    await runSeedStep('recruitment-onboarding', () => seedRecruitmentOnboarding(prisma, tenant.id));
+
+    // Step P3-7: Compliance & Statutory (India PF/ESI/TDS/PT, localization, translations, audit logs)
+    console.log('[P3-7] Compliance & Statutory...');
+    await runSeedStep('compliance-statutory', () => seedComplianceStatutory(prisma, tenant.id));
+
+    // Step P3-8: System & Integration (workflows, reports, dashboards, AI, webhooks, API keys, notifications)
+    console.log('[P3-8] System & Integration...');
+    await runSeedStep('system-integration', () => seedSystemIntegration(prisma, tenant.id));
+
+    // Step P3-9: Assets, Documents & Misc (assets, documents, geofence, expenses, recognition, training, permissions)
+    console.log('[P3-9] Assets, Documents & Misc...');
+    await runSeedStep('asset-document-misc', () => seedAssetDocumentMisc(prisma, tenant.id));
+
+    // Step P3-10: Remaining Coverage (permissions, roles, delegations, competency relations, GOSI/WPS submissions, mentoring, increments)
+    console.log('[P3-10] Remaining Coverage (17 final models)...');
+    await runSeedStep('remaining-coverage', () => seedRemainingCoverage(prisma, tenant.id));
+
+    console.log('\n Phase 3 Comprehensive Table Seeds completed.');
     console.log('Comprehensive Seeding Completed!');
 }
 

@@ -57,9 +57,7 @@
 
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
-
-export async function learningSeed(tenantId: string) {
+export async function learningSeed(prisma: PrismaClient, tenantId: string) {
     console.log('Seeding Learning & Development data...');
 
     // -----------------------------------------------------------------------

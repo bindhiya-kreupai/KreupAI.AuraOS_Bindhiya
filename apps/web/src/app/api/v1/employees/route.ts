@@ -1,16 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { ServiceProxy } from '@/lib/services/service-proxy';
+import { prisma } from '@/lib/database';
 import { auditMiddleware } from '@/lib/middleware/audit.middleware';
 import { z } from 'zod';
 
 // API Response Standard
-interface ApiResponse<T = any> {
+interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: {
     code: string;
     message: string;
+    messageAr?: string;
     details?: Record<string, unknown>;
   };
   meta?: {
@@ -39,56 +41,99 @@ const createEmployeeSchema = z.object({
   gradeId: z.string().uuid('Valid grade ID is required'),
   statusId: z.string().uuid('Valid status ID is required'),
   typeId: z.string().uuid('Valid employment type ID is required'),
-  joiningDate: z.string().datetime('Valid joining date is required'),
-  managerId: z.string().uuid().optional(),
-  addressId: z.string().uuid().optional(),
+  joiningDate: z.string().or(z.date()),
+  managerId: z.string().uuid().optional().nullable(),
+  positionId: z.string().uuid().optional().nullable(),
+  addressId: z.string().uuid().optional().nullable(),
+  userId: z.string().uuid().optional().nullable(),
 });
 
-const updateEmployeeSchema = z.object({
-  firstName: z.string().min(1).optional(),
-  lastName: z.string().min(1).optional(),
-  email: z.string().email().optional(),
-  departmentId: z.string().uuid().optional(),
-  locationId: z.string().uuid().optional(),
-  jobProfileId: z.string().uuid().optional(),
-  gradeId: z.string().uuid().optional(),
-  statusId: z.string().uuid().optional(),
-  typeId: z.string().uuid().optional(),
-  managerId: z.string().uuid().optional(),
-  addressId: z.string().uuid().optional(),
-});
+const employeeInclude = {
+  company: true,
+  department: true,
+  location: true,
+  jobProfile: true,
+  grade: true,
+  status: true,
+  type: true,
+  manager: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      employeeCode: true,
+    },
+  },
+};
 
 /**
  * GET /api/v1/employees
- * List employees with filtering and pagination
+ * List employees with filtering and pagination — queries Prisma directly
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const { user } = context;
+    const tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
 
     // Parse query parameters
-    const filter = {
-      companyId: searchParams.get('companyId') || undefined,
-      departmentId: searchParams.get('departmentId') || undefined,
-      locationId: searchParams.get('locationId') || undefined,
-      statusId: searchParams.get('statusId') || undefined,
-      managerId: searchParams.get('managerId') || undefined,
-      search: searchParams.get('search') || undefined,
-      page: parseInt(searchParams.get('page') || '1'),
-      limit: Math.min(parseInt(searchParams.get('limit') || '20'), 100), // Max 100 per page
-      sortBy: searchParams.get('sortBy') || 'createdAt',
-      sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc',
-    };
+    const companyId = searchParams.get('companyId') || undefined;
+    const departmentId = searchParams.get('departmentId') || undefined;
+    const locationId = searchParams.get('locationId') || undefined;
+    const statusId = searchParams.get('statusId') || undefined;
+    const managerId = searchParams.get('managerId') || undefined;
+    const search = searchParams.get('search') || '';
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
+    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortOrder = (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc';
 
-    // Fetch employees from microservice
-    const result = await ServiceProxy.get('employee', '/employees', filter);
+    // Build where clause with tenant scoping
+    const where: Record<string, unknown> = { tenantId };
+
+    if (companyId) where.companyId = companyId;
+    if (departmentId) where.departmentId = departmentId;
+    if (locationId) where.locationId = locationId;
+    if (statusId) where.statusId = statusId;
+    if (managerId) where.managerId = managerId;
+
+    if (search) {
+      where.OR = [
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { employeeCode: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [employees, total] = await Promise.all([
+      prisma.employee.findMany({
+        where,
+        include: employeeInclude,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder },
+      }),
+      prisma.employee.count({ where }),
+    ]);
 
     const response: ApiResponse = {
       success: true,
-      data: result.data,
+      data: employees.map((emp) => ({
+        ...emp,
+        name: `${emp.firstName} ${emp.lastName}`,
+        role: emp.jobProfile?.title ?? null,
+        dept: emp.department?.name ?? null,
+        loc: emp.location?.name ?? null,
+      })),
       meta: {
-        pagination: result.pagination,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
         timestamp: new Date().toISOString(),
         requestId: crypto.randomUUID(),
         apiVersion: 'v1',
@@ -104,6 +149,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       error: {
         code: 'E5001',
         message: 'Failed to fetch employees',
+        messageAr: 'فشل في جلب الموظفين',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       },
       meta: {
@@ -121,20 +167,124 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
  * POST /api/v1/employees
  * Create a new employee
  */
-export const POST = auditMiddleware.createEmployee(withEnhancedAuth(async (request: NextRequest, context) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
+export const POST = auditMiddleware.createEmployee(
+  withEnhancedAuth(async (request: NextRequest, context) => {
+    try {
+      const { user } = context;
+      const tenantId = user.tenantId;
+      const body = await request.json();
 
-    // Validate request body
-    const validationResult = createEmployeeSchema.safeParse(body);
-    if (!validationResult.success) {
+      // Validate request body
+      const validationResult = createEmployeeSchema.safeParse(body);
+      if (!validationResult.success) {
+        const response: ApiResponse = {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Validation failed',
+            messageAr: 'فشل التحقق',
+            details: { errors: validationResult.error.errors },
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+
+        return NextResponse.json(response, { status: 400 });
+      }
+
+      const data = validationResult.data;
+
+      // Check for duplicate email
+      const existingEmail = await prisma.employee.findUnique({ where: { email: data.email } });
+      if (existingEmail) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E3002',
+              message: 'An employee with this email already exists',
+              messageAr: 'يوجد موظف بهذا البريد الإلكتروني بالفعل',
+            },
+            meta: {
+              timestamp: new Date().toISOString(),
+              requestId: crypto.randomUUID(),
+              apiVersion: 'v1',
+            },
+          },
+          { status: 409 }
+        );
+      }
+
+      // Check for duplicate employeeCode
+      const existingCode = await prisma.employee.findUnique({
+        where: { employeeCode: data.employeeCode },
+      });
+      if (existingCode) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E3002',
+              message: 'An employee with this code already exists',
+              messageAr: 'يوجد موظف بهذا الرمز بالفعل',
+            },
+            meta: {
+              timestamp: new Date().toISOString(),
+              requestId: crypto.randomUUID(),
+              apiVersion: 'v1',
+            },
+          },
+          { status: 409 }
+        );
+      }
+
+      const employee = await prisma.employee.create({
+        data: {
+          tenantId,
+          employeeCode: data.employeeCode,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          companyId: data.companyId,
+          departmentId: data.departmentId,
+          locationId: data.locationId,
+          jobProfileId: data.jobProfileId,
+          gradeId: data.gradeId,
+          statusId: data.statusId,
+          typeId: data.typeId,
+          joiningDate: new Date(data.joiningDate as string),
+          managerId: data.managerId ?? undefined,
+          positionId: data.positionId ?? undefined,
+          addressId: data.addressId ?? undefined,
+          userId: data.userId ?? undefined,
+        },
+        include: employeeInclude,
+      });
+
+      const response: ApiResponse = {
+        success: true,
+        data: employee,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      };
+
+      return NextResponse.json(response, { status: 201 });
+    } catch (error) {
+      console.error('[Employees API] POST Error:', error);
+
       const response: ApiResponse = {
         success: false,
         error: {
-          code: 'E2001',
-          message: 'Validation failed',
-          details: { errors: validationResult.error.errors },
+          code: 'E5001',
+          message: 'Failed to create employee',
+          messageAr: 'فشل في إنشاء الموظف',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
         meta: {
           timestamp: new Date().toISOString(),
@@ -143,61 +293,7 @@ export const POST = auditMiddleware.createEmployee(withEnhancedAuth(async (reque
         },
       };
 
-      return NextResponse.json(response, { status: 400 });
+      return NextResponse.json(response, { status: 500 });
     }
-
-    // Create employee via microservice
-    const employee = await ServiceProxy.post('employee', '/employees', {
-      ...validationResult.data,
-      joiningDate: new Date(validationResult.data.joiningDate),
-    });
-
-    const response: ApiResponse = {
-      success: true,
-      data: employee,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 201 });
-  } catch (error) {
-    console.error('[Employees API] POST Error:', error);
-
-    // Check for duplicate errors
-    if (error instanceof Error && error.message.includes('already exists')) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E3002',
-          message: error.message,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 409 });
-    }
-
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to create employee',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 500 });
-  }
-}));
+  })
+);

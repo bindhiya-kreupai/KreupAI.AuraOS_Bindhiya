@@ -30,9 +30,7 @@
 
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
-
-export async function performanceSeed(tenantId: string) {
+export async function performanceSeed(prisma: PrismaClient, tenantId: string) {
     console.log('...Seeding Performance Management Data');
 
     // Get some employees for testing (we'll use the first 10)

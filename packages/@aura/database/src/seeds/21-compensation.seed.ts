@@ -28,9 +28,7 @@
 
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
-
-export async function compensationSeed(tenantId: string) {
+export async function compensationSeed(prisma: PrismaClient, tenantId: string) {
     console.log('  Seeding Compensation data...');
 
     // -----------------------------------------------------------------------

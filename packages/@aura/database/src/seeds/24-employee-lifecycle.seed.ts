@@ -1,0 +1,1370 @@
+/**
+ * @seed Employee Lifecycle
+ * @description Comprehensive employee lifecycle seed data including employment history,
+ *   life events, letter templates/letters, ID cards, exit management, probation tracking,
+ *   and confirmation requests. Uses realistic GCC + India HCM context.
+ * @project AURA HCM Platform
+ */
+
+import { PrismaClient } from '@prisma/client';
+
+export async function seedEmployeeLifecycle(prisma: PrismaClient, tenantId: string) {
+  console.log('Seeding Employee Lifecycle...');
+
+  // ── Fetch existing employees with relations ──
+  const employees = await prisma.employee.findMany({
+    where: { company: { tenantId } },
+    take: 15,
+    include: {
+      department: true,
+      location: true,
+      grade: true,
+      jobProfile: true,
+    },
+    orderBy: { employeeCode: 'asc' },
+  });
+
+  if (employees.length < 2) {
+    console.warn('Need at least 2 employees to seed lifecycle data. Skipping.');
+    return;
+  }
+
+  const departments = await prisma.department.findMany({
+    where: { company: { tenantId } },
+    take: 5,
+  });
+
+  const grades = await prisma.grade.findMany({
+    orderBy: { level: 'asc' },
+    take: 10,
+  });
+
+  const locations = await prisma.location.findMany({
+    where: { company: { tenantId } },
+    take: 5,
+  });
+
+  const pick = <T>(arr: T[], idx: number): T => arr[idx % arr.length];
+
+  // ════════════════════════════════════════════════════════════════════════
+  // 1. EMPLOYMENT HISTORY
+  // ════════════════════════════════════════════════════════════════════════
+  console.log('  ...Seeding Employment History');
+
+  const historyDefs = [
+    {
+      empIdx: 0,
+      changeType: 'HIRE',
+      effectiveDate: new Date('2022-01-15'),
+      reason: 'New hire - joined as Senior Software Engineer',
+      status: 'COMPLETED',
+      sourceType: 'SYSTEM_TRIGGER',
+    },
+    {
+      empIdx: 1,
+      changeType: 'HIRE',
+      effectiveDate: new Date('2022-03-01'),
+      reason: 'New hire - joined as HR Business Partner',
+      status: 'COMPLETED',
+      sourceType: 'SYSTEM_TRIGGER',
+    },
+    {
+      empIdx: 0,
+      changeType: 'PROMOTION',
+      effectiveDate: new Date('2023-07-01'),
+      reason: 'Annual promotion cycle - promoted to Lead Engineer based on outstanding delivery and leadership',
+      status: 'COMPLETED',
+      sourceType: 'MANUAL',
+      prevGradeIdx: 2,
+      newGradeIdx: 3,
+      previousSalary: 18000,
+      newSalary: 22000,
+    },
+    {
+      empIdx: 2,
+      changeType: 'HIRE',
+      effectiveDate: new Date('2023-01-10'),
+      reason: 'New hire - joined as Finance Analyst from India operations',
+      status: 'COMPLETED',
+      sourceType: 'SYSTEM_TRIGGER',
+    },
+    {
+      empIdx: 2,
+      changeType: 'DEPARTMENT_TRANSFER',
+      effectiveDate: new Date('2024-04-01'),
+      reason: 'Inter-department transfer to support regional expansion in KSA',
+      status: 'COMPLETED',
+      sourceType: 'MANUAL',
+      prevDeptIdx: 0,
+      newDeptIdx: 1,
+    },
+    {
+      empIdx: 3,
+      changeType: 'HIRE',
+      effectiveDate: new Date('2023-06-15'),
+      reason: 'New hire - Operations Manager, Dubai HQ',
+      status: 'COMPLETED',
+      sourceType: 'SYSTEM_TRIGGER',
+    },
+    {
+      empIdx: 3,
+      changeType: 'GRADE_CHANGE',
+      effectiveDate: new Date('2024-09-01'),
+      reason: 'Grade reclassification following organizational restructuring',
+      status: 'COMPLETED',
+      sourceType: 'MANUAL',
+      prevGradeIdx: 4,
+      newGradeIdx: 5,
+      previousSalary: 25000,
+      newSalary: 28000,
+    },
+    {
+      empIdx: 4,
+      changeType: 'HIRE',
+      effectiveDate: new Date('2024-01-02'),
+      reason: 'New hire - Junior Developer (probation period)',
+      status: 'COMPLETED',
+      sourceType: 'SYSTEM_TRIGGER',
+    },
+    {
+      empIdx: 1,
+      changeType: 'COMPENSATION_CHANGE',
+      effectiveDate: new Date('2024-04-01'),
+      reason: 'Annual salary revision - cost of living adjustment + merit increase',
+      status: 'COMPLETED',
+      sourceType: 'MANUAL',
+      previousSalary: 15000,
+      newSalary: 17500,
+    },
+    {
+      empIdx: 0,
+      changeType: 'MANAGER_CHANGE',
+      effectiveDate: new Date('2024-06-01'),
+      reason: 'Reporting line change following departmental reorganization',
+      status: 'COMPLETED',
+      sourceType: 'WORKFLOW',
+    },
+  ];
+
+  for (const def of historyDefs) {
+    const emp = pick(employees, def.empIdx);
+    const existing = await prisma.employmentHistory.findFirst({
+      where: {
+        tenantId,
+        employeeId: emp.id,
+        changeType: def.changeType,
+        effectiveDate: def.effectiveDate,
+      },
+    });
+    if (!existing) {
+      await prisma.employmentHistory.create({
+        data: {
+          tenantId,
+          employeeId: emp.id,
+          changeType: def.changeType,
+          effectiveDate: def.effectiveDate,
+          reason: def.reason,
+          status: def.status,
+          sourceType: def.sourceType,
+          isAutoGenerated: def.sourceType === 'SYSTEM_TRIGGER',
+          previousDepartmentId: def.prevDeptIdx !== undefined && departments.length > 0
+            ? pick(departments, def.prevDeptIdx).id
+            : undefined,
+          newDepartmentId: def.newDeptIdx !== undefined && departments.length > 0
+            ? pick(departments, def.newDeptIdx).id
+            : undefined,
+          previousGradeId: def.prevGradeIdx !== undefined && grades.length > 0
+            ? pick(grades, def.prevGradeIdx).id
+            : undefined,
+          newGradeId: def.newGradeIdx !== undefined && grades.length > 0
+            ? pick(grades, def.newGradeIdx).id
+            : undefined,
+          previousSalary: def.previousSalary ?? undefined,
+          newSalary: def.newSalary ?? undefined,
+        },
+      });
+    }
+  }
+  console.log(`  Created/verified ${historyDefs.length} employment history records`);
+
+  // ════════════════════════════════════════════════════════════════════════
+  // 2. LIFE EVENT TYPES
+  // ════════════════════════════════════════════════════════════════════════
+  console.log('  ...Seeding Life Event Types');
+
+  const lifeEventTypeDefs = [
+    {
+      code: 'MARRIAGE',
+      name: 'Marriage',
+      description: 'Employee marriage event - impacts benefits enrollment, tax status, and emergency contacts',
+      category: 'FAMILY',
+      requiresDocument: true,
+      requiresVerification: true,
+      impactsPayroll: true,
+      impactsBenefits: true,
+      impactsTax: true,
+      notifyHR: true,
+      notifyManager: true,
+    },
+    {
+      code: 'BIRTH',
+      name: 'Birth of Child',
+      description: 'Birth of a child - triggers dependent enrollment, paternity/maternity leave entitlements',
+      category: 'FAMILY',
+      requiresDocument: true,
+      requiresVerification: true,
+      impactsPayroll: true,
+      impactsBenefits: true,
+      impactsTax: true,
+      notifyHR: true,
+      notifyManager: true,
+    },
+    {
+      code: 'ADOPTION',
+      name: 'Adoption',
+      description: 'Legal adoption of a child - similar impacts to birth event',
+      category: 'FAMILY',
+      requiresDocument: true,
+      requiresVerification: true,
+      impactsPayroll: true,
+      impactsBenefits: true,
+      impactsTax: false,
+      notifyHR: true,
+      notifyManager: true,
+    },
+    {
+      code: 'DEATH',
+      name: 'Death of Dependent',
+      description: 'Death of a dependent family member - impacts benefits, bereavement leave',
+      category: 'FAMILY',
+      requiresDocument: true,
+      requiresVerification: true,
+      impactsPayroll: false,
+      impactsBenefits: true,
+      impactsTax: false,
+      notifyHR: true,
+      notifyManager: true,
+    },
+    {
+      code: 'DIVORCE',
+      name: 'Divorce',
+      description: 'Divorce or legal separation - impacts benefits, tax filing status, emergency contacts',
+      category: 'FAMILY',
+      requiresDocument: true,
+      requiresVerification: true,
+      impactsPayroll: true,
+      impactsBenefits: true,
+      impactsTax: true,
+      notifyHR: true,
+      notifyManager: false,
+    },
+    {
+      code: 'RELOCATION',
+      name: 'Relocation',
+      description: 'Employee relocation to a different city or country - impacts tax jurisdiction, allowances',
+      category: 'PERSONAL',
+      requiresDocument: false,
+      requiresVerification: true,
+      impactsPayroll: true,
+      impactsBenefits: false,
+      impactsTax: true,
+      notifyHR: true,
+      notifyManager: true,
+    },
+    {
+      code: 'DISABILITY',
+      name: 'Disability Declaration',
+      description: 'Employee or dependent disability - impacts benefits enrollment and accommodation requirements',
+      category: 'PERSONAL',
+      requiresDocument: true,
+      requiresVerification: true,
+      impactsPayroll: false,
+      impactsBenefits: true,
+      impactsTax: false,
+      notifyHR: true,
+      notifyManager: false,
+    },
+    {
+      code: 'EMERGENCY_CONTACT_CHANGE',
+      name: 'Emergency Contact Change',
+      description: 'Update to employee emergency contact information',
+      category: 'EMERGENCY',
+      requiresDocument: false,
+      requiresVerification: false,
+      impactsPayroll: false,
+      impactsBenefits: false,
+      impactsTax: false,
+      notifyHR: true,
+      notifyManager: false,
+    },
+  ];
+
+  for (const def of lifeEventTypeDefs) {
+    const existing = await prisma.lifeEventType.findFirst({
+      where: { tenantId, code: def.code },
+    });
+    if (!existing) {
+      await prisma.lifeEventType.create({
+        data: { tenantId, ...def },
+      });
+    }
+  }
+  console.log(`  Created/verified ${lifeEventTypeDefs.length} life event types`);
+
+  // ════════════════════════════════════════════════════════════════════════
+  // 3. EMPLOYEE LIFE EVENTS
+  // ════════════════════════════════════════════════════════════════════════
+  console.log('  ...Seeding Employee Life Events');
+
+  const lifeEventDefs = [
+    {
+      empIdx: 0,
+      eventType: 'MARRIAGE',
+      eventDate: new Date('2023-03-15'),
+      title: 'Marriage - Sarah Ahmed',
+      description: 'Employee married on 15 March 2023 in Dubai, UAE. Marriage certificate submitted and verified.',
+      relatedPersonName: 'Amira Khalid',
+      relatedPersonRelation: 'Spouse',
+      verified: true,
+      verifiedBy: 'HR_ADMIN',
+      impactsPayroll: true,
+      impactsBenefits: true,
+      impactsTax: true,
+      impactsEmergencyContact: true,
+      status: 'PROCESSED',
+      notifyHR: true,
+      notifyManager: true,
+      notificationSent: true,
+    },
+    {
+      empIdx: 1,
+      eventType: 'BIRTH',
+      eventDate: new Date('2024-01-20'),
+      title: 'Birth of Child - Mohammed Al-Rashid',
+      description: 'Birth of first child. Paternity leave of 5 days approved per UAE Labour Law.',
+      relatedPersonName: 'Youssef Al-Rashid',
+      relatedPersonRelation: 'Child',
+      verified: true,
+      verifiedBy: 'HR_ADMIN',
+      impactsPayroll: true,
+      impactsBenefits: true,
+      impactsTax: false,
+      impactsEmergencyContact: false,
+      status: 'PROCESSED',
+      notifyHR: true,
+      notifyManager: true,
+      notificationSent: true,
+    },
+    {
+      empIdx: 2,
+      eventType: 'RELOCATION',
+      eventDate: new Date('2024-04-01'),
+      title: 'Relocation - Priya Sharma to Riyadh',
+      description: 'Employee relocated from Hyderabad, India to Riyadh, KSA office. Housing allowance and relocation benefits activated.',
+      relatedPersonName: null,
+      relatedPersonRelation: null,
+      verified: true,
+      verifiedBy: 'HR_ADMIN',
+      impactsPayroll: true,
+      impactsBenefits: false,
+      impactsTax: true,
+      impactsEmergencyContact: false,
+      status: 'PROCESSED',
+      notifyHR: true,
+      notifyManager: true,
+      notificationSent: true,
+    },
+    {
+      empIdx: 3,
+      eventType: 'ADOPTION',
+      eventDate: new Date('2024-06-10'),
+      title: 'Adoption - Ahmed Hassan',
+      description: 'Legal adoption completed. Dependent added to medical insurance and GOSI records updated.',
+      relatedPersonName: 'Layla Hassan',
+      relatedPersonRelation: 'Child',
+      verified: true,
+      verifiedBy: 'HR_ADMIN',
+      impactsPayroll: true,
+      impactsBenefits: true,
+      impactsTax: false,
+      impactsEmergencyContact: false,
+      status: 'PROCESSED',
+      notifyHR: true,
+      notifyManager: true,
+      notificationSent: true,
+    },
+    {
+      empIdx: 4,
+      eventType: 'EMERGENCY_CONTACT_CHANGE',
+      eventDate: new Date('2024-09-05'),
+      title: 'Emergency Contact Update - Fatima Al-Zahra',
+      description: 'Updated primary emergency contact from father to spouse after marriage.',
+      relatedPersonName: 'Kareem Al-Zahra',
+      relatedPersonRelation: 'Spouse',
+      verified: false,
+      verifiedBy: null,
+      impactsPayroll: false,
+      impactsBenefits: false,
+      impactsTax: false,
+      impactsEmergencyContact: true,
+      status: 'PENDING',
+      notifyHR: true,
+      notifyManager: false,
+      notificationSent: false,
+    },
+  ];
+
+  for (const def of lifeEventDefs) {
+    const emp = pick(employees, def.empIdx);
+    const existing = await prisma.employeeLifeEvent.findFirst({
+      where: {
+        tenantId,
+        employeeId: emp.id,
+        eventType: def.eventType,
+        eventDate: def.eventDate,
+      },
+    });
+    if (!existing) {
+      await prisma.employeeLifeEvent.create({
+        data: {
+          tenantId,
+          employeeId: emp.id,
+          eventType: def.eventType,
+          eventDate: def.eventDate,
+          title: def.title,
+          description: def.description,
+          relatedPersonName: def.relatedPersonName ?? undefined,
+          relatedPersonRelation: def.relatedPersonRelation ?? undefined,
+          verified: def.verified,
+          verifiedBy: def.verifiedBy ?? undefined,
+          verifiedAt: def.verified ? def.eventDate : undefined,
+          impactsPayroll: def.impactsPayroll,
+          impactsBenefits: def.impactsBenefits,
+          impactsTax: def.impactsTax,
+          impactsEmergencyContact: def.impactsEmergencyContact,
+          status: def.status,
+          processedBy: def.status === 'PROCESSED' ? 'HR_ADMIN' : undefined,
+          processedAt: def.status === 'PROCESSED' ? def.eventDate : undefined,
+          notifyHR: def.notifyHR,
+          notifyManager: def.notifyManager,
+          notificationSent: def.notificationSent,
+        },
+      });
+    }
+  }
+  console.log(`  Created/verified ${lifeEventDefs.length} employee life events`);
+
+  // ════════════════════════════════════════════════════════════════════════
+  // 4. LETTER TEMPLATES
+  // ════════════════════════════════════════════════════════════════════════
+  console.log('  ...Seeding Letter Templates');
+
+  const letterTemplateDefs = [
+    {
+      name: 'Standard Offer Letter - UAE',
+      description: 'Offer letter template compliant with UAE Labour Law for full-time employees',
+      letterType: 'OFFER',
+      content: `Dear {{employeeName}},
+
+We are pleased to offer you the position of {{jobTitle}} at {{companyName}}, effective {{startDate}}.
+
+Compensation Package:
+- Basic Salary: AED {{basicSalary}} per month
+- Housing Allowance: AED {{housingAllowance}} per month
+- Transportation Allowance: AED {{transportAllowance}} per month
+- Total Package: AED {{totalPackage}} per month
+
+Benefits:
+- Annual Leave: {{annualLeave}} working days
+- Medical Insurance: Provided for employee and dependents
+- End of Service Gratuity: As per UAE Labour Law
+- Annual Air Ticket: Economy class return ticket to home country
+
+This offer is contingent upon successful completion of background verification and medical fitness examination as required by UAE regulations.
+
+Please confirm your acceptance by signing and returning this letter by {{acceptanceDeadline}}.
+
+Sincerely,
+{{hrManagerName}}
+{{hrManagerTitle}}
+{{companyName}}`,
+    },
+    {
+      name: 'Appointment Letter - India',
+      description: 'Appointment letter template compliant with Indian employment law',
+      letterType: 'APPOINTMENT',
+      content: `Ref: {{referenceNumber}}
+Date: {{issueDate}}
+
+Dear {{employeeName}},
+
+Sub: Letter of Appointment
+
+With reference to your application and subsequent interview, we are pleased to appoint you as {{jobTitle}} in the {{departmentName}} department at {{companyName}}, {{locationName}}.
+
+Date of Joining: {{joiningDate}}
+Employee Code: {{employeeCode}}
+
+Compensation:
+- CTC: INR {{ctc}} per annum
+- Basic: INR {{basicSalary}} per month
+- HRA: INR {{hra}} per month
+- Special Allowance: INR {{specialAllowance}} per month
+- PF Contribution (Employer): INR {{pfContribution}} per month
+
+Statutory Deductions:
+- Employee PF: As per EPF Act, 1952
+- Professional Tax: As per state regulations
+- Income Tax: As per applicable slab
+
+Probation Period: {{probationMonths}} months from the date of joining.
+
+You are requested to bring the following documents on the date of joining:
+1. Educational certificates (originals for verification)
+2. Previous employment relieving letter
+3. PAN card and Aadhaar card
+4. Passport-size photographs (4 nos.)
+5. Bank account details for salary credit
+
+We welcome you to the {{companyName}} family.
+
+For {{companyName}},
+{{hrManagerName}}
+Head of Human Resources`,
+    },
+    {
+      name: 'Confirmation Letter',
+      description: 'Probation confirmation letter template',
+      letterType: 'CONFIRMATION',
+      content: `Ref: {{referenceNumber}}
+Date: {{issueDate}}
+
+Dear {{employeeName}},
+
+Sub: Confirmation of Employment
+
+We are pleased to inform you that based on your satisfactory performance during the probation period, your services have been confirmed with effect from {{confirmationDate}}.
+
+Your revised compensation effective {{confirmationDate}}:
+- Basic Salary: {{currency}} {{basicSalary}} per month
+- Total Package: {{currency}} {{totalPackage}} per month
+
+All other terms and conditions of your employment shall remain unchanged.
+
+We wish you a long and successful career with {{companyName}}.
+
+Regards,
+{{hrManagerName}}
+{{hrManagerTitle}}`,
+    },
+    {
+      name: 'Transfer Letter',
+      description: 'Inter-department or inter-location transfer notification',
+      letterType: 'TRANSFER',
+      content: `Ref: {{referenceNumber}}
+Date: {{issueDate}}
+
+Dear {{employeeName}},
+
+Sub: Transfer Order
+
+This is to inform you that you are being transferred from {{fromDepartment}} ({{fromLocation}}) to {{toDepartment}} ({{toLocation}}), effective {{effectiveDate}}.
+
+Your designation, grade, and compensation will remain as:
+- Designation: {{jobTitle}}
+- Grade: {{gradeName}}
+- Basic Salary: {{currency}} {{basicSalary}} per month
+
+{{#if hasRelocationAllowance}}
+Relocation Benefits:
+- Relocation Allowance: {{currency}} {{relocationAllowance}} (one-time)
+- Temporary Accommodation: {{accommodationDays}} days
+{{/if}}
+
+Please complete the handover of your current responsibilities to {{handoverPerson}} by {{handoverDate}}.
+
+We appreciate your flexibility and cooperation.
+
+Regards,
+{{hrManagerName}}
+{{hrManagerTitle}}`,
+    },
+    {
+      name: 'Promotion Letter',
+      description: 'Employee promotion notification letter',
+      letterType: 'PROMOTION',
+      content: `Ref: {{referenceNumber}}
+Date: {{issueDate}}
+
+Dear {{employeeName}},
+
+Sub: Promotion
+
+We are pleased to announce your promotion to the position of {{newJobTitle}} in the {{departmentName}} department, effective {{effectiveDate}}.
+
+Your revised compensation:
+- Previous Grade: {{previousGrade}} | New Grade: {{newGrade}}
+- Previous Salary: {{currency}} {{previousSalary}} | New Salary: {{currency}} {{newSalary}}
+
+This promotion is a recognition of your exceptional contributions, leadership, and dedication to {{companyName}}.
+
+Congratulations on this well-deserved achievement.
+
+Best regards,
+{{hrManagerName}}
+{{hrManagerTitle}}`,
+    },
+    {
+      name: 'Experience Certificate',
+      description: 'Employment experience certificate issued upon exit',
+      letterType: 'EXPERIENCE',
+      content: `Ref: {{referenceNumber}}
+Date: {{issueDate}}
+
+TO WHOM IT MAY CONCERN
+
+This is to certify that {{employeeName}} (Employee Code: {{employeeCode}}) was employed with {{companyName}} from {{joiningDate}} to {{lastWorkingDate}}.
+
+During the tenure, {{pronoun}} held the following position(s):
+- {{jobTitle}} in the {{departmentName}} department
+
+{{pronoun_cap}} last drawn monthly compensation was {{currency}} {{lastSalary}}.
+
+We found {{pronoun_obj}} to be a dedicated and sincere employee. We wish {{pronoun_obj}} all the best in future endeavors.
+
+This certificate is issued upon request, without any liability on the part of {{companyName}}.
+
+For {{companyName}},
+{{hrManagerName}}
+Head of Human Resources`,
+    },
+    {
+      name: 'Exit Letter - Resignation Acceptance',
+      description: 'Resignation acceptance and exit process initiation letter',
+      letterType: 'EXIT',
+      content: `Ref: {{referenceNumber}}
+Date: {{issueDate}}
+
+Dear {{employeeName}},
+
+Sub: Acceptance of Resignation
+
+We acknowledge receipt of your resignation letter dated {{resignationDate}}. Your resignation has been accepted with effect from {{lastWorkingDate}}.
+
+Notice Period: {{noticePeriodDays}} days (from {{resignationDate}} to {{lastWorkingDate}})
+
+Exit Checklist:
+1. Complete knowledge transfer and handover
+2. Return all company property (laptop, ID card, access cards)
+3. Clear all pending financial obligations
+4. Obtain departmental clearances
+
+Your final settlement including:
+- Salary up to last working date
+- Leave encashment for {{unusedLeave}} days
+- End of Service Gratuity (if applicable)
+- Any other dues
+
+will be processed within {{settlementDays}} business days from your last working date.
+
+Please coordinate with HR for your exit interview and clearance formalities.
+
+Regards,
+{{hrManagerName}}
+{{hrManagerTitle}}`,
+    },
+  ];
+
+  const createdTemplates: Record<string, string> = {};
+  for (const def of letterTemplateDefs) {
+    const existing = await prisma.letterTemplate.findFirst({
+      where: { tenantId, name: def.name },
+    });
+    if (existing) {
+      createdTemplates[def.letterType] = existing.id;
+    } else {
+      const created = await prisma.letterTemplate.create({
+        data: { tenantId, ...def },
+      });
+      createdTemplates[def.letterType] = created.id;
+    }
+  }
+  console.log(`  Created/verified ${letterTemplateDefs.length} letter templates`);
+
+  // ════════════════════════════════════════════════════════════════════════
+  // 5. LETTERS (generated from templates for specific employees)
+  // ════════════════════════════════════════════════════════════════════════
+  console.log('  ...Seeding Letters');
+
+  const letterDefs = [
+    {
+      empIdx: 0,
+      letterType: 'OFFER',
+      subject: `Offer of Employment - ${employees[0]?.firstName ?? 'Employee'} ${employees[0]?.lastName ?? ''}`,
+      status: 'ISSUED',
+      issuedAt: new Date('2021-12-20'),
+    },
+    {
+      empIdx: 0,
+      letterType: 'PROMOTION',
+      subject: `Promotion to Lead Engineer - ${employees[0]?.firstName ?? 'Employee'} ${employees[0]?.lastName ?? ''}`,
+      status: 'ISSUED',
+      issuedAt: new Date('2023-06-25'),
+    },
+    {
+      empIdx: 1,
+      letterType: 'APPOINTMENT',
+      subject: `Appointment Letter - ${employees[1]?.firstName ?? 'Employee'} ${employees[1]?.lastName ?? ''}`,
+      status: 'ISSUED',
+      issuedAt: new Date('2022-02-20'),
+    },
+    {
+      empIdx: 2,
+      letterType: 'TRANSFER',
+      subject: `Transfer Order - ${employees[2]?.firstName ?? 'Employee'} ${employees[2]?.lastName ?? ''} to Riyadh`,
+      status: 'ISSUED',
+      issuedAt: new Date('2024-03-20'),
+    },
+    {
+      empIdx: 3,
+      letterType: 'CONFIRMATION',
+      subject: `Confirmation of Employment - ${employees[3]?.firstName ?? 'Employee'} ${employees[3]?.lastName ?? ''}`,
+      status: 'ISSUED',
+      issuedAt: new Date('2023-12-15'),
+    },
+    {
+      empIdx: 4,
+      letterType: 'OFFER',
+      subject: `Offer of Employment - ${employees[Math.min(4, employees.length - 1)]?.firstName ?? 'Employee'} ${employees[Math.min(4, employees.length - 1)]?.lastName ?? ''}`,
+      status: 'APPROVED',
+      issuedAt: null,
+    },
+  ];
+
+  for (const def of letterDefs) {
+    const emp = pick(employees, def.empIdx);
+    const templateId = createdTemplates[def.letterType];
+    if (!templateId) continue;
+
+    const existing = await prisma.letter.findFirst({
+      where: {
+        tenantId,
+        employeeId: emp.id,
+        letterType: def.letterType,
+        subject: def.subject,
+      },
+    });
+    if (!existing) {
+      await prisma.letter.create({
+        data: {
+          tenantId,
+          employeeId: emp.id,
+          templateId,
+          letterType: def.letterType,
+          subject: def.subject,
+          content: `Generated letter content for ${emp.firstName} ${emp.lastName}. Letter type: ${def.letterType}. This content would be populated from the template with actual employee data at generation time.`,
+          status: def.status,
+          issuedAt: def.issuedAt ?? undefined,
+          createdBy: 'SYSTEM_SEED',
+        },
+      });
+    }
+  }
+  console.log(`  Created/verified ${letterDefs.length} letters`);
+
+  // ════════════════════════════════════════════════════════════════════════
+  // 6. ID CARD TEMPLATES
+  // ════════════════════════════════════════════════════════════════════════
+  console.log('  ...Seeding ID Card Templates');
+
+  const idCardTemplateDefs = [
+    {
+      name: 'Standard Employee ID - UAE',
+      description: 'Standard employee identity card for UAE-based staff with Emirates ID integration',
+      cardType: 'EMPLOYEE',
+      designData: {
+        layout: 'landscape',
+        dimensions: { width: 85.6, height: 53.98, unit: 'mm' },
+        frontFields: ['photo', 'employeeName', 'employeeCode', 'designation', 'department', 'companyLogo', 'qrCode'],
+        backFields: ['emergencyContact', 'bloodGroup', 'validity', 'barcode', 'companyAddress'],
+        colorScheme: { primary: '#1a365d', secondary: '#2d3748', accent: '#e53e3e' },
+        fontFamily: 'Inter',
+      },
+      includePhoto: true,
+      includeQRCode: true,
+      includeBarcode: true,
+      validityDays: 365,
+      isDefault: true,
+    },
+    {
+      name: 'Standard Employee ID - India',
+      description: 'Standard employee identity card for India-based staff',
+      cardType: 'EMPLOYEE',
+      designData: {
+        layout: 'portrait',
+        dimensions: { width: 53.98, height: 85.6, unit: 'mm' },
+        frontFields: ['photo', 'employeeName', 'employeeCode', 'designation', 'department', 'companyLogo'],
+        backFields: ['emergencyContact', 'bloodGroup', 'validity', 'qrCode', 'companyAddress'],
+        colorScheme: { primary: '#2c5282', secondary: '#4a5568', accent: '#dd6b20' },
+        fontFamily: 'Roboto',
+      },
+      includePhoto: true,
+      includeQRCode: true,
+      includeBarcode: false,
+      validityDays: 365,
+      isDefault: false,
+    },
+    {
+      name: 'Contractor Badge',
+      description: 'Temporary contractor badge with restricted access areas',
+      cardType: 'CONTRACTOR',
+      designData: {
+        layout: 'landscape',
+        dimensions: { width: 85.6, height: 53.98, unit: 'mm' },
+        frontFields: ['photo', 'contractorName', 'contractorId', 'company', 'accessLevel', 'companyLogo'],
+        backFields: ['validity', 'restrictedAreas', 'emergencyNumber'],
+        colorScheme: { primary: '#744210', secondary: '#975a16', accent: '#fbd38d' },
+        fontFamily: 'Inter',
+      },
+      includePhoto: true,
+      includeQRCode: true,
+      includeBarcode: false,
+      validityDays: 90,
+      isDefault: false,
+    },
+    {
+      name: 'Visitor Pass',
+      description: 'Single-day visitor pass with escort requirements',
+      cardType: 'VISITOR',
+      designData: {
+        layout: 'portrait',
+        dimensions: { width: 53.98, height: 85.6, unit: 'mm' },
+        frontFields: ['visitorName', 'visitDate', 'hostName', 'purpose', 'companyLogo'],
+        backFields: ['safetyGuidelines', 'emergencyNumber'],
+        colorScheme: { primary: '#276749', secondary: '#38a169', accent: '#c6f6d5' },
+        fontFamily: 'Inter',
+      },
+      includePhoto: false,
+      includeQRCode: true,
+      includeBarcode: false,
+      validityDays: 1,
+      isDefault: false,
+    },
+  ];
+
+  const createdIdTemplates: string[] = [];
+  for (const def of idCardTemplateDefs) {
+    const existing = await prisma.iDCardTemplate.findFirst({
+      where: { tenantId, name: def.name },
+    });
+    if (existing) {
+      createdIdTemplates.push(existing.id);
+    } else {
+      const created = await prisma.iDCardTemplate.create({
+        data: { tenantId, ...def },
+      });
+      createdIdTemplates.push(created.id);
+    }
+  }
+  console.log(`  Created/verified ${idCardTemplateDefs.length} ID card templates`);
+
+  // ════════════════════════════════════════════════════════════════════════
+  // 7. ID CARDS
+  // ════════════════════════════════════════════════════════════════════════
+  console.log('  ...Seeding ID Cards');
+
+  const idCardDefs = [
+    {
+      empIdx: 0,
+      templateIdx: 0,
+      cardNumber: 'IDC-2022-00001',
+      cardType: 'EMPLOYEE',
+      issueDate: new Date('2022-01-20'),
+      expiryDate: new Date('2025-01-20'),
+      status: 'ISSUED',
+      printedCount: 1,
+    },
+    {
+      empIdx: 1,
+      templateIdx: 0,
+      cardNumber: 'IDC-2022-00002',
+      cardType: 'EMPLOYEE',
+      issueDate: new Date('2022-03-05'),
+      expiryDate: new Date('2025-03-05'),
+      status: 'ISSUED',
+      printedCount: 1,
+    },
+    {
+      empIdx: 2,
+      templateIdx: 1,
+      cardNumber: 'IDC-2023-00003',
+      cardType: 'EMPLOYEE',
+      issueDate: new Date('2023-01-15'),
+      expiryDate: new Date('2026-01-15'),
+      status: 'ISSUED',
+      printedCount: 2,
+    },
+    {
+      empIdx: 3,
+      templateIdx: 0,
+      cardNumber: 'IDC-2023-00004',
+      cardType: 'EMPLOYEE',
+      issueDate: new Date('2023-06-20'),
+      expiryDate: new Date('2026-06-20'),
+      status: 'ISSUED',
+      printedCount: 1,
+    },
+    {
+      empIdx: 4,
+      templateIdx: 0,
+      cardNumber: 'IDC-2024-00005',
+      cardType: 'EMPLOYEE',
+      issueDate: new Date('2024-01-10'),
+      expiryDate: new Date('2027-01-10'),
+      status: 'PENDING',
+      printedCount: 0,
+    },
+  ];
+
+  for (const def of idCardDefs) {
+    const emp = pick(employees, def.empIdx);
+    const templateId = pick(createdIdTemplates, def.templateIdx);
+    if (!templateId) continue;
+
+    const existing = await prisma.iDCard.findFirst({
+      where: { tenantId, cardNumber: def.cardNumber },
+    });
+    if (!existing) {
+      await prisma.iDCard.create({
+        data: {
+          tenantId,
+          employeeId: emp.id,
+          templateId,
+          cardNumber: def.cardNumber,
+          cardType: def.cardType,
+          issueDate: def.issueDate,
+          expiryDate: def.expiryDate,
+          status: def.status,
+          qrCodeData: JSON.stringify({ empId: emp.id, card: def.cardNumber, type: def.cardType }),
+          barcodeData: def.cardNumber.replace(/-/g, ''),
+          issuedBy: def.status === 'ISSUED' ? 'HR_ADMIN' : undefined,
+          issuedAt: def.status === 'ISSUED' ? def.issueDate : undefined,
+          printedCount: def.printedCount,
+          lastPrintedAt: def.printedCount > 0 ? def.issueDate : undefined,
+          createdBy: 'SYSTEM_SEED',
+        },
+      });
+    }
+  }
+  console.log(`  Created/verified ${idCardDefs.length} ID cards`);
+
+  // ════════════════════════════════════════════════════════════════════════
+  // 8. EXIT REQUEST + EXIT CLEARANCE (for a terminated employee)
+  // ════════════════════════════════════════════════════════════════════════
+  console.log('  ...Seeding Exit Requests & Clearances');
+
+  // Use the last available employee as the exiting employee
+  const exitingEmpIdx = Math.min(employees.length - 1, 5);
+  const exitingEmp = employees[exitingEmpIdx];
+
+  const exitDefs = [
+    {
+      emp: exitingEmp,
+      exitType: 'RESIGNATION',
+      resignationDate: new Date('2024-10-01'),
+      lastWorkingDate: new Date('2024-10-31'),
+      noticePeriodDays: 30,
+      reason: 'Personal reasons - relocating to home country for family obligations',
+      status: 'PROCESSING',
+      clearanceStatus: 'IN_PROGRESS',
+      settlementAmount: 45000,
+      rehireEligible: true,
+    },
+    {
+      emp: pick(employees, Math.min(employees.length - 1, 6)),
+      exitType: 'CONTRACT_END',
+      resignationDate: new Date('2024-12-15'),
+      lastWorkingDate: new Date('2024-12-31'),
+      noticePeriodDays: 14,
+      reason: 'Fixed-term contract expiry - project completion',
+      status: 'COMPLETED',
+      clearanceStatus: 'COMPLETED',
+      settlementAmount: 22000,
+      rehireEligible: true,
+    },
+    {
+      emp: pick(employees, Math.min(employees.length - 1, 7)),
+      exitType: 'TERMINATION',
+      resignationDate: new Date('2024-08-15'),
+      lastWorkingDate: new Date('2024-08-15'),
+      noticePeriodDays: 0,
+      reason: 'Termination during probation period - performance below expectations',
+      status: 'COMPLETED',
+      clearanceStatus: 'COMPLETED',
+      settlementAmount: 8500,
+      rehireEligible: false,
+    },
+  ];
+
+  for (const def of exitDefs) {
+    const existing = await prisma.exitRequest.findFirst({
+      where: {
+        tenantId,
+        employeeId: def.emp.id,
+        exitType: def.exitType,
+      },
+    });
+
+    let exitRequestId: string;
+    if (existing) {
+      exitRequestId = existing.id;
+    } else {
+      const created = await prisma.exitRequest.create({
+        data: {
+          tenantId,
+          employeeId: def.emp.id,
+          exitType: def.exitType,
+          resignationDate: def.resignationDate,
+          lastWorkingDate: def.lastWorkingDate,
+          noticePeriodDays: def.noticePeriodDays,
+          reason: def.reason,
+          status: def.status,
+          clearanceStatus: def.clearanceStatus,
+          settlementAmount: def.settlementAmount,
+          rehireEligible: def.rehireEligible,
+        },
+      });
+      exitRequestId = created.id;
+    }
+
+    // Create clearance items for each exit request
+    const clearanceDefs = [
+      {
+        department: 'IT Department',
+        description: 'Return laptop, access cards, and revoke system access (AD, VPN, email)',
+        status: def.clearanceStatus === 'COMPLETED' ? 'APPROVED' : 'APPROVED',
+        clearedBy: 'IT_ADMIN',
+        clearedAt: new Date('2024-10-25'),
+        notes: 'Laptop serial: LAP-2022-0156 returned. All access revoked.',
+      },
+      {
+        department: 'Finance',
+        description: 'Clear pending expense claims, salary advances, and company credit card',
+        status: def.clearanceStatus === 'COMPLETED' ? 'APPROVED' : 'PENDING',
+        clearedBy: def.clearanceStatus === 'COMPLETED' ? 'FINANCE_ADMIN' : null,
+        clearedAt: def.clearanceStatus === 'COMPLETED' ? new Date('2024-10-28') : null,
+        notes: def.clearanceStatus === 'COMPLETED' ? 'All financial obligations cleared. No outstanding advances.' : 'Pending expense report review: AED 2,350',
+      },
+      {
+        department: 'HR Department',
+        description: 'Collect ID card, conduct exit interview, process final settlement',
+        status: def.clearanceStatus === 'COMPLETED' ? 'APPROVED' : 'PENDING',
+        clearedBy: def.clearanceStatus === 'COMPLETED' ? 'HR_ADMIN' : null,
+        clearedAt: def.clearanceStatus === 'COMPLETED' ? new Date('2024-10-30') : null,
+        notes: def.clearanceStatus === 'COMPLETED' ? 'Exit interview completed. ID card collected. EOSB calculated.' : 'Exit interview scheduled for 28 Oct',
+      },
+      {
+        department: 'Admin / Facilities',
+        description: 'Return parking card, office keys, and clear personal belongings from workstation',
+        status: def.clearanceStatus === 'COMPLETED' ? 'APPROVED' : 'APPROVED',
+        clearedBy: 'FACILITIES_ADMIN',
+        clearedAt: new Date('2024-10-22'),
+        notes: 'Parking card returned. Workstation cleared and sanitized.',
+      },
+    ];
+
+    const existingClearances = await prisma.exitClearance.findMany({
+      where: { exitRequestId },
+    });
+
+    if (existingClearances.length === 0) {
+      for (const cl of clearanceDefs) {
+        await prisma.exitClearance.create({
+          data: {
+            exitRequestId,
+            department: cl.department,
+            description: cl.description,
+            status: cl.status,
+            clearedBy: cl.clearedBy ?? undefined,
+            clearedAt: cl.clearedAt ?? undefined,
+            notes: cl.notes,
+          },
+        });
+      }
+    }
+  }
+  console.log(`  Created/verified ${exitDefs.length} exit requests with clearances`);
+
+  // ════════════════════════════════════════════════════════════════════════
+  // 9. PROBATION TRACKING + PROBATION REVIEWS (for new hires)
+  // ════════════════════════════════════════════════════════════════════════
+  console.log('  ...Seeding Probation Tracking & Reviews');
+
+  const probationDefs = [
+    {
+      empIdx: 4,
+      startDate: new Date('2024-01-02'),
+      endDate: new Date('2024-07-01'),
+      extendedEndDate: null,
+      status: 'CONFIRMED',
+      performanceRating: 'MEETS_EXPECTATIONS',
+      managerRecommendation: 'Recommend confirmation. Strong technical skills, good team collaboration.',
+      hrRecommendation: 'Confirmed. Attendance record satisfactory, no disciplinary issues.',
+      finalDecision: 'CONFIRM',
+      reviews: [
+        {
+          reviewDate: new Date('2024-02-15'),
+          reviewerName: 'Ahmed Al-Rashid (Manager)',
+          performanceRating: 3,
+          comments: 'Month 1 review: Good start. Still ramping up on codebase. Communication skills are strong. Needs to improve speed of delivery.',
+        },
+        {
+          reviewDate: new Date('2024-04-15'),
+          reviewerName: 'Ahmed Al-Rashid (Manager)',
+          performanceRating: 4,
+          comments: 'Month 3 review: Significant improvement. Delivered 2 features independently. Shows initiative in code reviews. Recommended for confirmation track.',
+        },
+        {
+          reviewDate: new Date('2024-06-15'),
+          reviewerName: 'Ahmed Al-Rashid (Manager)',
+          performanceRating: 4,
+          comments: 'Month 6 final review: Consistent performer. Handles production incidents well. Ready for confirmation.',
+        },
+      ],
+    },
+    {
+      empIdx: Math.min(employees.length - 1, 8),
+      startDate: new Date('2024-06-01'),
+      endDate: new Date('2024-12-01'),
+      extendedEndDate: new Date('2025-03-01'),
+      status: 'EXTENDED',
+      performanceRating: 'BELOW_EXPECTATIONS',
+      managerRecommendation: 'Extend probation by 3 months. Employee shows potential but needs improvement in delivery timelines.',
+      hrRecommendation: 'Agree with extension. Create PIP for specific deliverables.',
+      finalDecision: 'EXTEND',
+      reviews: [
+        {
+          reviewDate: new Date('2024-08-01'),
+          reviewerName: 'Priya Sharma (Manager)',
+          performanceRating: 2,
+          comments: 'Month 2 review: Struggling with process adherence. Quality of work acceptable but timelines frequently missed.',
+        },
+        {
+          reviewDate: new Date('2024-10-01'),
+          reviewerName: 'Priya Sharma (Manager)',
+          performanceRating: 3,
+          comments: 'Month 4 review: Marginal improvement. Recommending probation extension with clear performance targets.',
+        },
+      ],
+    },
+    {
+      empIdx: Math.min(employees.length - 1, 9),
+      startDate: new Date('2024-09-15'),
+      endDate: new Date('2025-03-15'),
+      extendedEndDate: null,
+      status: 'ACTIVE',
+      performanceRating: null,
+      managerRecommendation: null,
+      hrRecommendation: null,
+      finalDecision: null,
+      reviews: [
+        {
+          reviewDate: new Date('2024-11-15'),
+          reviewerName: 'Omar Khalil (Manager)',
+          performanceRating: 4,
+          comments: 'Month 2 review: Excellent onboarding. Quick learner, already contributing to sprint deliverables. Good cultural fit.',
+        },
+      ],
+    },
+    {
+      empIdx: Math.min(employees.length - 1, 10),
+      startDate: new Date('2025-01-05'),
+      endDate: new Date('2025-07-05'),
+      extendedEndDate: null,
+      status: 'ACTIVE',
+      performanceRating: null,
+      managerRecommendation: null,
+      hrRecommendation: null,
+      finalDecision: null,
+      reviews: [
+        {
+          reviewDate: new Date('2025-03-05'),
+          reviewerName: 'Fatima Al-Zahra (Manager)',
+          performanceRating: 3,
+          comments: 'Month 2 review: Adequate progress. Employee is adapting well to the team. Needs to take more ownership of tasks.',
+        },
+      ],
+    },
+  ];
+
+  for (const def of probationDefs) {
+    const emp = pick(employees, def.empIdx);
+    const existing = await prisma.probationTracking.findFirst({
+      where: {
+        tenantId,
+        employeeId: emp.id,
+        startDate: def.startDate,
+      },
+    });
+
+    let probationId: string;
+    if (existing) {
+      probationId = existing.id;
+    } else {
+      const created = await prisma.probationTracking.create({
+        data: {
+          tenantId,
+          employeeId: emp.id,
+          startDate: def.startDate,
+          endDate: def.endDate,
+          extendedEndDate: def.extendedEndDate ?? undefined,
+          status: def.status,
+          performanceRating: def.performanceRating ?? undefined,
+          managerRecommendation: def.managerRecommendation ?? undefined,
+          hrRecommendation: def.hrRecommendation ?? undefined,
+          finalDecision: def.finalDecision ?? undefined,
+        },
+      });
+      probationId = created.id;
+    }
+
+    // Create reviews for this probation record
+    const existingReviews = await prisma.probationReview.findMany({
+      where: { probationId },
+    });
+
+    if (existingReviews.length === 0) {
+      for (const review of def.reviews) {
+        await prisma.probationReview.create({
+          data: {
+            probationId,
+            reviewDate: review.reviewDate,
+            reviewerName: review.reviewerName,
+            performanceRating: review.performanceRating,
+            comments: review.comments,
+          },
+        });
+      }
+    }
+  }
+  console.log(`  Created/verified ${probationDefs.length} probation tracking records with reviews`);
+
+  // ════════════════════════════════════════════════════════════════════════
+  // 10. CONFIRMATION REQUESTS
+  // ════════════════════════════════════════════════════════════════════════
+  console.log('  ...Seeding Confirmation Requests');
+
+  const confirmationDefs = [
+    {
+      empIdx: 4,
+      eligibleDate: new Date('2024-07-01'),
+      requestedDate: new Date('2024-06-20'),
+      status: 'CONFIRMED',
+      managerApproval: 'APPROVED',
+      hrApproval: 'APPROVED',
+      confirmationDate: new Date('2024-07-01'),
+      confirmationLetterUrl: '/documents/confirmations/CONF-2024-001.pdf',
+      newSalary: 16000,
+    },
+    {
+      empIdx: 0,
+      eligibleDate: new Date('2022-07-15'),
+      requestedDate: new Date('2022-07-01'),
+      status: 'CONFIRMED',
+      managerApproval: 'APPROVED',
+      hrApproval: 'APPROVED',
+      confirmationDate: new Date('2022-07-15'),
+      confirmationLetterUrl: '/documents/confirmations/CONF-2022-001.pdf',
+      newSalary: 18500,
+    },
+    {
+      empIdx: 1,
+      eligibleDate: new Date('2022-09-01'),
+      requestedDate: new Date('2022-08-15'),
+      status: 'CONFIRMED',
+      managerApproval: 'APPROVED',
+      hrApproval: 'APPROVED',
+      confirmationDate: new Date('2022-09-01'),
+      confirmationLetterUrl: '/documents/confirmations/CONF-2022-002.pdf',
+      newSalary: 15500,
+    },
+    {
+      empIdx: Math.min(employees.length - 1, 9),
+      eligibleDate: new Date('2025-03-15'),
+      requestedDate: new Date('2025-03-01'),
+      status: 'PENDING',
+      managerApproval: 'PENDING',
+      hrApproval: 'PENDING',
+      confirmationDate: null,
+      confirmationLetterUrl: null,
+      newSalary: null,
+    },
+    {
+      empIdx: Math.min(employees.length - 1, 8),
+      eligibleDate: new Date('2025-03-01'),
+      requestedDate: new Date('2025-02-15'),
+      status: 'REJECTED',
+      managerApproval: 'REJECTED',
+      hrApproval: null,
+      confirmationDate: null,
+      confirmationLetterUrl: null,
+      newSalary: null,
+    },
+  ];
+
+  for (const def of confirmationDefs) {
+    const emp = pick(employees, def.empIdx);
+    const existing = await prisma.confirmationRequest.findFirst({
+      where: {
+        tenantId,
+        employeeId: emp.id,
+        eligibleDate: def.eligibleDate,
+      },
+    });
+    if (!existing) {
+      await prisma.confirmationRequest.create({
+        data: {
+          tenantId,
+          employeeId: emp.id,
+          eligibleDate: def.eligibleDate,
+          requestedDate: def.requestedDate,
+          status: def.status,
+          managerApproval: def.managerApproval,
+          hrApproval: def.hrApproval ?? undefined,
+          confirmationDate: def.confirmationDate ?? undefined,
+          confirmationLetterUrl: def.confirmationLetterUrl ?? undefined,
+          newSalary: def.newSalary ?? undefined,
+        },
+      });
+    }
+  }
+  console.log(`  Created/verified ${confirmationDefs.length} confirmation requests`);
+
+  // ── Summary ──
+  console.log('Employee Lifecycle seed completed successfully');
+  console.log('  Summary:');
+  console.log(`    - ${historyDefs.length} employment history records`);
+  console.log(`    - ${lifeEventTypeDefs.length} life event types`);
+  console.log(`    - ${lifeEventDefs.length} employee life events`);
+  console.log(`    - ${letterTemplateDefs.length} letter templates`);
+  console.log(`    - ${letterDefs.length} letters`);
+  console.log(`    - ${idCardTemplateDefs.length} ID card templates`);
+  console.log(`    - ${idCardDefs.length} ID cards`);
+  console.log(`    - ${exitDefs.length} exit requests with clearances`);
+  console.log(`    - ${probationDefs.length} probation tracking records with reviews`);
+  console.log(`    - ${confirmationDefs.length} confirmation requests`);
+}
+
+// Run if executed directly
+if (require.main === module) {
+  const _prisma = new PrismaClient();
+  const tenantId = process.env.TENANT_ID || 'default-tenant';
+  seedEmployeeLifecycle(_prisma, tenantId)
+    .catch((e) => {
+      console.error('Error seeding employee lifecycle:', e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await _prisma.$disconnect();
+    });
+}

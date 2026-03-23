@@ -1,16 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { ServiceProxy } from '@/lib/services/service-proxy';
+import { prisma } from '@/lib/database';
 import { auditMiddleware } from '@/lib/middleware/audit.middleware';
 import { z } from 'zod';
 
-// API Response Standard
-interface ApiResponse<T = any> {
+interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: {
     code: string;
     message: string;
+    messageAr?: string;
     details?: Record<string, unknown>;
   };
   meta?: {
@@ -30,68 +31,92 @@ const updateEmployeeSchema = z.object({
   gradeId: z.string().uuid().optional(),
   statusId: z.string().uuid().optional(),
   typeId: z.string().uuid().optional(),
-  managerId: z.string().uuid().optional(),
-  addressId: z.string().uuid().optional(),
+  managerId: z.string().uuid().optional().nullable(),
+  addressId: z.string().uuid().optional().nullable(),
+  positionId: z.string().uuid().optional().nullable(),
+  joiningDate: z.string().or(z.date()).optional(),
 });
+
+const employeeInclude = {
+  company: true,
+  department: true,
+  location: true,
+  jobProfile: true,
+  grade: true,
+  status: true,
+  type: true,
+  manager: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      employeeCode: true,
+    },
+  },
+};
 
 /**
  * GET /api/v1/employees/:id
- * Get employee by ID
+ * Get employee by ID — queries Prisma directly
  */
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, params }: { user: any; params: { id: string } }) => {
     try {
+      const tenantId = user.tenantId;
       const { id } = params;
 
-      // Fetch employee from microservice
-      const employee = await ServiceProxy.get('employee', `/employees/${id}`);
+      const employee = await prisma.employee.findFirst({
+        where: { id, tenantId },
+        include: employeeInclude,
+      });
 
       if (!employee) {
-        const response: ApiResponse = {
+        return NextResponse.json(
+          {
+            success: false,
+            error: { code: 'E3001', message: 'Employee not found', messageAr: 'الموظف غير موجود' },
+            meta: {
+              timestamp: new Date().toISOString(),
+              requestId: crypto.randomUUID(),
+              apiVersion: 'v1',
+            },
+          } satisfies ApiResponse,
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(
+        {
+          success: true,
+          data: { ...employee, name: `${employee.firstName} ${employee.lastName}` },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        } satisfies ApiResponse,
+        { status: 200 }
+      );
+    } catch (error) {
+      console.error('[Employee API] GET Error:', error);
+      return NextResponse.json(
+        {
           success: false,
           error: {
-            code: 'E3001',
-            message: 'Employee not found',
+            code: 'E5001',
+            message: 'Failed to fetch employee',
+            messageAr: 'فشل في جلب الموظف',
+            details: { error: error instanceof Error ? error.message : 'Unknown error' },
           },
           meta: {
             timestamp: new Date().toISOString(),
             requestId: crypto.randomUUID(),
             apiVersion: 'v1',
           },
-        };
-
-        return NextResponse.json(response, { status: 404 });
-      }
-
-      const response: ApiResponse = {
-        success: true,
-        data: employee,
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 200 });
-    } catch (error) {
-      console.error('[Employee API] GET Error:', error);
-
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E5001',
-          message: 'Failed to fetch employee',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 500 });
+        } satisfies ApiResponse,
+        { status: 500 }
+      );
     }
   }
 );
@@ -100,190 +125,216 @@ export const GET = withEnhancedAuth(
  * PUT /api/v1/employees/:id
  * Update employee by ID
  */
-export const PUT = auditMiddleware.updateEmployee(withEnhancedAuth(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
-    try {
-      const { id } = params;
-      const body = await request.json();
+export const PUT = auditMiddleware.updateEmployee(
+  withEnhancedAuth(
+    async (request: NextRequest, { user, params }: { user: any; params: { id: string } }) => {
+      try {
+        const tenantId = user.tenantId;
+        const { id } = params;
+        const body = await request.json();
 
-      // Validate request body
-      const validationResult = updateEmployeeSchema.safeParse(body);
-      if (!validationResult.success) {
-        const response: ApiResponse = {
-          success: false,
-          error: {
-            code: 'E2001',
-            message: 'Validation failed',
-            details: { errors: validationResult.error.errors },
-          },
-          meta: {
-            timestamp: new Date().toISOString(),
-            requestId: crypto.randomUUID(),
-            apiVersion: 'v1',
-          },
-        };
+        const validationResult = updateEmployeeSchema.safeParse(body);
+        if (!validationResult.success) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: {
+                code: 'E2001',
+                message: 'Validation failed',
+                messageAr: 'فشل التحقق',
+                details: { errors: validationResult.error.errors },
+              },
+              meta: {
+                timestamp: new Date().toISOString(),
+                requestId: crypto.randomUUID(),
+                apiVersion: 'v1',
+              },
+            } satisfies ApiResponse,
+            { status: 400 }
+          );
+        }
 
-        return NextResponse.json(response, { status: 400 });
+        // Verify employee exists and belongs to tenant
+        const existing = await prisma.employee.findFirst({ where: { id, tenantId } });
+        if (!existing) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: {
+                code: 'E3001',
+                message: 'Employee not found',
+                messageAr: 'الموظف غير موجود',
+              },
+              meta: {
+                timestamp: new Date().toISOString(),
+                requestId: crypto.randomUUID(),
+                apiVersion: 'v1',
+              },
+            } satisfies ApiResponse,
+            { status: 404 }
+          );
+        }
+
+        // Check email uniqueness if being updated
+        const data = validationResult.data;
+        if (data.email && data.email !== existing.email) {
+          const emailTaken = await prisma.employee.findUnique({ where: { email: data.email } });
+          if (emailTaken) {
+            return NextResponse.json(
+              {
+                success: false,
+                error: {
+                  code: 'E3002',
+                  message: 'An employee with this email already exists',
+                  messageAr: 'يوجد موظف بهذا البريد الإلكتروني بالفعل',
+                },
+                meta: {
+                  timestamp: new Date().toISOString(),
+                  requestId: crypto.randomUUID(),
+                  apiVersion: 'v1',
+                },
+              } satisfies ApiResponse,
+              { status: 409 }
+            );
+          }
+        }
+
+        const updateData: Record<string, unknown> = { ...data };
+        if (updateData.joiningDate) {
+          updateData.joiningDate = new Date(updateData.joiningDate as string);
+        }
+
+        const employee = await prisma.employee.update({
+          where: { id },
+          data: updateData,
+          include: employeeInclude,
+        });
+
+        return NextResponse.json(
+          {
+            success: true,
+            data: employee,
+            meta: {
+              timestamp: new Date().toISOString(),
+              requestId: crypto.randomUUID(),
+              apiVersion: 'v1',
+            },
+          } satisfies ApiResponse,
+          { status: 200 }
+        );
+      } catch (error) {
+        console.error('[Employee API] PUT Error:', error);
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E5001',
+              message: 'Failed to update employee',
+              messageAr: 'فشل في تحديث الموظف',
+              details: { error: error instanceof Error ? error.message : 'Unknown error' },
+            },
+            meta: {
+              timestamp: new Date().toISOString(),
+              requestId: crypto.randomUUID(),
+              apiVersion: 'v1',
+            },
+          } satisfies ApiResponse,
+          { status: 500 }
+        );
       }
-
-      // Update employee via microservice
-      const employee = await ServiceProxy.put('employee', `/employees/${id}`, validationResult.data);
-
-      const response: ApiResponse = {
-        success: true,
-        data: employee,
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 200 });
-    } catch (error) {
-      console.error('[Employee API] PUT Error:', error);
-
-      // Check for not found error
-      if (
-        error instanceof Error &&
-        error.message.includes('Record to update not found')
-      ) {
-        const response: ApiResponse = {
-          success: false,
-          error: {
-            code: 'E3001',
-            message: 'Employee not found',
-          },
-          meta: {
-            timestamp: new Date().toISOString(),
-            requestId: crypto.randomUUID(),
-            apiVersion: 'v1',
-          },
-        };
-
-        return NextResponse.json(response, { status: 404 });
-      }
-
-      // Check for duplicate errors
-      if (error instanceof Error && error.message.includes('already exists')) {
-        const response: ApiResponse = {
-          success: false,
-          error: {
-            code: 'E3002',
-            message: error.message,
-          },
-          meta: {
-            timestamp: new Date().toISOString(),
-            requestId: crypto.randomUUID(),
-            apiVersion: 'v1',
-          },
-        };
-
-        return NextResponse.json(response, { status: 409 });
-      }
-
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E5001',
-          message: 'Failed to update employee',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 500 });
     }
-  }
-));
+  )
+);
 
 /**
  * DELETE /api/v1/employees/:id
- * Soft delete employee by updating status to TERMINATED
+ * Soft delete employee by updating status
  */
-export const DELETE = auditMiddleware.deleteEmployee(withEnhancedAuth(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
-    try {
-      const { id } = params;
-      const { searchParams } = new URL(request.url);
+export const DELETE = auditMiddleware.deleteEmployee(
+  withEnhancedAuth(
+    async (request: NextRequest, { user, params }: { user: any; params: { id: string } }) => {
+      try {
+        const tenantId = user.tenantId;
+        const { id } = params;
+        const { searchParams } = new URL(request.url);
+        const terminatedStatusId = searchParams.get('terminatedStatusId');
 
-      // Get terminated status ID from query params or use default
-      const terminatedStatusId = searchParams.get('terminatedStatusId');
+        if (!terminatedStatusId) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: {
+                code: 'E2001',
+                message: 'terminatedStatusId is required',
+                messageAr: 'معرف حالة الإنهاء مطلوب',
+              },
+              meta: {
+                timestamp: new Date().toISOString(),
+                requestId: crypto.randomUUID(),
+                apiVersion: 'v1',
+              },
+            } satisfies ApiResponse,
+            { status: 400 }
+          );
+        }
 
-      if (!terminatedStatusId) {
-        const response: ApiResponse = {
-          success: false,
-          error: {
-            code: 'E2001',
-            message: 'terminatedStatusId is required in query parameters',
-          },
-          meta: {
-            timestamp: new Date().toISOString(),
-            requestId: crypto.randomUUID(),
-            apiVersion: 'v1',
-          },
-        };
+        const existing = await prisma.employee.findFirst({ where: { id, tenantId } });
+        if (!existing) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: {
+                code: 'E3001',
+                message: 'Employee not found',
+                messageAr: 'الموظف غير موجود',
+              },
+              meta: {
+                timestamp: new Date().toISOString(),
+                requestId: crypto.randomUUID(),
+                apiVersion: 'v1',
+              },
+            } satisfies ApiResponse,
+            { status: 404 }
+          );
+        }
 
-        return NextResponse.json(response, { status: 400 });
+        await prisma.employee.update({
+          where: { id },
+          data: { statusId: terminatedStatusId },
+        });
+
+        return NextResponse.json(
+          {
+            success: true,
+            data: null,
+            meta: {
+              timestamp: new Date().toISOString(),
+              requestId: crypto.randomUUID(),
+              apiVersion: 'v1',
+            },
+          } satisfies ApiResponse,
+          { status: 200 }
+        );
+      } catch (error) {
+        console.error('[Employee API] DELETE Error:', error);
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E5001',
+              message: 'Failed to delete employee',
+              messageAr: 'فشل في حذف الموظف',
+              details: { error: error instanceof Error ? error.message : 'Unknown error' },
+            },
+            meta: {
+              timestamp: new Date().toISOString(),
+              requestId: crypto.randomUUID(),
+              apiVersion: 'v1',
+            },
+          } satisfies ApiResponse,
+          { status: 500 }
+        );
       }
-
-      // Soft delete employee via microservice
-      await ServiceProxy.delete('employee', `/employees/${id}?terminatedStatusId=${terminatedStatusId}`);
-
-      const response: ApiResponse = {
-        success: true,
-        data: null,
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 204 });
-    } catch (error) {
-      console.error('[Employee API] DELETE Error:', error);
-
-      // Check for not found error
-      if (
-        error instanceof Error &&
-        error.message.includes('Record to update not found')
-      ) {
-        const response: ApiResponse = {
-          success: false,
-          error: {
-            code: 'E3001',
-            message: 'Employee not found',
-          },
-          meta: {
-            timestamp: new Date().toISOString(),
-            requestId: crypto.randomUUID(),
-            apiVersion: 'v1',
-          },
-        };
-
-        return NextResponse.json(response, { status: 404 });
-      }
-
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E5001',
-          message: 'Failed to delete employee',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-
-      return NextResponse.json(response, { status: 500 });
     }
-  }
-));
+  )
+);

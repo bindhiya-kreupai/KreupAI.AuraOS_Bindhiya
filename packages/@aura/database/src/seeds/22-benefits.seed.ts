@@ -1,8 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
-
-export async function benefitsSeed(tenantId: string) {
+export async function benefitsSeed(prisma: PrismaClient, tenantId: string) {
   console.log('  💊 Seeding Benefits data...');
 
   // Create Benefit Plans

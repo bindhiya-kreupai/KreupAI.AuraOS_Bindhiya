@@ -1,8 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
-
-export async function seedPositions() {
+export async function seedPositions(prisma: PrismaClient = new PrismaClient()) {
   console.log('🔧 Seeding Positions...');
 
   const tenantId = 'tenant-kreup-001';
