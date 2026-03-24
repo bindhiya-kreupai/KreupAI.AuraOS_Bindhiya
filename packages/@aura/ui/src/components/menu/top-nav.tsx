@@ -29,12 +29,15 @@ import { cn } from '../../utils';
 interface TopNavProps {
   onMenuClick?: () => void;
   onSearchClick?: () => void;
+  onAIAssistantClick?: () => void;
+  onHelpClick?: () => void;
+  onSignOut?: () => void;
   isDark?: boolean;
   onThemeToggle?: () => void;
   className?: string;
 }
 
-export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, onSearchClick, isDark = false, onThemeToggle, className }) => {
+export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, onSearchClick, onAIAssistantClick, onHelpClick, onSignOut, isDark = false, onThemeToggle, className }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
@@ -87,7 +90,10 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, onSearchClick, isDa
       {/* Right Section */}
       <div className="flex items-center gap-2">
         {/* AI Assistant */}
-        <button className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-celestial-indigo to-quantum-rose text-white text-sm font-medium hover:opacity-90 transition-opacity">
+        <button
+          onClick={onAIAssistantClick}
+          className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-celestial-indigo to-quantum-rose text-white text-sm font-medium hover:opacity-90 transition-opacity"
+        >
           <MessageSquare className="w-4 h-4" />
           <span>AI</span>
         </button>
@@ -106,7 +112,11 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, onSearchClick, isDa
         </button>
 
         {/* Help */}
-        <button className="hidden sm:block p-2 rounded-lg hover:bg-pearl dark:hover:bg-stellar-blue transition-colors">
+        <button
+          onClick={onHelpClick}
+          className="hidden sm:block p-2 rounded-lg hover:bg-pearl dark:hover:bg-stellar-blue transition-colors"
+          title="Help & Support"
+        >
           <HelpCircle className="w-5 h-5 text-twilight dark:text-silver-mist" />
         </button>
 
@@ -117,7 +127,6 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, onSearchClick, isDa
             className="p-2 rounded-lg hover:bg-pearl dark:hover:bg-stellar-blue transition-colors relative"
           >
             <Bell className="w-5 h-5 text-twilight dark:text-silver-mist" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-quantum-rose rounded-full" />
           </button>
 
           {isNotificationsOpen && (
@@ -177,7 +186,13 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, onSearchClick, isDa
                   <Settings className="w-4 h-4" />
                   Settings
                 </Link>
-                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-coral-alert hover:bg-coral-alert/10 transition-colors">
+                <button
+                  onClick={() => {
+                    setIsProfileOpen(false);
+                    onSignOut?.();
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-coral-alert hover:bg-coral-alert/10 transition-colors"
+                >
                   <LogOut className="w-4 h-4" />
                   Sign Out
                 </button>

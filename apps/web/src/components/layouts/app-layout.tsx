@@ -8,8 +8,8 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import React, { useState, useEffect, useCallback } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { SidebarMenu, MobileMenu, TopNav, RightSidebar } from '@aura/ui/components/menu';
 import { cn } from '@/lib/utils';
 import { ActivityProvider, useActivity } from '@/stores/activity-store';
@@ -25,6 +25,7 @@ interface AppLayoutProps {
 // Inner component that uses the activity context
 const AppLayoutInner: React.FC<AppLayoutProps> = ({ children }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -32,6 +33,32 @@ const AppLayoutInner: React.FC<AppLayoutProps> = ({ children }) => {
     useActivity();
   const { setIsOpen: setSearchOpen } = useSearch();
   const { isDark, toggleTheme } = useTheme();
+
+  const handleSignOut = useCallback(async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {
+      // Continue with client-side cleanup even if API call fails
+    }
+    // Clear client-side auth state
+    document.cookie.split(';').forEach((c) => {
+      const name = c.trim().split('=')[0];
+      if (name) {
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+      }
+    });
+    localStorage.removeItem('aura_token');
+    localStorage.removeItem('aura_session');
+    router.push('/auth/login');
+  }, [router]);
+
+  const handleAIAssistantClick = useCallback(() => {
+    window.dispatchEvent(new CustomEvent('aura:toggle-chatbot'));
+  }, []);
+
+  const handleHelpClick = useCallback(() => {
+    router.push('/dashboard/hr-helpdesk');
+  }, [router]);
 
   // Track page visits for recent activity
   useEffect(() => {
@@ -88,6 +115,9 @@ const AppLayoutInner: React.FC<AppLayoutProps> = ({ children }) => {
       <TopNav
         onMenuClick={() => setMobileMenuOpen(true)}
         onSearchClick={() => setSearchOpen(true)}
+        onAIAssistantClick={handleAIAssistantClick}
+        onHelpClick={handleHelpClick}
+        onSignOut={handleSignOut}
         isDark={isDark}
         onThemeToggle={toggleTheme}
       />

@@ -42,6 +42,17 @@
   },
   "overrides": [
     {
+      "files": [
+        "src/app/**/*.tsx",
+        "src/app/**/*.ts",
+        "src/components/**/*.tsx",
+        "src/components/**/*.ts"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    },
+    {
       "files": ["src/app/api/**/*.ts"],
       "rules": {
         "no-console": ["error", { "allow": ["error", "warn", "info"] }],

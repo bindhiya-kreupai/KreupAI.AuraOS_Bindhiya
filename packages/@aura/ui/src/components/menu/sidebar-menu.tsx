@@ -149,9 +149,23 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70 group-focus-within:text-white transition-colors" />
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search modules..."
-              className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
+              className={cn(
+                "w-full pl-10 py-2 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all",
+                searchQuery ? 'pr-8' : 'pr-4'
+              )}
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-white/20 transition-colors"
+                aria-label="Clear search"
+              >
+                <X className="w-3.5 h-3.5 text-white/70" />
+              </button>
+            )}
           </div>
         ) : (
           <div className="w-full flex justify-center">
@@ -354,8 +368,8 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
       {!collapsed && (
         <div className="p-4 border-t border-cloud dark:border-nebula-purple">
           <div className="text-xs text-silver-mist text-center">
-            <span className="font-medium">43</span> Modules •{' '}
-            <span className="font-medium">394</span> Features
+            <span className="font-medium">{superAdminMenu.items.length}</span> Modules •{' '}
+            <span className="font-medium">{superAdminMenu.items.reduce((sum, m) => sum + m.features.length, 0)}</span> Features
           </div>
         </div>
       )}

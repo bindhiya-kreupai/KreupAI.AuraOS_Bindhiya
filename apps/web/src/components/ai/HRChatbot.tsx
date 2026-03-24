@@ -142,6 +142,13 @@ export default function HRChatbot({ defaultOpen = false }: HRChatbotProps) {
   const [inputText, setInputText] = useState('');
   const [typing, setTyping] = useState(false);
   const [escalated, setEscalated] = useState(false);
+
+  // Listen for toggle events from the header AI button
+  useEffect(() => {
+    const handler = () => setIsOpen((v) => !v);
+    window.addEventListener('aura:toggle-chatbot', handler);
+    return () => window.removeEventListener('aura:toggle-chatbot', handler);
+  }, []);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 

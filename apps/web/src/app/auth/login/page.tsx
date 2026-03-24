@@ -5,13 +5,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Button } from '@aura/ui/components/ui/button';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('example@auraos.com');
   const [password, setPassword] = useState('password123');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,13 +128,23 @@ export default function LoginPage() {
                   Forgot password?
                 </Link>
               </div>
-              <input
-                type="password"
-                required
-                className="w-full px-4 py-3 rounded-lg border border-cloud dark:border-nebula-purple bg-transparent focus:ring-2 focus:ring-celestial-indigo focus:border-transparent transition-all outline-none"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  className="w-full px-4 py-3 pr-12 rounded-lg border border-cloud dark:border-nebula-purple bg-transparent focus:ring-2 focus:ring-celestial-indigo focus:border-transparent transition-all outline-none"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-twilight dark:text-silver-mist hover:text-ink-black dark:hover:text-pearl transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
 
             <Button
@@ -194,4 +205,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
