@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get('type');
   const status = searchParams.get('status');
@@ -56,9 +58,9 @@ export async function GET(request: NextRequest) {
       filters: { type, status },
     },
   });
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   const body = await request.json();
 
   return NextResponse.json({
@@ -76,4 +78,4 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     },
   });
-}
+});

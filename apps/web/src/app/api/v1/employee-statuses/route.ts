@@ -1,22 +1,25 @@
 /**
  * Employee Statuses API
- * GET /api/v1/employee-statuses - List all employee statuses
+ * GET /api/v1/employee-statuses - List all employee statuses (tenant-scoped)
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/database';
 import { logger } from '@/lib/logger';
+import { withEnhancedAuth } from '@/lib/auth';
 
 /**
  * GET /api/v1/employee-statuses
- * List all employee statuses
+ * List all employee statuses for the authenticated user's tenant
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export const GET = withEnhancedAuth(async (request: NextRequest, { user }: any) => {
   try {
-    logger.info('Fetching employee statuses list');
+    logger.info({ tenantId: user.tenantId }, 'Fetching employee statuses list');
 
     const statuses = await prisma.employeeStatus.findMany({
       where: {
+        tenantId: user.tenantId,
         status: 'Active',
       },
       select: {
@@ -53,9 +56,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: {
           code: 'E5001',
           message: 'Internal server error',
-          details: {
-            error: error instanceof Error ? error.message : 'Unknown error',
-          },
+          messageAr: 'خطأ داخلي في الخادم',
         },
         meta: {
           timestamp: new Date().toISOString(),
@@ -65,4 +66,4 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       { status: 500 }
     );
   }
-}
+});

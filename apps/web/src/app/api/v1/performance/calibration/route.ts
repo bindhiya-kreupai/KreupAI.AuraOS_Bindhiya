@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   const body = await request.json();
 
   return NextResponse.json({
@@ -13,7 +15,13 @@ export async function POST(request: NextRequest) {
       facilitatorName: 'HR Director',
       participants: body.participants || ['emp-201', 'emp-202', 'emp-203'],
       reviewPeriod: body.reviewPeriod || '2025-Q4',
-      employeesUnderReview: body.employeeIds || ['emp-101', 'emp-102', 'emp-103', 'emp-104', 'emp-105'],
+      employeesUnderReview: body.employeeIds || [
+        'emp-101',
+        'emp-102',
+        'emp-103',
+        'emp-104',
+        'emp-105',
+      ],
       ratingDistribution: {
         exceptional: 0,
         exceedsExpectations: 0,
@@ -26,4 +34,4 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     },
   });
-}
+});

@@ -20,7 +20,10 @@ export const config = {
 
   // JWT
   jwt: {
-    secret: process.env.JWT_SECRET || 'development-secret-change-in-production',
+    secret: (() => {
+      if (!process.env.JWT_SECRET) throw new Error('FATAL: JWT_SECRET environment variable is not set.');
+      return process.env.JWT_SECRET;
+    })(),
     expiresIn: process.env.JWT_EXPIRY || '1h',
     refreshExpiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d',
   },

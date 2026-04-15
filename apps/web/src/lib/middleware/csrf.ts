@@ -14,7 +14,12 @@ import { logger } from '@/lib/logger';
 const CSRF_TOKEN_LENGTH = 32;
 const CSRF_COOKIE_NAME = 'csrf_token';
 const CSRF_HEADER_NAME = 'X-CSRF-Token';
-const CSRF_SECRET = process.env.CSRF_SECRET || process.env.JWT_SECRET || 'csrf-secret-key';
+const CSRF_SECRET =
+  process.env.CSRF_SECRET ||
+  process.env.JWT_SECRET ||
+  (() => {
+    throw new Error('FATAL: Neither CSRF_SECRET nor JWT_SECRET environment variable is set.');
+  })();
 const CSRF_COOKIE_MAX_AGE = 60 * 60 * 24; // 24 hours in seconds
 
 // Methods that require CSRF validation
@@ -95,7 +100,10 @@ export function verifyCSRFToken(signedToken: string): boolean {
 /**
  * Extract CSRF token from request
  */
-export function extractCSRFToken(request: NextRequest, headerName: string = CSRF_HEADER_NAME): string | null {
+export function extractCSRFToken(
+  request: NextRequest,
+  headerName: string = CSRF_HEADER_NAME
+): string | null {
   // First try header
   const headerToken = request.headers.get(headerName);
   if (headerToken) {
@@ -110,7 +118,10 @@ export function extractCSRFToken(request: NextRequest, headerName: string = CSRF
 /**
  * Extract CSRF cookie from request
  */
-export function extractCSRFCookie(request: NextRequest, cookieName: string = CSRF_COOKIE_NAME): string | null {
+export function extractCSRFCookie(
+  request: NextRequest,
+  cookieName: string = CSRF_COOKIE_NAME
+): string | null {
   const cookie = request.cookies.get(cookieName);
   return cookie?.value || null;
 }
@@ -196,9 +207,9 @@ export function withCSRFProtection(config: CSRFConfig = {}) {
   const headerName = config.headerName || CSRF_HEADER_NAME;
   const exemptPaths = config.exemptPaths || EXEMPT_PATHS;
 
-  return function csrfMiddleware<T extends (request: NextRequest, ...args: any[]) => Promise<NextResponse>>(
-    handler: T
-  ): T {
+  return function csrfMiddleware<
+    T extends (request: NextRequest, ...args: any[]) => Promise<NextResponse>,
+  >(handler: T): T {
     return (async (request: NextRequest, ...args: any[]) => {
       const path = new URL(request.url).pathname;
       const method = request.method;

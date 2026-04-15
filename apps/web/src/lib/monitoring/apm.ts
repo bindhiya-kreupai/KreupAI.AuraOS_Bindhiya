@@ -31,7 +31,9 @@ interface APMConfig {
 }
 
 const config: APMConfig = {
-  enabled: process.env.APM_ENABLED === 'true',
+  enabled:
+    (process.env.APM_ENABLED !== 'false' && process.env.NODE_ENV === 'production') ||
+    process.env.APM_ENABLED === 'true',
   provider: (process.env.APM_PROVIDER as APMConfig['provider']) || 'custom',
   serviceName: process.env.APM_SERVICE_NAME || 'auraos-web',
   environment: process.env.NODE_ENV || 'development',

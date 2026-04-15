@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   const { searchParams } = new URL(request.url);
   const year = searchParams.get('year') || '2024';
   const page = parseInt(searchParams.get('page') || '1');
@@ -70,4 +72,4 @@ export async function GET(request: NextRequest) {
       availableYears: [2024, 2023, 2022, 2021],
     },
   });
-}
+});

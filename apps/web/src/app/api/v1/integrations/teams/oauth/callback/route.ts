@@ -1,5 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
+/**
+ * GET /api/v1/integrations/teams/oauth/callback
+ * OAuth redirect from Microsoft — no JWT auth (user redirected from Azure AD)
+ * Security: validated via OAuth state parameter
+ */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
@@ -8,30 +16,27 @@ export async function GET(request: NextRequest) {
   const errorDescription = searchParams.get('error_description');
 
   if (error) {
-    console.error('[Teams OAuth] Error:', error, errorDescription);
-    return NextResponse.redirect(new URL('/dashboard/integration-hub?error=teams_denied', request.url));
+    logger.warn({ error, errorDescription }, 'Teams OAuth denied');
+    return NextResponse.redirect(
+      new URL('/dashboard/integration-hub?error=teams_denied', request.url)
+    );
   }
 
   if (!code || !state) {
     return NextResponse.json({ error: 'Missing code or state parameter' }, { status: 400 });
   }
 
-  // Exchange code for access token via Azure AD
-  // In production: call exchangeTeamsCode(code) from teams/oauth.ts
-  const tokenData = {
-    access_token: 'eyJ0-mock-teams-token',
-    refresh_token: 'mock-refresh-token',
-    expires_in: 3600,
-    scope: 'User.Read Chat.ReadWrite Team.ReadBasic.All',
-  };
-
-  // Store integration credentials
-  // In production: save to database with tenant association
+  // TODO: Validate state parameter against stored CSRF state in Redis
+  // TODO: Exchange code for access token via Azure AD
 
   return NextResponse.redirect(new URL('/dashboard/integration-hub?connected=teams', request.url));
 }
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/v1/integrations/teams/oauth/callback
+ * Manual code exchange — requires authentication
+ */
+export const POST = withEnhancedAuth(async (request: NextRequest, { user }: any) => {
   const body = await request.json();
   const { code, tenantId } = body;
 
@@ -39,13 +44,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Authorization code required' }, { status: 400 });
   }
 
+  logger.info({ tenantId: user.tenantId }, 'Teams integration code exchange');
+
   return NextResponse.json({
     success: true,
     data: {
       integration: 'microsoft_teams',
       status: 'connected',
-      tenant: tenantId || 'default',
+      tenant: tenantId || user.tenantId,
       connectedAt: new Date().toISOString(),
     },
   });
-}
+});

@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get('category');
   const level = searchParams.get('level');
@@ -85,9 +87,9 @@ export async function GET(request: NextRequest) {
       levels: ['beginner', 'intermediate', 'advanced'],
     },
   });
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   const body = await request.json();
 
   const newPath = {
@@ -111,4 +113,4 @@ export async function POST(request: NextRequest) {
     { success: true, data: newPath, message: 'Learning path created successfully' },
     { status: 201 }
   );
-}
+});

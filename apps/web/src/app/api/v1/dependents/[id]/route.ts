@@ -1,10 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { id } = params;
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { id } = context.params;
 
   const mockDependent = {
     id,
@@ -28,13 +27,10 @@ export async function GET(
   };
 
   return NextResponse.json({ data: mockDependent });
-}
+});
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { id } = params;
+export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { id } = context.params;
   const body = await request.json();
 
   const updatedDependent = {
@@ -52,13 +48,10 @@ export async function PUT(
   };
 
   return NextResponse.json({ data: updatedDependent });
-}
+});
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { id } = params;
+export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { id } = context.params;
 
   return NextResponse.json({
     data: {
@@ -68,4 +61,4 @@ export async function DELETE(
       message: `Dependent ${id} has been successfully removed`,
     },
   });
-}
+});

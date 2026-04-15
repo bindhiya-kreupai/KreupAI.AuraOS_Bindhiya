@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,7 +59,7 @@ const overtimePolicies: Record<string, any> = {
   },
 };
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   try {
     // Simulated tenant isolation: tenantId would come from validated JWT
     const { searchParams } = new URL(request.url);
@@ -119,4 +120,4 @@ export async function GET(request: NextRequest) {
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});

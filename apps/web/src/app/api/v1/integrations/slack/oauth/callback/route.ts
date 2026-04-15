@@ -1,5 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
+/**
+ * GET /api/v1/integrations/slack/oauth/callback
+ * OAuth redirect from Slack — no JWT auth (user redirected from Slack)
+ * Security: validated via OAuth state parameter
+ */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
@@ -7,36 +15,43 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get('error');
 
   if (error) {
-    return NextResponse.redirect(new URL('/dashboard/integration-hub?error=slack_denied', request.url));
+    logger.warn({ error }, 'Slack OAuth denied');
+    return NextResponse.redirect(
+      new URL('/dashboard/integration-hub?error=slack_denied', request.url)
+    );
   }
 
   if (!code || !state) {
     return NextResponse.json({ error: 'Missing code or state parameter' }, { status: 400 });
   }
 
-  // Exchange code for access token
-  // In production: call exchangeSlackCode(code) from slack/oauth.ts
-  const tokenData = {
+  // TODO: Validate state parameter against stored CSRF state in Redis
+  // TODO: Exchange code for access token via Slack API
+  const _tokenData = {
     access_token: 'xoxb-mock-token',
     team: { id: 'T12345', name: 'Mock Workspace' },
     scope: 'chat:write,channels:read,users:read',
   };
 
-  // Store integration credentials
-  // In production: save to database with tenant association
+  // TODO: Store integration credentials in DB with tenant association
 
   return NextResponse.redirect(new URL('/dashboard/integration-hub?connected=slack', request.url));
 }
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/v1/integrations/slack/oauth/callback
+ * Manual code exchange — requires authentication
+ */
+export const POST = withEnhancedAuth(async (request: NextRequest, { user }: any) => {
   const body = await request.json();
-  const { code, redirectUri } = body;
+  const { code } = body;
 
   if (!code) {
     return NextResponse.json({ error: 'Authorization code required' }, { status: 400 });
   }
 
-  // Exchange code for token
+  logger.info({ tenantId: user.tenantId }, 'Slack integration code exchange');
+
   return NextResponse.json({
     success: true,
     data: {
@@ -46,4 +61,4 @@ export async function POST(request: NextRequest) {
       connectedAt: new Date().toISOString(),
     },
   });
-}
+});

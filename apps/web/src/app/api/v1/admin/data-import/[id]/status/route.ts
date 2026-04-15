@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
   const { id } = params;
 
   const importStatus = {
@@ -26,11 +25,35 @@ export async function GET(
       updated: 4,
     },
     errors: [
-      { row: 23, field: 'email', error: 'Invalid email format', value: 'john.doe@', action: 'skipped' },
-      { row: 67, field: 'startDate', error: 'Date format invalid', value: '01/32/2026', action: 'skipped' },
-      { row: 89, field: 'department', error: 'Unknown department code', value: 'INNOV', action: 'skipped' },
+      {
+        row: 23,
+        field: 'email',
+        error: 'Invalid email format',
+        value: 'john.doe@',
+        action: 'skipped',
+      },
+      {
+        row: 67,
+        field: 'startDate',
+        error: 'Date format invalid',
+        value: '01/32/2026',
+        action: 'skipped',
+      },
+      {
+        row: 89,
+        field: 'department',
+        error: 'Unknown department code',
+        value: 'INNOV',
+        action: 'skipped',
+      },
       { row: 112, field: 'salary', error: 'Non-numeric value', value: 'TBD', action: 'skipped' },
-      { row: 134, field: 'email', error: 'Duplicate entry', value: 'existing@company.com', action: 'skipped' },
+      {
+        row: 134,
+        field: 'email',
+        error: 'Duplicate entry',
+        value: 'existing@company.com',
+        action: 'skipped',
+      },
     ],
     summary: {
       newDepartmentsCreated: 0,
@@ -43,4 +66,4 @@ export async function GET(
   };
 
   return NextResponse.json({ success: true, data: importStatus });
-}
+});

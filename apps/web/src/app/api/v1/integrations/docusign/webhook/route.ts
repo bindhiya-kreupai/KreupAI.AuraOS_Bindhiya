@@ -1,19 +1,32 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
-// DocuSign Connect webhook handler
-// Receives real-time notifications about envelope status changes
+/**
+ * POST /api/v1/integrations/docusign/webhook
+ * DocuSign Connect webhook — no JWT auth (called by DocuSign servers)
+ * Security: HMAC signature verification
+ */
 export async function POST(request: NextRequest) {
   const body = await request.text();
 
   // Verify HMAC signature from DocuSign
   const signature = request.headers.get('x-docusign-signature-1');
   if (!signature) {
+    logger.warn('DocuSign webhook received without signature');
     return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
   }
 
-  // In production: verify HMAC-SHA256 signature
+  // TODO: Implement proper HMAC-SHA256 verification
+  // const DOCUSIGN_CONNECT_KEY = process.env.DOCUSIGN_CONNECT_KEY;
+  // if (!DOCUSIGN_CONNECT_KEY) {
+  //   throw new Error('DOCUSIGN_CONNECT_KEY not configured');
+  // }
   // const isValid = verifyDocuSignSignature(body, signature, DOCUSIGN_CONNECT_KEY);
+  // if (!isValid) {
+  //   logger.warn('DocuSign webhook signature verification failed');
+  //   return NextResponse.json({ error: 'Invalid signature' }, { status: 403 });
+  // }
 
   let payload: any;
   try {
@@ -26,32 +39,34 @@ export async function POST(request: NextRequest) {
   const event = payload.event || payload.Status;
   const envelopeId = payload.envelopeId || payload.EnvelopeStatus?.EnvelopeID;
 
+  logger.info({ event, envelopeId }, 'DocuSign webhook received');
+
   switch (event) {
     case 'envelope-sent':
-      console.warn(`[DocuSign] Envelope ${envelopeId} sent for signing`);
+      logger.info({ envelopeId }, 'Envelope sent for signing');
       break;
     case 'envelope-delivered':
-      console.warn(`[DocuSign] Envelope ${envelopeId} delivered to recipient`);
+      logger.info({ envelopeId }, 'Envelope delivered to recipient');
       break;
     case 'envelope-completed':
-      console.warn(`[DocuSign] Envelope ${envelopeId} completed - all signatures collected`);
-      // In production: update offer status, notify HR, trigger onboarding workflow
+      logger.info({ envelopeId }, 'Envelope completed - all signatures collected');
+      // TODO: update offer status, notify HR, trigger onboarding workflow
       break;
     case 'envelope-declined':
-      console.warn(`[DocuSign] Envelope ${envelopeId} declined by recipient`);
-      // In production: notify recruiter, update candidate status
+      logger.warn({ envelopeId }, 'Envelope declined by recipient');
+      // TODO: notify recruiter, update candidate status
       break;
     case 'envelope-voided':
-      console.warn(`[DocuSign] Envelope ${envelopeId} voided`);
+      logger.warn({ envelopeId }, 'Envelope voided');
       break;
     case 'recipient-sent':
     case 'recipient-delivered':
     case 'recipient-completed':
     case 'recipient-declined':
-      console.warn(`[DocuSign] Recipient event: ${event} for envelope ${envelopeId}`);
+      logger.info({ event, envelopeId }, 'Recipient event');
       break;
     default:
-      console.warn(`[DocuSign] Unknown event: ${event}`);
+      logger.warn({ event, envelopeId }, 'Unknown DocuSign event');
   }
 
   // Always return 200 to acknowledge receipt

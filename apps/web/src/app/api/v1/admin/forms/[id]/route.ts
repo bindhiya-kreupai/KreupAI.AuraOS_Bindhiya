@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
   const { id } = params;
 
   const formSchema = {
@@ -110,4 +109,4 @@ export async function GET(
   };
 
   return NextResponse.json({ success: true, data: formSchema });
-}
+});

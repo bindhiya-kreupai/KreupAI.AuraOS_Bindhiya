@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
+  params = params || {};
   const { id } = params;
   const body = await request.json();
 
@@ -46,4 +46,4 @@ export async function POST(
   };
 
   return NextResponse.json({ success: true, data: result });
-}
+});

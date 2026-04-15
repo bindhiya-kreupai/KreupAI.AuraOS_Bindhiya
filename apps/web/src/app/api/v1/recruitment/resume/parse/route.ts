@@ -1,14 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   const formData = await request.formData();
   const file = formData.get('file');
 
   if (!file) {
-    return NextResponse.json(
-      { success: false, error: 'No file provided' },
-      { status: 400 }
-    );
+    return NextResponse.json({ success: false, error: 'No file provided' }, { status: 400 });
   }
 
   return NextResponse.json({
@@ -46,4 +45,4 @@ export async function POST(request: NextRequest) {
       parsedAt: new Date().toISOString(),
     },
   });
-}
+});

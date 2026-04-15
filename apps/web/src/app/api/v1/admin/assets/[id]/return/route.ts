@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
 // Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
 
@@ -12,7 +13,7 @@ interface ApiResponse<T = any> {
 
 const VALID_CONDITIONS = ['EXCELLENT', 'GOOD', 'FAIR', 'POOR', 'DAMAGED', 'LOST'];
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
   try {
     const { id } = params;
     const body = await request.json();
@@ -130,4 +131,4 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});

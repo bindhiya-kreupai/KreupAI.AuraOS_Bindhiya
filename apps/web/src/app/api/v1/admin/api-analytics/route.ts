@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
 interface EndpointAnalytics {
   endpoint: string;
@@ -190,7 +192,7 @@ const mockTopErrors = [
   },
 ];
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   const { searchParams } = new URL(request.url);
   const period = searchParams.get('period') || '24h';
   const endpoint = searchParams.get('endpoint');
@@ -199,9 +201,7 @@ export async function GET(request: NextRequest) {
   let filteredEndpoints = [...mockEndpointAnalytics];
 
   if (endpoint) {
-    filteredEndpoints = filteredEndpoints.filter((e) =>
-      e.endpoint.includes(endpoint)
-    );
+    filteredEndpoints = filteredEndpoints.filter((e) => e.endpoint.includes(endpoint));
   }
 
   if (method) {
@@ -214,7 +214,8 @@ export async function GET(request: NextRequest) {
   const totalErrors = filteredEndpoints.reduce((sum, e) => sum + e.errorCount, 0);
   const weightedAvgResponseTime =
     totalRequests > 0
-      ? filteredEndpoints.reduce((sum, e) => sum + e.avgResponseTime * e.requestCount, 0) / totalRequests
+      ? filteredEndpoints.reduce((sum, e) => sum + e.avgResponseTime * e.requestCount, 0) /
+        totalRequests
       : 0;
 
   const now = new Date();
@@ -224,7 +225,8 @@ export async function GET(request: NextRequest) {
   const overall: OverallStats = {
     totalRequests,
     avgResponseTime: Math.round(weightedAvgResponseTime * 100) / 100,
-    overallErrorRate: totalRequests > 0 ? Math.round((totalErrors / totalRequests) * 10000) / 100 : 0,
+    overallErrorRate:
+      totalRequests > 0 ? Math.round((totalErrors / totalRequests) * 10000) / 100 : 0,
     uniqueEndpoints: new Set(filteredEndpoints.map((e) => e.endpoint)).size,
     peakRequestsPerMinute: 342,
     periodStart: periodStart.toISOString(),
@@ -238,4 +240,4 @@ export async function GET(request: NextRequest) {
   };
 
   return NextResponse.json({ data: response });
-}
+});

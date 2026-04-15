@@ -1,22 +1,25 @@
 /**
  * Job Profiles API
- * GET /api/v1/job-profiles - List all job profiles
+ * GET /api/v1/job-profiles - List all job profiles (tenant-scoped)
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/database';
 import { logger } from '@/lib/logger';
+import { withEnhancedAuth } from '@/lib/auth';
 
 /**
  * GET /api/v1/job-profiles
- * List all job profiles
+ * List all job profiles for the authenticated user's tenant
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export const GET = withEnhancedAuth(async (request: NextRequest, { user }: any) => {
   try {
-    logger.info('Fetching job profiles list');
+    logger.info({ tenantId: user.tenantId }, 'Fetching job profiles list');
 
     const jobProfiles = await prisma.jobProfile.findMany({
       where: {
+        tenantId: user.tenantId,
         status: 'Active',
       },
       select: {
@@ -63,9 +66,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: {
           code: 'E5001',
           message: 'Internal server error',
-          details: {
-            error: error instanceof Error ? error.message : 'Unknown error',
-          },
+          messageAr: 'خطأ داخلي في الخادم',
         },
         meta: {
           timestamp: new Date().toISOString(),
@@ -75,4 +76,4 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       { status: 500 }
     );
   }
-}
+});

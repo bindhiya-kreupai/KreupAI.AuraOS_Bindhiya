@@ -1,11 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { generateOpenAPISpec } from '@/lib/docs/openapi-generator';
+import { withEnhancedAuth } from '@/lib/auth';
 
 /**
  * GET /api/v1/docs/openapi
  * Returns the OpenAPI 3.0 specification as JSON
  */
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (_request: NextRequest, { _user }: any) => {
   try {
     const spec = generateOpenAPISpec();
 
@@ -13,7 +15,7 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*', // Allow Swagger UI to fetch
+        'Access-Control-Allow-Origin': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3006',
       },
     });
   } catch (error) {
@@ -27,4 +29,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

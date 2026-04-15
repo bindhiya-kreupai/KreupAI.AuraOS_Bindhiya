@@ -2,10 +2,11 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { logger } from '@/lib/logger';
+import { withEnhancedAuth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   try {
     const { searchParams } = new URL(request.url);
     const employeeId = searchParams.get('employeeId');
@@ -65,7 +66,10 @@ export async function GET(request: NextRequest) {
     // Build skills data by grouping competencies by category
     const categoryMap = new Map<
       string,
-      { category: string; skills: { name: string; currentLevel: number; requiredLevel: number; gap: number }[] }
+      {
+        category: string;
+        skills: { name: string; currentLevel: number; requiredLevel: number; gap: number }[];
+      }
     >();
 
     for (const assessment of assessments) {
@@ -132,7 +136,13 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    let recommendations: { skill: string; type: string; title: string; provider: string | null; estimatedHours: string | null }[] = [];
+    let recommendations: {
+      skill: string;
+      type: string;
+      title: string;
+      provider: string | null;
+      estimatedHours: string | null;
+    }[] = [];
     if (competencyIdsWithGaps.size > 0) {
       const resources = await prisma.competencyDevelopmentResource.findMany({
         where: {
@@ -182,4 +192,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

@@ -5,10 +5,10 @@
  *              Provides DDL generation and automated maintenance helpers.
  *
  * Tables:
- *  - AttendancePunch  → range by punchTime   (monthly)
- *  - AuditLog         → range by createdAt   (monthly)
- *  - PayrollEntry     → range by createdAt   (quarterly)
- *  - Notification     → range by createdAt   (monthly)
+ *  - aura_attendance_punch  → range by punchTime   (monthly)
+ *  - aura_audit_log         → range by createdAt   (monthly)
+ *  - aura_payroll_entry     → range by createdAt   (quarterly)
+ *  - aura_notification      → range by createdAt   (monthly)
  */
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -34,30 +34,30 @@ export interface PartitionInfo {
 // ── Partition Configurations ───────────────────────────────────────────────
 
 export const PARTITION_CONFIGS: Record<string, PartitionConfig> = {
-  AttendancePunch: {
-    tableName:       'AttendancePunch',
+  aura_attendance_punch: {
+    tableName:       'aura_attendance_punch',
     schemaName:      'public',
     partitionKey:    'punchTime',
     interval:        'MONTHLY',
     retentionMonths: 24,
   },
-  AuditLog: {
-    tableName:       'AuditLog',
+  aura_audit_log: {
+    tableName:       'aura_audit_log',
     schemaName:      'public',
     partitionKey:    'createdAt',
     interval:        'MONTHLY',
     retentionMonths: 36,
-    archiveTable:    'AuditLog_archive',
+    archiveTable:    'aura_audit_log_archive',
   },
-  PayrollEntry: {
-    tableName:       'PayrollEntry',
+  aura_payroll_entry: {
+    tableName:       'aura_payroll_entry',
     schemaName:      'public',
     partitionKey:    'createdAt',
     interval:        'QUARTERLY',
     retentionMonths: 84,   // 7 years (payroll compliance)
   },
-  Notification: {
-    tableName:       'Notification',
+  aura_notification: {
+    tableName:       'aura_notification',
     schemaName:      'public',
     partitionKey:    'createdAt',
     interval:        'MONTHLY',

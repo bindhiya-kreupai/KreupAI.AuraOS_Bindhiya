@@ -1,10 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { id } = params;
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { id } = context.params;
 
   // Mock file content (in production, this would fetch from storage)
   const mockFileContent = Buffer.from(`Mock document content for document ID: ${id}`);
@@ -19,4 +18,4 @@ export async function GET(
       'X-Document-Name': `Document ${id}`,
     },
   });
-}
+});

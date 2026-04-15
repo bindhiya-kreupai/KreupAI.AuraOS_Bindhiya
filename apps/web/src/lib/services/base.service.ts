@@ -1,6 +1,6 @@
 import { prisma } from '@aura/database';
 import type { PrismaClient, Prisma } from '@prisma/client';
-import { createLogger, logServiceError, logAudit } from '@/lib/logger';
+import { createLogger, _logServiceError, logAudit } from '@/lib/logger';
 import { DatabaseError } from '@/lib/errors';
 
 /**
@@ -53,9 +53,6 @@ export abstract class BaseService {
           ipAddress: params.ipAddress || 'unknown',
           beforeValues: params.beforeValues || undefined,
           afterValues: params.afterValues || undefined,
-          // Backward compatibility (deprecated)
-          entityType: params.module,
-          module: params.module,
         },
       });
     } catch (error) {
@@ -103,11 +100,7 @@ export abstract class BaseService {
    * Extract IP address from request headers
    */
   protected extractIpAddress(headers: Headers): string {
-    return (
-      headers.get('x-forwarded-for') ||
-      headers.get('x-real-ip') ||
-      'unknown'
-    );
+    return headers.get('x-forwarded-for') || headers.get('x-real-ip') || 'unknown';
   }
 }
 

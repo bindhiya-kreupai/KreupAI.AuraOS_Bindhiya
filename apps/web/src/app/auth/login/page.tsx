@@ -5,12 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Button } from '@aura/ui/components/ui/button';
-import { CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('example@auraos.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -78,29 +78,6 @@ export default function LoginPage() {
                 Get started for free
               </Link>
             </p>
-          </div>
-
-          {/* Demo Credentials Alert */}
-          <div className="bg-celestial-indigo/5 border border-celestial-indigo/20 rounded-lg p-4 flex items-start gap-3">
-            <div className="p-1 bg-celestial-indigo/10 rounded-full shrink-0">
-              <CheckCircle2 className="w-4 h-4 text-celestial-indigo" />
-            </div>
-            <div className="flex-1 text-sm">
-              <p className="font-medium text-ink-black dark:text-pearl mb-1">Demo Credentials</p>
-              <div className="flex flex-col gap-1 text-twilight dark:text-silver-mist font-mono text-xs">
-                <div className="flex justify-between w-full">
-                  <span>
-                    Email:{' '}
-                    <span className="text-ink-black dark:text-pearl">example@auraos.com</span>
-                  </span>
-                </div>
-                <div className="flex justify-between w-full">
-                  <span>
-                    Pass: <span className="text-ink-black dark:text-pearl">password123</span>
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
 
           <form className="space-y-4" onSubmit={handleLogin}>

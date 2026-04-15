@@ -80,12 +80,13 @@ export function extractAPIKey(request: NextRequest): string | null {
     return headerKey;
   }
 
-  // Try query parameter (not recommended for security)
+  // Reject API keys in query parameters — they leak via logs, referer headers, and browser history
   const url = new URL(request.url);
-  const queryKey = url.searchParams.get(API_KEY_QUERY_PARAM);
-  if (queryKey) {
-    logger.warn('API key provided via query parameter - this is less secure than header');
-    return queryKey;
+  if (url.searchParams.has(API_KEY_QUERY_PARAM)) {
+    logger.warn(
+      'API key rejected — query parameter usage is not allowed. Use the X-API-Key header instead.'
+    );
+    return null;
   }
 
   return null;
@@ -140,7 +141,7 @@ export async function validateAPIKey(apiKey: string): Promise<APIKeyValidationRe
       }>
     >`
       SELECT id, name, "tenantId", permissions, "rateLimit", "expiresAt", "isActive", "lastUsedAt"
-      FROM "APIClient"
+      FROM "aura_api_key"
       WHERE "keyHash" = ${keyHash}
       LIMIT 1
     `;
@@ -163,7 +164,7 @@ export async function validateAPIKey(apiKey: string): Promise<APIKeyValidationRe
 
     // Update last used timestamp
     await prisma.$executeRaw`
-      UPDATE "APIClient"
+      UPDATE "aura_api_key"
       SET "lastUsedAt" = NOW()
       WHERE id = ${client.id}
     `;
@@ -244,7 +245,7 @@ export interface APIKeyAuthContext {
 
 export function withAPIKeyAuth(options: APIKeyAuthOptions = {}) {
   return function apiKeyMiddleware<
-    T extends (request: NextRequest, context: APIKeyAuthContext & any) => Promise<NextResponse>
+    T extends (request: NextRequest, context: APIKeyAuthContext & any) => Promise<NextResponse>,
   >(handler: T): T {
     return (async (request: NextRequest, context: any = {}) => {
       const apiKey = extractAPIKey(request);
@@ -370,7 +371,7 @@ export async function createAPIClient(data: {
   const keyHash = hashAPIKey(apiKey);
 
   const result = await prisma.$queryRaw<Array<{ id: string }>>`
-    INSERT INTO "APIClient" (id, name, "tenantId", "keyHash", permissions, "rateLimit", "expiresAt", "isActive", "createdAt", "updatedAt")
+    INSERT INTO "aura_api_key" (id, name, "tenantId", "keyHash", permissions, "rateLimit", "expiresAt", "isActive", "createdAt", "updatedAt")
     VALUES (
       gen_random_uuid(),
       ${data.name},
@@ -398,7 +399,7 @@ export async function createAPIClient(data: {
 export async function revokeAPIKey(clientId: string): Promise<boolean> {
   try {
     await prisma.$executeRaw`
-      UPDATE "APIClient"
+      UPDATE "aura_api_key"
       SET "isActive" = false, "updatedAt" = NOW()
       WHERE id = ${clientId}
     `;

@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
 // Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
 
@@ -17,7 +18,7 @@ const VALID_PRIORITIES = [
   'EMPLOYEE_PREFERENCE',
 ];
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   try {
     const body = await request.json();
     const { departmentId, startDate, endDate, priority, constraints } = body;
@@ -155,4 +156,4 @@ export async function POST(request: NextRequest) {
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});

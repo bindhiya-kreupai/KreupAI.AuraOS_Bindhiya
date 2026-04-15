@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
 interface TestDeliveryResult {
   success: boolean;
@@ -12,20 +14,17 @@ interface TestDeliveryResult {
   error: string | null;
 }
 
-interface RouteContext {
+interface _RouteContext {
   params: Promise<{ id: string }>;
 }
 
 const knownWebhookIds = ['wh_001', 'wh_002', 'wh_003'];
 
-export async function POST(request: NextRequest, context: RouteContext) {
-  const { id } = await context.params;
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
+  const { id } = await params;
 
   if (!knownWebhookIds.includes(id)) {
-    return NextResponse.json(
-      { error: `Webhook with id '${id}' not found` },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: `Webhook with id '${id}' not found` }, { status: 404 });
   }
 
   let eventType = 'test.ping';
@@ -108,4 +107,4 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const statusCode = result.success ? 200 : 502;
 
   return NextResponse.json({ data: result }, { status: statusCode });
-}
+});

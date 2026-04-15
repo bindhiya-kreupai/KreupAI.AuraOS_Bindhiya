@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function GET() {
+export const GET = withEnhancedAuth(async (_request: NextRequest, { _user }: any) => {
   return NextResponse.json({
     success: true,
     data: {
@@ -48,7 +50,8 @@ export async function GET() {
           badge: 'mentor',
           badgeLabel: 'Mentor',
           points: 100,
-          message: 'Incredible mentorship throughout the onboarding process. Made all the difference!',
+          message:
+            'Incredible mentorship throughout the onboarding process. Made all the difference!',
           likes: 15,
           comments: 4,
           createdAt: '2026-01-20T11:00:00Z',
@@ -57,9 +60,9 @@ export async function GET() {
       total: 3,
     },
   });
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   const body = await request.json();
 
   return NextResponse.json({
@@ -78,4 +81,4 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     },
   });
-}
+});

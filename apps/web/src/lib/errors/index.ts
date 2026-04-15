@@ -5,6 +5,24 @@
  */
 
 /**
+ * Bilingual error message map — common error codes to Arabic translations.
+ * Routes can override per-error, but this provides a consistent fallback.
+ */
+const ERROR_MESSAGES_AR: Record<string, string> = {
+  INTERNAL_ERROR: 'خطأ داخلي في الخادم',
+  VALIDATION_ERROR: 'خطأ في التحقق من البيانات',
+  AUTHENTICATION_ERROR: 'فشل المصادقة',
+  AUTHORIZATION_ERROR: 'صلاحيات غير كافية',
+  NOT_FOUND: 'المورد غير موجود',
+  CONFLICT: 'تعارض في البيانات',
+  RATE_LIMIT_EXCEEDED: 'تم تجاوز حد الطلبات',
+  DATABASE_ERROR: 'خطأ في قاعدة البيانات',
+  EXTERNAL_SERVICE_ERROR: 'خطأ في الخدمة الخارجية',
+  TENANT_ISOLATION_ERROR: 'انتهاك عزل المستأجر',
+  BUSINESS_RULE_VIOLATION: 'انتهاك قاعدة العمل',
+};
+
+/**
  * Base Application Error
  */
 export class ApplicationError extends Error {
@@ -12,6 +30,7 @@ export class ApplicationError extends Error {
   public readonly code: string;
   public readonly isOperational: boolean;
   public readonly context?: Record<string, any>;
+  public readonly messageAr: string;
 
   constructor(
     message: string,
@@ -26,6 +45,7 @@ export class ApplicationError extends Error {
     this.code = code;
     this.isOperational = isOperational;
     this.context = context;
+    this.messageAr = ERROR_MESSAGES_AR[code] || ERROR_MESSAGES_AR.INTERNAL_ERROR;
 
     Error.captureStackTrace(this, this.constructor);
   }
@@ -150,6 +170,7 @@ export function serializeError(error: Error) {
       success: false,
       error: {
         message: error.message,
+        messageAr: error.messageAr,
         code: error.code,
         ...(error.context && { context: error.context }),
         ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
@@ -163,6 +184,7 @@ export function serializeError(error: Error) {
       success: false,
       error: {
         message: 'An unexpected error occurred',
+        messageAr: ERROR_MESSAGES_AR.INTERNAL_ERROR,
         code: 'INTERNAL_ERROR',
       },
     };
@@ -173,6 +195,7 @@ export function serializeError(error: Error) {
     success: false,
     error: {
       message: error.message,
+      messageAr: ERROR_MESSAGES_AR.INTERNAL_ERROR,
       code: 'INTERNAL_ERROR',
       stack: error.stack,
     },

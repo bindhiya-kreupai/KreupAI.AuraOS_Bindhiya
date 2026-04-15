@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
 // Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
 
@@ -10,8 +11,9 @@ interface ApiResponse<T = any> {
   meta?: any;
 }
 
-export async function GET(request: NextRequest, { params }: { params: { employeeId: string } }) {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
+    const { params } = context;
     const { employeeId } = params;
 
     // Simulated employee lookup with tenant isolation
@@ -132,4 +134,4 @@ export async function GET(request: NextRequest, { params }: { params: { employee
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});

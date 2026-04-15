@@ -1,7 +1,12 @@
 import jwt from 'jsonwebtoken';
 
-// JWT configuration
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
+// JWT configuration — JWT_SECRET is required, no fallback allowed
+if (!process.env.JWT_SECRET) {
+  throw new Error(
+    'FATAL: JWT_SECRET environment variable is not set. Refusing to start with an insecure default.'
+  );
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 
@@ -53,7 +58,7 @@ export function verifyToken(token: string): JWTPayload {
 export function decodeToken(token: string): JWTPayload | null {
   try {
     return jwt.decode(token) as JWTPayload;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }

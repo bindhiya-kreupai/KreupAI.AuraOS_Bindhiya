@@ -42,7 +42,10 @@ declare module 'socket.io' {
 
 // ── JWT verification ──────────────────────────────────────────────────────────
 
-const JWT_SECRET = process.env.JWT_SECRET || 'aura-notification-secret-change-in-production';
+if (!process.env.JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is not set. Refusing to start with an insecure default.');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 function verifyToken(token: string): SocketUser {
   const decoded = jwt.verify(token, JWT_SECRET) as Record<string, unknown>;

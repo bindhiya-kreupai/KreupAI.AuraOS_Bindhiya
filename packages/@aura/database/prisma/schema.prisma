@@ -31,6 +31,7 @@ model Tenant {
   wpsSubmissions    WPSSubmission[]
   wpsRecords        WPSRecord[]
   wpsAuditLogs      WPSAuditLog[]
+  @@map("aura_tenant")
 }
 
 model Company {
@@ -55,6 +56,8 @@ model Company {
 
   @@unique([tenantId, code])
   @@index([tenantId])
+
+  @@map("aura_company")
 }
 
 model Department {
@@ -86,6 +89,7 @@ model Department {
   @@index([companyId])
   @@index([parentId])
   @@index([isDeleted])
+  @@map("aura_department")
 }
 
 model CostCenter {
@@ -93,6 +97,8 @@ model CostCenter {
   code        String       @unique
   name        String
   departments Department[]
+
+  @@map("aura_cost_center")
 }
 
 // ============================================================================
@@ -107,6 +113,8 @@ model Country {
 
   states    State[]
   addresses Address[]
+
+  @@map("aura_country")
 }
 
 model State {
@@ -120,6 +128,7 @@ model State {
   addresses Address[]
 
   @@index([countryId])
+  @@map("aura_state")
 }
 
 model City {
@@ -131,6 +140,8 @@ model City {
   addresses Address[]
 
   @@index([stateId])
+
+  @@map("aura_city")
 }
 
 model Address {
@@ -148,6 +159,8 @@ model Address {
   locations Location[]
   employees Employee[] // Home address
   positions Position[]
+
+  @@map("aura_address")
 }
 
 model Location {
@@ -176,6 +189,7 @@ model Location {
   @@index([companyId])
   @@index([type])
   @@index([isDeleted])
+  @@map("aura_location")
 }
 
 enum LocationType {
@@ -196,6 +210,8 @@ model JobFunction {
   name String // e.g., "Engineering"
 
   jobFamilies JobFamily[]
+
+  @@map("aura_job_function")
 }
 
 model JobFamily {
@@ -206,6 +222,7 @@ model JobFamily {
   name       String // e.g., "Software Development"
 
   jobProfiles JobProfile[]
+  @@map("aura_job_family")
 }
 
 model JobProfile {
@@ -230,6 +247,8 @@ model JobProfile {
   @@index([familyId])
   @@index([gradeId])
   @@index([status])
+
+  @@map("aura_job_profile")
 }
 
 model Grade {
@@ -247,6 +266,7 @@ model Grade {
   previousEmploymentHistory EmploymentHistory[] @relation("PreviousGrade")
   newEmploymentHistory      EmploymentHistory[] @relation("NewGrade")
   Position                  Position[]
+  @@map("aura_grade")
 }
 
 // ============================================================================
@@ -342,6 +362,7 @@ model Employee {
   @@index([email])
   @@index([employeeCode])
   @@index([companyId, isDeleted])
+  @@map("aura_employee")
 }
 
 model EmployeeStatus {
@@ -353,6 +374,8 @@ model EmployeeStatus {
 
   employees Employee[]
   positions Position[]
+
+  @@map("aura_employee_status")
 }
 
 model EmploymentType {
@@ -364,6 +387,8 @@ model EmploymentType {
 
   employees Employee[]
   positions Position[]
+
+  @@map("aura_employment_type")
 }
 
 // ============================================================================
@@ -412,6 +437,7 @@ model User {
   @@index([tenantId, status])
   @@index([email])
   @@index([lastLogin])
+  @@map("aura_user")
 }
 
 // ============================================================================
@@ -442,6 +468,7 @@ model Role {
   @@index([tenantId])
   @@index([code])
   @@index([isActive])
+  @@map("aura_role")
 }
 
 model UserRole {
@@ -462,6 +489,8 @@ model UserRole {
   @@index([roleId])
   @@index([tenantId])
   @@index([expiresAt])
+
+  @@map("aura_user_role")
 }
 
 model Permission {
@@ -479,6 +508,7 @@ model Permission {
 
   @@unique([resource, action])
   @@index([resource])
+  @@map("aura_permission")
 }
 
 model RolePermission {
@@ -493,6 +523,8 @@ model RolePermission {
   @@unique([roleId, permissionId])
   @@index([roleId])
   @@index([permissionId])
+
+  @@map("aura_role_permission")
 }
 
 // 5C. Password Reset
@@ -510,6 +542,7 @@ model PasswordResetToken {
   @@index([userId])
   @@index([token])
   @@index([expiresAt])
+  @@map("aura_password_reset_token")
 }
 
 // 5D. Multi-Factor Authentication (MFA)
@@ -528,6 +561,8 @@ model MFASecret {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+
+  @@map("aura_mfa_secret")
 }
 
 model RefreshToken {
@@ -542,6 +577,7 @@ model RefreshToken {
 
   @@index([userId])
   @@index([token])
+  @@map("aura_refresh_token")
 }
 
 // ============================================================================
@@ -554,6 +590,8 @@ model Currency {
   name   String
   symbol String
   status String @default("Active") // Active, Inactive
+
+  @@map("aura_currency")
 }
 
 model Language {
@@ -562,6 +600,8 @@ model Language {
   name   String
   isRTL  Boolean @default(false)
   status String  @default("Active")
+
+  @@map("aura_language")
 }
 
 model DocumentType {
@@ -572,6 +612,7 @@ model DocumentType {
   isRequired  Boolean            @default(false)
   status      String             @default("Active")
   documents   EmployeeDocument[]
+  @@map("aura_document_type")
 }
 
 // ============================================================================
@@ -584,6 +625,8 @@ model BusinessUnit {
   name   String
   head   String?
   status String  @default("Active")
+
+  @@map("aura_business_unit")
 }
 
 model Designation {
@@ -593,6 +636,8 @@ model Designation {
   gradeId     String?
   description String?
   status      String  @default("Active")
+
+  @@map("aura_designation")
 }
 
 // ============================================================================
@@ -610,6 +655,7 @@ model Skill {
   deletedAt   DateTime?
   createdBy   String?
   updatedBy   String?
+  @@map("aura_skill")
 }
 
 model Competency {
@@ -618,6 +664,8 @@ model Competency {
   name        String
   description String?
   status      String  @default("Active")
+
+  @@map("aura_competency")
 }
 
 // ============================================================================
@@ -634,6 +682,8 @@ model LeaveType {
   deletedAt DateTime?
   createdBy String?
   updatedBy String?
+
+  @@map("aura_leave_type")
 }
 
 model ShiftType {
@@ -643,6 +693,7 @@ model ShiftType {
   startTime String
   endTime   String
   status    String @default("Active")
+  @@map("aura_shift_type")
 }
 
 model Holiday {
@@ -651,6 +702,8 @@ model Holiday {
   date   String // YYYY-MM-DD
   type   String // National, Regional
   status String @default("Active")
+
+  @@map("aura_holiday")
 }
 
 // ============================================================================
@@ -694,6 +747,7 @@ model AttendancePunch {
   @@index([punchType])
   @@index([punchTime])
   @@index([employeeId, punchTime])
+  @@map("aura_attendance_punch")
 }
 
 // Daily Attendance Summary
@@ -746,6 +800,7 @@ model AttendanceRecord {
   @@index([date])
   @@index([status])
   @@index([employeeId, date])
+  @@map("aura_attendance_record")
 }
 
 // Shift Definitions
@@ -792,6 +847,7 @@ model Shift {
   @@unique([tenantId, code])
   @@index([tenantId])
   @@index([isActive])
+  @@map("aura_shift")
 }
 
 // Employee Shift Assignments
@@ -816,6 +872,8 @@ model ShiftAssignment {
   @@index([employeeId])
   @@index([shiftId])
   @@index([effectiveFrom])
+
+  @@map("aura_shift_assignment")
 }
 
 // Shift Roster (Weekly/Monthly Planning)
@@ -845,6 +903,7 @@ model ShiftRoster {
   @@index([employeeId])
   @@index([shiftId])
   @@index([rosterDate])
+  @@map("aura_shift_roster")
 }
 
 // Shift Swap Requests
@@ -877,6 +936,7 @@ model ShiftSwapRequest {
   @@index([requestorId])
   @@index([swapWithId])
   @@index([status])
+  @@map("aura_shift_swap_request")
 }
 
 // Overtime Management
@@ -922,6 +982,7 @@ model OvertimeRequest {
   @@index([employeeId])
   @@index([overtimeDate])
   @@index([status])
+  @@map("aura_overtime_request")
 }
 
 // Attendance Regularization Requests
@@ -956,6 +1017,7 @@ model AttendanceRegularization {
   @@index([employeeId])
   @@index([date])
   @@index([status])
+  @@map("aura_attendance_regularization")
 }
 
 // Comp-Off (Compensatory Off) Management
@@ -989,6 +1051,7 @@ model CompOffRequest {
   @@index([employeeId])
   @@index([status])
   @@index([expiryDate])
+  @@map("aura_comp_off_request")
 }
 
 // ============================================================================
@@ -1001,6 +1064,8 @@ model TaxRegime {
   name    String
   country String
   status  String @default("Active")
+
+  @@map("aura_tax_regime")
 }
 
 model PayComponent {
@@ -1009,6 +1074,8 @@ model PayComponent {
   name   String
   type   String // Earning, Deduction
   status String @default("Active")
+
+  @@map("aura_pay_component")
 }
 
 model Bank {
@@ -1018,6 +1085,7 @@ model Bank {
   branchName  String?
   countryCode String? // ISO codde e.g. AE, IN (Optional for migration safety, backfill later)
   status      String  @default("Active")
+  @@map("aura_bank")
 }
 
 // ============================================================================
@@ -1036,6 +1104,8 @@ model SystemSetting {
   deletedAt   DateTime?
   createdBy   String?
   updatedBy   String?
+
+  @@map("aura_system_setting")
 }
 
 // ============================================================================
@@ -1047,6 +1117,7 @@ model EducationLevel {
   name        String  @unique
   description String?
   status      String  @default("Active")
+  @@map("aura_education_level")
 }
 
 model Relationship {
@@ -1054,6 +1125,8 @@ model Relationship {
   name   String @unique
   type   String // Immediate, Extended
   status String @default("Active")
+
+  @@map("aura_relationship")
 }
 
 model ExitReason {
@@ -1061,6 +1134,8 @@ model ExitReason {
   reason String @unique
   type   String // Voluntary, Involuntary
   status String @default("Active")
+
+  @@map("aura_exit_reason")
 }
 
 // ============================================================================
@@ -1075,6 +1150,8 @@ model AccessControl {
   status    String   @default("Active")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("aura_access_control")
 }
 
 model PasswordPolicy {
@@ -1089,6 +1166,7 @@ model PasswordPolicy {
   lockoutAttempts     Int      @default(3)
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+  @@map("aura_password_policy")
 }
 
 model SSOConfig {
@@ -1100,6 +1178,8 @@ model SSOConfig {
   certificate String?  @db.Text
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@map("aura_sso_config")
 }
 
 model UserSession {
@@ -1120,6 +1200,7 @@ model UserSession {
   @@index([userId, status])
   @@index([lastActive])
   @@index([expiresAt])
+  @@map("aura_user_session")
 }
 
 enum AuditAction {
@@ -1255,6 +1336,7 @@ model AuditLog {
   @@index([userId])
   @@index([timestamp])
   @@index([entityType, entityId])
+  @@map("aura_audit_log")
 }
 
 model AuditLogArchive {
@@ -1283,6 +1365,8 @@ model AuditLogArchive {
   @@index([userId, timestamp])
   @@index([resourceType, resourceId])
   @@index([archivedAt])
+
+  @@map("aura_audit_log_archive")
 }
 
 model UserDelegation {
@@ -1303,6 +1387,7 @@ model UserDelegation {
   @@index([delegateeId])
   @@index([status])
   @@index([startDate, endDate])
+  @@map("aura_user_delegation")
 }
 
 model License {
@@ -1314,6 +1399,8 @@ model License {
   status    String   @default("Active")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("aura_license")
 }
 
 model UserDeactivation {
@@ -1323,6 +1410,8 @@ model UserDeactivation {
   reason        String?
   deactivatedBy String
   deactivatedAt DateTime @default(now())
+
+  @@map("aura_user_deactivation")
 }
 
 model MFAConfig {
@@ -1334,6 +1423,7 @@ model MFAConfig {
   gracePeriodDays  Int      @default(7)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  @@map("aura_mfa_config")
 }
 
 // ============================================================================
@@ -1372,6 +1462,7 @@ model JobPosting {
   @@index([location])
   @@index([postedDate])
   @@index([isDeleted])
+  @@map("aura_job_posting")
 }
 
 // ============================================================================
@@ -1392,6 +1483,8 @@ model CompetencyCategory {
 
   competencies  CompetencyCatalog[]
   subcategories CompetencySubcategory[]
+
+  @@map("aura_competency_category")
 }
 
 model CompetencySubcategory {
@@ -1407,6 +1500,7 @@ model CompetencySubcategory {
   competencies CompetencyCatalog[]
 
   @@unique([categoryId, code])
+  @@map("aura_competency_subcategory")
 }
 
 model CompetencyCatalog {
@@ -1435,6 +1529,8 @@ model CompetencyCatalog {
   jobCompetencyMappings  JobCompetencyMapping[]
   skillAssessments       SkillAssessmentCompetency[]
   gapAnalysisItems       GapAnalysisItem[]
+
+  @@map("aura_competency_catalog")
 }
 
 model CompetencyProficiencyDescriptor {
@@ -1449,6 +1545,7 @@ model CompetencyProficiencyDescriptor {
   updatedAt    DateTime          @updatedAt
 
   @@unique([competencyId, levelId])
+  @@map("aura_competency_proficiency_descriptor")
 }
 
 model CompetencyRelation {
@@ -1461,6 +1558,8 @@ model CompetencyRelation {
   createdAt           DateTime          @default(now())
 
   @@unique([sourceCompetencyId, relatedCompetencyId])
+
+  @@map("aura_competency_relation")
 }
 
 model CompetencyRoleMapping {
@@ -1471,6 +1570,8 @@ model CompetencyRoleMapping {
   createdAt    DateTime          @default(now())
 
   @@unique([competencyId, roleName])
+
+  @@map("aura_competency_role_mapping")
 }
 
 model CompetencyAssessmentCriteria {
@@ -1480,6 +1581,7 @@ model CompetencyAssessmentCriteria {
   criteria     String
   sortOrder    Int               @default(0)
   createdAt    DateTime          @default(now())
+  @@map("aura_competency_assessment_criteria")
 }
 
 model CompetencyDevelopmentResource {
@@ -1493,6 +1595,8 @@ model CompetencyDevelopmentResource {
   duration     String?
   cost         Float?
   createdAt    DateTime          @default(now())
+
+  @@map("aura_competency_development_resource")
 }
 
 // ============================================================================
@@ -1511,6 +1615,7 @@ model ProficiencyFramework {
   updatedAt   DateTime @updatedAt
 
   levels ProficiencyLevel[]
+  @@map("aura_proficiency_framework")
 }
 
 model ProficiencyLevel {
@@ -1534,6 +1639,8 @@ model ProficiencyLevel {
 
   @@unique([frameworkId, levelNumber])
   @@unique([frameworkId, code])
+
+  @@map("aura_proficiency_level")
 }
 
 // ============================================================================
@@ -1553,6 +1660,7 @@ model JobRole {
 
   competencyMappings JobCompetencyMapping[]
   skillAssessments   SkillAssessment[]
+  @@map("aura_job_role")
 }
 
 model JobCompetencyMapping {
@@ -1571,6 +1679,8 @@ model JobCompetencyMapping {
   updatedAt       DateTime          @updatedAt
 
   @@unique([jobRoleId, competencyId])
+
+  @@map("aura_job_competency_mapping")
 }
 
 // ============================================================================
@@ -1598,6 +1708,7 @@ model SkillAssessment {
 
   competencies SkillAssessmentCompetency[]
   results      SkillAssessmentResult[]
+  @@map("aura_skill_assessment")
 }
 
 model SkillAssessmentCompetency {
@@ -1610,6 +1721,8 @@ model SkillAssessmentCompetency {
   createdAt    DateTime          @default(now())
 
   @@unique([assessmentId, competencyId])
+
+  @@map("aura_skill_assessment_competency")
 }
 
 model SkillAssessmentResult {
@@ -1627,6 +1740,7 @@ model SkillAssessmentResult {
   updatedAt     DateTime         @updatedAt
 
   @@unique([assessmentId, competencyId, assessorId])
+  @@map("aura_skill_assessment_result")
 }
 
 // ============================================================================
@@ -1648,6 +1762,8 @@ model GapAnalysis {
 
   items           GapAnalysisItem[]
   developmentPlan DevelopmentPlan?
+
+  @@map("aura_gap_analysis")
 }
 
 model GapAnalysisItem {
@@ -1667,6 +1783,7 @@ model GapAnalysisItem {
   updatedAt      DateTime          @updatedAt
 
   @@unique([gapAnalysisId, competencyId])
+  @@map("aura_gap_analysis_item")
 }
 
 model DevelopmentPlan {
@@ -1689,6 +1806,8 @@ model DevelopmentPlan {
 
   activities DevelopmentActivity[]
   milestones DevelopmentMilestone[]
+
+  @@map("aura_development_plan")
 }
 
 model DevelopmentActivity {
@@ -1710,6 +1829,7 @@ model DevelopmentActivity {
   sortOrder         Int             @default(0)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
+  @@map("aura_development_activity")
 }
 
 model DevelopmentMilestone {
@@ -1724,6 +1844,8 @@ model DevelopmentMilestone {
   sortOrder         Int             @default(0)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
+
+  @@map("aura_development_milestone")
 }
 
 // ============================================================================
@@ -1809,6 +1931,7 @@ model LabourLawConfig {
   @@unique([countryCode, effectiveFrom])
   @@index([countryCode])
   @@index([status])
+  @@map("aura_labour_law_config")
 }
 
 // ============================================================================
@@ -1858,6 +1981,7 @@ model WPSConfiguration {
   @@index([tenantId])
   @@index([companyId])
   @@index([isActive])
+  @@map("aura_wps_configuration")
 }
 
 model WPSSubmission {
@@ -1925,6 +2049,7 @@ model WPSSubmission {
   @@index([status])
   @@index([submissionDate])
   @@index([createdAt])
+  @@map("aura_wps_submission")
 }
 
 model WPSRecord {
@@ -1987,6 +2112,7 @@ model WPSRecord {
   @@index([status])
   @@index([labourCardNumber])
   @@index([lineNumber])
+  @@map("aura_wps_record")
 }
 
 model WPSAuditLog {
@@ -2028,6 +2154,7 @@ model WPSAuditLog {
   @@index([action])
   @@index([userId])
   @@index([timestamp])
+  @@map("aura_wps_audit_log")
 }
 
 enum WPSStatus {
@@ -2075,6 +2202,7 @@ model GOSIConfiguration {
 
   @@unique([tenantId, companyId])
   @@index([tenantId])
+  @@map("aura_gosi_configuration")
 }
 
 model GOSISubmission {
@@ -2118,6 +2246,7 @@ model GOSISubmission {
   @@index([tenantId])
   @@index([contributionMonth])
   @@index([status])
+  @@map("aura_gosi_submission")
 }
 
 model GOSIRecord {
@@ -2157,6 +2286,7 @@ model GOSIRecord {
   @@index([submissionId])
   @@index([employeeId])
   @@index([status])
+  @@map("aura_gosi_record")
 }
 
 enum GOSIStatus {
@@ -2204,6 +2334,7 @@ model NitaqatConfiguration {
 
   @@unique([tenantId, companyId])
   @@index([tenantId])
+  @@map("aura_nitaqat_configuration")
 }
 
 model NitaqatSnapshot {
@@ -2231,6 +2362,8 @@ model NitaqatSnapshot {
 
   @@index([configId])
   @@index([snapshotDate])
+
+  @@map("aura_nitaqat_snapshot")
 }
 
 enum NitaqatBand {
@@ -2298,6 +2431,7 @@ model EOSBCalculation {
   @@index([tenantId])
   @@index([employeeId])
   @@index([status])
+  @@map("aura_eosb_calculation")
 }
 
 enum EOSBCalculationType {
@@ -2384,6 +2518,7 @@ model EmployeeComplianceDetails {
   @@index([tenantId])
   @@index([employeeId])
   @@index([countryCode])
+  @@map("aura_employee_compliance_details")
 }
 
 // ============================================================================
@@ -2424,6 +2559,7 @@ model PayrollConfiguration {
 
   @@unique([tenantId, companyId])
   @@index([tenantId])
+  @@map("aura_payroll_configuration")
 }
 
 model PayrollRun {
@@ -2466,6 +2602,7 @@ model PayrollRun {
   @@index([payrollMonth])
   @@index([status])
   @@index([configId])
+  @@map("aura_payroll_run")
 }
 
 model Payslip {
@@ -2527,6 +2664,7 @@ model Payslip {
   @@index([employeeId])
   @@index([status])
   @@index([employeeId, payrollRunId])
+  @@map("aura_payslip")
 }
 
 enum PayrollRunStatus {
@@ -2584,6 +2722,7 @@ model EmployeeSalaryStructure {
   @@index([employeeId])
   @@index([effectiveFrom])
   @@index([isActive])
+  @@map("aura_employee_salary_structure")
 }
 
 // Employee Benefits - Insurance, medical, etc.
@@ -2626,6 +2765,7 @@ model EmployeeBenefit {
   @@index([employeeId])
   @@index([benefitType])
   @@index([status])
+  @@map("aura_employee_benefit")
 }
 
 // Tax Declarations - Employee tax-saving declarations
@@ -2692,6 +2832,7 @@ model TaxDeclaration {
   @@index([employeeId])
   @@index([financialYear])
   @@index([status])
+  @@map("aura_tax_declaration")
 }
 
 // Payroll Adjustments - One-time additions/deductions
@@ -2731,6 +2872,7 @@ model PayrollAdjustment {
   @@index([payrollMonth])
   @@index([isProcessed])
   @@index([approvalStatus])
+  @@map("aura_payroll_adjustment")
 }
 
 // Statutory Payments - PF, ESI, PT records
@@ -2773,6 +2915,7 @@ model StatutoryPayment {
   @@index([paymentMonth])
   @@index([statutoryType])
   @@index([status])
+  @@map("aura_statutory_payment")
 }
 
 // ============================================================================
@@ -2837,6 +2980,7 @@ model LeavePolicy {
   @@unique([tenantId, code])
   @@index([tenantId])
   @@index([countryCode])
+  @@map("aura_leave_policy")
 }
 
 model LeaveBalance {
@@ -2871,6 +3015,7 @@ model LeaveBalance {
   @@index([tenantId])
   @@index([employeeId])
   @@index([leaveYear])
+  @@map("aura_leave_balance")
 }
 
 enum LeaveAccrualType {
@@ -2942,6 +3087,7 @@ model LeaveRequest {
   @@index([isDeleted])
   @@index([employeeId, status])
   @@index([startDate, endDate])
+  @@map("aura_leave_request")
 }
 
 // Leave Encashment Request
@@ -2985,6 +3131,7 @@ model LeaveEncashment {
   @@index([employeeId])
   @@index([status])
   @@index([payrollMonth])
+  @@map("aura_leave_encashment")
 }
 
 // Leave Accrual History - Track monthly/annual accruals
@@ -3015,6 +3162,7 @@ model LeaveAccrual {
   @@index([policyId])
   @@index([leaveYear])
   @@index([accrualDate])
+  @@map("aura_leave_accrual")
 }
 
 // Leave Carry Forward - Track year-end carry forwards
@@ -3048,6 +3196,7 @@ model LeaveCarryForward {
   @@index([tenantId])
   @@index([employeeId])
   @@index([toYear])
+  @@map("aura_leave_carry_forward")
 }
 
 // Comp-Off (Compensatory Off) - Earned time off for working on holidays/weekends
@@ -3088,6 +3237,7 @@ model CompOffEarned {
   @@index([status])
   @@index([workedDate])
   @@index([expiryDate])
+  @@map("aura_comp_off_earned")
 }
 
 // ============================================================================
@@ -3108,6 +3258,8 @@ model Translation {
   @@unique([tenantId, locale, namespace, key])
   @@index([locale])
   @@index([namespace])
+
+  @@map("aura_translation")
 }
 
 model LocalizationConfig {
@@ -3139,6 +3291,7 @@ model LocalizationConfig {
   updatedAt DateTime @updatedAt
 
   @@index([tenantId])
+  @@map("aura_localization_config")
 }
 
 // ============================================================================
@@ -3173,6 +3326,7 @@ model IndiaPFConfiguration {
 
   @@unique([tenantId, companyId])
   @@index([tenantId])
+  @@map("aura_india_pf_configuration")
 }
 
 model IndiaPFSubmission {
@@ -3214,6 +3368,7 @@ model IndiaPFSubmission {
   @@index([tenantId])
   @@index([contributionMonth])
   @@index([status])
+  @@map("aura_india_pf_submission")
 }
 
 model IndiaPFRecord {
@@ -3256,6 +3411,7 @@ model IndiaPFRecord {
   @@index([submissionId])
   @@index([employeeId])
   @@index([uanNumber])
+  @@map("aura_india_pf_record")
 }
 
 enum IndiaPFStatus {
@@ -3307,6 +3463,7 @@ model IndiaESIConfiguration {
 
   @@unique([tenantId, companyId])
   @@index([tenantId])
+  @@map("aura_india_esi_configuration")
 }
 
 model IndiaESISubmission {
@@ -3344,6 +3501,7 @@ model IndiaESISubmission {
   @@index([tenantId])
   @@index([contributionMonth])
   @@index([status])
+  @@map("aura_india_esi_submission")
 }
 
 model IndiaESIRecord {
@@ -3377,6 +3535,7 @@ model IndiaESIRecord {
   @@index([submissionId])
   @@index([employeeId])
   @@index([esiNumber])
+  @@map("aura_india_esi_record")
 }
 
 enum IndiaESIStatus {
@@ -3426,6 +3585,7 @@ model IndiaTDSConfiguration {
 
   @@unique([tenantId, companyId, assessmentYear])
   @@index([tenantId])
+  @@map("aura_india_tds_configuration")
 }
 
 model IndiaTDSDeclaration {
@@ -3485,6 +3645,7 @@ model IndiaTDSDeclaration {
   @@index([tenantId])
   @@index([employeeId])
   @@index([financialYear])
+  @@map("aura_india_tds_declaration")
 }
 
 enum TDSDeclarationStatus {
@@ -3525,6 +3686,7 @@ model IndiaProfessionalTaxConfig {
   @@unique([tenantId, companyId, stateCode])
   @@index([tenantId])
   @@index([stateCode])
+  @@map("aura_india_professional_tax_config")
 }
 
 model IndiaProfessionalTaxDeduction {
@@ -3552,6 +3714,8 @@ model IndiaProfessionalTaxDeduction {
   @@unique([employeeId, deductionMonth])
   @@index([tenantId])
   @@index([deductionMonth])
+
+  @@map("aura_india_professional_tax_deduction")
 }
 
 enum PTDeductionStatus {
@@ -3599,6 +3763,7 @@ model ComplianceAuditLog {
   @@index([module])
   @@index([entityType, entityId])
   @@index([createdAt])
+  @@map("aura_compliance_audit_log")
 }
 
 model EmployeeDocument {
@@ -3664,6 +3829,7 @@ model EmployeeDocument {
   @@index([status])
   @@index([employeeId, category])
   @@index([employeeId, documentTypeId])
+  @@map("aura_employee_document")
 }
 
 // ========================================
@@ -3732,6 +3898,7 @@ model Asset {
   @@index([status])
   @@index([currentEmployeeId])
   @@index([locationId])
+  @@map("aura_asset")
 }
 
 model AssetAssignment {
@@ -3769,6 +3936,7 @@ model AssetAssignment {
   @@index([assetId])
   @@index([employeeId])
   @@index([status])
+  @@map("aura_asset_assignment")
 }
 
 model AssetMaintenance {
@@ -3802,6 +3970,7 @@ model AssetMaintenance {
   @@index([assetId])
   @@index([scheduledDate])
   @@index([status])
+  @@map("aura_asset_maintenance")
 }
 
 model AssetCategory {
@@ -3813,6 +3982,8 @@ model AssetCategory {
   status           String   @default("Active")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
+  @@map("aura_asset_category")
 }
 
 // ========================================
@@ -3899,6 +4070,7 @@ model EmploymentHistory {
   @@index([tenantId, status])
   @@index([isBackfilled])
   @@index([isDeleted])
+  @@map("aura_employment_history")
 }
 
 // ========================================
@@ -3984,7 +4156,9 @@ model Position {
   @@index([departmentId])
   @@index([status])
   @@index([reportsToPositionId])
+  @@index([jobProfileId])
   @@index([isDeleted])
+  @@map("aura_position")
 }
 
 // ========================================
@@ -4019,6 +4193,7 @@ model InterCompanyTransfer {
   @@index([tenantId])
   @@index([employeeId])
   @@index([status])
+  @@map("aura_inter_company_transfer")
 }
 
 // ========================================
@@ -4048,6 +4223,7 @@ model SharedServiceRequest {
   @@index([tenantId])
   @@index([status])
   @@index([category])
+  @@map("aura_shared_service_request")
 }
 
 // Life Events Schema Addition
@@ -4107,6 +4283,7 @@ model EmployeeLifeEvent {
   @@index([eventType])
   @@index([eventDate])
   @@index([status])
+  @@map("aura_employee_life_event")
 }
 
 model LifeEventType {
@@ -4136,6 +4313,7 @@ model LifeEventType {
   @@unique([tenantId, code])
   @@index([tenantId])
   @@index([category])
+  @@map("aura_life_event_type")
 }
 
 // ID Card Management
@@ -4172,6 +4350,7 @@ model IDCardTemplate {
   @@unique([tenantId, name])
   @@index([tenantId])
   @@index([cardType])
+  @@map("aura_id_card_template")
 }
 
 model IDCard {
@@ -4226,6 +4405,7 @@ model IDCard {
   @@index([employeeId])
   @@index([status])
   @@index([expiryDate])
+  @@map("aura_id_card")
 }
 
 // Letter Generation
@@ -4243,6 +4423,8 @@ model LetterTemplate {
 
   @@unique([tenantId, name])
   @@index([tenantId])
+
+  @@map("aura_letter_template")
 }
 
 model Letter {
@@ -4264,6 +4446,7 @@ model Letter {
 
   @@index([tenantId])
   @@index([employeeId])
+  @@map("aura_letter")
 }
 
 // Exit Management
@@ -4287,6 +4470,8 @@ model ExitRequest {
 
   @@index([tenantId])
   @@index([employeeId])
+
+  @@map("aura_exit_request")
 }
 
 model ExitClearance {
@@ -4303,6 +4488,7 @@ model ExitClearance {
   updatedAt     DateTime    @updatedAt
 
   @@index([exitRequestId])
+  @@map("aura_exit_clearance")
 }
 
 // Probation Management
@@ -4325,6 +4511,8 @@ model ProbationTracking {
 
   @@index([tenantId])
   @@index([employeeId])
+
+  @@map("aura_probation_tracking")
 }
 
 model ProbationReview {
@@ -4339,6 +4527,7 @@ model ProbationReview {
   updatedAt         DateTime          @updatedAt
 
   @@index([probationId])
+  @@map("aura_probation_review")
 }
 
 // Confirmation Process
@@ -4360,6 +4549,8 @@ model ConfirmationRequest {
 
   @@index([tenantId])
   @@index([employeeId])
+
+  @@map("aura_confirmation_request")
 }
 
 // ============================================================================
@@ -4407,6 +4598,7 @@ model ReportDefinition {
   @@index([tenantId])
   @@index([category])
   @@index([createdBy])
+  @@map("aura_report_definition")
 }
 
 // Report Execution History
@@ -4438,6 +4630,7 @@ model ReportExecution {
   @@index([tenantId])
   @@index([executedBy])
   @@index([executedAt])
+  @@map("aura_report_execution")
 }
 
 // Analytics Dashboard Widgets
@@ -4470,6 +4663,7 @@ model DashboardWidget {
   @@unique([tenantId, code])
   @@index([tenantId])
   @@index([dashboardId])
+  @@map("aura_dashboard_widget")
 }
 
 // Predictive Analytics Models
@@ -4514,6 +4708,7 @@ model PredictiveModel {
   @@index([tenantId])
   @@index([modelType])
   @@index([status])
+  @@map("aura_predictive_model")
 }
 
 // Prediction Results
@@ -4546,6 +4741,7 @@ model Prediction {
   @@index([tenantId])
   @@index([entityType, entityId])
   @@index([predictedDate])
+  @@map("aura_prediction")
 }
 
 // AI Agent Conversations
@@ -4573,6 +4769,8 @@ model AIAgentConversation {
   @@index([tenantId])
   @@index([userId])
   @@index([sessionId])
+
+  @@map("aura_ai_agent_conversation")
 }
 
 // AI Agent Messages
@@ -4598,6 +4796,7 @@ model AIAgentMessage {
   @@index([conversationId])
   @@index([role])
   @@index([createdAt])
+  @@map("aura_ai_agent_message")
 }
 
 // Analytics Cache for performance
@@ -4620,6 +4819,8 @@ model AnalyticsCache {
   @@unique([tenantId, cacheKey])
   @@index([tenantId])
   @@index([expiresAt])
+
+  @@map("aura_analytics_cache")
 }
 
 // ============================================================================
@@ -4798,6 +4999,7 @@ model BenefitPlan {
   @@index([category])
   @@index([status])
   @@index([effectiveFrom])
+  @@map("aura_benefit_plan")
 }
 
 // Benefit Enrollments - Employee enrollment in benefit plans
@@ -4845,6 +5047,7 @@ model BenefitEnrollment {
   @@index([planId])
   @@index([status])
   @@index([effectiveFrom])
+  @@map("aura_benefit_enrollment")
 }
 
 // Dependents - Employee dependents for benefit coverage
@@ -4874,6 +5077,7 @@ model Dependent {
   @@index([tenantId])
   @@index([employeeId])
   @@index([status])
+  @@map("aura_dependent")
 }
 
 // Benefit Claims - Claims submitted for benefits
@@ -4923,6 +5127,7 @@ model BenefitClaim {
   @@index([enrollmentId])
   @@index([status])
   @@index([claimDate])
+  @@map("aura_benefit_claim")
 }
 
 // Healthcare Providers - Provider directory
@@ -4953,6 +5158,7 @@ model HealthcareProvider {
   @@index([providerType])
   @@index([specialty])
   @@index([isActive])
+  @@map("aura_healthcare_provider")
 }
 
 // Qualifying Events - Life events triggering benefit changes
@@ -4979,6 +5185,8 @@ model QualifyingEvent {
   @@index([employeeId])
   @@index([eventType])
   @@index([eventDate])
+
+  @@map("aura_qualifying_event")
 }
 
 // Enrollment Windows - Open enrollment periods
@@ -5001,6 +5209,7 @@ model EnrollmentWindow {
   @@index([planYear])
   @@index([startDate])
   @@index([isActive])
+  @@map("aura_enrollment_window")
 }
 
 // Premium Rates - Age-based or tier-based premium rates
@@ -5024,6 +5233,8 @@ model PremiumRate {
   @@index([tenantId])
   @@index([planId])
   @@index([effectiveFrom])
+
+  @@map("aura_premium_rate")
 }
 
 // Premium Deductions - Payroll deduction tracking
@@ -5048,6 +5259,7 @@ model PremiumDeduction {
   @@index([enrollmentId])
   @@index([employeeId])
   @@index([payrollDate])
+  @@map("aura_premium_deduction")
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -5076,6 +5288,8 @@ model TaxDocument {
   @@index([tenantId])
   @@index([employeeId])
   @@index([taxYear])
+
+  @@map("aura_tax_document")
 }
 
 // Continuous Feedback - Praise, Constructive, Suggestions
@@ -5096,6 +5310,7 @@ model ContinuousFeedback {
   @@index([fromUserId])
   @@index([toEmployeeId])
   @@index([type])
+  @@map("aura_continuous_feedback")
 }
 
 // Recognition - Kudos, Awards, Badges
@@ -5116,6 +5331,8 @@ model Recognition {
   @@index([giverId])
   @@index([receiverId])
   @@index([createdAt])
+
+  @@map("aura_recognition")
 }
 
 // One-on-One Meetings
@@ -5139,6 +5356,7 @@ model OneOnOneMeeting {
   @@index([managerId])
   @@index([employeeId])
   @@index([scheduledAt])
+  @@map("aura_one_on_one_meeting")
 }
 
 // One-on-One Notes
@@ -5154,6 +5372,8 @@ model OneOnOneNote {
   meeting OneOnOneMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
 
   @@index([meetingId])
+
+  @@map("aura_one_on_one_note")
 }
 
 // One-on-One Action Items
@@ -5173,6 +5393,7 @@ model OneOnOneActionItem {
   @@index([meetingId])
   @@index([assigneeId])
   @@index([status])
+  @@map("aura_one_on_one_action_item")
 }
 
 // Learning Paths
@@ -5194,6 +5415,8 @@ model LearningPath {
 
   @@index([tenantId])
   @@index([isPublished])
+
+  @@map("aura_learning_path")
 }
 
 // Learning Path Enrollments
@@ -5213,6 +5436,7 @@ model LearningPathEnrollment {
   @@index([tenantId])
   @@index([pathId])
   @@index([employeeId])
+  @@map("aura_learning_path_enrollment")
 }
 
 // Learning Progress Tracking
@@ -5233,6 +5457,8 @@ model LearningProgress {
   @@index([tenantId])
   @@index([employeeId])
   @@index([contentId])
+
+  @@map("aura_learning_progress")
 }
 
 // Assessments / Quizzes
@@ -5255,6 +5481,7 @@ model Assessment {
 
   @@index([tenantId])
   @@index([pathId])
+  @@map("aura_assessment")
 }
 
 // Assessment Submissions
@@ -5274,6 +5501,8 @@ model AssessmentSubmission {
 
   @@index([assessmentId])
   @@index([employeeId])
+
+  @@map("aura_assessment_submission")
 }
 
 // Webhooks
@@ -5294,6 +5523,7 @@ model Webhook {
 
   @@index([tenantId])
   @@index([isActive])
+  @@map("aura_webhook")
 }
 
 // Webhook Delivery Logs
@@ -5315,6 +5545,8 @@ model WebhookLog {
   @@index([webhookId])
   @@index([createdAt])
   @@index([success])
+
+  @@map("aura_webhook_log")
 }
 
 // Custom Reports
@@ -5336,6 +5568,7 @@ model CustomReport {
 
   @@index([tenantId])
   @@index([createdBy])
+  @@map("aura_custom_report")
 }
 
 // Workflow Definitions
@@ -5362,6 +5595,8 @@ model WorkflowDefinition {
   @@index([tenantId])
   @@index([isActive])
   @@index([trigger])
+
+  @@map("aura_workflow_definition")
 }
 
 // Workflow Instances (Executions)
@@ -5386,6 +5621,7 @@ model WorkflowInstance {
   @@index([definitionId])
   @@index([tenantId])
   @@index([status])
+  @@map("aura_workflow_instance")
 }
 
 // Project Time Entries
@@ -5409,6 +5645,8 @@ model ProjectTimeEntry {
   @@index([employeeId])
   @@index([projectId])
   @@index([date])
+
+  @@map("aura_project_time_entry")
 }
 
 // Geofence Locations
@@ -5426,6 +5664,7 @@ model GeofenceLocation {
 
   @@index([tenantId])
   @@index([isActive])
+  @@map("aura_geofence_location")
 }
 
 // Expense Claims
@@ -5452,6 +5691,8 @@ model ExpenseClaim {
   @@index([employeeId])
   @@index([status])
   @@index([date])
+
+  @@map("aura_expense_claim")
 }
 
 // API Keys
@@ -5473,6 +5714,7 @@ model APIKey {
   @@index([tenantId])
   @@index([keyHash])
   @@index([isActive])
+  @@map("aura_api_key")
 }
 
 // ============================================================================
@@ -5498,6 +5740,8 @@ model EmergencyContact {
 
   @@index([tenantId])
   @@index([employeeId])
+
+  @@map("aura_emergency_contact")
 }
 
 // ============================================================================
@@ -5530,6 +5774,7 @@ model Garnishment {
   @@index([tenantId])
   @@index([employeeId])
   @@index([status])
+  @@map("aura_garnishment")
 }
 
 // ============================================================================
@@ -5561,6 +5806,7 @@ model HSAFSAAccount {
   @@unique([employeeId, accountType, planYear])
   @@index([tenantId])
   @@index([employeeId])
+  @@map("aura_hsa_fsa_account")
 }
 
 model HSAFSATransaction {
@@ -5577,6 +5823,8 @@ model HSAFSATransaction {
 
   @@index([accountId])
   @@index([date])
+
+  @@map("aura_hsa_fsa_transaction")
 }
 
 // ============================================================================
@@ -5605,6 +5853,7 @@ model Candidate {
   updatedBy   String?
 
   applications CandidateApplication[]
+  @@map("aura_candidate")
 }
 
 model CandidateApplication {
@@ -5632,6 +5881,8 @@ model CandidateApplication {
   @@index([candidateId])
   @@index([jobPostingId])
   @@index([status])
+
+  @@map("aura_candidate_application")
 }
 
 model Interview {
@@ -5657,6 +5908,7 @@ model Interview {
 
   @@index([applicationId])
   @@index([scheduledDate])
+  @@map("aura_interview")
 }
 
 model InterviewFeedback {
@@ -5674,6 +5926,8 @@ model InterviewFeedback {
   interview Interview @relation(fields: [interviewId], references: [id])
 
   @@index([interviewId])
+
+  @@map("aura_interview_feedback")
 }
 
 model JobOffer {
@@ -5707,6 +5961,7 @@ model JobOffer {
 
   @@index([applicationId])
   @@index([status])
+  @@map("aura_job_offer")
 }
 
 model BackgroundCheck {
@@ -5731,6 +5986,8 @@ model BackgroundCheck {
   @@index([tenantId])
   @@index([applicationId])
   @@index([status])
+
+  @@map("aura_background_check")
 }
 
 model JobRequisition {
@@ -5760,6 +6017,7 @@ model JobRequisition {
   @@index([tenantId])
   @@index([status])
   @@index([department])
+  @@map("aura_job_requisition")
 }
 
 model RecruitmentVendor {
@@ -5794,6 +6052,7 @@ model RecruitmentVendor {
   @@index([tenantId])
   @@index([status])
   @@index([category])
+  @@map("aura_recruitment_vendor")
 }
 
 model OnboardingProgram {
@@ -5826,6 +6085,7 @@ model OnboardingProgram {
 
   @@unique([tenantId, programCode])
   @@index([tenantId])
+  @@map("aura_onboarding_program")
 }
 
 model OnboardingInstance {
@@ -5855,6 +6115,7 @@ model OnboardingInstance {
   @@index([tenantId])
   @@index([employeeId])
   @@index([status])
+  @@map("aura_onboarding_instance")
 }
 
 model OnboardingTask {
@@ -5883,6 +6144,8 @@ model OnboardingTask {
 
   @@index([instanceId])
   @@index([status])
+
+  @@map("aura_onboarding_task")
 }
 
 // ============================================================================
@@ -5919,6 +6182,7 @@ model PerformanceReview {
   @@index([employeeId])
   @@index([reviewCycleId])
   @@index([status])
+  @@map("aura_performance_review")
 }
 
 model ReviewCycle {
@@ -5945,6 +6209,8 @@ model ReviewCycle {
 
   @@index([tenantId])
   @@index([status])
+
+  @@map("aura_review_cycle")
 }
 
 model PerformanceGoal {
@@ -5977,6 +6243,7 @@ model PerformanceGoal {
   @@index([tenantId])
   @@index([employeeId])
   @@index([status])
+  @@map("aura_performance_goal")
 }
 
 model CalibrationSession {
@@ -5998,6 +6265,8 @@ model CalibrationSession {
 
   @@index([tenantId])
   @@index([status])
+
+  @@map("aura_calibration_session")
 }
 
 model SalaryComponent {
@@ -6022,6 +6291,7 @@ model SalaryComponent {
 
   @@unique([tenantId, componentCode])
   @@index([tenantId])
+  @@map("aura_salary_component")
 }
 
 model CompensationBand {
@@ -6040,6 +6310,8 @@ model CompensationBand {
   updatedAt     DateTime  @updatedAt
 
   @@index([tenantId])
+
+  @@map("aura_compensation_band")
 }
 
 model IncrementCycle {
@@ -6058,6 +6330,7 @@ model IncrementCycle {
 
   @@index([tenantId])
   @@index([status])
+  @@map("aura_increment_cycle")
 }
 
 // NOTIFICATION MODELS
@@ -6091,6 +6364,7 @@ model Notification {
   @@index([status])
   @@index([type])
   @@index([createdAt])
+  @@map("aura_notification")
 }
 
 model NotificationRecipient {
@@ -6112,6 +6386,8 @@ model NotificationRecipient {
   @@index([isRead])
   @@index([userId, isRead])
   @@index([createdAt])
+
+  @@map("aura_notification_recipient")
 }
 
 model NotificationTemplate {
@@ -6131,6 +6407,7 @@ model NotificationTemplate {
   @@index([tenantId])
   @@index([type])
   @@index([isActive])
+  @@map("aura_notification_template")
 }
 
 model NotificationPreference {
@@ -6148,6 +6425,8 @@ model NotificationPreference {
   @@unique([userId, category])
   @@index([userId])
   @@index([tenantId])
+
+  @@map("aura_notification_preference")
 }
 
 model DeviceToken {
@@ -6165,6 +6444,7 @@ model DeviceToken {
   @@index([userId])
   @@index([tenantId])
   @@index([token])
+  @@map("aura_device_token")
 }
 
 // ============================================================================
@@ -6200,6 +6480,7 @@ model Course {
   @@index([tenantId])
   @@index([status])
   @@index([category])
+  @@map("aura_course")
 }
 
 model CourseEnrollment {
@@ -6221,6 +6502,8 @@ model CourseEnrollment {
   @@index([courseId])
   @@index([employeeId])
   @@index([tenantId])
+
+  @@map("aura_course_enrollment")
 }
 
 model TrainingSession {
@@ -6250,6 +6533,7 @@ model TrainingSession {
   @@index([tenantId])
   @@index([startDate])
   @@index([status])
+  @@map("aura_training_session")
 }
 
 model SessionAttendee {
@@ -6267,6 +6551,8 @@ model SessionAttendee {
   @@unique([sessionId, employeeId])
   @@index([sessionId])
   @@index([employeeId])
+
+  @@map("aura_session_attendee")
 }
 
 model Certification {
@@ -6289,6 +6575,7 @@ model Certification {
   @@index([employeeId])
   @@index([status])
   @@index([expiryDate])
+  @@map("aura_certification")
 }
 
 model MentoringProgram {
@@ -6312,4 +6599,6 @@ model MentoringProgram {
   @@index([mentorId])
   @@index([menteeId])
   @@index([status])
+
+  @@map("aura_mentoring_program")
 }

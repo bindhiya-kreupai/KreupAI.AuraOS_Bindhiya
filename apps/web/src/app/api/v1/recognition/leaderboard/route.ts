@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function GET(_request: NextRequest) {
+export const GET = withEnhancedAuth(async (_request: NextRequest, { _user }: any) => {
   return NextResponse.json({
     success: true,
     data: {
@@ -61,4 +63,4 @@ export async function GET(_request: NextRequest) {
       totalParticipants: 45,
     },
   });
-}
+});

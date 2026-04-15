@@ -1,10 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
+export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) => {
+  const { id } = await context.params;
 
   return NextResponse.json({
     success: true,
@@ -68,4 +67,4 @@ export async function GET(
       completedAt: '2026-02-01T12:30:00Z',
     },
   });
-}
+});

@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
 interface DeliveryLog {
   id: string;
@@ -22,7 +24,7 @@ interface PaginationMeta {
   totalPages: number;
 }
 
-interface RouteContext {
+interface _RouteContext {
   params: Promise<{ id: string }>;
 }
 
@@ -77,7 +79,8 @@ const mockDeliveryLogs: Record<string, DeliveryLog[]> = {
         'X-Webhook-Signature': 'sha256=ghi789',
         'X-Webhook-Id': 'wh_001',
       },
-      requestBody: '{"event":"order.cancelled","data":{"orderId":"ord_997","reason":"customer_request"}}',
+      requestBody:
+        '{"event":"order.cancelled","data":{"orderId":"ord_997","reason":"customer_request"}}',
       responseBody: '{"error":"Internal Server Error"}',
       attemptNumber: 3,
       nextRetryAt: null,
@@ -123,8 +126,8 @@ const mockDeliveryLogs: Record<string, DeliveryLog[]> = {
   ],
 };
 
-export async function GET(request: NextRequest, context: RouteContext) {
-  const { id } = await context.params;
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
+  const { id } = await params;
   const { searchParams } = new URL(request.url);
 
   const page = parseInt(searchParams.get('page') || '1', 10);
@@ -135,10 +138,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const logs = mockDeliveryLogs[id];
 
   if (!logs) {
-    return NextResponse.json(
-      { error: `Webhook with id '${id}' not found` },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: `Webhook with id '${id}' not found` }, { status: 404 });
   }
 
   let filtered = [...logs];
@@ -167,4 +167,4 @@ export async function GET(request: NextRequest, context: RouteContext) {
   };
 
   return NextResponse.json({ data: paginated, pagination });
-}
+});

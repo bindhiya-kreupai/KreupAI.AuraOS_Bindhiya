@@ -352,46 +352,46 @@ export class QueryAnalyzer {
 
   private _defaultIndexSuggestions(table: string): IndexSuggestion[] {
     const knownTables: Record<string, IndexSuggestion[]> = {
-      Employee: [
+      aura_employee: [
         {
-          table:   'Employee',
+          table:   'aura_employee',
           columns: ['departmentId'],
           reason:  'Frequently filtered by department',
-          sql:     `CREATE INDEX CONCURRENTLY "idx_employee_departmentid" ON "Employee" ("departmentId");`,
+          sql:     `CREATE INDEX CONCURRENTLY "idx_employee_departmentid" ON "aura_employee" ("departmentId");`,
         },
         {
-          table:   'Employee',
+          table:   'aura_employee',
           columns: ['managerId'],
           reason:  'Manager hierarchy queries',
-          sql:     `CREATE INDEX CONCURRENTLY "idx_employee_managerid" ON "Employee" ("managerId");`,
+          sql:     `CREATE INDEX CONCURRENTLY "idx_employee_managerid" ON "aura_employee" ("managerId");`,
         },
         {
-          table:   'Employee',
+          table:   'aura_employee',
           columns: ['status', 'hireDate'],
           reason:  'Active employee list queries',
-          sql:     `CREATE INDEX CONCURRENTLY "idx_employee_status_hiredate" ON "Employee" ("status", "hireDate");`,
+          sql:     `CREATE INDEX CONCURRENTLY "idx_employee_status_hiredate" ON "aura_employee" ("status", "hireDate");`,
         },
       ],
-      AttendancePunch: [
+      aura_attendance_punch: [
         {
-          table:   'AttendancePunch',
+          table:   'aura_attendance_punch',
           columns: ['employeeId', 'punchTime'],
           reason:  'Employee-specific time range queries',
-          sql:     `CREATE INDEX CONCURRENTLY "idx_attendancepunch_empid_punchtime" ON "AttendancePunch" ("employeeId", "punchTime");`,
+          sql:     `CREATE INDEX CONCURRENTLY "idx_attendancepunch_empid_punchtime" ON "aura_attendance_punch" ("employeeId", "punchTime");`,
         },
       ],
-      LeaveRequest: [
+      aura_leave_request: [
         {
-          table:   'LeaveRequest',
+          table:   'aura_leave_request',
           columns: ['employeeId', 'status'],
           reason:  'Leave request approval queries',
-          sql:     `CREATE INDEX CONCURRENTLY "idx_leaverequest_empid_status" ON "LeaveRequest" ("employeeId", "status");`,
+          sql:     `CREATE INDEX CONCURRENTLY "idx_leaverequest_empid_status" ON "aura_leave_request" ("employeeId", "status");`,
         },
         {
-          table:   'LeaveRequest',
+          table:   'aura_leave_request',
           columns: ['approverId', 'status'],
           reason:  'Manager approval queue',
-          sql:     `CREATE INDEX CONCURRENTLY "idx_leaverequest_approverid_status" ON "LeaveRequest" ("approverId", "status");`,
+          sql:     `CREATE INDEX CONCURRENTLY "idx_leaverequest_approverid_status" ON "aura_leave_request" ("approverId", "status");`,
         },
       ],
     };

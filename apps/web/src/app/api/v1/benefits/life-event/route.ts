@@ -3,7 +3,9 @@
  * @description Qualifying life event trigger for special enrollment
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
 interface QualifyingLifeEvent {
   id: string;
@@ -73,10 +75,11 @@ const EVENT_REQUIRED_DOCS: Record<string, string[]> = {
   court_order: ['Court order documentation'],
 };
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   try {
     const body = await request.json();
-    const { eventType, eventDate, dependentName, dependentRelationship, notes, documentUrl } = body;
+    const { eventType, eventDate, _dependentName, _dependentRelationship, notes, documentUrl } =
+      body;
 
     if (!eventType || !eventDate) {
       return NextResponse.json(
@@ -102,7 +105,9 @@ export async function POST(request: NextRequest) {
     // Check if event date is within allowable reporting window (60 days from event)
     const eventDateParsed = new Date(eventDate);
     const now = new Date();
-    const daysSinceEvent = Math.floor((now.getTime() - eventDateParsed.getTime()) / (1000 * 60 * 60 * 24));
+    const daysSinceEvent = Math.floor(
+      (now.getTime() - eventDateParsed.getTime()) / (1000 * 60 * 60 * 24)
+    );
 
     if (daysSinceEvent > 60) {
       return NextResponse.json(
@@ -130,7 +135,10 @@ export async function POST(request: NextRequest) {
     const windowDays = EVENT_WINDOWS[eventType] || 30;
     const enrollmentWindowEnd = new Date(eventDateParsed);
     enrollmentWindowEnd.setDate(enrollmentWindowEnd.getDate() + windowDays);
-    const daysRemaining = Math.max(0, Math.floor((enrollmentWindowEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+    const daysRemaining = Math.max(
+      0,
+      Math.floor((enrollmentWindowEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    );
 
     const lifeEvent: QualifyingLifeEvent = {
       id: 'qle-' + Date.now().toString(36),
@@ -148,19 +156,23 @@ export async function POST(request: NextRequest) {
       notes,
     };
 
-    return NextResponse.json({
-      data: lifeEvent,
-      message: `Qualifying life event "${eventType}" has been reported. You have ${daysRemaining} days remaining to make benefit changes.`,
-      nextSteps: [
-        ...(documentUrl ? [] : [`Upload required documentation: ${(EVENT_REQUIRED_DOCS[eventType] || []).join(', ')}`]),
-        'Review and update your benefit elections',
-        'Changes will take effect on the event date or the first of the following month',
-      ],
-    }, { status: 201 });
-  } catch {
     return NextResponse.json(
-      { error: 'Invalid request body' },
-      { status: 400 }
+      {
+        data: lifeEvent,
+        message: `Qualifying life event "${eventType}" has been reported. You have ${daysRemaining} days remaining to make benefit changes.`,
+        nextSteps: [
+          ...(documentUrl
+            ? []
+            : [
+                `Upload required documentation: ${(EVENT_REQUIRED_DOCS[eventType] || []).join(', ')}`,
+              ]),
+          'Review and update your benefit elections',
+          'Changes will take effect on the event date or the first of the following month',
+        ],
+      },
+      { status: 201 }
     );
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
-}
+});

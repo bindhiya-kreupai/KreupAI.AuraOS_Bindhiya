@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '20');
@@ -56,9 +58,9 @@ export async function GET(request: NextRequest) {
       totalPages: 1,
     },
   });
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   const body = await request.json();
   const { name, relationship, dob, ssn } = body;
 
@@ -87,4 +89,4 @@ export async function POST(request: NextRequest) {
   };
 
   return NextResponse.json({ data: newDependent }, { status: 201 });
-}
+});

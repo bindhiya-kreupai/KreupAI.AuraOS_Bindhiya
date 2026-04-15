@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   const body = await request.json();
 
   const recommendations = [
@@ -8,7 +10,8 @@ export async function POST(request: NextRequest) {
       pathId: 'lp-002',
       title: 'Data Analytics Fundamentals',
       matchScore: 95,
-      reason: 'Based on your role as Product Manager, data analytics skills will enhance your decision-making capabilities',
+      reason:
+        'Based on your role as Product Manager, data analytics skills will enhance your decision-making capabilities',
       skillGaps: ['data-analysis', 'visualization'],
       estimatedImpact: 'high',
       priority: 1,
@@ -28,7 +31,8 @@ export async function POST(request: NextRequest) {
       pathId: 'lp-004',
       title: 'Advanced Project Management',
       matchScore: 82,
-      reason: 'Complements your existing project coordination experience with advanced methodologies',
+      reason:
+        'Complements your existing project coordination experience with advanced methodologies',
       skillGaps: ['agile', 'risk-management'],
       estimatedImpact: 'medium',
       priority: 3,
@@ -41,7 +45,11 @@ export async function POST(request: NextRequest) {
     data: {
       recommendations,
       basedOn: {
-        currentSkills: body.skills || ['communication', 'project-coordination', 'stakeholder-management'],
+        currentSkills: body.skills || [
+          'communication',
+          'project-coordination',
+          'stakeholder-management',
+        ],
         role: body.role || 'Product Manager',
         department: body.department || 'Product',
         careerGoals: body.careerGoals || ['senior-management', 'data-driven-leadership'],
@@ -49,4 +57,4 @@ export async function POST(request: NextRequest) {
       generatedAt: new Date().toISOString(),
     },
   });
-}
+});

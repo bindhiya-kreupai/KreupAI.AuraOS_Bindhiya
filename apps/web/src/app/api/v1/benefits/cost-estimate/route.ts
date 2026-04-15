@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
 // Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
 
@@ -23,7 +24,7 @@ const procedureCostData: Record<string, { name: string; averageCost: number; cpt
   70553: { name: 'MRI Brain with Contrast', averageCost: 3500, cptCode: '70553' },
 };
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   try {
     const body = await request.json();
     const { procedureCode, providerId, planId } = body;
@@ -130,4 +131,4 @@ export async function POST(request: NextRequest) {
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});

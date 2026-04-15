@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
 // Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
 
@@ -87,7 +88,7 @@ const mockShiftPatterns = [
   },
 ];
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   try {
     // Simulated tenant isolation: tenantId would come from validated JWT
     const { searchParams } = new URL(request.url);
@@ -131,9 +132,9 @@ export async function GET(request: NextRequest) {
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
   try {
     const body = await request.json();
     const { name, type, rotationDays, shifts } = body;
@@ -212,4 +213,4 @@ export async function POST(request: NextRequest) {
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
+});

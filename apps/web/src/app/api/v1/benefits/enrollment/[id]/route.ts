@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export const PUT = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
   const { id } = params;
   const body = await request.json();
 
@@ -29,12 +28,9 @@ export async function PUT(
   };
 
   return NextResponse.json({ data: updatedEnrollment });
-}
+});
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export const DELETE = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
   const { id } = params;
   const { searchParams } = new URL(request.url);
   const reason = searchParams.get('reason') || 'voluntary_cancellation';
@@ -51,4 +47,4 @@ export async function DELETE(
       cobraNotificationDate: new Date().toISOString(),
     },
   });
-}
+});

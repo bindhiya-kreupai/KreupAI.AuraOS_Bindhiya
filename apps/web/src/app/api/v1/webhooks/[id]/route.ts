@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
 
 interface Webhook {
   id: string;
@@ -21,10 +23,6 @@ interface WebhookUpdatePayload {
   active?: boolean;
   description?: string;
   metadata?: Record<string, string>;
-}
-
-interface RouteContext {
-  params: Promise<{ id: string }>;
 }
 
 const mockWebhookDetails: Record<string, Webhook> = {
@@ -56,31 +54,25 @@ const mockWebhookDetails: Record<string, Webhook> = {
   },
 };
 
-export async function GET(request: NextRequest, context: RouteContext) {
-  const { id } = await context.params;
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
+  const { id } = await params;
 
   const webhook = mockWebhookDetails[id];
 
   if (!webhook) {
-    return NextResponse.json(
-      { error: `Webhook with id '${id}' not found` },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: `Webhook with id '${id}' not found` }, { status: 404 });
   }
 
   return NextResponse.json({ data: webhook });
-}
+});
 
-export async function PUT(request: NextRequest, context: RouteContext) {
-  const { id } = await context.params;
+export const PUT = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
+  const { id } = await params;
 
   const webhook = mockWebhookDetails[id];
 
   if (!webhook) {
-    return NextResponse.json(
-      { error: `Webhook with id '${id}' not found` },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: `Webhook with id '${id}' not found` }, { status: 404 });
   }
 
   try {
@@ -90,10 +82,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       try {
         new URL(body.url);
       } catch {
-        return NextResponse.json(
-          { error: 'Invalid URL format' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
       }
     }
 
@@ -117,27 +106,21 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json({ data: updatedWebhook });
   } catch {
-    return NextResponse.json(
-      { error: 'Invalid request body' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
-}
+});
 
-export async function DELETE(request: NextRequest, context: RouteContext) {
-  const { id } = await context.params;
+export const DELETE = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
+  const { id } = await params;
 
   const webhook = mockWebhookDetails[id];
 
   if (!webhook) {
-    return NextResponse.json(
-      { error: `Webhook with id '${id}' not found` },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: `Webhook with id '${id}' not found` }, { status: 404 });
   }
 
   return NextResponse.json(
     { message: `Webhook '${id}' has been deleted successfully` },
     { status: 200 }
   );
-}
+});

@@ -7,7 +7,12 @@ import jwt from 'jsonwebtoken';
 import { redis } from '@/lib/cache/redis';
 import { logger } from '@/lib/logger';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+if (!process.env.JWT_SECRET) {
+  throw new Error(
+    'FATAL: JWT_SECRET environment variable is not set. Refusing to start with an insecure default.'
+  );
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 const SESSION_TTL = 7 * 24 * 60 * 60; // 7 days in seconds
 const REFRESH_TOKEN_TTL = 30 * 24 * 60 * 60; // 30 days
 
@@ -138,10 +143,7 @@ export class SessionService {
       }
 
       if (storedData.userId !== decoded.userId) {
-        logger.error(
-          { tokenId: decoded.tokenId },
-          'Refresh token userId mismatch'
-        );
+        logger.error({ tokenId: decoded.tokenId }, 'Refresh token userId mismatch');
         return null;
       }
 
