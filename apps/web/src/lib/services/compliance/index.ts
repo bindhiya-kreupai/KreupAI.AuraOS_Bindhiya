@@ -40,6 +40,27 @@ export { ECRService, ECR_CONFIG } from './india-ecr.service';
 // Multi-Currency Support
 export { MultiCurrencyService, CURRENCIES, FIXED_USD_RATES } from './multi-currency.service';
 
+// EX-01: UAE WPS Certification Readiness
+export { WPSCertificationService } from './wps-certification.service';
+
+// EX-02: KSA GOSI Law-Change Verification
+export { GOSIVerificationService, GOSI_2025_RATES } from './gosi-verification.service';
+
+// EX-03: India Filing Readiness
+export { IndiaFilingReadinessService } from './india-filing-readiness.service';
+
+// EX-04: Bahrain SIO Portal Readiness
+export { BahrainSIOPortalService } from './bahrain-sio-portal.service';
+
+// EX-05: KSA Qiwa Integration
+export { QiwaService, QiwaAuthError, QiwaValidationError, QiwaAPIError } from './qiwa.service';
+
+// EX-06: Kuwait AS'HAL Integration
+export { KuwaitASHALService, ASHALValidationError } from './kuwait-ashal.service';
+
+// EX-07: Compliance Observability
+export { ComplianceObservabilityService } from './compliance-observability.service';
+
 // ============================================================================
 // TYPES
 // ============================================================================
