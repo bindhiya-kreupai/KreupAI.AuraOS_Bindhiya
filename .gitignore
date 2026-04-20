@@ -58,3 +58,9 @@ pnpm-lock.yaml
 
 # Generated files
 apps/web/matches.txt
+
+# Root typecheck/log dumps
+/typecheck_output*.txt
+/ui_typecheck_output*.txt
+/web_typecheck_output*.txt
+/web_typecheck_final_result.txt
