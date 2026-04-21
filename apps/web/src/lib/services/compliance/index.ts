@@ -36,6 +36,7 @@ export { LabourLawService } from './labour-law.service';
 export { IndiaStatutoryService } from './india-statutory.service';
 export { Form16Service } from './india-form16.service';
 export { ECRService, ECR_CONFIG } from './india-ecr.service';
+export { IndiaProfessionalTaxService } from './india-professional-tax.service';
 
 // Multi-Currency Support
 export { MultiCurrencyService, CURRENCIES, FIXED_USD_RATES } from './multi-currency.service';
@@ -60,6 +61,9 @@ export { KuwaitASHALService, ASHALValidationError } from './kuwait-ashal.service
 
 // EX-07: Compliance Observability
 export { ComplianceObservabilityService } from './compliance-observability.service';
+
+// Working Hours Engine
+export { WorkingHoursEngine } from './working-hours-engine.service';
 
 // ============================================================================
 // TYPES
@@ -167,6 +171,16 @@ export type {
   ECRValidationWarning,
 } from './india-ecr.service';
 
+// India Professional Tax Types
+export type {
+  IndiaState,
+  ProfessionalTaxSlab as PTProfessionalTaxSlab,
+  PTCalculationResult,
+  PTAnnualSummary,
+  PTReturnData,
+  StatePTConfig,
+} from './india-professional-tax.service';
+
 // Multi-Currency Types
 export type {
   CurrencyCode,
@@ -176,6 +190,16 @@ export type {
   MultiCurrencyPayrollItem,
   CurrencyFormatOptions,
 } from './multi-currency.service';
+
+// Working Hours Engine Types
+export type {
+  WorkScheduleConfig,
+  OvertimeCalculation,
+  WorkingHoursValidation,
+  ShiftBreakRule,
+  WeeklyComplianceReport,
+  OvertimeType,
+} from './working-hours-engine.service';
 
 // ============================================================================
 // CONSTANTS

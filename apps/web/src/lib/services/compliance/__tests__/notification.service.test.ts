@@ -1,441 +1,440 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { prisma } from '@/lib/prisma';
-import { NotificationService } from '../notification.service';
 
-// Mock email and SMS services
-vi.mock('@/lib/email/email.service', () => ({
-  EmailService: {
-    send: vi.fn(),
+// Use vi.hoisted to define mock functions that can be used in vi.mock factories
+const {
+  mockNotifyUser,
+  mockNotifyCompany,
+  mockBroadcast,
+  mockGetConnectedClientCount,
+  mockGetConnectedUsers,
+  mockIsUserOnline,
+} = vi.hoisted(() => ({
+  mockNotifyUser: vi.fn().mockResolvedValue(undefined),
+  mockNotifyCompany: vi.fn().mockResolvedValue(undefined),
+  mockBroadcast: vi.fn().mockResolvedValue(undefined),
+  mockGetConnectedClientCount: vi.fn().mockReturnValue(5),
+  mockGetConnectedUsers: vi.fn().mockReturnValue(['user-1', 'user-2']),
+  mockIsUserOnline: vi.fn().mockReturnValue(true),
+}));
+
+// Mock socket.io before any imports that depend on it
+vi.mock('socket.io', () => ({
+  Server: vi.fn(),
+}));
+
+// Mock redis before websocket server imports it
+vi.mock('@/lib/cache/redis', () => ({
+  redis: {
+    get: vi.fn(),
+    set: vi.fn(),
+    del: vi.fn(),
   },
 }));
 
-vi.mock('@/lib/sms/sms.service', () => ({
-  SMSService: {
-    send: vi.fn(),
+// Mock the websocket server module
+vi.mock('@/lib/websocket/server', () => ({
+  wsServer: {
+    notifyUser: mockNotifyUser,
+    notifyCompany: mockNotifyCompany,
+    broadcast: mockBroadcast,
+    getConnectedClientCount: mockGetConnectedClientCount,
+    getConnectedUsers: mockGetConnectedUsers,
+    isUserOnline: mockIsUserOnline,
+  },
+  NotificationType: {
+    PAYROLL_RUN_STARTED: 'PAYROLL_RUN_STARTED',
+    PAYROLL_RUN_COMPLETED: 'PAYROLL_RUN_COMPLETED',
+    PAYROLL_RUN_FAILED: 'PAYROLL_RUN_FAILED',
+    PAYSLIP_GENERATED: 'PAYSLIP_GENERATED',
+    LEAVE_REQUEST_SUBMITTED: 'LEAVE_REQUEST_SUBMITTED',
+    LEAVE_REQUEST_APPROVED: 'LEAVE_REQUEST_APPROVED',
+    LEAVE_REQUEST_REJECTED: 'LEAVE_REQUEST_REJECTED',
+    LEAVE_BALANCE_LOW: 'LEAVE_BALANCE_LOW',
+    ATTENDANCE_MARKED: 'ATTENDANCE_MARKED',
+    LATE_ARRIVAL: 'LATE_ARRIVAL',
+    MISSING_ATTENDANCE: 'MISSING_ATTENDANCE',
+    REGULARIZATION_APPROVED: 'REGULARIZATION_APPROVED',
+    REPORT_GENERATION_STARTED: 'REPORT_GENERATION_STARTED',
+    REPORT_READY: 'REPORT_READY',
+    REPORT_GENERATION_FAILED: 'REPORT_GENERATION_FAILED',
+    SYSTEM_MAINTENANCE: 'SYSTEM_MAINTENANCE',
+    SYSTEM_UPDATE: 'SYSTEM_UPDATE',
+    EMPLOYEE_ONBOARDED: 'EMPLOYEE_ONBOARDED',
   },
 }));
 
-vi.mock('@/lib/prisma', () => ({
-  prisma: {
-    notification: {
-      create: vi.fn(),
-      findMany: vi.fn(),
-      update: vi.fn(),
-      count: vi.fn(),
-    },
-    employee: {
-      findUnique: vi.fn(),
-      findMany: vi.fn(),
-    },
+vi.mock('@/lib/logger', () => ({
+  logger: {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
   },
 }));
+
+// Import after all mocks are set up
+import { NotificationService, notificationService } from '../../notification.service';
 
 describe('NotificationService', () => {
+  let service: NotificationService;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    service = new NotificationService();
   });
 
-  const mockEmployee = {
-    id: 'emp-1',
-    email: 'john.doe@example.com',
-    phoneNumber: '+966501234567',
-    firstName: 'John',
-    lastName: 'Doe',
-  };
-
-  const mockNotification = {
-    id: 'notif-1',
-    tenantId: 'tenant-1',
-    employeeId: 'emp-1',
-    type: 'LEAVE_APPROVED',
-    title: 'Leave Approved',
-    message: 'Your leave request has been approved',
-    status: 'SENT',
-    createdAt: new Date(),
-  };
-
-  describe('sendNotification', () => {
-    it('should send email notification', async () => {
-      const { EmailService } = await import('@/lib/email/email.service');
-      vi.mocked(prisma.employee.findUnique).mockResolvedValue(mockEmployee as any);
-      vi.mocked(prisma.notification.create).mockResolvedValue(mockNotification as any);
-      vi.mocked(EmailService.send).mockResolvedValue({ success: true });
-
-      const result = await NotificationService.sendNotification({
-        tenantId: 'tenant-1',
-        employeeId: 'emp-1',
-        type: 'LEAVE_APPROVED',
-        title: 'Leave Approved',
-        message: 'Your leave request has been approved',
-        channels: ['EMAIL'],
-      });
-
-      expect(result.sent).toBe(true);
-      expect(EmailService.send).toHaveBeenCalledWith(
-        expect.objectContaining({
-          to: 'john.doe@example.com',
-          subject: 'Leave Approved',
-        })
-      );
-    });
-
-    it('should send SMS notification', async () => {
-      const { SMSService } = await import('@/lib/sms/sms.service');
-      vi.mocked(prisma.employee.findUnique).mockResolvedValue(mockEmployee as any);
-      vi.mocked(prisma.notification.create).mockResolvedValue(mockNotification as any);
-      vi.mocked(SMSService.send).mockResolvedValue({ success: true });
-
-      await NotificationService.sendNotification({
-        tenantId: 'tenant-1',
-        employeeId: 'emp-1',
-        type: 'PAYSLIP_READY',
-        title: 'Payslip Ready',
-        message: 'Your payslip for June is ready',
-        channels: ['SMS'],
-      });
-
-      expect(SMSService.send).toHaveBeenCalledWith(
-        expect.objectContaining({
-          to: '+966501234567',
-          message: expect.stringContaining('Payslip Ready'),
-        })
-      );
-    });
-
-    it('should send both email and SMS', async () => {
-      const { EmailService } = await import('@/lib/email/email.service');
-      const { SMSService } = await import('@/lib/sms/sms.service');
-      vi.mocked(prisma.employee.findUnique).mockResolvedValue(mockEmployee as any);
-      vi.mocked(prisma.notification.create).mockResolvedValue(mockNotification as any);
-      vi.mocked(EmailService.send).mockResolvedValue({ success: true });
-      vi.mocked(SMSService.send).mockResolvedValue({ success: true });
-
-      await NotificationService.sendNotification({
-        tenantId: 'tenant-1',
-        employeeId: 'emp-1',
-        type: 'URGENT_ANNOUNCEMENT',
-        title: 'Urgent',
-        message: 'Important announcement',
-        channels: ['EMAIL', 'SMS'],
-      });
-
-      expect(EmailService.send).toHaveBeenCalled();
-      expect(SMSService.send).toHaveBeenCalled();
-    });
-
-    it('should create in-app notification', async () => {
-      vi.mocked(prisma.employee.findUnique).mockResolvedValue(mockEmployee as any);
-      vi.mocked(prisma.notification.create).mockResolvedValue(mockNotification as any);
-
-      await NotificationService.sendNotification({
-        tenantId: 'tenant-1',
-        employeeId: 'emp-1',
-        type: 'LEAVE_APPROVED',
-        title: 'Leave Approved',
-        message: 'Your leave has been approved',
-        channels: ['IN_APP'],
-      });
-
-      expect(prisma.notification.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          type: 'LEAVE_APPROVED',
-          title: 'Leave Approved',
-          status: 'SENT',
-        }),
-      });
-    });
-
-    it('should handle email send failure gracefully', async () => {
-      const { EmailService } = await import('@/lib/email/email.service');
-      vi.mocked(prisma.employee.findUnique).mockResolvedValue(mockEmployee as any);
-      vi.mocked(prisma.notification.create).mockResolvedValue({
-        ...mockNotification,
-        status: 'FAILED',
-      } as any);
-      vi.mocked(EmailService.send).mockRejectedValue(new Error('SMTP error'));
-
-      const result = await NotificationService.sendNotification({
-        tenantId: 'tenant-1',
-        employeeId: 'emp-1',
-        type: 'LEAVE_APPROVED',
-        title: 'Leave Approved',
-        message: 'Test',
-        channels: ['EMAIL'],
-      });
-
-      expect(result.sent).toBe(false);
-      expect(result.error).toBeDefined();
-    });
-
-    it('should throw error if employee not found', async () => {
-      vi.mocked(prisma.employee.findUnique).mockResolvedValue(null);
-
-      await expect(
-        NotificationService.sendNotification({
-          tenantId: 'tenant-1',
-          employeeId: 'invalid',
-          type: 'TEST',
-          title: 'Test',
-          message: 'Test',
-          channels: ['EMAIL'],
-        })
-      ).rejects.toThrow('Employee not found');
-    });
-  });
-
-  describe('sendBulkNotification', () => {
-    it('should send notification to multiple employees', async () => {
-      const employees = [
-        mockEmployee,
-        { ...mockEmployee, id: 'emp-2', email: 'jane@example.com' },
-        { ...mockEmployee, id: 'emp-3', email: 'bob@example.com' },
-      ];
-
-      vi.mocked(prisma.employee.findMany).mockResolvedValue(employees as any);
-      vi.mocked(prisma.notification.create).mockResolvedValue(mockNotification as any);
-
-      const result = await NotificationService.sendBulkNotification({
-        tenantId: 'tenant-1',
-        employeeIds: ['emp-1', 'emp-2', 'emp-3'],
-        type: 'ANNOUNCEMENT',
-        title: 'Company Update',
-        message: 'Important update for all employees',
-        channels: ['IN_APP'],
-      });
-
-      expect(result.sent).toBe(3);
-      expect(result.failed).toBe(0);
-    });
-
-    it('should handle partial failures', async () => {
-      const { EmailService } = await import('@/lib/email/email.service');
-      vi.mocked(prisma.employee.findMany).mockResolvedValue([
-        mockEmployee,
-        { ...mockEmployee, id: 'emp-2', email: 'invalid' },
-      ] as any);
-      vi.mocked(prisma.notification.create).mockResolvedValue(mockNotification as any);
-      vi.mocked(EmailService.send)
-        .mockResolvedValueOnce({ success: true })
-        .mockRejectedValueOnce(new Error('Invalid email'));
-
-      const result = await NotificationService.sendBulkNotification({
-        tenantId: 'tenant-1',
-        employeeIds: ['emp-1', 'emp-2'],
-        type: 'ANNOUNCEMENT',
-        title: 'Test',
-        message: 'Test',
-        channels: ['EMAIL'],
-      });
-
-      expect(result.sent).toBe(1);
-      expect(result.failed).toBe(1);
-    });
-  });
-
-  describe('getNotifications', () => {
-    it('should return employee notifications', async () => {
-      const notifications = [mockNotification, { ...mockNotification, id: 'notif-2' }];
-      vi.mocked(prisma.notification.count).mockResolvedValue(2);
-      vi.mocked(prisma.notification.findMany).mockResolvedValue(notifications as any);
-
-      const result = await NotificationService.getNotifications('emp-1', 'tenant-1', {
-        page: 1,
-        limit: 20,
-      });
-
-      expect(result.data).toHaveLength(2);
-      expect(result.pagination.total).toBe(2);
-    });
-
-    it('should filter by status', async () => {
-      vi.mocked(prisma.notification.count).mockResolvedValue(1);
-      vi.mocked(prisma.notification.findMany).mockResolvedValue([mockNotification] as any);
-
-      await NotificationService.getNotifications('emp-1', 'tenant-1', {
-        status: 'UNREAD',
-      });
-
-      expect(prisma.notification.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            status: 'UNREAD',
-          }),
-        })
-      );
-    });
-
-    it('should filter by type', async () => {
-      vi.mocked(prisma.notification.count).mockResolvedValue(1);
-      vi.mocked(prisma.notification.findMany).mockResolvedValue([mockNotification] as any);
-
-      await NotificationService.getNotifications('emp-1', 'tenant-1', {
-        type: 'LEAVE_APPROVED',
-      });
-
-      expect(prisma.notification.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            type: 'LEAVE_APPROVED',
-          }),
-        })
-      );
-    });
-  });
-
-  describe('markAsRead', () => {
-    it('should mark notification as read', async () => {
-      vi.mocked(prisma.notification.update).mockResolvedValue({
-        ...mockNotification,
-        status: 'READ',
-        readAt: new Date(),
-      } as any);
-
-      const result = await NotificationService.markAsRead('notif-1', 'tenant-1');
-
-      expect(result.status).toBe('READ');
-      expect(result.readAt).toBeDefined();
-    });
-
-    it('should mark all notifications as read', async () => {
-      vi.mocked(prisma.notification.updateMany).mockResolvedValue({ count: 5 });
-
-      const result = await NotificationService.markAllAsRead('emp-1', 'tenant-1');
-
-      expect(result.count).toBe(5);
-    });
-  });
-
-  describe('getUnreadCount', () => {
-    it('should return count of unread notifications', async () => {
-      vi.mocked(prisma.notification.count).mockResolvedValue(7);
-
-      const result = await NotificationService.getUnreadCount('emp-1', 'tenant-1');
-
-      expect(result).toBe(7);
-    });
-  });
-
-  describe('deleteNotification', () => {
-    it('should delete notification', async () => {
-      vi.mocked(prisma.notification.delete).mockResolvedValue(mockNotification as any);
-
-      await NotificationService.deleteNotification('notif-1', 'tenant-1');
-
-      expect(prisma.notification.delete).toHaveBeenCalledWith({
-        where: { id: 'notif-1', tenantId: 'tenant-1' },
-      });
-    });
-
-    it('should delete old notifications', async () => {
-      vi.mocked(prisma.notification.deleteMany).mockResolvedValue({ count: 100 });
-
-      const result = await NotificationService.deleteOldNotifications('tenant-1', 90); // Older than 90 days
-
-      expect(result.count).toBe(100);
-    });
-  });
-
-  describe('getNotificationTemplates', () => {
-    it('should return template for leave approval', () => {
-      const template = NotificationService.getNotificationTemplate('LEAVE_APPROVED', {
-        employeeName: 'John Doe',
-        leaveType: 'Annual Leave',
-        startDate: '2024-06-01',
-        endDate: '2024-06-05',
-      });
-
-      expect(template.title).toContain('Leave Approved');
-      expect(template.message).toContain('John Doe');
-      expect(template.message).toContain('Annual Leave');
-    });
-
-    it('should return template for payslip ready', () => {
-      const template = NotificationService.getNotificationTemplate('PAYSLIP_READY', {
+  describe('Payroll Notifications', () => {
+    it('should send payroll run started notification', async () => {
+      await service.notifyPayrollRunStarted('user-1', {
+        runId: 'run-1',
         month: 'June 2024',
       });
 
-      expect(template.title).toContain('Payslip');
-      expect(template.message).toContain('June 2024');
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'user-1',
+        expect.objectContaining({
+          type: 'PAYROLL_RUN_STARTED',
+          title: 'Payroll Processing Started',
+          priority: 'medium',
+        })
+      );
     });
 
-    it('should support bilingual templates', () => {
-      const templateEn = NotificationService.getNotificationTemplate(
-        'LEAVE_APPROVED',
-        { employeeName: 'John' },
-        'en'
-      );
-      const templateAr = NotificationService.getNotificationTemplate(
-        'LEAVE_APPROVED',
-        { employeeName: 'أحمد' },
-        'ar'
-      );
-
-      expect(templateEn.title).not.toBe(templateAr.title);
-      expect(templateAr.message).toContain('أحمد');
-    });
-  });
-
-  describe('sendScheduledNotification', () => {
-    it('should schedule notification for future delivery', async () => {
-      const scheduledDate = new Date();
-      scheduledDate.setDate(scheduledDate.getDate() + 1); // Tomorrow
-
-      vi.mocked(prisma.notification.create).mockResolvedValue({
-        ...mockNotification,
-        status: 'SCHEDULED',
-        scheduledFor: scheduledDate,
-      } as any);
-
-      const result = await NotificationService.sendScheduledNotification({
-        tenantId: 'tenant-1',
-        employeeId: 'emp-1',
-        type: 'REMINDER',
-        title: 'Reminder',
-        message: "Don't forget",
-        channels: ['EMAIL'],
-        scheduledFor: scheduledDate,
+    it('should send payroll run completed notification', async () => {
+      await service.notifyPayrollRunCompleted('user-1', {
+        runId: 'run-1',
+        month: 'June 2024',
+        employeeCount: 50,
       });
 
-      expect(result.status).toBe('SCHEDULED');
-      expect(result.scheduledFor).toEqual(scheduledDate);
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'user-1',
+        expect.objectContaining({
+          type: 'PAYROLL_RUN_COMPLETED',
+          title: 'Payroll Processing Completed',
+          priority: 'high',
+        })
+      );
+    });
+
+    it('should send payroll run failed notification with urgent priority', async () => {
+      await service.notifyPayrollRunFailed('user-1', {
+        runId: 'run-1',
+        month: 'June 2024',
+        error: 'Database timeout',
+      });
+
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'user-1',
+        expect.objectContaining({
+          type: 'PAYROLL_RUN_FAILED',
+          title: 'Payroll Processing Failed',
+          priority: 'urgent',
+        })
+      );
+    });
+
+    it('should send payslip generated notification', async () => {
+      await service.notifyPayslipGenerated('user-1', {
+        month: 'June 2024',
+        fileUrl: '/files/payslip-june.pdf',
+      });
+
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'user-1',
+        expect.objectContaining({
+          type: 'PAYSLIP_GENERATED',
+          title: 'Payslip Available',
+          priority: 'high',
+        })
+      );
     });
   });
 
-  describe('Edge Cases', () => {
-    it('should handle missing email for email notification', async () => {
-      vi.mocked(prisma.employee.findUnique).mockResolvedValue({
-        ...mockEmployee,
-        email: null,
-      } as any);
+  describe('Leave Notifications', () => {
+    it('should send leave request submitted notification to manager', async () => {
+      await service.notifyLeaveRequestSubmitted('manager-1', {
+        requestId: 'req-1',
+        employeeName: 'Ahmed Al-Rashid',
+        startDate: '2024-06-01',
+        endDate: '2024-06-05',
+        leaveType: 'Annual Leave',
+      });
 
-      await expect(
-        NotificationService.sendNotification({
-          tenantId: 'tenant-1',
-          employeeId: 'emp-1',
-          type: 'TEST',
-          title: 'Test',
-          message: 'Test',
-          channels: ['EMAIL'],
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'manager-1',
+        expect.objectContaining({
+          type: 'LEAVE_REQUEST_SUBMITTED',
+          title: 'New Leave Request',
+          priority: 'medium',
         })
-      ).rejects.toThrow('Employee email not found');
+      );
     });
 
-    it('should handle missing phone for SMS notification', async () => {
-      vi.mocked(prisma.employee.findUnique).mockResolvedValue({
-        ...mockEmployee,
-        phoneNumber: null,
-      } as any);
+    it('should send leave request approved notification', async () => {
+      await service.notifyLeaveRequestApproved('emp-1', {
+        requestId: 'req-1',
+        startDate: '2024-06-01',
+        endDate: '2024-06-05',
+        approverName: 'Manager One',
+      });
 
-      await expect(
-        NotificationService.sendNotification({
-          tenantId: 'tenant-1',
-          employeeId: 'emp-1',
-          type: 'TEST',
-          title: 'Test',
-          message: 'Test',
-          channels: ['SMS'],
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'emp-1',
+        expect.objectContaining({
+          type: 'LEAVE_REQUEST_APPROVED',
+          title: 'Leave Request Approved',
+          priority: 'high',
         })
-      ).rejects.toThrow('Employee phone number not found');
+      );
+    });
+
+    it('should send leave request rejected notification with reason', async () => {
+      await service.notifyLeaveRequestRejected('emp-1', {
+        requestId: 'req-1',
+        startDate: '2024-06-01',
+        endDate: '2024-06-05',
+        approverName: 'Manager One',
+        reason: 'Insufficient coverage',
+      });
+
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'emp-1',
+        expect.objectContaining({
+          type: 'LEAVE_REQUEST_REJECTED',
+          title: 'Leave Request Rejected',
+          priority: 'high',
+        })
+      );
+    });
+
+    it('should send leave balance low notification', async () => {
+      await service.notifyLeaveBalanceLow('emp-1', {
+        leaveType: 'Annual Leave',
+        remainingDays: 2,
+      });
+
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'emp-1',
+        expect.objectContaining({
+          type: 'LEAVE_BALANCE_LOW',
+          title: 'Low Leave Balance',
+          priority: 'low',
+        })
+      );
+    });
+  });
+
+  describe('Attendance Notifications', () => {
+    it('should send attendance marked notification', async () => {
+      await service.notifyAttendanceMarked('emp-1', {
+        date: '2024-06-15',
+        clockIn: '09:00',
+        status: 'PRESENT',
+      });
+
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'emp-1',
+        expect.objectContaining({
+          type: 'ATTENDANCE_MARKED',
+          title: 'Attendance Marked',
+          priority: 'low',
+        })
+      );
+    });
+
+    it('should send late arrival notification', async () => {
+      await service.notifyLateArrival('emp-1', {
+        date: '2024-06-15',
+        clockIn: '09:30',
+        expectedTime: '09:00',
+        lateMinutes: 30,
+      });
+
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'emp-1',
+        expect.objectContaining({
+          type: 'LATE_ARRIVAL',
+          title: 'Late Arrival',
+          priority: 'medium',
+        })
+      );
+    });
+
+    it('should send missing attendance notification', async () => {
+      await service.notifyMissingAttendance('emp-1', {
+        date: '2024-06-15',
+        action: 'submit a regularization request',
+      });
+
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'emp-1',
+        expect.objectContaining({
+          type: 'MISSING_ATTENDANCE',
+          title: 'Missing Attendance',
+          priority: 'high',
+        })
+      );
+    });
+
+    it('should send regularization approved notification', async () => {
+      await service.notifyRegularizationApproved('emp-1', {
+        date: '2024-06-15',
+        approverName: 'Manager One',
+      });
+
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'emp-1',
+        expect.objectContaining({
+          type: 'REGULARIZATION_APPROVED',
+          title: 'Attendance Regularization Approved',
+          priority: 'medium',
+        })
+      );
+    });
+  });
+
+  describe('Report Notifications', () => {
+    it('should send report generation started notification', async () => {
+      await service.notifyReportGenerationStarted('user-1', {
+        reportType: 'Payroll Summary',
+        requestId: 'req-1',
+      });
+
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'user-1',
+        expect.objectContaining({
+          type: 'REPORT_GENERATION_STARTED',
+          title: 'Report Generation Started',
+          priority: 'low',
+        })
+      );
+    });
+
+    it('should send report ready notification', async () => {
+      await service.notifyReportReady('user-1', {
+        reportType: 'Payroll Summary',
+        fileUrl: '/reports/payroll-summary.xlsx',
+        recordCount: 150,
+      });
+
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'user-1',
+        expect.objectContaining({
+          type: 'REPORT_READY',
+          title: 'Report Ready',
+          priority: 'high',
+        })
+      );
+    });
+
+    it('should send report generation failed notification', async () => {
+      await service.notifyReportGenerationFailed('user-1', {
+        reportType: 'Payroll Summary',
+        error: 'Timeout',
+      });
+
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'user-1',
+        expect.objectContaining({
+          type: 'REPORT_GENERATION_FAILED',
+          title: 'Report Generation Failed',
+          priority: 'high',
+        })
+      );
+    });
+  });
+
+  describe('System Notifications', () => {
+    it('should send system maintenance notification to company', async () => {
+      await service.notifySystemMaintenance('company-1', {
+        startTime: '2024-06-15T22:00:00Z',
+        endTime: '2024-06-16T02:00:00Z',
+        message: 'Database migration',
+      });
+
+      expect(mockNotifyCompany).toHaveBeenCalledWith(
+        'company-1',
+        expect.objectContaining({
+          type: 'SYSTEM_MAINTENANCE',
+          title: 'Scheduled Maintenance',
+          priority: 'urgent',
+        })
+      );
+    });
+
+    it('should send system update notification to company', async () => {
+      await service.notifySystemUpdate('company-1', {
+        version: '2.5.0',
+        features: ['Leave balance dashboard', 'Mobile attendance'],
+      });
+
+      expect(mockNotifyCompany).toHaveBeenCalledWith(
+        'company-1',
+        expect.objectContaining({
+          type: 'SYSTEM_UPDATE',
+          title: 'System Update',
+          priority: 'medium',
+        })
+      );
+    });
+
+    it('should send employee onboarded notification to company', async () => {
+      await service.notifyEmployeeOnboarded('company-1', {
+        employeeId: 'emp-1',
+        employeeName: 'Ahmed Al-Rashid',
+        department: 'Engineering',
+      });
+
+      expect(mockNotifyCompany).toHaveBeenCalledWith(
+        'company-1',
+        expect.objectContaining({
+          type: 'EMPLOYEE_ONBOARDED',
+          title: 'New Employee Onboarded',
+          priority: 'low',
+        })
+      );
+    });
+  });
+
+  describe('Custom Notification', () => {
+    it('should send custom notification to user', async () => {
+      await service.sendCustomNotification('user-1', {
+        type: 'CUSTOM' as any,
+        title: 'Custom Alert',
+        message: 'Something happened',
+        data: {},
+        priority: 'medium',
+      });
+
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        'user-1',
+        expect.objectContaining({
+          title: 'Custom Alert',
+        })
+      );
+    });
+  });
+
+  describe('Statistics and Status', () => {
+    it('should return server statistics', () => {
+      const stats = service.getStatistics();
+
+      expect(stats.connectedClients).toBe(5);
+      expect(stats.connectedUsers).toEqual(['user-1', 'user-2']);
+    });
+
+    it('should check if user is online', () => {
+      const online = service.isUserOnline('user-1');
+
+      expect(online).toBe(true);
+      expect(mockIsUserOnline).toHaveBeenCalledWith('user-1');
+    });
+  });
+
+  describe('Singleton export', () => {
+    it('should export a singleton instance', () => {
+      expect(notificationService).toBeInstanceOf(NotificationService);
     });
   });
 });

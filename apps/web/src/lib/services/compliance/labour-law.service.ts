@@ -13,6 +13,7 @@ import {
   COUNTRY_NAMES,
   COUNTRY_CURRENCIES
 } from './types';
+import { HijriCalendarService } from './hijri-calendar.service';
 
 // ============================================================================
 // LABOUR LAW CONFIGURATIONS BY COUNTRY
@@ -560,12 +561,10 @@ export class LabourLawService {
 
   /**
    * Check if it's Ramadan period for reduced working hours
+   * Uses the Hijri calendar service for accurate detection
    */
   static isRamadanPeriod(date: Date = new Date()): boolean {
-    // This should integrate with a Hijri calendar library
-    // For now, return false as placeholder
-    // In production, use hijri-converter or similar
-    return false;
+    return HijriCalendarService.isRamadan(date);
   }
 
   /**

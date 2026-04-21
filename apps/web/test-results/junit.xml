@@ -1,455 +1,453 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="77" failures="0" errors="0" time="6.579086669">
-    <testsuite name="src/__tests__/api/recruitment-core-routes.test.ts" timestamp="2026-03-22T18:28:42.878Z" hostname="MacBookPro" tests="3" failures="0" errors="0" skipped="0" time="0.010419042">
-        <testcase classname="src/__tests__/api/recruitment-core-routes.test.ts" name="recruitment core routes &gt; scopes candidate applications through tenant user ownership and orders by appliedDate" time="0.005455291">
+<testsuites name="vitest tests" tests="217" failures="0" errors="0" time="0.086696626">
+    <testsuite name="src/lib/services/compliance/__tests__/eosb.service.test.ts" timestamp="2026-04-21T04:13:15.824Z" hostname="MacBookPro" tests="25" failures="0" errors="0" skipped="0" time="0.007087125">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - Saudi Arabia (KSA) &gt; should calculate EOSB for less than 5 years service (termination)" time="0.001046292">
         </testcase>
-        <testcase classname="src/__tests__/api/recruitment-core-routes.test.ts" name="recruitment core routes &gt; supports stage updates by candidate id while normalizing the stage payload" time="0.002542792">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - Saudi Arabia (KSA) &gt; should calculate EOSB for more than 5 years service" time="0.00026375">
         </testcase>
-        <testcase classname="src/__tests__/api/recruitment-core-routes.test.ts" name="recruitment core routes &gt; returns direct Prisma-backed recruitment stats instead of proxying to another service" time="0.001349875">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - Saudi Arabia (KSA) &gt; should apply resignation factor for resignation under 2 years" time="0.000191625">
         </testcase>
-    </testsuite>
-    <testsuite name="src/__tests__/api/recruitment-vendors-route.test.ts" timestamp="2026-03-22T18:28:42.879Z" hostname="MacBookPro" tests="3" failures="0" errors="0" skipped="0" time="0.01018125">
-        <testcase classname="src/__tests__/api/recruitment-vendors-route.test.ts" name="recruitment vendors routes &gt; lists tenant-scoped vendors with filters" time="0.005313833">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - Saudi Arabia (KSA) &gt; should apply 1/3 factor for resignation between 2-5 years" time="0.000120667">
         </testcase>
-        <testcase classname="src/__tests__/api/recruitment-vendors-route.test.ts" name="recruitment vendors routes &gt; creates a tenant-scoped recruitment vendor" time="0.001986292">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - Saudi Arabia (KSA) &gt; should apply 2/3 factor for resignation between 5-10 years" time="0.000156958">
         </testcase>
-        <testcase classname="src/__tests__/api/recruitment-vendors-route.test.ts" name="recruitment vendors routes &gt; updates only the current tenant vendor" time="0.00135175">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - Saudi Arabia (KSA) &gt; should provide full gratuity for resignation after 10 years" time="0.000151375">
         </testcase>
-    </testsuite>
-    <testsuite name="src/__tests__/services/recruitment-dashboard.service.test.ts" timestamp="2026-03-22T18:28:42.879Z" hostname="MacBookPro" tests="20" failures="0" errors="0" skipped="0" time="0.027882084">
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; loads dashboard job postings from the v1 recruitment jobs route" time="0.014353125">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - Saudi Arabia (KSA) &gt; should include calculation details with law reference" time="0.00014925">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; maps requisitions from the v1 requisitions route into dashboard requisition types" time="0.000770667">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - UAE &gt; should return zero for service less than 1 year" time="0.000091708">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; unwraps requisition create responses and maps the returned record" time="0.001016208">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - UAE &gt; should calculate 21 days per year for first 5 years" time="0.000179166">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; maps v1 recruitment candidate payloads into dashboard applications" time="0.000772458">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - UAE &gt; should calculate 30 days per year after 5 years" time="0.000182958">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; translates screening updates into the legacy application update contract" time="0.000703125">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - UAE &gt; should apply resignation factor for 1-3 years service" time="0.000129708">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; uses the dedicated v1 stage route for dashboard stage moves" time="0.000435291">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - UAE &gt; should cap gratuity at 2 years salary" time="0.000096667">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; loads dashboard interviews from the v1 recruitment interviews route" time="0.000478959">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - Other GCC Countries &gt; should calculate EOSB for Qatar (21 days per year)" time="0.000129583">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; schedules dashboard interviews through the v1 recruitment interviews route" time="0.000468084">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - Other GCC Countries &gt; should calculate EOSB for Bahrain" time="0.000195375">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; keeps dashboard interview status updates on the legacy mutation route" time="0.000883917">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - Other GCC Countries &gt; should calculate EOSB for Oman" time="0.000148292">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; loads dashboard interview feedback from the legacy feedback route" time="0.000778583">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - Other GCC Countries &gt; should calculate EOSB for Kuwait with cap at 1.5 years salary" time="0.000135167">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; maps dashboard offers from the legacy offers route into dashboard offer types" time="0.000658708">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - India &gt; should require 5 years minimum service for gratuity" time="0.000098625">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; maps dashboard background checks from the v1 singular route into page-friendly fields" time="0.000504584">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - India &gt; should calculate gratuity for 5+ years service" time="0.00013">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; maps hiring pipelines from the pipeline items envelope" time="0.001103667">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - India &gt; should cap India gratuity at 20 lakh" time="0.000062916">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; maps recruitment settings payloads into the flattened dashboard settings shape" time="0.000670792">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - India &gt; should return zero for death/disability when under minimum service months" time="0.000116459">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; maps updated recruitment settings responses into the same flattened shape" time="0.000415584">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; calculate - unsupported country &gt; should throw error for unsupported country" time="0.000413083">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; initiates background checks through the v1 singular route with mapped payloads" time="0.000444167">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; getEstimate &gt; should return current amount and future projections" time="0.000540333">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; updates background checks through the v1 item route with normalized payloads" time="0.00044025">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; getEstimate &gt; should show increasing amounts over time" time="0.0002435">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; uses the v1 offer e-sign action route for offer status updates" time="0.000590917">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; Edge Cases &gt; should handle zero salary" time="0.00017175">
         </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; submits dashboard interview feedback through the v1 per-interview route" time="0.0005715">
-        </testcase>
-        <testcase classname="src/__tests__/services/recruitment-dashboard.service.test.ts" name="dashboard recruitment services &gt; loads dashboard analytics from the v1 recruitment stats route" time="0.000367542">
+        <testcase classname="src/lib/services/compliance/__tests__/eosb.service.test.ts" name="EOSBService - End of Service Benefits &gt; Edge Cases &gt; should handle very long service periods" time="0.000107166">
         </testcase>
     </testsuite>
-    <testsuite name="src/__tests__/services/recruitment-vendors.service.test.ts" timestamp="2026-03-22T18:28:42.881Z" hostname="MacBookPro" tests="1" failures="0" errors="0" skipped="0" time="0.014935541">
-        <testcase classname="src/__tests__/services/recruitment-vendors.service.test.ts" name="recruitment vendor service &gt; maps vendor registry rows from the v1 recruitment vendors route" time="0.01348675">
+    <testsuite name="src/lib/services/compliance/__tests__/gosi.service.test.ts" timestamp="2026-04-21T04:13:15.829Z" hostname="MacBookPro" tests="26" failures="0" errors="0" skipped="0" time="0.007989709">
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; calculateContributions &gt; should calculate GOSI for Saudi employee correctly" time="0.000810583">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; calculateContributions &gt; should calculate GOSI for non-Saudi employee correctly" time="0.000154958">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; calculateContributions &gt; should cap contributable salary at GOSI ceiling (45000 SAR)" time="0.000227125">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; calculateContributions &gt; should provide breakdown by component" time="0.000245959">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; calculateContributions &gt; should show zero annuity and SANED for non-Saudi" time="0.000223125">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; calculateContributions &gt; should round contributions to 2 decimal places" time="0.00007775">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; calculateContributions &gt; should handle zero housing allowance" time="0.000086083">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; generateSubmissionFile &gt; should generate submission file with header" time="0.000256125">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; generateSubmissionFile &gt; should calculate correct totals in summary" time="0.000183958">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; generateSubmissionFile &gt; should include all records in output" time="0.000558459">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; toXML &gt; should generate valid XML structure" time="0.000337917">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; toCSV &gt; should generate CSV with headers and records" time="0.000187167">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; validateRecords &gt; should validate valid records successfully" time="0.000287042">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; validateRecords &gt; should detect missing subscriber number" time="0.000203958">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; validateRecords &gt; should detect missing national ID for Saudi employees" time="0.000152833">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; validateRecords &gt; should detect missing Iqama for non-Saudi employees" time="0.000100458">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; validateRecords &gt; should detect invalid salary" time="0.000089917">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; validateRecords &gt; should warn about salary below minimum wage" time="0.000064375">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; validateRecords &gt; should return error for empty records" time="0.0000715">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; getRates &gt; should return current GOSI rates" time="0.000310416">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; getWageCeiling &gt; should return 45000 SAR" time="0.000066709">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; getMinimumWage &gt; should return 4000 SAR" time="0.000060083">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; calculateCompanyLiability &gt; should calculate total company GOSI liability" time="0.000582833">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; prepareRecords &gt; should prepare GOSI records from payroll data" time="0.00027625">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; Edge Cases &gt; should handle very high salary with cap" time="0.000075042">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/gosi.service.test.ts" name="GOSIService - Saudi Arabia Social Insurance &gt; Edge Cases &gt; should handle zero salary" time="0.000080708">
         </testcase>
     </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/agency-portal/page.test.tsx" timestamp="2026-03-22T18:28:42.881Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.480091459">
-        <testcase classname="src/app/dashboard/recruitment/agency-portal/page.test.tsx" name="AgencyPortalPage &gt; renders live agency-shareable jobs from posting fields" time="0.127632917">
+    <testsuite name="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" timestamp="2026-04-21T04:13:15.832Z" hostname="MacBookPro" tests="23" failures="0" errors="0" skipped="0" time="0.011006958">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; toHijri &gt; should convert a known Gregorian date to Hijri" time="0.001365708">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/agency-portal/page.test.tsx" name="AgencyPortalPage &gt; shows explicit empty states for unsupported submissions and agencies tabs" time="0.350921416">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; toHijri &gt; should return month 9 (Ramadan) during Ramadan period" time="0.000202791">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/assessment-tests/page.test.tsx" timestamp="2026-03-22T18:28:42.882Z" hostname="MacBookPro" tests="1" failures="0" errors="0" skipped="0" time="0.188668791">
-        <testcase classname="src/app/dashboard/recruitment/assessment-tests/page.test.tsx" name="AssessmentsPage &gt; shows an explicit unsupported state instead of synthetic assessment tests" time="0.186926583">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; toHijri &gt; should return valid Arabic formatted string" time="0.000265875">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/application-tracking/page.test.tsx" timestamp="2026-03-22T18:28:42.882Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.411096459">
-        <testcase classname="src/app/dashboard/recruitment/application-tracking/page.test.tsx" name="ApplicationTrackingPage &gt; renders live application fields and normalizes stages into board columns" time="0.364266792">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; toGregorian &gt; should convert Hijri date back to Gregorian" time="0.00033875">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/application-tracking/page.test.tsx" name="ApplicationTrackingPage &gt; renders empty columns when no applications are returned" time="0.042505708">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; toGregorian &gt; should roundtrip Gregorian → Hijri → Gregorian within 1 day" time="0.000245375">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/background-verification/page.test.tsx" timestamp="2026-03-22T18:28:42.882Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.160298333">
-        <testcase classname="src/app/dashboard/recruitment/background-verification/page.test.tsx" name="BackgroundVerificationPage &gt; renders live background checks and derives connected vendors from them" time="0.124281208">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; isRamadan &gt; should return a boolean" time="0.000172666">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/background-verification/page.test.tsx" name="BackgroundVerificationPage &gt; shows truthful empty states when there are no checks or vendors" time="0.032583791">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; getRamadanPeriod &gt; should return valid Ramadan period for a Hijri year" time="0.000311542">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/candidate-screening/page.test.tsx" timestamp="2026-03-22T18:28:42.883Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.673002083">
-        <testcase classname="src/app/dashboard/recruitment/candidate-screening/page.test.tsx" name="CandidateScreeningPage &gt; renders live application fields and updates screening actions" time="0.653647125">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; getRamadanPeriod &gt; should default to current Hijri year when no year provided" time="0.000174541">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/candidate-screening/page.test.tsx" name="CandidateScreeningPage &gt; shows an empty state when there are no screening candidates" time="0.015801125">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; getIslamicHolidays &gt; should return holidays for all GCC countries" time="0.000841209">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/career-site/page.test.tsx" timestamp="2026-03-22T18:28:42.883Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.230583875">
-        <testcase classname="src/app/dashboard/recruitment/career-site/page.test.tsx" name="CareerSitePage &gt; renders company and open roles from live settings and postings" time="0.200426375">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; getIslamicHolidays &gt; should filter holidays by country code" time="0.0011335">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/career-site/page.test.tsx" name="CareerSitePage &gt; shows an empty roles state when there are no active postings" time="0.024126666">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; getIslamicHolidays &gt; should include Eid al-Fitr and Eid al-Adha" time="0.000221">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/emails/page.test.tsx" timestamp="2026-03-22T18:28:42.883Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.070639708">
-        <testcase classname="src/app/dashboard/recruitment/emails/page.test.tsx" name="RecruitmentEmailsPage &gt; renders email templates from recruitment settings" time="0.0584435">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; isIslamicHoliday &gt; should return isHoliday boolean" time="0.000320709">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/emails/page.test.tsx" name="RecruitmentEmailsPage &gt; shows an empty state when no templates are configured" time="0.010626334">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; getEidAlFitr &gt; should return start and end dates" time="0.0001635">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/integrations/page.test.tsx" timestamp="2026-03-22T18:28:42.883Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.09028875">
-        <testcase classname="src/app/dashboard/recruitment/integrations/page.test.tsx" name="JobBoardsPage &gt; derives the connected board from recruitment settings and active postings" time="0.080273125">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; getEidAlAdha &gt; should return start and end dates" time="0.000244834">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/integrations/page.test.tsx" name="JobBoardsPage &gt; shows a real empty state when no job board is configured" time="0.008321">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; getHajjSeason &gt; should return 6-day Hajj season (8-13 Dhul Hijjah)" time="0.000252875">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/interview-feedback/page.test.tsx" timestamp="2026-03-22T18:28:42.883Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.157365959">
-        <testcase classname="src/app/dashboard/recruitment/interview-feedback/page.test.tsx" name="InterviewFeedbackPage &gt; renders feedback cards from joined interview and interview feedback services" time="0.136039958">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; formatHijri &gt; should format in English by default" time="0.000184667">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/interview-feedback/page.test.tsx" name="InterviewFeedbackPage &gt; shows an empty state when no interview feedback exists" time="0.019111292">
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; formatHijri &gt; should format in Arabic when locale is ar" time="0.000116917">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; getCurrentHijriYear &gt; should return a reasonable Hijri year" time="0.000225792">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; getMonthNames &gt; should return 12 English month names" time="0.00041375">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; getMonthNames &gt; should return 12 Arabic month names" time="0.000298208">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; getRamadanDaysRemaining &gt; should return 0 when not Ramadan" time="0.000245625">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; getDaysUntilRamadan &gt; should return 0 during Ramadan" time="0.000152292">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/hijri-calendar.service.test.ts" name="HijriCalendarService &gt; getDaysUntilRamadan &gt; should return positive number when not Ramadan" time="0.000080292">
         </testcase>
     </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/interview-management/page.test.tsx" timestamp="2026-03-22T18:28:42.884Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.588102709">
-        <testcase classname="src/app/dashboard/recruitment/interview-management/page.test.tsx" name="InterviewSchedulingPage &gt; renders upcoming interviews from the live interview contract" time="0.478848708">
+    <testsuite name="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" timestamp="2026-04-21T04:13:15.835Z" hostname="MacBookPro" tests="20" failures="0" errors="0" skipped="0" time="0.022002125">
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; getSupportedStates &gt; should return at least 15 states" time="0.00129625">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/interview-management/page.test.tsx" name="InterviewSchedulingPage &gt; shows an empty state when there are no interviews" time="0.092385542">
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; getSupportedStates &gt; should include state name and collection frequency" time="0.000257417">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/job-posting/page.test.tsx" timestamp="2026-03-22T18:28:42.884Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.242866958">
-        <testcase classname="src/app/dashboard/recruitment/job-posting/page.test.tsx" name="JobPostingsPage &gt; renders live job posting fields from the recruitment posting service" time="0.225144042">
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; calculateMonthlyPT &gt; should calculate PT for Maharashtra high salary" time="0.013532542">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/job-posting/page.test.tsx" name="JobPostingsPage &gt; shows an empty state when there are no job postings" time="0.011611625">
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; calculateMonthlyPT &gt; should apply February adjustment for Maharashtra" time="0.00026">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/portal/page.test.tsx" timestamp="2026-03-22T18:28:42.884Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.363794583">
-        <testcase classname="src/app/dashboard/recruitment/portal/page.test.tsx" name="CandidatePortalPage &gt; renders live application cards in the Applications tab" time="0.097824042">
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; calculateMonthlyPT &gt; should return 0 for salary below PT threshold" time="0.000188542">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/portal/page.test.tsx" name="CandidatePortalPage &gt; shows explicit unsupported states for Documents and Offers tabs" time="0.263479">
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; calculateMonthlyPT &gt; should calculate Karnataka PT correctly" time="0.000114792">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/job-requisition/page.test.tsx" timestamp="2026-03-22T18:28:42.884Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.180002042">
-        <testcase classname="src/app/dashboard/recruitment/job-requisition/page.test.tsx" name="JobRequisitionsPage &gt; renders requisitions from the live requisition contract" time="0.157710917">
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; calculateMonthlyPT &gt; should calculate West Bengal PT correctly" time="0.0000895">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/job-requisition/page.test.tsx" name="JobRequisitionsPage &gt; shows an empty state when there are no requisitions" time="0.018988584">
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; calculateMonthlyPT &gt; should return 0 for unsupported state" time="0.000083292">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/offer-management/page.test.tsx" timestamp="2026-03-22T18:28:42.884Z" hostname="MacBookPro" tests="3" failures="0" errors="0" skipped="0" time="0.659550209">
-        <testcase classname="src/app/dashboard/recruitment/offer-management/page.test.tsx" name="OfferManagementPage &gt; renders live offer fields from the normalized job offer contract" time="0.415519458">
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; calculateAnnualPT &gt; should not exceed ₹2,500 annual cap" time="0.000672583">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/offer-management/page.test.tsx" name="OfferManagementPage &gt; sends an approved offer and refreshes the list" time="0.220937459">
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; calculateAnnualPT &gt; should calculate annual PT for all 12 months" time="0.000274">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/offer-management/page.test.tsx" name="OfferManagementPage &gt; shows an empty state when there are no offers" time="0.020034125">
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; calculateAnnualPT &gt; should include financial year in result" time="0.000191375">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/ratings/page.test.tsx" timestamp="2026-03-22T18:28:42.885Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.278007166">
-        <testcase classname="src/app/dashboard/recruitment/ratings/page.test.tsx" name="InterviewRatingsPage &gt; derives rating rows and summary metrics from live interview feedback data" time="0.24356775">
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; getSlabs &gt; should return slab data for Maharashtra" time="0.000087042">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/ratings/page.test.tsx" name="InterviewRatingsPage &gt; shows an empty state when no interview ratings exist" time="0.032736458">
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; getSlabs &gt; should return empty array for unsupported state" time="0.000090833">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/referrals/page.test.tsx" timestamp="2026-03-22T18:28:42.885Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.249654042">
-        <testcase classname="src/app/dashboard/recruitment/referrals/page.test.tsx" name="ReferralsPage &gt; renders referral applications and open jobs from live recruitment fields" time="0.206096958">
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; getStateConfig &gt; should return full config for Maharashtra" time="0.000114">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/referrals/page.test.tsx" name="ReferralsPage &gt; shows empty states when there are no referrals or jobs" time="0.040713917">
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; getStateConfig &gt; should return null for unsupported state" time="0.000078917">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; generatePTReturn &gt; should generate return for a set of employees" time="0.000461792">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; comparePTAcrossStates &gt; should compare PT across all supported states" time="0.001234833">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; comparePTAcrossStates &gt; should show variation across states for same salary" time="0.00022575">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; isStatePTApplicable &gt; should return true for Maharashtra" time="0.000085125">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/india-professional-tax.service.test.ts" name="IndiaProfessionalTaxService &gt; isStatePTApplicable &gt; should return false for unsupported state" time="0.000182209">
         </testcase>
     </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/resume-parsing/page.test.tsx" timestamp="2026-03-22T18:28:42.885Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.092444834">
-        <testcase classname="src/app/dashboard/recruitment/resume-parsing/page.test.tsx" name="ResumeParsingPage &gt; renders parsed resumes from live candidate application fields" time="0.075334209">
+    <testsuite name="src/lib/services/compliance/__tests__/labour-law.service.test.ts" timestamp="2026-04-21T04:13:15.836Z" hostname="MacBookPro" tests="47" failures="0" errors="0" skipped="0" time="0.009045333">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; getConfig &gt; should return labour law config for Saudi Arabia" time="0.000756208">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/resume-parsing/page.test.tsx" name="ResumeParsingPage &gt; shows an empty state when no resumes are available" time="0.015518167">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; getConfig &gt; should return labour law config for UAE" time="0.000241166">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/talent-pool/page.test.tsx" timestamp="2026-03-22T18:28:42.885Z" hostname="MacBookPro" tests="2" failures="0" errors="0" skipped="0" time="0.173738875">
-        <testcase classname="src/app/dashboard/recruitment/talent-pool/page.test.tsx" name="TalentPoolPage &gt; renders live candidate application fields in the talent pool" time="0.138120667">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; getConfig &gt; should return labour law config for India" time="0.000595958">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/talent-pool/page.test.tsx" name="TalentPoolPage &gt; shows an empty state when there are no candidates" time="0.0320905">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; getConfig &gt; should throw error for unsupported country" time="0.000388167">
         </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/vendors/page.test.tsx" timestamp="2026-03-22T18:28:42.886Z" hostname="MacBookPro" tests="13" failures="0" errors="0" skipped="0" time="0.964435917">
-        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; shows a live empty vendor registry for function VendorManagementPage() {
-  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
-    (0,__vite_ssr_import_1__.RecruitmentVendorRegistry),
-    {
-      title: &quot;Vendor Management&quot;,
-      description: &quot;Manage recruitment vendors, agencies, and service providers from the live tenant-scoped vendor registry.&quot;
-    },
-    void 0,
-    false,
-    {
-      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/page.tsx&quot;,
-      lineNumber: 8,
-      columnNumber: 9
-    },
-    this
-  );
-}" time="0.2402905">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; getConfig &gt; should include EOSB configuration" time="0.000201">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; shows a live empty vendor registry for function VendorsManagementPage() {
-  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
-    (0,__vite_ssr_import_1__.RecruitmentVendorRegistry),
-    {
-      title: &quot;Vendor Management&quot;,
-      description: &quot;Review vendor onboarding and relationship status from the live recruitment vendor registry.&quot;
-    },
-    void 0,
-    false,
-    {
-      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/management/page.tsx&quot;,
-      lineNumber: 8,
-      columnNumber: 9
-    },
-    this
-  );
-}" time="0.094569958">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; getConfig &gt; should include overtime rates" time="0.000151084">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; shows a live empty vendor registry for function VendorManagementPage() {
-  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
-    (0,__vite_ssr_import_1__.RecruitmentVendorRegistry),
-    {
-      title: &quot;Vendor Management&quot;,
-      description: &quot;Manage preferred staffing suppliers and agency partners from the live recruitment vendor registry.&quot;
-    },
-    void 0,
-    false,
-    {
-      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/vendor-management/page.tsx&quot;,
-      lineNumber: 8,
-      columnNumber: 9
-    },
-    this
-  );
-}" time="0.090515958">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; getConfig &gt; should include leave entitlements" time="0.000114">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; renders live vendor data for function VendorManagementPage() {
-  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
-    (0,__vite_ssr_import_1__.RecruitmentVendorRegistry),
-    {
-      title: &quot;Vendor Management&quot;,
-      description: &quot;Manage recruitment vendors, agencies, and service providers from the live tenant-scoped vendor registry.&quot;
-    },
-    void 0,
-    false,
-    {
-      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/page.tsx&quot;,
-      lineNumber: 8,
-      columnNumber: 9
-    },
-    this
-  );
-}" time="0.115844708">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; getConfig &gt; should include probation details" time="0.0000925">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; renders live vendor data for function VendorsManagementPage() {
-  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
-    (0,__vite_ssr_import_1__.RecruitmentVendorRegistry),
-    {
-      title: &quot;Vendor Management&quot;,
-      description: &quot;Review vendor onboarding and relationship status from the live recruitment vendor registry.&quot;
-    },
-    void 0,
-    false,
-    {
-      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/management/page.tsx&quot;,
-      lineNumber: 8,
-      columnNumber: 9
-    },
-    this
-  );
-}" time="0.056477584">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; getSupportedCountries &gt; should return all 7 supported countries" time="0.000637166">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; renders live vendor data for function VendorManagementPage() {
-  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
-    (0,__vite_ssr_import_1__.RecruitmentVendorRegistry),
-    {
-      title: &quot;Vendor Management&quot;,
-      description: &quot;Manage preferred staffing suppliers and agency partners from the live recruitment vendor registry.&quot;
-    },
-    void 0,
-    false,
-    {
-      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/vendor-management/page.tsx&quot;,
-      lineNumber: 8,
-      columnNumber: 9
-    },
-    this
-  );
-}" time="0.059411417">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; getSupportedCountries &gt; should include both English and Arabic names" time="0.000188625">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; keeps unsupported vendor subdomains explicit for function ComplianceDocsPage() {
-  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
-    (0,__vite_ssr_import_2__.VendorUnsupportedState),
-    {
-      title: &quot;Vendor Compliance&quot;,
-      description: &quot;Track mandatory legal and security documents once vendor compliance data is backed by recruitment services.&quot;,
-      unavailableTitle: &quot;Vendor compliance not yet connected&quot;,
-      buttonLabel: &quot;Request Document&quot;,
-      requirement: &quot;Add vendor document storage, expiry tracking, and audit metadata to a dedicated recruitment vendor contract before enabling compliance review.&quot;,
-      scope: &quot;Compliance status, document lists, and request actions remain unavailable because there is no validated vendor compliance integration in the current dashboard layer.&quot;,
-      statusLabel: &quot;Awaiting vendor compliance contract&quot;,
-      Icon: __vite_ssr_import_1__.ShieldCheck
-    },
-    void 0,
-    false,
-    {
-      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/compliance-docs/page.tsx&quot;,
-      lineNumber: 9,
-      columnNumber: 9
-    },
-    this
-  );
-}" time="0.0413145">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; getGCCCountries &gt; should return only 6 GCC countries" time="0.000339667">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; keeps unsupported vendor subdomains explicit for function ContractRenewalPage() {
-  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
-    (0,__vite_ssr_import_2__.VendorUnsupportedState),
-    {
-      title: &quot;Contract Renewals&quot;,
-      description: &quot;Manage expiring contractor agreements and extensions once vendor contract lifecycle data is integrated.&quot;,
-      unavailableTitle: &quot;Vendor renewals not yet connected&quot;,
-      buttonLabel: &quot;Review Renewals&quot;,
-      requirement: &quot;Add contract terms, renewal decisions, and renewal history to the recruitment vendor domain before surfacing lifecycle actions here.&quot;,
-      scope: &quot;This route no longer shows synthetic contractor renewals or negotiation events because there is no validated vendor renewal contract in recruitment.&quot;,
-      statusLabel: &quot;Awaiting vendor renewal contract&quot;,
-      Icon: __vite_ssr_import_1__.RefreshCw
-    },
-    void 0,
-    false,
-    {
-      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/contract-renewal/page.tsx&quot;,
-      lineNumber: 9,
-      columnNumber: 9
-    },
-    this
-  );
-}" time="0.070296875">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; calculateAnnualLeave &gt; should return 21 days for KSA with less than 5 years service" time="0.000074458">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; keeps unsupported vendor subdomains explicit for function ContractTypesPage() {
-  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
-    (0,__vite_ssr_import_2__.VendorUnsupportedState),
-    {
-      title: &quot;Contract Configurations&quot;,
-      description: &quot;Define engagement models and standard terms after vendor contract types are sourced from a real recruitment configuration service.&quot;,
-      unavailableTitle: &quot;Vendor contract types not yet connected&quot;,
-      buttonLabel: &quot;Configure Types&quot;,
-      requirement: &quot;Expose vendor engagement models, notice periods, and payment terms through a normalized vendor configuration contract before enabling rate or term setup.&quot;,
-      scope: &quot;This page intentionally avoids fabricated contract templates and commercial defaults because vendor contracting is not part of the validated recruitment dashboard surface yet.&quot;,
-      statusLabel: &quot;Awaiting vendor contract configuration&quot;,
-      Icon: __vite_ssr_import_1__.FileText
-    },
-    void 0,
-    false,
-    {
-      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/contract-types/page.tsx&quot;,
-      lineNumber: 9,
-      columnNumber: 9
-    },
-    this
-  );
-}" time="0.060268709">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; calculateAnnualLeave &gt; should return 30 days for KSA with 5+ years service" time="0.0000555">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; keeps unsupported vendor subdomains explicit for function InvoiceProcessingPage() {
-  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
-    (0,__vite_ssr_import_2__.VendorUnsupportedState),
-    {
-      title: &quot;Vendor Invoices&quot;,
-      description: &quot;Process payments and reconcile vendor charges once invoices and timesheets are exposed through a real vendor finance contract.&quot;,
-      unavailableTitle: &quot;Vendor invoices not yet connected&quot;,
-      buttonLabel: &quot;Approve Invoices&quot;,
-      requirement: &quot;Add invoice intake, approval status, and vendor payment reconciliation to the recruitment vendor domain before enabling finance workflows here.&quot;,
-      scope: &quot;Invoice queues, payable totals, and payment history have been removed because they were synthetic and are not backed by a validated recruitment vendor integration.&quot;,
-      statusLabel: &quot;Awaiting vendor finance contract&quot;,
-      Icon: __vite_ssr_import_1__.FileText
-    },
-    void 0,
-    false,
-    {
-      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/invoice-processing/page.tsx&quot;,
-      lineNumber: 9,
-      columnNumber: 9
-    },
-    this
-  );
-}" time="0.037258209">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; calculateAnnualLeave &gt; should return 30 days for UAE with 1+ year service" time="0.00005725">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; keeps unsupported vendor subdomains explicit for function VendorPerformancePage() {
-  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
-    (0,__vite_ssr_import_2__.VendorUnsupportedState),
-    {
-      title: &quot;Vendor Performance&quot;,
-      description: &quot;Review staffing partner scorecards once vendor performance metrics are sourced from a dedicated recruitment service.&quot;,
-      unavailableTitle: &quot;Vendor performance not yet connected&quot;,
-      buttonLabel: &quot;Review Ratings&quot;,
-      requirement: &quot;Expose vendor scorecards, trend metrics, and review notes through a normalized vendor analytics contract before enabling partner reviews.&quot;,
-      scope: &quot;This page no longer displays fabricated ratings or trend bars because vendor performance data is not part of the validated recruitment dashboard contract today.&quot;,
-      statusLabel: &quot;Awaiting vendor analytics contract&quot;,
-      Icon: __vite_ssr_import_1__.Award
-    },
-    void 0,
-    false,
-    {
-      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/performance-rating/page.tsx&quot;,
-      lineNumber: 9,
-      columnNumber: 9
-    },
-    this
-  );
-}" time="0.027012708">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; calculateAnnualLeave &gt; should pro-rate for UAE in first year (2 days per month)" time="0.000082709">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; keeps unsupported vendor subdomains explicit for function RateCardsPage() {
-  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
-    (0,__vite_ssr_import_2__.VendorUnsupportedState),
-    {
-      title: &quot;Vendor Rate Cards&quot;,
-      description: &quot;Standardize pricing by role, location, and experience once commercial rate data is backed by a real vendor contract.&quot;,
-      unavailableTitle: &quot;Vendor rate cards not yet connected&quot;,
-      buttonLabel: &quot;Update Rates&quot;,
-      requirement: &quot;Add vendor-specific rate cards, pricing dimensions, and commercial history to the recruitment vendor domain before enabling rate management here.&quot;,
-      scope: &quot;Rate tables and pricing trends were removed because they were hardcoded and are not backed by a validated recruitment vendor integration.&quot;,
-      statusLabel: &quot;Awaiting vendor pricing contract&quot;,
-      Icon: __vite_ssr_import_1__.DollarSign
-    },
-    void 0,
-    false,
-    {
-      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/rate-cards/page.tsx&quot;,
-      lineNumber: 9,
-      columnNumber: 9
-    },
-    this
-  );
-}" time="0.042224">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; calculateAnnualLeave &gt; should return 15 days for India" time="0.000054834">
         </testcase>
-        <testcase classname="src/app/dashboard/recruitment/vendors/page.test.tsx" name="Recruitment vendor pages &gt; keeps unsupported vendor subdomains explicit for function AgencyTimesheetPage() {
-  return /* @__PURE__ */ (0,__vite_ssr_import_0__.jsxDEV)(
-    (0,__vite_ssr_import_2__.VendorUnsupportedState),
-    {
-      title: &quot;Contractor Timesheets&quot;,
-      description: &quot;Review and approve weekly hours from vendors after timesheet submission data is integrated into recruitment.&quot;,
-      unavailableTitle: &quot;Vendor timesheets not yet connected&quot;,
-      buttonLabel: &quot;Approve Timesheets&quot;,
-      requirement: &quot;Add vendor worker assignments, timesheet submissions, and approval state to a dedicated vendor operations contract before enabling timesheet review.&quot;,
-      scope: &quot;Timesheet rows, weekly totals, and approval actions have been removed because they were synthetic and are not backed by a validated recruitment vendor workflow.&quot;,
-      statusLabel: &quot;Awaiting vendor timesheet contract&quot;,
-      Icon: __vite_ssr_import_1__.Clock
-    },
-    void 0,
-    false,
-    {
-      fileName: &quot;/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/app/dashboard/recruitment/vendors/timesheet/page.tsx&quot;,
-      lineNumber: 9,
-      columnNumber: 9
-    },
-    this
-  );
-}" time="0.026945959">
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; calculateOvertimeRate &gt; should return 1.50 for normal overtime in KSA" time="0.000066">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; calculateOvertimeRate &gt; should return 1.25 for normal overtime in UAE" time="0.000049125">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; calculateOvertimeRate &gt; should return 1.50 for night shift overtime in UAE" time="0.000048041">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; calculateOvertimeRate &gt; should return 1.50 for holiday overtime in UAE" time="0.000100375">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; calculateOvertimeRate &gt; should return 2.00 for India (double pay)" time="0.000049125">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; calculateOvertimeRate &gt; should use holiday rate as fallback for friday" time="0.000051">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; calculateOvertimeRate &gt; should return 2.00 for holiday work in Kuwait" time="0.000049208">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; getWorkingHours &gt; should return standard hours for KSA" time="0.000227">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; getWorkingHours &gt; should return standard hours for UAE" time="0.000083083">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; getWorkingHours &gt; should return 9 hours per day for Oman" time="0.000075875">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; isRamadanPeriod &gt; should return a boolean" time="0.000058375">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; isEligibleForHajjLeave &gt; should be eligible for Muslim with sufficient service" time="0.000072791">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; isEligibleForHajjLeave &gt; should not be eligible for non-Muslim" time="0.000067292">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; isEligibleForHajjLeave &gt; should not be eligible if already taken" time="0.00006425">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; isEligibleForHajjLeave &gt; should not be eligible if insufficient service years" time="0.000065583">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; validateWorkingHours &gt; should pass for compliant working hours" time="0.00016725">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; validateWorkingHours &gt; should flag excessive daily hours" time="0.000079084">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; validateWorkingHours &gt; should flag excessive weekly hours" time="0.000065542">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; validateWorkingHours &gt; should flag annual overtime exceeding KSA limit" time="0.000063916">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; validateWorkingHours &gt; should include country and category in result" time="0.000165833">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; validateWorkingHours &gt; should include bilingual messages in issues" time="0.000148334">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; validateProbation &gt; should pass for valid probation period" time="0.000124">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; validateProbation &gt; should flag excessive probation period" time="0.000076666">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; validateProbation &gt; should allow extended probation with extension flag for KSA" time="0.00004825">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; validateProbation &gt; should validate UAE probation (max 180 days)" time="0.000068792">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; Country-specific configurations &gt; should have correct weekend days for GCC (Fri/Sat)" time="0.000124875">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; Country-specific configurations &gt; should have correct weekend days for India (Sat/Sun)" time="0.000142625">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; Country-specific configurations &gt; should have social insurance config for applicable countries" time="0.000104166">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; Country-specific configurations &gt; should not have social insurance for UAE (no income tax)" time="0.000057375">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; Edge Cases &gt; should handle zero service years for annual leave" time="0.00004825">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/labour-law.service.test.ts" name="LabourLawService &gt; Edge Cases &gt; should handle very long service years" time="0.000046125">
         </testcase>
     </testsuite>
-    <testsuite name="src/app/dashboard/recruitment/offer-management/templates/page.test.tsx" timestamp="2026-03-22T18:28:42.886Z" hostname="MacBookPro" tests="1" failures="0" errors="0" skipped="0" time="0.261036">
-        <testcase classname="src/app/dashboard/recruitment/offer-management/templates/page.test.tsx" name="OfferTemplatesPage &gt; shows an explicit unsupported state instead of hardcoded templates" time="0.258879083">
+    <testsuite name="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" timestamp="2026-04-21T04:13:15.840Z" hostname="MacBookPro" tests="36" failures="0" errors="0" skipped="0" time="0.0124965">
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; initialize &gt; should populate exchange rates for all currency pairs" time="0.000958833">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; getExchangeRate &gt; should return rate 1 for same currency" time="0.000414042">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; getExchangeRate &gt; should return exchange rate between two currencies" time="0.000497417">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; getExchangeRate &gt; should return inverse rate" time="0.000192292">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; getExchangeRate &gt; should return effective date and source" time="0.000327417">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; setExchangeRate &gt; should set custom exchange rate" time="0.000363709">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; setExchangeRate &gt; should also set the inverse rate" time="0.000433875">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; convert &gt; should convert amount between currencies" time="0.000268875">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; convert &gt; should return same amount for same currency" time="0.000289333">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; convert &gt; should apply correct rounding for 2 decimal place currencies" time="0.000137042">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; convert &gt; should apply 3 decimal place rounding for BHD" time="0.000109709">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; convert &gt; should calculate rounding difference" time="0.000130417">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; convert &gt; should handle zero amount" time="0.00011575">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; convert &gt; should handle negative amount" time="0.000402333">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; convert &gt; should handle very large amounts" time="0.000138083">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; convertBulk &gt; should convert multiple items to target currency" time="0.000724333">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; format &gt; should format amount with currency symbol" time="0.0002905">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; format &gt; should format with symbol before for USD" time="0.000147208">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; format &gt; should respect decimal places for BHD (3 decimals)" time="0.00012325">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; format &gt; should format with code instead of symbol when specified" time="0.000125">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; format &gt; should handle Arabic locale" time="0.000162833">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; parse &gt; should parse formatted currency string to number" time="0.000138708">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; parse &gt; should handle string with currency code" time="0.000083583">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; parse &gt; should return 0 for invalid input" time="0.00007925">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; round &gt; should round to 2 decimal places by default" time="0.000078875">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; round &gt; should round to specified decimal places" time="0.000077542">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; round &gt; should handle 0 decimal places" time="0.000075209">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; getCurrency &gt; should return currency configuration" time="0.000162834">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; getCurrency &gt; should return configuration for KWD with 3 decimal places" time="0.000080333">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; getAllCurrencies &gt; should return all supported currencies" time="0.000417583">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; getGCCCurrencies &gt; should return only GCC currencies" time="0.000479417">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; isValidCurrency &gt; should return true for supported currencies" time="0.000139291">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; isValidCurrency &gt; should return false for unsupported currencies" time="0.000093375">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; getExchangeRateTable &gt; should return exchange rate table for base currency" time="0.001093625">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; getGCCCrossRates &gt; should return cross rates between GCC currencies" time="0.000342458">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/multi-currency.service.test.ts" name="MultiCurrencyService &gt; calculateMultiCurrencyPayroll &gt; should calculate totals by currency" time="0.0003005">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/services/compliance/__tests__/notification.service.test.ts" timestamp="2026-04-21T04:13:15.844Z" hostname="MacBookPro" tests="22" failures="0" errors="0" skipped="0" time="0.009466542">
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Payroll Notifications &gt; should send payroll run started notification" time="0.002024333">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Payroll Notifications &gt; should send payroll run completed notification" time="0.000260416">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Payroll Notifications &gt; should send payroll run failed notification with urgent priority" time="0.000408125">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Payroll Notifications &gt; should send payslip generated notification" time="0.000326">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Leave Notifications &gt; should send leave request submitted notification to manager" time="0.000243084">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Leave Notifications &gt; should send leave request approved notification" time="0.000229958">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Leave Notifications &gt; should send leave request rejected notification with reason" time="0.000206625">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Leave Notifications &gt; should send leave balance low notification" time="0.000146583">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Attendance Notifications &gt; should send attendance marked notification" time="0.000343958">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Attendance Notifications &gt; should send late arrival notification" time="0.000236958">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Attendance Notifications &gt; should send missing attendance notification" time="0.000255042">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Attendance Notifications &gt; should send regularization approved notification" time="0.000147791">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Report Notifications &gt; should send report generation started notification" time="0.000302834">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Report Notifications &gt; should send report ready notification" time="0.000480417">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Report Notifications &gt; should send report generation failed notification" time="0.000144333">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; System Notifications &gt; should send system maintenance notification to company" time="0.000197541">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; System Notifications &gt; should send system update notification to company" time="0.00013325">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; System Notifications &gt; should send employee onboarded notification to company" time="0.000115875">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Custom Notification &gt; should send custom notification to user" time="0.000351167">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Statistics and Status &gt; should return server statistics" time="0.000559542">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Statistics and Status &gt; should check if user is online" time="0.000178333">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/notification.service.test.ts" name="NotificationService &gt; Singleton export &gt; should export a singleton instance" time="0.0001535">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" timestamp="2026-04-21T04:13:15.846Z" hostname="MacBookPro" tests="18" failures="0" errors="0" skipped="0" time="0.007602334">
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; calculateDailyWorkingHours &gt; should calculate standard working hours for UAE" time="0.001146875">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; calculateDailyWorkingHours &gt; should detect Ramadan and adjust hours" time="0.000309791">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; calculateDailyWorkingHours &gt; should return standard hours for Saudi Arabia" time="0.000315167">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; calculateOvertime &gt; should calculate overtime hours when exceeding shift hours" time="0.000341709">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; calculateOvertime &gt; should apply night shift overtime type" time="0.000293458">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; calculateOvertime &gt; should apply Friday premium for GCC countries" time="0.000138375">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; calculateOvertime &gt; should return 0 overtime when within shift hours" time="0.000097792">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; validateDailyCompliance &gt; should pass for normal UAE workday" time="0.000664333">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; validateDailyCompliance &gt; should flag excessive daily hours" time="0.000847917">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; validateWeeklyCompliance &gt; should pass for normal work week" time="0.000588916">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; validateWeeklyCompliance &gt; should flag excessive weekly hours" time="0.000158125">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; getBreakRequirements &gt; should return break requirements for UAE after 5+ hours" time="0.000205625">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; getBreakRequirements &gt; should return break requirements for India" time="0.0000665">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; getBreakRequirements &gt; should not require break for short shifts" time="0.0000765">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; isNightShift &gt; should detect UAE night shift with start/end times" time="0.000110334">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; isNightShift &gt; should not flag daytime shift as night shift" time="0.000117667">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; calculateFridayCompensation &gt; should apply 150% rate for Friday work in UAE" time="0.000150875">
+        </testcase>
+        <testcase classname="src/lib/services/compliance/__tests__/working-hours-engine.service.test.ts" name="WorkingHoursEngine &gt; calculateFridayCompensation &gt; should not apply Friday rules for non-GCC countries" time="0.000051417">
         </testcase>
     </testsuite>
 </testsuites>

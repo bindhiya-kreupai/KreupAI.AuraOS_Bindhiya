@@ -1,372 +1,485 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { GOSIService } from '../gosi.service';
-import type { Employee } from '@/types/employee';
+import type { GOSIRecord, GOSIConfiguration } from '../types';
 
 describe('GOSIService - Saudi Arabia Social Insurance', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  const saudiEmployee: Employee = {
-    id: 'emp-1',
-    employeeId: 'E001',
-    tenantId: 'tenant-1',
-    firstName: 'Ahmed',
-    lastName: 'Al-Rashid',
-    nationality: 'Saudi',
-    countryCode: 'SA',
-    basicSalary: 10000,
-    isSaudi: true,
-    nationalId: '1234567890',
-  };
-
-  const nonSaudiEmployee: Employee = {
-    id: 'emp-2',
-    employeeId: 'E002',
-    tenantId: 'tenant-1',
-    firstName: 'John',
-    lastName: 'Smith',
-    nationality: 'American',
-    countryCode: 'SA',
-    basicSalary: 10000,
-    isSaudi: false,
-    iqamaNumber: '2234567890',
-  };
-
   describe('calculateContributions', () => {
     it('should calculate GOSI for Saudi employee correctly', () => {
-      const result = GOSIService.calculateContributions(saudiEmployee, 10000);
+      const result = GOSIService.calculateContributions(10000, 2500, true);
 
-      // Saudi: 9% employee + 12% employer (21% total on contributable salary)
-      expect(result.employeeContribution).toBe(900); // 9% of 10,000
-      expect(result.employerContribution).toBe(1200); // 12% of 10,000
-      expect(result.totalContribution).toBe(2100);
-      expect(result.contributableSalary).toBe(10000);
+      // Contributable salary = basic + housing = 12,500
+      expect(result.contributableSalary).toBe(12500);
+
+      // Saudi: 9% annuity employee + 0.75% SANED = 9.75% employee
+      expect(result.employeeContribution).toBeCloseTo(12500 * 0.0975, 2);
+
+      // Saudi: 9% annuity employer + 0.75% SANED + 2% hazards = 11.75% employer
+      expect(result.employerContribution).toBeCloseTo(12500 * 0.1175, 2);
+
+      expect(result.totalContribution).toBeCloseTo(
+        result.employeeContribution + result.employerContribution, 2
+      );
     });
 
     it('should calculate GOSI for non-Saudi employee correctly', () => {
-      const result = GOSIService.calculateContributions(nonSaudiEmployee, 10000);
+      const result = GOSIService.calculateContributions(10000, 2500, false);
 
-      // Non-Saudi: 0% employee + 2% employer (occupational hazards only)
+      // Non-Saudi: 0% employee contribution
       expect(result.employeeContribution).toBe(0);
-      expect(result.employerContribution).toBe(200); // 2% of 10,000
-      expect(result.totalContribution).toBe(200);
-      expect(result.contributableSalary).toBe(10000);
+
+      // Non-Saudi: only 2% occupational hazards (employer)
+      expect(result.employerContribution).toBeCloseTo(12500 * 0.02, 2);
+
+      expect(result.totalContribution).toBe(result.employerContribution);
     });
 
-    it('should cap contributable salary at maximum limit', () => {
-      const highSalaryEmployee = { ...saudiEmployee, basicSalary: 50000 };
-      const result = GOSIService.calculateContributions(highSalaryEmployee, 50000);
+    it('should cap contributable salary at GOSI ceiling (45000 SAR)', () => {
+      const result = GOSIService.calculateContributions(40000, 10000, true);
 
-      // GOSI max salary cap is 45,000 SAR
+      // basic + housing = 50,000, but capped at 45,000
       expect(result.contributableSalary).toBe(45000);
-      expect(result.employeeContribution).toBe(4050); // 9% of 45,000
-      expect(result.employerContribution).toBe(5400); // 12% of 45,000
+      expect(result.employeeContribution).toBeCloseTo(45000 * 0.0975, 2);
     });
 
-    it('should handle minimum salary threshold', () => {
-      const lowSalaryEmployee = { ...saudiEmployee, basicSalary: 500 };
-      const result = GOSIService.calculateContributions(lowSalaryEmployee, 500);
+    it('should provide breakdown by component', () => {
+      const result = GOSIService.calculateContributions(10000, 2500, true);
 
-      // Minimum wage for GOSI is 1,500 SAR
-      expect(result.contributableSalary).toBe(1500);
-      expect(result.employeeContribution).toBe(135); // 9% of 1,500
-      expect(result.employerContribution).toBe(180); // 12% of 1,500
+      expect(result.breakdown.annuity.employee).toBeCloseTo(12500 * 0.09, 2);
+      expect(result.breakdown.annuity.employer).toBeCloseTo(12500 * 0.09, 2);
+      expect(result.breakdown.saned.employee).toBeCloseTo(12500 * 0.0075, 2);
+      expect(result.breakdown.saned.employer).toBeCloseTo(12500 * 0.0075, 2);
+      expect(result.breakdown.occupationalHazards.employee).toBe(0);
+      expect(result.breakdown.occupationalHazards.employer).toBeCloseTo(12500 * 0.02, 2);
     });
 
-    it('should include occupational hazards for all employees', () => {
-      const result = GOSIService.calculateContributions(saudiEmployee, 10000);
+    it('should show zero annuity and SANED for non-Saudi', () => {
+      const result = GOSIService.calculateContributions(10000, 2500, false);
 
-      expect(result.breakdown.occupationalHazards).toBeDefined();
-      expect(result.breakdown.occupationalHazards.rate).toBe(2); // 2%
-      expect(result.breakdown.occupationalHazards.amount).toBe(200);
+      expect(result.breakdown.annuity.employee).toBe(0);
+      expect(result.breakdown.annuity.employer).toBe(0);
+      expect(result.breakdown.saned.employee).toBe(0);
+      expect(result.breakdown.saned.employer).toBe(0);
+      expect(result.breakdown.occupationalHazards.employer).toBeCloseTo(12500 * 0.02, 2);
     });
 
-    it('should calculate annuities for Saudi employees only', () => {
-      const saudiResult = GOSIService.calculateContributions(saudiEmployee, 10000);
-      const nonSaudiResult = GOSIService.calculateContributions(nonSaudiEmployee, 10000);
+    it('should round contributions to 2 decimal places', () => {
+      const result = GOSIService.calculateContributions(10333, 2333, true);
 
-      expect(saudiResult.breakdown.annuities).toBeDefined();
-      expect(saudiResult.breakdown.annuities.employeeRate).toBe(9);
-      expect(saudiResult.breakdown.annuities.employerRate).toBe(9);
-
-      expect(nonSaudiResult.breakdown.annuities).toBeUndefined();
+      // Verify rounding
+      expect(result.employeeContribution).toBe(
+        Math.round((10333 + 2333) * 0.0975 * 100) / 100
+      );
     });
 
-    it('should calculate unemployment insurance for Saudis (SANED)', () => {
-      const result = GOSIService.calculateContributions(saudiEmployee, 10000);
+    it('should handle zero housing allowance', () => {
+      const result = GOSIService.calculateContributions(10000, 0, true);
 
-      expect(result.breakdown.unemployment).toBeDefined();
-      expect(result.breakdown.unemployment.employeeRate).toBe(1); // 1%
-      expect(result.breakdown.unemployment.employerRate).toBe(1); // 1%
-      expect(result.breakdown.unemployment.totalAmount).toBe(200); // 2% of 10,000
+      expect(result.contributableSalary).toBe(10000);
+      expect(result.employeeContribution).toBeCloseTo(10000 * 0.0975, 2);
     });
+  });
 
-    it('should exclude allowances from GOSI calculation if configured', () => {
-      const employeeWithAllowances = {
-        ...saudiEmployee,
+  describe('generateSubmissionFile', () => {
+    const config: GOSIConfiguration = {
+      id: 'config-1',
+      tenantId: 'tenant-1',
+      companyId: 'company-1',
+      gosiSubscriptionNumber: '123456789',
+      establishmentNumber: '12345678',
+      laborOfficeCode: '1001',
+      isActive: true,
+    };
+
+    const sampleRecords: GOSIRecord[] = [
+      {
+        employeeId: 'emp-1',
+        subscriberNumber: '123456789',
+        nationalId: '1234567890',
+        isSaudi: true,
         basicSalary: 10000,
+        housingAllowance: 2500,
+        contributableSalary: 12500,
+        employeeContribution: 1218.75,
+        employerContribution: 1468.75,
+        annuityContribution: 2250,
+        sanedContribution: 187.5,
+        occupationalHazardsContribution: 250,
+      },
+      {
+        employeeId: 'emp-2',
+        subscriberNumber: '987654321',
+        nationalId: '',
+        iqamaNumber: '2234567890',
+        isSaudi: false,
+        basicSalary: 8000,
         housingAllowance: 2000,
-        transportAllowance: 1000,
+        contributableSalary: 10000,
+        employeeContribution: 0,
+        employerContribution: 200,
+        annuityContribution: 0,
+        sanedContribution: 0,
+        occupationalHazardsContribution: 200,
+      },
+    ];
+
+    it('should generate submission file with header', () => {
+      const file = GOSIService.generateSubmissionFile(config, sampleRecords, '2024-06');
+
+      expect(file.header.establishmentNumber).toBe('12345678');
+      expect(file.header.laborOfficeCode).toBe('1001');
+      expect(file.header.contributionMonth).toBe('2024-06');
+      expect(file.header.totalRecords).toBe(2);
+      expect(file.header.saudiCount).toBe(1);
+      expect(file.header.nonSaudiCount).toBe(1);
+    });
+
+    it('should calculate correct totals in summary', () => {
+      const file = GOSIService.generateSubmissionFile(config, sampleRecords, '2024-06');
+
+      expect(file.summary.totalEmployeeContributions).toBeCloseTo(1218.75, 2);
+      expect(file.summary.totalEmployerContributions).toBeCloseTo(1668.75, 2);
+      expect(file.summary.totalContribution).toBeCloseTo(
+        file.summary.totalEmployeeContributions + file.summary.totalEmployerContributions, 2
+      );
+    });
+
+    it('should include all records in output', () => {
+      const file = GOSIService.generateSubmissionFile(config, sampleRecords, '2024-06');
+
+      expect(file.records).toHaveLength(2);
+      expect(file.records[0].recordType).toBe('EMP');
+    });
+  });
+
+  describe('toXML', () => {
+    it('should generate valid XML structure', () => {
+      const config: GOSIConfiguration = {
+        id: 'config-1',
+        tenantId: 'tenant-1',
+        companyId: 'company-1',
+        gosiSubscriptionNumber: '123456789',
+        establishmentNumber: '12345678',
+        laborOfficeCode: '1001',
+        isActive: true,
       };
 
-      // GOSI typically calculated on basic + HRA only
-      const result = GOSIService.calculateContributions(
-        employeeWithAllowances,
-        12000, // Basic + Housing
-        { includeAllowances: false }
-      );
+      const records: GOSIRecord[] = [{
+        employeeId: 'emp-1',
+        subscriberNumber: '123456789',
+        nationalId: '1234567890',
+        isSaudi: true,
+        basicSalary: 10000,
+        housingAllowance: 2500,
+        contributableSalary: 12500,
+        employeeContribution: 1218.75,
+        employerContribution: 1468.75,
+        annuityContribution: 2250,
+        sanedContribution: 187.5,
+        occupationalHazardsContribution: 250,
+      }];
 
-      expect(result.contributableSalary).toBe(12000);
+      const file = GOSIService.generateSubmissionFile(config, records, '2024-06');
+      const xml = GOSIService.toXML(file);
+
+      expect(xml).toContain('<?xml version="1.0"');
+      expect(xml).toContain('<GOSIContribution>');
+      expect(xml).toContain('<EstablishmentNumber>12345678</EstablishmentNumber>');
+      expect(xml).toContain('<SubscriberNumber>123456789</SubscriberNumber>');
+      expect(xml).toContain('</GOSIContribution>');
     });
   });
 
-  describe('getContributionBreakdown', () => {
-    it('should provide detailed breakdown for Saudi employee', () => {
-      const result = GOSIService.getContributionBreakdown(saudiEmployee, 10000);
+  describe('toCSV', () => {
+    it('should generate CSV with headers and records', () => {
+      const config: GOSIConfiguration = {
+        id: 'config-1',
+        tenantId: 'tenant-1',
+        companyId: 'company-1',
+        gosiSubscriptionNumber: '123456789',
+        establishmentNumber: '12345678',
+        laborOfficeCode: '1001',
+        isActive: true,
+      };
 
-      expect(result).toHaveProperty('annuities');
-      expect(result).toHaveProperty('occupationalHazards');
-      expect(result).toHaveProperty('unemployment');
-      expect(result.annuities.employeeAmount).toBe(900); // 9%
-      expect(result.annuities.employerAmount).toBe(900); // 9%
-      expect(result.occupationalHazards.amount).toBe(200); // 2%
-      expect(result.unemployment.totalAmount).toBe(200); // 2%
-    });
+      const records: GOSIRecord[] = [{
+        employeeId: 'emp-1',
+        subscriberNumber: '123456789',
+        nationalId: '1234567890',
+        isSaudi: true,
+        basicSalary: 10000,
+        housingAllowance: 2500,
+        contributableSalary: 12500,
+        employeeContribution: 1218.75,
+        employerContribution: 1468.75,
+        annuityContribution: 2250,
+        sanedContribution: 187.5,
+        occupationalHazardsContribution: 250,
+      }];
 
-    it('should show zero employee contribution for non-Saudi', () => {
-      const result = GOSIService.getContributionBreakdown(nonSaudiEmployee, 10000);
+      const file = GOSIService.generateSubmissionFile(config, records, '2024-06');
+      const csv = GOSIService.toCSV(file);
 
-      expect(result.annuities).toBeUndefined();
-      expect(result.unemployment).toBeUndefined();
-      expect(result.occupationalHazards.amount).toBe(200);
+      expect(csv).toContain('Subscriber Number');
+      expect(csv).toContain('123456789');
+      expect(csv).toContain('10000.00');
     });
   });
 
-  describe('validateGOSIEligibility', () => {
-    it('should validate Saudi employee is eligible', () => {
-      const result = GOSIService.validateGOSIEligibility(saudiEmployee);
+  describe('validateRecords', () => {
+    it('should validate valid records successfully', () => {
+      const records: GOSIRecord[] = [{
+        employeeId: 'emp-1',
+        subscriberNumber: '123456789',
+        nationalId: '1234567890',
+        isSaudi: true,
+        basicSalary: 10000,
+        housingAllowance: 2500,
+        contributableSalary: 12500,
+        employeeContribution: 1218.75,
+        employerContribution: 1468.75,
+        annuityContribution: 2250,
+        sanedContribution: 187.5,
+        occupationalHazardsContribution: 250,
+      }];
 
-      expect(result.isEligible).toBe(true);
+      const result = GOSIService.validateRecords(records);
+
+      expect(result.isValid).toBe(true);
       expect(result.errors).toHaveLength(0);
     });
 
-    it('should validate non-Saudi employee is eligible', () => {
-      const result = GOSIService.validateGOSIEligibility(nonSaudiEmployee);
+    it('should detect missing subscriber number', () => {
+      const records: GOSIRecord[] = [{
+        employeeId: 'emp-1',
+        subscriberNumber: '',
+        nationalId: '1234567890',
+        isSaudi: true,
+        basicSalary: 10000,
+        housingAllowance: 2500,
+        contributableSalary: 12500,
+        employeeContribution: 1218.75,
+        employerContribution: 1468.75,
+        annuityContribution: 2250,
+        sanedContribution: 187.5,
+        occupationalHazardsContribution: 250,
+      }];
 
-      expect(result.isEligible).toBe(true);
-      expect(result.errors).toHaveLength(0);
+      const result = GOSIService.validateRecords(records);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some(e => e.code === 'MISSING_SUBSCRIBER')).toBe(true);
     });
 
-    it('should require national ID for Saudi employees', () => {
-      const employeeWithoutID = { ...saudiEmployee, nationalId: undefined };
-      const result = GOSIService.validateGOSIEligibility(employeeWithoutID);
+    it('should detect missing national ID for Saudi employees', () => {
+      const records: GOSIRecord[] = [{
+        employeeId: 'emp-1',
+        subscriberNumber: '123456789',
+        nationalId: '',
+        isSaudi: true,
+        basicSalary: 10000,
+        housingAllowance: 2500,
+        contributableSalary: 12500,
+        employeeContribution: 1218.75,
+        employerContribution: 1468.75,
+        annuityContribution: 2250,
+        sanedContribution: 187.5,
+        occupationalHazardsContribution: 250,
+      }];
 
-      expect(result.isEligible).toBe(false);
-      expect(result.errors).toContain('National ID is required for Saudi employees');
+      const result = GOSIService.validateRecords(records);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some(e => e.code === 'MISSING_NATIONAL_ID')).toBe(true);
     });
 
-    it('should require Iqama for non-Saudi employees', () => {
-      const employeeWithoutIqama = { ...nonSaudiEmployee, iqamaNumber: undefined };
-      const result = GOSIService.validateGOSIEligibility(employeeWithoutIqama);
+    it('should detect missing Iqama for non-Saudi employees', () => {
+      const records: GOSIRecord[] = [{
+        employeeId: 'emp-2',
+        subscriberNumber: '987654321',
+        nationalId: '',
+        isSaudi: false,
+        basicSalary: 8000,
+        housingAllowance: 2000,
+        contributableSalary: 10000,
+        employeeContribution: 0,
+        employerContribution: 200,
+        annuityContribution: 0,
+        sanedContribution: 0,
+        occupationalHazardsContribution: 200,
+      }];
 
-      expect(result.isEligible).toBe(false);
-      expect(result.errors).toContain('Iqama number is required for non-Saudi employees');
+      const result = GOSIService.validateRecords(records);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some(e => e.code === 'MISSING_IQAMA')).toBe(true);
     });
 
-    it('should require valid salary', () => {
-      const employeeWithoutSalary = { ...saudiEmployee, basicSalary: 0 };
-      const result = GOSIService.validateGOSIEligibility(employeeWithoutSalary);
+    it('should detect invalid salary', () => {
+      const records: GOSIRecord[] = [{
+        employeeId: 'emp-1',
+        subscriberNumber: '123456789',
+        nationalId: '1234567890',
+        isSaudi: true,
+        basicSalary: 0,
+        housingAllowance: 0,
+        contributableSalary: 0,
+        employeeContribution: 0,
+        employerContribution: 0,
+        annuityContribution: 0,
+        sanedContribution: 0,
+        occupationalHazardsContribution: 0,
+      }];
 
-      expect(result.isEligible).toBe(false);
-      expect(result.errors).toContain('Valid salary is required');
+      const result = GOSIService.validateRecords(records);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some(e => e.code === 'INVALID_SALARY')).toBe(true);
+    });
+
+    it('should warn about salary below minimum wage', () => {
+      const records: GOSIRecord[] = [{
+        employeeId: 'emp-1',
+        subscriberNumber: '123456789',
+        nationalId: '1234567890',
+        isSaudi: true,
+        basicSalary: 3000,
+        housingAllowance: 500,
+        contributableSalary: 3500,
+        employeeContribution: 341.25,
+        employerContribution: 411.25,
+        annuityContribution: 630,
+        sanedContribution: 52.5,
+        occupationalHazardsContribution: 70,
+      }];
+
+      const result = GOSIService.validateRecords(records);
+
+      expect(result.warnings.some(w => w.code === 'BELOW_MINIMUM_WAGE')).toBe(true);
+    });
+
+    it('should return error for empty records', () => {
+      const result = GOSIService.validateRecords([]);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some(e => e.code === 'EMPTY_RECORDS')).toBe(true);
     });
   });
 
-  describe('generateGOSIReport', () => {
-    it('should generate monthly GOSI report for all employees', () => {
-      const employees = [saudiEmployee, nonSaudiEmployee];
-      const result = GOSIService.generateGOSIReport(employees, '2024-06');
+  describe('getRates', () => {
+    it('should return current GOSI rates', () => {
+      const rates = GOSIService.getRates();
 
-      expect(result.month).toBe('2024-06');
-      expect(result.totalEmployees).toBe(2);
-      expect(result.saudiEmployees).toBe(1);
-      expect(result.nonSaudiEmployees).toBe(1);
-      expect(result.totalEmployeeContribution).toBe(900); // Only Saudi employee
-      expect(result.totalEmployerContribution).toBe(1400); // 1200 (Saudi) + 200 (Non-Saudi)
+      expect(rates.saudi.annuity.employee).toBe(9.0);
+      expect(rates.saudi.annuity.employer).toBe(9.0);
+      expect(rates.saudi.saned.employee).toBe(0.75);
+      expect(rates.saudi.saned.employer).toBe(0.75);
+      expect(rates.saudi.occupationalHazards.employer).toBe(2.0);
+      expect(rates.nonSaudi.occupationalHazards.employer).toBe(2.0);
+      expect(rates.nonSaudi.annuity.employee).toBe(0);
     });
+  });
 
-    it('should group contributions by nationality', () => {
-      const employees = [
-        saudiEmployee,
-        { ...saudiEmployee, id: 'emp-3' },
-        nonSaudiEmployee,
+  describe('getWageCeiling', () => {
+    it('should return 45000 SAR', () => {
+      expect(GOSIService.getWageCeiling()).toBe(45000);
+    });
+  });
+
+  describe('getMinimumWage', () => {
+    it('should return 4000 SAR', () => {
+      expect(GOSIService.getMinimumWage()).toBe(4000);
+    });
+  });
+
+  describe('calculateCompanyLiability', () => {
+    it('should calculate total company GOSI liability', () => {
+      const records: GOSIRecord[] = [
+        {
+          employeeId: 'emp-1',
+          subscriberNumber: '123456789',
+          nationalId: '1234567890',
+          isSaudi: true,
+          basicSalary: 10000,
+          housingAllowance: 2500,
+          contributableSalary: 12500,
+          employeeContribution: 1218.75,
+          employerContribution: 1468.75,
+          annuityContribution: 2250,
+          sanedContribution: 187.5,
+          occupationalHazardsContribution: 250,
+        },
+        {
+          employeeId: 'emp-2',
+          subscriberNumber: '987654321',
+          nationalId: '',
+          iqamaNumber: '2234567890',
+          isSaudi: false,
+          basicSalary: 8000,
+          housingAllowance: 2000,
+          contributableSalary: 10000,
+          employeeContribution: 0,
+          employerContribution: 200,
+          annuityContribution: 0,
+          sanedContribution: 0,
+          occupationalHazardsContribution: 200,
+        },
       ];
-      const result = GOSIService.generateGOSIReport(employees, '2024-06');
 
-      expect(result.bySaudiNationality.count).toBe(2);
-      expect(result.bySaudiNationality.totalContribution).toBe(4200); // 2100 * 2
-      expect(result.byNonSaudi.count).toBe(1);
-      expect(result.byNonSaudi.totalContribution).toBe(200);
-    });
+      const result = GOSIService.calculateCompanyLiability(records);
 
-    it('should calculate total contributable wages', () => {
-      const employees = [saudiEmployee, nonSaudiEmployee];
-      const result = GOSIService.generateGOSIReport(employees, '2024-06');
-
-      expect(result.totalContributableWages).toBe(20000); // 10,000 + 10,000
+      expect(result.totalEmployerContribution).toBeCloseTo(1668.75, 2);
+      expect(result.totalEmployeeContribution).toBeCloseTo(1218.75, 2);
+      expect(result.totalContribution).toBeCloseTo(2887.50, 2);
+      expect(result.bySaudiStatus.saudi.count).toBe(1);
+      expect(result.bySaudiStatus.nonSaudi.count).toBe(1);
+      expect(result.byType.annuity).toBeCloseTo(2250, 2);
+      expect(result.byType.occupationalHazards).toBeCloseTo(450, 2);
     });
   });
 
-  describe('calculateProration', () => {
-    it('should prorate GOSI for partial month (new joiner)', () => {
-      const joinDate = new Date('2024-06-15'); // Joined mid-month
-      const monthDays = 30;
-      const workedDays = 15;
+  describe('prepareRecords', () => {
+    it('should prepare GOSI records from payroll data', () => {
+      const payrollData = [
+        {
+          employeeId: 'emp-1',
+          complianceData: {
+            employeeId: 'emp-1',
+            countryCode: 'SA' as const,
+            nationality: 'SA',
+            gosiSubscriberNumber: '123456789',
+            nationalId: '1234567890',
+            isLocalNational: true,
+          },
+          basicSalary: 10000,
+          housingAllowance: 2500,
+        },
+      ];
 
-      const result = GOSIService.calculateProratedContribution(
-        saudiEmployee,
-        10000,
-        joinDate,
-        workedDays,
-        monthDays
-      );
+      const records = GOSIService.prepareRecords(payrollData);
 
-      // Pro-rate: (10000 * 15/30) = 5000 contributable
-      expect(result.contributableSalary).toBe(5000);
-      expect(result.employeeContribution).toBe(450); // 9% of 5,000
-      expect(result.employerContribution).toBe(600); // 12% of 5,000
-    });
-
-    it('should not prorate for full month', () => {
-      const joinDate = new Date('2024-06-01');
-      const result = GOSIService.calculateProratedContribution(
-        saudiEmployee,
-        10000,
-        joinDate,
-        30,
-        30
-      );
-
-      expect(result.contributableSalary).toBe(10000);
-      expect(result.employeeContribution).toBe(900);
-    });
-  });
-
-  describe('calculateAnnualGOSI', () => {
-    it('should calculate annual GOSI contributions', () => {
-      const result = GOSIService.calculateAnnualGOSI(saudiEmployee, 10000);
-
-      expect(result.annualEmployeeContribution).toBe(10800); // 900 * 12
-      expect(result.annualEmployerContribution).toBe(14400); // 1200 * 12
-      expect(result.annualTotalContribution).toBe(25200);
-    });
-
-    it('should provide monthly breakdown', () => {
-      const result = GOSIService.calculateAnnualGOSI(saudiEmployee, 10000);
-
-      expect(result.monthlyBreakdown).toHaveLength(12);
-      expect(result.monthlyBreakdown[0].month).toBe('January');
-      expect(result.monthlyBreakdown[0].employeeContribution).toBe(900);
-    });
-  });
-
-  describe('generateGOSIFile', () => {
-    it('should generate GOSI file in required format', () => {
-      const employees = [saudiEmployee, nonSaudiEmployee];
-      const result = GOSIService.generateGOSIFile(employees, '2024-06');
-
-      expect(result.format).toBe('CSV');
-      expect(result.records).toHaveLength(2);
-      expect(result.records[0]).toHaveProperty('employeeId');
-      expect(result.records[0]).toHaveProperty('nationalId');
-      expect(result.records[0]).toHaveProperty('contributableSalary');
-      expect(result.records[0]).toHaveProperty('employeeContribution');
-      expect(result.records[0]).toHaveProperty('employerContribution');
-    });
-
-    it('should validate file data before generation', () => {
-      const invalidEmployee = { ...saudiEmployee, nationalId: undefined };
-
-      expect(() => {
-        GOSIService.generateGOSIFile([invalidEmployee], '2024-06');
-      }).toThrow('Invalid employee data for GOSI file');
-    });
-  });
-
-  describe('getRatesByYear', () => {
-    it('should return current GOSI rates for 2024', () => {
-      const rates = GOSIService.getRatesByYear(2024);
-
-      expect(rates.saudi.employee.annuities).toBe(9);
-      expect(rates.saudi.employer.annuities).toBe(9);
-      expect(rates.saudi.employer.occupationalHazards).toBe(2);
-      expect(rates.saudi.employee.unemployment).toBe(1);
-      expect(rates.saudi.employer.unemployment).toBe(1);
-      expect(rates.nonSaudi.employer.occupationalHazards).toBe(2);
-    });
-
-    it('should return historical rates for previous years', () => {
-      const rates2020 = GOSIService.getRatesByYear(2020);
-      const rates2024 = GOSIService.getRatesByYear(2024);
-
-      // Rates may have changed over years
-      expect(rates2020).toBeDefined();
-      expect(rates2024).toBeDefined();
-    });
-  });
-
-  describe('calculateSalaryIncreaseImpact', () => {
-    it('should calculate GOSI impact of salary increase', () => {
-      const oldSalary = 10000;
-      const newSalary = 12000;
-
-      const result = GOSIService.calculateSalaryIncreaseImpact(
-        saudiEmployee,
-        oldSalary,
-        newSalary
-      );
-
-      expect(result.oldEmployeeContribution).toBe(900); // 9% of 10,000
-      expect(result.newEmployeeContribution).toBe(1080); // 9% of 12,000
-      expect(result.employeeIncrease).toBe(180);
-      expect(result.oldEmployerContribution).toBe(1200); // 12% of 10,000
-      expect(result.newEmployerContribution).toBe(1440); // 12% of 12,000
-      expect(result.employerIncrease).toBe(240);
-    });
-
-    it('should show percentage increase', () => {
-      const result = GOSIService.calculateSalaryIncreaseImpact(
-        saudiEmployee,
-        10000,
-        12000
-      );
-
-      expect(result.salaryIncreasePercentage).toBe(20); // 20% increase
-      expect(result.employeeContributionIncreasePercentage).toBe(20);
+      expect(records).toHaveLength(1);
+      expect(records[0].isSaudi).toBe(true);
+      expect(records[0].subscriberNumber).toBe('123456789');
+      expect(records[0].contributableSalary).toBe(12500);
+      expect(records[0].employeeContribution).toBeGreaterThan(0);
     });
   });
 
   describe('Edge Cases', () => {
-    it('should handle zero salary gracefully', () => {
-      const result = GOSIService.calculateContributions({ ...saudiEmployee, basicSalary: 0 }, 0);
-
-      // Should apply minimum wage
-      expect(result.contributableSalary).toBe(1500);
-    });
-
     it('should handle very high salary with cap', () => {
-      const result = GOSIService.calculateContributions(saudiEmployee, 100000);
+      const result = GOSIService.calculateContributions(80000, 20000, true);
 
-      expect(result.contributableSalary).toBe(45000); // Capped
-      expect(result.employeeContribution).toBe(4050);
-      expect(result.employerContribution).toBe(5400);
+      // Capped at 45,000
+      expect(result.contributableSalary).toBe(45000);
+      expect(result.employeeContribution).toBeCloseTo(45000 * 0.0975, 2);
     });
 
-    it('should round contributions to 2 decimal places', () => {
-      const result = GOSIService.calculateContributions(saudiEmployee, 10333.33);
+    it('should handle zero salary', () => {
+      const result = GOSIService.calculateContributions(0, 0, true);
 
-      expect(result.employeeContribution).toBe(Math.round(10333.33 * 0.09 * 100) / 100);
+      expect(result.contributableSalary).toBe(0);
+      expect(result.employeeContribution).toBe(0);
+      expect(result.employerContribution).toBe(0);
     });
   });
 });

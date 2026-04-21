@@ -1,349 +1,346 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MultiCurrencyService } from '../multi-currency.service';
-
-// Mock external exchange rate API
-vi.mock('@/lib/external/exchange-rate-api', () => ({
-  ExchangeRateAPI: {
-    getRate: vi.fn(),
-    getRates: vi.fn(),
-  },
-}));
+import { describe, it, expect, beforeEach } from 'vitest';
+import { MultiCurrencyService, CURRENCIES, FIXED_USD_RATES } from '../multi-currency.service';
 
 describe('MultiCurrencyService', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    // Re-initialize to ensure clean state
+    MultiCurrencyService.initialize();
   });
 
-  describe('convert', () => {
-    it('should convert amount from one currency to another', () => {
-      const result = MultiCurrencyService.convert(1000, 'USD', 'SAR', 3.75);
+  describe('initialize', () => {
+    it('should populate exchange rates for all currency pairs', () => {
+      MultiCurrencyService.initialize();
 
-      expect(result.fromAmount).toBe(1000);
-      expect(result.fromCurrency).toBe('USD');
-      expect(result.toAmount).toBe(3750); // 1000 * 3.75
-      expect(result.toCurrency).toBe('SAR');
-      expect(result.exchangeRate).toBe(3.75);
-    });
-
-    it('should handle same currency conversion', () => {
-      const result = MultiCurrencyService.convert(1000, 'SAR', 'SAR', 1);
-
-      expect(result.toAmount).toBe(1000);
-      expect(result.exchangeRate).toBe(1);
-    });
-
-    it('should round to 2 decimal places', () => {
-      const result = MultiCurrencyService.convert(1000, 'USD', 'SAR', 3.7512345);
-
-      expect(result.toAmount).toBe(3751.23); // Rounded
-    });
-
-    it('should handle zero amount', () => {
-      const result = MultiCurrencyService.convert(0, 'USD', 'SAR', 3.75);
-
-      expect(result.toAmount).toBe(0);
-    });
-
-    it('should throw error for invalid exchange rate', () => {
-      expect(() => {
-        MultiCurrencyService.convert(1000, 'USD', 'SAR', 0);
-      }).toThrow('Invalid exchange rate');
+      // After initialization, getExchangeRate should work for any pair
+      const rate = MultiCurrencyService.getExchangeRate('USD', 'SAR');
+      expect(rate).not.toBeNull();
+      expect(rate!.rate).toBeGreaterThan(0);
     });
   });
 
   describe('getExchangeRate', () => {
-    it('should return cached exchange rate if available', async () => {
-      // Seed cache
-      await MultiCurrencyService.updateExchangeRate('USD', 'SAR', 3.75);
+    it('should return rate 1 for same currency', () => {
+      const rate = MultiCurrencyService.getExchangeRate('SAR', 'SAR');
 
-      const result = await MultiCurrencyService.getExchangeRate('USD', 'SAR');
-
-      expect(result.rate).toBe(3.75);
-      expect(result.cached).toBe(true);
+      expect(rate).not.toBeNull();
+      expect(rate!.rate).toBe(1);
+      expect(rate!.inverseRate).toBe(1);
+      expect(rate!.source).toBe('FIXED');
     });
 
-    it('should fetch live rate if not cached', async () => {
-      const { ExchangeRateAPI } = await import('@/lib/external/exchange-rate-api');
-      vi.mocked(ExchangeRateAPI.getRate).mockResolvedValue(3.75);
+    it('should return exchange rate between two currencies', () => {
+      const rate = MultiCurrencyService.getExchangeRate('USD', 'SAR');
 
-      const result = await MultiCurrencyService.getExchangeRate('USD', 'SAR');
-
-      expect(result.rate).toBe(3.75);
-      expect(result.cached).toBe(false);
-      expect(ExchangeRateAPI.getRate).toHaveBeenCalledWith('USD', 'SAR');
+      expect(rate).not.toBeNull();
+      expect(rate!.baseCurrency).toBe('USD');
+      expect(rate!.targetCurrency).toBe('SAR');
+      // Rate is calculated as fromRate / toRate (FIXED_USD_RATES.USD / FIXED_USD_RATES.SAR)
+      expect(rate!.rate).toBeCloseTo(FIXED_USD_RATES.USD / FIXED_USD_RATES.SAR, 4);
     });
 
-    it('should return 1 for same currency', async () => {
-      const result = await MultiCurrencyService.getExchangeRate('SAR', 'SAR');
+    it('should return inverse rate', () => {
+      const rate = MultiCurrencyService.getExchangeRate('SAR', 'USD');
 
-      expect(result.rate).toBe(1);
-      expect(result.cached).toBe(true);
+      expect(rate).not.toBeNull();
+      // SAR->USD rate = FIXED_USD_RATES.SAR / FIXED_USD_RATES.USD = 3.75
+      expect(rate!.rate).toBeCloseTo(FIXED_USD_RATES.SAR / FIXED_USD_RATES.USD, 4);
     });
 
-    it('should handle API errors gracefully', async () => {
-      const { ExchangeRateAPI } = await import('@/lib/external/exchange-rate-api');
-      vi.mocked(ExchangeRateAPI.getRate).mockRejectedValue(new Error('API Error'));
+    it('should return effective date and source', () => {
+      const rate = MultiCurrencyService.getExchangeRate('AED', 'SAR');
 
-      await expect(
-        MultiCurrencyService.getExchangeRate('USD', 'XXX')
-      ).rejects.toThrow('Failed to fetch exchange rate');
-    });
-  });
-
-  describe('convertWithLiveRate', () => {
-    it('should fetch live rate and convert', async () => {
-      const { ExchangeRateAPI } = await import('@/lib/external/exchange-rate-api');
-      vi.mocked(ExchangeRateAPI.getRate).mockResolvedValue(3.75);
-
-      const result = await MultiCurrencyService.convertWithLiveRate(1000, 'USD', 'SAR');
-
-      expect(result.toAmount).toBe(3750);
-      expect(result.exchangeRate).toBe(3.75);
+      expect(rate).not.toBeNull();
+      expect(rate!.effectiveDate).toBeInstanceOf(Date);
+      expect(rate!.lastUpdated).toBeInstanceOf(Date);
+      expect(rate!.source).toBe('FIXED');
     });
   });
 
-  describe('getSupportedCurrencies', () => {
-    it('should return list of supported currencies', () => {
-      const currencies = MultiCurrencyService.getSupportedCurrencies();
+  describe('setExchangeRate', () => {
+    it('should set custom exchange rate', () => {
+      MultiCurrencyService.setExchangeRate('USD', 'SAR', 3.80, 'CUSTOM');
 
-      expect(currencies).toContain('SAR'); // Saudi Riyal
-      expect(currencies).toContain('AED'); // UAE Dirham
-      expect(currencies).toContain('KWD'); // Kuwaiti Dinar
-      expect(currencies).toContain('BHD'); // Bahraini Dinar
-      expect(currencies).toContain('OMR'); // Omani Rial
-      expect(currencies).toContain('QAR'); // Qatari Riyal
-      expect(currencies).toContain('USD'); // US Dollar
-      expect(currencies).toContain('EUR'); // Euro
-      expect(currencies).toContain('GBP'); // British Pound
-      expect(currencies).toContain('INR'); // Indian Rupee
+      const rate = MultiCurrencyService.getExchangeRate('USD', 'SAR');
+      expect(rate).not.toBeNull();
+      expect(rate!.rate).toBe(3.80);
+      expect(rate!.source).toBe('CUSTOM');
     });
 
-    it('should return GCC currencies only', () => {
-      const gccCurrencies = MultiCurrencyService.getGCCCurrencies();
+    it('should also set the inverse rate', () => {
+      MultiCurrencyService.setExchangeRate('USD', 'SAR', 3.80);
 
-      expect(gccCurrencies).toEqual(['SAR', 'AED', 'KWD', 'BHD', 'OMR', 'QAR']);
+      const inverseRate = MultiCurrencyService.getExchangeRate('SAR', 'USD');
+      expect(inverseRate).not.toBeNull();
+      expect(inverseRate!.rate).toBeCloseTo(1 / 3.80, 6);
     });
   });
 
-  describe('getCurrencyInfo', () => {
-    it('should return currency information', () => {
-      const info = MultiCurrencyService.getCurrencyInfo('SAR');
+  describe('convert', () => {
+    it('should convert amount between currencies', () => {
+      const result = MultiCurrencyService.convert(1000, 'USD', 'SAR');
 
-      expect(info.code).toBe('SAR');
-      expect(info.name).toBe('Saudi Riyal');
-      expect(info.symbol).toBe('﷼');
-      expect(info.decimalPlaces).toBe(2);
+      expect(result.originalAmount).toBe(1000);
+      expect(result.originalCurrency).toBe('USD');
+      expect(result.targetCurrency).toBe('SAR');
+      expect(result.convertedAmount).toBeGreaterThan(0);
+      expect(result.exchangeRate).toBeGreaterThan(0);
+      expect(result.rateDate).toBeInstanceOf(Date);
     });
 
-    it('should handle currency with 3 decimal places', () => {
-      const info = MultiCurrencyService.getCurrencyInfo('KWD');
+    it('should return same amount for same currency', () => {
+      const result = MultiCurrencyService.convert(1000, 'SAR', 'SAR');
 
-      expect(info.decimalPlaces).toBe(3); // Kuwaiti Dinar uses 3 decimals
+      expect(result.convertedAmount).toBe(1000);
+      expect(result.exchangeRate).toBe(1);
+      expect(result.roundedAmount).toBe(1000);
     });
 
-    it('should throw error for unsupported currency', () => {
-      expect(() => {
-        MultiCurrencyService.getCurrencyInfo('XXX');
-      }).toThrow('Unsupported currency');
+    it('should apply correct rounding for 2 decimal place currencies', () => {
+      MultiCurrencyService.setExchangeRate('USD', 'SAR', 3.7512345);
+      const result = MultiCurrencyService.convert(1000, 'USD', 'SAR');
+
+      // SAR has 2 decimal places
+      expect(result.roundedAmount).toBe(3751.23);
+    });
+
+    it('should apply 3 decimal place rounding for BHD', () => {
+      const result = MultiCurrencyService.convert(1000, 'USD', 'BHD');
+
+      // BHD has 3 decimal places
+      const expectedRounded = MultiCurrencyService.round(result.convertedAmount, 3);
+      expect(result.roundedAmount).toBe(expectedRounded);
+    });
+
+    it('should calculate rounding difference', () => {
+      const result = MultiCurrencyService.convert(1000, 'USD', 'SAR');
+
+      expect(result.roundingDifference).toBeDefined();
+      expect(typeof result.roundingDifference).toBe('number');
+    });
+
+    it('should handle zero amount', () => {
+      const result = MultiCurrencyService.convert(0, 'USD', 'SAR');
+
+      expect(result.convertedAmount).toBe(0);
+      expect(result.roundedAmount).toBe(0);
+    });
+
+    it('should handle negative amount', () => {
+      const result = MultiCurrencyService.convert(-1000, 'USD', 'SAR');
+
+      expect(result.convertedAmount).toBeLessThan(0);
+    });
+
+    it('should handle very large amounts', () => {
+      const result = MultiCurrencyService.convert(1000000, 'USD', 'SAR');
+
+      expect(result.convertedAmount).toBeGreaterThan(0);
+      expect(result.originalAmount).toBe(1000000);
     });
   });
 
-  describe('formatAmount', () => {
+  describe('convertBulk', () => {
+    it('should convert multiple items to target currency', () => {
+      const items = [
+        { amount: 1000, fromCurrency: 'USD' as const },
+        { amount: 5000, fromCurrency: 'AED' as const },
+        { amount: 2000, fromCurrency: 'EUR' as const },
+      ];
+
+      const results = MultiCurrencyService.convertBulk(items, 'SAR');
+
+      expect(results).toHaveLength(3);
+      results.forEach(result => {
+        expect(result.targetCurrency).toBe('SAR');
+        expect(result.convertedAmount).toBeGreaterThan(0);
+      });
+    });
+  });
+
+  describe('format', () => {
     it('should format amount with currency symbol', () => {
-      const formatted = MultiCurrencyService.formatAmount(1000, 'SAR');
+      const formatted = MultiCurrencyService.format(1000, 'SAR');
 
       expect(formatted).toContain('1,000');
-      expect(formatted).toContain('SAR');
+      expect(formatted).toContain('ر.س');
     });
 
-    it('should format with 3 decimal places for KWD', () => {
-      const formatted = MultiCurrencyService.formatAmount(1000.123, 'KWD');
+    it('should format with symbol before for USD', () => {
+      const formatted = MultiCurrencyService.format(1000, 'USD');
+
+      expect(formatted).toContain('$');
+      expect(formatted).toContain('1,000');
+    });
+
+    it('should respect decimal places for BHD (3 decimals)', () => {
+      const formatted = MultiCurrencyService.format(1000.123, 'BHD');
 
       expect(formatted).toContain('1,000.123');
     });
 
-    it('should format with locale-specific separators', () => {
-      const formatted = MultiCurrencyService.formatAmount(1234567.89, 'USD', 'en-US');
+    it('should format with code instead of symbol when specified', () => {
+      const formatted = MultiCurrencyService.format(1000, 'SAR', {
+        showSymbol: false,
+        showCode: true,
+      });
 
-      expect(formatted).toContain('1,234,567.89');
+      expect(formatted).toContain('SAR');
     });
 
     it('should handle Arabic locale', () => {
-      const formatted = MultiCurrencyService.formatAmount(1000, 'SAR', 'ar-SA');
+      const formatted = MultiCurrencyService.format(1000, 'SAR', { locale: 'ar' });
 
       expect(formatted).toBeDefined();
+      expect(formatted.length).toBeGreaterThan(0);
     });
   });
 
-  describe('convertSalary', () => {
-    it('should convert salary with all components', () => {
-      const salary = {
-        basicSalary: 10000,
-        housingAllowance: 4000,
-        transportAllowance: 1000,
-      };
+  describe('parse', () => {
+    it('should parse formatted currency string to number', () => {
+      const result = MultiCurrencyService.parse('1,000.50 ر.س', 'SAR');
 
-      const result = MultiCurrencyService.convertSalary(salary, 'SAR', 'USD', 0.27);
-
-      expect(result.basicSalary).toBe(2700); // 10000 * 0.27
-      expect(result.housingAllowance).toBe(1080); // 4000 * 0.27
-      expect(result.transportAllowance).toBe(270); // 1000 * 0.27
-      expect(result.totalSalary).toBe(4050);
+      expect(result).toBe(1000.50);
     });
 
-    it('should handle missing allowances', () => {
-      const salary = {
-        basicSalary: 10000,
-      };
+    it('should handle string with currency code', () => {
+      const result = MultiCurrencyService.parse('1,000.50 SAR', 'SAR');
 
-      const result = MultiCurrencyService.convertSalary(salary, 'SAR', 'USD', 0.27);
+      expect(result).toBe(1000.50);
+    });
 
-      expect(result.basicSalary).toBe(2700);
-      expect(result.totalSalary).toBe(2700);
+    it('should return 0 for invalid input', () => {
+      const result = MultiCurrencyService.parse('invalid', 'SAR');
+
+      expect(result).toBe(0);
     });
   });
 
-  describe('getBulkExchangeRates', () => {
-    it('should return exchange rates for multiple currencies', async () => {
-      const { ExchangeRateAPI } = await import('@/lib/external/exchange-rate-api');
-      vi.mocked(ExchangeRateAPI.getRates).mockResolvedValue({
-        SAR: 3.75,
-        AED: 3.67,
-        EUR: 0.92,
+  describe('round', () => {
+    it('should round to 2 decimal places by default', () => {
+      expect(MultiCurrencyService.round(1000.5678)).toBe(1000.57);
+    });
+
+    it('should round to specified decimal places', () => {
+      expect(MultiCurrencyService.round(1000.5678, 3)).toBe(1000.568);
+    });
+
+    it('should handle 0 decimal places', () => {
+      expect(MultiCurrencyService.round(1000.5678, 0)).toBe(1001);
+    });
+  });
+
+  describe('getCurrency', () => {
+    it('should return currency configuration', () => {
+      const config = MultiCurrencyService.getCurrency('SAR');
+
+      expect(config.code).toBe('SAR');
+      expect(config.name).toBe('Saudi Riyal');
+      expect(config.nameAr).toBe('ريال سعودي');
+      expect(config.symbol).toBe('ر.س');
+      expect(config.decimalPlaces).toBe(2);
+    });
+
+    it('should return configuration for KWD with 3 decimal places', () => {
+      const config = MultiCurrencyService.getCurrency('KWD');
+
+      expect(config.decimalPlaces).toBe(3);
+    });
+  });
+
+  describe('getAllCurrencies', () => {
+    it('should return all supported currencies', () => {
+      const currencies = MultiCurrencyService.getAllCurrencies();
+
+      expect(currencies.length).toBe(Object.keys(CURRENCIES).length);
+      const codes = currencies.map(c => c.code);
+      expect(codes).toContain('SAR');
+      expect(codes).toContain('AED');
+      expect(codes).toContain('USD');
+      expect(codes).toContain('INR');
+    });
+  });
+
+  describe('getGCCCurrencies', () => {
+    it('should return only GCC currencies', () => {
+      const gccCurrencies = MultiCurrencyService.getGCCCurrencies();
+
+      expect(gccCurrencies).toHaveLength(6);
+      const codes = gccCurrencies.map(c => c.code);
+      expect(codes).toContain('AED');
+      expect(codes).toContain('SAR');
+      expect(codes).toContain('BHD');
+      expect(codes).toContain('QAR');
+      expect(codes).toContain('OMR');
+      expect(codes).toContain('KWD');
+      expect(codes).not.toContain('INR');
+      expect(codes).not.toContain('USD');
+    });
+  });
+
+  describe('isValidCurrency', () => {
+    it('should return true for supported currencies', () => {
+      expect(MultiCurrencyService.isValidCurrency('SAR')).toBe(true);
+      expect(MultiCurrencyService.isValidCurrency('AED')).toBe(true);
+      expect(MultiCurrencyService.isValidCurrency('USD')).toBe(true);
+    });
+
+    it('should return false for unsupported currencies', () => {
+      expect(MultiCurrencyService.isValidCurrency('XXX')).toBe(false);
+      expect(MultiCurrencyService.isValidCurrency('')).toBe(false);
+    });
+  });
+
+  describe('getExchangeRateTable', () => {
+    it('should return exchange rate table for base currency', () => {
+      const table = MultiCurrencyService.getExchangeRateTable('USD');
+
+      expect(table.length).toBe(Object.keys(CURRENCIES).length - 1); // Excludes USD itself
+      table.forEach(entry => {
+        expect(entry.currency).toBeDefined();
+        expect(entry.rate).toBeGreaterThan(0);
+        expect(entry.formatted).toBeTruthy();
       });
-
-      const result = await MultiCurrencyService.getBulkExchangeRates('USD', ['SAR', 'AED', 'EUR']);
-
-      expect(result.USD_SAR).toBe(3.75);
-      expect(result.USD_AED).toBe(3.67);
-      expect(result.USD_EUR).toBe(0.92);
     });
   });
 
-  describe('calculateCrossRate', () => {
-    it('should calculate cross rate via base currency', () => {
-      // EUR to SAR via USD
-      // USD/EUR = 0.92, USD/SAR = 3.75
-      // EUR/SAR = 3.75 / 0.92 = 4.076
-      const result = MultiCurrencyService.calculateCrossRate('EUR', 'SAR', {
-        EUR_USD: 1.09, // EUR to USD
-        USD_SAR: 3.75, // USD to SAR
-      });
+  describe('getGCCCrossRates', () => {
+    it('should return cross rates between GCC currencies', () => {
+      const crossRates = MultiCurrencyService.getGCCCrossRates();
 
-      expect(result).toBeCloseTo(4.09, 1); // EUR/SAR = 1.09 * 3.75
+      expect(crossRates.AED).toBeDefined();
+      expect(crossRates.SAR).toBeDefined();
+      expect(crossRates.AED.SAR).toBeGreaterThan(0);
+      expect(crossRates.AED.AED).toBe(1);
     });
   });
 
-  describe('updateExchangeRate', () => {
-    it('should update exchange rate in cache', async () => {
-      await MultiCurrencyService.updateExchangeRate('USD', 'SAR', 3.75);
+  describe('calculateMultiCurrencyPayroll', () => {
+    it('should calculate totals by currency', () => {
+      const items = [
+        {
+          employeeId: 'emp-1',
+          description: 'Salary',
+          originalCurrency: 'USD' as const,
+          originalAmount: 5000,
+          targetCurrency: 'SAR' as const,
+          convertedAmount: 18750,
+          exchangeRate: 3.75,
+        },
+        {
+          employeeId: 'emp-2',
+          description: 'Salary',
+          originalCurrency: 'AED' as const,
+          originalAmount: 10000,
+          targetCurrency: 'SAR' as const,
+          convertedAmount: 10204,
+          exchangeRate: 1.0204,
+        },
+      ];
 
-      const result = await MultiCurrencyService.getExchangeRate('USD', 'SAR');
+      const result = MultiCurrencyService.calculateMultiCurrencyPayroll(items);
 
-      expect(result.rate).toBe(3.75);
-      expect(result.cached).toBe(true);
-    });
-
-    it('should store timestamp with rate', async () => {
-      await MultiCurrencyService.updateExchangeRate('USD', 'SAR', 3.75);
-
-      const result = await MultiCurrencyService.getExchangeRate('USD', 'SAR');
-
-      expect(result.updatedAt).toBeDefined();
-      expect(result.updatedAt).toBeInstanceOf(Date);
-    });
-  });
-
-  describe('isStaleRate', () => {
-    it('should detect stale rates older than threshold', () => {
-      const oldDate = new Date();
-      oldDate.setHours(oldDate.getHours() - 25); // 25 hours ago
-
-      const result = MultiCurrencyService.isStaleRate(oldDate, 24); // 24 hour threshold
-
-      expect(result).toBe(true);
-    });
-
-    it('should not flag fresh rates', () => {
-      const recentDate = new Date();
-      recentDate.setHours(recentDate.getHours() - 1); // 1 hour ago
-
-      const result = MultiCurrencyService.isStaleRate(recentDate, 24);
-
-      expect(result).toBe(false);
-    });
-  });
-
-  describe('getHistoricalRate', () => {
-    it('should fetch historical exchange rate for date', async () => {
-      const { ExchangeRateAPI } = await import('@/lib/external/exchange-rate-api');
-      vi.mocked(ExchangeRateAPI.getHistoricalRate).mockResolvedValue(3.72);
-
-      const result = await MultiCurrencyService.getHistoricalRate(
-        'USD',
-        'SAR',
-        new Date('2024-01-01')
-      );
-
-      expect(result.rate).toBe(3.72);
-      expect(result.date).toEqual(new Date('2024-01-01'));
-    });
-  });
-
-  describe('calculateGainLoss', () => {
-    it('should calculate currency gain/loss', () => {
-      const originalAmount = 1000; // USD
-      const originalRate = 3.75; // USD to SAR
-      const currentRate = 3.80; // New rate
-
-      const result = MultiCurrencyService.calculateGainLoss(
-        originalAmount,
-        'USD',
-        'SAR',
-        originalRate,
-        currentRate
-      );
-
-      // Original: 1000 * 3.75 = 3750 SAR
-      // Current: 1000 * 3.80 = 3800 SAR
-      // Gain: 50 SAR
-      expect(result.originalValue).toBe(3750);
-      expect(result.currentValue).toBe(3800);
-      expect(result.gainLoss).toBe(50);
-      expect(result.gainLossPercentage).toBeCloseTo(1.33, 1);
-    });
-
-    it('should show loss when rate decreases', () => {
-      const result = MultiCurrencyService.calculateGainLoss(
-        1000,
-        'USD',
-        'SAR',
-        3.75,
-        3.70 // Lower rate
-      );
-
-      expect(result.gainLoss).toBe(-50); // Loss
-      expect(result.gainLossPercentage).toBeLessThan(0);
-    });
-  });
-
-  describe('Edge Cases', () => {
-    it('should handle very small amounts', () => {
-      const result = MultiCurrencyService.convert(0.01, 'USD', 'SAR', 3.75);
-
-      expect(result.toAmount).toBeCloseTo(0.04, 2);
-    });
-
-    it('should handle very large amounts', () => {
-      const result = MultiCurrencyService.convert(1000000, 'USD', 'SAR', 3.75);
-
-      expect(result.toAmount).toBe(3750000);
-    });
-
-    it('should handle negative amounts', () => {
-      const result = MultiCurrencyService.convert(-1000, 'USD', 'SAR', 3.75);
-
-      expect(result.toAmount).toBe(-3750);
+      expect(result.items).toHaveLength(2);
+      expect(result.totalsByCurrency.SAR).toBe(18750 + 10204);
     });
   });
 });

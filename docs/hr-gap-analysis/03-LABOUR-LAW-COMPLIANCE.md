@@ -6,8 +6,10 @@
 - [Implementation Roadmap](./05-IMPLEMENTATION-ROADMAP.md)
 - [Module Connections](./06-MODULE-CONNECTIONS.md)
 
-**Last Updated:** December 2025
+**Last Updated:** April 20, 2026
 **Regulatory Sources:** Official government portals and legal advisories
+
+> **UPDATE (April 2026):** AuraOS now has comprehensive labour law compliance implementations across all 7 jurisdictions (UAE, KSA, BH, QA, OM, KW, IN). Key services added: `labour-law.service.ts`, `working-hours-engine.service.ts`, `hijri-calendar.service.ts`, `india-professional-tax.service.ts`. Status columns updated below to reflect current implementation state.
 
 ---
 
@@ -103,37 +105,37 @@ interface EmiratisationTracking {
 
 | Requirement | Description | AuraOS Status |
 |-------------|-------------|---------------|
-| Contract Types | Fixed-term contracts mandatory (max 3 years, renewable) | Partial |
-| Probation Period | Max 6 months; notice 14-30 days during probation | Partial |
-| Employment Categories | Full-time, Part-time, Temporary, Flexible | Implemented |
-| Contract Language | Arabic mandatory; English supplementary | Missing |
-| Contract Registration | MOHRE portal integration | Missing |
+| Contract Types | Fixed-term contracts mandatory (max 3 years, renewable) | ✅ Implemented |
+| Probation Period | Max 6 months; notice 14-30 days during probation | ✅ Implemented |
+| Employment Categories | Full-time, Part-time, Temporary, Flexible | ✅ Implemented |
+| Contract Language | Arabic mandatory; English supplementary | ✅ Implemented (bilingual) |
+| Contract Registration | MOHRE portal integration | ✅ Implemented (via connectors) |
 | Limitation Period | 2 years from termination to file claim (Aug 2024) | N/A |
 
 ### 1.5 Working Hours & Overtime
 
 | Requirement | Rate/Rule | AuraOS Status |
 |-------------|-----------|---------------|
-| Standard Hours | 8 hours/day, 48 hours/week | Partial |
-| Ramadan Hours | 6 hours/day for Muslim employees | Missing |
-| Overtime Cap | Max 2 hours/day | Missing |
-| Overtime Rate (Day) | 125% of hourly wage | Missing |
-| Overtime Rate (Night) | 150% (9pm-4am) | Missing |
-| Friday Work | 150% or day off in lieu | Missing |
+| Standard Hours | 8 hours/day, 48 hours/week | ✅ Implemented |
+| Ramadan Hours | 6 hours/day for Muslim employees | ✅ Implemented (Hijri calendar) |
+| Overtime Cap | Max 2 hours/day | ✅ Implemented |
+| Overtime Rate (Day) | 125% of hourly wage | ✅ Implemented |
+| Overtime Rate (Night) | 150% (9pm-4am) | ✅ Implemented |
+| Friday Work | 150% or day off in lieu | ✅ Implemented |
 
 ### 1.6 Leave Entitlements (UAE)
 
 | Leave Type | Entitlement | AuraOS Status |
 |------------|-------------|---------------|
-| Annual Leave (First Year) | 2 days per month | Missing |
-| Annual Leave (After 1 Year) | 30 days | Missing |
-| Sick Leave | 90 days (15 full, 30 half, 45 unpaid) | Missing |
-| Maternity Leave | 60 days (45 full, 15 half) + 45 unpaid option | Missing |
-| Paternity Leave | 5 days (within 6 months of birth) | Missing |
-| Parental Leave | 5 days (children with disabilities) | Missing |
-| Bereavement | 5 days (spouse), 3 days (others) | Missing |
-| Study Leave | 10 days/year (UAE students, 2+ years service) | Missing |
-| Hajj Leave | 30 days unpaid (once during employment) | Missing |
+| Annual Leave (First Year) | 2 days per month | ✅ Implemented |
+| Annual Leave (After 1 Year) | 30 days | ✅ Implemented |
+| Sick Leave | 90 days (15 full, 30 half, 45 unpaid) | ✅ Implemented |
+| Maternity Leave | 60 days (45 full, 15 half) + 45 unpaid option | ✅ Implemented |
+| Paternity Leave | 5 days (within 6 months of birth) | ✅ Implemented |
+| Parental Leave | 5 days (children with disabilities) | ✅ Implemented |
+| Bereavement | 5 days (spouse), 3 days (others) | ✅ Implemented |
+| Study Leave | 10 days/year (UAE students, 2+ years service) | ✅ Implemented |
+| Hajj Leave | 30 days unpaid (once during employment) | ✅ Implemented |
 
 ### 1.7 End of Service Benefits (EOSB) / Gratuity
 
@@ -267,15 +269,15 @@ interface NitaqatCompliance {
 
 | Leave Type | Entitlement | AuraOS Status |
 |------------|-------------|---------------|
-| Annual Leave (First 5 years) | 21 days | Missing |
-| Annual Leave (After 5 years) | 30 days | Missing |
-| Sick Leave | 30 full + 60 @ 75% + 30 unpaid | Missing |
-| Maternity Leave | 10 weeks (4 before, 6 after) | Missing |
-| Paternity Leave | 3 days | Missing |
-| Marriage Leave | 5 days | Missing |
-| Bereavement | 5 days (spouse/immediate), 3 days (others) | Missing |
-| Hajj Leave | 10-15 days (once, after 2 years) | Missing |
-| Iddah Leave | 4 months 10 days (Muslim widow) | Missing |
+| Annual Leave (First 5 years) | 21 days | ✅ Implemented |
+| Annual Leave (After 5 years) | 30 days | ✅ Implemented |
+| Sick Leave | 30 full + 60 @ 75% + 30 unpaid | ✅ Implemented |
+| Maternity Leave | 10 weeks (4 before, 6 after) | ✅ Implemented |
+| Paternity Leave | 3 days | ✅ Implemented |
+| Marriage Leave | 5 days | ✅ Implemented |
+| Bereavement | 5 days (spouse/immediate), 3 days (others) | ✅ Implemented |
+| Hajj Leave | 10-15 days (once, after 2 years) | ✅ Implemented |
+| Iddah Leave | 4 months 10 days (Muslim widow) | ✅ Implemented |
 
 ### 2.7 EOSB/Gratuity (KSA)
 
@@ -612,44 +614,44 @@ All four national labour codes are now in force as of November 21, 2025:
 
 ---
 
-## Implementation Priority Matrix
+## Implementation Priority Matrix (Updated April 2026)
 
-### Phase 1 - Critical (MENA Launch Ready)
+### Phase 1 - Critical (MENA Launch Ready) — ✅ COMPLETE
 
-| Country | Requirements | Priority | Deadline |
-|---------|--------------|----------|----------|
-| **UAE** | WPS API Integration | P0 | Dec 2025 |
-| **UAE** | EOSB Calculator | P0 | Q1 2025 |
-| **UAE** | Emiratisation Tracking | P1 | Q1 2025 |
-| **KSA** | GOSI Integration | P0 | July 2025 |
-| **KSA** | Mudad WPS | P0 | Q1 2025 |
-| **KSA** | Nitaqat Tracking | P1 | Q2 2025 |
-| **KSA** | Qiwa Contract Authentication | P1 | Oct 2025 |
+| Country | Requirements | Priority | Status |
+|---------|--------------|----------|--------|
+| **UAE** | WPS API Integration | P0 | ✅ Implemented |
+| **UAE** | EOSB Calculator | P0 | ✅ Implemented |
+| **UAE** | Emiratisation Tracking | P1 | ✅ Implemented |
+| **KSA** | GOSI Integration | P0 | ✅ Implemented |
+| **KSA** | Mudad WPS | P0 | ✅ Implemented |
+| **KSA** | Nitaqat Tracking | P1 | ✅ Implemented |
+| **KSA** | Qiwa Contract Authentication | P1 | ✅ Implemented (via connectors) |
 
-### Phase 2 - High Priority (GCC Expansion)
+### Phase 2 - High Priority (GCC Expansion) — ✅ COMPLETE
 
-| Country | Requirements | Priority | Timeline |
-|---------|--------------|----------|----------|
-| **Bahrain** | SIO End-of-Service Contributions | P1 | Active |
-| **Bahrain** | GOSI Integration | P1 | Q2 2025 |
-| **Qatar** | WPS/SIF Generation | P1 | Q2 2025 |
-| **Qatar** | Minimum Wage Validation | P2 | Q2 2025 |
-| **Oman** | SPF Integration | P1 | Q2 2025 |
-| **Oman** | Non-Omani Savings System | P2 | Mid-2026 |
-| **Kuwait** | PIFSS Integration | P1 | Q3 2025 |
-| **Kuwait** | AS'HAL Portal | P1 | Nov 2025 |
+| Country | Requirements | Priority | Status |
+|---------|--------------|----------|--------|
+| **Bahrain** | SIO End-of-Service Contributions | P1 | ✅ Implemented |
+| **Bahrain** | GOSI Integration | P1 | ✅ Implemented |
+| **Qatar** | WPS/SIF Generation | P1 | ✅ Implemented |
+| **Qatar** | Minimum Wage Validation | P2 | ✅ Implemented |
+| **Oman** | SPF Integration | P1 | ✅ Implemented |
+| **Oman** | Non-Omani Savings System | P2 | ✅ Implemented |
+| **Kuwait** | PIFSS Integration | P1 | ✅ Implemented |
+| **Kuwait** | AS'HAL Portal | P1 | ✅ Implemented (via connectors) |
 
-### Phase 3 - India Market Entry
+### Phase 3 - India Market Entry — ✅ COMPLETE
 
-| Requirement | Priority | Timeline |
-|-------------|----------|----------|
-| EPF/EPS Calculations | P0 | Q2 2025 |
-| ESI Calculations | P0 | Q2 2025 |
-| TDS Engine (Both Regimes) | P0 | Q2 2025 |
-| Professional Tax (All States) | P1 | Q2 2025 |
-| Gratuity Calculator | P1 | Q2 2025 |
-| Form 16/12BA Generation | P1 | Q3 2025 |
-| ECR File Generation | P1 | Q3 2025 |
+| Requirement | Priority | Status |
+|-------------|----------|--------|
+| EPF/EPS Calculations | P0 | ✅ Implemented |
+| ESI Calculations | P0 | ✅ Implemented |
+| TDS Engine (Both Regimes) | P0 | ✅ Implemented |
+| Professional Tax (17 States) | P1 | ✅ Implemented |
+| Gratuity Calculator | P1 | ✅ Implemented |
+| Form 16/12BA Generation | P1 | ✅ Implemented |
+| ECR File Generation | P1 | ✅ Implemented |
 
 ---
 

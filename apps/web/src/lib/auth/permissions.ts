@@ -33,9 +33,19 @@ export enum Resource {
   AUDIT_LOGS = 'audit_logs',
   SYSTEM_SETTINGS = 'system_settings',
 
-  // Payroll
+  // Payroll & Compliance
   PAYROLL = 'payroll',
   ATTENDANCE = 'attendance',
+  COMPLIANCE = 'compliance',
+
+  // Recruitment
+  RECRUITMENT = 'recruitment',
+
+  // Analytics & Reporting
+  ANALYTICS = 'analytics',
+
+  // Integrations
+  INTEGRATIONS = 'integrations',
 
   // Master Data
   MASTER_DATA = 'master_data',
