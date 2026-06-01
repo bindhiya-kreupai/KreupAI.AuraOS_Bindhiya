@@ -54,6 +54,15 @@ export enum Resource {
   CITIES = 'cities',
   CURRENCIES = 'currencies',
   LANGUAGES = 'languages',
+
+  // Workforce modules
+  COMPENSATION = 'compensation',
+  LEAVE = 'leave',
+  ENGAGEMENT = 'engagement',
+  LEARNING = 'learning',
+  TRAVEL = 'travel',
+  BENEFITS = 'benefits',
+  SYSTEM = 'system',
 }
 
 export enum Action {
