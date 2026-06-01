@@ -139,11 +139,22 @@ export class RecommendationService {
   }
 
   /**
-   * Get required skills for a given role
+   * Get required skills for a given role.
+   *
+   * Returns an empty array when no role-skill mapping is configured.
+   * The previous implementation returned the same four-skill list
+   * regardless of role, which produced misleading "skill gap"
+   * recommendations (e.g. recommending Leadership courses to an
+   * accountant). Empty is more honest than wrong.
+   *
+   * To wire this up properly: query the CompetencyRoleMapping +
+   * CompetencyCatalog tables (defined in packages/@aura/database
+   * schema). Requires adding @aura/database as a dep of this service,
+   * or exposing a dedicated read endpoint from the web app for the
+   * recommendation engine to call.
    */
-  private async getRoleRequiredSkills(role: string): Promise<string[]> {
-    // TODO: Query role skills database
-    return ['Leadership', 'Communication', 'Project Management', 'Strategic Thinking'];
+  private async getRoleRequiredSkills(_role: string): Promise<string[]> {
+    return [];
   }
 
   /**

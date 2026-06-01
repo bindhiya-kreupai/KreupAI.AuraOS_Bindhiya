@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -50,8 +50,8 @@ export default function KuwaitPIFSSPage() {
           setReferenceData(data.data);
         }
       } catch (error) {
-            console.error('Error:', error);
-              }
+        console.error('Error:', error);
+      }
     };
     fetchReferenceData();
   }, []);
@@ -59,11 +59,43 @@ export default function KuwaitPIFSSPage() {
   const handleCalculate = async () => {
     setLoading(true);
     try {
-      // Mock employee data
+      // FIXME(#36): These three employees are hardcoded fixture data, not the
+      // tenant's real workforce. The Kuwait PIFSS calculator therefore returns
+      // numbers grounded in fake basic salaries / nationalities / sectors —
+      // useful for UI verification but NOT for compliance submission.
+      //
+      // To wire to real data, expose an aggregation endpoint that joins:
+      //   Employee
+      //     + EmployeeComplianceDetails (nationality, countryCode='KW')
+      //     + Compensation (basicSalary)
+      //     + a yet-to-be-added Sector field (PRIVATE | GOVERNMENT) on the
+      //       compliance details or company profile
+      // Then call it here instead of using mockEmployees.
       const mockEmployees = [
-        { employeeId: '1', employeeName: 'Abdullah Al-Mutairi', nationality: 'KW', sector: 'PRIVATE', basicSalary: 1200, socialAllowance: 150 },
-        { employeeId: '2', employeeName: 'Noura Al-Sabah', nationality: 'KW', sector: 'GOVERNMENT', basicSalary: 1500, socialAllowance: 200 },
-        { employeeId: '3', employeeName: 'Ahmed Al-Rashid', nationality: 'SA', sector: 'PRIVATE', basicSalary: 1000, socialAllowance: 0 },
+        {
+          employeeId: '1',
+          employeeName: 'Abdullah Al-Mutairi',
+          nationality: 'KW',
+          sector: 'PRIVATE',
+          basicSalary: 1200,
+          socialAllowance: 150,
+        },
+        {
+          employeeId: '2',
+          employeeName: 'Noura Al-Sabah',
+          nationality: 'KW',
+          sector: 'GOVERNMENT',
+          basicSalary: 1500,
+          socialAllowance: 200,
+        },
+        {
+          employeeId: '3',
+          employeeName: 'Ahmed Al-Rashid',
+          nationality: 'SA',
+          sector: 'PRIVATE',
+          basicSalary: 1000,
+          socialAllowance: 0,
+        },
       ];
 
       const response = await fetch('/api/compliance/kuwait-pifss', {
@@ -81,8 +113,8 @@ export default function KuwaitPIFSSPage() {
         setTotals(data.data.totals);
       }
     } catch (error) {
-            console.error('Error:', error);
-          } finally {
+      console.error('Error:', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -92,14 +124,19 @@ export default function KuwaitPIFSSPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <Link href="/dashboard/payroll-compliance" className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2">
+          <Link
+            href="/dashboard/payroll-compliance"
+            className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2"
+          >
             <ArrowLeft className="w-4 h-4" /> Back to Compliance
           </Link>
           <h1 className="text-2xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
             <Shield className="w-7 h-7 text-blue-500" />
             Kuwait PIFSS - Public Institution for Social Security
             <span className="text-sm font-normal text-slate-500 mr-2">|</span>
-            <span className="text-lg font-semibold text-slate-600 dark:text-slate-400" dir="rtl">المؤسسة العامة للتأمينات الاجتماعية</span>
+            <span className="text-lg font-semibold text-slate-600 dark:text-slate-400" dir="rtl">
+              المؤسسة العامة للتأمينات الاجتماعية
+            </span>
           </h1>
           <p className="text-slate-500 text-sm mt-1">
             Calculate social security contributions for Kuwaiti and GCC employees
@@ -116,8 +153,18 @@ export default function KuwaitPIFSSPage() {
       {/* Tabs */}
       <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800">
         {[
-          { id: 'calculate', label: 'Calculate Contributions', labelAr: 'حساب المساهمات', icon: Calculator },
-          { id: 'rates', label: 'Contribution Rates', labelAr: 'معدلات المساهمة', icon: TrendingUp },
+          {
+            id: 'calculate',
+            label: 'Calculate Contributions',
+            labelAr: 'حساب المساهمات',
+            icon: Calculator,
+          },
+          {
+            id: 'rates',
+            label: 'Contribution Rates',
+            labelAr: 'معدلات المساهمة',
+            icon: TrendingUp,
+          },
           { id: 'schemes', label: 'Insurance Schemes', labelAr: 'أنظمة التأمين', icon: FileText },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -133,7 +180,9 @@ export default function KuwaitPIFSSPage() {
             >
               <Icon className="w-4 h-4" />
               <span className="font-medium">{tab.label}</span>
-              <span className="text-sm opacity-75" dir="rtl">({tab.labelAr})</span>
+              <span className="text-sm opacity-75" dir="rtl">
+                ({tab.labelAr})
+              </span>
             </button>
           );
         })}
@@ -175,34 +224,59 @@ export default function KuwaitPIFSSPage() {
                   </thead>
                   <tbody>
                     {results.map((result) => (
-                      <tr key={result.employeeId} className="border-t border-slate-200 dark:border-slate-700">
+                      <tr
+                        key={result.employeeId}
+                        className="border-t border-slate-200 dark:border-slate-700"
+                      >
                         <td className="px-4 py-2 font-medium">{result.employeeName}</td>
                         <td className="px-4 py-2">{result.nationality}</td>
                         <td className="px-4 py-2">
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            result.sector === 'GOVERNMENT'
-                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                              : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                          }`}>
+                          <span
+                            className={`px-2 py-1 rounded text-xs ${
+                              result.sector === 'GOVERNMENT'
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                                : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                            }`}
+                          >
                             {result.sector}
                           </span>
                         </td>
-                        <td className="px-4 py-2 text-right">KWD {result.basicSalary.toFixed(2)}</td>
-                        <td className="px-4 py-2 text-right">KWD {result.socialAllowance.toFixed(2)}</td>
-                        <td className="px-4 py-2 text-right">KWD {result.contributorySalary.toFixed(2)}</td>
-                        <td className="px-4 py-2 text-right">KWD {result.contribution.employeeShare.toFixed(2)}</td>
-                        <td className="px-4 py-2 text-right">KWD {result.contribution.employerShare.toFixed(2)}</td>
-                        <td className="px-4 py-2 text-right font-semibold">KWD {result.contribution.totalContribution.toFixed(2)}</td>
+                        <td className="px-4 py-2 text-right">
+                          KWD {result.basicSalary.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          KWD {result.socialAllowance.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          KWD {result.contributorySalary.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          KWD {result.contribution.employeeShare.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          KWD {result.contribution.employerShare.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-right font-semibold">
+                          KWD {result.contribution.totalContribution.toFixed(2)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                   {totals && (
                     <tfoot className="bg-slate-50 dark:bg-slate-900 font-semibold">
                       <tr>
-                        <td colSpan={6} className="px-4 py-2">Total</td>
-                        <td className="px-4 py-2 text-right">KWD {totals.totalEmployeeContribution.toFixed(2)}</td>
-                        <td className="px-4 py-2 text-right">KWD {totals.totalEmployerContribution.toFixed(2)}</td>
-                        <td className="px-4 py-2 text-right">KWD {totals.totalContribution.toFixed(2)}</td>
+                        <td colSpan={6} className="px-4 py-2">
+                          Total
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          KWD {totals.totalEmployeeContribution.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          KWD {totals.totalEmployerContribution.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          KWD {totals.totalContribution.toFixed(2)}
+                        </td>
                       </tr>
                     </tfoot>
                   )}
@@ -227,15 +301,21 @@ export default function KuwaitPIFSSPage() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-slate-600 dark:text-slate-400">Employee Share:</span>
-                  <span className="font-semibold">{referenceData.rates.PRIVATE.employee * 100}%</span>
+                  <span className="font-semibold">
+                    {referenceData.rates.PRIVATE.employee * 100}%
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600 dark:text-slate-400">Employer Share:</span>
-                  <span className="font-semibold">{referenceData.rates.PRIVATE.employer * 100}%</span>
+                  <span className="font-semibold">
+                    {referenceData.rates.PRIVATE.employer * 100}%
+                  </span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
                   <span className="text-slate-900 dark:text-white font-medium">Total Rate:</span>
-                  <span className="font-bold text-blue-600">{referenceData.rates.PRIVATE.total * 100}%</span>
+                  <span className="font-bold text-blue-600">
+                    {referenceData.rates.PRIVATE.total * 100}%
+                  </span>
                 </div>
               </div>
             </div>
@@ -250,22 +330,30 @@ export default function KuwaitPIFSSPage() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-slate-600 dark:text-slate-400">Employee Share:</span>
-                  <span className="font-semibold">{referenceData.rates.GOVERNMENT.employee * 100}%</span>
+                  <span className="font-semibold">
+                    {referenceData.rates.GOVERNMENT.employee * 100}%
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600 dark:text-slate-400">Employer Share:</span>
-                  <span className="font-semibold">{referenceData.rates.GOVERNMENT.employer * 100}%</span>
+                  <span className="font-semibold">
+                    {referenceData.rates.GOVERNMENT.employer * 100}%
+                  </span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
                   <span className="text-slate-900 dark:text-white font-medium">Total Rate:</span>
-                  <span className="font-bold text-green-600">{referenceData.rates.GOVERNMENT.total * 100}%</span>
+                  <span className="font-bold text-green-600">
+                    {referenceData.rates.GOVERNMENT.total * 100}%
+                  </span>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
-            <h4 className="font-medium text-slate-900 dark:text-white mb-2">Contributory Salary Components</h4>
+            <h4 className="font-medium text-slate-900 dark:text-white mb-2">
+              Contributory Salary Components
+            </h4>
             <p className="text-sm text-slate-600 dark:text-slate-400">
               Contributory salary = Basic salary + Social allowance (if applicable)
             </p>
@@ -277,16 +365,17 @@ export default function KuwaitPIFSSPage() {
       {activeTab === 'schemes' && referenceData && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {referenceData.schemes.map((scheme: any) => (
-            <div key={scheme.id} className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
+            <div
+              key={scheme.id}
+              className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6"
+            >
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                 {scheme.name}
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-3" dir="rtl">
                 {scheme.nameAr}
               </p>
-              <p className="text-sm text-slate-700 dark:text-slate-300">
-                {scheme.description}
-              </p>
+              <p className="text-sm text-slate-700 dark:text-slate-300">{scheme.description}</p>
             </div>
           ))}
         </div>
@@ -297,10 +386,13 @@ export default function KuwaitPIFSSPage() {
         <div className="flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
           <div className="flex-1">
-            <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-1">Coverage Information</h4>
+            <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-1">
+              Coverage Information
+            </h4>
             <p className="text-sm text-blue-800 dark:text-blue-300">
-              Kuwait PIFSS provides comprehensive social security coverage including pension, disability, death benefits, and occupational hazards insurance.
-              Different rates apply for private and government sector employees.
+              Kuwait PIFSS provides comprehensive social security coverage including pension,
+              disability, death benefits, and occupational hazards insurance. Different rates apply
+              for private and government sector employees.
             </p>
           </div>
         </div>
@@ -308,4 +400,3 @@ export default function KuwaitPIFSSPage() {
     </div>
   );
 }
-
