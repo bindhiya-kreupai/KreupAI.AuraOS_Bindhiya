@@ -430,12 +430,21 @@ export class WpsService {
   /**
    * Submit a validated WPS file to MoHRE portal.
    *
-   * Production implementation would:
+   * Production implementation must:
    *  1. Encrypt the SIF file
-   *  2. POST to MoHRE WPS gateway API
-   *  3. Parse synchronous ACK or poll for async response
+   *  2. POST to MoHRE WPS gateway API (or the configured bank gateway)
+   *  3. Persist the acknowledgement reference returned by the gateway
    *
-   * This stub simulates a successful submission.
+   * Until the real integration is wired (issue #34), this method refuses
+   * to mark a submission as SUBMITTED. The previous implementation
+   * generated a fake `MOL${Date.now()}` reference number and stored it
+   * as if MoHRE had acknowledged the file — that's a compliance failure
+   * because employees would see a reference number that the Ministry has
+   * no record of.
+   *
+   * Set WPS_MOHRE_INTEGRATION_ENABLED=true only after the real client is
+   * implemented. The submission then stays at VALIDATED until the real
+   * call returns an acknowledgement.
    */
   async submitToMOHRE(submissionId: string, submittedByUserId: string): Promise<WpsSubmissionResult> {
     WpsSubmitSchema.parse({ submissionId, submittedByUserId });
@@ -454,41 +463,40 @@ export class WpsService {
       );
     }
 
-    // Simulate MoHRE submission
-    // TODO: Replace with actual MoHRE API call
-    //   const mohrePaylod = await fs.readFile(submission.sifFileUrl);
-    //   const response = await mohreClient.post('/wps/upload', { file: payload, ... });
-    const mockReferenceNumber = `MOL${Date.now()}`;
+    if (process.env.WPS_MOHRE_INTEGRATION_ENABLED !== 'true') {
+      // Audit the refused attempt so operators can see who tried, when, and against which file.
+      await prisma.wPSAuditLog.create({
+        data: {
+          tenantId: submission.tenantId,
+          submissionId: submission.id,
+          action: 'SUBMIT',
+          actionType: 'SUBMISSION',
+          description:
+            'Refused: WPS_MOHRE_INTEGRATION_ENABLED is not set. ' +
+            'Real MoHRE/bank integration must be wired before any submission can be marked as SUBMITTED. ' +
+            'See issue #34.',
+          userId: submittedByUserId,
+          ipAddress: null,
+          userAgent: null,
+          timestamp: new Date(),
+        } as any,
+      });
 
-    await prisma.wPSSubmission.update({
-      where: { id: submissionId },
-      data: {
-        status: 'SUBMITTED',
-        submittedBy: submittedByUserId,
-        submittedAt: new Date(),
-        molReferenceNumber: mockReferenceNumber,
-      },
-    });
+      throw new Error(
+        'WPS MoHRE submission is not configured. The previous implementation generated a fake ' +
+          'reference number — that has been removed. Wire the real MoHRE/bank gateway client and ' +
+          'set WPS_MOHRE_INTEGRATION_ENABLED=true to enable submissions. See issue #34.'
+      );
+    }
 
-    await prisma.wPSAuditLog.create({
-      data: {
-        tenantId: submission.tenantId,
-        submissionId: submission.id,
-        action: 'SUBMIT',
-        actionType: 'SUBMISSION',
-        description: `Submitted to MoHRE — Reference: ${mockReferenceNumber}`,
-        userId: submittedByUserId,
-        ipAddress: null,
-        userAgent: null,
-        timestamp: new Date(),
-      } as any,
-    });
-
-    return {
-      success: true,
-      message: 'WPS file submitted to MoHRE successfully',
-      referenceNumber: mockReferenceNumber,
-    };
+    // TODO(#34): Real MoHRE client call goes here.
+    //   const sifFile = await fs.readFile(submission.sifFileUrl);
+    //   const ack = await mohreClient.upload({ sif: sifFile, payrollMonth, salaryMonth });
+    //   referenceNumber = ack.referenceNumber;
+    throw new Error(
+      'WPS MoHRE client is not yet implemented even though WPS_MOHRE_INTEGRATION_ENABLED is true. ' +
+        'Implement the gateway client in this method before enabling the flag. See issue #34.'
+    );
   }
 
   /**
