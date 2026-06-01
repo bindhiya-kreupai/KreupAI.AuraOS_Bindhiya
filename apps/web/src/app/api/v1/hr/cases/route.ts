@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
@@ -108,7 +109,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       );
     }
 
-    const caseNumber = `ER-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const caseNumber = `ER-${Date.now()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
 
     const erCase = await prisma.eRCase.create({
       data: {

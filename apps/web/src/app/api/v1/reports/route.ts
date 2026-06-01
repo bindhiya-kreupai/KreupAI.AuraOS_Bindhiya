@@ -13,7 +13,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           error: {
             code: 'E4030',
             message: 'Forbidden: missing reports:read permission',
-            messageAr: 'ممنوع',
+            messageAr: 'ممنوع: صلاحية قراءة التقارير غير متوفرة',
           },
         },
         { status: 403 }
@@ -37,14 +37,14 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user, permissions } = context;
-    if (!permissions.includes('reports:create')) {
+    if (!permissions.includes('reports:write') && !permissions.includes('reports:create')) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: 'E4030',
-            message: 'Forbidden: missing reports:create permission',
-            messageAr: 'ممنوع',
+            message: 'Forbidden: missing reports:write permission',
+            messageAr: 'ممنوع: صلاحية كتابة التقارير غير متوفرة',
           },
         },
         { status: 403 }

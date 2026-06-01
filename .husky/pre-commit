@@ -1,5 +1,12 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Run lint-staged
+# Phase 0 #26 — scan staged content for committed secrets before letting
+# lint-staged run. Cheap, no external dependencies. If this fires on a
+# real secret, rotate it AND remove from history; the rotation runbook
+# is at docs/runbooks/ROLLBACK.md (and the secrets manager pattern at
+# docs/SECRETS.md).
+bash scripts/scan-staged-for-secrets.sh
+
+# Run lint-staged (eslint --fix + prettier --write)
 pnpm lint-staged

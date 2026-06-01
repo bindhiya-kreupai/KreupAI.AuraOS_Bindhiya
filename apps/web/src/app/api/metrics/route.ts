@@ -5,7 +5,9 @@
  * This is a protected endpoint that requires authentication.
  */
 
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 import { prisma } from '@aura/database';
 import { redis } from '@/lib/cache/redis';
 import { queryMonitor } from '@/lib/monitoring/query-monitor';
@@ -22,12 +24,14 @@ interface MetricValue {
 
 /**
  * GET /api/metrics
- * Returns application metrics in Prometheus format or JSON
+ * Returns application metrics in Prometheus format or JSON (auth: metrics:read)
+ *
+ * Prometheus scrapers should authenticate using a service-account bearer token
+ * granted the `metrics:read` permission. Do not expose this endpoint publicly.
  */
-export async function GET(request: Request) {
-  const startTime = Date.now();
-
-  try {
+export const GET = createProtectedRoute(
+  async (request: NextRequest, _ctx) => {
+    const startTime = Date.now();
     const url = new URL(request.url);
     const format = url.searchParams.get('format') || 'json';
 
@@ -218,15 +222,9 @@ export async function GET(request: Request) {
         {} as Record<string, { value: number; type: string; help?: string }>
       ),
     });
-  } catch (error) {
-    logger.error({ error }, 'Metrics collection failed');
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to collect metrics',
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 }
-    );
+  },
+  {
+    requiredPermissions: ['metrics:read'],
+    rateLimit: 'API_USER',
   }
-}
+);

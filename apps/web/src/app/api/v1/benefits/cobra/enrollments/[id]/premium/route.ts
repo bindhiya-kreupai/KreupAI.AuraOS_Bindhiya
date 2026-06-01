@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { withEnhancedAuth } from '@/lib/auth';
 
 // Tenant isolation is enforced via tenantId extracted from auth context
@@ -113,7 +114,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       transactionId: `TXN-${Date.now()}`,
       status: 'PROCESSED',
       gracePeriodExtendedTo: null,
-      receiptNumber: `RCP-${Math.floor(Math.random() * 900000) + 100000}`,
+      receiptNumber: `RCP-${crypto.randomBytes(3).toString('hex').toUpperCase()}`,
       processedAt: new Date().toISOString(),
       createdAt: new Date().toISOString(),
     };

@@ -3,25 +3,25 @@
  * Phase 4: Enterprise Expansion - Integration Marketplace
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { IntegrationRegistryService, IntegrationConnectionService } from '@/lib/services/integrations';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
+import {
+  IntegrationRegistryService,
+  IntegrationConnectionService,
+} from '@/lib/services/integrations';
 
 /**
  * POST /api/integrations
- * Manage integrations
+ * Manage integrations (auth: integrations:write)
+ *
+ * Tenant scoping: tenantId is ALWAYS taken from the authenticated session.
+ * Any tenantId in the request body is overridden.
  */
-export async function POST(request: NextRequest) {
-  try {
+export const POST = createProtectedRoute(
+  async (request: NextRequest, { auth }) => {
     const body = await request.json();
-
-    // Validate required fields
-    if (!body.tenantId) {
-      return NextResponse.json(
-        { error: 'tenantId is required', errorAr: 'معرف المستأجر مطلوب' },
-        { status: 400 }
-      );
-    }
+    body.tenantId = auth!.tenantId;
 
     const action = body.action || 'connect';
 
@@ -71,7 +71,10 @@ export async function POST(request: NextRequest) {
         // Update configuration
         if (!body.connectionId || !body.configuration) {
           return NextResponse.json(
-            { error: 'connectionId and configuration are required', errorAr: 'معرف الاتصال والإعدادات مطلوبان' },
+            {
+              error: 'connectionId and configuration are required',
+              errorAr: 'معرف الاتصال والإعدادات مطلوبان',
+            },
             { status: 400 }
           );
         }
@@ -95,7 +98,9 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const connection_test = await IntegrationConnectionService.getConnectionById(body.connectionId);
+        const connection_test = await IntegrationConnectionService.getConnectionById(
+          body.connectionId
+        );
         if (!connection_test) {
           return NextResponse.json(
             { error: 'Connection not found', errorAr: 'الاتصال غير موجود' },
@@ -114,7 +119,10 @@ export async function POST(request: NextRequest) {
         // Start sync job
         if (!body.connectionId || !body.entity) {
           return NextResponse.json(
-            { error: 'connectionId and entity are required', errorAr: 'معرف الاتصال والكيان مطلوبان' },
+            {
+              error: 'connectionId and entity are required',
+              errorAr: 'معرف الاتصال والكيان مطلوبان',
+            },
             { status: 400 }
           );
         }
@@ -136,7 +144,10 @@ export async function POST(request: NextRequest) {
         // Create webhook
         if (!body.connectionId || !body.webhook) {
           return NextResponse.json(
-            { error: 'connectionId and webhook config are required', errorAr: 'معرف الاتصال وإعدادات الـ Webhook مطلوبان' },
+            {
+              error: 'connectionId and webhook config are required',
+              errorAr: 'معرف الاتصال وإعدادات الـ Webhook مطلوبان',
+            },
             { status: 400 }
           );
         }
@@ -157,25 +168,23 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-        return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to process integration',
-        errorAr: 'فشل في معالجة التكامل',
-      },
-      { status: 500 }
-    );
+  },
+  {
+    requiredPermissions: ['integrations:write'],
+    rateLimit: 'API_USER',
   }
-}
+);
 
 /**
  * GET /api/integrations
- * Get integrations catalog or connections
+ * Get integrations catalog or connections (auth: integrations:read)
+ *
+ * Tenant scoping: tenantId is ALWAYS taken from the authenticated session.
  */
-export async function GET(request: NextRequest) {
-  try {
+export const GET = createProtectedRoute(
+  async (request: NextRequest, { auth }) => {
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId');
+    const tenantId = auth!.tenantId;
     const type = searchParams.get('type') || 'catalog'; // 'catalog' | 'connections' | 'categories' | 'popular'
     const category = searchParams.get('category');
     const search = searchParams.get('search');
@@ -342,10 +351,9 @@ export async function GET(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-        return NextResponse.json(
-      { error: 'Failed to fetch integration data', errorAr: 'فشل في جلب بيانات التكامل' },
-      { status: 500 }
-    );
+  },
+  {
+    requiredPermissions: ['integrations:read'],
+    rateLimit: 'API_USER',
   }
-}
+);

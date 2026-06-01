@@ -1,24 +1,12 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { withEnhancedAuth } from '@/lib/auth';
 import { withAudit } from '@/lib/middleware/audit.middleware';
 import { AuditAction } from '@/lib/audit/audit.service';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  const { user, permissions } = context;
-  if (!permissions.includes('admin/api-keys:read')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing admin/api-keys:read permission',
-          messageAr: 'ممنوع',
-        },
-      },
-      { status: 403 }
-    );
-  }
+  const { user } = context;
   const _tenantId = user.tenantId;
 
   const apiKeys = [
@@ -97,11 +85,17 @@ export const POST = withAudit(
 
     const body = await request.json();
 
+    // API key MUST come from a CSPRNG; Math.random() is predictable and unsafe for tokens.
+    // 32 bytes -> 64 hex chars -> ~256 bits of entropy.
+    const keyBytes = crypto.randomBytes(32).toString('hex');
+    const keySecret = `aura_live_${keyBytes}`;
+    const keyPrefix = `aura_live_${keyBytes.slice(0, 4)}...`;
+
     const newKey = {
       id: 'key-005',
       name: body.name || 'New API Key',
-      key: 'aura_live_' + Math.random().toString(36).substring(2, 34),
-      prefix: 'aura_live_' + Math.random().toString(36).substring(2, 6) + '...',
+      key: keySecret,
+      prefix: keyPrefix,
       status: 'active',
       permissions: body.permissions || ['employees:read'],
       createdAt: new Date().toISOString(),

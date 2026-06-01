@@ -98,20 +98,7 @@ const mockAssets = [
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, permissions } = context;
-    if (!permissions.includes('admin/assets:read')) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'E4030',
-            message: 'Forbidden: missing admin/assets:read permission',
-            messageAr: 'ممنوع',
-          },
-        },
-        { status: 403 }
-      );
-    }
+    const { user } = context;
     const _tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category') || undefined;
@@ -170,20 +157,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, permissions } = context;
-    if (!permissions.includes('admin/assets:create')) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'E4030',
-            message: 'Forbidden: missing admin/assets:create permission',
-            messageAr: 'ممنوع',
-          },
-        },
-        { status: 403 }
-      );
-    }
+    const { user } = context;
     const tenantId = user.tenantId;
     const body = await request.json();
     const { name, category, serialNumber, purchaseDate, value } = body;
@@ -227,7 +201,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     }
 
     const year = new Date().getFullYear().toString().slice(-2);
-    const randomNum = Math.floor(Math.random() * 9000) + 1000;
+    // 4 hex chars from a CSPRNG — replaces Math.random which had ~9000-value collision risk.
+    const randomNum = crypto.randomUUID().slice(0, 4).toUpperCase();
 
     const newAsset = {
       id: `asset-${crypto.randomUUID().slice(0, 8)}`,

@@ -57,14 +57,17 @@ export const PUT = withAudit(
   withEnhancedAuth(async (request: NextRequest, context: any) => {
     try {
       const { user, permissions } = context;
-      if (!permissions.includes('recruitment:update')) {
+      if (
+        !permissions.includes('recruitment:write') &&
+        !permissions.includes('recruitment:update')
+      ) {
         return NextResponse.json(
           {
             success: false,
             error: {
               code: 'E4030',
-              message: 'Forbidden: missing recruitment:update permission',
-              messageAr: 'ممنوع',
+              message: 'Forbidden: missing recruitment:write permission',
+              messageAr: 'ممنوع: صلاحية كتابة التوظيف غير متوفرة',
             },
           },
           { status: 403 }

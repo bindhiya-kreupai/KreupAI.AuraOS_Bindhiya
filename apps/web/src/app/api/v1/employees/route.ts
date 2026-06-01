@@ -81,9 +81,9 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
           error: {
             code: 'E4030',
             message: 'Forbidden: missing employees:read permission',
-            messageAr: 'ممنوع',
+            messageAr: 'ممنوع: صلاحية قراءة الموظفين غير متوفرة',
           },
-        },
+        } satisfies ApiResponse,
         { status: 403 }
       );
     }
@@ -184,16 +184,16 @@ export const POST = auditMiddleware.createEmployee(
   withEnhancedAuth(async (request: NextRequest, context) => {
     try {
       const { user, permissions } = context;
-      if (!permissions.includes('employees:create')) {
+      if (!permissions.includes('employees:write') && !permissions.includes('employees:create')) {
         return NextResponse.json(
           {
             success: false,
             error: {
               code: 'E4030',
-              message: 'Forbidden: missing employees:create permission',
-              messageAr: 'ممنوع',
+              message: 'Forbidden: missing employees:write permission',
+              messageAr: 'ممنوع: صلاحية كتابة الموظفين غير متوفرة',
             },
-          },
+          } satisfies ApiResponse,
           { status: 403 }
         );
       }
