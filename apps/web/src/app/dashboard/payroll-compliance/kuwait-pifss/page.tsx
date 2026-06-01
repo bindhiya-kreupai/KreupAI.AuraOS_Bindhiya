@@ -59,50 +59,31 @@ export default function KuwaitPIFSSPage() {
   const handleCalculate = async () => {
     setLoading(true);
     try {
-      // FIXME(#36): These three employees are hardcoded fixture data, not the
-      // tenant's real workforce. The Kuwait PIFSS calculator therefore returns
-      // numbers grounded in fake basic salaries / nationalities / sectors —
-      // useful for UI verification but NOT for compliance submission.
-      //
-      // To wire to real data, expose an aggregation endpoint that joins:
-      //   Employee
-      //     + EmployeeComplianceDetails (nationality, countryCode='KW')
-      //     + Compensation (basicSalary)
-      //     + a yet-to-be-added Sector field (PRIVATE | GOVERNMENT) on the
-      //       compliance details or company profile
-      // Then call it here instead of using mockEmployees.
-      const mockEmployees = [
-        {
-          employeeId: '1',
-          employeeName: 'Abdullah Al-Mutairi',
-          nationality: 'KW',
-          sector: 'PRIVATE',
-          basicSalary: 1200,
-          socialAllowance: 150,
-        },
-        {
-          employeeId: '2',
-          employeeName: 'Noura Al-Sabah',
-          nationality: 'KW',
-          sector: 'GOVERNMENT',
-          basicSalary: 1500,
-          socialAllowance: 200,
-        },
-        {
-          employeeId: '3',
-          employeeName: 'Ahmed Al-Rashid',
-          nationality: 'SA',
-          sector: 'PRIVATE',
-          basicSalary: 1000,
-          socialAllowance: 0,
-        },
-      ];
+      // Phase 2 #36: fetch real eligible employees for this tenant.
+      // Previously the 3-employee fixture array lived here as a FIXME.
+      // The aggregation endpoint joins Employee + EmployeeComplianceDetails
+      // + EmployeeSalaryStructure under the eligibility criteria documented
+      // at /api/v1/payroll-compliance/kuwait/eligible-employees.
+      const eligibleRes = await fetch('/api/v1/payroll-compliance/kuwait/eligible-employees');
+      if (!eligibleRes.ok) {
+        setResults([]);
+        setTotals(null);
+        console.error('Eligible-employees endpoint returned', eligibleRes.status);
+        return;
+      }
+      const eligibleBody = await eligibleRes.json();
+      const employees = eligibleBody?.data?.employees ?? [];
+      if (employees.length === 0) {
+        setResults([]);
+        setTotals(null);
+        return;
+      }
 
       const response = await fetch('/api/compliance/kuwait-pifss', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          employees: mockEmployees,
+          employees,
           month: new Date().toISOString().slice(0, 7),
         }),
       });
@@ -113,7 +94,7 @@ export default function KuwaitPIFSSPage() {
         setTotals(data.data.totals);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Kuwait PIFSS calculation failed:', error);
     } finally {
       setLoading(false);
     }
