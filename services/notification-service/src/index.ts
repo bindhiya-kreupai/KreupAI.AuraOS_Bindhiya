@@ -18,6 +18,7 @@
  * Real-time: Socket.IO on /notifications namespace (ws://<host>:3003/socket.io)
  */
 
+import './instrumentation';
 import Fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import { PrismaClient } from '@prisma/client';
 import {
@@ -94,6 +95,15 @@ app.get('/health', async (_request: FastifyRequest, _reply: FastifyReply) => {
     timestamp: new Date().toISOString(),
   };
 });
+
+// ── Kubernetes probe endpoints (Phase 3 #40) ──────────────────────────────────
+// /healthz — liveness: returns 200 unconditionally if the process is up.
+//           No external calls — depending on Postgres here would let a transient
+//           DB outage trigger pod restarts and cause cascade failures.
+// /readyz  — readiness: returns 200 by default. Override per service when there
+//           are real dependency probes worth gating traffic on.
+app.get('/healthz', async () => ({ status: 'alive', uptime: process.uptime() }));
+app.get('/readyz', async () => ({ status: 'ready' }));
 
 // ── SEND SINGLE NOTIFICATION ──────────────────────────────────────────────────
 
