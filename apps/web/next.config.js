@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // FIXME(#29): both `ignoreDuringBuilds` and `ignoreBuildErrors` mask real errors.
+  // Baseline as of 2026-06-01 in apps/web: 3,926 TypeScript errors + 644 ESLint errors.
+  // Flipping these to `false` today blocks every build until the backlog is cleared.
+  // Treat this as a multi-week initiative — see GitHub issue #29 for the rollout plan
+  // and current error breakdown. DO NOT add code that depends on these staying true.
   eslint: {
     ignoreDuringBuilds: true,
   },
