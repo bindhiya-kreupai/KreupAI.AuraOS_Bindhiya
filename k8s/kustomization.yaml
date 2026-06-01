@@ -34,6 +34,9 @@ resources:
   - services/notification-service.yaml
   - services/ingress.yaml
 
+  # PodDisruptionBudgets for all services (Phase 3 #40)
+  - services/pod-disruption-budgets.yaml
+
   # Infrastructure
   - infrastructure/postgres.yaml
   - infrastructure/redis.yaml
