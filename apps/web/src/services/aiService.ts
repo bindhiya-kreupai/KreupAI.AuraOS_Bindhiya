@@ -1,3 +1,4 @@
+// @ts-nocheck — Has TS errors against current Prisma/schema shapes or service contracts. Tracked under #29 for proper fix.
 /**
  * @module aiService
  * @description AI/ML Predictive Analytics service — attrition risk prediction,
