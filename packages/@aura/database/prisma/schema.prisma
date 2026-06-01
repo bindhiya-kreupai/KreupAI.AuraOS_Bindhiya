@@ -2512,12 +2512,19 @@ model EmployeeComplianceDetails {
   religion        String? // For Hajj leave eligibility
   isLocalNational Boolean @default(false) // Saudi/Emirati/etc.
 
+  // Sector classification (Phase 2 #36)
+  // Free-string rather than enum because per-country sector values differ
+  // (Kuwait: PRIVATE/GOVERNMENT/MILITARY; Saudi: own; India: unused).
+  // The service layer enforces valid values per country.
+  sector String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
   @@index([countryCode])
+  @@index([countryCode, sector])
   @@map("aura_employee_compliance_details")
 }
 
@@ -6601,4 +6608,46 @@ model MentoringProgram {
   @@index([status])
 
   @@map("aura_mentoring_program")
+}
+
+// ============================================================================
+// 31. INDUSTRY-VERTICAL SETTINGS (Phase 2 #36)
+// ============================================================================
+
+model IndustryAviationSettings {
+  id          String    @id @default(uuid())
+  tenantId    String
+  companyId   String? // null = tenant-wide default; company-specific overrides tenant-wide
+
+  // Identity codes
+  airlineCode String // operational code, e.g. "KAI"
+  iataCode    String? // 2-char IATA designator, e.g. "EK"
+  icaoCode    String? // 3-char ICAO designator, e.g. "UAE"
+
+  // Duty-time regulation framework chosen by the operator
+  dutyTimeRegulation String? // 'FAA' | 'EASA' | 'ICAO' | 'CUSTOM'
+
+  // Fleet types operated. Stored as JSON so adding/removing types doesn't
+  // require a schema migration. Each entry:
+  //   { type: 'NB' | 'WB' | 'REGIONAL' | 'CARGO',
+  //     codes: string[],
+  //     trainingDays: number }
+  fleetConfig Json?
+
+  // Crew-cert tracking windows
+  pilotLicenseRenewalNoticeDays Int @default(30)
+  medicalCertRenewalNoticeDays  Int @default(45)
+
+  isActive  Boolean   @default(true)
+  version   Int       @default(1)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String
+  updatedBy String
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  @@unique([tenantId, companyId])
+  @@index([tenantId])
+  @@map("aura_industry_aviation_settings")
 }
