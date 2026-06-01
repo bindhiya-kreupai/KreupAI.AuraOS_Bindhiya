@@ -8,7 +8,7 @@ import {
   TravelRequestService, TravelBookingService, TravelAnalyticsService, TravelSettingsService
 } from '../services';
 import { travelData } from '../data';
-import { useToast } from '../../components/Toast';
+import { useToast } from '../components/Toast';
 
 interface UseTravelReturn {
   // State

@@ -525,7 +525,7 @@ export class CareerPortalService {
       candidateName: '', // Would be populated from join
       jobTitle: '',
       interviewType: interview.interviewType,
-      scheduledAt: interview.scheduledAt,
+      scheduledAt: interview.scheduledDate,
       durationMinutes: interview.durationMinutes,
       interviewers: [],
       location: interview.location || undefined,
@@ -561,7 +561,7 @@ export class CareerPortalService {
       });
 
       if (existingInterview) {
-        conflicts.push(`Interviewer ${interviewerId} has a conflict at ${existingInterview.scheduledAt.toISOString()}`);
+        conflicts.push(`Interviewer ${interviewerId} has a conflict at ${existingInterview.scheduledDate.toISOString()}`);
       }
     }
 

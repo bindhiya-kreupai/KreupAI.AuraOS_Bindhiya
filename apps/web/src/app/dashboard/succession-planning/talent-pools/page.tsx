@@ -125,7 +125,7 @@ export default function TalentPoolsPage() {
                                         </div>
                                         <div>
                                             <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">{c.employeeName}</div>
-                                            <div className="text-xs text-slate-500">{c.currentPosition || 'N/A'}</div>
+                                            <div className="text-xs text-slate-500">{c.currentPositionId || 'N/A'}</div>
                                         </div>
                                     </div>
                                     <div className="text-right">

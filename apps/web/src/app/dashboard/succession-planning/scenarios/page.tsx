@@ -182,7 +182,7 @@ export default function SuccessionScenariosPage() {
                                                         <div className="flex justify-between items-start">
                                                             <div>
                                                                 <h4 className="font-bold text-ink-black dark:text-pearl">{successor.employeeName}</h4>
-                                                                <div className="text-xs text-silver-mist">{successor.currentPosition || 'N/A'}</div>
+                                                                <div className="text-xs text-silver-mist">{successor.currentPositionId || 'N/A'}</div>
                                                             </div>
                                                             <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase border ${successor.readinessLevel === 'ready_now' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                                                                     'bg-amber-50 text-amber-600 border-amber-100'

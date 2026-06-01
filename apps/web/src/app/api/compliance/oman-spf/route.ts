@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     // Calculate contributions for all employees
     const results = employees.map(employee => {
-      const contribution = OmanSPFService.calculateContribution(employee);
+      const contribution = OmanSPFService.calculateContributions(employee);
       return {
         employeeId: employee.employeeId,
         employeeName: employee.employeeName,

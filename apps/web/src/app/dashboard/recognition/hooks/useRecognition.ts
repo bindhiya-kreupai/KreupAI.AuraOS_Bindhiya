@@ -327,7 +327,7 @@ export function useRecognition(): UseRecognitionReturn {
 
   const getRecognitionsByType = async (type: RecognitionType): Promise<Recognition[]> => {
     try {
-      return await RecognitionService.getRecognitionsByType(type);
+      return await RecognitionService.getRecognitions(type);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to get recognitions by type');
       return [];
@@ -576,7 +576,7 @@ export function useRecognition(): UseRecognitionReturn {
 
   const getPointsTransactions = async (employeeId: string): Promise<PointsTransaction[]> => {
     try {
-      return await PointsService.getPointsTransactions(employeeId);
+      return await PointsService.getTransactions(employeeId);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to get points transactions');
       return [];
@@ -662,7 +662,7 @@ export function useRecognition(): UseRecognitionReturn {
 
   const getProgramById = async (programId: string): Promise<RecognitionProgram | null> => {
     try {
-      return await RecognitionProgramService.getProgramById(programId);
+      return await RecognitionProgramService.getPrograms(programId);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to get program');
       return null;
@@ -671,7 +671,7 @@ export function useRecognition(): UseRecognitionReturn {
 
   const getActivePrograms = async (): Promise<RecognitionProgram[]> => {
     try {
-      return await RecognitionProgramService.getActivePrograms();
+      return await RecognitionProgramService.activateProgram();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to get active programs');
       return [];
@@ -681,7 +681,7 @@ export function useRecognition(): UseRecognitionReturn {
   const updateProgramStatus = async (programId: string, status: ProgramStatus): Promise<void> => {
     try {
       setLoading(true);
-      await RecognitionProgramService.updateProgramStatus(programId, status);
+      await RecognitionProgramService.updateProgram(programId, status);
       setPrograms(await RecognitionProgramService.getPrograms());
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to update program status');
@@ -842,7 +842,7 @@ export function useRecognition(): UseRecognitionReturn {
     try {
       const points = await PointsService.getEmployeePoints(employeeId);
       setCurrentEmployeePoints(points);
-      const transactions = await PointsService.getPointsTransactions(employeeId);
+      const transactions = await PointsService.getTransactions(employeeId);
       setPointsTransactions(transactions);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to set current employee');

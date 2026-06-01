@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate SIF file
-    const sifFile = QatarWPSService.generateSIFFile(config, records, payrollMonth);
+    const sifFile = QatarWPSService.generateSIF(config, records, payrollMonth);
 
     if (format === 'sif') {
       // Return as downloadable SIF file

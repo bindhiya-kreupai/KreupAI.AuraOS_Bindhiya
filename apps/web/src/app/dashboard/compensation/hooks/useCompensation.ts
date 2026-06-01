@@ -1024,7 +1024,7 @@ export function useCompensation(): UseCompensationReturn {
 
   const getBenchmarkById = async (id: string): Promise<MarketBenchmark | null> => {
     try {
-      return await MarketBenchmarkService.getBenchmarkById(id);
+      return await MarketBenchmarkService.getBenchmarks(id);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to get market benchmark');
       return null;

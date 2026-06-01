@@ -167,7 +167,7 @@ export class PredictiveAnalyticsService {
     const heatmap: Record<string, Record<string, { count: number; avgRisk: number; total: number }>> = {};
 
     for (const emp of employees) {
-      const deptName = emp.department?.name || 'Unknown';
+      const deptName = emp.departmentId?.name || 'Unknown';
       const tenureMonths = emp.hireDate
         ? Math.floor((Date.now() - new Date(emp.hireDate).getTime()) / (30.44 * 24 * 60 * 60 * 1000))
         : 0;
@@ -338,7 +338,7 @@ export class PredictiveAnalyticsService {
 
     if (historical.length < 3) {
       // Not enough history; project flat from current
-      const current = employees.filter((e) => e.status === 'ACTIVE').length;
+      const current = employees.filter((e) => e.statusId === 'ACTIVE').length;
       return this.generateFlatForecast(current, months);
     }
 
@@ -650,7 +650,7 @@ export class PredictiveAnalyticsService {
     for (const emp of employees) {
       const deptId = emp.departmentId || '_none';
       if (!deptCounts[deptId]) {
-        deptCounts[deptId] = { name: emp.department?.name || 'Unknown', count: 0, highRisk: 0 };
+        deptCounts[deptId] = { name: emp.departmentId?.name || 'Unknown', count: 0, highRisk: 0 };
       }
       deptCounts[deptId].count += 1;
       const risk = risks.find((r) => r.employeeId === emp.id);

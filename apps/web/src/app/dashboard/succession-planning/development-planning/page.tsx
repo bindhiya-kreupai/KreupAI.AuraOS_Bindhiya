@@ -125,7 +125,7 @@ export default function DevelopmentPlanningPage() {
                                     <tr key={plan.planId || i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 group cursor-pointer">
                                         <td className="p-4">
                                             <div className="font-bold text-slate-900 dark:text-slate-100">{plan.employeeName || 'N/A'}</div>
-                                            <div className="text-xs text-slate-500">{plan.targetPosition || 'N/A'}</div>
+                                            <div className="text-xs text-slate-500">{plan.targetPositionId || 'N/A'}</div>
                                         </td>
                                         <td className="p-4 font-medium text-slate-700 dark:text-slate-300">
                                             {plan.planName || 'Development Plan'}

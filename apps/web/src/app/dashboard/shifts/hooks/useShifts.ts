@@ -22,7 +22,7 @@ import {
   ShiftSettingsService
 } from '../services';
 import { shiftData } from '../data';
-import { useToast } from '../../components/Toast';
+import { useToast } from '../components/Toast';
 
 export const useShifts = () => {
   const [shifts, setShifts] = useState<Shift[]>([]);

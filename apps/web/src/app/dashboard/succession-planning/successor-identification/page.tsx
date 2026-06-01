@@ -90,7 +90,7 @@ export default function SuccessorIdentificationPage() {
                                             </h4>
                                             <div className="text-3xl font-bold text-indigo-600">{candidate.readinessLevel === 'ready_now' ? '95%' : candidate.readinessLevel === 'ready_1_2_years' ? '78%' : '55%'}</div>
                                         </div>
-                                        <p className="text-slate-500 font-medium mb-4">{candidate.currentPosition || 'N/A'}</p>
+                                        <p className="text-slate-500 font-medium mb-4">{candidate.currentPositionId || 'N/A'}</p>
 
                                         <div className="flex flex-wrap gap-2 mb-4">
                                             {(candidate.competencies || []).slice(0, 4).map((skill: any, si: number) => (

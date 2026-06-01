@@ -9,7 +9,7 @@ import {
   DocumentShareService, DocumentAnalyticsService, DocumentSettingsService
 } from '../services';
 import { documentData } from '../data';
-import { useToast } from '../../components/Toast';
+import { useToast } from '../components/Toast';
 
 interface UseDocumentsReturn {
   // State

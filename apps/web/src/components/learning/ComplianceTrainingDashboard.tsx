@@ -589,8 +589,8 @@ export default function ComplianceTrainingDashboard() {
         ComplianceTrainingService.getModules
           ? ComplianceTrainingService.getModules()
           : Promise.resolve([]),
-        ComplianceTrainingService.getAssignments
-          ? ComplianceTrainingService.getAssignments()
+        ComplianceTrainingService.getAllAssignments
+          ? ComplianceTrainingService.getAllAssignments()
           : Promise.resolve([]),
         ComplianceTrainingService.getDepartmentCompliance
           ? ComplianceTrainingService.getDepartmentCompliance()

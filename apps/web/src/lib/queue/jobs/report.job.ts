@@ -270,7 +270,7 @@ async function fetchStatutoryData(filters: any): Promise<any[]> {
   if (filters.companyId) where.companyId = filters.companyId;
   if (filters.employeeIds?.length) where.employeeId = { in: filters.employeeIds };
 
-  const records = await prisma.statutoryComponent.findMany({
+  const records = await prisma.salaryComponent.findMany({
     where,
     include: { employee: { select: { employeeCode: true, firstName: true, lastName: true } } },
     orderBy: { createdAt: 'desc' },

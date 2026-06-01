@@ -60,7 +60,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
           employeeId: emp.id,
           employeeName: `${emp.firstName} ${emp.lastName}`,
           employeeCode: emp.employeeCode,
-          department: emp.department,
+          department: emp.departmentId,
           joiningDate: emp.joiningDate,
           yearsOfService,
           anniversaryDate: new Date(

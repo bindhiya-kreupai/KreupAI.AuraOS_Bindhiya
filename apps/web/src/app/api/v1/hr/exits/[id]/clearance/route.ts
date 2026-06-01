@@ -192,7 +192,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     const updates = await Promise.all(
       body.items.map((item: any) =>
         item.id
-          ? prisma.exitClearanceItem.update({
+          ? prisma.exitClearance.update({
               where: { id: item.id },
               data: {
                 status: item.status,
@@ -201,7 +201,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
                 completedBy: item.status === 'COMPLETED' ? user.id : null,
               },
             })
-          : prisma.exitClearanceItem.create({
+          : prisma.exitClearance.create({
               data: {
                 exitRequestId: id,
                 department: item.department,

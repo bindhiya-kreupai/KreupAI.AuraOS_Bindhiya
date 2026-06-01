@@ -116,7 +116,7 @@ export default function SuccessionPoolsPage() {
                                             </div>
                                             <div>
                                                 <div className="font-bold">{cand.employeeName}</div>
-                                                <div className="text-xs text-slate-500">{cand.currentPosition || 'N/A'}</div>
+                                                <div className="text-xs text-slate-500">{cand.currentPositionId || 'N/A'}</div>
                                             </div>
                                         </div>
 
