@@ -42,6 +42,9 @@ resources:
   - infrastructure/redis.yaml
   - infrastructure/rabbitmq.yaml
 
+  # Observability (Phase 3 #41 + #45)
+  - infrastructure/datadog-agent.yaml
+
 # Image tags — override these in overlays (staging/production)
 images:
   - name: kreupai/aura-web
