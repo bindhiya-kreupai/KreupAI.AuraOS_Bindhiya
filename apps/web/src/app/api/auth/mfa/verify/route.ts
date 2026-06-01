@@ -50,7 +50,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
     const ipAddress = request.headers.get('x-forwarded-for') || 'unknown';
 
     // Get MFA settings
-    const mfaSettings = await prisma.userMFA.findUnique({
+    const mfaSettings = await prisma.mFASecret.findUnique({
       where: { userId: user.userId },
     });
 
@@ -68,7 +68,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
       );
     }
 
-    if (!mfaSettings.totpSecret) {
+    if (!mfaSettings.secret) {
       return NextResponse.json(
         { success: false, error: 'TOTP secret not found. Please restart setup.' },
         { status: 400 }
@@ -76,7 +76,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
     }
 
     // Decrypt secret
-    const secret = decryptSecret(mfaSettings.totpSecret);
+    const secret = decryptSecret(mfaSettings.secret);
 
     // Verify TOTP code
     const isValid = authenticator.verify({
@@ -101,7 +101,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
 
     // Mark MFA as verified and enable it on user account
     await prisma.$transaction([
-      prisma.userMFA.update({
+      prisma.mFASecret.update({
         where: { userId: user.userId },
         data: { verifiedAt: new Date() },
       }),
@@ -114,10 +114,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
     // Create audit log
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'MFA_ENABLED',
-        entityType: 'Authentication',
-        details: 'MFA successfully verified and enabled',
+        resourceType: 'Authentication',
+        errorMessage: 'MFA successfully verified and enabled',
         ipAddress,
       },
     });

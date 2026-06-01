@@ -303,7 +303,7 @@ const ENTITIES: Record<string, {
 
 // GET - List entities
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { entity: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       const permissionError = requirePermission(Resource.MASTER_DATA, Action.READ, permissions);
       if (permissionError) return permissionError;
@@ -349,7 +349,7 @@ export const GET = withEnhancedAuth(
 
 // POST - Create entity
 export const POST = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { entity: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       const permissionError = requirePermission(Resource.MASTER_DATA, Action.CREATE, permissions);
       if (permissionError) return permissionError;

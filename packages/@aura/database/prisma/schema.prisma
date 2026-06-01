@@ -1307,6 +1307,11 @@ enum AuditAction {
   CANCEL_INTERVIEW
   REQUEST_DOCUMENT
   REQUEST_INFO
+
+  // MFA / auth flow events
+  MFA_SETUP_INITIATED
+  MFA_VALIDATION_FAILED
+  LOGIN_SUCCESS
 }
 
 enum AuditSeverity {

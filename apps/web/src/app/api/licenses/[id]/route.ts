@@ -10,7 +10,7 @@ import { logger } from '@/lib/logger';
 
 // GET - Fetch single license by ID
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       const permissionError = requirePermission(Resource.LICENSES, Action.READ, permissions);
@@ -47,7 +47,7 @@ export const GET = withEnhancedAuth(
 
 // PUT - Update license
 export const PUT = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       const permissionError = requirePermission(Resource.LICENSES, Action.UPDATE, permissions);
@@ -111,7 +111,7 @@ export const PUT = withEnhancedAuth(
 
 // DELETE - Delete license (soft delete by setting status to Inactive)
 export const DELETE = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       const permissionError = requirePermission(Resource.LICENSES, Action.DELETE, permissions);

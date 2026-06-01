@@ -20,7 +20,7 @@ const UpdateRoleSchema = z.object({
 
 // GET - Fetch single role by ID
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       if (!permissions.includes('roles:read') && !permissions.includes('roles:manage')) {
@@ -96,7 +96,7 @@ export const GET = withEnhancedAuth(
 
 // PUT - Update role
 export const PUT = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       if (!permissions.includes('roles:update') && !permissions.includes('roles:manage')) {
@@ -219,7 +219,7 @@ export const PUT = withEnhancedAuth(
 
 // DELETE - Delete role (soft delete by deactivation)
 export const DELETE = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       if (!permissions.includes('roles:delete') && !permissions.includes('roles:manage')) {

@@ -56,7 +56,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
     const ipAddress = request.headers.get('x-forwarded-for') || 'unknown';
 
     // Check if user already has MFA enabled
-    const existingMFA = await prisma.userMFA.findUnique({
+    const existingMFA = await prisma.mFASecret.findUnique({
       where: { userId: user.userId },
     });
 
@@ -103,17 +103,17 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
     const encryptedSecret = encryptSecret(secret);
 
     // Store MFA settings (not yet verified)
-    await prisma.userMFA.upsert({
+    await prisma.mFASecret.upsert({
       where: { userId: user.userId },
       create: {
         userId: user.userId,
-        totpSecret: encryptedSecret,
+        secret: encryptedSecret,
         backupCodes: hashedBackupCodes,
         method: 'totp',
         verifiedAt: null, // Not verified yet
       },
       update: {
-        totpSecret: encryptedSecret,
+        secret: encryptedSecret,
         backupCodes: hashedBackupCodes,
         verifiedAt: null, // Reset verification
       },
@@ -122,10 +122,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
     // Create audit log
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'MFA_SETUP_INITIATED',
-        entityType: 'Authentication',
-        details: 'MFA setup initiated - waiting for verification',
+        resourceType: 'Authentication',
+        errorMessage: 'MFA setup initiated - waiting for verification',
         ipAddress,
       },
     });
@@ -163,7 +164,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, { user }) => {
   try {
-    const mfaSettings = await prisma.userMFA.findUnique({
+    const mfaSettings = await prisma.mFASecret.findUnique({
       where: { userId: user.userId },
       select: {
         method: true,

@@ -74,7 +74,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
         where: { id: user.userId },
         data: { mfaEnabled: false },
       }),
-      prisma.userMFA.delete({
+      prisma.mFASecret.delete({
         where: { userId: user.userId },
       }),
     ]);
@@ -82,10 +82,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
     // Create audit log
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'MFA_DISABLED',
-        entityType: 'Authentication',
-        details: 'MFA disabled by user',
+        resourceType: 'Authentication',
+        errorMessage: 'MFA disabled by user',
         ipAddress,
       },
     });

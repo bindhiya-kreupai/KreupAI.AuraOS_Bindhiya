@@ -22,7 +22,7 @@ const RemoveRoleSchema = z.object({
 
 // GET - Fetch all roles assigned to a user
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       if (!permissions.includes('users:read') && !permissions.includes('users:manage')) {
@@ -97,7 +97,7 @@ export const GET = withEnhancedAuth(
 
 // POST - Assign a role to a user
 export const POST = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       if (!permissions.includes('users:update') && !permissions.includes('users:manage')) {
@@ -235,7 +235,7 @@ export const POST = withEnhancedAuth(
 
 // DELETE - Remove a role from a user
 export const DELETE = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       if (!permissions.includes('users:update') && !permissions.includes('users:manage')) {

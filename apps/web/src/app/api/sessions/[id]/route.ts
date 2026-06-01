@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger';
 
 // DELETE - Revoke a session
 export const DELETE = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       const permissionError = requirePermission(Resource.SESSIONS, Action.DELETE, permissions);

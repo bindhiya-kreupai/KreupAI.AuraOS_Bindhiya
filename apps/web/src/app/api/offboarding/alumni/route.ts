@@ -44,15 +44,15 @@ export const GET = withEnhancedAuth(async (request, context) => {
             lastName: true,
             email: true,
             departmentId: true,
-            positionId: true,
-            dateOfJoining: true,
+            jobProfileId: true,
+            joiningDate: true,
           },
         },
       },
     });
 
     const alumni = exitRequests.map((req) => {
-      const joinDate = req.employee?.dateOfJoining;
+      const joinDate = req.employee?.joiningDate;
       const exitDate = req.lastWorkingDate;
       const tenure = joinDate
         ? Math.round(

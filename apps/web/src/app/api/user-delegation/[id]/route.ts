@@ -9,7 +9,7 @@ import { logger } from '@/lib/logger';
 
 // GET - Fetch single user delegation by ID
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       const permissionError = requirePermission(Resource.USERS, Action.READ, permissions);
@@ -59,7 +59,7 @@ export const GET = withEnhancedAuth(
 
 // PUT - Update user delegation
 export const PUT = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       const permissionError = requirePermission(Resource.USERS, Action.UPDATE, permissions);
@@ -184,7 +184,7 @@ export const PUT = withEnhancedAuth(
 
 // DELETE - Delete user delegation
 export const DELETE = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       const permissionError = requirePermission(Resource.USERS, Action.DELETE, permissions);

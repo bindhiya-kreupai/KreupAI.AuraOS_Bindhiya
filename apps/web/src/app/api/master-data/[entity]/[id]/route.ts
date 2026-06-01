@@ -95,7 +95,7 @@ const ENTITIES: Record<string, { model: any; updateSchema: z.ZodType; include?: 
 
 // GET - Fetch single entity
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { entity: string; id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       const permissionError = requirePermission(Resource.MASTER_DATA, Action.READ, permissions);
       if (permissionError) return permissionError;
@@ -124,7 +124,7 @@ export const GET = withEnhancedAuth(
 
 // PUT - Update entity
 export const PUT = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { entity: string; id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       const permissionError = requirePermission(Resource.MASTER_DATA, Action.UPDATE, permissions);
       if (permissionError) return permissionError;
@@ -169,7 +169,7 @@ export const PUT = withEnhancedAuth(
 
 // DELETE - Delete entity
 export const DELETE = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { entity: string; id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       const permissionError = requirePermission(Resource.MASTER_DATA, Action.DELETE, permissions);
       if (permissionError) return permissionError;
