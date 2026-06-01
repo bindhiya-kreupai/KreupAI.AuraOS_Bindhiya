@@ -23,8 +23,7 @@ import type {
     RecruitmentVendorStatus,
     RequisitionStatus,
     ApplicationStatus,
-    OfferStatus,
-} from './types';
+    OfferStatus, BackgroundCheckItem } from './types';
 
 type ApiEnvelope<T> = {
     success?: boolean;

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
  * GET /api/v1/leaves/types
  * Get all available leave types
  */
-export const GET = withEnhancedAuth(async (request: NextRequest) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   const { permissions } = context;
   if (!permissions.includes('leaves:read')) {
     return NextResponse.json(
