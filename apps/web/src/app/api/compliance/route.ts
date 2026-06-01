@@ -2,6 +2,11 @@
  * Compliance API - Main Route
  * Provides an overview of all compliance services and endpoints
  *
+ * INTENTIONALLY PUBLIC — this endpoint returns only static metadata
+ * (supported countries, endpoint catalogue, feature flags). No tenant data,
+ * no PII, no compliance calculations are performed here. Sub-routes under
+ * /api/compliance/* (wps, gosi, mudad, etc.) handle their own authentication.
+ *
  * @swagger
  * /api/compliance:
  *   get:
@@ -120,9 +125,12 @@ export async function GET() {
         ],
       },
     });
-  } catch (error) {
-        return NextResponse.json(
-      { error: 'Failed to fetch compliance API overview', errorAr: 'فشل في جلب نظرة عامة على واجهة الامتثال' },
+  } catch (_error) {
+    return NextResponse.json(
+      {
+        error: 'Failed to fetch compliance API overview',
+        errorAr: 'فشل في جلب نظرة عامة على واجهة الامتثال',
+      },
       { status: 500 }
     );
   }

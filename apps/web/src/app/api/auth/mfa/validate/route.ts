@@ -13,7 +13,12 @@ import { logger } from '@/lib/logger';
  * Public endpoint (called after initial password verification)
  */
 
-const ENCRYPTION_KEY = process.env.MFA_ENCRYPTION_KEY || 'default-key-change-in-production';
+if (!process.env.MFA_ENCRYPTION_KEY) {
+  throw new Error(
+    'FATAL: MFA_ENCRYPTION_KEY environment variable is not set. Refusing to start with an insecure default.'
+  );
+}
+const ENCRYPTION_KEY = process.env.MFA_ENCRYPTION_KEY;
 
 /**
  * Simple decryption for TOTP secrets
@@ -55,10 +60,13 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user || !user.mfaSecret) {
-      logger.warn({
-        userId: validatedData.userId,
-        ipAddress,
-      }, 'MFA validation attempted for user without MFA');
+      logger.warn(
+        {
+          userId: validatedData.userId,
+          ipAddress,
+        },
+        'MFA validation attempted for user without MFA'
+      );
 
       return NextResponse.json(
         { success: false, error: 'MFA not configured for this user' },
@@ -93,10 +101,13 @@ export async function POST(request: NextRequest) {
             data: { backupCodes },
           });
 
-          logger.info({
-            userId: user.id,
-            remainingCodes: backupCodes.length,
-          }, 'Backup code used for MFA');
+          logger.info(
+            {
+              userId: user.id,
+              remainingCodes: backupCodes.length,
+            },
+            'Backup code used for MFA'
+          );
 
           break;
         }
@@ -104,10 +115,7 @@ export async function POST(request: NextRequest) {
     } else {
       // Validate TOTP code
       if (!user.mfaSecret.secret) {
-        return NextResponse.json(
-          { success: false, error: 'TOTP not configured' },
-          { status: 400 }
-        );
+        return NextResponse.json({ success: false, error: 'TOTP not configured' }, { status: 400 });
       }
 
       const secret = decryptSecret(user.mfaSecret.secret);
@@ -118,11 +126,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isValid) {
-      logger.warn({
-        userId: user.id,
-        ipAddress,
-        useBackupCode: validatedData.useBackupCode,
-      }, 'Invalid MFA code during login');
+      logger.warn(
+        {
+          userId: user.id,
+          ipAddress,
+          useBackupCode: validatedData.useBackupCode,
+        },
+        'Invalid MFA code during login'
+      );
 
       // Create audit log for failed attempt
       await prisma.auditLog.create({
@@ -136,10 +147,7 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return NextResponse.json(
-        { success: false, error: 'Invalid MFA code' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'Invalid MFA code' }, { status: 401 });
     }
 
     // MFA validation successful - generate tokens
@@ -177,13 +185,16 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    logger.info({
-      userId: user.id,
-      email: user.email,
-      tenantId: user.tenantId,
-      sessionId: session.id,
-      mfaMethod: usedBackupCode ? 'backup_code' : 'totp',
-    }, 'Login successful with MFA');
+    logger.info(
+      {
+        userId: user.id,
+        email: user.email,
+        tenantId: user.tenantId,
+        sessionId: session.id,
+        mfaMethod: usedBackupCode ? 'backup_code' : 'totp',
+      },
+      'Login successful with MFA'
+    );
 
     return NextResponse.json({
       success: true,
@@ -209,9 +220,6 @@ export async function POST(request: NextRequest) {
 
     logger.error({ error }, 'Error validating MFA');
 
-    return NextResponse.json(
-      { success: false, error: 'Failed to validate MFA' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to validate MFA' }, { status: 500 });
   }
 }
