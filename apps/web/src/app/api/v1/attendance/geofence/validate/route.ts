@@ -15,7 +15,20 @@ interface GeofenceValidateResponse {
   timestamp: string;
 }
 
-export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
+  if (!permissions.includes('attendance:create')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing attendance:create permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const body: GeofenceValidateRequest = await request.json();
 

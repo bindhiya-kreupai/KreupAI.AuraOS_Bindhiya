@@ -1,11 +1,23 @@
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
 export const GET = withEnhancedAuth(async (request, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('admin/workflows:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/workflows:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
 
@@ -32,7 +44,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     });
 
     const total = workflows.length;
-    const active = workflows.filter(w => w.isActive).length;
+    const active = workflows.filter((w) => w.isActive).length;
     const inactive = total - active;
 
     return NextResponse.json({
@@ -40,25 +52,32 @@ export const GET = withEnhancedAuth(async (request, context) => {
       data: workflows,
       meta: { total, active, inactive },
     });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch workflows' },
-      { status: 500 }
-    );
+  } catch (_error) {
+    return NextResponse.json({ error: 'Failed to fetch workflows' }, { status: 500 });
   }
 });
 
 export const POST = withEnhancedAuth(async (request, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('admin/workflows:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/workflows:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
     const body = await request.json();
 
     if (!body.name) {
-      return NextResponse.json(
-        { error: 'Workflow name is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Workflow name is required' }, { status: 400 });
     }
 
     const workflow = await prisma.workflowDefinition.create({
@@ -80,10 +99,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       { success: true, data: workflow, message: 'Workflow created successfully' },
       { status: 201 }
     );
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to create workflow' },
-      { status: 500 }
-    );
+  } catch (_error) {
+    return NextResponse.json({ error: 'Failed to create workflow' }, { status: 500 });
   }
 });

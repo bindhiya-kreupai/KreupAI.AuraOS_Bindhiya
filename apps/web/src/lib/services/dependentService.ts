@@ -15,7 +15,12 @@ export interface Dependent {
   createdAt: Date;
 }
 
-const ENCRYPTION_KEY = process.env.SSN_ENCRYPTION_KEY || 'default-32-byte-key-for-development!';
+if (!process.env.SSN_ENCRYPTION_KEY) {
+  throw new Error(
+    'FATAL: SSN_ENCRYPTION_KEY environment variable is not set. Refusing to start with an insecure default.'
+  );
+}
+const ENCRYPTION_KEY = process.env.SSN_ENCRYPTION_KEY;
 const IV_LENGTH = 16;
 
 export class DependentService extends BaseService {
@@ -25,7 +30,11 @@ export class DependentService extends BaseService {
 
   private encryptSSN(ssn: string): string {
     const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY.slice(0, 32)), iv);
+    const cipher = crypto.createCipheriv(
+      'aes-256-cbc',
+      Buffer.from(ENCRYPTION_KEY.slice(0, 32)),
+      iv
+    );
     let encrypted = cipher.update(ssn, 'utf8', 'hex');
     encrypted += cipher.final('hex');
     return iv.toString('hex') + ':' + encrypted;
@@ -35,7 +44,11 @@ export class DependentService extends BaseService {
     try {
       const [ivHex, encryptedData] = encrypted.split(':');
       const iv = Buffer.from(ivHex, 'hex');
-      const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY.slice(0, 32)), iv);
+      const decipher = crypto.createDecipheriv(
+        'aes-256-cbc',
+        Buffer.from(ENCRYPTION_KEY.slice(0, 32)),
+        iv
+      );
       let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
       decrypted += decipher.final('utf8');
       return '***-**-' + decrypted.slice(-4);
@@ -130,15 +143,18 @@ export class DependentService extends BaseService {
     };
   }
 
-  async updateDependent(id: string, data: Partial<{
-    firstName: string;
-    lastName: string;
-    relationship: Dependent['relationship'];
-    dateOfBirth: Date;
-    gender: Dependent['gender'];
-    ssn: string;
-    benefitEligible: boolean;
-  }>): Promise<Dependent> {
+  async updateDependent(
+    id: string,
+    data: Partial<{
+      firstName: string;
+      lastName: string;
+      relationship: Dependent['relationship'];
+      dateOfBirth: Date;
+      gender: Dependent['gender'];
+      ssn: string;
+      benefitEligible: boolean;
+    }>
+  ): Promise<Dependent> {
     const updateData: any = { ...data };
     if (data.ssn) {
       updateData.ssn = this.encryptSSN(data.ssn);

@@ -42,7 +42,20 @@ export async function GET(request: NextRequest) {
  * POST /api/v1/integrations/slack/oauth/callback
  * Manual code exchange — requires authentication
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, { user }: any) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, { user, permissions }: any) => {
+  if (!permissions.includes('integrations:create')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing integrations:create permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   const body = await request.json();
   const { code } = body;
 

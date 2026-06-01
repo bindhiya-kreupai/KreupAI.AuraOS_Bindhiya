@@ -7,7 +7,20 @@ import { withEnhancedAuth } from '@/lib/auth';
  * GET /api/v1/docs/openapi
  * Returns the OpenAPI 3.0 specification as JSON
  */
-export const GET = withEnhancedAuth(async (_request: NextRequest, { _user }: any) => {
+export const GET = withEnhancedAuth(async (_request: NextRequest, { _user, permissions }: any) => {
+  if (!permissions.includes('docs:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing docs:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const spec = generateOpenAPISpec();
 

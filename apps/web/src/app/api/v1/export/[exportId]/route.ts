@@ -3,7 +3,8 @@
  * GET /api/v1/export/{exportId} - Get export status
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { queueService } from '@/lib/queue/queue.service';
 import { logger } from '@/lib/logger';
 import { withAuth } from '@/lib/auth';

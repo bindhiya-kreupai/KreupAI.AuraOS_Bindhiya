@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -6,7 +7,20 @@ export const dynamic = 'force-dynamic';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('benefits/enrollment:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing benefits/enrollment:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -123,7 +137,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('benefits/enrollment:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing benefits/enrollment:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
     const {
       planId,
@@ -180,7 +207,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     // Determine premiums based on coverage level
     const coverageLevelEnum = coverageLevel.toUpperCase().replace(/-/g, '_');
     let employeePremium = plan.employeePremium;
-    let employerPremium = plan.employerPremium;
+    const employerPremium = plan.employerPremium;
 
     if (coverageLevelEnum === 'EMPLOYEE_SPOUSE' && plan.spousePremium != null) {
       employeePremium = plan.spousePremium;
@@ -203,7 +230,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
         select: { firstName: true, lastName: true, employeeCode: true },
       });
       if (employee) {
-        resolvedEmployeeName = resolvedEmployeeName || `${employee.firstName} ${employee.lastName}`.trim();
+        resolvedEmployeeName =
+          resolvedEmployeeName || `${employee.firstName} ${employee.lastName}`.trim();
         resolvedEmployeeCode = resolvedEmployeeCode || employee.employeeCode;
       }
     }

@@ -3,6 +3,20 @@ import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { permissions } = context;
+  if (!permissions.includes('dependents:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing dependents:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   const { id } = context.params;
 
   const mockDependent = {
@@ -30,6 +44,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
 });
 
 export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { permissions } = context;
+  if (!permissions.includes('dependents:update')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing dependents:update permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   const { id } = context.params;
   const body = await request.json();
 
@@ -51,6 +79,20 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
 });
 
 export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { permissions } = context;
+  if (!permissions.includes('dependents:delete')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing dependents:delete permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   const { id } = context.params;
 
   return NextResponse.json({

@@ -30,7 +30,7 @@ async function getTenantUserIds(tenantId: string): Promise<string[]> {
     select: { id: true },
   });
 
-  return users.map(user => user.id);
+  return users.map((user) => user.id);
 }
 
 /**
@@ -38,6 +38,20 @@ async function getTenantUserIds(tenantId: string): Promise<string[]> {
  * List candidates with pagination and filters
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { permissions } = context;
+  if (!permissions.includes('recruitment:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing recruitment:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { _user } = context;
     const { searchParams } = new URL(request.url);
@@ -52,7 +66,9 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     const search = searchParams.get('search') || undefined;
 
     const tenantUserIds = await getTenantUserIds(_user.tenantId);
-    const tenantCreatedBy = { in: tenantUserIds.length > 0 ? tenantUserIds : ['__no_tenant_users__'] };
+    const tenantCreatedBy = {
+      in: tenantUserIds.length > 0 ? tenantUserIds : ['__no_tenant_users__'],
+    };
 
     const where: Record<string, unknown> = {};
     if (status) {

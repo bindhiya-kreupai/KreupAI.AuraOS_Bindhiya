@@ -4,7 +4,8 @@
  * @project AURA HCM Platform
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { EmploymentHistoryService } from '@/lib/services/employment-history.service';
 
@@ -30,11 +31,28 @@ interface ApiResponse<T = any> {
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('employment-history:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing employment-history:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
-    const startDate = searchParams.get('startDate') ? new Date(searchParams.get('startDate')!) : undefined;
-    const endDate = searchParams.get('endDate') ? new Date(searchParams.get('endDate')!) : undefined;
+    const startDate = searchParams.get('startDate')
+      ? new Date(searchParams.get('startDate')!)
+      : undefined;
+    const endDate = searchParams.get('endDate')
+      ? new Date(searchParams.get('endDate')!)
+      : undefined;
 
     const stats = await EmploymentHistoryService.getStatistics(user.tenantId, startDate, endDate);
 

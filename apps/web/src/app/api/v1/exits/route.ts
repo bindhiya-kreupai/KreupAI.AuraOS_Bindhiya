@@ -1,10 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { ServiceProxy } from '@/lib/services/service-proxy';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('exits:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing exits:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const filter = {
@@ -40,7 +54,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('exits:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing exits:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
     body.tenantId = user.tenantId;
 

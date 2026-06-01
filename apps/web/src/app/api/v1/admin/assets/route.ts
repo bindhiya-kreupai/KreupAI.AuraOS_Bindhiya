@@ -99,7 +99,7 @@ const mockAssets = [
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user } = context;
-    const tenantId = user.tenantId;
+    const _tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category') || undefined;
     const status = searchParams.get('status') || undefined;
@@ -201,7 +201,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     }
 
     const year = new Date().getFullYear().toString().slice(-2);
-    const randomNum = Math.floor(Math.random() * 9000) + 1000;
+    // 4 hex chars from a CSPRNG — replaces Math.random which had ~9000-value collision risk.
+    const randomNum = crypto.randomUUID().slice(0, 4).toUpperCase();
 
     const newAsset = {
       id: `asset-${crypto.randomUUID().slice(0, 8)}`,

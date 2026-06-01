@@ -11,15 +11,25 @@ export const dynamic = 'force-dynamic';
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('notifications:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing notifications:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
     const { pushToken } = body;
 
     if (!pushToken) {
-      return NextResponse.json(
-        { error: 'pushToken is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'pushToken is required' }, { status: 400 });
     }
 
     // Soft-delete by marking inactive
@@ -37,9 +47,6 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[unregister-device] Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to unregister device' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to unregister device' }, { status: 500 });
   }
 });

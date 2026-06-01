@@ -6,6 +6,7 @@
  * job completions (e.g. audit-log, analytics, alerting).
  */
 
+import './instrumentation';
 import Fastify from 'fastify';
 import { startCronRegistry, stopCronRegistry, CRON_JOBS } from './scheduler/cron-registry';
 import { getRabbitMQEventBus } from '@aura/events';
@@ -87,6 +88,15 @@ app.get('/health', async () => {
     eventBus: busReady ? 'connected' : 'unavailable',
   };
 });
+
+// ── Kubernetes probe endpoints (Phase 3 #40) ──────────────────────────────────
+// /healthz — liveness: returns 200 unconditionally if the process is up.
+//           No external calls — depending on Postgres here would let a transient
+//           DB outage trigger pod restarts and cause cascade failures.
+// /readyz  — readiness: returns 200 by default. Override per service when there
+//           are real dependency probes worth gating traffic on.
+app.get('/healthz', async () => ({ status: 'alive', uptime: process.uptime() }));
+app.get('/readyz', async () => ({ status: 'ready' }));
 
 // Cron job status endpoint — lists all registered HCM jobs and their metadata
 app.get('/api/v1/cron-jobs', async () => {

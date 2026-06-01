@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -41,6 +42,20 @@ interface TimesheetEntry {
  * - employeeId (optional): Filter by employee (defaults to current user's employee)
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+  const { permissions } = context;
+  if (!permissions.includes('attendance:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing attendance:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { searchParams } = new URL(request.url);
     const tenantId = context.user.tenantId;
@@ -110,7 +125,15 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     }
 
     // Day name helpers based on day offset from weekStart
-    const dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
+    const dayNames = [
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+      'sunday',
+    ] as const;
 
     const entries: TimesheetEntry[] = [];
     let totalWeeklyHours = 0;
@@ -128,7 +151,9 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
       for (const entry of projectTimeEntries) {
         const entryDate = new Date(entry.date);
-        const dayOffset = Math.floor((entryDate.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
+        const dayOffset = Math.floor(
+          (entryDate.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24)
+        );
         if (dayOffset >= 0 && dayOffset < 7) {
           const dayName = dayNames[dayOffset];
           dayHours[dayName] += entry.hours;

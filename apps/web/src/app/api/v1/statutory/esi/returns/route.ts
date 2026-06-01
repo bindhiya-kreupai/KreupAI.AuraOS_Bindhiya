@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -14,7 +15,20 @@ export const dynamic = 'force-dynamic';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('statutory:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing statutory:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
     const month = searchParams.get('month');
     const companyId = searchParams.get('companyId');
@@ -24,7 +38,11 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         {
           success: false,
           error: { code: 'E2001', message: 'month and companyId are required in query parameters' },
-          meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
         { status: 400 }
       );
@@ -71,13 +89,28 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         select: { id: true },
       });
 
-      const runIds = payrollRuns.map(r => r.id);
+      const runIds = payrollRuns.map((r) => r.id);
 
       if (runIds.length === 0) {
         return NextResponse.json({
           success: true,
-          data: { month, companyId, summary: { totalEmployees: 0, totalWages: 0, employeeContribution: 0, employerContribution: 0, totalContribution: 0 }, employees: [] },
-          meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+          data: {
+            month,
+            companyId,
+            summary: {
+              totalEmployees: 0,
+              totalWages: 0,
+              employeeContribution: 0,
+              employerContribution: 0,
+              totalContribution: 0,
+            },
+            employees: [],
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         });
       }
 
@@ -107,7 +140,9 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         data: {
           month,
           companyId,
-          establishment: esiConfig ? { esicCode: esiConfig.esicCode, esicSubCode: esiConfig.esicSubCode } : null,
+          establishment: esiConfig
+            ? { esicCode: esiConfig.esicCode, esicSubCode: esiConfig.esicSubCode }
+            : null,
           summary: {
             totalEmployees: payslips.length,
             totalWages,
@@ -115,7 +150,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
             employerContribution: totalEmployerContribution,
             totalContribution: totalEmployeeContribution + totalEmployerContribution,
           },
-          employees: payslips.map(p => ({
+          employees: payslips.map((p) => ({
             employeeCode: p.employeeCode,
             employeeName: p.employeeName,
             grossWages: Number(p.grossSalary),
@@ -125,7 +160,11 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           })),
           generatedAt: new Date().toISOString(),
         },
-        meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       });
     }
 
@@ -134,7 +173,9 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       data: {
         month,
         companyId,
-        establishment: esiConfig ? { esicCode: esiConfig.esicCode, esicSubCode: esiConfig.esicSubCode } : null,
+        establishment: esiConfig
+          ? { esicCode: esiConfig.esicCode, esicSubCode: esiConfig.esicSubCode }
+          : null,
         submission: {
           id: submission.id,
           status: submission.status,
@@ -146,7 +187,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           challanNumber: submission.challanNumber,
           fileName: submission.fileName,
         },
-        employees: submission.records.map(r => ({
+        employees: submission.records.map((r) => ({
           employeeId: r.employeeId,
           esiNumber: r.esiNumber,
           employeeName: r.employeeName,
@@ -159,15 +200,27 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         })),
         generatedAt: new Date().toISOString(),
       },
-      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     });
   } catch (error) {
     console.error('[ESI Returns API] GET Error:', error);
     return NextResponse.json(
       {
         success: false,
-        error: { code: 'E5001', message: 'Failed to fetch ESI returns', details: { error: error instanceof Error ? error.message : 'Unknown error' } },
-        meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+        error: {
+          code: 'E5001',
+          message: 'Failed to fetch ESI returns',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
       { status: 500 }
     );

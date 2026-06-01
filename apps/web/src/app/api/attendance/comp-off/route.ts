@@ -1,217 +1,28 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-import { prisma } from '@aura/database';
 import { z } from 'zod';
-import { withEnhancedAuth } from '@/lib/auth';
-import { Resource, Action, requirePermission } from '@/lib/auth';
-import { logger } from '@/lib/logger';
+import { makeAttendanceConfigRoutes } from '@/lib/services/attendance/config-crud';
 
-const CompOffSchema = z.object({
-  employeeId: z.string().optional(),
-  workDate: z.string(),
-  workHours: z.number(),
-  reason: z.string().min(1),
-  approvedBy: z.string().optional(),
-  expiryDate: z.string().optional(),
+const CompOffConfigSchema = z.object({
+  earnsCompOffOn: z.enum(['WEEKEND', 'HOLIDAY', 'BOTH']),
+  minHoursForCompOff: z.number().nonnegative(),
+  maxAccumulation: z.number().int().nonnegative(),
+  expiryDays: z.number().int().nonnegative(),
+  requiresApproval: z.boolean().default(true),
 });
 
-// GET - Fetch comp-off records
-export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ATTENDANCE, Action.READ, permissions);
-      if (permissionError) return permissionError;
+const CompOffSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+  config: CompOffConfigSchema,
+  isActive: z.boolean().default(true),
+});
 
-      const { searchParams } = new URL(request.url);
-      const requestedEmployeeId = searchParams.get('employeeId');
-      const employeeId =
-        !requestedEmployeeId || ['current-user', 'current-user-id'].includes(requestedEmployeeId)
-          ? user.employeeId || user.userId
-          : requestedEmployeeId;
-      const status = searchParams.get('status');
+const handlers = makeAttendanceConfigRoutes({
+  model: 'compOffPolicy',
+  createSchema: CompOffSchema,
+  resourceLabel: 'Comp-Off Policy',
+});
 
-      const mockCompOffs = [
-        {
-          id: '1',
-          employeeId,
-          employeeName: 'John Doe',
-          workDate: '2024-08-17',
-          workHours: 8,
-          reason: 'Worked on weekend for urgent project delivery',
-          status: 'APPROVED',
-          approvedBy: 'manager-1',
-          approvedAt: '2024-08-18T10:00:00',
-          earnedDate: '2024-08-18',
-          expiryDate: '2024-11-18',
-          balance: 1,
-          used: 0,
-        },
-        {
-          id: '2',
-          employeeId,
-          employeeName: 'John Doe',
-          workDate: '2024-08-24',
-          workHours: 4,
-          reason: 'Public holiday work - system maintenance',
-          status: 'PENDING',
-          requestedAt: '2024-08-25T09:00:00',
-          balance: 0.5,
-          used: 0,
-        },
-        {
-          id: '3',
-          employeeId,
-          employeeName: 'John Doe',
-          workDate: '2024-07-15',
-          workHours: 8,
-          reason: 'Weekend deployment',
-          status: 'APPROVED',
-          approvedBy: 'manager-1',
-          approvedAt: '2024-07-16T09:00:00',
-          earnedDate: '2024-07-16',
-          expiryDate: '2024-10-16',
-          balance: 0,
-          used: 1,
-          usedOn: '2024-08-10',
-        },
-      ];
-
-      let filteredData = mockCompOffs.filter(c => c.employeeId === employeeId);
-      if (status) filteredData = filteredData.filter(c => c.status === status);
-
-      const summary = {
-        total: filteredData.reduce((sum, c) => sum + c.balance, 0),
-        earned: filteredData.filter(c => c.status === 'APPROVED').length,
-        used: filteredData.reduce((sum, c) => sum + c.used, 0),
-        pending: filteredData.filter(c => c.status === 'PENDING').length,
-        expiring: filteredData.filter(
-          c => c.expiryDate && new Date(c.expiryDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        ).length,
-      };
-
-      return NextResponse.json({
-        success: true,
-        data: { compOffs: filteredData, summary },
-        meta: { total: filteredData.length },
-      });
-    } catch (error) {
-      logger.error({ error }, 'Error fetching comp-off records:');
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch comp-off records' },
-        { status: 500 }
-      );
-    }
-  }
-);
-
-// POST - Request comp-off
-export const POST = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ATTENDANCE, Action.CREATE, permissions);
-      if (permissionError) return permissionError;
-
-      const body = await request.json();
-      const data = CompOffSchema.parse({
-        employeeId: body.employeeId,
-        workDate: body.workDate || body.date,
-        workHours: body.workHours || body.hours,
-        reason: body.reason,
-        approvedBy: body.approvedBy,
-        expiryDate: body.expiryDate,
-      });
-      const employeeId =
-        !data.employeeId || ['current-user', 'current-user-id'].includes(data.employeeId)
-          ? user.employeeId || user.userId
-          : data.employeeId;
-
-      // Calculate expiry (90 days from approval)
-      const expiryDate = new Date();
-      expiryDate.setDate(expiryDate.getDate() + 90);
-
-      const newCompOff = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data,
-        employeeId,
-        status: 'PENDING',
-        requestedAt: new Date().toISOString(),
-        expiryDate: data.expiryDate || expiryDate.toISOString().split('T')[0],
-        balance: data.workHours / 8, // Convert hours to days
-        used: 0,
-      };
-
-      await prisma.auditLog.create({
-        data: {
-          tenantId: user.tenantId,
-          userId: user.userId,
-          action: 'CREATE',
-          entityType: 'Attendance - Comp-off',
-          details: `Requested comp-off for work on ${data.workDate}`,
-          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        },
-      });
-
-      return NextResponse.json({ success: true, data: newCompOff }, { status: 201 });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          { success: false, error: 'Validation error', details: error.errors },
-          { status: 400 }
-        );
-      }
-      logger.error({ error }, 'Error creating comp-off request:');
-      return NextResponse.json(
-        { success: false, error: 'Failed to create comp-off request' },
-        { status: 500 }
-      );
-    }
-  }
-);
-
-// PUT - Approve/Reject comp-off
-export const PUT = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ATTENDANCE, Action.UPDATE, permissions);
-      if (permissionError) return permissionError;
-
-      const body = await request.json();
-      const { id, status, remarks } = body;
-
-      if (!['APPROVED', 'REJECTED'].includes(status)) {
-        return NextResponse.json(
-          { success: false, error: 'Invalid status' },
-          { status: 400 }
-        );
-      }
-
-      const updated = {
-        id,
-        status,
-        remarks,
-        approvedBy: user.userId,
-        approvedAt: new Date().toISOString(),
-        earnedDate: status === 'APPROVED' ? new Date().toISOString().split('T')[0] : undefined,
-      };
-
-      await prisma.auditLog.create({
-        data: {
-          tenantId: user.tenantId,
-          userId: user.userId,
-          action: 'UPDATE',
-          entityType: 'Attendance - Comp-off',
-          details: `${status} comp-off request: ${id}`,
-          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        },
-      });
-
-      return NextResponse.json({ success: true, data: updated });
-    } catch (error) {
-      logger.error({ error }, 'Error updating comp-off request:');
-      return NextResponse.json(
-        { success: false, error: 'Failed to update comp-off request' },
-        { status: 500 }
-      );
-    }
-  }
-);
+export const GET = handlers.GET;
+export const POST = handlers.POST;
+export const PUT = handlers.PUT;
+export const DELETE = handlers.DELETE;

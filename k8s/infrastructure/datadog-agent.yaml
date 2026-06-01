@@ -1,0 +1,186 @@
+---
+# Datadog Agent — node-level DaemonSet for log + metric + trace collection
+#
+# Why a DaemonSet: one agent pod per node, tailing every container's stdout/
+# stderr via the kubelet's log directory. App pods don't need a sidecar.
+#
+# Pino in apps/* already writes structured JSON to stdout in production
+# (apps/web/src/lib/logger/index.ts), so the agent just needs to pick it up
+# and ship it to DD. No app-side code change required.
+#
+# Prerequisites:
+#   1. DD API key in the `datadog-secret` Secret (key: DD_API_KEY)
+#   2. The `aura-system` namespace exists (see base/namespace.yaml)
+#   3. The cluster name is set in the `datadog-config` ConfigMap below
+#
+# References:
+#   https://docs.datadoghq.com/agent/kubernetes/?tab=helm
+#   docs/runbooks/ROLLBACK.md  (where this dashboards-out)
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: datadog-agent
+  namespace: aura-system
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: datadog-agent
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "namespaces", "endpoints", "pods", "services", "events"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["nodes/metrics", "nodes/spec", "nodes/proxy", "nodes/stats"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["datadogtoken"]
+    verbs: ["get", "update"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create"]
+  - apiGroups: ["quota.openshift.io"]
+    resources: ["clusterresourcequotas"]
+    verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: datadog-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: datadog-agent
+subjects:
+  - kind: ServiceAccount
+    name: datadog-agent
+    namespace: aura-system
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: datadog-config
+  namespace: aura-system
+data:
+  # The cluster name shows up as a tag on every metric/log/trace.
+  # Override per environment via Kustomize overlays.
+  DD_CLUSTER_NAME: "auraos-prod"
+  DD_SITE: "datadoghq.com"            # change to .eu / .us3 / ap1 if applicable
+  DD_LOGS_ENABLED: "true"
+  DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: "true"
+  DD_APM_ENABLED: "true"
+  DD_PROCESS_AGENT_ENABLED: "true"
+  DD_DOGSTATSD_NON_LOCAL_TRAFFIC: "true"
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: datadog-agent
+  namespace: aura-system
+  labels:
+    app: datadog-agent
+spec:
+  selector:
+    matchLabels:
+      app: datadog-agent
+  template:
+    metadata:
+      labels:
+        app: datadog-agent
+      name: datadog-agent
+    spec:
+      serviceAccountName: datadog-agent
+      hostPID: true
+      tolerations:
+        # Run on every node, including control-plane nodes
+        - operator: Exists
+      containers:
+        - name: agent
+          image: gcr.io/datadoghq/agent:7
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8125
+              name: dogstatsdport
+              protocol: UDP
+            - containerPort: 8126
+              name: traceport
+              protocol: TCP
+          env:
+            - name: DD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: datadog-secret
+                  key: DD_API_KEY
+            - name: DD_KUBERNETES_KUBELET_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          envFrom:
+            - configMapRef:
+                name: datadog-config
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: dockersocket
+              mountPath: /var/run/docker.sock
+              readOnly: true
+            - name: procdir
+              mountPath: /host/proc
+              readOnly: true
+            - name: cgroups
+              mountPath: /host/sys/fs/cgroup
+              readOnly: true
+            - name: pointerdir
+              mountPath: /opt/datadog-agent/run
+            - name: logpodpath
+              mountPath: /var/log/pods
+              readOnly: true
+            - name: logcontainerpath
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 5555
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 5555
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - hostPath:
+            path: /var/run/docker.sock
+          name: dockersocket
+        - hostPath:
+            path: /proc
+          name: procdir
+        - hostPath:
+            path: /sys/fs/cgroup
+          name: cgroups
+        - hostPath:
+            path: /opt/datadog-agent/run
+          name: pointerdir
+        - hostPath:
+            path: /var/log/pods
+          name: logpodpath
+        - hostPath:
+            path: /var/lib/docker/containers
+          name: logcontainerpath

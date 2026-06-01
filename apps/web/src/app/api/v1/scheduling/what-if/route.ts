@@ -21,7 +21,20 @@ const VALID_SCENARIO_TYPES = [
   'SKILL_MIX_CHANGE',
 ];
 
-export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
+  if (!permissions.includes('scheduling:create')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing scheduling:create permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const body = await request.json();
     const { scenarioType, parameters } = body;

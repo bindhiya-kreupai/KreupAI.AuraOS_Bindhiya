@@ -3,6 +3,20 @@ import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) => {
+  const { permissions } = context;
+  if (!permissions.includes('performance:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing performance:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   const { id } = await context.params;
 
   return NextResponse.json({

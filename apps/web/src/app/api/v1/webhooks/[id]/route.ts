@@ -54,73 +54,118 @@ const mockWebhookDetails: Record<string, Webhook> = {
   },
 };
 
-export const GET = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
-  const { id } = await params;
-
-  const webhook = mockWebhookDetails[id];
-
-  if (!webhook) {
-    return NextResponse.json({ error: `Webhook with id '${id}' not found` }, { status: 404 });
-  }
-
-  return NextResponse.json({ data: webhook });
-});
-
-export const PUT = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
-  const { id } = await params;
-
-  const webhook = mockWebhookDetails[id];
-
-  if (!webhook) {
-    return NextResponse.json({ error: `Webhook with id '${id}' not found` }, { status: 404 });
-  }
-
-  try {
-    const body: WebhookUpdatePayload = await request.json();
-
-    if (body.url) {
-      try {
-        new URL(body.url);
-      } catch {
-        return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
-      }
-    }
-
-    if (body.events && (!Array.isArray(body.events) || body.events.length === 0)) {
+export const GET = withEnhancedAuth(
+  async (request: NextRequest, { _user, params, permissions }: any) => {
+    if (!permissions.includes('webhooks:read')) {
       return NextResponse.json(
-        { error: 'events must be a non-empty array of event types' },
-        { status: 400 }
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing webhooks:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
       );
     }
+    const { id } = await params;
 
-    const updatedWebhook: Webhook = {
-      ...webhook,
-      ...(body.url && { url: body.url }),
-      ...(body.events && { events: body.events }),
-      ...(body.secret && { secret: body.secret }),
-      ...(typeof body.active === 'boolean' && { active: body.active }),
-      ...(body.description !== undefined && { description: body.description }),
-      ...(body.metadata && { metadata: body.metadata }),
-      updatedAt: new Date().toISOString(),
-    };
+    const webhook = mockWebhookDetails[id];
 
-    return NextResponse.json({ data: updatedWebhook });
-  } catch {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    if (!webhook) {
+      return NextResponse.json({ error: `Webhook with id '${id}' not found` }, { status: 404 });
+    }
+
+    return NextResponse.json({ data: webhook });
   }
-});
+);
 
-export const DELETE = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
-  const { id } = await params;
+export const PUT = withEnhancedAuth(
+  async (request: NextRequest, { _user, params, permissions }: any) => {
+    if (!permissions.includes('webhooks:update')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing webhooks:update permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
+    const { id } = await params;
 
-  const webhook = mockWebhookDetails[id];
+    const webhook = mockWebhookDetails[id];
 
-  if (!webhook) {
-    return NextResponse.json({ error: `Webhook with id '${id}' not found` }, { status: 404 });
+    if (!webhook) {
+      return NextResponse.json({ error: `Webhook with id '${id}' not found` }, { status: 404 });
+    }
+
+    try {
+      const body: WebhookUpdatePayload = await request.json();
+
+      if (body.url) {
+        try {
+          new URL(body.url);
+        } catch {
+          return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
+        }
+      }
+
+      if (body.events && (!Array.isArray(body.events) || body.events.length === 0)) {
+        return NextResponse.json(
+          { error: 'events must be a non-empty array of event types' },
+          { status: 400 }
+        );
+      }
+
+      const updatedWebhook: Webhook = {
+        ...webhook,
+        ...(body.url && { url: body.url }),
+        ...(body.events && { events: body.events }),
+        ...(body.secret && { secret: body.secret }),
+        ...(typeof body.active === 'boolean' && { active: body.active }),
+        ...(body.description !== undefined && { description: body.description }),
+        ...(body.metadata && { metadata: body.metadata }),
+        updatedAt: new Date().toISOString(),
+      };
+
+      return NextResponse.json({ data: updatedWebhook });
+    } catch {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
   }
+);
 
-  return NextResponse.json(
-    { message: `Webhook '${id}' has been deleted successfully` },
-    { status: 200 }
-  );
-});
+export const DELETE = withEnhancedAuth(
+  async (request: NextRequest, { _user, params, permissions }: any) => {
+    if (!permissions.includes('webhooks:delete')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing webhooks:delete permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
+    const { id } = await params;
+
+    const webhook = mockWebhookDetails[id];
+
+    if (!webhook) {
+      return NextResponse.json({ error: `Webhook with id '${id}' not found` }, { status: 404 });
+    }
+
+    return NextResponse.json(
+      { message: `Webhook '${id}' has been deleted successfully` },
+      { status: 200 }
+    );
+  }
+);

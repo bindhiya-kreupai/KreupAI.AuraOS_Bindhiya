@@ -7,87 +7,145 @@ import { z } from 'zod';
  * Prevents runtime errors from missing or invalid configuration
  */
 
-const envSchema = z.object({
-  // Node Environment
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+const envSchema = z
+  .object({
+    // Node Environment
+    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
-  // Database Configuration
-  DATABASE_URL: z.string().url('DATABASE_URL must be a valid PostgreSQL connection string'),
+    // Database Configuration
+    DATABASE_URL: z.string().url('DATABASE_URL must be a valid PostgreSQL connection string'),
 
-  // JWT Configuration
-  JWT_SECRET: z
-    .string()
-    .min(32, 'JWT_SECRET must be at least 32 characters for security')
-    .describe('Secret key for signing JWT tokens'),
-  JWT_REFRESH_SECRET: z
-    .string()
-    .min(32, 'JWT_REFRESH_SECRET must be at least 32 characters for security')
-    .describe('Secret key for signing refresh tokens'),
-  JWT_EXPIRES_IN: z.string().default('15m').describe('Access token expiration time'),
-  JWT_REFRESH_EXPIRES_IN: z.string().default('7d').describe('Refresh token expiration time'),
+    // JWT Configuration
+    JWT_SECRET: z
+      .string()
+      .min(32, 'JWT_SECRET must be at least 32 characters for security')
+      .describe('Secret key for signing JWT tokens'),
+    JWT_REFRESH_SECRET: z
+      .string()
+      .min(32, 'JWT_REFRESH_SECRET must be at least 32 characters for security')
+      .describe('Secret key for signing refresh tokens'),
+    JWT_EXPIRES_IN: z.string().default('15m').describe('Access token expiration time'),
+    JWT_REFRESH_EXPIRES_IN: z.string().default('7d').describe('Refresh token expiration time'),
 
-  // Application Configuration
-  NEXT_PUBLIC_APP_URL: z.string().url().optional().describe('Public application URL'),
-  PORT: z.coerce.number().int().positive().default(3000).describe('Application port'),
+    // Crypto Keys (REQUIRED — app refuses to start without these; see Phase 1 #28)
+    MFA_ENCRYPTION_KEY: z
+      .string()
+      .min(
+        32,
+        'MFA_ENCRYPTION_KEY must be at least 32 characters; generate with `openssl rand -base64 32`'
+      )
+      .describe('Encrypts TOTP secrets at rest'),
+    SSN_ENCRYPTION_KEY: z
+      .string()
+      .min(
+        32,
+        'SSN_ENCRYPTION_KEY must be at least 32 characters; generate with `openssl rand -base64 32`'
+      )
+      .describe('Encrypts dependent SSN fields at rest'),
 
-  // Logging Configuration
-  LOG_LEVEL: z
-    .enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal'])
-    .default('info')
-    .describe('Minimum log level'),
+    // Application Configuration
+    NEXT_PUBLIC_APP_URL: z.string().url().optional().describe('Public application URL'),
+    PORT: z.coerce.number().int().positive().default(3000).describe('Application port'),
 
-  // Email Configuration (Optional - for future use)
-  SMTP_HOST: z.string().optional().describe('SMTP server host'),
-  SMTP_PORT: z.coerce.number().int().positive().optional().describe('SMTP server port'),
-  SMTP_USER: z.string().optional().describe('SMTP username'),
-  SMTP_PASSWORD: z.string().optional().describe('SMTP password'),
-  SMTP_FROM: z.string().email().optional().describe('Default sender email address'),
+    // Logging Configuration
+    LOG_LEVEL: z
+      .enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal'])
+      .default('info')
+      .describe('Minimum log level'),
 
-  // Redis Configuration (Optional - for caching)
-  REDIS_URL: z.string().url().optional().describe('Redis connection URL'),
+    // Email Configuration (Optional - for future use)
+    SMTP_HOST: z.string().optional().describe('SMTP server host'),
+    SMTP_PORT: z.coerce.number().int().positive().optional().describe('SMTP server port'),
+    SMTP_USER: z.string().optional().describe('SMTP username'),
+    SMTP_PASSWORD: z.string().optional().describe('SMTP password'),
+    SMTP_FROM: z.string().email().optional().describe('Default sender email address'),
 
-  // External Services (Optional)
-  SENTRY_DSN: z.string().url().optional().describe('Sentry error tracking DSN'),
-  DATADOG_API_KEY: z.string().optional().describe('Datadog API key'),
+    // Redis Configuration (Optional - for caching)
+    REDIS_URL: z.string().url().optional().describe('Redis connection URL'),
 
-  // S3/Storage Configuration (Optional)
-  AWS_ACCESS_KEY_ID: z.string().optional().describe('AWS access key'),
-  AWS_SECRET_ACCESS_KEY: z.string().optional().describe('AWS secret key'),
-  AWS_REGION: z.string().optional().describe('AWS region'),
-  AWS_S3_BUCKET: z.string().optional().describe('S3 bucket name'),
+    // External Services (Optional)
+    SENTRY_DSN: z.string().url().optional().describe('Sentry error tracking DSN'),
+    DATADOG_API_KEY: z.string().optional().describe('Datadog API key'),
 
-  // OAuth/SSO Configuration (Optional)
-  GOOGLE_CLIENT_ID: z.string().optional().describe('Google OAuth client ID'),
-  GOOGLE_CLIENT_SECRET: z.string().optional().describe('Google OAuth client secret'),
-  MICROSOFT_CLIENT_ID: z.string().optional().describe('Microsoft OAuth client ID'),
-  MICROSOFT_CLIENT_SECRET: z.string().optional().describe('Microsoft OAuth client secret'),
+    // S3/Storage Configuration (Optional)
+    AWS_ACCESS_KEY_ID: z.string().optional().describe('AWS access key'),
+    AWS_SECRET_ACCESS_KEY: z.string().optional().describe('AWS secret key'),
+    AWS_REGION: z.string().optional().describe('AWS region'),
+    AWS_S3_BUCKET: z.string().optional().describe('S3 bucket name'),
 
-  // Feature Flags
-  ENABLE_SIGNUP: z.coerce.boolean().default(true).describe('Allow new user registration'),
-  ENABLE_MFA: z.coerce.boolean().default(true).describe('Enable multi-factor authentication'),
-  ENABLE_SSO: z.coerce.boolean().default(false).describe('Enable SSO authentication'),
+    // OAuth/SSO Configuration (Optional)
+    GOOGLE_CLIENT_ID: z.string().optional().describe('Google OAuth client ID'),
+    GOOGLE_CLIENT_SECRET: z.string().optional().describe('Google OAuth client secret'),
+    MICROSOFT_CLIENT_ID: z.string().optional().describe('Microsoft OAuth client ID'),
+    MICROSOFT_CLIENT_SECRET: z.string().optional().describe('Microsoft OAuth client secret'),
 
-  // Rate Limiting
-  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100).describe('Max requests per window'),
-  RATE_LIMIT_WINDOW: z.coerce.number().int().positive().default(900000).describe('Rate limit window in ms (15min)'),
+    // Feature Flags
+    ENABLE_SIGNUP: z.coerce.boolean().default(true).describe('Allow new user registration'),
+    ENABLE_MFA: z.coerce.boolean().default(true).describe('Enable multi-factor authentication'),
+    ENABLE_SSO: z.coerce.boolean().default(false).describe('Enable SSO authentication'),
 
-  // Microservices Configuration
-  AUTH_SERVICE_URL: z.string().url().default('http://localhost:3001'),
-  EMPLOYEE_SERVICE_URL: z.string().url().default('http://localhost:3002'),
-  NOTIFICATION_SERVICE_URL: z.string().url().default('http://localhost:3003'),
-  DOCUMENT_SERVICE_URL: z.string().url().default('http://localhost:3004'),
-  PAYROLL_SERVICE_URL: z.string().url().default('http://localhost:3005'),
-  ANALYTICS_SERVICE_URL: z.string().url().default('http://localhost:3007'),
-  AI_SERVICE_URL: z.string().url().default('http://localhost:3000'),
-  INTEGRATION_SERVICE_URL: z.string().url().default('http://localhost:3008'),
-  SCHEDULING_SERVICE_URL: z.string().url().default('http://localhost:3009'),
-  WORKFLOW_SERVICE_URL: z.string().url().default('http://localhost:3010'),
+    // Rate Limiting
+    RATE_LIMIT_MAX: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(100)
+      .describe('Max requests per window'),
+    RATE_LIMIT_WINDOW: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(900000)
+      .describe('Rate limit window in ms (15min)'),
 
-  // Deployment Information (Vercel)
-  VERCEL_ENV: z.enum(['production', 'preview', 'development']).optional(),
-  VERCEL_URL: z.string().optional(),
-  VERCEL_GIT_COMMIT_SHA: z.string().optional(),
-});
+    // Microservices Configuration
+    AUTH_SERVICE_URL: z.string().url().default('http://localhost:3001'),
+    EMPLOYEE_SERVICE_URL: z.string().url().default('http://localhost:3002'),
+    NOTIFICATION_SERVICE_URL: z.string().url().default('http://localhost:3003'),
+    DOCUMENT_SERVICE_URL: z.string().url().default('http://localhost:3004'),
+    PAYROLL_SERVICE_URL: z.string().url().default('http://localhost:3005'),
+    ANALYTICS_SERVICE_URL: z.string().url().default('http://localhost:3007'),
+    AI_SERVICE_URL: z.string().url().default('http://localhost:3000'),
+    INTEGRATION_SERVICE_URL: z.string().url().default('http://localhost:3008'),
+    SCHEDULING_SERVICE_URL: z.string().url().default('http://localhost:3009'),
+    WORKFLOW_SERVICE_URL: z.string().url().default('http://localhost:3010'),
+
+    // Deployment Information (Vercel)
+    VERCEL_ENV: z.enum(['production', 'preview', 'development']).optional(),
+    VERCEL_URL: z.string().optional(),
+    VERCEL_GIT_COMMIT_SHA: z.string().optional(),
+  })
+  .superRefine((vals, ctx) => {
+    // In production, env vars that are merely "optional" for local dev MUST be set
+    // for observability, secrets management, and audit-trail integrity to function.
+    // Keep this list narrow — every entry should justify being a hard blocker.
+    if (vals.NODE_ENV !== 'production') return;
+    const requiredInProd: Array<keyof typeof vals> = [
+      'NEXT_PUBLIC_APP_URL', // canonical URL for emails/redirects
+      'REDIS_URL', // session + audit + rate-limit storage
+      'SENTRY_DSN', // error tracking
+    ];
+    for (const key of requiredInProd) {
+      if (!vals[key]) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [key as string],
+          message: `${String(key)} is required in production (NODE_ENV=production)`,
+        });
+      }
+    }
+    // If SSO is on, OAuth secrets must be supplied
+    if (vals.ENABLE_SSO) {
+      if (!vals.GOOGLE_CLIENT_SECRET && !vals.MICROSOFT_CLIENT_SECRET) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['ENABLE_SSO'],
+          message:
+            'ENABLE_SSO=true but no OAuth provider secret is configured (Google or Microsoft)',
+        });
+      }
+    }
+  });
 
 /**
  * Validated environment variables
@@ -234,11 +292,6 @@ export const servicesConfig = {
   workflow: env.WORKFLOW_SERVICE_URL,
 };
 
-/**
- * Validate environment on module load
- * This ensures the app won't start with invalid configuration
- */
-if (typeof window === 'undefined') {
-  // Only validate on server-side
-  console.log('✅ Environment variables validated successfully');
-}
+// Validation runs at module load via parseEnv() above; if it failed,
+// the process would have already exited. No explicit success log here —
+// the absence of a startup error is the success signal.

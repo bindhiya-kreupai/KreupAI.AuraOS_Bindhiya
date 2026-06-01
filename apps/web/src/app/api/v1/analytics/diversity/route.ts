@@ -1,10 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
 export const GET = withEnhancedAuth(async (request, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('analytics:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing analytics:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
 
     const employees = await prisma.employee.findMany({
@@ -30,7 +43,8 @@ export const GET = withEnhancedAuth(async (request, context) => {
     ];
 
     for (const emp of employees) {
-      const years = (now.getTime() - new Date(emp.joiningDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+      const years =
+        (now.getTime() - new Date(emp.joiningDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000);
       if (years < 1) tenureBuckets[0].count++;
       else if (years < 3) tenureBuckets[1].count++;
       else if (years < 5) tenureBuckets[2].count++;
@@ -59,7 +73,10 @@ export const GET = withEnhancedAuth(async (request, context) => {
       totalEmployees > 0
         ? Math.round(
             (employees.reduce((sum, e) => {
-              return sum + (now.getTime() - new Date(e.joiningDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+              return (
+                sum +
+                (now.getTime() - new Date(e.joiningDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000)
+              );
             }, 0) /
               totalEmployees) *
               10
@@ -119,7 +136,13 @@ export const GET = withEnhancedAuth(async (request, context) => {
         departmentBreakdown: [],
         payEquity: { genderPayGap: 0, ethnicityPayGap: 0, trend: 'not_available', lastAudit: null },
         deiInitiatives: [],
-        deiScore: { overall: 0, representation: 0, inclusion: 0, belonging: 0, industryBenchmark: 0 },
+        deiScore: {
+          overall: 0,
+          representation: 0,
+          inclusion: 0,
+          belonging: 0,
+          industryBenchmark: 0,
+        },
       },
     });
   }

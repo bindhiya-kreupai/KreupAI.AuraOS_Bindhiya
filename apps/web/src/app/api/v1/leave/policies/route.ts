@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -32,7 +33,20 @@ const createLeavePolicySchema = z.object({
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('leave:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing leave:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const companyId = searchParams.get('companyId');
@@ -102,7 +116,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     const totalPages = Math.ceil(total / limit);
 
     // Format the response to maintain existing shape
-    const formattedPolicies = policies.map(p => ({
+    const formattedPolicies = policies.map((p) => ({
       ...p,
       annualEntitlement: Number(p.annualEntitlement),
       accrualRate: p.accrualRate ? Number(p.accrualRate) : null,
@@ -115,37 +129,43 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       effectiveTo: p.effectiveTo?.toISOString() ?? null,
     }));
 
-    return NextResponse.json({
-      success: true,
-      data: formattedPolicies,
-      meta: {
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages,
+    return NextResponse.json(
+      {
+        success: true,
+        data: formattedPolicies,
+        meta: {
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages,
+          },
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
         },
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
       },
-    }, { status: 200 });
+      { status: 200 }
+    );
   } catch (error) {
     console.error('[Leave Policies API] GET Error:', error);
 
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to fetch leave policies',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E5001',
+          message: 'Failed to fetch leave policies',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    }, { status: 500 });
+      { status: 500 }
+    );
   }
 });
 
@@ -155,25 +175,41 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('leave:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing leave:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
 
     // Validate request body
     const validationResult = createLeavePolicySchema.safeParse(body);
     if (!validationResult.success) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'Validation failed',
-          details: { errors: validationResult.error.errors },
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Validation failed',
+            details: { errors: validationResult.error.errors },
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 400 });
+        { status: 400 }
+      );
     }
 
     const data = validationResult.data;
@@ -189,18 +225,21 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     });
 
     if (existing) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'E4004',
-          message: `A leave policy with code '${data.code}' already exists`,
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4004',
+            message: `A leave policy with code '${data.code}' already exists`,
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 409 });
+        { status: 409 }
+      );
     }
 
     // Create the leave policy
@@ -228,42 +267,50 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        ...policy,
-        annualEntitlement: Number(policy.annualEntitlement),
-        accrualRate: policy.accrualRate ? Number(policy.accrualRate) : null,
-        maxCarryForwardDays: policy.maxCarryForwardDays ? Number(policy.maxCarryForwardDays) : null,
-        maxEncashmentDays: policy.maxEncashmentDays ? Number(policy.maxEncashmentDays) : null,
-        maxNegativeDays: policy.maxNegativeDays ? Number(policy.maxNegativeDays) : null,
-        encashmentRate: Number(policy.encashmentRate),
-        createdAt: policy.createdAt.toISOString(),
-        updatedAt: policy.updatedAt.toISOString(),
-        effectiveFrom: policy.effectiveFrom.toISOString(),
-        effectiveTo: policy.effectiveTo?.toISOString() ?? null,
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          ...policy,
+          annualEntitlement: Number(policy.annualEntitlement),
+          accrualRate: policy.accrualRate ? Number(policy.accrualRate) : null,
+          maxCarryForwardDays: policy.maxCarryForwardDays
+            ? Number(policy.maxCarryForwardDays)
+            : null,
+          maxEncashmentDays: policy.maxEncashmentDays ? Number(policy.maxEncashmentDays) : null,
+          maxNegativeDays: policy.maxNegativeDays ? Number(policy.maxNegativeDays) : null,
+          encashmentRate: Number(policy.encashmentRate),
+          createdAt: policy.createdAt.toISOString(),
+          updatedAt: policy.updatedAt.toISOString(),
+          effectiveFrom: policy.effectiveFrom.toISOString(),
+          effectiveTo: policy.effectiveTo?.toISOString() ?? null,
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    }, { status: 201 });
+      { status: 201 }
+    );
   } catch (error) {
     console.error('[Leave Policies API] POST Error:', error);
 
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to create leave policy',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E5001',
+          message: 'Failed to create leave policy',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    }, { status: 500 });
+      { status: 500 }
+    );
   }
 });

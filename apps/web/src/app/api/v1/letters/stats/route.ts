@@ -1,10 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { LetterService } from '@/lib/services/letter.service';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('letters:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing letters:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const stats = await LetterService.getStatistics(user.tenantId);
     return NextResponse.json({ success: true, data: stats });
   } catch (error: any) {

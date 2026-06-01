@@ -3,43 +3,38 @@
  * Phase 4 Sprint 31-32: Agent Endpoints
  */
 
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
-import {
-  AgentFrameworkService,
-  HRAgentService,
-  RecruitmentAgentService,
-  AnalyticsAgentService,
-  AgentType,
-} from '@/lib/services/agentic-ai';
+import type { NextRequest } from 'next/server';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
+import { AgentFrameworkService } from '@/lib/services/agentic-ai';
 
 /**
  * GET /api/agents
- * Get all available agents
+ * Get all available agents (auth: agents:read)
+ *
+ * Lists agent capabilities and configuration. Authenticated to prevent
+ * unauthenticated discovery of available AI capabilities.
  */
-export async function GET(request: NextRequest) {
-  try {
+export const GET = createProtectedRoute(
+  async (_request: NextRequest, _ctx) => {
     const agents = AgentFrameworkService.getAllAgents();
-
-    return NextResponse.json({
+    return {
       success: true,
-      data: agents.map(agent => ({
+      data: agents.map((agent) => ({
         id: agent.id,
         type: agent.type,
         name: agent.name,
         description: agent.description,
-        capabilities: agent.capabilities.map(c => ({
+        capabilities: agent.capabilities.map((c) => ({
           id: c.id,
           name: c.name,
           description: c.description,
         })),
         isActive: agent.isActive,
       })),
-    });
-  } catch (error) {
-        return NextResponse.json(
-      { success: false, error: 'Failed to fetch agents' },
-      { status: 500 }
-    );
+    };
+  },
+  {
+    requiredPermissions: ['agents:read'],
+    rateLimit: 'API_USER',
   }
-}
+);

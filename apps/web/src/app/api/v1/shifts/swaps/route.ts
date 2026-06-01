@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { ShiftManagementService } from '@/lib/services/shift-management.service';
 import { withEnhancedAuth } from '@/lib/auth';
 import { withAudit } from '@/lib/middleware/audit.middleware';
@@ -6,7 +7,20 @@ import { AuditAction } from '@/lib/audit/audit.service';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('shifts:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing shifts:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const filter = {
@@ -38,80 +52,113 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
   }
 });
 
-export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
+export const POST = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, permissions } = context;
+      if (!permissions.includes('shifts:create')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing shifts:create permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
+      const body = await request.json();
 
-    const { requestorId, swapWithId, requestorDate, requestorShiftId, swapWithDate, swapWithShiftId, reason } = body;
+      const {
+        requestorId,
+        swapWithId,
+        requestorDate,
+        requestorShiftId,
+        swapWithDate,
+        swapWithShiftId,
+        reason,
+      } = body;
 
-    if (!requestorId || !swapWithId || !requestorDate || !requestorShiftId || !swapWithDate || !swapWithShiftId || !reason) {
+      if (
+        !requestorId ||
+        !swapWithId ||
+        !requestorDate ||
+        !requestorShiftId ||
+        !swapWithDate ||
+        !swapWithShiftId ||
+        !reason
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E2001',
+              message:
+                'Validation failed: requestorId, swapWithId, requestorDate, requestorShiftId, swapWithDate, swapWithShiftId, and reason are required',
+            },
+            meta: {
+              timestamp: new Date().toISOString(),
+              requestId: crypto.randomUUID(),
+              apiVersion: 'v1',
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      if (requestorId === swapWithId) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E2001',
+              message: 'requestorId and swapWithId must be different employees',
+            },
+            meta: {
+              timestamp: new Date().toISOString(),
+              requestId: crypto.randomUUID(),
+              apiVersion: 'v1',
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      const swap = await ShiftManagementService.createSwap({
+        tenantId: user.tenantId,
+        requestorId,
+        swapWithId,
+        requestorDate,
+        requestorShiftId,
+        swapWithDate,
+        swapWithShiftId,
+        reason,
+      });
+
       return NextResponse.json(
         {
-          success: false,
-          error: {
-            code: 'E2001',
-            message: 'Validation failed: requestorId, swapWithId, requestorDate, requestorShiftId, swapWithDate, swapWithShiftId, and reason are required',
-          },
+          success: true,
+          data: swap,
           meta: {
             timestamp: new Date().toISOString(),
             requestId: crypto.randomUUID(),
             apiVersion: 'v1',
           },
         },
-        { status: 400 }
+        { status: 201 }
       );
-    }
-
-    if (requestorId === swapWithId) {
+    } catch (error: any) {
       return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'E2001',
-            message: 'requestorId and swapWithId must be different employees',
-          },
-          meta: {
-            timestamp: new Date().toISOString(),
-            requestId: crypto.randomUUID(),
-            apiVersion: 'v1',
-          },
-        },
-        { status: 400 }
+        { success: false, error: { code: 'E5001', message: error.message } },
+        { status: 500 }
       );
     }
-
-    const swap = await ShiftManagementService.createSwap({
-      tenantId: user.tenantId,
-      requestorId,
-      swapWithId,
-      requestorDate,
-      requestorShiftId,
-      swapWithDate,
-      swapWithShiftId,
-      reason,
-    });
-
-    return NextResponse.json(
-      {
-        success: true,
-        data: swap,
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      },
-      { status: 201 }
-    );
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: { code: 'E5001', message: error.message } },
-      { status: 500 }
-    );
+  }),
+  {
+    action: AuditAction.EMPLOYEE_UPDATED,
+    resourceType: 'shift_swap_request',
+    captureRequestBody: true,
   }
-}), {
-  action: AuditAction.EMPLOYEE_UPDATED,
-  resourceType: 'shift_swap_request',
-  captureRequestBody: true,
-});
+);

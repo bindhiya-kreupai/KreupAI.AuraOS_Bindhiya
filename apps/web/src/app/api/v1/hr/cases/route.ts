@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
@@ -11,7 +12,20 @@ export const dynamic = 'force-dynamic';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('hr/cases:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing hr/cases:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get('page') || '1');
@@ -69,7 +83,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('hr/cases:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing hr/cases:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
 
     if (!body.employeeId || !body.caseType || !body.subject) {
@@ -82,7 +109,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       );
     }
 
-    const caseNumber = `ER-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const caseNumber = `ER-${Date.now()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
 
     const erCase = await prisma.eRCase.create({
       data: {

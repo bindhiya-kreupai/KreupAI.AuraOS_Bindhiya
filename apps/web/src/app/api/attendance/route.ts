@@ -3,10 +3,11 @@
  * Phase 2: Core Enhancement - Attendance Enhancement
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { AttendanceService } from '@/lib/services/attendance';
 import { getSessionOrError, type Session } from '@/lib/auth/session';
+import { prisma } from '@aura/database';
 
 /**
  * GET /api/attendance
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') || 'records'; // 'records' | 'summary' | 'calendar'
 
     switch (type) {
-      case 'summary':
+      case 'summary': {
         if (!employeeId || !month) {
           return NextResponse.json(
             {
@@ -38,11 +39,23 @@ export async function GET(request: NextRequest) {
             { status: 400 }
           );
         }
+        // Cross-tenant guard: verify employeeId belongs to the authenticated tenant
+        const summaryOwnership = await prisma.employee.findFirst({
+          where: { id: employeeId, company: { tenantId } },
+          select: { id: true },
+        });
+        if (!summaryOwnership) {
+          return NextResponse.json(
+            { error: 'Employee not found', errorAr: 'لم يتم العثور على الموظف' },
+            { status: 404 }
+          );
+        }
         const summary = await AttendanceService.getMonthlyAttendance(employeeId, month);
         return NextResponse.json({
           success: true,
           data: summary,
         });
+      }
 
       case 'calendar':
         // Return calendar view data
@@ -70,7 +83,7 @@ export async function GET(request: NextRequest) {
           },
         });
     }
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch attendance data', errorAr: 'فشل في جلب بيانات الحضور' },
       { status: 500 }
@@ -126,6 +139,20 @@ export async function POST(request: NextRequest) {
               errorAr: 'معرف الموظف ونوع البصمة مطلوبان',
             },
             { status: 400 }
+          );
+        }
+
+        // Cross-tenant guard: verify body.employeeId belongs to the authenticated tenant
+        // before calling the service. AttendanceService.recordPunch does not currently
+        // accept a tenantId argument, so the route owns this check.
+        const employeeOwnership = await prisma.employee.findFirst({
+          where: { id: body.employeeId, company: { tenantId } },
+          select: { id: true },
+        });
+        if (!employeeOwnership) {
+          return NextResponse.json(
+            { error: 'Employee not found', errorAr: 'لم يتم العثور على الموظف' },
+            { status: 404 }
           );
         }
 

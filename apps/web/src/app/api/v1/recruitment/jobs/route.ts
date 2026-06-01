@@ -13,7 +13,7 @@ async function getTenantUserIds(tenantId: string): Promise<string[]> {
     select: { id: true },
   });
 
-  return users.map(user => user.id);
+  return users.map((user) => user.id);
 }
 
 /**
@@ -88,64 +88,80 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
  * POST /api/v1/recruitment/jobs
  * Create a new job posting
  */
-export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
+export const POST = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, permissions } = context;
+      if (!permissions.includes('recruitment:create')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing recruitment:create permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
+      const body = await request.json();
 
-    if (!body.title || !body.department || !body.type) {
+      if (!body.title || !body.department || !body.type) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: { code: 'E2001', message: 'title, department and type are required' },
+          },
+          { status: 400 }
+        );
+      }
+
+      const job = await prisma.jobPosting.create({
+        data: {
+          title: body.title,
+          department: body.department,
+          location: body.location || 'Remote',
+          type: body.type,
+          status: body.status || 'Draft',
+          description: body.description || null,
+          channels: body.channels || null,
+          createdBy: user.id,
+          postedDate: body.status === 'Active' ? new Date() : null,
+        },
+      });
+
+      return NextResponse.json(
+        {
+          success: true,
+          data: job,
+          message: 'Job posting created successfully',
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        },
+        { status: 201 }
+      );
+    } catch (error) {
+      console.error('[Recruitment Jobs API] POST Error:', error);
       return NextResponse.json(
         {
           success: false,
-          error: { code: 'E2001', message: 'title, department and type are required' },
+          error: {
+            code: 'E5001',
+            message: 'Failed to create job posting',
+            details: { error: error instanceof Error ? error.message : 'Unknown error' },
+          },
         },
-        { status: 400 }
+        { status: 500 }
       );
     }
-
-    const job = await prisma.jobPosting.create({
-      data: {
-        title: body.title,
-        department: body.department,
-        location: body.location || 'Remote',
-        type: body.type,
-        status: body.status || 'Draft',
-        description: body.description || null,
-        channels: body.channels || null,
-        createdBy: user.id,
-        postedDate: body.status === 'Active' ? new Date() : null,
-      },
-    });
-
-    return NextResponse.json(
-      {
-        success: true,
-        data: job,
-        message: 'Job posting created successfully',
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error('[Recruitment Jobs API] POST Error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E5001',
-          message: 'Failed to create job posting',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        },
-      },
-      { status: 500 }
-    );
+  }),
+  {
+    action: AuditAction.EMPLOYEE_CREATED,
+    resourceType: 'job_posting',
+    captureRequestBody: true,
   }
-}), {
-  action: AuditAction.EMPLOYEE_CREATED,
-  resourceType: 'job_posting',
-  captureRequestBody: true,
-});
+);

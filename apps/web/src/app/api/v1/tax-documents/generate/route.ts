@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -17,26 +18,42 @@ const generateSchema = z.object({
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('tax-documents:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing tax-documents:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
     const body = await request.json();
 
     // Validate request body
     const validationResult = generateSchema.safeParse(body);
     if (!validationResult.success) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'Validation failed. Year and type are required fields.',
-          details: { errors: validationResult.error.errors },
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Validation failed. Year and type are required fields.',
+            details: { errors: validationResult.error.errors },
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 400 });
+        { status: 400 }
+      );
     }
 
     const { year, type, employeeIds } = validationResult.data;
@@ -91,46 +108,52 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     const completed = results.filter((r) => r.status === 'fulfilled').length;
     const failed = results.filter((r) => r.status === 'rejected').length;
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        jobId: `gen-job-${Date.now()}`,
-        status: 'queued',
-        year,
-        type,
-        requestedBy: user.userId,
-        requestedAt: new Date().toISOString(),
-        estimatedCompletionTime: new Date(Date.now() + 300000).toISOString(),
-        targetEmployees: employeeIds || 'all',
-        totalDocumentsToGenerate,
-        progress: {
-          completed,
-          failed,
-          pending: totalDocumentsToGenerate - completed - failed,
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          jobId: `gen-job-${Date.now()}`,
+          status: 'queued',
+          year,
+          type,
+          requestedBy: user.userId,
+          requestedAt: new Date().toISOString(),
+          estimatedCompletionTime: new Date(Date.now() + 300000).toISOString(),
+          targetEmployees: employeeIds || 'all',
+          totalDocumentsToGenerate,
+          progress: {
+            completed,
+            failed,
+            pending: totalDocumentsToGenerate - completed - failed,
+          },
+          message: `Tax document generation for ${type} (${year}) has been processed. ${completed} generated successfully.`,
         },
-        message: `Tax document generation for ${type} (${year}) has been processed. ${completed} generated successfully.`,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    }, { status: 202 });
+      { status: 202 }
+    );
   } catch (error) {
     console.error('[Tax Documents Generate API] POST Error:', error);
 
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to generate tax documents',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E5001',
+          message: 'Failed to generate tax documents',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    }, { status: 500 });
+      { status: 500 }
+    );
   }
 });

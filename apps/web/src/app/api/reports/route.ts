@@ -3,25 +3,22 @@
  * Phase 3: Intelligence Layer - Advanced Reporting
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 import { ReportService } from '@/lib/services/reporting';
 
 /**
  * POST /api/reports
- * Generate or manage reports
+ * Generate or manage reports (auth: reports:write)
+ *
+ * Tenant scoping: tenantId is ALWAYS taken from the authenticated session.
+ * Any tenantId in the request body is overridden.
  */
-export async function POST(request: NextRequest) {
-  try {
+export const POST = createProtectedRoute(
+  async (request: NextRequest, { auth }) => {
     const body = await request.json();
-
-    // Validate required fields
-    if (!body.tenantId) {
-      return NextResponse.json(
-        { error: 'tenantId is required', errorAr: 'معرف المستأجر مطلوب' },
-        { status: 400 }
-      );
-    }
+    body.tenantId = auth!.tenantId;
 
     const action = body.action || 'generate';
 
@@ -30,7 +27,10 @@ export async function POST(request: NextRequest) {
         // Generate report
         if (!body.reportId && !body.templateId) {
           return NextResponse.json(
-            { error: 'reportId or templateId is required', errorAr: 'معرف التقرير أو القالب مطلوب' },
+            {
+              error: 'reportId or templateId is required',
+              errorAr: 'معرف التقرير أو القالب مطلوب',
+            },
             { status: 400 }
           );
         }
@@ -76,10 +76,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const exportData = await ReportService.exportReport(
-          body.result,
-          body.format || 'PDF'
-        );
+        const exportData = await ReportService.exportReport(body.result, body.format || 'PDF');
 
         return NextResponse.json({
           success: true,
@@ -94,7 +91,10 @@ export async function POST(request: NextRequest) {
         // Schedule report
         if (!body.reportId || !body.schedule) {
           return NextResponse.json(
-            { error: 'reportId and schedule are required', errorAr: 'معرف التقرير والجدولة مطلوبان' },
+            {
+              error: 'reportId and schedule are required',
+              errorAr: 'معرف التقرير والجدولة مطلوبان',
+            },
             { status: 400 }
           );
         }
@@ -137,25 +137,23 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-        return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to process report',
-        errorAr: 'فشل في معالجة التقرير',
-      },
-      { status: 500 }
-    );
+  },
+  {
+    requiredPermissions: ['reports:write'],
+    rateLimit: 'API_USER',
   }
-}
+);
 
 /**
  * GET /api/reports
- * Get report templates or reports
+ * Get report templates or reports (auth: reports:read)
+ *
+ * Tenant scoping: tenantId is ALWAYS taken from the authenticated session.
  */
-export async function GET(request: NextRequest) {
-  try {
+export const GET = createProtectedRoute(
+  async (request: NextRequest, { auth }) => {
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId');
+    const tenantId = auth!.tenantId;
     const type = searchParams.get('type'); // 'templates' | 'reports' | 'schedules'
     const reportType = searchParams.get('reportType');
     const category = searchParams.get('category');
@@ -203,10 +201,9 @@ export async function GET(request: NextRequest) {
           },
         });
     }
-  } catch (error) {
-        return NextResponse.json(
-      { error: 'Failed to fetch reports', errorAr: 'فشل في جلب التقارير' },
-      { status: 500 }
-    );
+  },
+  {
+    requiredPermissions: ['reports:read'],
+    rateLimit: 'API_USER',
   }
-}
+);

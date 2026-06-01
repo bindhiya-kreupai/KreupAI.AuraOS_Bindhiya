@@ -10,25 +10,23 @@
  * - Statutory forms generation
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 import { IndiaFormsService } from '@/lib/services/india-statutory';
 import { IndiaStatutoryService } from '@/lib/services/compliance/india-statutory.service';
 
 /**
  * POST /api/india-statutory
- * Generate statutory forms and returns
+ * Generate statutory forms and returns (auth: india-statutory:write)
+ *
+ * Tenant scoping: tenantId is ALWAYS taken from the authenticated session.
+ * Any tenantId in the request body is overridden.
  */
-export async function POST(request: NextRequest) {
-  try {
+export const POST = createProtectedRoute(
+  async (request: NextRequest, { auth }) => {
     const body = await request.json();
-
-    if (!body.tenantId) {
-      return NextResponse.json(
-        { error: 'tenantId is required', errorHi: 'टेनेंट आईडी आवश्यक है' },
-        { status: 400 }
-      );
-    }
+    body.tenantId = auth!.tenantId;
 
     const action = body.action || 'generate-form16';
 
@@ -38,7 +36,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: 'employeeId and financialYear are required',
-              errorHi: 'कर्मचारी आईडी और वित्तीय वर्ष आवश्यक हैं'
+              errorHi: 'कर्मचारी आईडी और वित्तीय वर्ष आवश्यक हैं',
             },
             { status: 400 }
           );
@@ -62,7 +60,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: 'quarter and financialYear are required',
-              errorHi: 'तिमाही और वित्तीय वर्ष आवश्यक हैं'
+              errorHi: 'तिमाही और वित्तीय वर्ष आवश्यक हैं',
             },
             { status: 400 }
           );
@@ -86,7 +84,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: 'month and year are required',
-              errorHi: 'महीना और वर्ष आवश्यक हैं'
+              errorHi: 'महीना और वर्ष आवश्यक हैं',
             },
             { status: 400 }
           );
@@ -110,7 +108,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: 'month and year are required',
-              errorHi: 'महीना और वर्ष आवश्यक हैं'
+              errorHi: 'महीना और वर्ष आवश्यक हैं',
             },
             { status: 400 }
           );
@@ -134,7 +132,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: 'declaration is required',
-              errorHi: 'घोषणा आवश्यक है'
+              errorHi: 'घोषणा आवश्यक है',
             },
             { status: 400 }
           );
@@ -154,7 +152,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: 'declaration is required',
-              errorHi: 'घोषणा आवश्यक है'
+              errorHi: 'घोषणा आवश्यक है',
             },
             { status: 400 }
           );
@@ -174,16 +172,13 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: 'taxableIncome and regime are required',
-              errorHi: 'कर योग्य आय और व्यवस्था आवश्यक हैं'
+              errorHi: 'कर योग्य आय और व्यवस्था आवश्यक हैं',
             },
             { status: 400 }
           );
         }
 
-        const taxCalculation = IndiaFormsService.calculateTax(
-          body.taxableIncome,
-          body.regime
-        );
+        const taxCalculation = IndiaFormsService.calculateTax(body.taxableIncome, body.regime);
 
         return NextResponse.json({
           success: true,
@@ -197,7 +192,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: 'grossWages is required',
-              errorHi: 'सकल वेतन आवश्यक है'
+              errorHi: 'सकल वेतन आवश्यक है',
             },
             { status: 400 }
           );
@@ -220,7 +215,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: 'grossWages is required',
-              errorHi: 'सकल वेतन आवश्यक है'
+              errorHi: 'सकल वेतन आवश्यक है',
             },
             { status: 400 }
           );
@@ -240,7 +235,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: 'basicSalary is required',
-              errorHi: 'मूल वेतन आवश्यक है'
+              errorHi: 'मूल वेतन आवश्यक है',
             },
             { status: 400 }
           );
@@ -264,7 +259,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: 'grossSalary is required',
-              errorHi: 'सकल वेतन आवश्यक है'
+              errorHi: 'सकल वेतन आवश्यक है',
             },
             { status: 400 }
           );
@@ -284,7 +279,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: 'grossSalary and stateCode are required',
-              errorHi: 'सकल वेतन और राज्य कोड आवश्यक हैं'
+              errorHi: 'सकल वेतन और राज्य कोड आवश्यक हैं',
             },
             { status: 400 }
           );
@@ -308,7 +303,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: 'annualGrossSalary is required',
-              errorHi: 'वार्षिक सकल वेतन आवश्यक है'
+              errorHi: 'वार्षिक सकल वेतन आवश्यक है',
             },
             { status: 400 }
           );
@@ -341,23 +336,20 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: 'annualGrossSalary is required',
-              errorHi: 'वार्षिक सकल वेतन आवश्यक है'
+              errorHi: 'वार्षिक सकल वेतन आवश्यक है',
             },
             { status: 400 }
           );
         }
 
-        const comparison = IndiaStatutoryService.compareRegimes(
-          body.annualGrossSalary,
-          {
-            section80C: body.section80C,
-            section80CCD1B: body.section80CCD1B,
-            section80D: body.section80D,
-            section24B: body.section24B,
-            hra: body.hra,
-            lta: body.lta,
-          }
-        );
+        const comparison = IndiaStatutoryService.compareRegimes(body.annualGrossSalary, {
+          section80C: body.section80C,
+          section80CCD1B: body.section80CCD1B,
+          section80D: body.section80D,
+          section24B: body.section24B,
+          hra: body.hra,
+          lta: body.lta,
+        });
 
         return NextResponse.json({
           success: true,
@@ -371,7 +363,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: 'employeeData is required',
-              errorHi: 'कर्मचारी डेटा आवश्यक है'
+              errorHi: 'कर्मचारी डेटा आवश्यक है',
             },
             { status: 400 }
           );
@@ -438,25 +430,23 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-        return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to process request',
-        errorHi: 'अनुरोध संसाधित करने में विफल',
-      },
-      { status: 500 }
-    );
+  },
+  {
+    requiredPermissions: ['india-statutory:write'],
+    rateLimit: 'API_USER',
   }
-}
+);
 
 /**
  * GET /api/india-statutory
- * Get statutory forms and compliance data
+ * Get statutory forms and compliance data (auth: india-statutory:read)
+ *
+ * Tenant scoping: tenantId is ALWAYS taken from the authenticated session.
+ * Any tenantId in the query string is ignored.
  */
-export async function GET(request: NextRequest) {
-  try {
+export const GET = createProtectedRoute(
+  async (request: NextRequest, _ctx) => {
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId');
     const type = searchParams.get('type') || 'tax-slabs';
 
     switch (type) {
@@ -700,10 +690,9 @@ export async function GET(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-        return NextResponse.json(
-      { error: 'Failed to fetch statutory data', errorHi: 'वैधानिक डेटा प्राप्त करने में विफल' },
-      { status: 500 }
-    );
+  },
+  {
+    requiredPermissions: ['india-statutory:read'],
+    rateLimit: 'API_USER',
   }
-}
+);

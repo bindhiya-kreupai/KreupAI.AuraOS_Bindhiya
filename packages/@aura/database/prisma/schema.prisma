@@ -1240,6 +1240,9 @@ enum AuditAction {
   USER_LOGIN_FAILED
   PASSWORD_CHANGED
   PASSWORD_RESET_REQUESTED
+  MFA_ENABLED
+  MFA_VERIFIED
+  MFA_DISABLED
 
   // Authorization
   ROLE_ASSIGNED
@@ -6608,6 +6611,242 @@ model MentoringProgram {
   @@index([status])
 
   @@map("aura_mentoring_program")
+}
+
+// ============================================================================
+// 30. ATTENDANCE CONFIGURATION (Phase 2 #35)
+// ============================================================================
+// Per-tenant configuration models that back the attendance/* admin routes.
+// Convention (consistent across all 10 models in this section):
+//   - tenantId required (multi-tenant scope)
+//   - companyId nullable (null = applies to all companies in the tenant)
+//   - name + description for the admin UI
+//   - JSON `config` blob for policy-specific fields (avoids 10 schema migrations
+//     when a domain detail changes; downside is no DB-level validation —
+//     enforced at the zod layer instead)
+//   - `version Int @default(1)` for optimistic locking when two admins edit
+//   - soft-delete pair (isDeleted, deletedAt) matching the rest of the schema
+//   - audit-trail columns (createdBy, updatedBy)
+//   - @@unique([tenantId, name]) per resource so admin UI can show clean names
+
+model TimeRoundingRule {
+  id           String    @id @default(uuid())
+  tenantId     String
+  companyId    String?
+  name         String
+  description  String?
+  applicableTo String // 'ALL' | 'DEPARTMENT' | 'DESIGNATION' | 'CUSTOM'
+  config       Json
+  isActive     Boolean   @default(true)
+  version      Int       @default(1)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String
+  updatedBy    String
+  isDeleted    Boolean   @default(false)
+  deletedAt    DateTime?
+
+  @@unique([tenantId, name])
+  @@index([tenantId, companyId, isActive])
+  @@map("aura_time_rounding_rule")
+}
+
+model RosterConfig {
+  id          String    @id @default(uuid())
+  tenantId    String
+  companyId   String?
+  name        String
+  description String?
+  config      Json
+  isActive    Boolean   @default(true)
+  version     Int       @default(1)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String
+  updatedBy   String
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  @@unique([tenantId, name])
+  @@index([tenantId, companyId, isActive])
+  @@map("aura_roster_config")
+}
+
+model WorkFromHomePolicy {
+  id          String    @id @default(uuid())
+  tenantId    String
+  companyId   String?
+  name        String
+  description String?
+  config      Json
+  isActive    Boolean   @default(true)
+  version     Int       @default(1)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String
+  updatedBy   String
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  @@unique([tenantId, name])
+  @@index([tenantId, companyId, isActive])
+  @@map("aura_wfh_policy")
+}
+
+model ShiftSwapPolicy {
+  id          String    @id @default(uuid())
+  tenantId    String
+  companyId   String?
+  name        String
+  description String?
+  config      Json
+  isActive    Boolean   @default(true)
+  version     Int       @default(1)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String
+  updatedBy   String
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  @@unique([tenantId, name])
+  @@index([tenantId, companyId, isActive])
+  @@map("aura_shift_swap_policy")
+}
+
+model AttendanceRule {
+  id          String    @id @default(uuid())
+  tenantId    String
+  companyId   String?
+  name        String
+  description String?
+  ruleType    String // 'LATE_THRESHOLD' | 'EARLY_LEAVE' | 'OVERTIME' | etc
+  config      Json
+  isActive    Boolean   @default(true)
+  version     Int       @default(1)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String
+  updatedBy   String
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  @@unique([tenantId, name])
+  @@index([tenantId, ruleType, isActive])
+  @@map("aura_attendance_rule")
+}
+
+model GeofenceConfig {
+  id           String    @id @default(uuid())
+  tenantId     String
+  companyId    String?
+  name         String
+  description  String?
+  fenceType    String // 'OFFICE' | 'BRANCH' | 'SITE' | 'CUSTOM'
+  latitude     Float
+  longitude    Float
+  radiusMeters Int
+  address      String?
+  strictMode   Boolean   @default(false)
+  config       Json?     // optional allowedEmployees/Departments/Designations
+  isActive     Boolean   @default(true)
+  version      Int       @default(1)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String
+  updatedBy    String
+  isDeleted    Boolean   @default(false)
+  deletedAt    DateTime?
+
+  @@unique([tenantId, name])
+  @@index([tenantId, isActive])
+  @@map("aura_geofence_config")
+}
+
+model IpRestriction {
+  id              String    @id @default(uuid())
+  tenantId        String
+  companyId       String?
+  name            String
+  description     String?
+  restrictionType String // 'WHITELIST' | 'BLACKLIST'
+  strictMode      Boolean   @default(false)
+  config          Json
+  isActive        Boolean   @default(true)
+  version         Int       @default(1)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String
+  updatedBy       String
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
+
+  @@unique([tenantId, name])
+  @@index([tenantId, restrictionType, isActive])
+  @@map("aura_ip_restriction")
+}
+
+model CompOffPolicy {
+  id          String    @id @default(uuid())
+  tenantId    String
+  companyId   String?
+  name        String
+  description String?
+  config      Json
+  isActive    Boolean   @default(true)
+  version     Int       @default(1)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String
+  updatedBy   String
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  @@unique([tenantId, name])
+  @@index([tenantId, companyId, isActive])
+  @@map("aura_comp_off_policy")
+}
+
+model PunchRule {
+  id          String    @id @default(uuid())
+  tenantId    String
+  companyId   String?
+  name        String
+  description String?
+  config      Json
+  isActive    Boolean   @default(true)
+  version     Int       @default(1)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String
+  updatedBy   String
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  @@unique([tenantId, name])
+  @@index([tenantId, companyId, isActive])
+  @@map("aura_punch_rule")
+}
+
+model FieldForceConfig {
+  id          String    @id @default(uuid())
+  tenantId    String
+  companyId   String?
+  name        String
+  description String?
+  config      Json
+  isActive    Boolean   @default(true)
+  version     Int       @default(1)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String
+  updatedBy   String
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  @@unique([tenantId, name])
+  @@index([tenantId, companyId, isActive])
+  @@map("aura_field_force_config")
 }
 
 // ============================================================================

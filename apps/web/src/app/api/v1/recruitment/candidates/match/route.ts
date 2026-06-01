@@ -10,6 +10,20 @@ export const dynamic = 'force-dynamic';
  * Find candidates matching job requirements based on skills
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { permissions } = context;
+  if (!permissions.includes('recruitment:create')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing recruitment:create permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const body = await request.json();
     const { jobId, skills, limit: maxResults } = body;
@@ -77,15 +91,16 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     });
 
     // Score candidates by skill match
-    const scored = candidates.map(candidate => {
-      const matchedSkills = requiredSkills.filter(skill =>
-        candidate.skills.some(s => s.toLowerCase().includes(skill.toLowerCase()))
+    const scored = candidates.map((candidate) => {
+      const matchedSkills = requiredSkills.filter((skill) =>
+        candidate.skills.some((s) => s.toLowerCase().includes(skill.toLowerCase()))
       );
-      const matchScore = requiredSkills.length > 0
-        ? Math.round((matchedSkills.length / requiredSkills.length) * 100)
-        : 50;
+      const matchScore =
+        requiredSkills.length > 0
+          ? Math.round((matchedSkills.length / requiredSkills.length) * 100)
+          : 50;
       const alreadyApplied = jobId
-        ? candidate.applications.some(a => a.jobPostingId === jobId)
+        ? candidate.applications.some((a) => a.jobPostingId === jobId)
         : false;
 
       return {
@@ -111,7 +126,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
         matches: scored,
         totalMatches: scored.length,
       },
-      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     });
   } catch (error) {
     console.error('[Candidate Match API] POST Error:', error);

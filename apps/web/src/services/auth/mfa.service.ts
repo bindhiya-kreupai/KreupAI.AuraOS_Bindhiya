@@ -14,7 +14,12 @@ import { logger } from '@/lib/logger';
  * - MFA enable/disable operations
  */
 
-const ENCRYPTION_KEY = process.env.MFA_ENCRYPTION_KEY || 'default-key-change-in-production';
+if (!process.env.MFA_ENCRYPTION_KEY) {
+  throw new Error(
+    'FATAL: MFA_ENCRYPTION_KEY environment variable is not set. Refusing to start with an insecure default.'
+  );
+}
+const ENCRYPTION_KEY = process.env.MFA_ENCRYPTION_KEY;
 const ENCRYPTION_ALGORITHM = 'aes-256-cbc';
 const BACKUP_CODE_LENGTH = 8;
 const BACKUP_CODE_COUNT = 10;
@@ -178,11 +183,7 @@ export class MFAService {
   /**
    * Verify TOTP code to complete MFA setup
    */
-  async verifyMFASetup(
-    userId: string,
-    code: string,
-    ipAddress: string
-  ): Promise<MFAVerifyResult> {
+  async verifyMFASetup(userId: string, code: string, ipAddress: string): Promise<MFAVerifyResult> {
     try {
       // Get user's MFA settings
       const mfaSettings = await prisma.userMFA.findUnique({
@@ -243,9 +244,6 @@ export class MFAService {
       ]);
 
       logger.info({ userId, ipAddress }, 'MFA enabled successfully');
-
-      // Return backup codes (only shown once)
-      const backupCodes = (mfaSettings.backupCodes as string[]) || [];
 
       return {
         success: true,
@@ -348,7 +346,11 @@ export class MFAService {
   /**
    * Disable MFA for a user
    */
-  async disableMFA(userId: string, password: string, ipAddress: string): Promise<{ success: boolean; message: string; error?: string }> {
+  async disableMFA(
+    userId: string,
+    password: string,
+    ipAddress: string
+  ): Promise<{ success: boolean; message: string; error?: string }> {
     try {
       // Verify password
       const user = await prisma.user.findUnique({
@@ -461,7 +463,10 @@ export class MFAService {
   /**
    * Generate new backup codes (replaces old ones)
    */
-  async regenerateBackupCodes(userId: string, ipAddress: string): Promise<{ success: boolean; codes?: string[]; message: string; error?: string }> {
+  async regenerateBackupCodes(
+    userId: string,
+    ipAddress: string
+  ): Promise<{ success: boolean; codes?: string[]; message: string; error?: string }> {
     try {
       const mfaSettings = await prisma.userMFA.findUnique({
         where: { userId },

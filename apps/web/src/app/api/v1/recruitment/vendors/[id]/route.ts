@@ -7,7 +7,20 @@ export const dynamic = 'force-dynamic';
 
 export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, params } = context;
+    const { user, params, permissions } = context;
+    if (!permissions.includes('recruitment:update')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing recruitment:update permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
     const vendorId = params?.id;
 
@@ -51,7 +64,11 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     return NextResponse.json({
       success: true,
       data: vendor,
-      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     });
   } catch (error) {
     console.error('[Recruitment Vendors API] PUT Error:', error);

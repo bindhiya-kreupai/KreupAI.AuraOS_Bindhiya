@@ -1,10 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { LetterService } from '@/lib/services/letter.service';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, params } = context;
+    const { user, params, permissions } = context;
+    if (!permissions.includes('letters:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing letters:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { id } = params;
 
     const letter = await LetterService.findById(id, user.tenantId);
@@ -26,7 +40,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
 
 export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, params } = context;
+    const { user, params, permissions } = context;
+    if (!permissions.includes('letters:update')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing letters:update permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { id } = params;
     const body = await request.json();
 
@@ -49,7 +76,20 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
 
 export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, params } = context;
+    const { user, params, permissions } = context;
+    if (!permissions.includes('letters:delete')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing letters:delete permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { id } = params;
 
     const letter = await LetterService.delete(id, user.tenantId);

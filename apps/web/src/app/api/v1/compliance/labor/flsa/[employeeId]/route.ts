@@ -12,6 +12,20 @@ interface ApiResponse<T = any> {
 }
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { permissions } = context;
+  if (!permissions.includes('compliance/labor:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing compliance/labor:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { employeeId } = context.params;
     const { searchParams } = new URL(request.url);
