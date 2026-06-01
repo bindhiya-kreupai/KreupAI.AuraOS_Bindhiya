@@ -12,7 +12,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     });
 
     return NextResponse.json({ templates }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching notification templates:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -38,7 +38,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     });
 
     return NextResponse.json({ template }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating notification template:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

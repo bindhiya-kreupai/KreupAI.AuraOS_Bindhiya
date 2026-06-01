@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       message: `Compliance observability: ${dashboard.overallHealth}`,
       messageAr: `مراقبة الامتثال: ${dashboard.overallHealth}`,
     });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       {
         message: 'Failed to load observability data',
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
       { message: 'Unknown action. Use: record_metric, check_alert', messageAr: 'إجراء غير معروف' },
       { status: 400 }
     );
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       {
         message: 'Observability action failed',

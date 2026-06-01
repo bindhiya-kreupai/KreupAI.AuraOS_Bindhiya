@@ -333,7 +333,7 @@ function ViolationChecker() {
       setResult(null);
       const res = await AccessGovernanceService.checkSoDViolations(userId, requestedRole);
       setResult(res);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
     } finally {
       setChecking(false);
@@ -541,7 +541,7 @@ export function SoDRuleManager() {
       setLoading(true);
       const data = await AccessGovernanceService.getSoDRules();
       setRules(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
     } finally {
       setLoading(false);
@@ -567,7 +567,7 @@ export function SoDRuleManager() {
       setTogglingId(id);
       const updated = await AccessGovernanceService.toggleSoDRule(id, isActive);
       setRules((prev) => prev.map((r) => (r.id === id ? updated : r)));
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
     } finally {
       setTogglingId(null);

@@ -8,7 +8,7 @@ export class VolunteerService {
     try {
       const response = await APIClient.get<{ volunteers?: Volunteer[] }>(this.endpoint);
       return response.volunteers || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -31,7 +31,7 @@ export class MissionService {
     try {
       const response = await APIClient.get<{ missions?: FieldMission[] }>(this.endpoint);
       return response.missions || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -54,7 +54,7 @@ export class DonorService {
     try {
       const response = await APIClient.get<{ donors?: Donor[] }>(this.endpoint);
       return response.donors || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -72,7 +72,7 @@ export class NonprofitSettingsService {
     try {
       const response = await APIClient.get<{ settings?: NonprofitSettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -90,7 +90,7 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: NonprofitAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }

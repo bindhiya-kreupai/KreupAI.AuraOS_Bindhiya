@@ -47,7 +47,7 @@ export default function CostModelingPage() {
             ]);
             setSimulations(simData);
             setMetrics(metricsData);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

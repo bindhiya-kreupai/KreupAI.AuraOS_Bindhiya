@@ -42,7 +42,7 @@ export default function OneOnOnesPage() {
           const data = await res.json();
           setMeetings(data.meetings || []);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to fetch one-on-one meetings:', err);
       } finally {
         setLoading(false);

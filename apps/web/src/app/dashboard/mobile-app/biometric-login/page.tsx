@@ -37,7 +37,7 @@ export default function BiometricLoginPage() {
             ]);
             if (configData) setConfig(configData);
             if (enrollmentsData.length > 0) setEnrollments(enrollmentsData);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

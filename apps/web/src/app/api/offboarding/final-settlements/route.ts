@@ -91,7 +91,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       { success: true, settlements },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching final settlements:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch final settlements' },
@@ -141,7 +141,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       { success: true, settlement },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating final settlement:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create final settlement' },
@@ -211,7 +211,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       { success: true, settlement },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating final settlement:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update final settlement' },

@@ -33,7 +33,7 @@ export default function PushNotificationsPage() {
             setLoading(true);
             const result = await PushNotificationService.getAllNotifications();
             setNotifications(result);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

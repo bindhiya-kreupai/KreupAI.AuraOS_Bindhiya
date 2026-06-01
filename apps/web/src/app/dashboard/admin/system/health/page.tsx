@@ -72,7 +72,7 @@ export default function SystemHealthPage() {
                 const data = await res.json();
                 setHealthData(data);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

@@ -27,7 +27,7 @@ export class BenefitPlanService {
         try {
             const response = await APIClient.get<{ success: boolean; data: BenefitPlan[]; pagination?: any }>('/benefits/plans', filters);
             return response || { success: false, data: [] };
-        } catch (error) {
+        } catch (error: any) {
             return { success: false, data: [] };
         }
     }
@@ -58,7 +58,7 @@ export class EnrollmentService {
         try {
             const response = await APIClient.get<{ success: boolean; data: BenefitEnrollment[]; pagination?: any }>('/benefits/enrollments', filters);
             return response || { success: false, data: [] };
-        } catch (error) {
+        } catch (error: any) {
             return { success: false, data: [] };
         }
     }
@@ -111,7 +111,7 @@ export class DependentService {
         try {
             const response = await APIClient.get<{ success: boolean; data: Dependent[]; pagination?: any }>('/benefits/dependents', filters);
             return response || { success: false, data: [] };
-        } catch (error) {
+        } catch (error: any) {
             return { success: false, data: [] };
         }
     }
@@ -138,7 +138,7 @@ export class ClaimService {
         try {
             const response = await APIClient.get<{ success: boolean; data: BenefitClaim[]; pagination?: any }>('/benefits/claims', filters);
             return response || { success: false, data: [] };
-        } catch (error) {
+        } catch (error: any) {
             return { success: false, data: [] };
         }
     }

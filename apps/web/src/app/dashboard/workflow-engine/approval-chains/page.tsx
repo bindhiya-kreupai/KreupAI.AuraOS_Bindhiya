@@ -17,7 +17,7 @@ export default function ApprovalChainsPage() {
             setLoading(true);
             const data = await ApprovalChainService.getChains();
             setChains(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

@@ -117,7 +117,7 @@ export function makeAttendanceConfigRoutes<TCreateSchema extends z.ZodTypeAny>(
         data,
         meta: { total: data.length, resourceLabel, requestId: crypto.randomUUID() },
       });
-    } catch (err) {
+    } catch (err: any) {
       logger.error({ err, model }, `${resourceLabel}: failed to list`);
       return NextResponse.json(
         { success: false, error: `Failed to fetch ${resourceLabel}` },
@@ -154,7 +154,7 @@ export function makeAttendanceConfigRoutes<TCreateSchema extends z.ZodTypeAny>(
       });
       logger.info({ model, id: (created as { id?: string }).id }, `${resourceLabel}: created`);
       return NextResponse.json({ success: true, data: created }, { status: 201 });
-    } catch (err) {
+    } catch (err: any) {
       // Handle Prisma unique-constraint violation (P2002) on (tenantId, name)
       const code = (err as { code?: string })?.code;
       if (code === 'P2002') {
@@ -233,7 +233,7 @@ export function makeAttendanceConfigRoutes<TCreateSchema extends z.ZodTypeAny>(
       });
       logger.info({ model, id }, `${resourceLabel}: updated`);
       return NextResponse.json({ success: true, data: updated });
-    } catch (err) {
+    } catch (err: any) {
       logger.error({ err, model, id }, `${resourceLabel}: failed to update`);
       return NextResponse.json(
         { success: false, error: `Failed to update ${resourceLabel}` },
@@ -274,7 +274,7 @@ export function makeAttendanceConfigRoutes<TCreateSchema extends z.ZodTypeAny>(
       });
       logger.info({ model, id }, `${resourceLabel}: soft-deleted`);
       return NextResponse.json({ success: true });
-    } catch (err) {
+    } catch (err: any) {
       logger.error({ err, model, id }, `${resourceLabel}: failed to delete`);
       return NextResponse.json(
         { success: false, error: `Failed to delete ${resourceLabel}` },

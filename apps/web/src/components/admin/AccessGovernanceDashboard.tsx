@@ -198,7 +198,7 @@ export function AccessGovernanceDashboard({
       setRules(r);
       setCampaigns(c);
       setMatrix(m);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
     } finally {
       setLoading(false);

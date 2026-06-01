@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: status,
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Failed to get scheduler status');
     return NextResponse.json(
       {
@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Scheduler API error');
     return NextResponse.json(
       {

@@ -143,7 +143,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Employee Documents API] GET Error:', error);
     return NextResponse.json(
       {

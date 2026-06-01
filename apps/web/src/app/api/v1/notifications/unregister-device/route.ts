@@ -45,7 +45,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[unregister-device] Error:', error);
     return NextResponse.json({ error: 'Failed to unregister device' }, { status: 500 });
   }

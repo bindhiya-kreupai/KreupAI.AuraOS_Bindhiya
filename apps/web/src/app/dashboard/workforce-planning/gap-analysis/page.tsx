@@ -45,7 +45,7 @@ export default function GapAnalysisPage() {
                 } else {
                     setData([]);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching gap analysis data:', error);
                 setData([]);
             } finally {

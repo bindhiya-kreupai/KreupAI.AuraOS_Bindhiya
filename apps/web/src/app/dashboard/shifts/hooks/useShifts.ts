@@ -43,7 +43,7 @@ export const useShifts = () => {
       setIsLoading(true);
       const data = await ShiftService.getShifts(filters);
       setShifts(data);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to load shifts: ${(error as Error).message}`);
     } finally {
       setIsLoading(false);
@@ -57,7 +57,7 @@ export const useShifts = () => {
       setShifts(prev => [...prev, created]);
       toast.success('Shift created successfully');
       return created;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to create shift: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -72,7 +72,7 @@ export const useShifts = () => {
       setShifts(prev => prev.map(s => s.id === id ? updated : s));
       toast.success('Shift updated successfully');
       return updated;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to update shift: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -86,7 +86,7 @@ export const useShifts = () => {
       await ShiftService.deleteShift(id);
       setShifts(prev => prev.filter(s => s.id !== id));
       toast.success('Shift deleted successfully');
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to delete shift: ${(error as Error).message}`);
     } finally {
       setIsSaving(false);
@@ -100,7 +100,7 @@ export const useShifts = () => {
       setShifts(prev => prev.map(s => s.id === id ? cancelled : s));
       toast.success('Shift cancelled');
       return cancelled;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to cancel shift: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -115,7 +115,7 @@ export const useShifts = () => {
       setShifts(prev => [...prev, duplicate]);
       toast.success('Shift duplicated successfully');
       return duplicate;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to duplicate shift: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -137,7 +137,7 @@ export const useShifts = () => {
 
       toast.success('Employee assigned to shift');
       return assignment;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to assign employee: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -157,7 +157,7 @@ export const useShifts = () => {
       }
 
       toast.success('Employee unassigned from shift');
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to unassign employee: ${(error as Error).message}`);
     } finally {
       setIsSaving(false);
@@ -170,7 +170,7 @@ export const useShifts = () => {
       const assignment = await ShiftAssignmentService.checkIn(assignmentId, checkInTime);
       toast.success('Checked in successfully');
       return assignment;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to check in: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -184,7 +184,7 @@ export const useShifts = () => {
       const assignment = await ShiftAssignmentService.checkOut(assignmentId, checkOutTime);
       toast.success(`Checked out successfully - ${assignment.actualDuration?.toFixed(2)} hours worked`);
       return assignment;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to check out: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -197,7 +197,7 @@ export const useShifts = () => {
     try {
       const data = await ShiftTemplateService.getTemplates(filters);
       setTemplates(data);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to load templates: ${(error as Error).message}`);
     }
   }, [toast]);
@@ -209,7 +209,7 @@ export const useShifts = () => {
       setTemplates(prev => [...prev, created]);
       toast.success('Template created successfully');
       return created;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to create template: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -224,7 +224,7 @@ export const useShifts = () => {
       setTemplates(prev => prev.map(t => t.id === id ? updated : t));
       toast.success('Template updated successfully');
       return updated;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to update template: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -238,7 +238,7 @@ export const useShifts = () => {
       await ShiftTemplateService.deleteTemplate(id);
       setTemplates(prev => prev.filter(t => t.id !== id));
       toast.success('Template deleted successfully');
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to delete template: ${(error as Error).message}`);
     } finally {
       setIsSaving(false);
@@ -250,7 +250,7 @@ export const useShifts = () => {
     try {
       const data = await ShiftPatternService.getPatterns(filters);
       setPatterns(data);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to load patterns: ${(error as Error).message}`);
     }
   }, [toast]);
@@ -262,7 +262,7 @@ export const useShifts = () => {
       setPatterns(prev => [...prev, created]);
       toast.success('Pattern created successfully');
       return created;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to create pattern: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -277,7 +277,7 @@ export const useShifts = () => {
       setPatterns(prev => prev.map(p => p.id === id ? updated : p));
       toast.success('Pattern updated successfully');
       return updated;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to update pattern: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -291,7 +291,7 @@ export const useShifts = () => {
       await ShiftPatternService.deletePattern(id);
       setPatterns(prev => prev.filter(p => p.id !== id));
       toast.success('Pattern deleted successfully');
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to delete pattern: ${(error as Error).message}`);
     } finally {
       setIsSaving(false);
@@ -305,7 +305,7 @@ export const useShifts = () => {
       setShifts(prev => [...prev, ...generatedShifts]);
       toast.success(`Generated ${generatedShifts.length} shifts from pattern`);
       return generatedShifts;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to generate shifts: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -318,7 +318,7 @@ export const useShifts = () => {
     try {
       const data = await ShiftSwapService.getSwapRequests(filters);
       setSwapRequests(data);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to load swap requests: ${(error as Error).message}`);
     }
   }, [toast]);
@@ -330,7 +330,7 @@ export const useShifts = () => {
       setSwapRequests(prev => [...prev, created]);
       toast.success('Swap request submitted');
       return created;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to create swap request: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -349,7 +349,7 @@ export const useShifts = () => {
 
       toast.success('Shift swap approved');
       return approved;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to approve swap: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -364,7 +364,7 @@ export const useShifts = () => {
       setSwapRequests(prev => prev.map(s => s.id === id ? rejected : s));
       toast.success('Shift swap rejected');
       return rejected;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to reject swap: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -377,7 +377,7 @@ export const useShifts = () => {
     try {
       const data = await ShiftScheduleService.getSchedules(filters);
       setSchedules(data);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to load schedules: ${(error as Error).message}`);
     }
   }, [toast]);
@@ -389,7 +389,7 @@ export const useShifts = () => {
       setSchedules(prev => [...prev, created]);
       toast.success('Schedule created successfully');
       return created;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to create schedule: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -404,7 +404,7 @@ export const useShifts = () => {
       setSchedules(prev => prev.map(s => s.id === id ? published : s));
       toast.success('Schedule published - Employees have been notified');
       return published;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to publish schedule: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -416,7 +416,7 @@ export const useShifts = () => {
     try {
       const coverage = await ShiftScheduleService.analyzeCoverage(scheduleId);
       return coverage;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to analyze coverage: ${(error as Error).message}`);
       return null;
     }
@@ -427,7 +427,7 @@ export const useShifts = () => {
     try {
       const data = await ShiftAnalyticsService.getMetrics();
       setMetrics(data);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to load metrics: ${(error as Error).message}`);
     }
   }, [toast]);
@@ -437,7 +437,7 @@ export const useShifts = () => {
     try {
       const data = await ShiftSettingsService.getSettings();
       setSettings(data);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to load settings: ${(error as Error).message}`);
     }
   }, [toast]);
@@ -449,7 +449,7 @@ export const useShifts = () => {
       setSettings(updated);
       toast.success('Settings updated successfully');
       return updated;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to update settings: ${(error as Error).message}`);
       throw error;
     } finally {
@@ -489,7 +489,7 @@ export const useShifts = () => {
       await loadMetrics();
 
       toast.success('Sample data initialized');
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to initialize data: ${(error as Error).message}`);
     } finally {
       setIsSaving(false);

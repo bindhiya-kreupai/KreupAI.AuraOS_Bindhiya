@@ -51,7 +51,7 @@ export const GET = withEnhancedAuth(
         .flat();
 
       return NextResponse.json({ feedback }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching feedback:', error);
       return NextResponse.json(
         { error: 'Failed to fetch feedback' },
@@ -126,7 +126,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ feedback: feedbackEntry }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting feedback:', error);
       return NextResponse.json(
         { error: 'Failed to submit feedback' },
@@ -189,7 +189,7 @@ export const PUT = withEnhancedAuth(
       );
 
       return NextResponse.json({ feedback: updatedFeedback }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating feedback:', error);
       return NextResponse.json(
         { error: 'Failed to update feedback' },

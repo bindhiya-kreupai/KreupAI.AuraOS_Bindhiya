@@ -23,7 +23,7 @@ export default function LeaveBalancePage() {
             setLoading(true);
             const result = await LeaveBalanceService.getBalances();
             setBalances(result);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

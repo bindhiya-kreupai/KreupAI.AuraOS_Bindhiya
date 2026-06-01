@@ -51,7 +51,7 @@ export const GET = withEnhancedAuth(
         compOffRequests: compOffs,
         data: { compOffs, summary },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching comp-off data:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch comp-off data' },
@@ -101,7 +101,7 @@ export const POST = withEnhancedAuth(
         { success: true, data: newCompOff, compOff: newCompOff, compOffRequest: newCompOff },
         { status: 201 }
       );
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -179,7 +179,7 @@ export const PUT = withEnhancedAuth(
         compOff: updated,
         compOffRequest: updated,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating comp-off:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update comp-off' },

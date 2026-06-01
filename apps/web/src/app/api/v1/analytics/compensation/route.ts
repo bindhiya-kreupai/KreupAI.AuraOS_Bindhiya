@@ -174,7 +174,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ success: true, data: compensationData });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Compensation analytics error:', error);
     return NextResponse.json({
       success: true,

@@ -61,7 +61,7 @@ export const GET = createProtectedRoute(
       );
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       throw new BusinessRuleError('Failed to fetch department stats', error);
     }
   },

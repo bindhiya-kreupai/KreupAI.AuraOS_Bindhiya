@@ -90,7 +90,7 @@ export default function FormBuilderPage() {
         setForms((prev) => [...prev, result.data]);
         setSelectedFormId(result.data.id);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to save form:", err);
     } finally {
       setSaving(false);

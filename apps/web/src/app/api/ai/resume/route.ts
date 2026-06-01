@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
           body.resumes.map(async (r: { text: string; fileName?: string }) => {
             try {
               return await ResumeParserService.parseResume(r.text, r.fileName);
-            } catch (error) {
+            } catch (error: any) {
               return {
                 error: true,
                 fileName: r.fileName,
@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process resume',
@@ -243,7 +243,7 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to fetch resume data', errorAr: 'فشل في جلب بيانات السيرة الذاتية' },
       { status: 500 }

@@ -29,7 +29,7 @@ export default function NativeAppsPage() {
             if (result) {
                 setConfig(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

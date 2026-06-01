@@ -63,7 +63,7 @@ export const GET = withEnhancedAuth(
       });
 
       return NextResponse.json({ documents }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching onboarding documents:', error);
       return NextResponse.json(
         { error: 'Failed to fetch onboarding documents' },
@@ -115,7 +115,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ document }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting document:', error);
       return NextResponse.json(
         { error: 'Failed to submit document' },
@@ -172,7 +172,7 @@ export const PUT = withEnhancedAuth(
       };
 
       return NextResponse.json({ document }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating document:', error);
       return NextResponse.json(
         { error: 'Failed to update document' },

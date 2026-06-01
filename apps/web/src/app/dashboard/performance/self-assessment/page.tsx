@@ -32,7 +32,7 @@ export default function SelfAssessmentPage() {
                 if (selfReview) {
                     setActiveReview(selfReview);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load self-assessment data:', error);
             } finally {
                 setLoading(false);

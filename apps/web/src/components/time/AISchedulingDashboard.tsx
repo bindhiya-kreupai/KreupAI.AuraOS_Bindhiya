@@ -170,7 +170,7 @@ export default function AISchedulingDashboard() {
         respectPreferences: true,
       });
       setGeneratedSchedule(schedule);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Schedule generation error:', err);
     } finally {
       setGenerating(false);
@@ -185,7 +185,7 @@ export default function AISchedulingDashboard() {
         scheduleParams.startDate
       );
       setDemandForecast(forecast);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Demand forecast error:', err);
     } finally {
       setDemandLoading(false);
@@ -199,7 +199,7 @@ export default function AISchedulingDashboard() {
         MOCK_EMPLOYEE_IDS.map((id) => aiSchedulingService.checkFatigueRisk(id))
       );
       setFatigueResults(results);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Fatigue check error:', err);
     } finally {
       setFatigueLoading(false);
@@ -211,7 +211,7 @@ export default function AISchedulingDashboard() {
     try {
       const score = await aiSchedulingService.calculateFairnessScore('sched-001');
       setFairnessScore(score);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Fairness score error:', err);
     } finally {
       setFairnessLoading(false);
@@ -223,7 +223,7 @@ export default function AISchedulingDashboard() {
     try {
       const impact = await aiSchedulingService.runWhatIfScenario(whatIfScenario);
       setScenarioImpact(impact);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Scenario error:', err);
     } finally {
       setScenarioLoading(false);

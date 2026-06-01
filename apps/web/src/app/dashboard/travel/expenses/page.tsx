@@ -25,7 +25,7 @@ export default function ExpensesPage() {
             setLoading(true);
             const requests = await TravelRequestService.getRequests();
             setReports(Array.isArray(requests) ? requests : []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

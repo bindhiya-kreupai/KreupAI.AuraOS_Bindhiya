@@ -114,7 +114,7 @@ export const GET = withEnhancedAuth(
         } satisfies ApiResponse,
         { status: 200 }
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Employee API] GET Error:', error);
       return NextResponse.json(
         {
@@ -254,7 +254,7 @@ export const PUT = auditMiddleware.updateEmployee(
           } satisfies ApiResponse,
           { status: 200 }
         );
-      } catch (error) {
+      } catch (error: any) {
         console.error('[Employee API] PUT Error:', error);
         return NextResponse.json(
           {
@@ -363,7 +363,7 @@ export const DELETE = auditMiddleware.deleteEmployee(
           } satisfies ApiResponse,
           { status: 200 }
         );
-      } catch (error) {
+      } catch (error: any) {
         console.error('[Employee API] DELETE Error:', error);
         return NextResponse.json(
           {

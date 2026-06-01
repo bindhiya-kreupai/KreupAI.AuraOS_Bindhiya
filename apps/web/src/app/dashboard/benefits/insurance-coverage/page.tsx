@@ -30,7 +30,7 @@ export default function InsuranceCoveragePage() {
             const enrollmentsData = enrollmentsResponse?.data || enrollmentsResponse || [];
             setPlans(Array.isArray(plansData) ? plansData : []);
             setEnrollments(Array.isArray(enrollmentsData) ? enrollmentsData : []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching coverage:', error);
         } finally {
             setLoading(false);

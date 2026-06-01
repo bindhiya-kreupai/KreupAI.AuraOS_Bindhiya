@@ -60,7 +60,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Failed to fetch employment types');
 
     return NextResponse.json(

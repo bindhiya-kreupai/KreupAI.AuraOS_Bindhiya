@@ -134,7 +134,7 @@ export default function EmployeesPage() {
       } else {
         toast.error(result.error?.message || 'Failed to load employees');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching employees:', error);
       toast.error('Error loading employees. Please try again.');
     } finally {
@@ -179,7 +179,7 @@ export default function EmployeesPage() {
       });
 
       setMasterData(newMasterData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching master data:', error);
       toast.error('Error loading form data');
     }
@@ -300,7 +300,7 @@ export default function EmployeesPage() {
         employeeFormSchema.parse(data);
       }
       return true;
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         const errors: ValidationErrors = {};
         error.errors.forEach((error) => {
@@ -380,7 +380,7 @@ export default function EmployeesPage() {
         }
         toast.error(result.error?.message || 'Operation failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving employee:', error);
       toast.error(
         error instanceof Error
@@ -417,7 +417,7 @@ export default function EmployeesPage() {
       } else {
         toast.error(result.error?.message || 'Delete failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting employee:', error);
       toast.error('Error deleting employee. Please try again.');
     }
@@ -450,7 +450,7 @@ export default function EmployeesPage() {
       } else {
         toast.error(result.error?.message || 'Export failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error exporting:', error);
       toast.error('Error exporting data. Please try again.');
     }

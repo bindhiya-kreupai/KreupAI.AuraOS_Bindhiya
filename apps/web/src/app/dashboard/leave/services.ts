@@ -42,7 +42,7 @@ export class LeaveTypeService {
                 '/leave/types'
             );
             return response.types || response.leaveTypes || [];
-        } catch (error) {
+        } catch (error: any) {
                         return [];
         }
     }
@@ -56,7 +56,7 @@ export class LeaveTypeService {
                 `/leave/types/${id}`
             );
             return response.type || response.leaveType || null;
-        } catch (error) {
+        } catch (error: any) {
                         return null;
         }
     }
@@ -105,7 +105,7 @@ export class LeavePolicyService {
                 '/leave/policy'
             );
             return response.policies || response.leavePolicies || [];
-        } catch (error) {
+        } catch (error: any) {
                         return [];
         }
     }
@@ -146,7 +146,7 @@ export class LeaveBalanceService {
             const url = employeeId ? `/leave/balance?employeeId=${employeeId}` : '/leave/balance';
             const response = await APIClient.get<{ balances?: LeaveBalance[]; leaveBalances?: LeaveBalance[] }>(url);
             return response.balances || response.leaveBalances || [];
-        } catch (error) {
+        } catch (error: any) {
                         return [];
         }
     }
@@ -160,7 +160,7 @@ export class LeaveBalanceService {
                 `/leave/balance/${employeeId}/${leaveTypeId}`
             );
             return response.balance || response.leaveBalance || null;
-        } catch (error) {
+        } catch (error: any) {
                         return null;
         }
     }
@@ -205,7 +205,7 @@ export class LeaveRequestService {
             const url = params.toString() ? `/leave?${params}` : '/leave';
             const response = await APIClient.get<{ requests?: LeaveRequest[]; leaveRequests?: LeaveRequest[] }>(url);
             return response.requests || response.leaveRequests || [];
-        } catch (error) {
+        } catch (error: any) {
                         return [];
         }
     }
@@ -219,7 +219,7 @@ export class LeaveRequestService {
                 `/leave/${id}`
             );
             return response.request || response.leaveRequest || null;
-        } catch (error) {
+        } catch (error: any) {
                         return null;
         }
     }
@@ -293,7 +293,7 @@ export class HolidayService {
             const url = year ? `/leave/holidays?year=${year}` : '/leave/holidays';
             const response = await APIClient.get<{ holidays?: Holiday[] }>(url);
             return response.holidays || [];
-        } catch (error) {
+        } catch (error: any) {
                         return [];
         }
     }
@@ -341,7 +341,7 @@ export class EncashmentService {
             const url = employeeId ? `/leave/encashment?employeeId=${employeeId}` : '/leave/encashment';
             const response = await APIClient.get<{ encashments?: LeaveEncashment[]; leaveEncashments?: LeaveEncashment[] }>(url);
             return response.encashments || response.leaveEncashments || [];
-        } catch (error) {
+        } catch (error: any) {
                         return [];
         }
     }
@@ -382,7 +382,7 @@ export class CompOffService {
             const url = employeeId ? `/leave/comp-off?employeeId=${employeeId}` : '/leave/comp-off';
             const response = await APIClient.get<{ compOffs?: CompOff[]; compOffRequests?: CompOff[] }>(url);
             return response.compOffs || response.compOffRequests || [];
-        } catch (error) {
+        } catch (error: any) {
                         return [];
         }
     }
@@ -423,7 +423,7 @@ export class CarryForwardService {
             const url = employeeId ? `/leave/carry-forward?employeeId=${employeeId}` : '/leave/carry-forward';
             const response = await APIClient.get<{ carryForwards?: CarryForward[]; records?: CarryForward[] }>(url);
             return response.carryForwards || response.records || [];
-        } catch (error) {
+        } catch (error: any) {
                         return [];
         }
     }
@@ -454,7 +454,7 @@ export class LeaveSettingsService {
                 '/leave/settings'
             );
             return response.settings || response.leaveSettings || null;
-        } catch (error) {
+        } catch (error: any) {
                         return null;
         }
     }
@@ -516,7 +516,7 @@ export class LeaveAnalyticsService {
             };
 
             return stats;
-        } catch (error) {
+        } catch (error: any) {
                         // Return empty stats on error
             return {
                 totalEmployees: 0,

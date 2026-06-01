@@ -99,7 +99,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
     };
 
     return NextResponse.json({ success: true, stats, data: stats });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Payroll Stats] Error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch payroll stats' },

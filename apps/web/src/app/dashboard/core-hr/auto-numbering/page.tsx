@@ -58,7 +58,7 @@ export default function AutoNumberingPage() {
             } else {
                 setSettings(defaultSettings);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             setSettings(defaultSettings);
         } finally {

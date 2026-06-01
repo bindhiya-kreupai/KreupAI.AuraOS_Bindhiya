@@ -111,7 +111,7 @@ export async function generateReport(
 
     console.log(`[ReportJob] Report generation complete: ${JSON.stringify(config)}`);
     return { success: true, processedCount, errors };
-  } catch (error) {
+  } catch (error: any) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[ReportJob] Error: ${msg}`);
     errors.push(msg);

@@ -114,7 +114,7 @@ export function withCache<T extends (request: NextRequest, context?: any) => Pro
           'X-Cache-Key': cacheKey,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Cache middleware error - falling back to handler');
       return handler(request, context);
     }

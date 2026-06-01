@@ -45,7 +45,7 @@ export async function generateCSRFToken(
     logger.debug({ userId, sessionId }, 'CSRF token generated');
 
     return token;
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error, userId }, 'Error generating CSRF token');
     throw error;
   }
@@ -88,7 +88,7 @@ export async function verifyCSRFToken(
     }
 
     return true;
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error, userId }, 'Error verifying CSRF token');
     return false;
   }
@@ -101,7 +101,7 @@ export async function deleteCSRFToken(token: string): Promise<void> {
   try {
     await redisClient.delete(`${CSRF_TOKEN_PREFIX}${token}`);
     logger.debug({ token: token.substring(0, 8) + '...' }, 'CSRF token deleted');
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error deleting CSRF token');
   }
 }
@@ -125,7 +125,7 @@ export async function deleteUserCSRFTokens(userId: string): Promise<void> {
     }
 
     logger.info({ userId }, 'All CSRF tokens deleted for user');
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error, userId }, 'Error deleting user CSRF tokens');
   }
 }
@@ -262,7 +262,7 @@ export function withCSRFProtection<T = any>(
         }
 
         return handler(newRequest, { user: sessionData, csrfToken });
-      } catch (error) {
+      } catch (error: any) {
         logger.error({ error }, 'Error parsing request body for CSRF validation');
         return NextResponse.json(
           {

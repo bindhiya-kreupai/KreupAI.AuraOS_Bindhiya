@@ -61,7 +61,7 @@ export default function CareerSitePage() {
             ]);
             setSettings(settingsData);
             setJobs(jobsData);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

@@ -44,7 +44,7 @@ export default function BusinessUnitsPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch business units:', error);
         } finally {
@@ -80,7 +80,7 @@ export default function BusinessUnitsPage() {
             } else {
                 alert('Failed to save business unit');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving business unit:', error);
             alert('Error saving business unit');
@@ -99,7 +99,7 @@ export default function BusinessUnitsPage() {
                 } else {
                     alert('Failed to delete business unit');
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting business unit:', error);
                 alert('Error deleting business unit');

@@ -41,7 +41,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       success: true,
       data: config,
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error fetching MFA configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch MFA configuration' },
@@ -103,7 +103,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
@@ -167,7 +167,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
       message: 'MFA configuration updated successfully',
       data: updatedConfig,
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
@@ -225,7 +225,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, perm
       success: true,
       message: 'MFA configuration deleted successfully. MFA is now disabled.',
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error deleting MFA configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to delete MFA configuration' },

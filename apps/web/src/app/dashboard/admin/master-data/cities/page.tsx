@@ -34,7 +34,7 @@ export default function CitiesPage() {
 
             if (citiesRes.ok) setData(await citiesRes.json());
             if (statesRes.ok) setStates(await statesRes.json());
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch data:', error);
         } finally {
@@ -81,7 +81,7 @@ export default function CitiesPage() {
             } else {
                 alert('Failed to save city');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving city:', error);
             alert('Error saving city');
@@ -100,7 +100,7 @@ export default function CitiesPage() {
                 } else {
                     alert('Failed to delete city');
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting city:', error);
                 alert('Error deleting city');

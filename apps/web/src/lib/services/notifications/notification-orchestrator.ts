@@ -277,7 +277,7 @@ async function dispatchToChannel(
       record.status = 'failed';
       record.error = 'Provider temporary unavailability';
     }
-  } catch (err) {
+  } catch (err: any) {
     record.status = 'failed';
     record.error = String(err);
   }

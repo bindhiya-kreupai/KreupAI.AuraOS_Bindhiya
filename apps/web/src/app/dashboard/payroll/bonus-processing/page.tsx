@@ -25,7 +25,7 @@ export default function BonusProcessingPage() {
             setLoading(true);
             const result = await BonusService.getBonuses();
             setBonuses(result);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

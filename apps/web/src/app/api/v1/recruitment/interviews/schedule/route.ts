@@ -77,7 +77,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, _context: any) 
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Interview Schedule API] GET Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch interview schedule' } },
@@ -167,7 +167,7 @@ export const POST = withAudit(
         },
         { status: 201 }
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Interview Schedule API] POST Error:', error);
       return NextResponse.json(
         { success: false, error: { code: 'E5001', message: 'Failed to schedule interview' } },

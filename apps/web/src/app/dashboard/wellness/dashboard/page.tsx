@@ -66,7 +66,7 @@ export default function WellnessDashboardPage() {
                 setLoading(true);
                 const data = await WellnessAnalyticsService.getMetrics();
                 setMetrics(data as any);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

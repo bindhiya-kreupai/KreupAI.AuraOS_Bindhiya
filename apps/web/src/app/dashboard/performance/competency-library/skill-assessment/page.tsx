@@ -502,7 +502,7 @@ export default function SkillAssessmentPage() {
                     setExpandedAssessments([result.data[0].id]);
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch assessments:', error);
         } finally {
@@ -638,7 +638,7 @@ export default function SkillAssessmentPage() {
                 }
             }
             setIsSheetOpen(false);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to save assessment:', error);
         } finally {
@@ -653,7 +653,7 @@ export default function SkillAssessmentPage() {
                 if (result.success) {
                     setAssessments(prev => prev.filter(a => a.id !== assessmentId));
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Failed to delete assessment:', error);
             }

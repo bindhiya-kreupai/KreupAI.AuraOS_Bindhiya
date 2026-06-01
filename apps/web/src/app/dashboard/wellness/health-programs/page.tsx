@@ -57,7 +57,7 @@ export default function HealthProgramsPage() {
                 setLoading(true);
                 const data = await HealthProgramService.getPrograms();
                 setPrograms(Array.isArray(data) ? data : []);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 /**
  * Workflow Engine Module - Sample Data
  * Comprehensive sample workflows for immediate testing

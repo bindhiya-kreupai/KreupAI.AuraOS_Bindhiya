@@ -21,7 +21,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     // No specific Prisma model for mass updates
     // Return empty array as placeholder
     return NextResponse.json({ updates: [] }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching mass updates:', error);
     return NextResponse.json(
       { error: 'Failed to fetch mass updates' },
@@ -51,7 +51,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ update }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -85,7 +85,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ update }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating mass update:', error);
     return NextResponse.json(
       { error: 'Failed to update mass update' },

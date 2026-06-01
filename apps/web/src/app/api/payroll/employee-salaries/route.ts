@@ -78,7 +78,7 @@ export const GET = withEnhancedAuth(
         data: { salaries },
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching employee salaries:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch employee salaries' },
@@ -147,7 +147,7 @@ export const POST = withEnhancedAuth(
         data: structure,
         salary: structure,
       }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -230,7 +230,7 @@ export const PUT = withEnhancedAuth(
         data: updated,
         salary: updated,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating salary structure:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update salary structure' },

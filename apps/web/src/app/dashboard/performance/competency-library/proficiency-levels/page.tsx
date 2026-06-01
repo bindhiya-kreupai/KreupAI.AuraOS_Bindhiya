@@ -1097,7 +1097,7 @@ export default function ProficiencyLevelsPage() {
         setFrameworks(mappedFrameworks);
         setExpandedFrameworks(mappedFrameworks[0] ? [mappedFrameworks[0].id] : []);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch frameworks:', error);
       setFrameworks([]);
       setExpandedFrameworks([]);
@@ -1261,7 +1261,7 @@ export default function ProficiencyLevelsPage() {
 
       setIsSheetOpen(false);
       setEditingFramework(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
       console.error('Failed to save framework:', error);
     } finally {
@@ -1281,7 +1281,7 @@ export default function ProficiencyLevelsPage() {
         if (result.success) {
           setFrameworks((prev) => prev.filter((f) => f.id !== id));
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error:', error);
         console.error('Failed to delete framework:', error);
       }

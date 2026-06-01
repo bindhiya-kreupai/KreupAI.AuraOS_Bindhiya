@@ -25,7 +25,7 @@ export default function JobMatchingPage() {
             if (result.success) {
                 setMatches(result.data?.matches || []);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

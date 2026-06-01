@@ -1456,7 +1456,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ approvals, summary }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching approvals:', error);
     return NextResponse.json(
       {
@@ -2332,7 +2332,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {

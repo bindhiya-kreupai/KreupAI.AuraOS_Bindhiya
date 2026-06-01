@@ -39,7 +39,7 @@ export default function BenefitTypesPage() {
             const response = await BenefitPlanService.getPlans();
             const data = response?.data || response || [];
             setBenefits(Array.isArray(data) ? data : []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching benefits:', error);
             setBenefits([]);
         } finally {

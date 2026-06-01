@@ -32,7 +32,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ goals }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching performance goals:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -70,7 +70,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ goal }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating performance goal:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -116,7 +116,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ goal }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating performance goal:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

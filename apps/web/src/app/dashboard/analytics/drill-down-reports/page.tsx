@@ -38,7 +38,7 @@ export default function DrillDownReportsPage() {
                     }))
                 );
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading drill-down data:', error);
         } finally {
             setLoading(false);

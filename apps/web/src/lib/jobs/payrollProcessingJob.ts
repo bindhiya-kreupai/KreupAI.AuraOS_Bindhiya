@@ -32,7 +32,7 @@ export async function processPayroll(runId: string): Promise<JobResult> {
     console.log(`[PayrollJob] Validated ${employeeCount} employees`);
     steps[0].status = "completed";
     processedCount += employeeCount;
-  } catch (error) {
+  } catch (error: any) {
     steps[0].status = "failed";
     errors.push(`Validation failed: ${error}`);
     return { success: false, processedCount, errors };
@@ -44,7 +44,7 @@ export async function processPayroll(runId: string): Promise<JobResult> {
   try {
     console.log("[PayrollJob] Calculated regular pay, overtime, and bonuses");
     steps[1].status = "completed";
-  } catch (error) {
+  } catch (error: any) {
     steps[1].status = "failed";
     errors.push(`Calculation failed: ${error}`);
     return { success: false, processedCount, errors };
@@ -56,7 +56,7 @@ export async function processPayroll(runId: string): Promise<JobResult> {
   try {
     console.log("[PayrollJob] Applied federal tax, state tax, FICA, benefits, and garnishments");
     steps[2].status = "completed";
-  } catch (error) {
+  } catch (error: any) {
     steps[2].status = "failed";
     errors.push(`Deductions failed: ${error}`);
     return { success: false, processedCount, errors };
@@ -68,7 +68,7 @@ export async function processPayroll(runId: string): Promise<JobResult> {
   try {
     console.log("[PayrollJob] Net pay calculated for all employees");
     steps[3].status = "completed";
-  } catch (error) {
+  } catch (error: any) {
     steps[3].status = "failed";
     errors.push(`Net pay calculation failed: ${error}`);
     return { success: false, processedCount, errors };
@@ -80,7 +80,7 @@ export async function processPayroll(runId: string): Promise<JobResult> {
   try {
     console.log("[PayrollJob] Generated PDF payslips for all employees");
     steps[4].status = "completed";
-  } catch (error) {
+  } catch (error: any) {
     steps[4].status = "failed";
     errors.push(`Payslip generation failed: ${error}`);
     return { success: false, processedCount, errors };

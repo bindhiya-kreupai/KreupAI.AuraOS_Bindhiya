@@ -102,7 +102,7 @@ export default function InterviewRatingsPage() {
                     feedback.map(item => mapReviewRow(interview, item))
                 )
             );
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

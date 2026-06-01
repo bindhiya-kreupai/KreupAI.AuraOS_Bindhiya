@@ -130,7 +130,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: reconciliation,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching reconciliation data:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch reconciliation data' },
@@ -212,7 +212,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: result });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error running reconciliation:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to run reconciliation' },

@@ -413,7 +413,7 @@ export default function JobCompetencyMapPage() {
                     setExpandedRoles([result.data[0].id]);
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch job roles:', error);
         } finally {
@@ -515,7 +515,7 @@ export default function JobCompetencyMapPage() {
                 }
             }
             setIsSheetOpen(false);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to save mapping:', error);
         } finally {
@@ -530,7 +530,7 @@ export default function JobCompetencyMapPage() {
                 if (result.success) {
                     setJobRoles(prev => prev.filter(r => r.id !== roleId));
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Failed to delete role:', error);
             }

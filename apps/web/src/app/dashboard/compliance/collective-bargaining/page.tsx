@@ -21,7 +21,7 @@ export default function CollectiveBargainingPage() {
         try {
             const data = await UnionService.getCBAgreements();
             setAgreements(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

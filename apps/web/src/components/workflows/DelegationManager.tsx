@@ -402,7 +402,7 @@ export function DelegationManager() {
       setLoading(true);
       const data = await WorkflowAutomationService.getDelegationRules();
       setRules(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
     } finally {
       setLoading(false);

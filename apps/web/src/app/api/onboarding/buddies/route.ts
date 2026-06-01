@@ -41,7 +41,7 @@ export const GET = withEnhancedAuth(
       }));
 
       return NextResponse.json({ assignments }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching buddy assignments:', error);
       return NextResponse.json(
         { error: 'Failed to fetch buddy assignments' },
@@ -96,7 +96,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ assignment }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error assigning buddy:', error);
       return NextResponse.json(
         { error: 'Failed to assign buddy' },
@@ -147,7 +147,7 @@ export const PUT = withEnhancedAuth(
       };
 
       return NextResponse.json({ assignment }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating buddy assignment:', error);
       return NextResponse.json(
         { error: 'Failed to update buddy assignment' },

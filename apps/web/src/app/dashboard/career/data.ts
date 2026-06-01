@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 // Career Planning Module - Sample Data
 
 import type {

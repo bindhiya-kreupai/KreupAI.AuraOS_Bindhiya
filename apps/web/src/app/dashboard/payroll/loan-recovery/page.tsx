@@ -26,7 +26,7 @@ export default function LoansPage() {
             setLoading(true);
             const result = await LoanService.getLoans();
             setLoans(result);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

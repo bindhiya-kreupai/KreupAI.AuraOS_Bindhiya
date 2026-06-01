@@ -216,7 +216,7 @@ export function useWellness(currentEmployeeId?: string): UseWellnessReturn {
         const transactionsData = await WellnessPointsService.getTransactions(currentEmployeeId);
         setTransactions(transactionsData);
       }
-    } catch (error) {
+    } catch (error: any) {
       setError(error instanceof Error ? error.message : 'Failed to load wellness data');
     } finally {
       setLoading(false);

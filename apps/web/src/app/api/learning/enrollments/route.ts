@@ -68,7 +68,7 @@ export const GET = withEnhancedAuth(
       ];
 
       return NextResponse.json({ success: true, data: combined });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching enrollments:', error);
       return NextResponse.json({ success: true, data: [] });
     }
@@ -114,7 +114,7 @@ export const POST = withEnhancedAuth(
 
       logger.info('Enrollment created:', enrollment.id);
       return NextResponse.json({ success: true, data: enrollment }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error creating enrollment:', error);
       return NextResponse.json({ success: false, error: 'Failed to create enrollment' }, { status: 500 });
     }
@@ -146,7 +146,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: enrollment });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating enrollment:', error);
       return NextResponse.json({ success: false, error: 'Failed to update enrollment' }, { status: 500 });
     }

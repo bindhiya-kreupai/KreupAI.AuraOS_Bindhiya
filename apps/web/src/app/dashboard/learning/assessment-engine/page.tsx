@@ -19,7 +19,7 @@ export default function AssessmentEnginePage() {
                 setLoading(true);
                 const result = await AssessmentService.getAssessments();
                 setData(result);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
                 setData([]);
             } finally {

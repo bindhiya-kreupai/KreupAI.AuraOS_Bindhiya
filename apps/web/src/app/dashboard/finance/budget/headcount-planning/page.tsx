@@ -26,7 +26,7 @@ export default function HeadcountPlanningPage() {
                 ]);
                 setBudgets(budgetData);
                 setMetrics(metricsData);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

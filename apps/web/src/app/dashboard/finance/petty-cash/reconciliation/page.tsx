@@ -51,7 +51,7 @@ export default function ReconciliationPage() {
                 setLoading(true);
                 const data = await PettyCashService.getReconciliations();
                 setReconciliations(data as any[]);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

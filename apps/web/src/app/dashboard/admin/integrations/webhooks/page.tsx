@@ -76,7 +76,7 @@ export default function WebhooksPage() {
                 new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
             ).slice(0, 10);
             setDeliveryLogs(merged);
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to fetch delivery logs:', err);
         } finally {
             setLogsLoading(false);

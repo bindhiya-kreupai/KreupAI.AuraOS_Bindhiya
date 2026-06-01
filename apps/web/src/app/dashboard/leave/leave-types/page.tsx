@@ -33,7 +33,7 @@ export default function LeaveTypesPage() {
       setLoading(true);
       const result = await LeaveTypeService.getLeaveTypes();
       setLeaveTypes(result);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -45,7 +45,7 @@ export default function LeaveTypesPage() {
     try {
       await LeaveTypeService.deleteLeaveType(id);
       await fetchLeaveTypes();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Delete failed:', error);
     }
   };
@@ -82,7 +82,7 @@ export default function LeaveTypesPage() {
       }
       setShowModal(false);
       await fetchLeaveTypes();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Save failed:', error);
     } finally {
       setSaving(false);

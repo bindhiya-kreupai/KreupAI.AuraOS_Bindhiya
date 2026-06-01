@@ -57,7 +57,7 @@ export default function ShiftManagementPage() {
                 employees: s.employees || s._count?.employees || 0,
             }));
             setShiftList(mapped);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
@@ -69,7 +69,7 @@ export default function ShiftManagementPage() {
         try {
             await ShiftService.deleteShift(id);
             await fetchShifts();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

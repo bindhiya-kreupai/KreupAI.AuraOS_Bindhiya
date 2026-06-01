@@ -112,7 +112,7 @@ export class MasterDataService extends BaseService {
         data: items,
         meta: this.buildPaginationMeta(total, page, limit),
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error('MasterDataService.listEntities error:', error);
       return {
         success: false,
@@ -153,7 +153,7 @@ export class MasterDataService extends BaseService {
         success: true,
         data: item,
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error('MasterDataService.getEntityById error:', error);
       return {
         success: false,
@@ -218,7 +218,7 @@ export class MasterDataService extends BaseService {
         success: true,
         data: result,
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error('MasterDataService.createEntity error:', error);
       return {
         success: false,
@@ -283,7 +283,7 @@ export class MasterDataService extends BaseService {
         success: true,
         data: result,
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error('MasterDataService.updateEntity error:', error);
       return {
         success: false,
@@ -349,7 +349,7 @@ export class MasterDataService extends BaseService {
       return {
         success: true,
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error('MasterDataService.deleteEntity error:', error);
       return {
         success: false,
@@ -373,7 +373,7 @@ export class MasterDataService extends BaseService {
         success: true,
         data: states,
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error('MasterDataService.getStatesByCountry error:', error);
       return {
         success: false,
@@ -397,7 +397,7 @@ export class MasterDataService extends BaseService {
         success: true,
         data: cities,
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error('MasterDataService.getCitiesByState error:', error);
       return {
         success: false,

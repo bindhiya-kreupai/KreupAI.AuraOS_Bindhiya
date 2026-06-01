@@ -163,7 +163,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
         },
       },
     });
-  } catch (err) {
+  } catch (err: any) {
     logger.error({ err, tenantId: user.tenantId }, 'kuwait/eligible-employees: query failed');
     return NextResponse.json(
       {

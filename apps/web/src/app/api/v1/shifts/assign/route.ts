@@ -255,7 +255,7 @@ export const POST = withAudit(
         },
         { status: 201 }
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Shift Assignment API] POST Error:', error);
 
       if (error instanceof Error && error.message.includes('not found')) {

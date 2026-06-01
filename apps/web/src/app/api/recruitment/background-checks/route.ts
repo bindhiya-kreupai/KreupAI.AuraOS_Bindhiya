@@ -27,7 +27,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         });
 
         return NextResponse.json({ success: true, items: backgroundChecks }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
         return NextResponse.json(
             { error: 'Failed to fetch background checks' },
             { status: 500 }
@@ -68,7 +68,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
         });
 
         return NextResponse.json({ success: true, data: backgroundCheck, items: [backgroundCheck] }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
         return NextResponse.json(
             { error: 'Failed to initiate background check' },
             { status: 500 }
@@ -119,7 +119,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
         });
 
         return NextResponse.json({ success: true, data: backgroundCheck }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
         return NextResponse.json(
             { error: 'Failed to update background check' },
             { status: 500 }

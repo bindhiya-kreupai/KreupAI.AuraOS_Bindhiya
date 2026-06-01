@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
             alerts: alertsData,
             count: alertsData.length,
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Healthcare alerts API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             alert: newAlert,
         }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Healthcare alerts API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

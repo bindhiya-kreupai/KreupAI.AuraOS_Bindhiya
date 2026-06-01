@@ -53,7 +53,7 @@ export default function MssPage() {
         }
 
         setData({ teamCount, pendingApprovals, avgAttendance, avgPerformance });
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to fetch dashboard data:', err);
         setData({ teamCount: 0, pendingApprovals: 0, avgAttendance: 0, avgPerformance: 0 });
       } finally {

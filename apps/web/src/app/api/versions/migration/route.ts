@@ -150,7 +150,7 @@ export async function GET(request: NextRequest) {
         checklist,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error generating migration guide');
     return NextResponse.json(
       {

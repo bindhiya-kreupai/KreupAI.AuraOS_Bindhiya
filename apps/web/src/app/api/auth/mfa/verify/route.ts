@@ -135,7 +135,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
       message:
         'MFA successfully enabled. You will now be required to enter a code when logging in.',
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Invalid code format', details: error.errors },

@@ -21,7 +21,7 @@ export default function GrievanceManagementPage() {
         try {
             const data = await GrievanceService.getGrievances();
             setGrievances(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

@@ -32,7 +32,7 @@ export default function GlobalPositioningPage() {
             ]);
             if (configData) setConfig(configData);
             if (checkInsData.length > 0) setCheckIns(checkInsData);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

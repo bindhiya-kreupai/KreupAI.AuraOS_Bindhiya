@@ -82,7 +82,7 @@ export default function ComplianceReportsPage() {
                 : 0;
             setOverallScore(avgScore);
             setTotalIssues(complianceItems.reduce((s, i) => s + i.issues, 0));
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading compliance data:', error);
         } finally {
             setLoading(false);

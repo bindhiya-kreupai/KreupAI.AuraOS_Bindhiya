@@ -34,7 +34,7 @@ export default function QatarWPSPage() {
         if (data.success) {
           setReferenceData(data.data);
         }
-      } catch (error) {
+      } catch (error: any) {
             console.error('Error:', error);
               }
     };
@@ -76,7 +76,7 @@ export default function QatarWPSPage() {
       if (data.success) {
         setValidationResult(data.data.validation);
       }
-    } catch (error) {
+    } catch (error: any) {
             console.error('Error:', error);
           } finally {
       setLoading(false);

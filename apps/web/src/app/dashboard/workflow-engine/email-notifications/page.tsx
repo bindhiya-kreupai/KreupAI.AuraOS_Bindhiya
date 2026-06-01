@@ -27,7 +27,7 @@ export default function EmailNotificationsPage() {
                 isActive: wf.isActive,
             }));
             setTemplates(notificationTemplates);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

@@ -55,7 +55,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('[My Services Grievances] GET Error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch grievances' },
@@ -101,7 +101,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       { success: true, data: grievance },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('[My Services Grievances] POST Error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to submit grievance' },

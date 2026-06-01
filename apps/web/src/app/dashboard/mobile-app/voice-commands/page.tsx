@@ -30,7 +30,7 @@ export default function VoiceCommandsPage() {
             ]);
             if (configData) setConfig(configData);
             if (interactionsData.length > 0) setInteractions(interactionsData);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

@@ -79,7 +79,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Expense Reject API] POST Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to reject expense report' } },

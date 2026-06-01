@@ -54,7 +54,7 @@ export const GET = withEnhancedAuth(
         data: bankFiles,
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching bank file history:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch bank file history' },
@@ -169,7 +169,7 @@ export const POST = withEnhancedAuth(
           totalAmount,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error generating bank file:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to generate bank file' },

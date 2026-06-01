@@ -35,7 +35,7 @@ export default function CostCenterPage() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const result = await response.json();
       setCostCenters(result.costCenters || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching cost centers:', error);
       toast.error('Error loading cost centers.');
     } finally {
@@ -117,7 +117,7 @@ export default function CostCenterPage() {
         costCenterFormSchema.parse(data);
       }
       return true;
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         const errors: ValidationErrors = {};
         error.errors.forEach((error) => {
@@ -176,7 +176,7 @@ export default function CostCenterPage() {
         toast.success(data.id ? 'Cost center updated' : 'Cost center created');
         await fetchCostCenters();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving cost center:', error);
       toast.error('Error saving cost center. Please try again.');
     }
@@ -188,7 +188,7 @@ export default function CostCenterPage() {
     try {
       // The API doesn't have a DELETE endpoint yet, show info
       toast.info('Delete operation is not yet supported for cost centers.');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting cost center:', error);
       toast.error('Error deleting cost center.');
     }

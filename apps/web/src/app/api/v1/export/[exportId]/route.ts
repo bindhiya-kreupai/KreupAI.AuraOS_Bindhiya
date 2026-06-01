@@ -57,7 +57,7 @@ async function handleGET(
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error, exportId: params.exportId }, 'Failed to fetch export status');
 
     return NextResponse.json(

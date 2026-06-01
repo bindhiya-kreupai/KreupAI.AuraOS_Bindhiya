@@ -200,7 +200,7 @@ export const POST = withEnhancedAuth(
           generatedAt: new Date().toISOString(),
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error generating payslips:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to generate payslips' },
@@ -265,7 +265,7 @@ export const GET = withEnhancedAuth(
           processedAt: payrollRun.processedAt?.toISOString(),
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching payslip generation status:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch payslip generation status' },

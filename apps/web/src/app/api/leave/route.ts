@@ -111,7 +111,7 @@ export const GET = withEnhancedAuth(
           });
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching leave data:', error);
       return NextResponse.json(
         { error: 'Failed to fetch leave data', errorAr: 'فشل في جلب بيانات الإجازات' },
@@ -186,7 +186,7 @@ export const POST = withEnhancedAuth(
         request: leaveRequest,
         leaveRequest: leaveRequest,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error submitting leave request:', error);
       return NextResponse.json(
         { error: 'Failed to submit leave request', errorAr: 'فشل في تقديم طلب الإجازة' },

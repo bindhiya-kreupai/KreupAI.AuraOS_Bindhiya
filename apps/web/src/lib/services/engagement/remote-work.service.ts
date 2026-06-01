@@ -138,7 +138,7 @@ export class RemoteWorkService extends BaseService {
             ];
 
             return { success: true, data: policies };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching remote work policies:', error);
             return { success: false, error: 'Failed to fetch policies' };
         }
@@ -190,7 +190,7 @@ export class RemoteWorkService extends BaseService {
             ];
 
             return { success: true, data: assignments };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching remote work assignments:', error);
             return { success: false, error: 'Failed to fetch assignments' };
         }
@@ -211,7 +211,7 @@ export class RemoteWorkService extends BaseService {
             ];
 
             return { success: true, data: inventory };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching equipment inventory:', error);
             return { success: false, error: 'Failed to fetch inventory' };
         }
@@ -262,7 +262,7 @@ export class RemoteWorkService extends BaseService {
             ];
 
             return { success: true, data: metrics };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching team metrics:', error);
             return { success: false, error: 'Failed to fetch team metrics' };
         }
@@ -311,7 +311,7 @@ export class RemoteWorkService extends BaseService {
             }
 
             return { success: true, data: requests };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching remote work requests:', error);
             return { success: false, error: 'Failed to fetch requests' };
         }
@@ -343,7 +343,7 @@ export class RemoteWorkService extends BaseService {
             });
 
             return { success: true, data: newRequest };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error submitting remote work request:', error);
             return { success: false, error: 'Failed to submit request' };
         }
@@ -386,7 +386,7 @@ export class RemoteWorkService extends BaseService {
             });
 
             return { success: true, data: request };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error reviewing remote work request:', error);
             return { success: false, error: 'Failed to review request' };
         }
@@ -419,7 +419,7 @@ export class RemoteWorkService extends BaseService {
             });
 
             return { success: true, data: newEquipment };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error assigning equipment:', error);
             return { success: false, error: 'Failed to assign equipment' };
         }
@@ -448,7 +448,7 @@ export class RemoteWorkService extends BaseService {
                     avgProductivity: 87,
                 },
             };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching remote work statistics:', error);
             return { success: false, error: 'Failed to fetch statistics' };
         }

@@ -37,7 +37,7 @@ export default function PayslipAccessPage() {
                     }));
                     setChartData(chart);
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Failed to fetch payslips:', err);
             } finally {
                 setFetching(false);

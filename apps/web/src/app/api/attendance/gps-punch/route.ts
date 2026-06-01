@@ -74,7 +74,7 @@ export const GET = withEnhancedAuth(
             { status: 400 }
           );
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Error fetching GPS data');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch GPS data' },
@@ -117,7 +117,7 @@ export const POST = withEnhancedAuth(
 
       const status = result.decision === 'BLOCK' ? 403 : 200;
       return NextResponse.json({ success: result.decision !== 'BLOCK', data: result }, { status });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

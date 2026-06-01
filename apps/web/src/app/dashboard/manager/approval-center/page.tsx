@@ -80,7 +80,7 @@ export default function ApprovalCenterPage() {
                 setApprovals(data.approvals || []);
                 setSummary(data.summary || null);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to fetch approvals:', err);
         } finally {
             setLoading(false);
@@ -105,7 +105,7 @@ export default function ApprovalCenterPage() {
                     });
                 }
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to process approval:', err);
         } finally {
             setProcessing(null);

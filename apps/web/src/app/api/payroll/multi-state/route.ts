@@ -61,7 +61,7 @@ export const GET = withEnhancedAuth(
           summary,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching multi-state config:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch multi-state configuration' },
@@ -135,7 +135,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: result });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error calculating multi-state payroll:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to calculate multi-state payroll' },

@@ -272,7 +272,7 @@ function OverviewTab() {
             }))
           );
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('Leave stats fetch error:', e);
       } finally {
         setLoading(false);
@@ -462,7 +462,7 @@ function AccrualEngineTab() {
             }))
           );
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('Accrual fetch error:', e);
       } finally {
         setLoading(false);
@@ -788,7 +788,7 @@ function HijriCalendarTab({ calendarMode, setCalendarMode }: any) {
             })
           );
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('Calendar fetch error:', e);
       }
     })();

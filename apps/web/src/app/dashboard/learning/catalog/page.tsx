@@ -34,7 +34,7 @@ export default function CourseCatalogPage() {
                 setLoading(true);
                 const result = await CourseService.getCourses();
                 setData(result.length > 0 ? result : mockCourses);
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                                 setData(mockCourses);
             } finally {

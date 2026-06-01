@@ -35,7 +35,7 @@ export default function DiversityMetricsPage() {
                 setLoading(true);
                 const data = await DiversityMetricsService.getAllMetrics();
                 setMetrics(data as any);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

@@ -127,7 +127,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: { exceptions, summary },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Error fetching exceptions:');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch exceptions' },
@@ -211,7 +211,7 @@ export const POST = withEnhancedAuth(
           remarks: updated.remarks,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Error resolving exceptions:');
       return NextResponse.json(
         { success: false, error: 'Failed to resolve attendance exception' },

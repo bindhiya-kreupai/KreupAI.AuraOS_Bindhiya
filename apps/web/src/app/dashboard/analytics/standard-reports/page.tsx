@@ -112,7 +112,7 @@ export default function StandardReportsPage() {
             } else {
                 setChartData([]);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading report:', error);
             setReportData(null);
             setChartData([]);

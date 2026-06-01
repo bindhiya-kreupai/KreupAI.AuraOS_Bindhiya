@@ -83,7 +83,7 @@ export const GET = withEnhancedAuth(
         cycles: Array.from(cycleMap.values()),
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching bonus cycles:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch bonus cycles' },
@@ -137,7 +137,7 @@ export const POST = withEnhancedAuth(
         data: adjustment,
         bonus: adjustment,
       }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

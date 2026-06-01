@@ -101,7 +101,7 @@ export const PUT = withAudit(
       };
 
       return NextResponse.json(response, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       const statusCode = error instanceof Error && error.message.includes('not found') ? 404 : 500;
       const errorCode = statusCode === 404 ? 'E4001' : 'E5001';
 

@@ -38,7 +38,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     }
 
     return NextResponse.json({ success: true, data: workflow });
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json({ error: 'Failed to fetch workflow' }, { status: 500 });
   }
 });
@@ -90,7 +90,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
       data: updatedWorkflow,
       message: 'Workflow updated successfully',
     });
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json({ error: 'Failed to update workflow' }, { status: 500 });
   }
 });
@@ -135,7 +135,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
       data: { id, deletedAt: new Date().toISOString() },
       message: 'Workflow deleted successfully',
     });
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json({ error: 'Failed to delete workflow' }, { status: 500 });
   }
 });

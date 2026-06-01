@@ -109,7 +109,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Compliance Training Complete API] POST Error:', error);
     return NextResponse.json(
       {

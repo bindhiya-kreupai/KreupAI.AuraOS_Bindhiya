@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to calculate SPF contributions', errorAr: 'فشل في حساب مساهمات صندوق الحماية الاجتماعية' },
       { status: 500 }
@@ -141,7 +141,7 @@ export async function GET() {
         ],
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to fetch SPF reference data', errorAr: 'فشل في جلب البيانات المرجعية' },
       { status: 500 }

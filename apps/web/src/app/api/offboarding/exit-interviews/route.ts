@@ -75,7 +75,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       { success: true, interviews },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching exit interviews:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch exit interviews' },
@@ -125,7 +125,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       { success: true, interview },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating exit interview:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create exit interview' },
@@ -192,7 +192,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       { success: true, interview },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating exit interview:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update exit interview' },

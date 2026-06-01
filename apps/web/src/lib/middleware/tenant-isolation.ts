@@ -166,7 +166,7 @@ export function withTenantIsolation(config: TenantIsolationConfig = {}) {
         const response = await handler(request, context);
 
         return response;
-      } catch (error) {
+      } catch (error: any) {
         if (error instanceof TenantIsolationError) {
           if (onViolation) {
             onViolation(request, error.context);
@@ -294,7 +294,7 @@ export async function logTenantViolation(
       },
       'Tenant isolation violation logged to audit trail'
     );
-  } catch (error) {
+  } catch (error: any) {
     logger.error(
       {
         error,

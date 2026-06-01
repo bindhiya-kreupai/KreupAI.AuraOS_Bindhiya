@@ -40,7 +40,7 @@ export const GET = withEnhancedAuth(
         data: leaveTypes,
         meta: { total: leaveTypes.length },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching leave types:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch leave types' },
@@ -83,7 +83,7 @@ export const POST = withEnhancedAuth(
         { success: true, data: newLeaveType, type: newLeaveType, leaveType: newLeaveType },
         { status: 201 }
       );
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

@@ -45,7 +45,7 @@ export const GET = withEnhancedAuth(
         logger.warn('IncrementCycle model not available, returning empty data');
         return NextResponse.json({ success: true, data: [] });
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching increment cycles:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch increment cycles' }, { status: 500 });
     }
@@ -87,7 +87,7 @@ export const POST = withEnhancedAuth(
         };
         return NextResponse.json({ success: true, data: newCycle }, { status: 201 });
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error creating increment cycle:', error);
       return NextResponse.json({ success: false, error: 'Failed to create increment cycle' }, { status: 500 });
     }
@@ -118,7 +118,7 @@ export const PUT = withEnhancedAuth(
       } catch {
         return NextResponse.json({ success: true, data: { ...body, updatedAt: new Date().toISOString() } });
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating increment cycle:', error);
       return NextResponse.json({ success: false, error: 'Failed to update increment cycle' }, { status: 500 });
     }

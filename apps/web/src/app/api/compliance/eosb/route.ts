@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: result,
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to calculate EOSB', errorAr: 'فشل في حساب مكافأة نهاية الخدمة' },
       { status: 500 }
@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
         currency: config.currency,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to fetch EOSB rules', errorAr: 'فشل في جلب قواعد مكافأة نهاية الخدمة' },
       { status: 500 }

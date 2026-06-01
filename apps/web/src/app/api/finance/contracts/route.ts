@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
         expiringContracts: 0,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to fetch contracts' },
       { status: 500 }
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to process contract' },
       { status: 500 }
@@ -94,7 +94,7 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to update contract' },
       { status: 500 }
@@ -122,7 +122,7 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Contract deleted successfully',
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to delete contract' },
       { status: 500 }

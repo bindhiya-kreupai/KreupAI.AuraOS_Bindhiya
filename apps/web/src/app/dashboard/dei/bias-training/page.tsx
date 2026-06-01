@@ -21,7 +21,7 @@ export default function BiasTrainingPage() {
                 setLoading(true);
                 const data = await BiasTrainingService.getAllTrainings();
                 setModules(Array.isArray(data) ? data : []);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

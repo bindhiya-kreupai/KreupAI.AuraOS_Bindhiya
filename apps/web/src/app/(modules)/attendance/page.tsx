@@ -120,7 +120,7 @@ export default function AttendanceCommandCenter() {
             { title: 'Check-ins', value: String(captures.length), icon: Timer, color: 'violet' },
           ]);
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('Attendance stats fetch error:', e);
       }
     })();
@@ -313,7 +313,7 @@ function LiveTrackingTab() {
             })
           );
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('Live feed fetch error:', e);
       }
     })();
@@ -492,7 +492,7 @@ function ShiftOrchestratorTab() {
             }))
           );
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('Shift fetch error:', e);
       }
     })();
@@ -632,7 +632,7 @@ function GeofenceGPSTab() {
             }))
           );
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('Geofence fetch error:', e);
       }
     })();

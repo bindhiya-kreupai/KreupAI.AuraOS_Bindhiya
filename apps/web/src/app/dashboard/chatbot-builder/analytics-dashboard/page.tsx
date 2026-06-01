@@ -29,7 +29,7 @@ export default function ChatbotAnalyticsPage() {
             if (result) {
                 setAnalytics(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

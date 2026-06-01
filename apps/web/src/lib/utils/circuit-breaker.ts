@@ -146,7 +146,7 @@ export class CircuitBreaker {
       this.onSuccess(Date.now() - startTime);
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       // Record failure
       this.onFailure(Date.now() - startTime, (error as Error).message);
 

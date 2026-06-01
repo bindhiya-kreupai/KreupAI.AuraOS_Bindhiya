@@ -92,7 +92,7 @@ export default function BenefitsEnrollmentPage() {
                 }
             }
             setSelections(defaultSelections);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching plans:', error);
         } finally {
             setLoading(false);

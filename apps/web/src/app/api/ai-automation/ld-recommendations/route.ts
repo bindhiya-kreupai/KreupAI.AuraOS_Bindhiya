@@ -17,7 +17,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       generatedDate: new Date().toISOString()
     };
     return NextResponse.json({ recommendation }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

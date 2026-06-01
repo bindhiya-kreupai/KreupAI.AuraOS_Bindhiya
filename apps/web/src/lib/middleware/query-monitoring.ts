@@ -473,7 +473,7 @@ export function createQueryMonitoringMiddleware(requestContext?: {
       });
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       queryMonitor.recordFailedQuery(
         params.model,
         params.action,

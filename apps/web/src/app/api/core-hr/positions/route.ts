@@ -105,7 +105,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
         totalPages: Math.ceil(total / limit),
       },
     }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching positions:', error);
     return NextResponse.json(
       { error: 'Failed to fetch positions' },
@@ -166,7 +166,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ position }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -239,7 +239,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ position }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

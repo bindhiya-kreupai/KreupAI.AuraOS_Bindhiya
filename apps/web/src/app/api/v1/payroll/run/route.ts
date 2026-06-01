@@ -167,7 +167,7 @@ export const POST = auditMiddleware.runPayroll(
         },
         { status: 202 }
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Payroll Run API] POST Error:', error);
 
       return NextResponse.json(

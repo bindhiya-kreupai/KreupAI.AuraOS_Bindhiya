@@ -23,7 +23,7 @@ export default function SessionsPage() {
         try {
             const res = await fetch('/api/sessions');
             if (res.ok) setData(await res.json());
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch sessions:', error);
         } finally {
@@ -65,7 +65,7 @@ export default function SessionsPage() {
                 const response = await fetch(`/api/sessions?id=${record.id}`, { method: 'DELETE' });
                 if (response.ok) fetchData();
                 else alert('Failed to revoke session');
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error revoking session:', error);
                 alert('Error revoking session');

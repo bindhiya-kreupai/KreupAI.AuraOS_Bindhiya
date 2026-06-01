@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to analyze sentiment',
@@ -209,7 +209,7 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to fetch sentiment data', errorAr: 'فشل في جلب بيانات المشاعر' },
       { status: 500 }

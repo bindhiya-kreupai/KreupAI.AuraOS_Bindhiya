@@ -30,7 +30,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ plans }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching development plans:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -58,7 +58,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ plan }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating development plan:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -96,7 +96,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ plan }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating development plan:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

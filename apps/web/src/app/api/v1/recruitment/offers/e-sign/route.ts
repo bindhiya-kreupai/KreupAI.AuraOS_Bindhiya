@@ -133,7 +133,7 @@ export const POST = withAudit(
           apiVersion: 'v1',
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Offer E-Sign API] POST Error:', error);
       return NextResponse.json(
         { success: false, error: { code: 'E5001', message: 'Failed to process offer action' } },

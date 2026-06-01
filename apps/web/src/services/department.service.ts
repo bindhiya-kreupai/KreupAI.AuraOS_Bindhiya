@@ -209,7 +209,7 @@ export class DepartmentService {
         department,
         message: 'Department created successfully',
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, input }, 'Error creating department');
       return {
         success: false,
@@ -542,7 +542,7 @@ export class DepartmentService {
         department,
         message: 'Department updated successfully',
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, departmentId }, 'Error updating department');
       return {
         success: false,
@@ -643,7 +643,7 @@ export class DepartmentService {
         success: true,
         message: 'Department deleted successfully',
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, departmentId }, 'Error deleting department');
       return {
         success: false,
@@ -733,7 +733,7 @@ export class DepartmentService {
         success: true,
         message: 'Manager assigned successfully',
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, departmentId, managerId }, 'Error assigning manager');
       return {
         success: false,

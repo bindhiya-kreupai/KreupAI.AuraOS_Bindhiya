@@ -30,7 +30,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       { success: true, data: defaultTraining },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching safety training:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },

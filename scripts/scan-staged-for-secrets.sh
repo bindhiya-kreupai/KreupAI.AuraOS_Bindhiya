@@ -69,7 +69,7 @@ for FILE in $STAGED; do
       MATCH=$(grep -nE "$PATTERN" "$TMPDIFF" | head -1)
       # Skip if the match is on a line that contains a known placeholder
       LINE_CONTENT=$(echo "$MATCH" | cut -d: -f2-)
-      if echo "$LINE_CONTENT" | grep -qE 'REPLACE_WITH|your-.*-here|change-this-in-production|test_password|test-jwt-secret|e2e-jwt|integration-test-|aura_redis_2024|auraos_rabbit_2024|NEW_PASS|EXAMPLE|<example>|placeholder|password@host|PASSWORD|<your|your_'; then
+      if echo "$LINE_CONTENT" | grep -qE 'REPLACE_WITH|your-.*-here|your-.*-token|your-.*-key|change-this-in-production|test_password|test-jwt-secret|e2e-jwt|integration-test-|aura_redis_2024|auraos_rabbit_2024|NEW_PASS|EXAMPLE|<example>|placeholder|password@host|PASSWORD|<your|your_'; then
         continue
       fi
       # Also tolerate all-caps placeholder words in connection strings

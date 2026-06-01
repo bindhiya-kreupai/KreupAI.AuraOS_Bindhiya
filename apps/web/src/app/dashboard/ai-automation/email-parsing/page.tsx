@@ -72,7 +72,7 @@ export default function EmailParsingPage() {
                     setCurrentEmail(result.data.emails[0]);
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);
@@ -99,7 +99,7 @@ export default function EmailParsingPage() {
                 await emailParser.processEmail(currentEmail.id, 'extract');
                 await fetchEmails();
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                         setIsProcessing(false);
         }

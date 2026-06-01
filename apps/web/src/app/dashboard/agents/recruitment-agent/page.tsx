@@ -108,7 +108,7 @@ export default function RecruitmentAgentPage() {
         timestamp: new Date().toISOString()
       };
       setMessages(prev => [...prev, agentMessage]);
-    } catch (error) {
+    } catch (error: any) {
             console.error('Error:', error);
       const agentMessage = {
         role: 'agent' as const,

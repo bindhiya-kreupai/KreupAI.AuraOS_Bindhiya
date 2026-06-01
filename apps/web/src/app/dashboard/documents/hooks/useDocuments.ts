@@ -100,7 +100,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setError(null);
       const data = await DocumentService.getDocuments(filters);
       setDocuments(data);
-    } catch (error) {
+    } catch (error: any) {
       setError(error);
       toast.error(`Failed to load documents: ${error.message}`);
     } finally {
@@ -112,7 +112,7 @@ export const useDocuments = (): UseDocumentsReturn => {
     try {
       const document = await DocumentService.getDocumentById(id);
       return document;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to get document: ${error.message}`);
       return null;
     }
@@ -127,7 +127,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       await loadMetrics();
       toast.success('Document uploaded successfully');
       return uploaded;
-    } catch (error) {
+    } catch (error: any) {
       setError(error);
       toast.error(`Failed to upload document: ${error.message}`);
       throw error;
@@ -145,7 +145,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       await loadMetrics();
       toast.success('Document updated successfully');
       return updated;
-    } catch (error) {
+    } catch (error: any) {
       setError(error);
       toast.error(`Failed to update document: ${error.message}`);
       throw error;
@@ -162,7 +162,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setDocuments((prev) => prev.filter(d => d.id !== id));
       await loadMetrics();
       toast.success('Document deleted successfully');
-    } catch (error) {
+    } catch (error: any) {
       setError(error);
       toast.error(`Failed to delete document: ${error.message}`);
       throw error;
@@ -178,7 +178,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setDocuments((prev) => prev.map(d => d.id === documentId ? updated : d));
       toast.success(`New version ${version.versionNumber} uploaded successfully`);
       return updated;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to upload new version: ${error.message}`);
       throw error;
     } finally {
@@ -194,7 +194,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       await loadMetrics();
       toast.success('Document approved successfully');
       return approved;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to approve document: ${error.message}`);
       throw error;
     } finally {
@@ -210,7 +210,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       await loadMetrics();
       toast.success('Document rejected');
       return rejected;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to reject document: ${error.message}`);
       throw error;
     } finally {
@@ -222,7 +222,7 @@ export const useDocuments = (): UseDocumentsReturn => {
     try {
       await DocumentService.incrementViewCount(id);
       setDocuments((prev) => prev.map(d => d.id === id ? { ...d, viewCount: d.viewCount + 1 } : d));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to increment view count:', error);
     }
   }, []);
@@ -232,7 +232,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       await DocumentService.incrementDownloadCount(id, downloadedBy, downloadedByName);
       setDocuments((prev) => prev.map(d => d.id === id ? { ...d, downloadCount: d.downloadCount + 1 } : d));
       toast.success('Document downloaded');
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to download document: ${error.message}`);
     }
   }, [toast]);
@@ -243,7 +243,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setIsLoading(true);
       const data = await FolderService.getFolders();
       setFolders(data);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to load folders: ${error.message}`);
     } finally {
       setIsLoading(false);
@@ -257,7 +257,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setFolders((prev) => [...prev, created]);
       toast.success('Folder created successfully');
       return created;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to create folder: ${error.message}`);
       throw error;
     } finally {
@@ -272,7 +272,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setFolders((prev) => prev.map(f => f.id === id ? updated : f));
       toast.success('Folder updated successfully');
       return updated;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to update folder: ${error.message}`);
       throw error;
     } finally {
@@ -286,7 +286,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       await FolderService.deleteFolder(id);
       setFolders((prev) => prev.filter(f => f.id !== id));
       toast.success('Folder deleted successfully');
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to delete folder: ${error.message}`);
       throw error;
     } finally {
@@ -304,7 +304,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setIsLoading(true);
       const data = await DocumentTemplateService.getTemplates();
       setTemplates(data);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to load templates: ${error.message}`);
     } finally {
       setIsLoading(false);
@@ -318,7 +318,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setTemplates((prev) => [...prev, created]);
       toast.success('Template created successfully');
       return created;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to create template: ${error.message}`);
       throw error;
     } finally {
@@ -333,7 +333,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setTemplates((prev) => prev.map(t => t.id === id ? updated : t));
       toast.success('Template updated successfully');
       return updated;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to update template: ${error.message}`);
       throw error;
     } finally {
@@ -389,7 +389,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       await uploadDocument(newDocument);
       toast.success('Document generated from template');
       return newDocument;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to generate document: ${error.message}`);
       throw error;
     } finally {
@@ -403,7 +403,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setIsLoading(true);
       const data = await DocumentRequestService.getRequests(filters);
       setRequests(data);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to load requests: ${error.message}`);
     } finally {
       setIsLoading(false);
@@ -417,7 +417,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setRequests((prev) => [...prev, submitted]);
       toast.success('Document request submitted');
       return submitted;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to submit request: ${error.message}`);
       throw error;
     } finally {
@@ -432,7 +432,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setRequests((prev) => prev.map(r => r.id === id ? approved : r));
       toast.success('Document request approved');
       return approved;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to approve request: ${error.message}`);
       throw error;
     } finally {
@@ -447,7 +447,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setRequests((prev) => prev.map(r => r.id === id ? fulfilled : r));
       toast.success('Document request fulfilled');
       return fulfilled;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to fulfill request: ${error.message}`);
       throw error;
     } finally {
@@ -469,7 +469,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       }));
       toast.success('Document shared successfully');
       return created;
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to share document: ${error.message}`);
       throw error;
     } finally {
@@ -489,7 +489,7 @@ export const useDocuments = (): UseDocumentsReturn => {
         return d;
       }));
       toast.success('Share revoked');
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to revoke share: ${error.message}`);
     } finally {
       setIsSaving(false);
@@ -540,7 +540,7 @@ export const useDocuments = (): UseDocumentsReturn => {
     try {
       const data = await DocumentAnalyticsService.getMetrics();
       setMetrics(data);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to load metrics: ${error.message}`);
     }
   }, [toast]);
@@ -555,7 +555,7 @@ export const useDocuments = (): UseDocumentsReturn => {
     try {
       const data = await DocumentSettingsService.getSettings();
       setSettings(data);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to load settings: ${error.message}`);
     }
   }, [toast]);
@@ -566,7 +566,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       const updated = await DocumentSettingsService.updateSettings(updates);
       setSettings(updated);
       toast.success('Settings updated successfully');
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to update settings: ${error.message}`);
     } finally {
       setIsSaving(false);
@@ -638,7 +638,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       await loadSettings();
 
       toast.success('Sample data initialized successfully');
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to initialize sample data: ${error.message}`);
     } finally {
       setIsSaving(false);
@@ -668,7 +668,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setSettings(null);
 
       toast.success('All document data cleared');
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to clear data: ${error.message}`);
     } finally {
       setIsSaving(false);

@@ -39,7 +39,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       { success: true, data: employee },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('[My Services Profile] GET Error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch profile' },
@@ -107,7 +107,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
       { success: true, data: updated },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('[My Services Profile] PUT Error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update profile' },

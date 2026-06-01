@@ -39,7 +39,7 @@ export default function LifeEventsPage() {
     try {
       const data = await LifeEventService.getAllLifeEvents();
       setEmployeeLifeEvents(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -72,7 +72,7 @@ export default function LifeEventsPage() {
           }),
         3000
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending wish:', error);
       setWishStatus((prev) => ({ ...prev, [name]: 'Failed' }));
     }

@@ -37,7 +37,7 @@ async function checkPostgres(): Promise<{ ok: boolean; latencyMs: number; error?
     const latencyMs = Date.now() - start;
     if (result === null) return { ok: false, latencyMs, error: 'timeout' };
     return { ok: true, latencyMs };
-  } catch (err) {
+  } catch (err: any) {
     return {
       ok: false,
       latencyMs: Date.now() - start,

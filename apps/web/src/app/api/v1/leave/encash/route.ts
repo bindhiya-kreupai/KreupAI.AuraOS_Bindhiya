@@ -266,7 +266,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Leave Encashment API] POST Error:', error);
 
     return NextResponse.json(

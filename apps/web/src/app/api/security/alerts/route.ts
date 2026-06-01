@@ -12,7 +12,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         tenantId: user.tenantId,
       },
     }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { success: false, error: 'Failed to fetch security alerts' },
       { status: 500 }
@@ -45,7 +45,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json({ success: true, data: alert }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { success: false, error: 'Failed to create security alert' },
       { status: 500 }
@@ -66,7 +66,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json({ success: true, data: alert }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { success: false, error: 'Failed to update security alert' },
       { status: 500 }

@@ -51,7 +51,7 @@ export default function TalentPoolPage() {
             setLoading(true);
             const data = await CandidateApplicationService.getApplications();
             setCandidates(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

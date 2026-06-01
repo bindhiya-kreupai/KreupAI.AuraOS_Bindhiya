@@ -48,7 +48,7 @@ export const PATCH = withEnhancedAuth(async (request: NextRequest, context: any)
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Notifications Read All API] PATCH Error:', error);
     return NextResponse.json(
       {

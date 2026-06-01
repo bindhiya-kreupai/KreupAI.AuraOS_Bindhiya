@@ -24,7 +24,7 @@ export default function TaxDeclarationPage() {
                 if (res?.success && Array.isArray(res.data)) {
                     setDeclarations(res.data);
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Failed to fetch tax declarations:', err);
             } finally {
                 setFetching(false);
@@ -42,7 +42,7 @@ export default function TaxDeclarationPage() {
                 status: 'SUBMITTED',
             });
             alert('Declaration submitted successfully!');
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to submit declaration:', err);
             alert('Failed to submit. Please try again.');
         } finally {

@@ -19,7 +19,7 @@ export default function ManagerAssessmentPage() {
             try {
                 const data = await PerformanceReviewService.getReviews();
                 setReviews(data);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load reviews:', error);
             } finally {
                 setLoading(false);

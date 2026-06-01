@@ -22,7 +22,7 @@ export default function TestingModePage() {
             ]);
             setWorkflows(wfs || []);
             setExecutions(execs || []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

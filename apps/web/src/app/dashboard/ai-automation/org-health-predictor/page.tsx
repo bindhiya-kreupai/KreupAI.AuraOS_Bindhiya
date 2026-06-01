@@ -146,7 +146,7 @@ export default function OrgHealthPredictorPage() {
             if (recommendationsResult.success) {
                 setRecommendations(recommendationsResult.data?.recommendations || []);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

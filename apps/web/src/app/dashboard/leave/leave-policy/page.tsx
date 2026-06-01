@@ -29,7 +29,7 @@ export default function LeavePolicyPage() {
       setLoading(true);
       const result = await LeavePolicyService.getPolicies();
       setPolicies(result);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -56,7 +56,7 @@ export default function LeavePolicyPage() {
       await LeavePolicyService.updatePolicy(editingPolicy.id, form as any);
       setShowModal(false);
       await fetchPolicies();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Save failed:', error);
     } finally {
       setSaving(false);

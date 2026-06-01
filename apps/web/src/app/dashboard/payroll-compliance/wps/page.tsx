@@ -80,7 +80,7 @@ export default function WPSPage() {
       } else {
         setError(result.error || 'Failed to load WPS reference data');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching WPS data:', err);
       setError('Failed to connect to WPS service');
     } finally {
@@ -134,7 +134,7 @@ export default function WPSPage() {
         });
       }
       setActiveTab('validate');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error validating WPS records:', err);
       setValidationResult({
         isValid: false,
@@ -189,7 +189,7 @@ export default function WPSPage() {
           setError(result.error || 'Failed to generate SIF file');
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error generating SIF:', err);
       setError('Failed to generate SIF file');
     } finally {

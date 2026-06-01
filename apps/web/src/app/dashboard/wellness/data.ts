@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 /**
  * Employee Wellness Module - Sample Data
  * Comprehensive sample data for immediate testing

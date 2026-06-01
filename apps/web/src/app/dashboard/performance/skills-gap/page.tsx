@@ -87,7 +87,7 @@ export default function SkillsGapPage() {
                 } else {
                     setHasAssessments(false);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load skills data:', error);
                 setHasAssessments(false);
             } finally {

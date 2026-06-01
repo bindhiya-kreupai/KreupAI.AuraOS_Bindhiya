@@ -47,7 +47,7 @@ export default function PayslipsPage() {
             if (result.length > 0) {
                 setSelectedPayslip(result[0]);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

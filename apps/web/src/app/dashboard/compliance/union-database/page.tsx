@@ -21,7 +21,7 @@ export default function UnionDatabasePage() {
         try {
             const data = await UnionService.getUnions();
             setUnions(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

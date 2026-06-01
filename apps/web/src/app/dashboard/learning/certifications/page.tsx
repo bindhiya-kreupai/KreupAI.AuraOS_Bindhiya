@@ -20,7 +20,7 @@ export default function CertificationsPage() {
                 setLoading(true);
                 const result = await CertificationService.getCertifications();
                 setData(result);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
                 setData([]);
             } finally {

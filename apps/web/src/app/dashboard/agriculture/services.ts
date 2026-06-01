@@ -29,7 +29,7 @@ export class SeasonalLaborService {
         `${this.endpoint}/workers`
       );
       return response.workers || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -41,7 +41,7 @@ export class SeasonalLaborService {
         `${this.endpoint}/workers/${workerId}`
       );
       return response.worker || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -89,7 +89,7 @@ export class SeasonalLaborService {
         { query, ...filters }
       );
       return response.workers || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -113,7 +113,7 @@ export class SeasonalLaborService {
         `${this.endpoint}/pools`
       );
       return response.pools || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -144,7 +144,7 @@ export class HousingManagementService {
         `${this.endpoint}/facilities`
       );
       return response.facilities || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -158,7 +158,7 @@ export class HousingManagementService {
         `${this.endpoint}/facilities/${facilityId}`
       );
       return response.facility || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -198,7 +198,7 @@ export class HousingManagementService {
         `${this.endpoint}/assignments`
       );
       return response.assignments || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -233,7 +233,7 @@ export class HousingManagementService {
         `${this.endpoint}/inspections`
       );
       return response.inspections || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -262,7 +262,7 @@ export class CropCycleService {
     try {
       const response = await APIClient.get<{ cycles?: CropCycle[] }>(this.endpoint);
       return response.cycles || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -274,7 +274,7 @@ export class CropCycleService {
         `${this.endpoint}/${cycleId}`
       );
       return response.cycle || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -326,7 +326,7 @@ export class CropCycleService {
         `${this.endpoint}/harvest-schedules`
       );
       return response.schedules || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -357,7 +357,7 @@ export class AgricultureAnalyticsService {
         this.endpoint
       );
       return response.analytics;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -370,7 +370,7 @@ export class AgricultureAnalyticsService {
         { format }
       );
       return response;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -390,7 +390,7 @@ export class AgricultureSettingsService {
         this.endpoint
       );
       return response.settings;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }

@@ -67,7 +67,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Employment History Stats API] GET Error:', error);
 
     const response: ApiResponse = {

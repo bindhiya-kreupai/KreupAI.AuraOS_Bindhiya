@@ -86,7 +86,7 @@ export const POST = withAudit(
         },
         { status: 201 }
       );
-    } catch (_error) {
+    } catch (_error: any) {
       console.error('[Attendance Regularize API] POST Error:', _error);
       return NextResponse.json(
         {

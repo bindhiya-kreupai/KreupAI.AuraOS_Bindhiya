@@ -71,7 +71,7 @@ export const GET = withEnhancedAuth(
         loans,
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching loan recovery:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch loan recovery' },
@@ -138,7 +138,7 @@ export const POST = withEnhancedAuth(
         },
         loan: adjustment,
       }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

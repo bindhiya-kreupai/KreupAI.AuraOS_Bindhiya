@@ -21,7 +21,7 @@ export default function LevelsTiersPage() {
                 setLoading(true);
                 const data = await LevelsService.getLevelDefinitions();
                 setLevels(data as any);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

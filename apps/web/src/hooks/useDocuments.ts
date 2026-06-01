@@ -68,7 +68,7 @@ export function useDocuments(): UseDocumentsReturn {
       setError(null);
       const docs = await DocumentVaultService.getDocuments(currentFilters);
       setDocuments(docs);
-    } catch (err) {
+    } catch (err: any) {
       setError(err instanceof Error ? err.message : 'Failed to load documents');
     } finally {
       setIsLoading(false);
@@ -79,7 +79,7 @@ export function useDocuments(): UseDocumentsReturn {
     try {
       const data = await DocumentVaultService.getFolders();
       setFolders(data);
-    } catch (err) {
+    } catch (err: any) {
       /* Failed to load folders */
       void err;
     }
@@ -164,7 +164,7 @@ export function useDocuments(): UseDocumentsReturn {
                 : item
             )
           );
-        } catch (err) {
+        } catch (err: any) {
           setUploadQueue((prev) =>
             prev.map((item) =>
               item.fileId === fileId
@@ -197,7 +197,7 @@ export function useDocuments(): UseDocumentsReturn {
         await DocumentVaultService.deleteDocument(id);
         setDocuments((prev) => prev.filter((d) => d.id !== id));
         if (selectedDocument?.id === id) setSelectedDocument(null);
-      } catch (err) {
+      } catch (err: any) {
         setError(err instanceof Error ? err.message : 'Failed to delete document');
       }
     },
@@ -210,7 +210,7 @@ export function useDocuments(): UseDocumentsReturn {
         const updated = await DocumentVaultService.toggleStar(id);
         setDocuments((prev) => prev.map((d) => (d.id === id ? updated : d)));
         if (selectedDocument?.id === id) setSelectedDocument(updated);
-      } catch (err) {
+      } catch (err: any) {
         /* Failed to toggle star */
         void err;
       }
@@ -224,7 +224,7 @@ export function useDocuments(): UseDocumentsReturn {
       setDocuments((prev) =>
         prev.map((d) => (d.id === id ? { ...d, downloadCount: d.downloadCount + 1 } : d))
       );
-    } catch (err) {
+    } catch (err: any) {
       /* Failed to download document */
       void err;
     }

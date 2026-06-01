@@ -19,7 +19,7 @@ export default function ExternalTrainingPage() {
                 setLoading(true);
                 const result = await ExternalTrainingService.getExternalTraining();
                 setData(result);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
                 setData([]);
             } finally {

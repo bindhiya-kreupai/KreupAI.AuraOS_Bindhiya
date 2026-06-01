@@ -61,7 +61,7 @@ export default function PayrollRunPage() {
         bonus: 0,
       }));
       setPayrollData(mapped);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch payroll data:', error);
     } finally {
       setLoading(false);
@@ -99,7 +99,7 @@ export default function PayrollRunPage() {
       await fetchData();
       alert('Payroll committed successfully!');
       setCurrentStep(1);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Commit failed:', error);
       alert('Failed to commit payroll. Please try again.');
     } finally {

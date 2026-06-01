@@ -48,7 +48,7 @@ export const GET = withEnhancedAuth(
       }));
 
       return NextResponse.json({ success: true, data });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching expense claims:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch expense claims' }, { status: 500 });
     }
@@ -80,7 +80,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: claim }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error creating expense claim:', error);
       return NextResponse.json({ success: false, error: 'Failed to create expense claim' }, { status: 500 });
     }
@@ -124,7 +124,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: claim });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating expense claim:', error);
       return NextResponse.json({ success: false, error: 'Failed to update expense claim' }, { status: 500 });
     }
@@ -147,7 +147,7 @@ export const DELETE = withEnhancedAuth(
       await prisma.expenseClaim.delete({ where: { id } });
 
       return NextResponse.json({ success: true, message: 'Expense claim deleted' });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error deleting expense claim:', error);
       return NextResponse.json({ success: false, error: 'Failed to delete expense claim' }, { status: 500 });
     }

@@ -25,7 +25,7 @@ export default function LeaveCalendarPage() {
       if (result.success) {
         setLeaveData(result.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch leave calendar:', error);
     } finally {
       setLoading(false);

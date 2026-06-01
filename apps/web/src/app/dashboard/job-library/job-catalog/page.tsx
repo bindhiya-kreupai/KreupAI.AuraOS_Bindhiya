@@ -33,7 +33,7 @@ export default function JobCatalogPage() {
                 if (!res.ok) throw new Error('Failed to fetch job catalog');
                 const data = await res.json();
                 setJobs(data);
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error(error);
                 setError('Failed to load job catalog');

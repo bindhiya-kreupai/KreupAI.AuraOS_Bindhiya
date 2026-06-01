@@ -35,7 +35,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ reviews }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching performance reviews:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -69,7 +69,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ review }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating performance review:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -119,7 +119,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ review }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating performance review:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

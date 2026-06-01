@@ -112,7 +112,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json(response);
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Projects API] GET Error:', error);
 
     const response: ApiResponse = {

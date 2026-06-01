@@ -313,7 +313,7 @@ export function WorkflowMonitor({ workflowId }: WorkflowMonitorProps) {
       setLoading(true);
       const data = await WorkflowAutomationService.getWorkflowInstances(workflowId);
       setInstances(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
     } finally {
       setLoading(false);

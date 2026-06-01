@@ -39,7 +39,7 @@ export class EventBusService {
     try {
       await this.eventBus.publish(event);
       logger.info({ eventType: event.eventType, aggregateId: event.aggregateId }, 'Event published');
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, eventType: event.eventType }, 'Error publishing event');
       throw error;
     }

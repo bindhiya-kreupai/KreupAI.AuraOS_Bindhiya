@@ -31,7 +31,7 @@ export default function MobileTimesheetsPage() {
             if (result.length > 0) {
                 setTimesheets(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

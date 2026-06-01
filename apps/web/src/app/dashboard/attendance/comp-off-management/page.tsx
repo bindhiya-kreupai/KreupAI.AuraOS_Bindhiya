@@ -47,7 +47,7 @@ export default function CompOffManagementPage() {
                 expiringSoon: result?.expiringSoon || 0,
                 transactions: result?.transactions || []
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

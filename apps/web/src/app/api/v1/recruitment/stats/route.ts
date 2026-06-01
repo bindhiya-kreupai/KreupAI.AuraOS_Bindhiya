@@ -276,7 +276,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
           })),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[RecruitmentStats API] Error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch recruitment statistics' },

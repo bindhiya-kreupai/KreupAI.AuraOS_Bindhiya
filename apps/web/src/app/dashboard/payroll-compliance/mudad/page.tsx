@@ -91,7 +91,7 @@ export default function MudadPage() {
       } else {
         setError(result.error || 'Failed to load Mudad reference data');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching Mudad data:', err);
       setError('Failed to connect to Mudad service');
     } finally {
@@ -153,7 +153,7 @@ export default function MudadPage() {
           warnings: result.warnings || [],
         });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error validating Mudad records:', err);
       setError('Failed to validate records');
     } finally {
@@ -215,7 +215,7 @@ export default function MudadPage() {
           setError(result.error || `Failed to generate ${format.toUpperCase()} file`);
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error generating Mudad file:', err);
       setError('Failed to generate file');
     } finally {

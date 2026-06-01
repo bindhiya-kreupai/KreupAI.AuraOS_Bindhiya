@@ -92,7 +92,7 @@ export default function InterviewFeedbackPage() {
                     feedback.map(item => ({ interview, feedback: item }))
                 )
             );
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

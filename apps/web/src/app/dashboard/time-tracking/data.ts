@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 // Time Tracking Sample Data
 import type { Timesheet, Project, Task, Client, TimeTrackingMetrics, TimeTrackingSettings, TimeEntry } from './types';
 

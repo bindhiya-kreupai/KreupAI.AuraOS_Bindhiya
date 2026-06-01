@@ -92,7 +92,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     const settings = getDefaultSettings(managerId);
 
     return NextResponse.json(settings, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching manager settings:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -120,7 +120,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json(updatedSettings, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating manager settings:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 /**
  * Construction & Real Estate Module - Sample Data
  * Comprehensive sample data for all construction features

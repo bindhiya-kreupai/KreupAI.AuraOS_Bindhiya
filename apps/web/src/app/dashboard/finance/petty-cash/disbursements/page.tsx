@@ -57,7 +57,7 @@ export default function DisbursementsPage() {
                 setLoading(true);
                 const data = await PettyCashService.getTransactions();
                 setDisbursements(data as any[]);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

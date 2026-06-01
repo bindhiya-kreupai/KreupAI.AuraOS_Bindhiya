@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
         count: suggestions.length,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error in employee autocomplete API');
 
     return NextResponse.json(

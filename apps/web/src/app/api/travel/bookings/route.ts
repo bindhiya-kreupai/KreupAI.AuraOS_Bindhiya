@@ -17,7 +17,7 @@ export const GET = withEnhancedAuth(
           tenantId: user.tenantId,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching bookings:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch bookings' }, { status: 500 });
     }
@@ -40,7 +40,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: newBooking }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error creating booking:', error);
       return NextResponse.json({ success: false, error: 'Failed to create booking' }, { status: 500 });
     }

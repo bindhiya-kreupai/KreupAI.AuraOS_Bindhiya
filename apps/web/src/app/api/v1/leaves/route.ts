@@ -71,7 +71,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Leaves API] GET Error:', error);
     return NextResponse.json(
       {
@@ -150,7 +150,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Leaves API] POST Error:', error);
     return NextResponse.json(
       {

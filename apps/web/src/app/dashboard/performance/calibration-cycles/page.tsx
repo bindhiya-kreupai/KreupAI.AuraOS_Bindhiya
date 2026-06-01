@@ -34,7 +34,7 @@ export default function CalibrationCyclesPage() {
                 ]);
                 setStats(statsData);
                 setSessions(sessionsData);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load calibration data:', error);
             } finally {
                 setLoading(false);

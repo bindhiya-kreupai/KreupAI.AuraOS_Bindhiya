@@ -18,7 +18,7 @@ export default function DevelopmentPlansPage() {
             try {
                 const data = await DevelopmentPlanService.getPlans();
                 setPlans(data);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load development plans:', error);
             } finally {
                 setLoading(false);

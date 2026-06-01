@@ -55,7 +55,7 @@ export abstract class BaseService {
           afterValues: params.afterValues || undefined,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error({ error }, 'Failed to create audit log');
       throw new DatabaseError('Failed to create audit log', { error });
     }
@@ -77,7 +77,7 @@ export abstract class BaseService {
       }
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       const duration = Date.now() - startTime;
       this.logger.error({ error, duration }, `Transaction failed after ${duration}ms`);
       throw new DatabaseError('Transaction failed', { error });

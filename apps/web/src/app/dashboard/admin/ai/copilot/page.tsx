@@ -83,7 +83,7 @@ export default function AICopilotPage() {
                 setSaved(true);
                 setTimeout(() => setSaved(false), 3000);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Save failed:', err);
         } finally {
             setSaving(false);

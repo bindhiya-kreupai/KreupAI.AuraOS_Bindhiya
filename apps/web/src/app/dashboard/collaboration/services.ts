@@ -35,7 +35,7 @@ export class WhiteboardService {
     try {
       const params = userId ? { userId } : undefined;
       return await APIClient.get<Whiteboard[]>(this.endpoint, params);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -43,7 +43,7 @@ export class WhiteboardService {
   static async getWhiteboardById(whiteboardId: string): Promise<Whiteboard> {
     try {
       return await APIClient.get<Whiteboard>(`${this.endpoint}/${whiteboardId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -51,7 +51,7 @@ export class WhiteboardService {
   static async createWhiteboard(whiteboard: Whiteboard): Promise<Whiteboard> {
     try {
       return await APIClient.post<Whiteboard>(this.endpoint, whiteboard);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -59,7 +59,7 @@ export class WhiteboardService {
   static async updateWhiteboard(whiteboardId: string, updates: Partial<Whiteboard>): Promise<Whiteboard> {
     try {
       return await APIClient.put<Whiteboard>(`${this.endpoint}/${whiteboardId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -67,7 +67,7 @@ export class WhiteboardService {
   static async deleteWhiteboard(whiteboardId: string): Promise<void> {
     try {
       await APIClient.delete<void>(`${this.endpoint}/${whiteboardId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -79,7 +79,7 @@ export class WhiteboardService {
         `${this.endpoint}/${whiteboardId}/elements`,
         element
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -94,7 +94,7 @@ export class WhiteboardService {
         `${this.endpoint}/${whiteboardId}/elements/${elementId}`,
         updates
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -104,7 +104,7 @@ export class WhiteboardService {
       return await APIClient.delete<Whiteboard>(
         `${this.endpoint}/${whiteboardId}/elements/${elementId}`
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -116,7 +116,7 @@ export class WhiteboardService {
         `${this.endpoint}/${whiteboardId}/collaborators`,
         collaborator
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -126,7 +126,7 @@ export class WhiteboardService {
       return await APIClient.delete<Whiteboard>(
         `${this.endpoint}/${whiteboardId}/collaborators/${userId}`
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -138,7 +138,7 @@ export class WhiteboardService {
         `${this.endpoint}/${whiteboardId}/versions`,
         { versionName }
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -149,7 +149,7 @@ export class WhiteboardService {
         `${this.endpoint}/${whiteboardId}/versions/${versionId}/restore`,
         {}
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -161,7 +161,7 @@ export class WhiteboardService {
         `${this.endpoint}/${whiteboardId}/export`,
         { format }
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -178,7 +178,7 @@ export class KanbanService {
     try {
       const params = userId ? { userId } : undefined;
       return await APIClient.get<KanbanBoard[]>(this.endpoint, params);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -186,7 +186,7 @@ export class KanbanService {
   static async getBoardById(boardId: string): Promise<KanbanBoard> {
     try {
       return await APIClient.get<KanbanBoard>(`${this.endpoint}/${boardId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -194,7 +194,7 @@ export class KanbanService {
   static async createBoard(board: KanbanBoard): Promise<KanbanBoard> {
     try {
       return await APIClient.post<KanbanBoard>(this.endpoint, board);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -202,7 +202,7 @@ export class KanbanService {
   static async updateBoard(boardId: string, updates: Partial<KanbanBoard>): Promise<KanbanBoard> {
     try {
       return await APIClient.put<KanbanBoard>(`${this.endpoint}/${boardId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -210,7 +210,7 @@ export class KanbanService {
   static async deleteBoard(boardId: string): Promise<void> {
     try {
       await APIClient.delete<void>(`${this.endpoint}/${boardId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -222,7 +222,7 @@ export class KanbanService {
         `${this.endpoint}/${boardId}/columns`,
         column
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -233,7 +233,7 @@ export class KanbanService {
         `${this.endpoint}/${boardId}/columns/${columnId}`,
         updates
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -243,7 +243,7 @@ export class KanbanService {
       return await APIClient.delete<KanbanBoard>(
         `${this.endpoint}/${boardId}/columns/${columnId}`
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -255,7 +255,7 @@ export class KanbanService {
         `${this.endpoint}/${boardId}/columns/${columnId}/cards`,
         card
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -266,7 +266,7 @@ export class KanbanService {
         `${this.endpoint}/${boardId}/cards/${cardId}`,
         updates
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -277,7 +277,7 @@ export class KanbanService {
         `${this.endpoint}/${boardId}/cards/${cardId}/move`,
         { targetColumnId, position }
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -287,7 +287,7 @@ export class KanbanService {
       await APIClient.delete<void>(
         `${this.endpoint}/${boardId}/cards/${cardId}`
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -299,7 +299,7 @@ export class KanbanService {
         `${this.endpoint}/${boardId}/cards/${cardId}/comments`,
         comment
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -311,7 +311,7 @@ export class KanbanService {
         `${this.endpoint}/${boardId}/cards/${cardId}/time-entries`,
         timeEntry
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -328,7 +328,7 @@ export class StandupService {
     try {
       const params = teamId ? { teamId } : undefined;
       return await APIClient.get<Standup[]>(this.endpoint, params);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -336,7 +336,7 @@ export class StandupService {
   static async getStandupById(standupId: string): Promise<Standup> {
     try {
       return await APIClient.get<Standup>(`${this.endpoint}/${standupId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -344,7 +344,7 @@ export class StandupService {
   static async createStandup(standup: Standup): Promise<Standup> {
     try {
       return await APIClient.post<Standup>(this.endpoint, standup);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -352,7 +352,7 @@ export class StandupService {
   static async updateStandup(standupId: string, updates: Partial<Standup>): Promise<Standup> {
     try {
       return await APIClient.put<Standup>(`${this.endpoint}/${standupId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -360,7 +360,7 @@ export class StandupService {
   static async deleteStandup(standupId: string): Promise<void> {
     try {
       await APIClient.delete<void>(`${this.endpoint}/${standupId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -372,7 +372,7 @@ export class StandupService {
       if (standupId) params.standupId = standupId;
       if (userId) params.userId = userId;
       return await APIClient.get<StandupResponse[]>(`${this.endpoint}/responses`, Object.keys(params).length ? params : undefined);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -380,7 +380,7 @@ export class StandupService {
   static async submitResponse(response: StandupResponse): Promise<StandupResponse> {
     try {
       return await APIClient.post<StandupResponse>(`${this.endpoint}/responses`, response);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -391,7 +391,7 @@ export class StandupService {
         `${this.endpoint}/responses/${responseId}`,
         updates
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -403,7 +403,7 @@ export class StandupService {
         `${this.endpoint}/responses/${responseId}/blockers`,
         blocker
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -414,7 +414,7 @@ export class StandupService {
         `${this.endpoint}/responses/${responseId}/blockers/${blockerId}/resolve`,
         { resolution }
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -426,7 +426,7 @@ export class StandupService {
         `${this.endpoint}/${standupId}/meetings`,
         meeting
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -437,7 +437,7 @@ export class StandupService {
         `${this.endpoint}/${standupId}/meetings/${meetingId}/complete`,
         summary
       );
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -453,7 +453,7 @@ export class CollaborationAnalyticsService {
   static async getAnalytics(period: string): Promise<CollaborationAnalytics> {
     try {
       return await APIClient.get<CollaborationAnalytics>(this.endpoint, { period });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -469,7 +469,7 @@ export class CollaborationSettingsService {
   static async getSettings(): Promise<CollaborationSettings> {
     try {
       return await APIClient.get<CollaborationSettings>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -477,7 +477,7 @@ export class CollaborationSettingsService {
   static async updateSettings(updates: Partial<CollaborationSettings>): Promise<CollaborationSettings> {
     try {
       return await APIClient.put<CollaborationSettings>(this.endpoint, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }

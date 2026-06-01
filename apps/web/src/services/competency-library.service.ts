@@ -35,7 +35,7 @@ async function checkApiAvailability(): Promise<boolean> {
             headers: { 'Content-Type': 'application/json' }
         });
         apiAvailable = res.ok;
-    } catch (error) {
+    } catch (error: any) {
         apiAvailable = false;
     }
     
@@ -67,7 +67,7 @@ async function fetchWithFallback<T>(
         }
 
         return await res.json();
-    } catch (error) {
+    } catch (error: any) {
         logger.warn({ error }, `[CompetencyService] Fetch failed, using mock data for: ${endpoint}`);
         return { success: true, data: fallbackData };
     }

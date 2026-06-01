@@ -103,7 +103,7 @@ export default function WorkflowGeneratorPage() {
                 if (workflow.nodes) setNodes(workflow.nodes);
                 if (workflow.edges) setEdges(workflow.edges);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     }
     };
@@ -119,7 +119,7 @@ export default function WorkflowGeneratorPage() {
                 if (result.data.nodes) setNodes(result.data.nodes);
                 if (result.data.edges) setEdges(result.data.edges);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setIsGenerating(false);
@@ -131,7 +131,7 @@ export default function WorkflowGeneratorPage() {
         try {
             await workflowGenerator.saveWorkflow({ nodes, edges, prompt });
             await fetchWorkflows();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

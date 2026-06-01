@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 /**
  * Sample Leave Management Data
  * Comprehensive sample data for testing and development

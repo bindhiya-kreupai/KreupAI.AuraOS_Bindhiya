@@ -42,7 +42,7 @@ export default function EducationLevelsPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch education levels:', error);
         } finally {
@@ -78,7 +78,7 @@ export default function EducationLevelsPage() {
             } else {
                 alert('Failed to save education level');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving education level:', error);
             alert('Error saving education level');
@@ -97,7 +97,7 @@ export default function EducationLevelsPage() {
                 } else {
                     alert('Failed to delete education level');
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting education level:', error);
                 alert('Error deleting education level');

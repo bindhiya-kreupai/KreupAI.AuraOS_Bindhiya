@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     // Redirect to Okta
     return NextResponse.redirect(authUrl);
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error initiating Okta OAuth2 flow');
 
     return NextResponse.json(

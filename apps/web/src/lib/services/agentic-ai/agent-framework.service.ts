@@ -640,7 +640,7 @@ export class AgentFrameworkService {
           outcome: 'SUCCESS',
         });
 
-      } catch (error) {
+      } catch (error: any) {
         action.status = 'FAILED';
         action.error = {
           code: 'EXECUTION_ERROR',

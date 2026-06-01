@@ -41,7 +41,7 @@ export default function LoansPage() {
             ]);
             setEmployeeLoans(loansData);
             setSchemes(schemesData);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

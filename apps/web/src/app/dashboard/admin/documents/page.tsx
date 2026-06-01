@@ -115,7 +115,7 @@ export default function DocumentsPage() {
                 } else {
                     setError(json.error?.message || 'Failed to fetch documents');
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Failed to fetch documents:', err);
                 setError('Failed to load documents. Please try again later.');
             } finally {

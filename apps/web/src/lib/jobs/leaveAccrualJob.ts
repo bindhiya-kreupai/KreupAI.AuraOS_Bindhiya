@@ -54,7 +54,7 @@ export async function processLeaveAccruals(tenantId?: string): Promise<JobResult
           `[LeaveAccrualJob] Tenant ${tid}: ${result.totalEmployees} employees, ` +
           `${result.totalAccrued.toFixed(1)} days accrued, status=${result.status}`
         );
-      } catch (err) {
+      } catch (err: any) {
         const msg = err instanceof Error ? err.message : 'Unknown error';
         errors.push(`[${tid}] Tenant processing failed: ${msg}`);
         console.error(`[LeaveAccrualJob] Tenant ${tid} failed:`, msg);
@@ -70,7 +70,7 @@ export async function processLeaveAccruals(tenantId?: string): Promise<JobResult
       processedCount,
       errors,
     };
-  } catch (error) {
+  } catch (error: any) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
     console.error('[LeaveAccrualJob] Fatal error:', msg);
     return { success: false, processedCount, errors: [msg] };

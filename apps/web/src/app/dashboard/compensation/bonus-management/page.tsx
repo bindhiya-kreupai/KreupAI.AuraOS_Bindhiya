@@ -30,7 +30,7 @@ export default function BonusManagementPage() {
             ]);
             setSchemes(schemesData);
             setPayouts(payoutsData);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

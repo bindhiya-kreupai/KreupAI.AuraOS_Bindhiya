@@ -32,7 +32,7 @@ export default function DocumentUploadPage() {
             ]);
             if (configData) setConfig(configData);
             if (documentsData.length > 0) setDocuments(documentsData);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

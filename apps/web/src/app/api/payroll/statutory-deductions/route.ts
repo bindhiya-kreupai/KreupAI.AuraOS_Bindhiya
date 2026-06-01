@@ -80,7 +80,7 @@ export const GET = withEnhancedAuth(
         reports,
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching statutory deductions:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch statutory deductions' },
@@ -145,7 +145,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error filing statutory payment:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to file statutory payment' },

@@ -171,7 +171,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Benefits HSA/FSA Contribution API] Error:', error);
     return NextResponse.json(
       {

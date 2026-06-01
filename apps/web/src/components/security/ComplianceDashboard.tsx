@@ -447,7 +447,7 @@ export function ComplianceDashboard({
 
         setFrameworks(enriched);
         setTimeline(tl);
-      } catch (err) {
+      } catch (err: any) {
         setError('Failed to load compliance data.');
         console.error(err);
       } finally {

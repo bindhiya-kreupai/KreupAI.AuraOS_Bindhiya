@@ -32,7 +32,7 @@ export default function LeaveCalendarPage() {
             ]);
             setHolidays(holidaysData);
             setLeaves(leavesData);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

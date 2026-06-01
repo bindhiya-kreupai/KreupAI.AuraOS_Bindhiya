@@ -47,7 +47,7 @@ export default function ExitManagementPage() {
       setLoading(true);
       const data = await ExitService.getAllExitProcesses();
       setExitProcesses(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -71,7 +71,7 @@ export default function ExitManagementPage() {
         exitReason: '',
       });
       await fetchExitProcesses();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error initiating separation:', error);
       setSubmitError('Failed to initiate separation. Please try again.');
     } finally {

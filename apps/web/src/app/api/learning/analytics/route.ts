@@ -80,7 +80,7 @@ export const GET = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: analytics });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching analytics:', error);
       return NextResponse.json({
         success: true,

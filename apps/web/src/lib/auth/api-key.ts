@@ -64,7 +64,7 @@ export function verifyAPIKeyHash(apiKey: string, storedHash: string): boolean {
     }
 
     return timingSafeEqual(inputBuffer, storedBuffer);
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'API key verification failed');
     return false;
   }
@@ -180,7 +180,7 @@ export async function validateAPIKey(apiKey: string): Promise<APIKeyValidationRe
         expiresAt: client.expiresAt ?? undefined,
       },
     };
-  } catch (error) {
+  } catch (error: any) {
     // If the table doesn't exist, return a more helpful error
     if ((error as Error).message?.includes('APIClient')) {
       logger.warn('APIClient table not found - API key auth requires database schema update');
@@ -404,7 +404,7 @@ export async function revokeAPIKey(clientId: string): Promise<boolean> {
       WHERE id = ${clientId}
     `;
     return true;
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error, clientId }, 'Failed to revoke API key');
     return false;
   }

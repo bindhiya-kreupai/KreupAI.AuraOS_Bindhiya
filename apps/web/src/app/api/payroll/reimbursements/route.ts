@@ -71,7 +71,7 @@ export const GET = withEnhancedAuth(
         claims,
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching reimbursements:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch reimbursements' },
@@ -125,7 +125,7 @@ export const POST = withEnhancedAuth(
         data: adjustment,
         claim: adjustment,
       }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -195,7 +195,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: updated, claim: updated });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating reimbursement:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update reimbursement' },

@@ -121,7 +121,7 @@ export default function BenefitsAnalyticsDashboard() {
       setTrends(trend);
       setWellnessROI(wellness);
       setTotalStatement(statement);
-    } catch (err) {
+    } catch (err: any) {
       console.error('BenefitsAnalyticsDashboard load error:', err);
     }
   }, []);
@@ -133,7 +133,7 @@ export default function BenefitsAnalyticsDashboard() {
         String(currentYear)
       );
       setPlanComparison(comparison);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Plan comparison error:', err);
     }
   }, [planComparison]);

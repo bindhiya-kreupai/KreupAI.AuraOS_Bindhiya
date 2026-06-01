@@ -36,7 +36,7 @@ export default function UserDelegationPage() {
 
             if (delegationsRes.ok) setData(await delegationsRes.json());
             if (usersRes.ok) setUsers(await usersRes.json());
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch data:', error);
         } finally {
@@ -91,7 +91,7 @@ export default function UserDelegationPage() {
                 const error = await response.json();
                 alert(`Failed to create delegation: ${error.error}`);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error creating delegation:', error);
             alert('Error creating delegation');
@@ -104,7 +104,7 @@ export default function UserDelegationPage() {
                 const response = await fetch(`/api/user-delegation?id=${record.id}`, { method: 'DELETE' });
                 if (response.ok) fetchData();
                 else alert('Failed to delete delegation');
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting delegation:', error);
                 alert('Error deleting delegation');

@@ -21,7 +21,7 @@ export default function DisciplinaryActionsPage() {
         try {
             const data = await DisciplinaryService.getRecords();
             setRecords(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

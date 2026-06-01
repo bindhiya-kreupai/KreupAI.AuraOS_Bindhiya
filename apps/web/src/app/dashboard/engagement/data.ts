@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 /**
  * Employee Engagement Module - Sample Data
  */

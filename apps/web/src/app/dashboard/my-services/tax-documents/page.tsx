@@ -35,7 +35,7 @@ export default function TaxDocumentsPage() {
           }));
           setTaxDocs(mapped);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to fetch tax documents:', err);
       } finally {
         setFetching(false);

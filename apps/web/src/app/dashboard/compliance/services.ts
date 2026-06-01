@@ -28,7 +28,7 @@ export class LaborLawService {
   static async getLaborLaws(): Promise<LaborLaw[]> {
     try {
       return await APIClient.get<LaborLaw[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -36,7 +36,7 @@ export class LaborLawService {
   static async getLaborLawById(id: string): Promise<LaborLaw | null> {
     try {
       return await APIClient.get<LaborLaw>(`${this.endpoint}/${id}`);
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -44,7 +44,7 @@ export class LaborLawService {
   static async createLaborLaw(data: LaborLaw): Promise<LaborLaw> {
     try {
       return await APIClient.post<LaborLaw>(this.endpoint, data);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -52,7 +52,7 @@ export class LaborLawService {
   static async updateLaborLaw(id: string, updates: Partial<LaborLaw>): Promise<LaborLaw> {
     try {
       return await APIClient.put<LaborLaw>(`${this.endpoint}/${id}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -60,7 +60,7 @@ export class LaborLawService {
   static async deleteLaborLaw(id: string): Promise<void> {
     try {
       await APIClient.delete<void>(`${this.endpoint}/${id}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -73,7 +73,7 @@ export class ComplianceRecordService {
   static async getRecords(): Promise<ComplianceRecord[]> {
     try {
       return await APIClient.get<ComplianceRecord[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -81,7 +81,7 @@ export class ComplianceRecordService {
   static async getRecordById(id: string): Promise<ComplianceRecord | null> {
     try {
       return await APIClient.get<ComplianceRecord>(`${this.endpoint}/${id}`);
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -89,7 +89,7 @@ export class ComplianceRecordService {
   static async getRecordsByLaw(lawId: string): Promise<ComplianceRecord[]> {
     try {
       return await APIClient.get<ComplianceRecord[]>(this.endpoint, { lawId });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -97,7 +97,7 @@ export class ComplianceRecordService {
   static async createRecord(data: ComplianceRecord): Promise<ComplianceRecord> {
     try {
       return await APIClient.post<ComplianceRecord>(this.endpoint, data);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -105,7 +105,7 @@ export class ComplianceRecordService {
   static async updateRecord(id: string, updates: Partial<ComplianceRecord>): Promise<ComplianceRecord> {
     try {
       return await APIClient.put<ComplianceRecord>(`${this.endpoint}/${id}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -117,7 +117,7 @@ export class ComplianceRecordService {
         verifiedByName,
         findings
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -131,7 +131,7 @@ export class POSHService {
   static async getComplaints(): Promise<POSHComplaint[]> {
     try {
       return await APIClient.get<POSHComplaint[]>(this.complaintsEndpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -139,7 +139,7 @@ export class POSHService {
   static async getComplaintById(id: string): Promise<POSHComplaint | null> {
     try {
       return await APIClient.get<POSHComplaint>(`${this.complaintsEndpoint}/${id}`);
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -147,7 +147,7 @@ export class POSHService {
   static async createComplaint(data: POSHComplaint): Promise<POSHComplaint> {
     try {
       return await APIClient.post<POSHComplaint>(this.complaintsEndpoint, data);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -155,7 +155,7 @@ export class POSHService {
   static async updateComplaint(id: string, updates: Partial<POSHComplaint>): Promise<POSHComplaint> {
     try {
       return await APIClient.put<POSHComplaint>(`${this.complaintsEndpoint}/${id}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -166,7 +166,7 @@ export class POSHService {
         committeeId,
         committeeName
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -174,7 +174,7 @@ export class POSHService {
   static async getCommittees(): Promise<POSHCommittee[]> {
     try {
       return await APIClient.get<POSHCommittee[]>(this.committeesEndpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -182,7 +182,7 @@ export class POSHService {
   static async createCommittee(data: POSHCommittee): Promise<POSHCommittee> {
     try {
       return await APIClient.post<POSHCommittee>(this.committeesEndpoint, data);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -195,7 +195,7 @@ export class GrievanceService {
   static async getGrievances(): Promise<Grievance[]> {
     try {
       return await APIClient.get<Grievance[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -203,7 +203,7 @@ export class GrievanceService {
   static async getGrievanceById(id: string): Promise<Grievance | null> {
     try {
       return await APIClient.get<Grievance>(`${this.endpoint}/${id}`);
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -211,7 +211,7 @@ export class GrievanceService {
   static async getGrievancesByEmployee(employeeId: string): Promise<Grievance[]> {
     try {
       return await APIClient.get<Grievance[]>(this.endpoint, { employeeId });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -219,7 +219,7 @@ export class GrievanceService {
   static async createGrievance(data: Grievance): Promise<Grievance> {
     try {
       return await APIClient.post<Grievance>(this.endpoint, data);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -227,7 +227,7 @@ export class GrievanceService {
   static async updateGrievance(id: string, updates: Partial<Grievance>): Promise<Grievance> {
     try {
       return await APIClient.put<Grievance>(`${this.endpoint}/${id}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -238,7 +238,7 @@ export class GrievanceService {
         assignedTo,
         assignedToName
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -249,7 +249,7 @@ export class GrievanceService {
         resolutionDetails,
         satisfactionRating
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -261,7 +261,7 @@ export class GrievanceService {
         escalatedToName,
         reason
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -274,7 +274,7 @@ export class DisciplinaryService {
   static async getRecords(): Promise<DisciplinaryRecord[]> {
     try {
       return await APIClient.get<DisciplinaryRecord[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -282,7 +282,7 @@ export class DisciplinaryService {
   static async getRecordById(id: string): Promise<DisciplinaryRecord | null> {
     try {
       return await APIClient.get<DisciplinaryRecord>(`${this.endpoint}/${id}`);
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -290,7 +290,7 @@ export class DisciplinaryService {
   static async getRecordsByEmployee(employeeId: string): Promise<DisciplinaryRecord[]> {
     try {
       return await APIClient.get<DisciplinaryRecord[]>(this.endpoint, { employeeId });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -298,7 +298,7 @@ export class DisciplinaryService {
   static async createRecord(data: DisciplinaryRecord): Promise<DisciplinaryRecord> {
     try {
       return await APIClient.post<DisciplinaryRecord>(this.endpoint, data);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -306,7 +306,7 @@ export class DisciplinaryService {
   static async updateRecord(id: string, updates: Partial<DisciplinaryRecord>): Promise<DisciplinaryRecord> {
     try {
       return await APIClient.put<DisciplinaryRecord>(`${this.endpoint}/${id}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -316,7 +316,7 @@ export class DisciplinaryService {
       return await APIClient.post<DisciplinaryRecord>(`${this.endpoint}/${id}/acknowledge`, {
         acknowledgedBy
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -326,7 +326,7 @@ export class DisciplinaryService {
       return await APIClient.post<DisciplinaryRecord>(`${this.endpoint}/${id}/appeal`, {
         appealReason
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -338,7 +338,7 @@ export class DisciplinaryService {
         decision,
         isApproved
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -351,7 +351,7 @@ export class ComplianceAuditService {
   static async getAudits(): Promise<ComplianceAudit[]> {
     try {
       return await APIClient.get<ComplianceAudit[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -359,7 +359,7 @@ export class ComplianceAuditService {
   static async getAuditById(id: string): Promise<ComplianceAudit | null> {
     try {
       return await APIClient.get<ComplianceAudit>(`${this.endpoint}/${id}`);
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -367,7 +367,7 @@ export class ComplianceAuditService {
   static async createAudit(data: ComplianceAudit): Promise<ComplianceAudit> {
     try {
       return await APIClient.post<ComplianceAudit>(this.endpoint, data);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -375,7 +375,7 @@ export class ComplianceAuditService {
   static async updateAudit(id: string, updates: Partial<ComplianceAudit>): Promise<ComplianceAudit> {
     try {
       return await APIClient.put<ComplianceAudit>(`${this.endpoint}/${id}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -383,7 +383,7 @@ export class ComplianceAuditService {
   static async startAudit(id: string): Promise<ComplianceAudit> {
     try {
       return await APIClient.post<ComplianceAudit>(`${this.endpoint}/${id}/start`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -394,7 +394,7 @@ export class ComplianceAuditService {
         overallRating,
         complianceScore
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -408,7 +408,7 @@ export class UnionService {
   static async getUnions(): Promise<Union[]> {
     try {
       return await APIClient.get<Union[]>(this.unionsEndpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -416,7 +416,7 @@ export class UnionService {
   static async getUnionById(id: string): Promise<Union | null> {
     try {
       return await APIClient.get<Union>(`${this.unionsEndpoint}/${id}`);
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -424,7 +424,7 @@ export class UnionService {
   static async createUnion(data: Union): Promise<Union> {
     try {
       return await APIClient.post<Union>(this.unionsEndpoint, data);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -432,7 +432,7 @@ export class UnionService {
   static async updateUnion(id: string, updates: Partial<Union>): Promise<Union> {
     try {
       return await APIClient.put<Union>(`${this.unionsEndpoint}/${id}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -440,7 +440,7 @@ export class UnionService {
   static async getCBAgreements(): Promise<CollectiveBargainingAgreement[]> {
     try {
       return await APIClient.get<CollectiveBargainingAgreement[]>(this.cbaEndpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -448,7 +448,7 @@ export class UnionService {
   static async createCBAgreement(data: CollectiveBargainingAgreement): Promise<CollectiveBargainingAgreement> {
     try {
       return await APIClient.post<CollectiveBargainingAgreement>(this.cbaEndpoint, data);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -456,7 +456,7 @@ export class UnionService {
   static async updateCBAgreement(id: string, updates: Partial<CollectiveBargainingAgreement>): Promise<CollectiveBargainingAgreement> {
     try {
       return await APIClient.put<CollectiveBargainingAgreement>(`${this.cbaEndpoint}/${id}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -469,7 +469,7 @@ export class WhistleblowerService {
   static async getReports(): Promise<WhistleblowerReport[]> {
     try {
       return await APIClient.get<WhistleblowerReport[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -477,7 +477,7 @@ export class WhistleblowerService {
   static async getReportById(id: string): Promise<WhistleblowerReport | null> {
     try {
       return await APIClient.get<WhistleblowerReport>(`${this.endpoint}/${id}`);
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -485,7 +485,7 @@ export class WhistleblowerService {
   static async createReport(data: WhistleblowerReport): Promise<WhistleblowerReport> {
     try {
       return await APIClient.post<WhistleblowerReport>(this.endpoint, data);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -493,7 +493,7 @@ export class WhistleblowerService {
   static async updateReport(id: string, updates: Partial<WhistleblowerReport>): Promise<WhistleblowerReport> {
     try {
       return await APIClient.put<WhistleblowerReport>(`${this.endpoint}/${id}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -504,7 +504,7 @@ export class WhistleblowerService {
         investigatorId,
         investigatorName
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -517,7 +517,7 @@ export class ArbitrationService {
   static async getArbitrations(): Promise<Arbitration[]> {
     try {
       return await APIClient.get<Arbitration[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -525,7 +525,7 @@ export class ArbitrationService {
   static async getArbitrationById(id: string): Promise<Arbitration | null> {
     try {
       return await APIClient.get<Arbitration>(`${this.endpoint}/${id}`);
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -533,7 +533,7 @@ export class ArbitrationService {
   static async createArbitration(data: Arbitration): Promise<Arbitration> {
     try {
       return await APIClient.post<Arbitration>(this.endpoint, data);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -541,7 +541,7 @@ export class ArbitrationService {
   static async updateArbitration(id: string, updates: Partial<Arbitration>): Promise<Arbitration> {
     try {
       return await APIClient.put<Arbitration>(`${this.endpoint}/${id}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -554,7 +554,7 @@ export class StrikeService {
   static async getStrikes(): Promise<Strike[]> {
     try {
       return await APIClient.get<Strike[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -562,7 +562,7 @@ export class StrikeService {
   static async getStrikeById(id: string): Promise<Strike | null> {
     try {
       return await APIClient.get<Strike>(`${this.endpoint}/${id}`);
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -570,7 +570,7 @@ export class StrikeService {
   static async createStrike(data: Strike): Promise<Strike> {
     try {
       return await APIClient.post<Strike>(this.endpoint, data);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -578,7 +578,7 @@ export class StrikeService {
   static async updateStrike(id: string, updates: Partial<Strike>): Promise<Strike> {
     try {
       return await APIClient.put<Strike>(`${this.endpoint}/${id}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -588,7 +588,7 @@ export class StrikeService {
       return await APIClient.post<Strike>(`${this.endpoint}/${id}/resolve`, {
         resolutionTerms
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -601,7 +601,7 @@ export class ComplianceAnalyticsService {
   static async getMetrics(): Promise<ComplianceMetrics> {
     try {
       return await APIClient.get<ComplianceMetrics>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -614,7 +614,7 @@ export class ComplianceSettingsService {
   static async getSettings(): Promise<ComplianceSettings> {
     try {
       return await APIClient.get<ComplianceSettings>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -622,7 +622,7 @@ export class ComplianceSettingsService {
   static async updateSettings(updates: Partial<ComplianceSettings>): Promise<ComplianceSettings> {
     try {
       return await APIClient.put<ComplianceSettings>(this.endpoint, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }

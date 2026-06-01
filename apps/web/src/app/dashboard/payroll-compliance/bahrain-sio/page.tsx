@@ -46,7 +46,7 @@ export default function BahrainSIOPage() {
         if (data.success) {
           setReferenceData(data.data);
         }
-      } catch (error) {
+      } catch (error: any) {
             console.error('Error:', error);
               }
     };
@@ -77,7 +77,7 @@ export default function BahrainSIOPage() {
         setResults(data.data.results);
         setTotals(data.data.totals);
       }
-    } catch (error) {
+    } catch (error: any) {
             console.error('Error:', error);
           } finally {
       setLoading(false);

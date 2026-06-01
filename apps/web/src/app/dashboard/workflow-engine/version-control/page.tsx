@@ -28,7 +28,7 @@ export default function VersionControlPage() {
                 }));
                 setHistory(versions);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

@@ -21,7 +21,7 @@ export default function DeiGoalsPage() {
                 setLoading(true);
                 const data = await DEIGoalsService.getAllGoals();
                 setGoals(Array.isArray(data) ? data : []);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

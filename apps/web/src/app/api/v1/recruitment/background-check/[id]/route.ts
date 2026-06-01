@@ -49,7 +49,7 @@ export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) 
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Background Check API] GET Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch background check' } },
@@ -121,7 +121,7 @@ export const PUT = withAudit(
           apiVersion: 'v1',
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Background Check API] PUT Error:', error);
       return NextResponse.json(
         { success: false, error: { code: 'E5001', message: 'Failed to update background check' } },

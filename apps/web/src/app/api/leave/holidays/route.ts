@@ -51,7 +51,7 @@ export const GET = withEnhancedAuth(
         holidays,
         data: { holidays, summary },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching holidays:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch holidays' },
@@ -94,7 +94,7 @@ export const POST = withEnhancedAuth(
         { success: true, data: newHoliday, holiday: newHoliday },
         { status: 201 }
       );
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

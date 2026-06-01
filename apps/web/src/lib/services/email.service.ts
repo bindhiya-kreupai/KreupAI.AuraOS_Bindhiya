@@ -113,7 +113,7 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
     );
 
     return { success: true, messageId: info.messageId };
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error, to: options.to, subject: options.subject }, 'Failed to send email');
     return { success: false, error: (error as Error).message };
   }

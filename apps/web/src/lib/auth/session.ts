@@ -81,7 +81,7 @@ export function getSession(request: NextRequest): SessionResult {
       },
       error: null
     };
-  } catch (error) {
+  } catch (error: any) {
     logger.warn({ error }, 'Failed to extract session from request');
     return {
       session: null,

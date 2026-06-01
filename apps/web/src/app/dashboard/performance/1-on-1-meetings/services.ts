@@ -18,7 +18,7 @@ export class MeetingsService {
     static async getMeetings(): Promise<Meeting[]> {
         try {
             return await APIClient.get<Meeting[]>(API_ENDPOINT);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching meetings:', error);
             const message = error instanceof APIError
                 ? `Failed to load meetings: ${error.message}`
@@ -33,7 +33,7 @@ export class MeetingsService {
     static async createMeeting(meeting: Meeting): Promise<Meeting> {
         try {
             return await APIClient.post<Meeting>(API_ENDPOINT, meeting);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error creating meeting:', error);
             const message = error instanceof APIError
                 ? `Failed to schedule meeting: ${error.message}`
@@ -48,7 +48,7 @@ export class MeetingsService {
     static async updateMeeting(id: string, updates: Partial<Meeting>): Promise<Meeting> {
         try {
             return await APIClient.patch<Meeting>(`${API_ENDPOINT}/${id}`, updates);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating meeting:', error);
             const message = error instanceof APIError
                 ? `Failed to update meeting: ${error.message}`
@@ -63,7 +63,7 @@ export class MeetingsService {
     static async deleteMeeting(id: string): Promise<void> {
         try {
             await APIClient.delete<void>(`${API_ENDPOINT}/${id}`);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error deleting meeting:', error);
             const message = error instanceof APIError
                 ? `Failed to delete meeting: ${error.message}`
@@ -78,7 +78,7 @@ export class MeetingsService {
     static async completeMeeting(id: string): Promise<Meeting> {
         try {
             return await APIClient.post<Meeting>(`${API_ENDPOINT}/${id}/complete`, {});
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error completing meeting:', error);
             const message = error instanceof APIError
                 ? `Failed to complete meeting: ${error.message}`
@@ -99,7 +99,7 @@ export class MeetingsService {
                 `${API_ENDPOINT}/${meetingId}/feedback`,
                 { responses }
             );
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error submitting feedback:', error);
             const message = error instanceof APIError
                 ? `Failed to submit feedback: ${error.message}`
@@ -114,7 +114,7 @@ export class MeetingsService {
     static async getAnalytics(): Promise<MeetingStats> {
         try {
             return await APIClient.get<MeetingStats>(`${API_ENDPOINT}/analytics`);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching analytics:', error);
             const message = error instanceof APIError
                 ? `Failed to load analytics: ${error.message}`

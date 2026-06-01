@@ -111,7 +111,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Letter Generate API] POST Error:', error);
     return NextResponse.json(
       {

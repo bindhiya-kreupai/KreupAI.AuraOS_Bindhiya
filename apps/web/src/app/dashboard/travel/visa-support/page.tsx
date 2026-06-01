@@ -17,7 +17,7 @@ export default function VisaSupportPage() {
             setLoading(true);
             const data = await TravelRequestService.getRequests();
             setRequests(Array.isArray(data) ? data : []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

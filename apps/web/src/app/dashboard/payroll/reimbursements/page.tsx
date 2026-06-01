@@ -26,7 +26,7 @@ export default function ReimbursementsPage() {
             setLoading(true);
             const result = await ReimbursementService.getClaims();
             setClaims(result);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching claims:', error);
         } finally {
             setLoading(false);
@@ -37,7 +37,7 @@ export default function ReimbursementsPage() {
         try {
             await ReimbursementService.updateClaimStatus(id, 'approved');
             fetchClaims();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error approving claim:', error);
         }
     };
@@ -46,7 +46,7 @@ export default function ReimbursementsPage() {
         try {
             await ReimbursementService.updateClaimStatus(id, 'rejected');
             fetchClaims();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error rejecting claim:', error);
         }
     };

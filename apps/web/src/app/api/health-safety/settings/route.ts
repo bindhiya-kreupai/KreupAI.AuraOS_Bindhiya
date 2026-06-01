@@ -30,7 +30,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       { success: true, data: defaultSettings },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching health-safety settings:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
@@ -56,7 +56,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       { success: true, data: settings },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating health-safety settings:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },

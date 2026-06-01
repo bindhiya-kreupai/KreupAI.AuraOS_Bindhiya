@@ -30,7 +30,7 @@ export const GET = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       return NextResponse.json({ success: true, data: defaultSettings });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching settings:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch settings' }, { status: 500 });
     }
@@ -48,7 +48,7 @@ export const PUT = withEnhancedAuth(
 
       logger.info('Settings updated by:', user.userId);
       return NextResponse.json({ success: true, data: merged });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating settings:', error);
       return NextResponse.json({ success: false, error: 'Failed to update settings' }, { status: 500 });
     }

@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process chat request',
@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {},
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to fetch chatbot configuration',

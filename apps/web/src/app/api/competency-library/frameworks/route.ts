@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
             success: true,
             data: frameworks
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error fetching frameworks:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch proficiency frameworks' },

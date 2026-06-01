@@ -31,7 +31,7 @@ export default function LeavePoliciesPage() {
           inactive: result.data.filter((p: any) => !p.isActive).length,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch stats:', error);
     }
   };
@@ -48,7 +48,7 @@ export default function LeavePoliciesPage() {
           }))
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch leave types:', error);
     }
   };

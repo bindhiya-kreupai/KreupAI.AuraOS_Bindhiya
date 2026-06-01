@@ -63,7 +63,7 @@ export const DELETE = withEnhancedAuth(
         success: true,
         message: 'Session revoked successfully',
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error revoking session:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to revoke session' },

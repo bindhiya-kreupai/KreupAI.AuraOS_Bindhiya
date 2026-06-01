@@ -33,7 +33,7 @@ export default function ResumeParsingPage() {
             // Filter applications that have resume data
             const withResumes = data.filter((app: CandidateApplication) => app.resumeUrl);
             setParsedResumes(withResumes);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
@@ -45,7 +45,7 @@ export default function ResumeParsingPage() {
         try {
             // Parse resume logic here
             await fetchParsedResumes();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setIsParsing(false);

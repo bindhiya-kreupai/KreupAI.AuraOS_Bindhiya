@@ -257,7 +257,7 @@ export class EmployeeService {
     try {
       const response = await APIClient.get<{ employees?: Employee[] }>(this.endpoint);
       return response.employees || [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -266,7 +266,7 @@ export class EmployeeService {
     try {
       const response = await APIClient.get<{ employee: Employee }>(`${this.endpoint}/${employeeId}`);
       return response.employee;
-    } catch (error) {
+    } catch (error: any) {
       return null;
     }
   }
@@ -285,7 +285,7 @@ export class EmployeeService {
     try {
       const response = await APIClient.get<{ employees?: Employee[] }>(this.endpoint, { query });
       return response.employees || [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -308,7 +308,7 @@ export class OrganizationService {
     try {
       const response = await APIClient.get<{ units?: OrganizationUnit[] }>(this.endpoint);
       return response.units || [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -348,7 +348,7 @@ export class EmploymentHistoryService {
     try {
       const response = await APIClient.get<{ history?: EmploymentHistory[] }>(this.endpoint);
       return response.history || [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -357,7 +357,7 @@ export class EmploymentHistoryService {
     try {
       const response = await APIClient.get<{ history?: EmploymentHistory[] }>(this.endpoint, { employeeId });
       return response.history || [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -384,7 +384,7 @@ export class DocumentService {
     try {
       const response = await APIClient.get<{ documents?: EmployeeDocument[] }>(this.endpoint);
       return response.documents || [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -393,7 +393,7 @@ export class DocumentService {
     try {
       const response = await APIClient.get<{ documents?: EmployeeDocument[] }>(this.endpoint, { employeeId });
       return response.documents || [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -434,7 +434,7 @@ export class DocumentService {
           });
         }, 2000);
       });
-    } catch (error) {
+    } catch (error: any) {
       return {};
     }
   }
@@ -447,7 +447,7 @@ export class DocumentTemplateService {
     try {
       const response = await APIClient.get<{ templates?: DocumentTemplate[] }>(this.endpoint);
       return response.templates || [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -466,7 +466,7 @@ export class PositionService {
     try {
       const response = await APIClient.get<{ positions?: Position[] }>(this.endpoint);
       return response.positions || [];
-    } catch (error) {
+    } catch (error: any) {
       return [
         {
           id: 'POS-101',
@@ -535,7 +535,7 @@ export class CostCenterService {
       return Array.isArray(response.costCenters)
         ? response.costCenters.map((costCenter) => mapCostCenter(costCenter))
         : [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -566,7 +566,7 @@ export class LifeEventService {
     try {
       const response = await APIClient.get<{ events?: LifeEvent[] }>(this.endpoint);
       return response.events || [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -584,7 +584,7 @@ export class LifeEventService {
     try {
       const response = await APIClient.get<{ events?: LifeEvent[] }>(this.endpoint, { employeeId });
       return response.events || [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -612,7 +612,7 @@ export class MassUpdateService {
     try {
       const response = await APIClient.get<{ updates?: MassUpdate[] }>(this.endpoint);
       return response.updates || [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -661,7 +661,7 @@ export class IDCardService {
     try {
       const response = await APIClient.get<{ cards?: any[] }>(this.endpoint);
       return Array.isArray(response.cards) ? response.cards.map((card) => mapIDCard(card)) : [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -679,7 +679,7 @@ export class IDCardService {
     try {
       const response = await APIClient.get<{ cards?: any[] }>(this.endpoint, { employeeId });
       return Array.isArray(response.cards) && response.cards[0] ? mapIDCard(response.cards[0]) : null;
-    } catch (error) {
+    } catch (error: any) {
       return null;
     }
   }
@@ -705,7 +705,7 @@ export class LetterService {
     try {
       const response = await APIClient.get<{ requests?: LetterRequest[] }>(this.endpoint);
       return response.requests || [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -718,7 +718,7 @@ export class LetterService {
     try {
       const response = await APIClient.get<{ requests?: LetterRequest[] }>(this.endpoint, { employeeId });
       return response.requests || [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -756,7 +756,7 @@ export class ExitService {
     try {
       const response = await APIClient.get<{ exits?: any[] }>(this.endpoint);
       return Array.isArray(response.exits) ? response.exits.map((exit) => mapExitProcess(exit)) : [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -812,7 +812,7 @@ export class AnniversaryService {
       return Array.isArray(response.anniversaries)
         ? response.anniversaries.map((anniversary) => mapAnniversary(anniversary))
         : [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -823,7 +823,7 @@ export class AnniversaryService {
       return Array.isArray(response.anniversaries)
         ? response.anniversaries.map((anniversary) => mapAnniversary(anniversary))
         : [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -888,7 +888,7 @@ export class AutoNumberService {
       return Array.isArray(response.sequences)
         ? response.sequences.map((sequence) => this.mapSequence(sequence))
         : [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -925,7 +925,7 @@ export class ProbationService {
     try {
       const response = await APIClient.get<{ records?: any[] }>(this.endpoint);
       return Array.isArray(response.records) ? response.records.map((record) => mapProbationRecord(record)) : [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -945,7 +945,7 @@ export class ProbationService {
       return Array.isArray(response.records) && response.records[0]
         ? mapProbationRecord(response.records[0])
         : null;
-    } catch (error) {
+    } catch (error: any) {
       return null;
     }
   }
@@ -977,7 +977,7 @@ export class ConfirmationLetterService {
     try {
       const response = await APIClient.get<{ letters?: any[] }>(this.endpoint);
       return Array.isArray(response.letters) ? response.letters.map((letter) => mapConfirmationLetter(letter)) : [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -999,7 +999,7 @@ export class ConfirmationService {
       return Array.isArray(response.letters)
         ? response.letters.map((letter) => mapConfirmationLetter(letter))
         : [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -1020,7 +1020,7 @@ export class AssetService {
     try {
       const response = await APIClient.get<{ assets?: any[] }>(this.endpoint);
       return Array.isArray(response.assets) ? response.assets.map((asset) => mapAsset(asset)) : [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -1089,7 +1089,7 @@ export class AssetAssignmentService {
       return Array.isArray(response.assignments)
         ? response.assignments.map((assignment) => mapAssetAssignment(assignment))
         : [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -1100,7 +1100,7 @@ export class AssetAssignmentService {
       return Array.isArray(response.assignments)
         ? response.assignments.map((assignment) => mapAssetAssignment(assignment))
         : [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -1114,7 +1114,7 @@ export class CoreHRSettingsService {
     try {
       const response = await APIClient.get<{ settings: CoreHRSettings }>(this.endpoint);
       return response.settings;
-    } catch (error) {
+    } catch (error: any) {
       return {
         settingsId: 'settings-1',
         employeeNumberPrefix: 'EMP',
@@ -1169,7 +1169,7 @@ export class InterCompanyTransferService {
       return Array.isArray(response.data)
         ? response.data.map((transfer) => this.mapTransfer(transfer))
         : [];
-    } catch (error) {
+    } catch (error: any) {
       return [
         {
           transferId: 'TRF-001',
@@ -1228,7 +1228,7 @@ export class SharedServiceRequestService {
     try {
       const response = await APIClient.get<{ requests?: SharedServiceRequest[] }>(this.endpoint);
       return (response.requests || []).map((request) => this.mapRequest(request));
-    } catch (error) {
+    } catch (error: any) {
       return [
         {
           requestId: 'SSR-101',

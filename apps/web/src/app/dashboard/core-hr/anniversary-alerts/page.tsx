@@ -45,7 +45,7 @@ export default function AnniversaryAlertsPage() {
     try {
       const data = await AnniversaryService.getAllAnniversaries();
       setAnniversaries(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -68,7 +68,7 @@ export default function AnniversaryAlertsPage() {
           }),
         3000
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending notification:', error);
       setActionStatus((prev) => ({ ...prev, [anniversaryId]: 'Failed to send' }));
     }

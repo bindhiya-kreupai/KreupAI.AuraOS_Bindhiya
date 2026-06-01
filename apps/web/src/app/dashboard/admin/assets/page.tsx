@@ -133,7 +133,7 @@ export default function AssetsPage() {
                 if (assignedJson.success) setMyAssets(assignedJson.data || []);
                 if (availableJson.success) setCatalog(availableJson.data || []);
                 if (repairJson.success) setTickets(repairJson.data || []);
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Failed to fetch assets:', err);
                 setError('Failed to load asset data. Please try again later.');
             } finally {

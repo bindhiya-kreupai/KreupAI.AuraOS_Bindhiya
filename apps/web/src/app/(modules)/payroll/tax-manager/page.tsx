@@ -51,7 +51,7 @@ export default function GlobalTaxManager() {
         if (decls?.length > 0) {
           setDeclarations(decls);
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('Tax data fetch error:', e);
       }
     })();

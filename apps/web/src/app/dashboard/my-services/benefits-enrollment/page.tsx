@@ -62,7 +62,7 @@ export default function BenefitsEnrollmentPage() {
         if (enrollRes.status === 'fulfilled' && enrollRes.value?.success && Array.isArray(enrollRes.value.data)) {
           setEnrollments(enrollRes.value.data);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to fetch benefits data:', err);
       } finally {
         setFetching(false);
@@ -101,7 +101,7 @@ export default function BenefitsEnrollmentPage() {
         effectiveFrom: new Date().toISOString(),
       });
       alert('Enrollment confirmed successfully!');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to enroll:', err);
       alert('Failed to confirm enrollment. Please try again.');
     } finally {

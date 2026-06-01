@@ -57,7 +57,7 @@ export const useHealthcare = () => {
       setLocumProviders(locumData.length > 0 ? locumData : sampleLocumProviders);
       setSettings(settingsData || sampleHealthcareSettings);
       setAlerts(alertsData);
-    } catch (_error) {
+    } catch (_error: any) {
       setError(_error instanceof Error ? _error.message : 'Failed to load data');
       addToast({ type: 'error', message: 'Failed to load healthcare data' });
     } finally {
@@ -74,7 +74,7 @@ export const useHealthcare = () => {
       setProviders(await CredentialingService.getAllProviders());
       addToast({ type: 'success', message: 'Provider created' });
       return provider;
-    } catch (_error) {
+    } catch (_error: any) {
       addToast({ type: 'error', message: 'Failed to create provider' });
       throw _error;
     } finally {
@@ -88,7 +88,7 @@ export const useHealthcare = () => {
       setProviders(await CredentialingService.getAllProviders());
       addToast({ type: 'success', message: 'Provider updated' });
       return provider;
-    } catch (_error) {
+    } catch (_error: any) {
       addToast({ type: 'error', message: 'Failed to update provider' });
       throw _error;
     } finally {
@@ -102,7 +102,7 @@ export const useHealthcare = () => {
       setSchedules(await NurseRosteringService.getAllSchedules());
       addToast({ type: 'success', message: 'Schedule created' });
       return schedule;
-    } catch (_error) {
+    } catch (_error: any) {
       addToast({ type: 'error', message: 'Failed to create schedule' });
       throw _error;
     } finally {
@@ -116,7 +116,7 @@ export const useHealthcare = () => {
       setSchedules(await NurseRosteringService.getAllSchedules());
       addToast({ type: 'success', message: 'Schedule updated' });
       return schedule;
-    } catch (_error) {
+    } catch (_error: any) {
       addToast({ type: 'error', message: 'Failed to update schedule' });
       throw _error;
     } finally {
@@ -130,7 +130,7 @@ export const useHealthcare = () => {
       setLocumProviders(await LocumManagementService.getAllLocumProviders());
       addToast({ type: 'success', message: 'Locum provider created' });
       return provider;
-    } catch (_error) {
+    } catch (_error: any) {
       addToast({ type: 'error', message: 'Failed to create locum provider' });
       throw _error;
     } finally {
@@ -144,7 +144,7 @@ export const useHealthcare = () => {
       setLocumAssignments(await LocumManagementService.getAllAssignments());
       addToast({ type: 'success', message: 'Assignment created' });
       return assignment;
-    } catch (_error) {
+    } catch (_error: any) {
       addToast({ type: 'error', message: 'Failed to create assignment' });
       throw _error;
     } finally {
@@ -158,7 +158,7 @@ export const useHealthcare = () => {
       setSettings(settingsData);
       addToast({ type: 'success', message: 'Settings updated' });
       return settingsData;
-    } catch (_error) {
+    } catch (_error: any) {
       addToast({ type: 'error', message: 'Failed to update settings' });
       throw _error;
     } finally {

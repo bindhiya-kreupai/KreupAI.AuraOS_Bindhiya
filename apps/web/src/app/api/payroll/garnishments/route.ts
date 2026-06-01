@@ -70,7 +70,7 @@ export const GET = withEnhancedAuth(
         data: garnishments,
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching garnishments:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch garnishments' },
@@ -126,7 +126,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: adjustment }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

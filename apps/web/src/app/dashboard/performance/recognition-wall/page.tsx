@@ -51,7 +51,7 @@ export default function RecognitionWallPage() {
             timestamp: r.completedAt ? new Date(r.completedAt).toLocaleDateString() : 'Recent',
           }));
         setRecognitions(derived);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to load recognitions:', error);
       } finally {
         setLoading(false);

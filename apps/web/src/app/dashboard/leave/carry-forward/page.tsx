@@ -22,7 +22,7 @@ export default function CarryForwardPage() {
             setLoading(true);
             const result = await CarryForwardService.getCarryForwards();
             setCarryForwards(result);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

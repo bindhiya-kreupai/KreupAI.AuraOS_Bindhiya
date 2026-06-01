@@ -55,7 +55,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     const response: ApiResponse = {
       success: false,
       error: {
@@ -118,7 +118,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     let statusCode = 500;
     let errorCode = 'E5001';
 
@@ -189,7 +189,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     let statusCode = 500;
     let errorCode = 'E5001';
     let message = 'Failed to delete position';

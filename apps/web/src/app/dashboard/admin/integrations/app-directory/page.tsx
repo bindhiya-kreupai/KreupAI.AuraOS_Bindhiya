@@ -53,7 +53,7 @@ export default function AppDirectoryPage() {
             } else {
                 setApps([]);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to fetch apps:', err);
             setError('Failed to load app directory.');
         }
@@ -118,7 +118,7 @@ export default function AppDirectoryPage() {
                     )
                 );
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Connect failed:', err);
         } finally {
             setActionLoading(null);
@@ -146,7 +146,7 @@ export default function AppDirectoryPage() {
                     )
                 );
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Disconnect failed:', err);
         } finally {
             setActionLoading(null);

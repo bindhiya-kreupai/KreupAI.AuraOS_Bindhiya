@@ -41,7 +41,7 @@ export class ESGMetricsService {
         try {
             const response = await APIClient.get<{ metrics?: ESGMetrics }>(BASE_ENDPOINT);
             return response.metrics || null;
-        } catch (error) {
+        } catch (error: any) {
             console.error('ESG metrics fetch error:', error);
             return null;
         }
@@ -53,7 +53,7 @@ export class ESGInitiativeService {
         try {
             const response = await APIClient.get<{ initiatives?: ESGInitiative[] }>(BASE_ENDPOINT);
             return response.initiatives || [];
-        } catch (error) {
+        } catch (error: any) {
             console.error('ESG initiatives fetch error:', error);
             return [];
         }
@@ -73,7 +73,7 @@ export class ESGGoalService {
         try {
             const response = await APIClient.get<{ goals?: ESGGoal[] }>(BASE_ENDPOINT);
             return response.goals || [];
-        } catch (error) {
+        } catch (error: any) {
             console.error('ESG goals fetch error:', error);
             return [];
         }
@@ -88,7 +88,7 @@ export class ESGReportService {
                 ...params
             });
             return response.report;
-        } catch (error) {
+        } catch (error: any) {
             console.error('ESG report generation error:', error);
             throw error;
         }

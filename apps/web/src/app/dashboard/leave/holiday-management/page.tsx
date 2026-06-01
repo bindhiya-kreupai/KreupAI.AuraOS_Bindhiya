@@ -29,7 +29,7 @@ export default function HolidayManagementPage() {
       setLoading(true);
       const result = await HolidayService.getHolidays(new Date().getFullYear());
       setHolidays(result);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -48,7 +48,7 @@ export default function HolidayManagementPage() {
       await HolidayService.createHoliday(form as any);
       setShowModal(false);
       await fetchHolidays();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Save failed:', error);
     } finally {
       setSaving(false);

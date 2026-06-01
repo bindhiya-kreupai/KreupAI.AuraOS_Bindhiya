@@ -25,7 +25,7 @@ export class DialogueFlowService {
   static async getAllFlows(filters?: { category?: string; status?: string }): Promise<DialogueFlow[]> {
     try {
       return await APIClient.get<DialogueFlow[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -33,7 +33,7 @@ export class DialogueFlowService {
   static async getFlowById(flowId: string): Promise<DialogueFlow | null> {
     try {
       return await APIClient.get<DialogueFlow>(`${this.endpoint}/${flowId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -41,7 +41,7 @@ export class DialogueFlowService {
   static async createFlow(flowData: Partial<DialogueFlow>): Promise<DialogueFlow> {
     try {
       return await APIClient.post<DialogueFlow>(this.endpoint, flowData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -49,7 +49,7 @@ export class DialogueFlowService {
   static async updateFlow(flowId: string, updates: Partial<DialogueFlow>): Promise<DialogueFlow> {
     try {
       return await APIClient.put<DialogueFlow>(`${this.endpoint}/${flowId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -57,7 +57,7 @@ export class DialogueFlowService {
   static async publishFlow(flowId: string): Promise<DialogueFlow> {
     try {
       return await APIClient.post<DialogueFlow>(`${this.endpoint}/${flowId}/publish`, {});
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -65,7 +65,7 @@ export class DialogueFlowService {
   static async deleteFlow(flowId: string): Promise<void> {
     try {
       return await APIClient.delete(`${this.endpoint}/${flowId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -77,7 +77,7 @@ export class FlowTestService {
   static async getAllTests(filters?: { flowId?: string; status?: string }): Promise<FlowTest[]> {
     try {
       return await APIClient.get<FlowTest[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -85,7 +85,7 @@ export class FlowTestService {
   static async createTest(testData: Partial<FlowTest>): Promise<FlowTest> {
     try {
       return await APIClient.post<FlowTest>(this.endpoint, testData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -93,7 +93,7 @@ export class FlowTestService {
   static async runTest(testId: string): Promise<FlowTest> {
     try {
       return await APIClient.post<FlowTest>(`${this.endpoint}/${testId}/run`, {});
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -109,7 +109,7 @@ export class EntityService {
   static async getAllEntities(filters?: { entityType?: string; status?: string }): Promise<Entity[]> {
     try {
       return await APIClient.get<Entity[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -117,7 +117,7 @@ export class EntityService {
   static async getEntityById(entityId: string): Promise<Entity | null> {
     try {
       return await APIClient.get<Entity>(`${this.endpoint}/${entityId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -125,7 +125,7 @@ export class EntityService {
   static async createEntity(entityData: Partial<Entity>): Promise<Entity> {
     try {
       return await APIClient.post<Entity>(this.endpoint, entityData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -133,7 +133,7 @@ export class EntityService {
   static async updateEntity(entityId: string, updates: Partial<Entity>): Promise<Entity> {
     try {
       return await APIClient.put<Entity>(`${this.endpoint}/${entityId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -141,7 +141,7 @@ export class EntityService {
   static async deleteEntity(entityId: string): Promise<void> {
     try {
       return await APIClient.delete(`${this.endpoint}/${entityId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -157,7 +157,7 @@ export class IntentService {
   static async getAllIntents(filters?: { category?: string; status?: string }): Promise<Intent[]> {
     try {
       return await APIClient.get<Intent[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -165,7 +165,7 @@ export class IntentService {
   static async getIntentById(intentId: string): Promise<Intent | null> {
     try {
       return await APIClient.get<Intent>(`${this.endpoint}/${intentId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -173,7 +173,7 @@ export class IntentService {
   static async createIntent(intentData: Partial<Intent>): Promise<Intent> {
     try {
       return await APIClient.post<Intent>(this.endpoint, intentData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -181,7 +181,7 @@ export class IntentService {
   static async updateIntent(intentId: string, updates: Partial<Intent>): Promise<Intent> {
     try {
       return await APIClient.put<Intent>(`${this.endpoint}/${intentId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -189,7 +189,7 @@ export class IntentService {
   static async deleteIntent(intentId: string): Promise<void> {
     try {
       return await APIClient.delete(`${this.endpoint}/${intentId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -201,7 +201,7 @@ export class IntentMatchService {
   static async getAllMatches(filters?: { sessionId?: string; intentId?: string }): Promise<IntentMatch[]> {
     try {
       return await APIClient.get<IntentMatch[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -209,7 +209,7 @@ export class IntentMatchService {
   static async logMatch(matchData: Partial<IntentMatch>): Promise<IntentMatch> {
     try {
       return await APIClient.post<IntentMatch>(this.endpoint, matchData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -225,7 +225,7 @@ export class TrainingDatasetService {
   static async getAllDatasets(filters?: { language?: string; status?: string }): Promise<TrainingDataset[]> {
     try {
       return await APIClient.get<TrainingDataset[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -233,7 +233,7 @@ export class TrainingDatasetService {
   static async createDataset(datasetData: Partial<TrainingDataset>): Promise<TrainingDataset> {
     try {
       return await APIClient.post<TrainingDataset>(this.endpoint, datasetData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -245,7 +245,7 @@ export class TrainingExampleService {
   static async getAllExamples(filters?: { datasetId?: string; intent?: string }): Promise<TrainingExample[]> {
     try {
       return await APIClient.get<TrainingExample[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -253,7 +253,7 @@ export class TrainingExampleService {
   static async createExample(exampleData: Partial<TrainingExample>): Promise<TrainingExample> {
     try {
       return await APIClient.post<TrainingExample>(this.endpoint, exampleData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -261,7 +261,7 @@ export class TrainingExampleService {
   static async updateExample(exampleId: string, updates: Partial<TrainingExample>): Promise<TrainingExample> {
     try {
       return await APIClient.put<TrainingExample>(`${this.endpoint}/${exampleId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -273,7 +273,7 @@ export class ModelTrainingService {
   static async getAllTrainings(filters?: { datasetId?: string; status?: string }): Promise<ModelTraining[]> {
     try {
       return await APIClient.get<ModelTraining[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -281,7 +281,7 @@ export class ModelTrainingService {
   static async startTraining(trainingData: Partial<ModelTraining>): Promise<ModelTraining> {
     try {
       return await APIClient.post<ModelTraining>(this.endpoint, trainingData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -289,7 +289,7 @@ export class ModelTrainingService {
   static async getTrainingStatus(trainingId: string): Promise<ModelTraining | null> {
     try {
       return await APIClient.get<ModelTraining>(`${this.endpoint}/${trainingId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -305,7 +305,7 @@ export class ChannelService {
   static async getAllChannels(filters?: { channelType?: string; status?: string }): Promise<Channel[]> {
     try {
       return await APIClient.get<Channel[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -313,7 +313,7 @@ export class ChannelService {
   static async createChannel(channelData: Partial<Channel>): Promise<Channel> {
     try {
       return await APIClient.post<Channel>(this.endpoint, channelData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -321,7 +321,7 @@ export class ChannelService {
   static async updateChannel(channelId: string, updates: Partial<Channel>): Promise<Channel> {
     try {
       return await APIClient.put<Channel>(`${this.endpoint}/${channelId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -329,7 +329,7 @@ export class ChannelService {
   static async testChannel(channelId: string): Promise<boolean> {
     try {
       return await APIClient.post<boolean>(`${this.endpoint}/${channelId}/test`, {});
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -341,7 +341,7 @@ export class MessageTemplateService {
   static async getAllTemplates(filters?: { channels?: string[]; status?: string }): Promise<MessageTemplate[]> {
     try {
       return await APIClient.get<MessageTemplate[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -349,7 +349,7 @@ export class MessageTemplateService {
   static async createTemplate(templateData: Partial<MessageTemplate>): Promise<MessageTemplate> {
     try {
       return await APIClient.post<MessageTemplate>(this.endpoint, templateData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -365,7 +365,7 @@ export class AnalyticsService {
   static async getAnalytics(filters?: { startDate?: string; endDate?: string }): Promise<ConversationAnalytics> {
     try {
       return await APIClient.get<ConversationAnalytics>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -377,7 +377,7 @@ export class UserFeedbackService {
   static async getAllFeedback(filters?: { sessionId?: string; status?: string }): Promise<UserFeedback[]> {
     try {
       return await APIClient.get<UserFeedback[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -385,7 +385,7 @@ export class UserFeedbackService {
   static async submitFeedback(feedbackData: Partial<UserFeedback>): Promise<UserFeedback> {
     try {
       return await APIClient.post<UserFeedback>(this.endpoint, feedbackData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -397,7 +397,7 @@ export class ConversationSessionService {
   static async getAllSessions(filters?: { userId?: string; status?: string }): Promise<ConversationSession[]> {
     try {
       return await APIClient.get<ConversationSession[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -405,7 +405,7 @@ export class ConversationSessionService {
   static async createSession(sessionData: Partial<ConversationSession>): Promise<ConversationSession> {
     try {
       return await APIClient.post<ConversationSession>(this.endpoint, sessionData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -413,7 +413,7 @@ export class ConversationSessionService {
   static async updateSession(sessionId: string, updates: Partial<ConversationSession>): Promise<ConversationSession> {
     try {
       return await APIClient.put<ConversationSession>(`${this.endpoint}/${sessionId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -429,7 +429,7 @@ export class HandoffRuleService {
   static async getAllRules(filters?: { priority?: number; isActive?: boolean }): Promise<HandoffRule[]> {
     try {
       return await APIClient.get<HandoffRule[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -437,7 +437,7 @@ export class HandoffRuleService {
   static async createRule(ruleData: Partial<HandoffRule>): Promise<HandoffRule> {
     try {
       return await APIClient.post<HandoffRule>(this.endpoint, ruleData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -445,7 +445,7 @@ export class HandoffRuleService {
   static async updateRule(ruleId: string, updates: Partial<HandoffRule>): Promise<HandoffRule> {
     try {
       return await APIClient.put<HandoffRule>(`${this.endpoint}/${ruleId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -457,7 +457,7 @@ export class HandoffRequestService {
   static async getAllRequests(filters?: { sessionId?: string; status?: string }): Promise<HandoffRequest[]> {
     try {
       return await APIClient.get<HandoffRequest[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -465,7 +465,7 @@ export class HandoffRequestService {
   static async createRequest(requestData: Partial<HandoffRequest>): Promise<HandoffRequest> {
     try {
       return await APIClient.post<HandoffRequest>(this.endpoint, requestData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -473,7 +473,7 @@ export class HandoffRequestService {
   static async updateRequest(requestId: string, updates: Partial<HandoffRequest>): Promise<HandoffRequest> {
     try {
       return await APIClient.put<HandoffRequest>(`${this.endpoint}/${requestId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -485,7 +485,7 @@ export class AgentService {
   static async getAllAgents(filters?: { status?: string }): Promise<Agent[]> {
     try {
       return await APIClient.get<Agent[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -493,7 +493,7 @@ export class AgentService {
   static async getAvailableAgents(): Promise<Agent[]> {
     try {
       return await APIClient.get<Agent[]>(`${this.endpoint}/available`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -509,7 +509,7 @@ export class LanguageService {
   static async getAllLanguages(filters?: { isEnabled?: boolean }): Promise<Language[]> {
     try {
       return await APIClient.get<Language[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -517,7 +517,7 @@ export class LanguageService {
   static async enableLanguage(languageCode: string): Promise<Language> {
     try {
       return await APIClient.post<Language>(`${this.endpoint}/${languageCode}/enable`, {});
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -529,7 +529,7 @@ export class TranslationService {
   static async getAllTranslations(filters?: { sourceLanguage?: string; targetLanguage?: string }): Promise<Translation[]> {
     try {
       return await APIClient.get<Translation[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -537,7 +537,7 @@ export class TranslationService {
   static async createTranslation(translationData: Partial<Translation>): Promise<Translation> {
     try {
       return await APIClient.post<Translation>(this.endpoint, translationData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -550,7 +550,7 @@ export class TranslationService {
         targetLanguage,
       });
       return result.translatedText;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -562,7 +562,7 @@ export class LanguageContentService {
   static async getAllContent(filters?: { contentType?: string; defaultLanguage?: string }): Promise<LanguageContent[]> {
     try {
       return await APIClient.get<LanguageContent[]>(this.endpoint, filters);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -570,7 +570,7 @@ export class LanguageContentService {
   static async createContent(contentData: Partial<LanguageContent>): Promise<LanguageContent> {
     try {
       return await APIClient.post<LanguageContent>(this.endpoint, contentData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -582,7 +582,7 @@ export class LanguageDetectionService {
   static async detectLanguage(text: string): Promise<LanguageDetection> {
     try {
       return await APIClient.post<LanguageDetection>(this.endpoint, { text });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -594,7 +594,7 @@ export class LocalizationSettingsService {
   static async getSettings(): Promise<LocalizationSettings> {
     try {
       return await APIClient.get<LocalizationSettings>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -602,7 +602,7 @@ export class LocalizationSettingsService {
   static async updateSettings(updates: Partial<LocalizationSettings>): Promise<LocalizationSettings> {
     try {
       return await APIClient.put<LocalizationSettings>(this.endpoint, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -618,7 +618,7 @@ export class ChatbotSettingsService {
   static async getSettings(): Promise<ChatbotSettings> {
     try {
       return await APIClient.get<ChatbotSettings>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -626,7 +626,7 @@ export class ChatbotSettingsService {
   static async updateSettings(updates: Partial<ChatbotSettings>): Promise<ChatbotSettings> {
     try {
       return await APIClient.put<ChatbotSettings>(this.endpoint, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }

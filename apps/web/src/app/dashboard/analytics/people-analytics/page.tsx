@@ -74,7 +74,7 @@ export default function PeopleAnalyticsPage() {
           medium: predictive.attritionRisk.mediumRisk.count,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading people analytics:', error);
     } finally {
       setLoading(false);

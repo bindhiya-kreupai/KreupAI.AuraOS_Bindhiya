@@ -74,7 +74,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('GET /api/core-hr/shared-services error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -118,7 +118,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     });
 
     return NextResponse.json({ request: mapSharedServiceRequest(created) }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('POST /api/core-hr/shared-services error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

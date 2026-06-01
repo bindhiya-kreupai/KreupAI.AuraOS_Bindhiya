@@ -89,7 +89,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       { success: true, transfers },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching knowledge transfers:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch knowledge transfers' },
@@ -128,7 +128,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       { success: true, transfer },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating knowledge transfer:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create knowledge transfer' },
@@ -184,7 +184,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       { success: true, transfer },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating knowledge transfer:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update knowledge transfer' },

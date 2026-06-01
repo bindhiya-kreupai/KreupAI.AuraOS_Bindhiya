@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json({ error: 'Failed to process auto accruals' }, { status: 500 });
   }
 }
@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
         ],
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json({ error: 'Failed to fetch auto accruals data' }, { status: 500 });
   }
 }

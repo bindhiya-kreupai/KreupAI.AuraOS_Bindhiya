@@ -281,7 +281,7 @@ export class ApprovalCenterService {
       try {
         const result = await this.approveRequest(requestId, approverId, remarks);
         approved.push(result);
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Failed to approve request ${requestId}:`, error);
       }
     }

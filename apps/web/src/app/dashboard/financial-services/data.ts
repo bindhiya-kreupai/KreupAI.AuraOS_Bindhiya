@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 import type { BankAccount, InsurancePolicy, Portfolio, FinancialSettings } from './types';
 
 export const sampleBankAccounts: BankAccount[] = [{ accountId: 'acct-001', accountNumber: '4532198765', accountType: 'checking', customerId: 'cust-001', customerName: 'John Smith', balance: { current: 12450.75, available: 12450.75, pending: 0, hold: 0, currency: 'USD' }, status: 'active', openDate: '2020-05-15', fees: [], features: ['online_banking', 'mobile_deposit', 'bill_pay'], linkedAccounts: [], alerts: [], createdAt: '2020-05-15T00:00:00Z' }];

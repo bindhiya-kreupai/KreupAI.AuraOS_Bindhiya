@@ -48,7 +48,7 @@ export default function DelegationPage() {
                     setDelegations(data.delegations || []);
                     setSummary(data.summary || null);
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Failed to fetch delegations:', err);
             } finally {
                 setLoading(false);

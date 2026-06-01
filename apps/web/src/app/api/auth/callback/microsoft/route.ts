@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
     });
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error in Microsoft OAuth2 callback');
 
     return NextResponse.redirect(

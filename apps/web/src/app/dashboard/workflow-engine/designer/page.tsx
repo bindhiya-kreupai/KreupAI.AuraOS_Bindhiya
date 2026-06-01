@@ -165,7 +165,7 @@ export default function WorkflowDesignerPage() {
                     }
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

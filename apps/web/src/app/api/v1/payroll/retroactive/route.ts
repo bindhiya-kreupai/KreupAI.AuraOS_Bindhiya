@@ -193,7 +193,7 @@ export const POST = withAudit(
         },
         { status: 200 }
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Retroactive Pay API] POST Error:', error);
 
       return NextResponse.json(

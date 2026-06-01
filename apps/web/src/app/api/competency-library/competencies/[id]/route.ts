@@ -44,7 +44,7 @@ export async function GET(
                 relatedCompetencies: competency.relatedCompetencies.map(r => r.relatedCompetency)
             }
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error fetching competency:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch competency' },
@@ -163,7 +163,7 @@ export async function PUT(
             },
             message: 'Competency updated successfully'
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error updating competency:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to update competency' },
@@ -201,7 +201,7 @@ export async function DELETE(
             success: true,
             message: 'Competency deleted successfully'
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error deleting competency:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to delete competency' },

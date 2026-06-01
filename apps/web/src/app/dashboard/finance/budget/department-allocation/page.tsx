@@ -19,7 +19,7 @@ export default function DepartmentAllocationPage() {
                 setLoading(true);
                 const data = await BudgetService.getBudgets();
                 setBudgets(data);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

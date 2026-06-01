@@ -207,7 +207,7 @@ export const POST = withAudit(
         },
         { status: 202 }
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Year-End Process API] POST Error:', error);
 
       return NextResponse.json(

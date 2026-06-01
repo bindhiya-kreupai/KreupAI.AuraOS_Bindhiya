@@ -382,7 +382,7 @@ export class DocumentService extends BaseService {
 
       this.logger.info('Virus scan complete', { fileName, clean: scanResult.clean });
       return scanResult;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Virus scan failed', { fileName, error });
       // Fail-safe: reject file if scan fails
       return {

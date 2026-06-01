@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to process Hijri calendar request', errorAr: 'فشل في معالجة طلب التقويم الهجري' },
       { status: 500 }

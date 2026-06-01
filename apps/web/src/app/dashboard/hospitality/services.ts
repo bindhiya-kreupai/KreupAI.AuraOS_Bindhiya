@@ -8,7 +8,7 @@ export class TipManagementService {
     try {
       const response = await APIClient.get<{ pools?: TipPool[] }>(`${this.endpoint}/pools`);
       return response.pools || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -31,7 +31,7 @@ export class EventStaffingService {
     try {
       const response = await APIClient.get<{ events?: Event[] }>(`${this.endpoint}/events`);
       return response.events || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -54,7 +54,7 @@ export class HousekeepingService {
     try {
       const response = await APIClient.get<{ tasks?: HousekeepingTask[] }>(`${this.endpoint}/tasks`);
       return response.tasks || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -77,7 +77,7 @@ export class HospitalitySettingsService {
     try {
       const response = await APIClient.get<{ settings?: HospitalitySettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -95,7 +95,7 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: HospitalityAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }

@@ -63,7 +63,7 @@ export class EmployeeSearchService {
       await this.searchClient.connect();
       this.isInitialized = true;
       logger.info('Employee search service initialized successfully');
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Failed to initialize employee search service');
       throw error;
     }
@@ -125,7 +125,7 @@ export class EmployeeSearchService {
         from: params.from || 0,
         size: params.size || 20,
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, params }, 'Error searching employees');
       throw error;
     }
@@ -158,7 +158,7 @@ export class EmployeeSearchService {
       );
 
       return suggestions;
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, tenantId, prefix }, 'Error autocompleting employees');
       throw error;
     }
@@ -180,7 +180,7 @@ export class EmployeeSearchService {
       );
 
       logger.info({ employeeId: employee.employeeId }, 'Employee indexed successfully');
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, employeeId: employee.employeeId }, 'Error indexing employee');
       throw error;
     }
@@ -203,7 +203,7 @@ export class EmployeeSearchService {
       await this.searchClient.bulkIndex(EMPLOYEE_INDEX, documents);
 
       logger.info({ count: employees.length }, 'Employees bulk indexed successfully');
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, count: employees.length }, 'Error bulk indexing employees');
       throw error;
     }
@@ -224,7 +224,7 @@ export class EmployeeSearchService {
       await this.searchClient.updateDocument(EMPLOYEE_INDEX, employeeId, updates);
 
       logger.info({ employeeId }, 'Employee updated successfully');
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, employeeId }, 'Error updating employee');
       throw error;
     }
@@ -242,7 +242,7 @@ export class EmployeeSearchService {
       await this.searchClient.deleteDocument(EMPLOYEE_INDEX, employeeId);
 
       logger.info({ employeeId }, 'Employee deleted from index successfully');
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, employeeId }, 'Error deleting employee from index');
       throw error;
     }
@@ -284,7 +284,7 @@ export class EmployeeSearchService {
       logger.info({ tenantId, departmentCount: Object.keys(stats).length }, 'Employee stats retrieved');
 
       return stats;
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, tenantId }, 'Error getting employee stats');
       throw error;
     }

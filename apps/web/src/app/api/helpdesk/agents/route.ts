@@ -51,7 +51,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       { success: true, data: agents },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching helpdesk agents:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
@@ -76,7 +76,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       { success: true, data: agent },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating agent:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },

@@ -17,7 +17,7 @@ export async function POST() {
       message: `GOSI verification ${result.overallPass ? 'PASSED' : 'FAILED'}: ${result.testCases.filter((t) => t.passed).length}/${result.testCases.length} tests passed`,
       messageAr: `تحقق التأمينات الاجتماعية ${result.overallPass ? 'ناجح' : 'فاشل'}`,
     });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { message: 'Verification failed', messageAr: 'فشل التحقق', error: String(error) },
       { status: 500 }
@@ -36,7 +36,7 @@ export async function GET() {
       message: 'GOSI rate card and regression results retrieved',
       messageAr: 'تم استرجاع بطاقة أسعار التأمينات ونتائج الاختبار',
     });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       {
         message: 'Failed to retrieve rate card',

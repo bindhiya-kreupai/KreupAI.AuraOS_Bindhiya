@@ -35,7 +35,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: result.data,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching user:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch user' },
@@ -97,7 +97,7 @@ export const PUT = withEnhancedAuth(
         data: result.data,
         message: 'User updated successfully',
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return validationErrorResponse(error);
       }
@@ -161,7 +161,7 @@ export const DELETE = withEnhancedAuth(
         success: true,
         message: 'User deactivated successfully',
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error deleting user:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to delete user' },

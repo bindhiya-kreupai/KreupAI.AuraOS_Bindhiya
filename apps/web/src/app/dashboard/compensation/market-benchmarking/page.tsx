@@ -33,7 +33,7 @@ export default function MarketBenchmarkingPage() {
             setLoading(true);
             const data = await MarketBenchmarkService.getBenchmarks();
             setBenchmarks(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

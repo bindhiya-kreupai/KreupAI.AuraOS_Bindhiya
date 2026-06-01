@@ -69,7 +69,7 @@ export const GET = withEnhancedAuth(
           totalPages: Math.ceil(total / limit),
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching tax declarations:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch tax declarations' },
@@ -182,7 +182,7 @@ export const POST = withEnhancedAuth(
         data: declaration,
         declaration,
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -271,7 +271,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

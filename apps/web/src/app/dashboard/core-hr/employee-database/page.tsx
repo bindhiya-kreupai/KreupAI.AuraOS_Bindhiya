@@ -30,7 +30,7 @@ export default function EmployeeDatabasePage() {
       setLoading(true);
       const data = await EmployeeService.getAllEmployees();
       setEmployees(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -80,7 +80,7 @@ export default function EmployeeDatabasePage() {
       setShowAddModal(false);
       setFormData({ firstName: '', lastName: '', role: '', department: '' });
       await fetchEmployees();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating employee:', error);
       setCreateError('Failed to create employee. Please try again.');
     } finally {

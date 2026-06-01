@@ -35,7 +35,7 @@ export default function PayrollPage() {
     try {
       const analytics = await PayrollAnalyticsService.getStats();
       setStats(analytics);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load payroll data:', error);
     }
   };

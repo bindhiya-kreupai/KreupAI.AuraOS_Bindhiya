@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to calculate PIFSS contributions', errorAr: 'فشل في حساب مساهمات المؤسسة العامة للتأمينات الاجتماعية' },
       { status: 500 }
@@ -150,7 +150,7 @@ export async function GET() {
         ],
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to fetch PIFSS reference data', errorAr: 'فشل في جلب البيانات المرجعية' },
       { status: 500 }

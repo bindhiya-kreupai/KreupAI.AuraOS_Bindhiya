@@ -415,7 +415,7 @@ async function processImportJob(
           await upsertRecord(entityType, record, options);
         }
         progress.succeeded++;
-      } catch (err) {
+      } catch (err: any) {
         progress.failed++;
         errors.push({
           jobId,

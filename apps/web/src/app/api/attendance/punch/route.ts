@@ -53,7 +53,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       success: true,
       data: { punch },
     });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to record punch' },
       { status: 500 }
@@ -89,7 +89,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         date: date || new Date().toISOString().split('T')[0],
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to fetch punch history' },
       { status: 500 }

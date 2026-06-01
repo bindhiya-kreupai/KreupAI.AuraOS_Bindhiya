@@ -44,7 +44,7 @@ export default function SSOPage() {
             } else {
                 alert('Failed to save configuration');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving SSO config:', error);
             alert('Error saving configuration');

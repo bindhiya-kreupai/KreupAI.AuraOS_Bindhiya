@@ -51,7 +51,7 @@ export const GET = withEnhancedAuth(
           configurations: configs,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching payroll settings:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch payroll settings' },
@@ -200,7 +200,7 @@ export const PUT = withEnhancedAuth(
         settings: updated,
         data: { settings: updated },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating payroll settings:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update payroll settings' },

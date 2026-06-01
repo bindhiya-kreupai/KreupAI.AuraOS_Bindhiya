@@ -34,7 +34,7 @@ export default function TrainingDataPage() {
             if (examplesData.length > 0) {
                 setExamples(examplesData);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

@@ -51,7 +51,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ cards }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching ID cards:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -92,7 +92,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ card }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -147,7 +147,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ card }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating ID card:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

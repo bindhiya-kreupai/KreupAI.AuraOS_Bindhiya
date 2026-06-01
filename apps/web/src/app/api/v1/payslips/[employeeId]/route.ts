@@ -142,7 +142,7 @@ export const GET = withEnhancedAuth(
         },
         { status: 200 }
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Payslips API] GET Error:', error);
 
       return NextResponse.json(

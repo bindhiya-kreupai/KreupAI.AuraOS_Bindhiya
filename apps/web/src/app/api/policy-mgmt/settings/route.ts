@@ -33,7 +33,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       { success: true, data: { settings: defaultSettings } },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching policy settings:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
@@ -59,7 +59,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       { success: true, data: { settings } },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating policy settings:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },

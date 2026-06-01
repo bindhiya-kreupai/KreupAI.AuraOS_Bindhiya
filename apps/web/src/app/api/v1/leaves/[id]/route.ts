@@ -51,7 +51,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Leaves API] GET/:id Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch leave request' } },
@@ -129,7 +129,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Leaves API] PUT/:id Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to update leave request' } },

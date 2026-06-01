@@ -69,7 +69,7 @@ export default function BankIntegrationPage() {
             setLoading(true);
             // BankFileService doesn't have a getAll method, so we'll just set loading to false
             // In a real implementation, you might need to add this method
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

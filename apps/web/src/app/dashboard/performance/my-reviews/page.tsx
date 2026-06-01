@@ -55,7 +55,7 @@ export default function PerformanceReviewsPage() {
                 ]);
                 setReviews(reviewData);
                 setGoals(goalData);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load performance data:', error);
             } finally {
                 setLoading(false);

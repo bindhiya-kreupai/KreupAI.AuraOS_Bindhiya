@@ -56,7 +56,7 @@ export default function CustomReportsPage() {
                 { id: 'src-pay', name: 'Payroll', desc: 'Salary and tax information', count: 'Records' },
                 { id: 'src-rec', name: 'Recruitment', desc: 'Candidates and applications', count: 'Records' },
             ]);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading custom reports:', error);
         } finally {
             setLoading(false);
@@ -77,7 +77,7 @@ export default function CustomReportsPage() {
                 }),
             });
             await fetchData();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error creating report:', error);
         }
     };

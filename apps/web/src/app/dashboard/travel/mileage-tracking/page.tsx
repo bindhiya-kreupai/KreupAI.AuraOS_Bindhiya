@@ -17,7 +17,7 @@ export default function MileageTrackingPage() {
             setLoading(true);
             const requests = await TravelRequestService.getRequests();
             setLogs(Array.isArray(requests) ? requests : []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

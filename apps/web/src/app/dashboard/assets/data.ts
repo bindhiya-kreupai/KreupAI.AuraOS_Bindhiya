@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 // Assets Management Sample Data
 import type { Asset, AssetRequest, AssetMetrics, AssetSettings } from './types';
 

@@ -77,7 +77,7 @@ export default function TimesheetsPage() {
                 billableHours: Math.round(billableHours * 10) / 10,
                 nonBillableHours: Math.round((totalHours - billableHours) * 10) / 10,
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
@@ -104,7 +104,7 @@ export default function TimesheetsPage() {
                 })),
             });
             await fetchTimesheets();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

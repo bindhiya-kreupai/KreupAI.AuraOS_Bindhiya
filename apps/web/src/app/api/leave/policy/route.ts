@@ -77,7 +77,7 @@ export const GET = withEnhancedAuth(
           totalPages: Math.ceil(total / limit),
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching leave policies:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch leave policies' },
@@ -144,7 +144,7 @@ export const POST = withEnhancedAuth(
         { success: true, data: newPolicy, policy: newPolicy, leavePolicy: newPolicy },
         { status: 201 }
       );
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

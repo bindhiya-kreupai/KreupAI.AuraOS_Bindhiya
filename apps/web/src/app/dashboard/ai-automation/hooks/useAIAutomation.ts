@@ -117,7 +117,7 @@ export const useAIAutomation = () => {
         loadInterviewSchedules(),
         loadSettings(),
       ]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading initial data:', error);
       addToast({ type: 'error', message: 'Failed to load AI automation data' });
     } finally {
@@ -135,7 +135,7 @@ export const useAIAutomation = () => {
       setOrgHealthPredictions(predictions);
       const latest = await OrgHealthPredictorService.getLatestPrediction();
       setLatestOrgHealth(latest);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading org health predictions:', error);
       addToast({ type: 'error', message: 'Failed to load org health predictions' });
     }
@@ -148,7 +148,7 @@ export const useAIAutomation = () => {
       await loadOrgHealthPredictions();
       addToast({ type: 'success', message: 'Org health prediction generated successfully' });
       return prediction;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating prediction:', error);
       addToast({ type: 'error', message: 'Failed to generate prediction' });
       throw error;
@@ -165,7 +165,7 @@ export const useAIAutomation = () => {
     try {
       const sessions = await AICoachingBotService.getAllSessions();
       setCoachingSessions(sessions);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading coaching sessions:', error);
       addToast({ type: 'error', message: 'Failed to load coaching sessions' });
     }
@@ -179,7 +179,7 @@ export const useAIAutomation = () => {
       await loadCoachingSessions();
       addToast({ type: 'success', message: 'Coaching session started' });
       return session;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error starting session:', error);
       addToast({ type: 'error', message: 'Failed to start coaching session' });
       throw error;
@@ -194,7 +194,7 @@ export const useAIAutomation = () => {
       setActiveCoachingSession(updated);
       await loadCoachingSessions();
       return updated;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
       addToast({ type: 'error', message: 'Failed to send message' });
       throw error;
@@ -208,7 +208,7 @@ export const useAIAutomation = () => {
       setActiveCoachingSession(null);
       await loadCoachingSessions();
       addToast({ type: 'success', message: 'Coaching session ended' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error ending session:', error);
       addToast({ type: 'error', message: 'Failed to end session' });
       throw error;
@@ -225,7 +225,7 @@ export const useAIAutomation = () => {
     try {
       const workflows = await WorkflowGeneratorService.getAllWorkflows();
       setGeneratedWorkflows(workflows);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading workflows:', error);
       addToast({ type: 'error', message: 'Failed to load workflows' });
     }
@@ -238,7 +238,7 @@ export const useAIAutomation = () => {
       await loadGeneratedWorkflows();
       addToast({ type: 'success', message: 'Workflow generated successfully' });
       return workflow;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating workflow:', error);
       addToast({ type: 'error', message: 'Failed to generate workflow' });
       throw error;
@@ -253,7 +253,7 @@ export const useAIAutomation = () => {
       await WorkflowGeneratorService.deployWorkflow(workflowId);
       await loadGeneratedWorkflows();
       addToast({ type: 'success', message: 'Workflow deployed successfully' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deploying workflow:', error);
       addToast({ type: 'error', message: 'Failed to deploy workflow' });
       throw error;
@@ -270,7 +270,7 @@ export const useAIAutomation = () => {
     try {
       const screenings = await ResumeScreeningService.getAllScreenings();
       setResumeScreenings(screenings);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading screenings:', error);
       addToast({ type: 'error', message: 'Failed to load resume screenings' });
     }
@@ -283,7 +283,7 @@ export const useAIAutomation = () => {
       await loadResumeScreenings();
       addToast({ type: 'success', message: 'Resume screened successfully' });
       return screening;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error screening resume:', error);
       addToast({ type: 'error', message: 'Failed to screen resume' });
       throw error;
@@ -302,7 +302,7 @@ export const useAIAutomation = () => {
       setAttritionPredictions(predictions);
       const highRisk = await AttritionPredictionService.getHighRiskEmployees();
       setHighRiskEmployees(highRisk);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading attrition predictions:', error);
       addToast({ type: 'error', message: 'Failed to load attrition predictions' });
     }
@@ -315,7 +315,7 @@ export const useAIAutomation = () => {
       await loadAttritionPredictions();
       addToast({ type: 'success', message: 'Attrition prediction generated' });
       return prediction;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error predicting attrition:', error);
       addToast({ type: 'error', message: 'Failed to predict attrition' });
       throw error;
@@ -332,7 +332,7 @@ export const useAIAutomation = () => {
     try {
       const forecasts = await LeaveForecastingService.getAllForecasts();
       setLeaveForecasts(forecasts);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading leave forecasts:', error);
       addToast({ type: 'error', message: 'Failed to load leave forecasts' });
     }
@@ -345,7 +345,7 @@ export const useAIAutomation = () => {
       await loadLeaveForecasts();
       addToast({ type: 'success', message: 'Leave forecast generated' });
       return forecast;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating forecast:', error);
       addToast({ type: 'error', message: 'Failed to generate leave forecast' });
       throw error;
@@ -364,7 +364,7 @@ export const useAIAutomation = () => {
       setDetectedAnomalies(anomalies);
       const active = await AnomalyDetectionService.getActiveAnomalies();
       setActiveAnomalies(active);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading anomalies:', error);
       addToast({ type: 'error', message: 'Failed to load anomalies' });
     }
@@ -376,7 +376,7 @@ export const useAIAutomation = () => {
       await AnomalyDetectionService.updateAnomaly(anomalyId, updates);
       await loadDetectedAnomalies();
       addToast({ type: 'success', message: 'Anomaly updated successfully' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating anomaly:', error);
       addToast({ type: 'error', message: 'Failed to update anomaly' });
       throw error;
@@ -393,7 +393,7 @@ export const useAIAutomation = () => {
     try {
       const conversations = await ChatbotService.getAllConversations();
       setChatbotConversations(conversations);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading conversations:', error);
       addToast({ type: 'error', message: 'Failed to load chatbot conversations' });
     }
@@ -406,7 +406,7 @@ export const useAIAutomation = () => {
       setActiveConversation(conversation);
       await loadChatbotConversations();
       return conversation;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error starting conversation:', error);
       addToast({ type: 'error', message: 'Failed to start conversation' });
       throw error;
@@ -421,7 +421,7 @@ export const useAIAutomation = () => {
       setActiveConversation(updated);
       await loadChatbotConversations();
       return updated;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
       addToast({ type: 'error', message: 'Failed to send message' });
       throw error;
@@ -436,7 +436,7 @@ export const useAIAutomation = () => {
     try {
       const schedules = await InterviewSchedulingService.getAllSchedules();
       setInterviewSchedules(schedules);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading interview schedules:', error);
       addToast({ type: 'error', message: 'Failed to load interview schedules' });
     }
@@ -449,7 +449,7 @@ export const useAIAutomation = () => {
       await loadInterviewSchedules();
       addToast({ type: 'success', message: 'Interview schedule created' });
       return schedule;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating schedule:', error);
       addToast({ type: 'error', message: 'Failed to create interview schedule' });
       throw error;
@@ -464,7 +464,7 @@ export const useAIAutomation = () => {
       await InterviewSchedulingService.confirmSchedule(scheduleId, slotId);
       await loadInterviewSchedules();
       addToast({ type: 'success', message: 'Interview confirmed' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error confirming schedule:', error);
       addToast({ type: 'error', message: 'Failed to confirm interview' });
       throw error;
@@ -481,7 +481,7 @@ export const useAIAutomation = () => {
     try {
       const settingsData = await AIAutomationSettingsService.getSettings();
       setSettings(settingsData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading settings:', error);
       addToast({ type: 'error', message: 'Failed to load settings' });
     }
@@ -494,7 +494,7 @@ export const useAIAutomation = () => {
       setSettings(updated);
       addToast({ type: 'success', message: 'Settings updated successfully' });
       return updated;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating settings:', error);
       addToast({ type: 'error', message: 'Failed to update settings' });
       throw error;

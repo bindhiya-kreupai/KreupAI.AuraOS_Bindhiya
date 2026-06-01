@@ -72,7 +72,7 @@ export default function NitaqatPage() {
       } else {
         setError(result.error || 'Failed to load Nitaqat reference data');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching Nitaqat data:', err);
       setError('Failed to connect to Nitaqat service');
     } finally {
@@ -101,7 +101,7 @@ export default function NitaqatPage() {
       if (result.success) {
         setCurrentStatus(result.data);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error calculating Nitaqat status:', err);
     }
   };
@@ -130,7 +130,7 @@ export default function NitaqatPage() {
       if (result.success) {
         setSimStatus(result.data);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error simulating Nitaqat:', err);
     }
   };

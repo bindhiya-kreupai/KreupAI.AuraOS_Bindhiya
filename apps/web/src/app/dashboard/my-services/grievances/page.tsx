@@ -52,7 +52,7 @@ export default function GrievancePage() {
                         updates: g.updates || g.timeline || [],
                     })));
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Failed to fetch grievances:', err);
             } finally {
                 setFetching(false);
@@ -86,7 +86,7 @@ export default function GrievancePage() {
                 setNewForm({ category: CATEGORIES[0], subject: '', description: '' });
                 setSeverity('Low');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to submit grievance:', err);
             alert('Failed to submit grievance. Please try again.');
         } finally {

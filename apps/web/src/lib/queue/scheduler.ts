@@ -239,14 +239,14 @@ export class JobScheduler {
           { jobId: config.id, name: config.name },
           'Scheduled job also enqueued to message queue'
         );
-      } catch (enqueueError) {
+      } catch (enqueueError: any) {
         // Queue dispatch is best-effort; the direct execution already ran
         logger.debug(
           { error: enqueueError, jobId: config.id },
           'Queue dispatch skipped (queue unavailable)'
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       const duration = Math.round(performance.now() - startTime);
 
       config.lastRun = new Date().toISOString();

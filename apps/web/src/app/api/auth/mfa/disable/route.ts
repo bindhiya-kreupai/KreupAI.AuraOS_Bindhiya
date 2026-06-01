@@ -100,7 +100,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
       success: true,
       message: 'MFA has been disabled for your account',
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Validation failed', details: error.errors },

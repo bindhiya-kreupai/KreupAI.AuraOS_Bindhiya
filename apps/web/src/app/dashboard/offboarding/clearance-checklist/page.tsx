@@ -59,7 +59,7 @@ export default function ClearanceChecklistPage() {
                 });
 
                 setClearanceItems(items);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching clearance data:', error);
             } finally {
                 setLoading(false);

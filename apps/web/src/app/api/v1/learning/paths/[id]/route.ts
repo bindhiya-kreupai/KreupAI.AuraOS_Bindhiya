@@ -59,7 +59,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json({ success: true, data: result });
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json({ success: true, data: null });
   }
 });
@@ -108,7 +108,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
     });
 
     return NextResponse.json({ success: true, data: updated });
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json(
       { success: false, error: 'Failed to update learning path' },
       { status: 500 }

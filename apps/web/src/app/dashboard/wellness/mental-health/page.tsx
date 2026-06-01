@@ -25,7 +25,7 @@ export default function MentalHealthPage() {
                 setLoading(true);
                 const data = await MentalHealthServiceLayer.getServices();
                 setResources(Array.isArray(data) ? data : []);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

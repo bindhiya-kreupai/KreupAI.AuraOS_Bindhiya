@@ -111,7 +111,7 @@ export const GET = withEnhancedAuth(
             { status: 400 }
           );
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Error fetching HR analytics');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch HR analytics data' },
@@ -154,7 +154,7 @@ export const POST = withEnhancedAuth(
             { status: 400 }
           );
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

@@ -91,7 +91,7 @@ export function verifyCSRFToken(signedToken: string): boolean {
     }
 
     return timingSafeEqual(signatureBuffer, expectedBuffer);
-  } catch (error) {
+  } catch (error: any) {
     logger.warn({ error }, 'CSRF token verification failed');
     return false;
   }

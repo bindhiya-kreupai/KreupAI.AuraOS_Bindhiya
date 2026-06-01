@@ -76,7 +76,7 @@ export default function AttritionPredictionPage() {
             if (atRiskResult.success) {
                 setAtRiskEmployees(atRiskResult.data?.employees || HIGH_RISK_EMPLOYEES);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

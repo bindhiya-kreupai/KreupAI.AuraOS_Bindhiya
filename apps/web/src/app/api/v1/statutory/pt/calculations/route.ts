@@ -193,7 +193,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[PT Calculations API] GET Error:', error);
     return NextResponse.json(
       {

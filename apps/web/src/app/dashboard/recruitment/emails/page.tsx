@@ -46,7 +46,7 @@ export default function RecruitmentEmailsPage() {
             setLoading(true);
             const data = await RecruitmentSettingsService.getSettings();
             setTemplates(mapEmailTemplates(data?.emailTemplates || []));
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             setTemplates([]);
         } finally {

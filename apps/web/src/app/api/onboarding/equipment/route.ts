@@ -62,7 +62,7 @@ export const GET = withEnhancedAuth(
       });
 
       return NextResponse.json({ equipment }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching onboarding equipment:', error);
       return NextResponse.json(
         { error: 'Failed to fetch onboarding equipment' },
@@ -128,7 +128,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ equipment }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error requesting equipment:', error);
       return NextResponse.json(
         { error: 'Failed to request equipment' },
@@ -185,7 +185,7 @@ export const PUT = withEnhancedAuth(
       };
 
       return NextResponse.json({ equipment }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating equipment:', error);
       return NextResponse.json(
         { error: 'Failed to update equipment' },

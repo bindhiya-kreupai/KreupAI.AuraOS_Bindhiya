@@ -104,7 +104,7 @@ export const POST = withAuth(async (request: NextRequest, { user }) => {
       success: true,
       message: 'Password changed successfully. All sessions have been revoked. Please login again.',
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }

@@ -73,7 +73,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       },
       { status: 201 }
     );
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json({ error: 'Failed to execute workflow' }, { status: 500 });
   }
 });

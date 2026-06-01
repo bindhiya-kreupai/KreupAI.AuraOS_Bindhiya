@@ -18,7 +18,7 @@ export default function PerDiemPage() {
             setLoading(true);
             const settings = await TravelSettingsService.getSettings();
             setData(settings);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

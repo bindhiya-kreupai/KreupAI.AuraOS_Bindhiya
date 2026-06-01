@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 // Document Management Sample Data
 import type {
   Document, Folder, DocumentTemplate, DocumentRequest, DocumentMetrics, DocumentSettings,

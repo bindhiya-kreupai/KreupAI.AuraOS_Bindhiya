@@ -24,7 +24,7 @@ export default function OffCyclePaymentsPage() {
             setLoading(true);
             const result = await PayrollRunService.getPayrollRuns();
             setPayrollRuns(result);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

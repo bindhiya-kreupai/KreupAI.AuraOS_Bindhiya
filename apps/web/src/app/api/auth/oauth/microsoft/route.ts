@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     // Redirect to Microsoft
     return NextResponse.redirect(authUrl);
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error initiating Microsoft OAuth2 flow');
 
     return NextResponse.json(

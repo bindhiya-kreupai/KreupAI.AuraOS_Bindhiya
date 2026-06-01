@@ -41,7 +41,7 @@ export default function TeamReportsPage() {
                 const data = await res.json();
                 setReportData(data.data || null);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to fetch report:', err);
         } finally {
             setLoading(false);

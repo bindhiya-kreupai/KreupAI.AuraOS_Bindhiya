@@ -35,7 +35,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ cycles }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching review cycles:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -67,7 +67,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ cycle }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating review cycle:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -106,7 +106,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ cycle }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating review cycle:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

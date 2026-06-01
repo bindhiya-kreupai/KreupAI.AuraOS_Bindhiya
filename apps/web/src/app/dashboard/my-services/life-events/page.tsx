@@ -34,7 +34,7 @@ export default function LifeEventsPage() {
         if (res?.success && Array.isArray(res.data)) {
           setEvents(res.data);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to fetch life events:', err);
       } finally {
         setFetching(false);
@@ -66,7 +66,7 @@ export default function LifeEventsPage() {
       if (res?.success && Array.isArray(res.data)) {
         setEvents(res.data);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to report event:', err);
       alert('Failed to report life event. Please try again.');
     }

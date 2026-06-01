@@ -43,7 +43,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ settings }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
@@ -60,7 +60,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ settings }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

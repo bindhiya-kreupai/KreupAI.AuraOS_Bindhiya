@@ -57,7 +57,7 @@ export default function CostCentersPage() {
                 setLoading(true);
                 const data = await FinancialAssetService.getAssets();
                 setCostCenters(data as unknown as CostCenter[]);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

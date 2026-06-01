@@ -28,7 +28,7 @@ export default function BudgetApprovalsPage() {
                 setLoading(true);
                 const data = await BudgetService.getBudgets();
                 setApprovals(data);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

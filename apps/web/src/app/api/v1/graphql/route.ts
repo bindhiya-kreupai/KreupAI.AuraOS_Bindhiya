@@ -210,7 +210,7 @@ async function handlePOST(request: NextRequest, _context: any): Promise<NextResp
     let document;
     try {
       document = parse(query);
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, query }, 'GraphQL parse error');
       return NextResponse.json(
         {
@@ -304,7 +304,7 @@ async function handlePOST(request: NextRequest, _context: any): Promise<NextResp
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     const duration = Math.round(performance.now() - startTime);
 
     logger.error({ error, duration }, 'GraphQL endpoint error');

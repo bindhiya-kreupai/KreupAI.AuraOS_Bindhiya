@@ -49,7 +49,7 @@ export function RecruitmentVendorRegistry({ title, description }: RecruitmentVen
                 setLoading(true);
                 const data = await RecruitmentVendorService.getVendors();
                 setVendors(data);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load recruitment vendors:', error);
                 setVendors([]);
             } finally {

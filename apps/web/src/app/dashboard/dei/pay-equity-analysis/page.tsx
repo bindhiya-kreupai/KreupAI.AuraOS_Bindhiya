@@ -33,7 +33,7 @@ export default function PayEquityPage() {
                 setLoading(true);
                 const data = await PayEquityService.getAllAnalyses();
                 setData(Array.isArray(data) ? data : []);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

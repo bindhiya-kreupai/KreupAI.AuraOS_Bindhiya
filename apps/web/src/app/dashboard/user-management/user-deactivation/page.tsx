@@ -32,7 +32,7 @@ export default function UserDeactivationPage() {
 
             if (deactivationsRes.ok) setData(await deactivationsRes.json());
             if (usersRes.ok) setUsers(await usersRes.json());
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch data:', error);
         } finally {
@@ -73,7 +73,7 @@ export default function UserDeactivationPage() {
                 const error = await response.json();
                 alert(`Failed to deactivate user: ${error.error}`);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error deactivating user:', error);
             alert('Error deactivating user');

@@ -27,7 +27,7 @@ export default function PositionManagementPage() {
       setLoading(true);
       const data = await PositionService.getAllPositions();
       setPositionsData(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -83,7 +83,7 @@ export default function PositionManagementPage() {
       } as any);
       setShowCreateModal(false);
       await fetchPositions();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating position:', error);
       setCreateError('Failed to create position. Please try again.');
     } finally {

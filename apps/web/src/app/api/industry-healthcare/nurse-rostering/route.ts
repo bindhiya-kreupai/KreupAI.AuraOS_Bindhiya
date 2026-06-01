@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
             schedules: scheduleData,
             count: scheduleData.length,
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Nurse rostering API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             schedule: newSchedule,
         }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Nurse rostering API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

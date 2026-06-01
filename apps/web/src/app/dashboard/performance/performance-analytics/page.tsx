@@ -25,7 +25,7 @@ export default function PerformanceAnalyticsPage() {
             try {
                 const data = await PerformanceAnalyticsService.getStats();
                 setStats(data);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load analytics:', error);
             } finally {
                 setLoading(false);

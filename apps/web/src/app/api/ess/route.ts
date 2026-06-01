@@ -130,7 +130,7 @@ export const GET = withEnhancedAuth(
             { status: 400 }
           );
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Error in ESS/MSS GET');
       return NextResponse.json(
         {
@@ -172,7 +172,7 @@ export const POST = withEnhancedAuth(
             { status: 400 }
           );
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', errorAr: 'خطأ في التحقق', details: error.errors },

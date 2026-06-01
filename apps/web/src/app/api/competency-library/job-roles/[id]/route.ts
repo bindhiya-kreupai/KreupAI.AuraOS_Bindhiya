@@ -45,7 +45,7 @@ export async function GET(
             success: true,
             data: jobRole
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error fetching job role:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch job role' },
@@ -110,7 +110,7 @@ export async function PUT(
             data: jobRole,
             message: 'Job role updated successfully'
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error updating job role:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to update job role' },
@@ -148,7 +148,7 @@ export async function DELETE(
             success: true,
             message: 'Job role deleted successfully'
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error deleting job role:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to delete job role' },

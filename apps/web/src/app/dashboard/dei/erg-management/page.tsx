@@ -21,7 +21,7 @@ export default function ErgManagementPage() {
                 setLoading(true);
                 const data = await ERGService.getAllERGs();
                 setGroups(Array.isArray(data) ? data : []);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

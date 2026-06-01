@@ -58,7 +58,7 @@ export const GET = withEnhancedAuth(
       } catch {
         return NextResponse.json({ success: true, data: getDefaultMetrics(user.tenantId) });
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching analytics:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch analytics' }, { status: 500 });
     }

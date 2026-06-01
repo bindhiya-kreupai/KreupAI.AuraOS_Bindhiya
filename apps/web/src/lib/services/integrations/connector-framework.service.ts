@@ -958,7 +958,7 @@ export class ConnectorFrameworkService {
         message: 'Connection successful',
         messageAr: 'الاتصال ناجح',
       };
-    } catch (error) {
+    } catch (error: any) {
       const latency = Date.now() - startTime;
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
@@ -1071,7 +1071,7 @@ export class ConnectorFrameworkService {
       });
 
       return operation;
-    } catch (error) {
+    } catch (error: any) {
       operation.status = 'FAILED';
       operation.completedAt = new Date();
       const errorMessage = error instanceof Error ? error.message : 'Unknown sync error';
@@ -1315,7 +1315,7 @@ export class ConnectorFrameworkService {
         // In production: execute actual data sync against external API
         const result = await this.executeSync(connector, operation);
         return result;
-      } catch (error) {
+      } catch (error: any) {
         lastError = error;
         const classification = classifyError(error);
 

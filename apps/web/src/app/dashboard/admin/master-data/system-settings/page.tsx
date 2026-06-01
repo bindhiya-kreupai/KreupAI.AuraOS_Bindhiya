@@ -47,7 +47,7 @@ export default function SystemSettingsPage() {
                     setSelectedRegions(REGIONS.map(r => r.code));
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch settings:', error);
         } finally {
@@ -108,7 +108,7 @@ export default function SystemSettingsPage() {
 
             alert('Settings saved successfully!');
             fetchSettings(); // Refresh
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving settings:', error);
             alert('Failed to save settings.');

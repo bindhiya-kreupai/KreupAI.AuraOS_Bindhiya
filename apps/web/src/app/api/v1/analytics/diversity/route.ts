@@ -122,7 +122,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ success: true, data: diversityData });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Diversity analytics error:', error);
     return NextResponse.json({
       success: true,

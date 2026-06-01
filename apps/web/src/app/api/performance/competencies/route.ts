@@ -19,7 +19,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ competencies }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching competencies:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -39,7 +39,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ competency }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating competency:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -74,7 +74,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ competency }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating competency:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

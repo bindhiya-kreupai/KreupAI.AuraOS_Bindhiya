@@ -70,7 +70,7 @@ export default function OrgStructurePage() {
         if (!u.parentId) rootIds[u.id] = true;
       });
       setExpandedNodes(rootIds);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);

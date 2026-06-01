@@ -24,7 +24,7 @@ export default function TeamCapacityPage() {
           const data = await res.json();
           setTeamMembers(data.members || []);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to fetch team capacity data:', err);
       } finally {
         setLoading(false);

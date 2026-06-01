@@ -203,7 +203,7 @@ export const POST = withAudit(
         },
         message: 'Use this link token with Plaid Link to verify your bank account.',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Direct Deposit Verify API] POST Error:', error);
       return NextResponse.json(
         { success: false, error: { code: 'E5001', message: 'Failed to verify bank account' } },

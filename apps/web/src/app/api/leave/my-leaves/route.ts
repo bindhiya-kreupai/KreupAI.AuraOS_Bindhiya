@@ -54,7 +54,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: { leaves, summary },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching my leaves:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch leave requests' },

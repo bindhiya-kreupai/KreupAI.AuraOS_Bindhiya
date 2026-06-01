@@ -40,7 +40,7 @@ export default function CheckInTemplatesPage() {
           isDefault: c.isActive || false,
         }));
         setTemplates(derived);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to load templates:', error);
       } finally {
         setLoading(false);

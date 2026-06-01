@@ -68,7 +68,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch candidate' } },
       { status: 500 }
@@ -151,7 +151,7 @@ export const PUT = withAudit(
           apiVersion: 'v1',
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Candidate API] PUT Error:', error);
       return NextResponse.json(
         { success: false, error: { code: 'E5001', message: 'Failed to update candidate' } },

@@ -136,7 +136,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         },
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Audit Log Export] Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to export audit logs' } },

@@ -302,7 +302,7 @@ export function useAIInsights(options: UseAIInsightsOptions = {}): UseAIInsights
       setCachedInsights(withDismissed);
       setInsights(withDismissed);
       setLastRefreshed(new Date());
-    } catch (err) {
+    } catch (err: any) {
       setError(err instanceof Error ? err.message : 'Failed to fetch insights');
     } finally {
       setLoading(false);

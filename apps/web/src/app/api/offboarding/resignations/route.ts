@@ -75,7 +75,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       { success: true, resignations },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching resignations:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch resignations' },
@@ -137,7 +137,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       { success: true, resignation },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating resignation:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create resignation' },
@@ -235,7 +235,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       { success: true, resignation },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating resignation:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update resignation' },

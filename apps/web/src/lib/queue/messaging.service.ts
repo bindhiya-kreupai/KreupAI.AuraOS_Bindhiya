@@ -70,7 +70,7 @@ export class MessagingService {
       await this.queueManager.connect();
       this.isInitialized = true;
       logger.info('Messaging service initialized successfully');
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Failed to initialize messaging service');
       throw error;
     }
@@ -143,7 +143,7 @@ export class MessagingService {
         // Fallback: process synchronously if queue is not available
         await this.processFallback(job);
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, jobId, jobType, queue }, 'Error enqueuing job');
       // Fallback: process synchronously if queue is not available
       await this.processFallback(job);
@@ -220,7 +220,7 @@ export class MessagingService {
       } else {
         throw new Error(result.error || 'Job failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       const duration = Math.round(performance.now() - startTime);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
@@ -251,7 +251,7 @@ export class MessagingService {
       try {
         await handler(job);
         logger.info({ jobId: job.id }, 'Job processed synchronously');
-      } catch (error) {
+      } catch (error: any) {
         logger.error({ error, jobId: job.id }, 'Synchronous job processing failed');
       }
     }

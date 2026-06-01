@@ -115,7 +115,7 @@ export default function ApplicationTrackingPage() {
             });
 
             setItems(grouped);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

@@ -28,7 +28,7 @@ export default function PipPage() {
                     p.type?.toLowerCase().includes('improvement')
                 );
                 setPlans(pips);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load PIPs:', error);
             } finally {
                 setLoading(false);

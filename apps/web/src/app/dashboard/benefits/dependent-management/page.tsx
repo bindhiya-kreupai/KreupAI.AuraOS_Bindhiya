@@ -24,7 +24,7 @@ export default function DependentManagementPage() {
             const response = await DependentService.getDependents();
             const data = response?.data || response || [];
             setDependents(Array.isArray(data) ? data : []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching dependents:', error);
             setDependents([]);
         } finally {

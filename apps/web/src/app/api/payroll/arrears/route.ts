@@ -67,7 +67,7 @@ export const GET = withEnhancedAuth(
         data: arrears,
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching arrears:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch arrears' },
@@ -115,7 +115,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: adjustment }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

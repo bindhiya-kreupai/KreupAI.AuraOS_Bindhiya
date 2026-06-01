@@ -44,7 +44,7 @@ export default function RoleBasedAccessPage() {
                 setRoles(mockRoles);
                 setSelectedRole(mockRoles[0]);
             }
-        } catch (error) {
+        } catch (error: any) {
             // Silent error handling
         } finally {
             setLoading(false);

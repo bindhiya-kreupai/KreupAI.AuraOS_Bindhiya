@@ -153,7 +153,7 @@ export default function ShiftManagementDashboard() {
       setOpenShifts(shifts);
       setDifferentials(diffs);
       setLaborCost(cost);
-    } catch (err) {
+    } catch (err: any) {
       console.error('ShiftManagementDashboard load error:', err);
     }
   }, []);
@@ -168,7 +168,7 @@ export default function ShiftManagementDashboard() {
     try {
       await shiftManagementService.approveShiftSwap(swapId);
       await loadData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Approve swap error:', err);
     } finally {
       setApprovingSwap(null);
@@ -180,7 +180,7 @@ export default function ShiftManagementDashboard() {
     try {
       await shiftManagementService.claimOpenShift(shiftId, 'emp-001');
       await loadData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Claim shift error:', err);
     } finally {
       setClaimingShift(null);

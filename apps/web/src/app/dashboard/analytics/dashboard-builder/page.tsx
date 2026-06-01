@@ -40,7 +40,7 @@ export default function ReportBuilderPage() {
                     }))
                 );
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading dashboard data:', error);
         } finally {
             setLoading(false);

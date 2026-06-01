@@ -204,7 +204,7 @@ export class WebhookService extends BaseService {
           data: { lastTriggered: new Date(), failureCount: 0 },
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Webhook delivery failed', { webhookId, url, error });
       await this.prisma.webhook.update({
         where: { id: webhookId },

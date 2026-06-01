@@ -18,7 +18,7 @@ export default function LeaveApplicationPage() {
       setLoading(true);
       const result = await LeaveRequestService.getRequests({ status: 'pending' });
       setRequests(result);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -29,7 +29,7 @@ export default function LeaveApplicationPage() {
     try {
       await LeaveRequestService.approveRequest(id, 'current-user', 'Manager');
       await fetchRequests();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Approve failed:', error);
     }
   };
@@ -38,7 +38,7 @@ export default function LeaveApplicationPage() {
     try {
       await LeaveRequestService.rejectRequest(id, 'current-user', 'Manager', 'Rejected by manager');
       await fetchRequests();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Reject failed:', error);
     }
   };

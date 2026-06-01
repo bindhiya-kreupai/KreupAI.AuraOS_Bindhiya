@@ -88,7 +88,7 @@ export class PasswordResetService {
         token,
         expiresAt,
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, email: request.email }, 'Error generating password reset token');
       throw error;
     }
@@ -127,7 +127,7 @@ export class PasswordResetService {
       }
 
       return tokenData;
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Error verifying password reset token');
       return null;
     }
@@ -178,7 +178,7 @@ export class PasswordResetService {
         success: true,
         userId: tokenData.userId,
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Error resetting password');
       throw error;
     }
@@ -216,7 +216,7 @@ export class PasswordResetService {
       });
 
       logger.info({ userId }, 'All user sessions invalidated after password reset');
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, userId }, 'Error invalidating user sessions');
       // Don't throw - password reset should still succeed
     }
@@ -239,7 +239,7 @@ export class PasswordResetService {
     try {
       await redisClient.delete(`${this.TOKEN_PREFIX}${token}`);
       logger.info({ token: token.substring(0, 8) + '...' }, 'Password reset token cancelled');
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Error cancelling password reset token');
     }
   }

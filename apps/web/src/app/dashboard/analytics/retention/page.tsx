@@ -61,7 +61,7 @@ export default function RetentionPage() {
                     setAvgTenure(Number((weightedSum / totalEmp).toFixed(1)));
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading retention data:', error);
         } finally {
             setLoading(false);

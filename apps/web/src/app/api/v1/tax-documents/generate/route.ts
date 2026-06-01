@@ -136,7 +136,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       },
       { status: 202 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Tax Documents Generate API] POST Error:', error);
 
     return NextResponse.json(

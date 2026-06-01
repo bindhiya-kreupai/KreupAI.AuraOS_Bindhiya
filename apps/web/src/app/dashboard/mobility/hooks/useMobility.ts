@@ -143,7 +143,7 @@ export function useMobility(): UseMobilityReturn {
     try {
       const applications = await VisaImmigrationService.getVisaApplications();
       setVisaApplications(applications);
-    } catch (error) {
+    } catch (error: any) {
       setVisaError(error instanceof Error ? error.message : 'Failed to fetch visa applications');
     } finally {
       setVisaLoading(false);
@@ -156,7 +156,7 @@ export function useMobility(): UseMobilityReturn {
     try {
       const application = await VisaImmigrationService.getVisaApplicationById(applicationId);
       setSelectedVisaApplication(application);
-    } catch (error) {
+    } catch (error: any) {
       setVisaError(error instanceof Error ? error.message : 'Failed to fetch visa application');
     } finally {
       setVisaLoading(false);
@@ -170,7 +170,7 @@ export function useMobility(): UseMobilityReturn {
       const newApplication = await VisaImmigrationService.createVisaApplication(application);
       setVisaApplications((prev) => [...prev, newApplication]);
       return newApplication;
-    } catch (error) {
+    } catch (error: any) {
       setVisaError(error instanceof Error ? error.message : 'Failed to create visa application');
       throw error;
     } finally {
@@ -190,7 +190,7 @@ export function useMobility(): UseMobilityReturn {
         setSelectedVisaApplication(updatedApplication);
       }
       return updatedApplication;
-    } catch (error) {
+    } catch (error: any) {
       setVisaError(error instanceof Error ? error.message : 'Failed to update visa application');
       throw error;
     } finally {
@@ -207,7 +207,7 @@ export function useMobility(): UseMobilityReturn {
       if (selectedVisaApplication?.applicationId === applicationId) {
         setSelectedVisaApplication(null);
       }
-    } catch (error) {
+    } catch (error: any) {
       setVisaError(error instanceof Error ? error.message : 'Failed to delete visa application');
       throw error;
     } finally {
@@ -227,7 +227,7 @@ export function useMobility(): UseMobilityReturn {
         setSelectedVisaApplication(submittedApplication);
       }
       return submittedApplication;
-    } catch (error) {
+    } catch (error: any) {
       setVisaError(error instanceof Error ? error.message : 'Failed to submit visa application');
       throw error;
     } finally {
@@ -253,7 +253,7 @@ export function useMobility(): UseMobilityReturn {
           setSelectedVisaApplication(approvedApplication);
         }
         return approvedApplication;
-      } catch (error) {
+      } catch (error: any) {
         setVisaError(error instanceof Error ? error.message : 'Failed to approve visa');
         throw error;
       } finally {
@@ -276,7 +276,7 @@ export function useMobility(): UseMobilityReturn {
           setSelectedVisaApplication(rejectedApplication);
         }
         return rejectedApplication;
-      } catch (error) {
+      } catch (error: any) {
         setVisaError(error instanceof Error ? error.message : 'Failed to reject visa');
         throw error;
       } finally {
@@ -299,7 +299,7 @@ export function useMobility(): UseMobilityReturn {
           setSelectedVisaApplication(updatedApplication);
         }
         return updatedApplication;
-      } catch (error) {
+      } catch (error: any) {
         setVisaError(error instanceof Error ? error.message : 'Failed to upload document');
         throw error;
       } finally {
@@ -315,7 +315,7 @@ export function useMobility(): UseMobilityReturn {
     try {
       const compliance = await VisaImmigrationService.getImmigrationCompliance();
       setImmigrationCompliance(compliance);
-    } catch (error) {
+    } catch (error: any) {
       setVisaError(error instanceof Error ? error.message : 'Failed to fetch immigration compliance');
     } finally {
       setVisaLoading(false);
@@ -331,7 +331,7 @@ export function useMobility(): UseMobilityReturn {
         prev.map((comp) => (comp.complianceId === complianceId ? updatedCompliance : comp))
       );
       return updatedCompliance;
-    } catch (error) {
+    } catch (error: any) {
       setVisaError(error instanceof Error ? error.message : 'Failed to update compliance status');
       throw error;
     } finally {
@@ -346,7 +346,7 @@ export function useMobility(): UseMobilityReturn {
     try {
       const packages = await RelocationPackageService.getAllRelocationPackages();
       setRelocationPackages(packages);
-    } catch (error) {
+    } catch (error: any) {
       setRelocationError(error instanceof Error ? error.message : 'Failed to fetch relocation packages');
     } finally {
       setRelocationLoading(false);
@@ -359,7 +359,7 @@ export function useMobility(): UseMobilityReturn {
     try {
       const pkg = await RelocationPackageService.getRelocationPackageById(packageId);
       setSelectedRelocationPackage(pkg);
-    } catch (error) {
+    } catch (error: any) {
       setRelocationError(error instanceof Error ? error.message : 'Failed to fetch relocation package');
     } finally {
       setRelocationLoading(false);
@@ -373,7 +373,7 @@ export function useMobility(): UseMobilityReturn {
       const newPackage = await RelocationPackageService.createRelocationPackage(pkg);
       setRelocationPackages((prev) => [...prev, newPackage]);
       return newPackage;
-    } catch (error) {
+    } catch (error: any) {
       setRelocationError(error instanceof Error ? error.message : 'Failed to create relocation package');
       throw error;
     } finally {
@@ -392,7 +392,7 @@ export function useMobility(): UseMobilityReturn {
           setSelectedRelocationPackage(updatedPackage);
         }
         return updatedPackage;
-      } catch (error) {
+      } catch (error: any) {
         setRelocationError(error instanceof Error ? error.message : 'Failed to update relocation package');
         throw error;
       } finally {
@@ -412,7 +412,7 @@ export function useMobility(): UseMobilityReturn {
         if (selectedRelocationPackage?.packageId === packageId) {
           setSelectedRelocationPackage(null);
         }
-      } catch (error) {
+      } catch (error: any) {
         setRelocationError(error instanceof Error ? error.message : 'Failed to delete relocation package');
         throw error;
       } finally {
@@ -433,7 +433,7 @@ export function useMobility(): UseMobilityReturn {
           setSelectedRelocationPackage(updatedPackage);
         }
         return updatedPackage;
-      } catch (error) {
+      } catch (error: any) {
         setRelocationError(error instanceof Error ? error.message : 'Failed to update relocation task');
         throw error;
       } finally {
@@ -454,7 +454,7 @@ export function useMobility(): UseMobilityReturn {
           setSelectedRelocationPackage(updatedPackage);
         }
         return updatedPackage;
-      } catch (error) {
+      } catch (error: any) {
         setRelocationError(error instanceof Error ? error.message : 'Failed to add vendor');
         throw error;
       } finally {
@@ -475,7 +475,7 @@ export function useMobility(): UseMobilityReturn {
           setSelectedRelocationPackage(updatedPackage);
         }
         return updatedPackage;
-      } catch (error) {
+      } catch (error: any) {
         setRelocationError(error instanceof Error ? error.message : 'Failed to record expense');
         throw error;
       } finally {
@@ -496,7 +496,7 @@ export function useMobility(): UseMobilityReturn {
           setSelectedRelocationPackage(updatedPackage);
         }
         return updatedPackage;
-      } catch (error) {
+      } catch (error: any) {
         setRelocationError(error instanceof Error ? error.message : 'Failed to approve expense');
         throw error;
       } finally {
@@ -513,7 +513,7 @@ export function useMobility(): UseMobilityReturn {
     try {
       const profiles = await ExpatTaxService.getAllExpatTaxProfiles();
       setExpatTaxProfiles(profiles);
-    } catch (error) {
+    } catch (error: any) {
       setTaxError(error instanceof Error ? error.message : 'Failed to fetch expat tax profiles');
     } finally {
       setTaxLoading(false);
@@ -526,7 +526,7 @@ export function useMobility(): UseMobilityReturn {
     try {
       const profile = await ExpatTaxService.getTaxProfileById(profileId);
       setSelectedExpatTaxProfile(profile);
-    } catch (error) {
+    } catch (error: any) {
       setTaxError(error instanceof Error ? error.message : 'Failed to fetch expat tax profile');
     } finally {
       setTaxLoading(false);
@@ -540,7 +540,7 @@ export function useMobility(): UseMobilityReturn {
       const newProfile = await ExpatTaxService.createTaxProfile(profile);
       setExpatTaxProfiles((prev) => [...prev, newProfile]);
       return newProfile;
-    } catch (error) {
+    } catch (error: any) {
       setTaxError(error instanceof Error ? error.message : 'Failed to create expat tax profile');
       throw error;
     } finally {
@@ -561,7 +561,7 @@ export function useMobility(): UseMobilityReturn {
           setSelectedExpatTaxProfile(updatedProfile);
         }
         return updatedProfile;
-      } catch (error) {
+      } catch (error: any) {
         setTaxError(error instanceof Error ? error.message : 'Failed to update expat tax profile');
         throw error;
       } finally {
@@ -581,7 +581,7 @@ export function useMobility(): UseMobilityReturn {
         if (selectedExpatTaxProfile?.profileId === profileId) {
           setSelectedExpatTaxProfile(null);
         }
-      } catch (error) {
+      } catch (error: any) {
         setTaxError(error instanceof Error ? error.message : 'Failed to delete expat tax profile');
         throw error;
       } finally {
@@ -604,7 +604,7 @@ export function useMobility(): UseMobilityReturn {
           setSelectedExpatTaxProfile(updatedProfile);
         }
         return updatedProfile;
-      } catch (error) {
+      } catch (error: any) {
         setTaxError(error instanceof Error ? error.message : 'Failed to create tax return');
         throw error;
       } finally {
@@ -627,7 +627,7 @@ export function useMobility(): UseMobilityReturn {
           setSelectedExpatTaxProfile(updatedProfile);
         }
         return updatedProfile;
-      } catch (error) {
+      } catch (error: any) {
         setTaxError(error instanceof Error ? error.message : 'Failed to update tax return');
         throw error;
       } finally {
@@ -643,7 +643,7 @@ export function useMobility(): UseMobilityReturn {
     try {
       const liability = await ExpatTaxService.calculateTaxLiability(profileId, taxYear, country);
       return liability;
-    } catch (error) {
+    } catch (error: any) {
       setTaxError(error instanceof Error ? error.message : 'Failed to calculate tax liability');
       throw error;
     } finally {
@@ -664,7 +664,7 @@ export function useMobility(): UseMobilityReturn {
           setSelectedExpatTaxProfile(updatedProfile);
         }
         return updatedProfile;
-      } catch (error) {
+      } catch (error: any) {
         setTaxError(error instanceof Error ? error.message : 'Failed to create tax projection');
         throw error;
       } finally {
@@ -680,7 +680,7 @@ export function useMobility(): UseMobilityReturn {
     try {
       const analyticsData = await MobilityAnalyticsService.getAnalytics();
       setAnalytics(analyticsData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch analytics:', error);
     } finally {
       setAnalyticsLoading(false);
@@ -693,7 +693,7 @@ export function useMobility(): UseMobilityReturn {
     try {
       const settingsData = await MobilitySettingsService.getSettings();
       setSettings(settingsData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch settings:', error);
     } finally {
       setSettingsLoading(false);
@@ -706,7 +706,7 @@ export function useMobility(): UseMobilityReturn {
       const updatedSettings = await MobilitySettingsService.updateSettings(updates);
       setSettings(updatedSettings);
       return updatedSettings;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update settings:', error);
       throw error;
     } finally {

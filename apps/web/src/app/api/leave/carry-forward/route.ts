@@ -56,7 +56,7 @@ export const GET = withEnhancedAuth(
           records: carryForwards,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching carry forward data:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch carry forward data' },
@@ -189,7 +189,7 @@ export const POST = withEnhancedAuth(
         data: result,
         carryForward: result,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error processing carry forward:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to process carry forward' },

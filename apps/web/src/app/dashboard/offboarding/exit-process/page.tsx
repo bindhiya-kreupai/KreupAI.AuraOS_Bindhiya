@@ -75,7 +75,7 @@ export default function OffboardingPage() {
                 if (mapped.length > 0) {
                     setSelectedEmployeeId(mapped[0].id);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching offboarding instances:', error);
             } finally {
                 setLoading(false);

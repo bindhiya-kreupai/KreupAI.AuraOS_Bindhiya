@@ -207,7 +207,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ success: true, data: turnoverData });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Turnover analytics error:', error);
     return NextResponse.json({
       success: true,

@@ -25,7 +25,7 @@ export default function ProbationTrackingPage() {
       if (result.success) {
         setStats(result.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch stats:', error);
     }
   };

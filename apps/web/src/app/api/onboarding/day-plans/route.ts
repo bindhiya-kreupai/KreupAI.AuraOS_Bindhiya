@@ -68,7 +68,7 @@ export const GET = withEnhancedAuth(
       });
 
       return NextResponse.json({ plans }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching day plans:', error);
       return NextResponse.json(
         { error: 'Failed to fetch day plans' },
@@ -132,7 +132,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ plan }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating day plan:', error);
       return NextResponse.json(
         { error: 'Failed to create day plan' },
@@ -183,7 +183,7 @@ export const PUT = withEnhancedAuth(
       };
 
       return NextResponse.json({ plan }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating day plan:', error);
       return NextResponse.json(
         { error: 'Failed to update day plan' },

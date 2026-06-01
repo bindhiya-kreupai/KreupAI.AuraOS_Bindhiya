@@ -24,7 +24,7 @@ export default function DEIDashboardPage() {
         setTenureData(data.tenure?.distribution || []);
         setDeptBreakdown(data.departmentBreakdown || []);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading DEI data:', error);
     } finally {
       setLoading(false);

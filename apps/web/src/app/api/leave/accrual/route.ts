@@ -67,7 +67,7 @@ export const GET = withEnhancedAuth(
           },
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching accrual history:', error);
       return NextResponse.json(
         { error: 'Failed to fetch accrual history', errorAr: 'فشل في جلب سجل الاستحقاق' },
@@ -219,7 +219,7 @@ export const POST = withEnhancedAuth(
         success: true,
         data: accrual,
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

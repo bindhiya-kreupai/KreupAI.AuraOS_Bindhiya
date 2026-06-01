@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
         valid: true,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error verifying password reset token');
 
     return NextResponse.json(

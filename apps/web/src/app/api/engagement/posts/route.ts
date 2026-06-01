@@ -54,7 +54,7 @@ export const GET = withEnhancedAuth(
 
         return NextResponse.json({ success: true, data: defaultPosts });
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching posts:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch posts' }, { status: 500 });
     }
@@ -112,7 +112,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: newPost }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error creating post:', error);
       return NextResponse.json({ success: false, error: 'Failed to create post' }, { status: 500 });
     }
@@ -127,7 +127,7 @@ export const PUT = withEnhancedAuth(
 
       const body = await request.json();
       return NextResponse.json({ success: true, data: { ...body, tenantId: user.tenantId, lastModified: new Date().toISOString(), modifiedBy: user.userId } });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating post:', error);
       return NextResponse.json({ success: false, error: 'Failed to update post' }, { status: 500 });
     }

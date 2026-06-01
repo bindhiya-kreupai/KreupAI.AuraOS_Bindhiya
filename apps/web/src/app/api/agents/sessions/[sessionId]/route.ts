@@ -39,7 +39,7 @@ export async function GET(
         state: session.state,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { success: false, error: 'Failed to fetch session' },
       { status: 500 }
@@ -72,7 +72,7 @@ export async function DELETE(
       success: true,
       message: 'Session ended successfully',
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { success: false, error: 'Failed to end session' },
       { status: 500 }

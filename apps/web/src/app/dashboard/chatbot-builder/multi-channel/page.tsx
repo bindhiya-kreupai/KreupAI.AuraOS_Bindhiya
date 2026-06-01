@@ -26,7 +26,7 @@ export default function MultiChannelPage() {
             if (result.length > 0) {
                 setChannels(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

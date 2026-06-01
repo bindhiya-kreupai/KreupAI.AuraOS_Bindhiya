@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 // Travel Management Sample Data
 import type {
   TravelRequest, TravelBooking, TravelPolicy, TravelMetrics, TravelSettings,

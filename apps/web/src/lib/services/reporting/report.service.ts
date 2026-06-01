@@ -301,7 +301,7 @@ export class ReportService {
       };
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Report generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }

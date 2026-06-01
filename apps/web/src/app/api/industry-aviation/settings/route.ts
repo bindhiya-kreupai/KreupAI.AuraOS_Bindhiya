@@ -48,7 +48,7 @@ export const GET = createProtectedRoute(
         orderBy: [{ companyId: 'asc' }, { createdAt: 'desc' }],
       });
       return { success: true, data: settings ?? null };
-    } catch (err) {
+    } catch (err: any) {
       logger.error({ err }, 'industry-aviation/settings: GET failed');
       return NextResponse.json(
         {
@@ -105,7 +105,7 @@ export const PUT = createProtectedRoute(
         },
       });
       return { success: true, data: settings };
-    } catch (err) {
+    } catch (err: any) {
       logger.error({ err }, 'industry-aviation/settings: PUT failed');
       return NextResponse.json(
         {

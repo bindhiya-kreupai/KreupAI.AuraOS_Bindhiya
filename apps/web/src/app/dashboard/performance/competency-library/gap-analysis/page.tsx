@@ -503,7 +503,7 @@ export default function GapAnalysisPage() {
                 }
                 setDepartmentGaps(deptSummaries);
 
-            } catch (err) {
+            } catch (err: any) {
                 if (!cancelled) {
                     console.error('Gap analysis fetch error:', err);
                     setFetchError('An error occurred while loading gap analysis data.');
@@ -670,7 +670,7 @@ export default function GapAnalysisPage() {
                 }]);
             }
             setIsSheetOpen(false);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to save development plan:', error);
         } finally {

@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       message: `SIO portal readiness: ${readinessReport.overallReady ? 'READY' : 'NOT READY'}`,
       messageAr: `جاهزية بوابة التأمينات: ${readinessReport.overallReady ? 'جاهز' : 'غير جاهز'}`,
     });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       {
         message: 'Readiness assessment failed',
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
       message: `SIO reconciliation for ${period}: ${reconciliation.status}`,
       messageAr: `تسوية التأمينات لـ ${period}: ${reconciliation.status}`,
     });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { message: 'Reconciliation failed', messageAr: 'فشل التسوية', error: String(error) },
       { status: 500 }

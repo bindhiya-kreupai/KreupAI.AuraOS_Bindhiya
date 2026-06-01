@@ -94,7 +94,7 @@ export default function DepartmentsPage() {
       } else {
         toast.error(result.error?.message || 'Failed to load departments');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading departments:', error);
       toast.error('Error loading departments. Please try again.');
     } finally {
@@ -132,7 +132,7 @@ export default function DepartmentsPage() {
       });
 
       setMasterData(newMasterData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading master data:', error);
       toast.error('Error loading form data');
     }
@@ -275,7 +275,7 @@ export default function DepartmentsPage() {
         departmentFormSchema.parse(data);
       }
       return true;
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         const errors: ValidationErrors = {};
         error.errors.forEach((error) => {
@@ -350,7 +350,7 @@ export default function DepartmentsPage() {
         }
         toast.error(result.error?.message || 'Operation failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving department:', error);
       toast.error(
         error instanceof Error
@@ -399,7 +399,7 @@ export default function DepartmentsPage() {
       } else {
         toast.error(result.error?.message || 'Delete failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting department:', error);
       toast.error('Error deleting department. Please try again.');
     }
@@ -432,7 +432,7 @@ export default function DepartmentsPage() {
       } else {
         toast.error(result.error?.message || 'Export failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error exporting:', error);
       toast.error('Error exporting data. Please try again.');
     }

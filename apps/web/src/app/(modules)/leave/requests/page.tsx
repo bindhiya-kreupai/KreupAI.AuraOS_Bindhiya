@@ -27,7 +27,7 @@ export default function LeaveRequestsPage() {
       if (result.success) {
         setStats(result.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch stats:', error);
     }
   };
@@ -44,7 +44,7 @@ export default function LeaveRequestsPage() {
           }))
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch leave types:', error);
     }
   };

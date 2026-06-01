@@ -36,7 +36,7 @@ export default function StatutoryDeductionsPage() {
             setLoading(true);
             const result = await StatutoryReportService.getReports();
             setReports(result);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

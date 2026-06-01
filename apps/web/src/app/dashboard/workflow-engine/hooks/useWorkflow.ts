@@ -147,7 +147,7 @@ export function useWorkflow(): UseWorkflowReturn {
       setForms(formsData);
       setMetrics(metricsData);
       setSettings(settingsData);
-    } catch (error) {
+    } catch (error: any) {
       setError(error instanceof Error ? error.message : 'Failed to load workflow data');
     } finally {
       setLoading(false);

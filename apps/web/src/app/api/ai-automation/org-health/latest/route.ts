@@ -43,7 +43,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ prediction }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

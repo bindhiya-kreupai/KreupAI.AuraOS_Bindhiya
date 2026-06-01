@@ -145,7 +145,7 @@ export class APMManager {
       } else {
         logger.warn('NEW_RELIC_LICENSE_KEY not found');
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Failed to initialize New Relic');
     }
   }
@@ -161,7 +161,7 @@ export class APMManager {
       } else {
         logger.warn('DD_API_KEY not found');
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Failed to initialize Datadog');
     }
   }
@@ -176,7 +176,7 @@ export class APMManager {
       } else {
         logger.warn('ELASTIC_APM_SERVER_URL not found');
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Failed to initialize Elastic APM');
     }
   }
@@ -369,7 +369,7 @@ export class APMManager {
 
       // TODO: Implement actual storage/transmission
       // Example: await fetch('/api/monitoring/apm', { method: 'POST', body: JSON.stringify(transaction) });
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Failed to send APM transaction');
     }
   }
@@ -472,7 +472,7 @@ export function withAPM<T = any>(
       }
 
       return enhancedResponse;
-    } catch (error) {
+    } catch (error: any) {
       // Record error
       apm.recordError(error as Error);
       apm.endTransaction('error', 500);
@@ -498,7 +498,7 @@ export async function traceDatabase<T>(operation: string, fn: () => Promise<T>):
     const result = await fn();
     apm.endSpan(span);
     return result;
-  } catch (error) {
+  } catch (error: any) {
     apm.endSpan(span);
     apm.recordError(error as Error);
     throw error;
@@ -522,7 +522,7 @@ export async function traceHTTP<T>(url: string, fn: () => Promise<T>): Promise<T
     const result = await fn();
     apm.endSpan(span);
     return result;
-  } catch (error) {
+  } catch (error: any) {
     apm.endSpan(span);
     apm.recordError(error as Error);
     throw error;
@@ -545,7 +545,7 @@ export async function trace<T>(name: string, type: string, fn: () => Promise<T>)
     const result = await fn();
     apm.endSpan(span);
     return result;
-  } catch (error) {
+  } catch (error: any) {
     apm.endSpan(span);
     apm.recordError(error as Error);
     throw error;

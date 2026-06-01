@@ -214,7 +214,7 @@ export const GET = withEnhancedAuth(
         stats,
         meta: { month },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error generating report:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to generate report' },

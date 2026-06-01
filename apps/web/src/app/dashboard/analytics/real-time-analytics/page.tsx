@@ -42,7 +42,7 @@ export default function RealTimeAnalyticsPage() {
                 setPendingApprovals(data.pendingApprovals?.total ?? 0);
                 setAlerts(data.alerts || []);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading real-time data:', error);
         } finally {
             setLoading(false);

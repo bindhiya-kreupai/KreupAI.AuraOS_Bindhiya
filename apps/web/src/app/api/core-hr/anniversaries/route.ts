@@ -73,7 +73,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       .sort((a, b) => new Date(a.anniversaryDate).getTime() - new Date(b.anniversaryDate).getTime());
 
     return NextResponse.json({ anniversaries }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching anniversaries:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

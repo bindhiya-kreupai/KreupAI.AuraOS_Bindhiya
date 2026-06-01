@@ -54,7 +54,7 @@ export default function BuddyAssignmentPage() {
                 }));
 
                 setBuddies(buddyData);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching buddy assignments:', error);
             } finally {
                 setLoading(false);

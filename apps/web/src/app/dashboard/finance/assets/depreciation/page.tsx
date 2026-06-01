@@ -47,7 +47,7 @@ export default function DepreciationPage() {
                 setLoading(true);
                 const data = await FinancialAssetService.getAssets();
                 setAssets(data as unknown as DepreciableAsset[]);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

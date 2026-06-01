@@ -51,7 +51,7 @@ export default function ScheduledReportsPage() {
                 }));
 
             setSchedules(scheduled);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading schedules:', error);
         } finally {
             setLoading(false);
@@ -71,7 +71,7 @@ export default function ScheduledReportsPage() {
             });
             await fetchSchedules();
             setShowModal(false);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error creating schedule:', error);
         }
     };

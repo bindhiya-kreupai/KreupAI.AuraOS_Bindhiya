@@ -49,7 +49,7 @@ export default function WorkforcePlanningPage() {
                 setTotalPayroll(comp.summary?.totalPayroll ?? 0);
                 setAvgSalary(comp.summary?.averageSalary ?? 0);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading workforce planning data:', error);
         } finally {
             setLoading(false);

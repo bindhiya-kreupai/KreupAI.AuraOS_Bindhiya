@@ -24,7 +24,7 @@ export default function FeedbackConfigPage() {
             try {
                 const data = await ReviewCycleService.getCycles();
                 setCycles(data);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load feedback config:', error);
             } finally {
                 setLoading(false);

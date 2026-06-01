@@ -61,7 +61,7 @@ export default function DesignationsPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch designations:', error);
         } finally {
@@ -97,7 +97,7 @@ export default function DesignationsPage() {
             } else {
                 alert('Failed to save designation');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving designation:', error);
             alert('Error saving designation');
@@ -116,7 +116,7 @@ export default function DesignationsPage() {
                 } else {
                     alert('Failed to delete designation');
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting designation:', error);
                 alert('Error deleting designation');

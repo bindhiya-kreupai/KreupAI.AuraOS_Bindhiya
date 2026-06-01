@@ -41,7 +41,7 @@ export default function RegularizationPage() {
         try {
             const result = await RegularizationService.getRegularizations({ status: 'PENDING' });
             setRequests(result as any);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
@@ -57,7 +57,7 @@ export default function RegularizationPage() {
                 await RegularizationService.rejectRegularization(id, 'current-user', 'Rejected from UI');
             }
             await fetchRegularizations();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);
@@ -77,7 +77,7 @@ export default function RegularizationPage() {
             } as any);
             await fetchRegularizations();
             setFormData({ type: 'MISSED_PUNCH', date: '', timeIn: '', timeOut: '', reason: '' });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

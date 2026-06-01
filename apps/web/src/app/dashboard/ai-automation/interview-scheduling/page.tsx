@@ -26,7 +26,7 @@ export default function InterviewSchedulingPage() {
                 setSchedules(result.data?.schedules || []);
                 setSlots(result.data?.suggestedSlots || []);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);
@@ -38,7 +38,7 @@ export default function InterviewSchedulingPage() {
         try {
             await interviewScheduling.scheduleInterview(slotData);
             await fetchData();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

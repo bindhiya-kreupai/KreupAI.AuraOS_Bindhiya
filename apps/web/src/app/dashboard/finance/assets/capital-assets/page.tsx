@@ -63,7 +63,7 @@ export default function CapitalAssetsPage() {
                 setLoading(true);
                 const data = await FinancialAssetService.getAssets();
                 setAssets(data as unknown as CapitalAsset[]);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

@@ -38,7 +38,7 @@ export function withAudit<T>(handler: T, config: AuditConfig): T {
         try {
           responseBody = await clonedResponse.json();
           success = responseBody.success !== false;
-        } catch (error) {
+        } catch (error: any) {
           // Response might not be JSON
         }
       }
@@ -47,7 +47,7 @@ export function withAudit<T>(handler: T, config: AuditConfig): T {
       await logAuditEntry(request, config, context, success, responseBody);
 
       return response;
-    } catch (error) {
+    } catch (error: any) {
       success = false;
       errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
@@ -90,7 +90,7 @@ async function logAuditEntry(
       try {
         const clonedRequest = request.clone();
         requestBody = await clonedRequest.json();
-      } catch (error) {
+      } catch (error: any) {
         // Request might not have JSON body
       }
     }
@@ -119,7 +119,7 @@ async function logAuditEntry(
       success,
       errorMessage,
     });
-  } catch (error) {
+  } catch (error: any) {
     // Don't fail the request if audit logging fails
     logger.error({ error, action: config.action }, 'Failed to log audit entry');
   }

@@ -42,7 +42,7 @@ export default function EmploymentStatusesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch employment statuses:', error);
         } finally {
@@ -78,7 +78,7 @@ export default function EmploymentStatusesPage() {
             } else {
                 alert('Failed to save employment status');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving employment status:', error);
             alert('Error saving employment status');
@@ -97,7 +97,7 @@ export default function EmploymentStatusesPage() {
                 } else {
                     alert('Failed to delete employment status');
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting employment status:', error);
                 alert('Error deleting employment status');

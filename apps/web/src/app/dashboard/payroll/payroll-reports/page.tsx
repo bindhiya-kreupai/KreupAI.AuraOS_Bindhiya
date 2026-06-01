@@ -28,7 +28,7 @@ export default function PayrollReportsPage() {
             setLoading(true);
             const result = await PayrollAnalyticsService.getStats();
             setStats(result);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         assetsUnderMaintenance: 0,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to fetch assets' },
       { status: 500 }
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to process asset' },
       { status: 500 }
@@ -96,7 +96,7 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to update asset' },
       { status: 500 }
@@ -124,7 +124,7 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Asset deleted successfully',
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to delete asset' },
       { status: 500 }

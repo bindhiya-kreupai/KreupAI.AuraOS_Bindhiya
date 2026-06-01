@@ -96,7 +96,7 @@ export const GET = withEnhancedAuth(
       };
 
       return NextResponse.json({ metrics }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching onboarding analytics:', error);
       return NextResponse.json(
         { error: 'Failed to fetch onboarding analytics' },

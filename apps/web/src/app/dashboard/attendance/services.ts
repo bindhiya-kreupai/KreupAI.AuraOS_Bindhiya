@@ -800,7 +800,7 @@ export class ShiftService {
     try {
       const response = await APIClient.get<{ shifts?: Shift[] }>(this.endpoint);
       return response.shifts || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -809,7 +809,7 @@ export class ShiftService {
     try {
       const response = await APIClient.get<{ shift?: Shift }>(`${this.endpoint}/${id}`);
       return response.shift || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -850,7 +850,7 @@ export class AttendanceRecordService {
         filters
       );
       return response.records || response.attendance || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -859,7 +859,7 @@ export class AttendanceRecordService {
     try {
       const response = await APIClient.get<{ record?: AttendanceRecord }>(`${this.endpoint}/${id}`);
       return response.record || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -885,7 +885,7 @@ export class AttendanceRecordService {
         { employeeId, month, type: 'summary' }
       );
       return response.report || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -932,7 +932,7 @@ export class AttendanceCheckService {
         filters
       );
       return (response.data?.captures || []).map((capture) => this.mapCheck(capture));
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -960,7 +960,7 @@ export class TimesheetService {
     try {
       const response = await APIClient.get<{ data?: TimesheetApiResponse[] }>(this.endpoint, filters);
       return (response.data || []).map(mapTimesheet);
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -1002,7 +1002,7 @@ export class RegularizationService {
         filters
       );
       return (response.data?.requests || []).map(mapRegularization);
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1065,7 +1065,7 @@ export class RegularizationService {
         filters
       );
       return (response.data?.requests || []).map(mapRegularization);
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1094,7 +1094,7 @@ export class OvertimeService {
         { ...filters, employeeId: normalizedEmployeeId }
       );
       return (response.data?.overtime || []).map(mapOvertimeRequest);
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1158,7 +1158,7 @@ export class OvertimeService {
     try {
       const response = await APIClient.get<{ data?: any[] }>(this.managementEndpoint, filters);
       return response.data || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1195,7 +1195,7 @@ export class AttendanceAnalyticsService {
           overtimeByDepartment: [],
         }
       );
-    } catch (error) {
+    } catch (error: any) {
             return {
         totalEmployees: 0,
         presentToday: 0,
@@ -1223,7 +1223,7 @@ export class AttendanceAnalyticsService {
         data?: { exceptions?: ExceptionApiResponse[]; summary?: unknown };
       }>('/attendance/exceptions', filters);
       return (response.data?.exceptions || []).map(mapAttendanceException);
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1286,7 +1286,7 @@ export class AttendanceSettingsService {
           sendMonthlySummary: true,
         }
       );
-    } catch (error) {
+    } catch (error: any) {
             return {
         workingDaysPerWeek: 5,
         weekendDays: [0, 6],
@@ -1343,7 +1343,7 @@ export class CompOffService {
         data?: { compOffs?: CompOffApiResponse[]; summary?: CompOffSummaryResponse };
       }>(this.endpoint, filters);
       return (response.data?.compOffs || []).map(mapCompOff);
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1382,7 +1382,7 @@ export class CompOffService {
         totalUsed: summary?.used ?? summary?.totalUsed ?? 0,
         balance: summary?.total ?? summary?.balance ?? 0,
       };
-    } catch (error) {
+    } catch (error: any) {
             return {
               total: 0,
               earned: 0,
@@ -1417,7 +1417,7 @@ export class WFHService {
         { ...filters, employeeId: normalizedEmployeeId }
       );
       return (response.data || []).map(mapWFHRequest);
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1467,7 +1467,7 @@ export class WFHService {
         remainingDays: Math.max(totalDays - usedDays, 0),
         pendingDays,
       };
-    } catch (error) {
+    } catch (error: any) {
             return { totalDays: 0, usedDays: 0, remainingDays: 0, pendingDays: 0 };
     }
   }
@@ -1521,7 +1521,7 @@ export class ShiftSwapService {
             status: mapShiftSwapStatus(matchedSwap?.status),
           };
         });
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1537,7 +1537,7 @@ export class ShiftSwapService {
         { ...filters, status: 'PENDING' }
       );
       return (response.data || []).map(mapMarketplaceSwap);
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1614,7 +1614,7 @@ export class RosterService {
         filters
       );
       return (response.data || []).map(mapRosterRow);
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1675,7 +1675,7 @@ export class GeoFencingService {
         this.endpoint
       );
       return response.locations || response.geoFences || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1704,7 +1704,7 @@ export class GeoFencingService {
         { latitude, longitude }
       );
       return response;
-    } catch (error) {
+    } catch (error: any) {
             return { isValid: false };
     }
   }
@@ -1721,7 +1721,7 @@ export class IPRestrictionService {
     try {
       const response = await APIClient.get<{ rules?: any[] }>(this.endpoint);
       return response.rules || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1747,7 +1747,7 @@ export class IPRestrictionService {
     try {
       const response = await APIClient.get<{ attempts?: any[] }>(`${this.endpoint}/blocked`, filters);
       return response.attempts || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1756,7 +1756,7 @@ export class IPRestrictionService {
     try {
       const response = await APIClient.post<{ isValid: boolean }>(`${this.endpoint}/validate`, { ipAddress });
       return response;
-    } catch (error) {
+    } catch (error: any) {
             return { isValid: false };
     }
   }
@@ -1786,7 +1786,7 @@ export class PunchRulesService {
           gracePeriodMinutes: 15,
         }
       );
-    } catch (error) {
+    } catch (error: any) {
             return {
         allowEarlyCheckIn: true,
         earlyCheckInMinutes: 30,
@@ -1827,7 +1827,7 @@ export class TimeRoundingService {
           roundingType: 'nearest',
         }
       );
-    } catch (error) {
+    } catch (error: any) {
             return {
         enabled: false,
         checkInRounding: 'none',
@@ -1855,7 +1855,7 @@ export class ApprovalWorkflowService {
     try {
       const response = await APIClient.get<{ workflows?: any[] }>(this.endpoint);
       return response.workflows || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1891,7 +1891,7 @@ export class FieldForceService {
     try {
       const response = await APIClient.get<{ agents?: any[] }>(this.endpoint, filters);
       return response.agents || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1904,7 +1904,7 @@ export class FieldForceService {
     try {
       const response = await APIClient.get<{ visits?: any[] }>(`${this.endpoint}/visits`, filters);
       return response.visits || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -1913,7 +1913,7 @@ export class FieldForceService {
     try {
       const response = await APIClient.get<{ tracking?: any }>(`${this.endpoint}/track/${employeeId}`);
       return response.tracking || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -1980,7 +1980,7 @@ export class CompOffManagementService {
         summary,
         transactions,
       };
-    } catch (error) {
+    } catch (error: any) {
             return {
               balance: 0,
               expiringDays: 60,

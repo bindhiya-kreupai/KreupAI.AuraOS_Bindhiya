@@ -153,7 +153,7 @@ export const prismaAPMMiddleware: Prisma.Middleware = async (params: any, next: 
     }
 
     return result;
-  } catch (error) {
+  } catch (error: any) {
     // End span with error
     const duration = Date.now() - startTime;
     span.endTime = Date.now();

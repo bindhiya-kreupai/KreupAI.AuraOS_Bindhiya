@@ -205,7 +205,7 @@ export default function OneOnOnePage() {
                     }
                 });
                 setEmployees(Array.from(empMap.values()));
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load 1-on-1 meetings:', error);
             } finally {
                 setLoading(false);
@@ -263,7 +263,7 @@ export default function OneOnOnePage() {
 
             setMeetings([newMeeting, ...meetings]);
             setSelectedMeeting(newMeeting);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to schedule meeting:', error);
             // Still add to local state for UI responsiveness
             const newMeeting: Meeting = {
@@ -411,7 +411,7 @@ export default function OneOnOnePage() {
 
         try {
             await OneOnOneMeetingService.deleteMeeting(meetingId);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to delete meeting:', error);
         }
 

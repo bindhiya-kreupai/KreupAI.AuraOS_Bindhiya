@@ -49,7 +49,7 @@ export default function KuwaitPIFSSPage() {
         if (data.success) {
           setReferenceData(data.data);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error:', error);
       }
     };
@@ -93,7 +93,7 @@ export default function KuwaitPIFSSPage() {
         setResults(data.data.results);
         setTotals(data.data.totals);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Kuwait PIFSS calculation failed:', error);
     } finally {
       setLoading(false);

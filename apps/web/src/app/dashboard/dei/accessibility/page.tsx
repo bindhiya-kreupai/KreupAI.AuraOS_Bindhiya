@@ -22,7 +22,7 @@ export default function AccessibilityPage() {
                 setLoading(true);
                 const data = await AccessibilityService.getAllRequests();
                 setData(Array.isArray(data) ? data : []);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

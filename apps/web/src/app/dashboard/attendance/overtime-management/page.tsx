@@ -56,7 +56,7 @@ export default function OvertimeManagementPage() {
                     });
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
@@ -68,7 +68,7 @@ export default function OvertimeManagementPage() {
         try {
             // TODO: Add updateOvertimePolicy method to OvertimeService when API supports it
                         await fetchPolicy();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

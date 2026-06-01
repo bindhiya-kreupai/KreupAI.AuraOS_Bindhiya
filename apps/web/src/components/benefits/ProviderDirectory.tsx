@@ -157,7 +157,7 @@ export default function ProviderDirectory() {
         limit: 20,
       });
       setProviders(results);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Provider search error:', err);
     } finally {
       setSearchLoading(false);
@@ -188,7 +188,7 @@ export default function ProviderDirectory() {
         'h-gold'
       );
       setCostEstimate(estimate);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Cost estimate error:', err);
     } finally {
       setEstimateLoading(false);
@@ -201,7 +201,7 @@ export default function ProviderDirectory() {
     try {
       const results = await providerDirectoryService.getFormulary('h-gold', drugSearch);
       setFormularyResults(results);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Formulary search error:', err);
     } finally {
       setFormularyLoading(false);

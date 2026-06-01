@@ -23,7 +23,7 @@ export default function ExceptionHandlingPage() {
             setLoading(true);
             const data = await QualifyingEventService.getEvents();
             setEvents(Array.isArray(data) ? data : []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching events:', error);
             setEvents([]);
         } finally {

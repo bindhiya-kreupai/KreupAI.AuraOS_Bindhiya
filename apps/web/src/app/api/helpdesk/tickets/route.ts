@@ -12,7 +12,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         tenantId: user.tenantId,
       },
     }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { success: false, error: 'Failed to fetch helpdesk tickets' },
       { status: 500 }
@@ -35,7 +35,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json({ success: true, data: ticket }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { success: false, error: 'Failed to create helpdesk ticket' },
       { status: 500 }

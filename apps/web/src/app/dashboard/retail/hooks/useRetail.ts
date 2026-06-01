@@ -59,7 +59,7 @@ export const useRetail = () => {
       setSeasonalHires(hiresData.length > 0 ? hiresData : sampleSeasonalHires);
       setSettings(settingsData || sampleRetailSettings);
       setAlerts(alertsData);
-    } catch (_error) {
+    } catch (_error: any) {
       setError(_error instanceof Error ? _error.message : 'Failed to load data');
       addToast({ type: 'error', message: 'Failed to load retail data' });
     } finally {
@@ -76,7 +76,7 @@ export const useRetail = () => {
       setStores(await StoreOperationsService.getAllStores());
       addToast({ type: 'success', message: 'Store created' });
       return store;
-    } catch (_error) {
+    } catch (_error: any) {
       addToast({ type: 'error', message: 'Failed to create store' });
       throw _error;
     } finally {
@@ -90,7 +90,7 @@ export const useRetail = () => {
       setStores(await StoreOperationsService.getAllStores());
       addToast({ type: 'success', message: 'Store updated' });
       return store;
-    } catch (_error) {
+    } catch (_error: any) {
       addToast({ type: 'error', message: 'Failed to update store' });
       throw _error;
     } finally {
@@ -104,7 +104,7 @@ export const useRetail = () => {
       setSalesCommissions(await CommissionService.getAllCommissions());
       addToast({ type: 'success', message: 'Commission created' });
       return commission;
-    } catch (_error) {
+    } catch (_error: any) {
       addToast({ type: 'error', message: 'Failed to create commission' });
       throw _error;
     } finally {
@@ -118,7 +118,7 @@ export const useRetail = () => {
       setSeasonalHires(await SeasonalHiringService.getAllHires());
       addToast({ type: 'success', message: 'Seasonal hire created' });
       return hire;
-    } catch (_error) {
+    } catch (_error: any) {
       addToast({ type: 'error', message: 'Failed to create hire' });
       throw _error;
     } finally {

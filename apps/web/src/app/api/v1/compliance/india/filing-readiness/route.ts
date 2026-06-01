@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       message: `E2E validation ${validation.overallPassed ? 'PASSED' : 'FAILED'} for ${filingType} period ${period}`,
       messageAr: `التحقق الشامل ${validation.overallPassed ? 'ناجح' : 'فاشل'}`,
     });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       {
         message: 'Filing validation failed',
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       message: `Filing calendar for FY ${financialYear}`,
       messageAr: `تقويم الإيداع للسنة المالية ${financialYear}`,
     });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       {
         message: 'Failed to generate calendar',

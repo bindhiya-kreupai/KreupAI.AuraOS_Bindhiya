@@ -486,7 +486,7 @@ export default function EmploymentHistoryPage() {
               } else {
                 toast.error(result.error.message);
               }
-            } catch (error) {
+            } catch (error: any) {
               toast.error('Failed to approve change');
             }
           },
@@ -511,7 +511,7 @@ export default function EmploymentHistoryPage() {
               } else {
                 toast.error(result.error.message);
               }
-            } catch (error) {
+            } catch (error: any) {
               toast.error('Failed to reject change');
             }
           },
@@ -554,7 +554,7 @@ export default function EmploymentHistoryPage() {
       if (result.success) {
         setStats(result.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching stats:', error);
     }
   };

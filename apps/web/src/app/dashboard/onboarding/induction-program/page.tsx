@@ -147,7 +147,7 @@ export default function InductionProgramPage() {
                         setExpandedPhase(phases[currentIdx].id);
                     }
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching induction program data:', error);
             } finally {
                 setLoading(false);

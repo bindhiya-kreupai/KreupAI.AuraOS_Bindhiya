@@ -11,7 +11,7 @@ export class RemoteEmployeeService {
         `${BASE_ENDPOINT}?type=employees`
       );
       return response.employees || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -32,7 +32,7 @@ export class RemotePolicyService {
         `${BASE_ENDPOINT}?type=policies`
       );
       return response.policies || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -62,7 +62,7 @@ export class RemoteWorkSettingsService {
         `${BASE_ENDPOINT}?type=metrics`
       );
       return response.teamMetrics || null;
-    } catch (_error) {
+    } catch (_error: any) {
       return null;
     }
   }
@@ -82,7 +82,7 @@ export class AlertsService {
         `${BASE_ENDPOINT}?type=requests`
       );
       return response.requests || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }

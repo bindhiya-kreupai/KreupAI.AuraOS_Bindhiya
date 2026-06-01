@@ -28,7 +28,7 @@ export const GET = withEnhancedAuth(
       });
 
       return NextResponse.json({ instances }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching onboarding instances:', error);
       return NextResponse.json(
         { error: 'Failed to fetch onboarding instances' },
@@ -70,7 +70,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ instance }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating onboarding instance:', error);
       return NextResponse.json(
         { error: 'Failed to create onboarding instance' },
@@ -129,7 +129,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ instance }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating onboarding instance:', error);
       return NextResponse.json(
         { error: 'Failed to update onboarding instance' },

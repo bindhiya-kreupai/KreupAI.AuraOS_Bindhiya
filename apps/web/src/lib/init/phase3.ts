@@ -50,7 +50,7 @@ export async function initializePhase3Services(): Promise<void> {
       { duration },
       '=== Phase 3 Infrastructure Initialized Successfully ==='
     );
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error during Phase 3 initialization');
     // Don't throw - allow app to start even if some services fail
   }
@@ -70,7 +70,7 @@ export async function shutdownPhase3Services(): Promise<void> {
     ]);
 
     logger.info('=== Phase 3 Infrastructure Shut Down Successfully ===');
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error during Phase 3 shutdown');
   }
 }

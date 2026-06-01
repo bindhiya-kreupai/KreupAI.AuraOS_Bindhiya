@@ -73,7 +73,7 @@ export const GET = withEnhancedAuth(async (_request: NextRequest, context) => {
     };
 
     return NextResponse.json(response);
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Geofences API] GET Error:', error);
 
     const response: ApiResponse = {
@@ -169,7 +169,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json(response, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Geofences API] POST Error:', error);
 
     const response: ApiResponse = {

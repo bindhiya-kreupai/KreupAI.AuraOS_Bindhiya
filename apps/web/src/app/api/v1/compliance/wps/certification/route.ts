@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       message: `Certification assessment complete: ${report.overallStatus}`,
       messageAr: `اكتمل تقييم الشهادة: ${report.overallStatus}`,
     });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       {
         message: 'Certification assessment failed',
@@ -58,7 +58,7 @@ export async function GET() {
       message: 'Bank UAT checklist retrieved',
       messageAr: 'تم استرجاع قائمة مراجعة اختبار قبول البنك',
     });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       {
         message: 'Failed to retrieve checklist',

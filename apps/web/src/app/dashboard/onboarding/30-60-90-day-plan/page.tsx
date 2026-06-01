@@ -93,7 +93,7 @@ export default function PlansPage() {
                         ),
                     ]);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching day plans:', error);
             } finally {
                 setLoading(false);

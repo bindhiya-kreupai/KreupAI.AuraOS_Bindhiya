@@ -46,7 +46,7 @@ export async function initializeScheduler(): Promise<void> {
       },
       'Background job scheduler initialized and started'
     );
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Failed to initialize background job scheduler');
     // Don't throw - allow app to start even if scheduler fails.
     // Jobs can still be triggered manually via the API.
@@ -62,7 +62,7 @@ export async function shutdownScheduler(): Promise<void> {
     jobScheduler.stopAll();
     isInitialized = false;
     logger.info('Background job scheduler shut down successfully');
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error shutting down background job scheduler');
   }
 }

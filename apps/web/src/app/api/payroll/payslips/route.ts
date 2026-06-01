@@ -83,7 +83,7 @@ export const GET = withEnhancedAuth(
           },
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching payslips:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch payslips', errorAr: 'فشل في جلب كشوف الرواتب' },
@@ -155,7 +155,7 @@ export const POST = withEnhancedAuth(
           generatedAt: new Date().toISOString(),
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error generating payslip:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to generate payslip', errorAr: 'فشل في إنشاء كشف الراتب' },

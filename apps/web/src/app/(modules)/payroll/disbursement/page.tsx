@@ -46,7 +46,7 @@ export default function DisbursementHub() {
         if (runs?.length > 0) {
           setPayrollRuns(runs);
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('Disbursement data fetch error:', e);
       }
     })();

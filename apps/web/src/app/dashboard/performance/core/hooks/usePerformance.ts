@@ -72,7 +72,7 @@ export const usePerformance = () => {
 
                 const statsData = await PerformanceAnalyticsService.getStats();
                 setStats(statsData);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to initialize performance data:', error);
                 toast.error('Failed to load performance data');
             } finally {
@@ -89,7 +89,7 @@ export const usePerformance = () => {
             setReviews(prev => [...prev, created]);
             toast.success('Performance review created successfully!');
             return created;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to create review');
             throw error;
         } finally {
@@ -104,7 +104,7 @@ export const usePerformance = () => {
             setReviews(prev => prev.map(r => r.id === id ? updated : r));
             toast.success('Review updated successfully!');
             return updated;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to update review');
             throw error;
         } finally {
@@ -119,7 +119,7 @@ export const usePerformance = () => {
             setReviews(prev => prev.map(r => r.id === id ? updated : r));
             toast.success('Review submitted successfully!');
             return updated;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to submit review');
             throw error;
         } finally {
@@ -134,7 +134,7 @@ export const usePerformance = () => {
             setGoals(prev => [...prev, created]);
             toast.success('Goal created successfully!');
             return created;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to create goal');
             throw error;
         } finally {
@@ -149,7 +149,7 @@ export const usePerformance = () => {
             setGoals(prev => prev.map(g => g.id === id ? updated : g));
             toast.success('Goal updated successfully!');
             return updated;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to update goal');
             throw error;
         } finally {
@@ -164,7 +164,7 @@ export const usePerformance = () => {
             setDevPlans(prev => [...prev, created]);
             toast.success('Development plan created successfully!');
             return created;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to create development plan');
             throw error;
         } finally {
@@ -177,7 +177,7 @@ export const usePerformance = () => {
             const statsData = await PerformanceAnalyticsService.getStats();
             setStats(statsData);
             return statsData;
-        } catch (error) {
+        } catch (error: any) {
             toast.error('Failed to refresh statistics');
             throw error;
         }

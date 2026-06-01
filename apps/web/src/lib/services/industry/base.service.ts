@@ -85,7 +85,7 @@ export class IndustryBaseService extends BaseService {
                     updatedAt: config.updatedAt,
                 },
             };
-        } catch (error) {
+        } catch (error: any) {
             console.error(`Error fetching ${this.industryCode} config:`, error);
             return {
                 success: false,
@@ -149,7 +149,7 @@ export class IndustryBaseService extends BaseService {
                     updatedAt: config.updatedAt,
                 },
             };
-        } catch (error) {
+        } catch (error: any) {
             console.error(`Error upserting ${this.industryCode} config:`, error);
             return {
                 success: false,
@@ -199,7 +199,7 @@ export class IndustryBaseService extends BaseService {
                     customMetrics: {},
                 },
             };
-        } catch (error) {
+        } catch (error: any) {
             console.error(`Error fetching ${this.industryCode} metrics:`, error);
             return {
                 success: false,
@@ -218,7 +218,7 @@ export class IndustryBaseService extends BaseService {
                 success: true,
                 data: requirements,
             };
-        } catch (error) {
+        } catch (error: any) {
             console.error(`Error fetching ${this.industryCode} compliance:`, error);
             return {
                 success: false,

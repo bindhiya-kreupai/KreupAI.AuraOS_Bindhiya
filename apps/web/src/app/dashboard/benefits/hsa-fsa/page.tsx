@@ -68,7 +68,7 @@ export default function HsaFsaPage() {
       } else {
         setTransactions([]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching HSA/FSA data:', error);
       setAccounts([]);
       setTransactions([]);

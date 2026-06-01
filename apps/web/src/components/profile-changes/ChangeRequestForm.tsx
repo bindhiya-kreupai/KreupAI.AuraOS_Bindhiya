@@ -244,7 +244,7 @@ export function ChangeRequestForm({
         effectiveDate: effectiveDate || undefined,
       });
       onSuccess();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to create change request:', err);
     } finally {
       setSubmitting(false);

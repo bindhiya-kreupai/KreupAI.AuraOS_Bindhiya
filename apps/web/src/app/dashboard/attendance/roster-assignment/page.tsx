@@ -70,7 +70,7 @@ export default function RosterAssignmentPage() {
             // Deduplicate by id
             const unique = empList.filter((e, i, arr) => arr.findIndex(x => x.id === e.id) === i);
             setEmployees(unique);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

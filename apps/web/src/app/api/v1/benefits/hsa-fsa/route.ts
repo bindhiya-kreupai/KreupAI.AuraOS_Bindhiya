@@ -140,7 +140,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Benefits HSA/FSA API] Error:', error);
     return NextResponse.json(
       {

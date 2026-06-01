@@ -20,7 +20,7 @@ export default function MissionsPage() {
                 setLoading(true);
                 const data = await MissionsService.getMissions();
                 setMissions(data as any);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

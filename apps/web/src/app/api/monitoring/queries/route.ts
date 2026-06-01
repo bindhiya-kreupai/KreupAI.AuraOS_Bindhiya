@@ -76,7 +76,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest) => {
       success: true,
       data: summary,
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error fetching query stats:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },

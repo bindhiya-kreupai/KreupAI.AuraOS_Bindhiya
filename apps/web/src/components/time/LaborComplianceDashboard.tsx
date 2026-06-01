@@ -130,7 +130,7 @@ export default function LaborComplianceDashboard() {
         MOCK_EMPLOYEE_IDS.map((id) => laborComplianceService.checkFLSACompliance(id, currentPeriod))
       );
       setFlsaResults(results);
-    } catch (err) {
+    } catch (err: any) {
       console.error('FLSA error:', err);
     } finally {
       setFlsaLoading(false);
@@ -146,7 +146,7 @@ export default function LaborComplianceDashboard() {
         )
       );
       setPredictiveResults(results);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Predictive scheduling error:', err);
     } finally {
       setPredictiveLoading(false);
@@ -162,7 +162,7 @@ export default function LaborComplianceDashboard() {
         'CA'
       );
       setMealBreakViolations(violations);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Meal break error:', err);
     } finally {
       setMealBreakLoading(false);
@@ -177,7 +177,7 @@ export default function LaborComplianceDashboard() {
         currentPeriod
       );
       setClopeningViolations(violations);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Clopening error:', err);
     } finally {
       setClopeningLoading(false);
@@ -189,7 +189,7 @@ export default function LaborComplianceDashboard() {
     try {
       const report = await laborComplianceService.getLaborComplianceReport(currentPeriod);
       setComplianceReport(report);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Compliance report error:', err);
     } finally {
       setReportLoading(false);

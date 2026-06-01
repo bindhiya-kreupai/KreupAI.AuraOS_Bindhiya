@@ -23,7 +23,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     const body = await request.json();
     const lifeEvent = await LifeEventService.reject(id, user.tenantId, user.userId, body.reason);
     return NextResponse.json({ success: true, data: lifeEvent });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       {
         success: false,

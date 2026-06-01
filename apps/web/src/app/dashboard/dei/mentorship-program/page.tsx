@@ -23,7 +23,7 @@ export default function MentorshipProgramPage() {
                 setLoading(true);
                 const data = await MentorshipService.getAllPrograms();
                 setPrograms(data as any[]);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

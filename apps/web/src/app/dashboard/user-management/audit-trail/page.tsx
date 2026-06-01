@@ -22,7 +22,7 @@ export default function AuditTrailPage() {
         try {
             const res = await fetch('/api/audit-logs');
             if (res.ok) setData(await res.json());
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch audit logs:', error);
         } finally {

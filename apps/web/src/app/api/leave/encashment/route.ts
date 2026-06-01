@@ -65,7 +65,7 @@ export const GET = withEnhancedAuth(
           summary,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching encashment requests:', error);
       return NextResponse.json(
         { error: 'Failed to fetch encashment requests', errorAr: 'فشل في جلب طلبات صرف الإجازات' },
@@ -123,7 +123,7 @@ export const POST = withEnhancedAuth(
         encashment,
         leaveEncashment: encashment,
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

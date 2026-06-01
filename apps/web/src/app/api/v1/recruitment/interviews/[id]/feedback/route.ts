@@ -152,7 +152,7 @@ export const POST = withAudit(
         },
         { status: 201 }
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Interview Feedback API] POST Error:', error);
       return NextResponse.json(
         {

@@ -56,7 +56,7 @@ export default function ReportBuilderPage() {
           }))
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading preview:', error);
     } finally {
       setLoading(false);

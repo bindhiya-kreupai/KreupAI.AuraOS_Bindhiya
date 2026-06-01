@@ -28,7 +28,7 @@ export const POST = withEnhancedAuth(async (_request: any, context: any, { param
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('POST /api/core-hr/mass-updates/[updateId]/execute error:', error);
     return NextResponse.json({ error: 'Failed to execute mass update' }, { status: 500 });
   }

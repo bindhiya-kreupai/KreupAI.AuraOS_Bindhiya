@@ -139,7 +139,7 @@ export default function DocumentManagementPage() {
       } else {
         toast.error(result.error?.message || 'Failed to load documents');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading documents:', error);
       toast.error('Error loading documents. Please try again.');
     } finally {
@@ -158,7 +158,7 @@ export default function DocumentManagementPage() {
           documentTypes: data.data?.data || data.data || [],
         }));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading document types:', error);
     }
   };
@@ -242,7 +242,7 @@ export default function DocumentManagementPage() {
       } else {
         toast.error(result.error?.message || 'Upload failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
       toast.error('Error uploading file');
     } finally {
@@ -370,7 +370,7 @@ export default function DocumentManagementPage() {
 
       documentFormSchema.parse(data);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         const errors: ValidationErrors = {};
         error.errors.forEach((error) => {
@@ -435,7 +435,7 @@ export default function DocumentManagementPage() {
       } else {
         toast.error(result.error?.message || 'Operation failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving document:', error);
       toast.error('Error saving document. Please try again.');
     }
@@ -460,7 +460,7 @@ export default function DocumentManagementPage() {
       } else {
         toast.error(result.error?.message || 'Delete failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting document:', error);
       toast.error('Error deleting document. Please try again.');
     }

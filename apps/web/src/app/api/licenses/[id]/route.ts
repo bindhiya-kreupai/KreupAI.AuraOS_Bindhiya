@@ -35,7 +35,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: result.data,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching license:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch license' },
@@ -95,7 +95,7 @@ export const PUT = withEnhancedAuth(
         message: 'License updated successfully',
         data: result.data,
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return validationErrorResponse(error);
       }
@@ -149,7 +149,7 @@ export const DELETE = withEnhancedAuth(
         success: true,
         message: 'License deactivated successfully',
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error deleting license:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to delete license' },

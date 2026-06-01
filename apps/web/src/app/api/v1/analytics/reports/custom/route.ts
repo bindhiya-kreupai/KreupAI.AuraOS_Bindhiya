@@ -51,7 +51,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       data: savedReports,
       meta: { total: savedReports.length },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Custom reports GET error:', error);
     return NextResponse.json({
       success: true,
@@ -131,7 +131,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ success: true, data: reportResult });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Custom reports POST error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create custom report' },

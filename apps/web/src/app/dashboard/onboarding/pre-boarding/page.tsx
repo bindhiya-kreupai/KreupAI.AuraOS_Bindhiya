@@ -54,7 +54,7 @@ export default function PreBoardingPage() {
                     }));
                     setTasks(transformedTasks);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching pre-boarding data:', error);
             } finally {
                 setLoading(false);

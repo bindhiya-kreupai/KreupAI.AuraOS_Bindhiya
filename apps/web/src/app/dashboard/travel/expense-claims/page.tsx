@@ -17,7 +17,7 @@ export default function ExpenseClaimsPage() {
             setLoading(true);
             const requests = await TravelRequestService.getRequests();
             setClaims(Array.isArray(requests) ? requests : []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

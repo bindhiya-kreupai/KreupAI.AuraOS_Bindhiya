@@ -70,7 +70,7 @@ export const useDEI = () => {
         loadDiversityMetrics(), loadSurveys(), loadPayEquityAnalyses(), loadBiasTrainings(),
         loadERGs(), loadMentorshipPrograms(), loadAccessibilityRequests(), loadDEIGoals(), loadSettings()
       ]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading data:', error);
       addToast({ type: 'error', message: 'Failed to load DEI data' });
     } finally {
@@ -91,7 +91,7 @@ export const useDEI = () => {
       await loadDiversityMetrics();
       addToast({ type: 'success', message: 'Diversity metric created' });
       return metric;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to create metric' });
       throw error;
     } finally {
@@ -106,7 +106,7 @@ export const useDEI = () => {
       await loadDiversityMetrics();
       addToast({ type: 'success', message: 'Metric updated' });
       return metric;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to update metric' });
       throw error;
     } finally {
@@ -121,7 +121,7 @@ export const useDEI = () => {
       await loadDiversityMetrics();
       addToast({ type: 'success', message: 'Metric calculated' });
       return metric;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to calculate metric' });
       throw error;
     } finally {
@@ -135,7 +135,7 @@ export const useDEI = () => {
       const report = await DiversityMetricsService.generateReport(reportData);
       addToast({ type: 'success', message: 'Report generated' });
       return report;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to generate report' });
       throw error;
     } finally {
@@ -156,7 +156,7 @@ export const useDEI = () => {
       await loadSurveys();
       addToast({ type: 'success', message: 'Survey created' });
       return survey;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to create survey' });
       throw error;
     } finally {
@@ -171,7 +171,7 @@ export const useDEI = () => {
       await loadSurveys();
       addToast({ type: 'success', message: 'Survey updated' });
       return survey;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to update survey' });
       throw error;
     } finally {
@@ -185,7 +185,7 @@ export const useDEI = () => {
       await InclusionSurveyService.launchSurvey(surveyId);
       await loadSurveys();
       addToast({ type: 'success', message: 'Survey launched' });
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to launch survey' });
       throw error;
     } finally {
@@ -199,7 +199,7 @@ export const useDEI = () => {
       await InclusionSurveyService.submitResponse(responseData);
       await loadSurveys();
       addToast({ type: 'success', message: 'Response submitted' });
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to submit response' });
       throw error;
     } finally {
@@ -212,7 +212,7 @@ export const useDEI = () => {
     try {
       const analytics = await InclusionSurveyService.getAnalytics(surveyId);
       return analytics;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to load analytics' });
       throw error;
     } finally {
@@ -233,7 +233,7 @@ export const useDEI = () => {
       await loadPayEquityAnalyses();
       addToast({ type: 'success', message: 'Pay equity analysis created' });
       return analysis;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to create analysis' });
       throw error;
     } finally {
@@ -248,7 +248,7 @@ export const useDEI = () => {
       await loadPayEquityAnalyses();
       addToast({ type: 'success', message: 'Analysis completed' });
       return result;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to run analysis' });
       throw error;
     } finally {
@@ -268,7 +268,7 @@ export const useDEI = () => {
       await loadPayAdjustments();
       addToast({ type: 'success', message: 'Pay adjustment created' });
       return adjustment;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to create adjustment' });
       throw error;
     } finally {
@@ -282,7 +282,7 @@ export const useDEI = () => {
       await PayEquityService.approveAdjustment(adjustmentId, approvedBy);
       await loadPayAdjustments();
       addToast({ type: 'success', message: 'Adjustment approved' });
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to approve adjustment' });
       throw error;
     } finally {
@@ -303,7 +303,7 @@ export const useDEI = () => {
       await loadBiasTrainings();
       addToast({ type: 'success', message: 'Training created' });
       return training;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to create training' });
       throw error;
     } finally {
@@ -318,7 +318,7 @@ export const useDEI = () => {
       await loadBiasTrainings();
       addToast({ type: 'success', message: 'Training updated' });
       return training;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to update training' });
       throw error;
     } finally {
@@ -332,7 +332,7 @@ export const useDEI = () => {
       const enrollment = await BiasTrainingService.enrollEmployee(enrollmentData);
       addToast({ type: 'success', message: 'Enrolled in training' });
       return enrollment;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to enroll' });
       throw error;
     } finally {
@@ -345,7 +345,7 @@ export const useDEI = () => {
     try {
       await BiasTrainingService.updateEnrollment(enrollmentId, updates);
       addToast({ type: 'success', message: 'Progress updated' });
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to update progress' });
       throw error;
     } finally {
@@ -366,7 +366,7 @@ export const useDEI = () => {
       await loadERGs();
       addToast({ type: 'success', message: 'ERG created' });
       return erg;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to create ERG' });
       throw error;
     } finally {
@@ -381,7 +381,7 @@ export const useDEI = () => {
       await loadERGs();
       addToast({ type: 'success', message: 'ERG updated' });
       return erg;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to update ERG' });
       throw error;
     } finally {
@@ -395,7 +395,7 @@ export const useDEI = () => {
       await ERGService.addMember(ergId, employeeId, employeeName, role);
       await loadERGs();
       addToast({ type: 'success', message: 'Member added to ERG' });
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to add member' });
       throw error;
     } finally {
@@ -409,7 +409,7 @@ export const useDEI = () => {
       await ERGService.recordMeeting(ergId, meetingData);
       await loadERGs();
       addToast({ type: 'success', message: 'Meeting recorded' });
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to record meeting' });
       throw error;
     } finally {
@@ -430,7 +430,7 @@ export const useDEI = () => {
       await loadMentorshipPrograms();
       addToast({ type: 'success', message: 'Program created' });
       return program;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to create program' });
       throw error;
     } finally {
@@ -445,7 +445,7 @@ export const useDEI = () => {
       await loadMentorshipPrograms();
       addToast({ type: 'success', message: 'Program updated' });
       return program;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to update program' });
       throw error;
     } finally {
@@ -465,7 +465,7 @@ export const useDEI = () => {
       await loadMentorProfiles();
       addToast({ type: 'success', message: 'Mentor profile created' });
       return profile;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to create profile' });
       throw error;
     } finally {
@@ -485,7 +485,7 @@ export const useDEI = () => {
       await loadMenteeProfiles();
       addToast({ type: 'success', message: 'Mentee profile created' });
       return profile;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to create profile' });
       throw error;
     } finally {
@@ -499,7 +499,7 @@ export const useDEI = () => {
       const pair = await MentorshipService.createPair(pairData);
       addToast({ type: 'success', message: 'Mentorship pair created' });
       return pair;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to create pair' });
       throw error;
     } finally {
@@ -513,7 +513,7 @@ export const useDEI = () => {
       const pair = await MentorshipService.updatePair(pairId, updates);
       addToast({ type: 'success', message: 'Pair updated' });
       return pair;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to update pair' });
       throw error;
     } finally {
@@ -534,7 +534,7 @@ export const useDEI = () => {
       await loadAccessibilityRequests();
       addToast({ type: 'success', message: 'Accessibility request submitted' });
       return request;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to submit request' });
       throw error;
     } finally {
@@ -549,7 +549,7 @@ export const useDEI = () => {
       await loadAccessibilityRequests();
       addToast({ type: 'success', message: 'Request updated' });
       return request;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to update request' });
       throw error;
     } finally {
@@ -563,7 +563,7 @@ export const useDEI = () => {
       await AccessibilityService.approveRequest(requestId, approvedBy);
       await loadAccessibilityRequests();
       addToast({ type: 'success', message: 'Request approved' });
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to approve request' });
       throw error;
     } finally {
@@ -583,7 +583,7 @@ export const useDEI = () => {
       await loadAccessibilityAssessments();
       addToast({ type: 'success', message: 'Assessment created' });
       return assessment;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to create assessment' });
       throw error;
     } finally {
@@ -603,7 +603,7 @@ export const useDEI = () => {
       await loadAccessibilityResources();
       addToast({ type: 'success', message: 'Resource created' });
       return resource;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to create resource' });
       throw error;
     } finally {
@@ -624,7 +624,7 @@ export const useDEI = () => {
       await loadDEIGoals();
       addToast({ type: 'success', message: 'DEI goal created' });
       return goal;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to create goal' });
       throw error;
     } finally {
@@ -639,7 +639,7 @@ export const useDEI = () => {
       await loadDEIGoals();
       addToast({ type: 'success', message: 'Goal updated' });
       return goal;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to update goal' });
       throw error;
     } finally {
@@ -653,7 +653,7 @@ export const useDEI = () => {
       await DEIGoalsService.addUpdate(goalId, updateData);
       await loadDEIGoals();
       addToast({ type: 'success', message: 'Goal update added' });
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to add update' });
       throw error;
     } finally {
@@ -673,7 +673,7 @@ export const useDEI = () => {
       await loadDEIInitiatives();
       addToast({ type: 'success', message: 'Initiative created' });
       return initiative;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to create initiative' });
       throw error;
     } finally {
@@ -688,7 +688,7 @@ export const useDEI = () => {
       await loadDEIInitiatives();
       addToast({ type: 'success', message: 'Initiative updated' });
       return initiative;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to update initiative' });
       throw error;
     } finally {
@@ -709,7 +709,7 @@ export const useDEI = () => {
       setSettings(updated);
       addToast({ type: 'success', message: 'Settings updated' });
       return updated;
-    } catch (error) {
+    } catch (error: any) {
       addToast({ type: 'error', message: 'Failed to update settings' });
       throw error;
     } finally {

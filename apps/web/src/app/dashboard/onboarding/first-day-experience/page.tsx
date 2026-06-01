@@ -83,7 +83,7 @@ export default function FirstDayPage() {
                         setSchedule(scheduleItems);
                     }
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching first day data:', error);
             } finally {
                 setLoading(false);

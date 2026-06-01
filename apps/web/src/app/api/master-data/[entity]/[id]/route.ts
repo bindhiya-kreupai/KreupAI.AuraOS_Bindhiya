@@ -115,7 +115,7 @@ export const GET = withEnhancedAuth(
       }
 
       return NextResponse.json({ success: true, data: item });
-    } catch (error) {
+    } catch (error: any) {
       logger.error(`Error fetching ${params.entity}:`, error);
       return NextResponse.json({ success: false, error: 'Failed to fetch' }, { status: 500 });
     }
@@ -159,7 +159,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) return validationErrorResponse(error);
       logger.error(`Error updating ${params.entity}:`, error);
       return NextResponse.json({ success: false, error: 'Failed to update' }, { status: 500 });
@@ -205,7 +205,7 @@ export const DELETE = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, message: 'Deleted successfully' });
-    } catch (error) {
+    } catch (error: any) {
       logger.error(`Error deleting ${params.entity}:`, error);
       return NextResponse.json({ success: false, error: 'Failed to delete' }, { status: 500 });
     }

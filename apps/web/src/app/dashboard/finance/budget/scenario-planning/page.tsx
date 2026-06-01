@@ -24,7 +24,7 @@ export default function ScenarioPlanningPage() {
             if (result.length > 0) {
                 setScenarios(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

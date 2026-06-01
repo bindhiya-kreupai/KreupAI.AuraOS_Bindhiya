@@ -27,7 +27,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     });
 
     return NextResponse.json({ notification }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error sending notification:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

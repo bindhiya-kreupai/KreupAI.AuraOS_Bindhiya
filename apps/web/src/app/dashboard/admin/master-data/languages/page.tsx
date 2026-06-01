@@ -44,7 +44,7 @@ export default function LanguagesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch languages:', error);
         } finally {
@@ -80,7 +80,7 @@ export default function LanguagesPage() {
             } else {
                 alert('Failed to save language');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving language:', error);
             alert('Error saving language');
@@ -99,7 +99,7 @@ export default function LanguagesPage() {
                 } else {
                     alert('Failed to delete language');
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting language:', error);
                 alert('Error deleting language');

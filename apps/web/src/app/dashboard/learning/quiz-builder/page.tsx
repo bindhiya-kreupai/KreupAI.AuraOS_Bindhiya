@@ -15,7 +15,7 @@ export default function QuizBuilderPage() {
         setLoading(true);
         const result = await AssessmentService.getAssessments();
         setQuizzes(result);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error:', error);
         setQuizzes([]);
       } finally {

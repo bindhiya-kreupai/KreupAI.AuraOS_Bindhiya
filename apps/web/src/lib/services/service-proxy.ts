@@ -44,7 +44,7 @@ export class ServiceProxy {
             }
 
             return isJSON ? await response.json() : ({} as T);
-        } catch (error) {
+        } catch (error: any) {
             console.error(`[ServiceProxy] Error calling ${String(service)}:`, error);
             throw error;
         }
