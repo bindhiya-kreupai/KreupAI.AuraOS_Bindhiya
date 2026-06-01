@@ -1,7 +1,8 @@
 import type { ServiceResponse, ListOptions } from './base.service';
 import { BaseService } from './base.service';
 import { hashPassword } from '@/lib/auth/password';
-import type { User, UserStatus } from '@prisma/client';
+import type { User } from '@prisma/client';
+type UserStatus = string;
 
 export interface CreateUserInput {
   email: string;
@@ -73,7 +74,7 @@ export class UserService extends BaseService {
                 id: true,
                 firstName: true,
                 lastName: true,
-                employeeId: true,
+                employeeCode: true,
               },
             },
           },
@@ -119,7 +120,7 @@ export class UserService extends BaseService {
               id: true,
               firstName: true,
               lastName: true,
-              employeeId: true,
+              employeeCode: true,
             },
           },
         },
@@ -192,10 +193,11 @@ export class UserService extends BaseService {
         // Create audit log
         await tx.auditLog.create({
           data: {
+            tenantId: input.tenantId,
             userId: createdBy,
             action: 'CREATE',
-            module: 'User Management',
-            details: `Created user: ${newUser.email}`,
+            resourceType: 'User',
+            metadata: { description: `Created user: ${newUser.email}` },
             ipAddress,
           },
         });
@@ -281,10 +283,11 @@ export class UserService extends BaseService {
         // Create audit log
         await tx.auditLog.create({
           data: {
+            tenantId: existingUser.tenantId,
             userId: updatedBy,
             action: 'UPDATE',
-            module: 'User Management',
-            details: `Updated user: ${updatedUser.email}`,
+            resourceType: 'User',
+            metadata: { description: `Updated user: ${updatedUser.email}` },
             ipAddress,
           },
         });
@@ -337,10 +340,11 @@ export class UserService extends BaseService {
         // Create audit log
         await tx.auditLog.create({
           data: {
+            tenantId: existingUser.tenantId,
             userId: deletedBy,
             action: 'DELETE',
-            module: 'User Management',
-            details: `Deleted user: ${existingUser.email}`,
+            resourceType: 'User',
+            metadata: { description: `Deleted user: ${existingUser.email}` },
             ipAddress,
           },
         });
