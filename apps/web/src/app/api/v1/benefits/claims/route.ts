@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
@@ -107,7 +108,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       );
     }
 
-    const claimNumber = `CLM-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const claimNumber = `CLM-${Date.now()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
 
     const claim = await prisma.benefitClaim.create({
       data: {

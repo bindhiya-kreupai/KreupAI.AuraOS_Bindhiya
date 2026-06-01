@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
@@ -13,7 +14,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any
     pathTitle: 'Leadership Essentials',
     issueDate: new Date().toISOString(),
     expiryDate: '2028-01-23T00:00:00Z',
-    credentialId: 'CRED-2026-' + Math.random().toString(36).substring(2, 10).toUpperCase(),
+    credentialId: 'CRED-2026-' + crypto.randomBytes(4).toString('hex').toUpperCase(),
     verificationUrl: 'https://auraos.kreupai.com/verify/CRED-2026-ABC123',
     score: body.score || 87,
     completionDate: body.completionDate || new Date().toISOString(),

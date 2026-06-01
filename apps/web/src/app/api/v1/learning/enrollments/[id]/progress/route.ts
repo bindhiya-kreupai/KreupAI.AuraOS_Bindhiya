@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
@@ -74,7 +75,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
               courseId: enrollment.courseId,
               employeeId: enrollment.employeeId,
               issuedAt: new Date(),
-              certificateNumber: `CERT-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+              certificateNumber: `CERT-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`,
               expiresAt: course.certificateValidityDays
                 ? new Date(Date.now() + course.certificateValidityDays * 24 * 60 * 60 * 1000)
                 : null,
