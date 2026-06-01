@@ -1,11 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { LeaveService } from '@/lib/services/leave.service';
 import { auditMiddleware } from '@/lib/middleware/audit.middleware';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('leave-requests:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing leave-requests:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const filter = {
@@ -27,33 +41,39 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       meta: result.meta,
     });
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 });
 
-export const POST = auditMiddleware.createLeaveRequest(withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
+export const POST = auditMiddleware.createLeaveRequest(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, permissions } = context;
+      if (!permissions.includes('leave-requests:create')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing leave-requests:create permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
+      const body = await request.json();
 
-    body.tenantId = user.tenantId;
-    if (!body.employeeId) {
-      body.employeeId = user.id;
+      body.tenantId = user.tenantId;
+      if (!body.employeeId) {
+        body.employeeId = user.id;
+      }
+
+      const leaveRequest = await LeaveService.createRequest(body);
+
+      return NextResponse.json({ success: true, data: leaveRequest }, { status: 201 });
+    } catch (error: any) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
-
-    const leaveRequest = await LeaveService.createRequest(body);
-
-    return NextResponse.json(
-      { success: true, data: leaveRequest },
-      { status: 201 }
-    );
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 400 }
-    );
-  }
-}));
+  })
+);

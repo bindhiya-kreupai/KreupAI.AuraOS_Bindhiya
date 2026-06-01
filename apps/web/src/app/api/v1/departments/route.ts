@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { ServiceProxy } from '@/lib/services/service-proxy';
 import { z } from 'zod';
@@ -39,6 +40,20 @@ const createDepartmentSchema = z.object({
  * List departments with filtering and pagination
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+  const { permissions } = context;
+  if (!permissions.includes('departments:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing departments:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { searchParams } = new URL(request.url);
 
@@ -94,6 +109,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
  * Create a new department
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+  const { permissions } = context;
+  if (!permissions.includes('departments:create')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing departments:create permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const body = await request.json();
 
@@ -135,11 +164,12 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     console.error('[Departments API] POST Error:', error);
 
     // Check for duplicate or business logic errors
-    if (error instanceof Error && (
-      error.message.includes('already exists') ||
-      error.message.includes('not found') ||
-      error.message.includes('same company')
-    )) {
+    if (
+      error instanceof Error &&
+      (error.message.includes('already exists') ||
+        error.message.includes('not found') ||
+        error.message.includes('same company'))
+    ) {
       const response: ApiResponse = {
         success: false,
         error: {
@@ -153,7 +183,9 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
         },
       };
 
-      return NextResponse.json(response, { status: error.message.includes('already exists') ? 409 : 400 });
+      return NextResponse.json(response, {
+        status: error.message.includes('already exists') ? 409 : 400,
+      });
     }
 
     const response: ApiResponse = {

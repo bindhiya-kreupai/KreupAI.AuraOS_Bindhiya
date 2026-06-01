@@ -8,6 +8,20 @@ export const dynamic = 'force-dynamic';
  * Get all available leave types
  */
 export const GET = withEnhancedAuth(async (request: NextRequest) => {
+  const { permissions } = context;
+  if (!permissions.includes('leaves:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing leaves:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || 'Active';

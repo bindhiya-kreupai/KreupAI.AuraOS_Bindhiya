@@ -3,9 +3,11 @@
  * POST /api/v1/export - Request data export
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { exportService, ExportFormat, ExportEntity } from '@/lib/export/export.service';
+import type { ExportFormat, ExportEntity } from '@/lib/export/export.service';
+import { exportService } from '@/lib/export/export.service';
 import { logger } from '@/lib/logger';
 import { withAuth } from '@/lib/auth';
 import { auditMiddleware } from '@/lib/middleware/audit.middleware';
@@ -21,8 +23,14 @@ const exportRequestSchema = z.object({
       companyId: z.string().uuid(),
       tenantId: z.string().uuid(),
       departmentId: z.string().uuid().optional(),
-      startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-      endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      startDate: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/)
+        .optional(),
+      endDate: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/)
+        .optional(),
       employeeIds: z.array(z.string().uuid()).optional(),
       status: z.string().optional(),
     })

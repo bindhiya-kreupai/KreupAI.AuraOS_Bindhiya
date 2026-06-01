@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import axios from 'axios';
 
 export interface WebhookConfig {
   id: string;
@@ -45,27 +46,33 @@ export class WebhookService {
     const startTime = Date.now();
 
     try {
-      // TODO: Implement actual HTTP delivery with axios
-      // const response = await axios.post(config.url, payload, {
-      //   headers: {
-      //     'X-Webhook-Signature': signature,
-      //     'X-Webhook-Id': config.id,
-      //     'X-Delivery-Id': deliveryId,
-      //     'Content-Type': 'application/json',
-      //   },
-      //   timeout: 30000,
-      // });
+      const response = await axios.post(config.url, payload, {
+        headers: {
+          'X-Webhook-Signature': signature,
+          'X-Webhook-Id': config.id,
+          'X-Delivery-Id': deliveryId,
+          'Content-Type': 'application/json',
+        },
+        timeout: 30000,
+        // Don't throw on 4xx/5xx — surface them in the DeliveryResult so the
+        // caller can decide whether to retry. axios default throws on >= 400.
+        validateStatus: () => true,
+      });
 
       const responseTime = Date.now() - startTime;
+      const success = response.status >= 200 && response.status < 300;
 
       return {
         webhookId: config.id,
         deliveryId,
-        statusCode: 200,
-        success: true,
+        statusCode: response.status,
+        success,
         responseTime,
+        error: success ? undefined : `Subscriber returned HTTP ${response.status}`,
       };
     } catch (error) {
+      // Network failure, timeout, DNS error, etc. — distinct from a non-2xx
+      // response from the subscriber.
       const responseTime = Date.now() - startTime;
       return {
         webhookId: config.id,

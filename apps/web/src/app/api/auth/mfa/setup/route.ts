@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { authenticator } from 'otplib';
@@ -13,7 +13,12 @@ import { logger } from '@/lib/logger';
  * Requires authentication
  */
 
-const ENCRYPTION_KEY = process.env.MFA_ENCRYPTION_KEY || 'default-key-change-in-production';
+if (!process.env.MFA_ENCRYPTION_KEY) {
+  throw new Error(
+    'FATAL: MFA_ENCRYPTION_KEY environment variable is not set. Refusing to start with an insecure default.'
+  );
+}
+const ENCRYPTION_KEY = process.env.MFA_ENCRYPTION_KEY;
 const BACKUP_CODES_COUNT = 10;
 
 /**
@@ -56,10 +61,13 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
     });
 
     if (existingMFA && existingMFA.verifiedAt) {
-      logger.warn({
-        userId: user.userId,
-        ipAddress,
-      }, 'MFA setup attempted for user with already verified MFA');
+      logger.warn(
+        {
+          userId: user.userId,
+          ipAddress,
+        },
+        'MFA setup attempted for user with already verified MFA'
+      );
 
       return NextResponse.json(
         { success: false, error: 'MFA is already enabled for this account' },
@@ -77,10 +85,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
     });
 
     if (!userRecord) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
     }
 
     // Generate OTP auth URL
@@ -125,11 +130,14 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
       },
     });
 
-    logger.info({
-      userId: user.userId,
-      email: userRecord.email,
-      ipAddress,
-    }, 'MFA setup initiated');
+    logger.info(
+      {
+        userId: user.userId,
+        email: userRecord.email,
+        ipAddress,
+      },
+      'MFA setup initiated'
+    );
 
     return NextResponse.json({
       success: true,
@@ -139,15 +147,13 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
         backupCodes, // Return plain backup codes (save these!)
         issuer,
       },
-      message: 'MFA setup initiated. Scan the QR code with your authenticator app and verify with a code.',
+      message:
+        'MFA setup initiated. Scan the QR code with your authenticator app and verify with a code.',
     });
   } catch (error) {
     logger.error({ error, userId: user.userId }, 'Error in MFA setup');
 
-    return NextResponse.json(
-      { success: false, error: 'Failed to setup MFA' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to setup MFA' }, { status: 500 });
   }
 });
 

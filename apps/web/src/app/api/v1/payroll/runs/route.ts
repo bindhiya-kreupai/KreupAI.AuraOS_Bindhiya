@@ -13,7 +13,20 @@ export const dynamic = 'force-dynamic';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('payroll:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing payroll:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get('page') || '1');
@@ -65,83 +78,102 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
  * POST /api/v1/payroll/runs
  * Create a new payroll run
  */
-export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
+export const POST = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, permissions } = context;
+      if (!permissions.includes('payroll:create')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing payroll:create permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
+      const body = await request.json();
 
-    if (!body.payrollMonth || !body.companyId) {
+      if (!body.payrollMonth || !body.companyId) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: { code: 'E2001', message: 'payrollMonth and companyId are required' },
+          },
+          { status: 400 }
+        );
+      }
+
+      // Check for existing run for same month/company
+      const existing = await prisma.payrollRun.findFirst({
+        where: {
+          tenantId: user.tenantId,
+          companyId: body.companyId,
+          payrollMonth: body.payrollMonth,
+        },
+      });
+
+      if (existing) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E3002',
+              message: `Payroll run already exists for ${body.payrollMonth}`,
+            },
+          },
+          { status: 409 }
+        );
+      }
+
+      const run = await prisma.payrollRun.create({
+        data: {
+          tenantId: user.tenantId,
+          companyId: body.companyId,
+          payrollMonth: body.payrollMonth,
+          payrollYear: body.payrollYear || parseInt(body.payrollMonth.split('-')[0]),
+          status: 'DRAFT',
+          runType: body.runType || 'REGULAR',
+          currency: body.currency || 'USD',
+          createdBy: user.id,
+          notes: body.notes || null,
+        },
+      });
+
+      return NextResponse.json(
+        {
+          success: true,
+          data: run,
+          message: 'Payroll run created successfully',
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        },
+        { status: 201 }
+      );
+    } catch (_error) {
+      console.error('[Payroll Runs API] POST Error:', error);
       return NextResponse.json(
         {
           success: false,
-          error: { code: 'E2001', message: 'payrollMonth and companyId are required' },
+          error: {
+            code: 'E5001',
+            message: 'Failed to create payroll run',
+            details: { error: error instanceof Error ? error.message : 'Unknown error' },
+          },
         },
-        { status: 400 }
+        { status: 500 }
       );
     }
-
-    // Check for existing run for same month/company
-    const existing = await prisma.payrollRun.findFirst({
-      where: {
-        tenantId: user.tenantId,
-        companyId: body.companyId,
-        payrollMonth: body.payrollMonth,
-      },
-    });
-
-    if (existing) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: { code: 'E3002', message: `Payroll run already exists for ${body.payrollMonth}` },
-        },
-        { status: 409 }
-      );
-    }
-
-    const run = await prisma.payrollRun.create({
-      data: {
-        tenantId: user.tenantId,
-        companyId: body.companyId,
-        payrollMonth: body.payrollMonth,
-        payrollYear: body.payrollYear || parseInt(body.payrollMonth.split('-')[0]),
-        status: 'DRAFT',
-        runType: body.runType || 'REGULAR',
-        currency: body.currency || 'USD',
-        createdBy: user.id,
-        notes: body.notes || null,
-      },
-    });
-
-    return NextResponse.json(
-      {
-        success: true,
-        data: run,
-        message: 'Payroll run created successfully',
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      },
-      { status: 201 }
-    );
-  } catch (_error) {
-    console.error('[Payroll Runs API] POST Error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E5001',
-          message: 'Failed to create payroll run',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        },
-      },
-      { status: 500 }
-    );
+  }),
+  {
+    action: AuditAction.PAYROLL_RUN_INITIATED,
+    resourceType: 'payroll_run',
+    captureRequestBody: true,
   }
-}), {
-  action: AuditAction.PAYROLL_RUN_INITIATED,
-  resourceType: 'payroll_run',
-  captureRequestBody: true,
-});
+);

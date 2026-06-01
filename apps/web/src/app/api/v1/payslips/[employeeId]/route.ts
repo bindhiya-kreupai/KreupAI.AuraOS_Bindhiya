@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -19,11 +20,22 @@ export const GET = withEnhancedAuth(
       const { employeeId } = await context.params;
       const user = (context as unknown as { user: { tenantId: string; userId: string } }).user;
       const tenantId = user.tenantId;
+      const permissions = (context as unknown as { permissions: string[] }).permissions ?? [];
+      if (!permissions.includes('payslips:read')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing payslips:read permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
       const { searchParams } = new URL(request.url);
-      const limit = Math.min(
-        parseInt(searchParams.get('limit') || '12'),
-        24
-      );
+      const limit = Math.min(parseInt(searchParams.get('limit') || '12'), 24);
       const page = Math.max(parseInt(searchParams.get('page') || '1'), 1);
       const skip = (page - 1) * limit;
       const month = searchParams.get('month');
@@ -35,18 +47,21 @@ export const GET = withEnhancedAuth(
       });
 
       if (!employee) {
-        return NextResponse.json({
-          success: false,
-          error: {
-            code: 'E3001',
-            message: 'Employee not found in this tenant',
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E3001',
+              message: 'Employee not found in this tenant',
+            },
+            meta: {
+              timestamp: new Date().toISOString(),
+              requestId: crypto.randomUUID(),
+              apiVersion: 'v1',
+            },
           },
-          meta: {
-            timestamp: new Date().toISOString(),
-            requestId: crypto.randomUUID(),
-            apiVersion: 'v1',
-          },
-        }, { status: 404 });
+          { status: 404 }
+        );
       }
 
       // Build where clause for payslips
@@ -109,37 +124,43 @@ export const GET = withEnhancedAuth(
         createdAt: p.createdAt.toISOString(),
       }));
 
-      return NextResponse.json({
-        success: true,
-        data,
-        meta: {
-          pagination: {
-            page,
-            limit,
-            total,
-            totalPages: Math.ceil(total / limit),
+      return NextResponse.json(
+        {
+          success: true,
+          data,
+          meta: {
+            pagination: {
+              page,
+              limit,
+              total,
+              totalPages: Math.ceil(total / limit),
+            },
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
           },
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
         },
-      }, { status: 200 });
+        { status: 200 }
+      );
     } catch (error) {
       console.error('[Payslips API] GET Error:', error);
 
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'E5001',
-          message: 'Failed to fetch payslips',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E5001',
+            message: 'Failed to fetch payslips',
+            details: { error: error instanceof Error ? error.message : 'Unknown error' },
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 500 });
+        { status: 500 }
+      );
     }
   }
 );

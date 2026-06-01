@@ -75,7 +75,20 @@ const EVENT_REQUIRED_DOCS: Record<string, string[]> = {
   court_order: ['Court order documentation'],
 };
 
-export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
+  if (!permissions.includes('benefits/life-event:create')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing benefits/life-event:create permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const body = await request.json();
     const { eventType, eventDate, _dependentName, _dependentRelationship, notes, documentUrl } =

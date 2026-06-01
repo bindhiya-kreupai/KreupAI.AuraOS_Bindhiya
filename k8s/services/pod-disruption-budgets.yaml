@@ -1,0 +1,129 @@
+---
+# PodDisruptionBudgets for all AuraOS services
+#
+# Why: a PDB tells k8s how many pods MUST remain available during voluntary
+# disruptions (node drains, cluster autoscaling, manual evictions). Without
+# one, draining a node can take an entire service offline if all its replicas
+# happen to land there. The k8s audit (Phase 3 #40) flagged this for every
+# service deployment.
+#
+# Sizing convention used here:
+#   - Stateless services that already have replicas >= 2: minAvailable = 1
+#     (guarantees at least one pod stays up during voluntary disruption)
+#   - The web app uses minAvailable = 2 because the HPA can scale it up and
+#     having both web pods drain together would cause a visible outage
+#
+# All PDBs in the aura-system namespace.
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: aura-web-pdb
+  namespace: aura-system
+  labels:
+    app: aura-web
+    app.kubernetes.io/part-of: aura-system
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: aura-web
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: auth-service-pdb
+  namespace: aura-system
+  labels:
+    app: auth-service
+    app.kubernetes.io/part-of: aura-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: auth-service
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: employee-service-pdb
+  namespace: aura-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: employee-service
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: document-service-pdb
+  namespace: aura-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: document-service
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: notification-service-pdb
+  namespace: aura-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: notification-service
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: payroll-service-pdb
+  namespace: aura-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: payroll-service
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: analytics-service-pdb
+  namespace: aura-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: analytics-service
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: scheduling-service-pdb
+  namespace: aura-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: scheduling-service
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: workflow-service-pdb
+  namespace: aura-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: workflow-service

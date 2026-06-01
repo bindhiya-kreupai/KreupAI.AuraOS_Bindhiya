@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
@@ -11,7 +12,20 @@ export const dynamic = 'force-dynamic';
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('hr/letters:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing hr/letters:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
 
     const { templateId, employeeId, variables, options } = body;
@@ -61,7 +75,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     }
 
     // Create letter record
-    const letterNumber = `LTR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const letterNumber = `LTR-${Date.now()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
 
     const letter = await prisma.letter.create({
       data: {

@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import {
   getPerformanceStats,
   getSlowEndpoints,
-  exportMetrics,
+  _exportMetrics,
 } from '@/lib/middleware/performance.middleware';
 import { queryDetective } from '@/lib/utils/query-detective';
 import { cacheService } from '@/lib/cache';
@@ -33,12 +34,26 @@ interface ApiResponse<T = any> {
  * - lastMinutes (optional): Number of minutes to analyze (default: 60)
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+  const { permissions } = context;
+  if (!permissions.includes('system:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing system:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'all';
     const lastMinutes = parseInt(searchParams.get('lastMinutes') || '60');
 
-    let performanceData: any = {};
+    const performanceData: any = {};
 
     // API Performance Metrics
     if (type === 'all' || type === 'api') {
@@ -107,10 +122,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         keysCount: cacheStats.keysCount || 0,
         hitRate: 'N/A', // Would need to track this separately
         recommendations: cacheStats.isConnected
-          ? [
-              'Cache is operational',
-              'Monitor cache hit rate for optimization opportunities',
-            ]
+          ? ['Cache is operational', 'Monitor cache hit rate for optimization opportunities']
           : [
               'Cache is not connected',
               'Check Redis configuration',

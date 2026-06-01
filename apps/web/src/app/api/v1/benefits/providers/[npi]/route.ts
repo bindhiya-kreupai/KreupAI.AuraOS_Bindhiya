@@ -71,17 +71,77 @@ const mockProviderDetail: Record<string, any> = {
   },
 };
 
-export const GET = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
-  try {
-    const { npi } = params;
+export const GET = withEnhancedAuth(
+  async (request: NextRequest, { _user, params, permissions }: any) => {
+    if (!permissions.includes('benefits/providers:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing benefits/providers:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
+    try {
+      const { npi } = params;
 
-    // Validate NPI format (10 digits)
-    if (!/^\d{10}$/.test(npi)) {
+      // Validate NPI format (10 digits)
+      if (!/^\d{10}$/.test(npi)) {
+        const response: ApiResponse = {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Invalid NPI format. NPI must be exactly 10 digits.',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 400 });
+      }
+
+      const provider = mockProviderDetail[npi];
+
+      if (!provider) {
+        const response: ApiResponse = {
+          success: false,
+          error: {
+            code: 'E4001',
+            message: `Provider with NPI '${npi}' not found`,
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 404 });
+      }
+
+      const response: ApiResponse = {
+        success: true,
+        data: provider,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      };
+
+      return NextResponse.json(response, { status: 200 });
+    } catch (_error) {
       const response: ApiResponse = {
         success: false,
         error: {
-          code: 'E2001',
-          message: 'Invalid NPI format. NPI must be exactly 10 digits.',
+          code: 'E5001',
+          message: 'Failed to fetch provider detail',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
         meta: {
           timestamp: new Date().toISOString(),
@@ -89,52 +149,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { _user, params
           apiVersion: 'v1',
         },
       };
-      return NextResponse.json(response, { status: 400 });
+      return NextResponse.json(response, { status: 500 });
     }
-
-    const provider = mockProviderDetail[npi];
-
-    if (!provider) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E4001',
-          message: `Provider with NPI '${npi}' not found`,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    const response: ApiResponse = {
-      success: true,
-      data: provider,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 200 });
-  } catch (_error) {
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to fetch provider detail',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-    return NextResponse.json(response, { status: 500 });
   }
-});
+);

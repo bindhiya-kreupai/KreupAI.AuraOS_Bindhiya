@@ -1,146 +1,121 @@
 /**
  * Enterprise Multi-Entity API Routes
  * Phase 4: Enterprise Expansion
+ *
+ * Tenant scoping: tenantId is ALWAYS extracted from the authenticated session.
+ * Any tenantId / createdBy / approverId supplied in the request body or query string
+ * is silently ignored for tenant context — only the resource-identifier params
+ * (entityId, transferId) are read from the request.
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 import { EntityService } from '@/lib/services/enterprise';
 
 /**
  * POST /api/enterprise
- * Manage entities and transfers
+ * Manage entities and transfers (auth: enterprise:write)
  */
-export async function POST(request: NextRequest) {
-  try {
+export const POST = createProtectedRoute(
+  async (request: NextRequest, { auth }) => {
     const body = await request.json();
-
-    if (!body.tenantId) {
-      return NextResponse.json(
-        { error: 'tenantId is required', errorAr: 'معرف المستأجر مطلوب' },
-        { status: 400 }
-      );
-    }
-
+    const tenantId = auth!.tenantId;
+    const userId = auth!.userId;
     const action = body.action || 'create-entity';
 
     switch (action) {
-      case 'create-entity':
+      case 'create-entity': {
         if (!body.entity) {
           return NextResponse.json(
             { error: 'entity is required', errorAr: 'الكيان مطلوب' },
             { status: 400 }
           );
         }
-
         const newEntity = await EntityService.createEntity({
-          tenantId: body.tenantId,
           ...body.entity,
-          createdBy: body.createdBy || 'system',
+          tenantId,
+          createdBy: userId,
         });
+        return { success: true, data: newEntity };
+      }
 
-        return NextResponse.json({
-          success: true,
-          data: newEntity,
-        });
-
-      case 'update-entity':
+      case 'update-entity': {
         if (!body.entityId || !body.updates) {
           return NextResponse.json(
-            { error: 'entityId and updates are required', errorAr: 'معرف الكيان والتحديثات مطلوبان' },
+            {
+              error: 'entityId and updates are required',
+              errorAr: 'معرف الكيان والتحديثات مطلوبان',
+            },
             { status: 400 }
           );
         }
-
         const updatedEntity = await EntityService.updateEntity(body.entityId, body.updates);
+        return { success: true, data: updatedEntity };
+      }
 
-        return NextResponse.json({
-          success: true,
-          data: updatedEntity,
-        });
-
-      case 'move-entity':
+      case 'move-entity': {
         if (!body.entityId) {
           return NextResponse.json(
             { error: 'entityId is required', errorAr: 'معرف الكيان مطلوب' },
             { status: 400 }
           );
         }
-
         const movedEntity = await EntityService.moveEntity(body.entityId, body.newParentId);
+        return { success: true, data: movedEntity };
+      }
 
-        return NextResponse.json({
-          success: true,
-          data: movedEntity,
-        });
-
-      case 'archive-entity':
+      case 'archive-entity': {
         if (!body.entityId) {
           return NextResponse.json(
             { error: 'entityId is required', errorAr: 'معرف الكيان مطلوب' },
             { status: 400 }
           );
         }
-
         const archivedEntity = await EntityService.archiveEntity(body.entityId);
+        return { success: true, data: archivedEntity };
+      }
 
-        return NextResponse.json({
-          success: true,
-          data: archivedEntity,
-        });
-
-      case 'create-transfer':
+      case 'create-transfer': {
         if (!body.transfer) {
           return NextResponse.json(
             { error: 'transfer is required', errorAr: 'بيانات النقل مطلوبة' },
             { status: 400 }
           );
         }
-
         const transfer = await EntityService.createTransfer({
           ...body.transfer,
-          createdBy: body.createdBy || 'system',
+          createdBy: userId,
         });
+        return { success: true, data: transfer };
+      }
 
-        return NextResponse.json({
-          success: true,
-          data: transfer,
-        });
-
-      case 'submit-transfer':
+      case 'submit-transfer': {
         if (!body.transferId) {
           return NextResponse.json(
             { error: 'transferId is required', errorAr: 'معرف النقل مطلوب' },
             { status: 400 }
           );
         }
-
         const submittedTransfer = await EntityService.submitTransfer(body.transferId);
+        return { success: true, data: submittedTransfer };
+      }
 
-        return NextResponse.json({
-          success: true,
-          data: submittedTransfer,
-        });
-
-      case 'approve-transfer':
-        if (!body.transferId || !body.approverId || !body.action) {
+      case 'approve-transfer': {
+        if (!body.transferId || !body.action) {
           return NextResponse.json(
-            { error: 'transferId, approverId and action are required', errorAr: 'معرف النقل ومعرف الموافق والإجراء مطلوبان' },
+            { error: 'transferId and action are required', errorAr: 'معرف النقل والإجراء مطلوبان' },
             { status: 400 }
           );
         }
-
         const approvedTransfer = await EntityService.processTransferApproval(
           body.transferId,
-          body.approverId,
+          userId,
           body.action,
           body.comments
         );
-
-        return NextResponse.json({
-          success: true,
-          data: approvedTransfer,
-        });
+        return { success: true, data: approvedTransfer };
+      }
 
       default:
         return NextResponse.json(
@@ -148,125 +123,90 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-        return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to process enterprise request',
-        errorAr: 'فشل في معالجة طلب المؤسسة',
-      },
-      { status: 500 }
-    );
+  },
+  {
+    requiredPermissions: ['enterprise:write'],
+    rateLimit: 'API_USER',
   }
-}
+);
 
 /**
  * GET /api/enterprise
- * Get entities and hierarchy
+ * Get entities and hierarchy (auth: enterprise:read)
  */
-export async function GET(request: NextRequest) {
-  try {
+export const GET = createProtectedRoute(
+  async (request: NextRequest, { auth }) => {
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId');
+    const tenantId = auth!.tenantId;
     const type = searchParams.get('type') || 'entities';
     const entityId = searchParams.get('entityId');
 
-    if (!tenantId) {
-      return NextResponse.json(
-        { error: 'tenantId is required', errorAr: 'معرف المستأجر مطلوب' },
-        { status: 400 }
-      );
-    }
-
     switch (type) {
-      case 'entities':
+      case 'entities': {
         const entities = await EntityService.getEntities(tenantId, {
           type: searchParams.get('entityType') as any,
           status: searchParams.get('status') as any,
           parentId: searchParams.get('parentId') || undefined,
           country: searchParams.get('country') || undefined,
         });
+        return { success: true, data: entities };
+      }
 
-        return NextResponse.json({
-          success: true,
-          data: entities,
-        });
-
-      case 'hierarchy':
+      case 'hierarchy': {
         const hierarchy = await EntityService.getEntityHierarchy(
           tenantId,
           searchParams.get('rootId') || undefined
         );
+        return { success: true, data: hierarchy };
+      }
 
-        return NextResponse.json({
-          success: true,
-          data: hierarchy,
-        });
-
-      case 'entity':
+      case 'entity': {
         if (!entityId) {
           return NextResponse.json(
             { error: 'entityId is required', errorAr: 'معرف الكيان مطلوب' },
             { status: 400 }
           );
         }
-
         const entity = await EntityService.getEntityById(entityId);
+        return { success: true, data: entity };
+      }
 
-        return NextResponse.json({
-          success: true,
-          data: entity,
-        });
-
-      case 'children':
+      case 'children': {
         if (!entityId) {
           return NextResponse.json(
             { error: 'entityId is required', errorAr: 'معرف الكيان مطلوب' },
             { status: 400 }
           );
         }
-
         const children = await EntityService.getChildren(entityId);
+        return { success: true, data: children };
+      }
 
-        return NextResponse.json({
-          success: true,
-          data: children,
-        });
-
-      case 'stats':
+      case 'stats': {
         if (!entityId) {
           return NextResponse.json(
             { error: 'entityId is required', errorAr: 'معرف الكيان مطلوب' },
             { status: 400 }
           );
         }
-
         const stats = await EntityService.getEntityStats(entityId);
+        return { success: true, data: stats };
+      }
 
-        return NextResponse.json({
-          success: true,
-          data: stats,
-        });
-
-      case 'consolidated':
+      case 'consolidated': {
         const consolidated = await EntityService.getConsolidatedView(tenantId);
+        return { success: true, data: consolidated };
+      }
 
-        return NextResponse.json({
-          success: true,
-          data: consolidated,
-        });
-
-      case 'transfers':
+      case 'transfers': {
         const transfers = await EntityService.getTransfers(tenantId, {
           employeeId: searchParams.get('employeeId') || undefined,
           sourceEntityId: searchParams.get('sourceEntityId') || undefined,
           targetEntityId: searchParams.get('targetEntityId') || undefined,
           status: searchParams.get('transferStatus') as any,
         });
-
-        return NextResponse.json({
-          success: true,
-          data: transfers,
-        });
+        return { success: true, data: transfers };
+      }
 
       default:
         return NextResponse.json(
@@ -274,10 +214,9 @@ export async function GET(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-        return NextResponse.json(
-      { error: 'Failed to fetch enterprise data', errorAr: 'فشل في جلب بيانات المؤسسة' },
-      { status: 500 }
-    );
+  },
+  {
+    requiredPermissions: ['enterprise:read'],
+    rateLimit: 'API_USER',
   }
-}
+);

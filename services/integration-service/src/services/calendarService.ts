@@ -77,86 +77,70 @@ export class CalendarService {
   }
 
   /**
-   * Find available time slots across attendees
+   * Find available time slots across attendees.
+   *
+   * Not yet implemented — refuses rather than returning [] silently.
+   * The previous behaviour ("return empty slots") looked like "no
+   * availability found" to the caller, hiding the fact that the
+   * provider integration is missing.
    */
-  async findAvailableSlots(params: FindSlotsParams): Promise<TimeSlot[]> {
+  async findAvailableSlots(_params: FindSlotsParams): Promise<TimeSlot[]> {
     this.ensureInitialized();
-
-    // TODO: Implement with Google Calendar API / Microsoft Graph API
-    // Fetch free/busy information for all attendees
-    // Calculate overlapping available slots
-    // Filter by working hours if requested
-
-    const slots: TimeSlot[] = [];
-    return slots;
+    throw new Error(this.notImplemented('findAvailableSlots'));
   }
 
   /**
-   * Create a calendar event
+   * Create a calendar event.
+   *
+   * Previously returned { success: true } with a fabricated `evt_<timestamp>`
+   * id without ever calling a provider. That caused calendar invites for
+   * interviews / meetings to silently disappear — neither the host nor the
+   * attendees saw anything on their calendars, but the caller assumed success.
+   * Returns success: false instead until the provider client is wired.
    */
-  async createEvent(params: CreateEventParams): Promise<CreateEventResult> {
+  async createEvent(_params: CreateEventParams): Promise<CreateEventResult> {
     this.ensureInitialized();
-
-    try {
-      // TODO: Implement with Google Calendar API / Microsoft Graph API
-      const event: CalendarEvent = {
-        id: 'evt_' + Date.now().toString(),
-        title: params.title,
-        description: params.description,
-        start: params.start,
-        end: params.end,
-        attendees: params.attendees || [],
-        location: params.location,
-        status: 'confirmed',
-      };
-
-      return { success: true, event };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
-  }
-
-  /**
-   * Update an existing calendar event
-   */
-  async updateEvent(eventId: string, updates: Partial<CreateEventParams>): Promise<CreateEventResult> {
-    this.ensureInitialized();
-
-    // TODO: Implement with provider API
     return {
-      success: true,
-      event: {
-        id: eventId,
-        title: updates.title || '',
-        start: updates.start || '',
-        end: updates.end || '',
-        attendees: updates.attendees || [],
-        status: 'confirmed',
-      },
+      success: false,
+      error: this.notImplemented('createEvent'),
     };
   }
 
   /**
-   * Delete a calendar event
+   * Update an existing calendar event.
    */
-  async deleteEvent(eventId: string): Promise<boolean> {
+  async updateEvent(_eventId: string, _updates: Partial<CreateEventParams>): Promise<CreateEventResult> {
     this.ensureInitialized();
-
-    // TODO: Implement with provider API
-    return true;
+    return {
+      success: false,
+      error: this.notImplemented('updateEvent'),
+    };
   }
 
   /**
-   * List events in a date range
+   * Delete a calendar event.
    */
-  async listEvents(startDate: string, endDate: string): Promise<CalendarEvent[]> {
+  async deleteEvent(_eventId: string): Promise<boolean> {
     this.ensureInitialized();
+    throw new Error(this.notImplemented('deleteEvent'));
+  }
 
-    // TODO: Implement with provider API
-    return [];
+  /**
+   * List events in a date range.
+   */
+  async listEvents(_startDate: string, _endDate: string): Promise<CalendarEvent[]> {
+    this.ensureInitialized();
+    throw new Error(this.notImplemented('listEvents'));
+  }
+
+  private notImplemented(method: string): string {
+    const provider = this.config?.provider ?? 'unknown';
+    return (
+      `CalendarService.${method} is not implemented for provider="${provider}". ` +
+      'Wire the Google Calendar API / Microsoft Graph API client before enabling ' +
+      'calendar-dependent features (interview scheduling, meeting invites). ' +
+      'See issue #39.'
+    );
   }
 
   private ensureInitialized(): void {

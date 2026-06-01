@@ -1,10 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { OvertimeService } from '@/lib/services/overtime.service';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('comp-offs:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing comp-offs:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const filter = {
@@ -20,22 +34,45 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     return NextResponse.json({
       success: true,
       data: result.data,
-      meta: { pagination: result.pagination, timestamp: new Date().toISOString(), requestId: crypto.randomUUID() },
+      meta: {
+        pagination: result.pagination,
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+      },
     });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: { code: 'E5000', message: error.message } }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: { code: 'E5000', message: error.message } },
+      { status: 500 }
+    );
   }
 });
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('comp-offs:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing comp-offs:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
     body.tenantId = user.tenantId;
 
     const compOff = await OvertimeService.createCompOff(body);
     return NextResponse.json({ success: true, data: compOff }, { status: 201 });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: { code: 'E1001', message: error.message } }, { status: 400 });
+    return NextResponse.json(
+      { success: false, error: { code: 'E1001', message: error.message } },
+      { status: 400 }
+    );
   }
 });

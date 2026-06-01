@@ -1,9 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  const { user } = context;
-  const tenantId = user.tenantId;
+  const { user, permissions } = context;
+  if (!permissions.includes('admin/forms:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing admin/forms:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
+  const _tenantId = user.tenantId;
 
   const forms = [
     {
@@ -81,8 +95,21 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
 });
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  const { user } = context;
-  const tenantId = user.tenantId;
+  const { user, permissions } = context;
+  if (!permissions.includes('admin/forms:create')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing admin/forms:create permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
+  const _tenantId = user.tenantId;
 
   const body = await request.json();
 

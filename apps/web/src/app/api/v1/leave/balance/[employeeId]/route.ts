@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -12,9 +13,25 @@ export const dynamic = 'force-dynamic';
  * - year (optional): Year for leave balance (defaults to current year)
  */
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, context: { params: { employeeId: string } } & Record<string, any>) => {
+  async (
+    request: NextRequest,
+    context: { params: { employeeId: string } } & Record<string, any>
+  ) => {
     try {
-      const { user } = context;
+      const { user, permissions } = context;
+      if (!permissions.includes('leave:read')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing leave:read permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
       const { employeeId } = context.params;
       const { searchParams } = new URL(request.url);
       const year = parseInt(searchParams.get('year') || new Date().getFullYear().toString());
@@ -34,18 +51,21 @@ export const GET = withEnhancedAuth(
       });
 
       if (!employee) {
-        return NextResponse.json({
-          success: false,
-          error: {
-            code: 'E3001',
-            message: 'Employee not found',
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E3001',
+              message: 'Employee not found',
+            },
+            meta: {
+              timestamp: new Date().toISOString(),
+              requestId: crypto.randomUUID(),
+              apiVersion: 'v1',
+            },
           },
-          meta: {
-            timestamp: new Date().toISOString(),
-            requestId: crypto.randomUUID(),
-            apiVersion: 'v1',
-          },
-        }, { status: 404 });
+          { status: 404 }
+        );
       }
 
       // Get all leave balances for this employee and year, joined with policy
@@ -91,11 +111,11 @@ export const GET = withEnhancedAuth(
       });
 
       const pendingByPolicy = new Map(
-        pendingRequests.map(p => [p.policyId, Number(p._sum.totalDays ?? 0)])
+        pendingRequests.map((p) => [p.policyId, Number(p._sum.totalDays ?? 0)])
       );
 
       // Build the response balances
-      const balanceItems = balances.map(b => {
+      const balanceItems = balances.map((b) => {
         const pending = pendingByPolicy.get(b.policyId) ?? 0;
         return {
           leavePolicyId: b.policyId,
@@ -125,39 +145,45 @@ export const GET = withEnhancedAuth(
         totalCarriedForward: balanceItems.reduce((sum, b) => sum + b.carriedForward, 0),
       };
 
-      return NextResponse.json({
-        success: true,
-        data: {
-          employeeId: employee.id,
-          employeeCode: employee.employeeCode,
-          employeeName: `${employee.firstName} ${employee.lastName}`,
-          year,
-          balances: balanceItems,
-          summary,
-          generatedAt: new Date().toISOString(),
+      return NextResponse.json(
+        {
+          success: true,
+          data: {
+            employeeId: employee.id,
+            employeeCode: employee.employeeCode,
+            employeeName: `${employee.firstName} ${employee.lastName}`,
+            year,
+            balances: balanceItems,
+            summary,
+            generatedAt: new Date().toISOString(),
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 200 });
+        { status: 200 }
+      );
     } catch (error) {
       console.error('[Leave Balance API] GET Error:', error);
 
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'E5001',
-          message: 'Failed to fetch leave balance',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E5001',
+            message: 'Failed to fetch leave balance',
+            details: { error: error instanceof Error ? error.message : 'Unknown error' },
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 500 });
+        { status: 500 }
+      );
     }
   }
 );

@@ -3,6 +3,7 @@
  * Microservice for handling payroll processing
  */
 
+import './instrumentation';
 console.log('Payroll Service - Starting...');
 
 // Placeholder server
@@ -11,6 +12,17 @@ const PORT = process.env.PORT || 3015;
 import { createServer } from 'http';
 
 const server = createServer((req, res) => {
+  // Kubernetes probe endpoints (Phase 3 #40)
+  if (req.url === '/healthz') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: 'alive', uptime: process.uptime() }));
+    return;
+  }
+  if (req.url === '/readyz') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: 'ready' }));
+    return;
+  }
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({
     service: 'payroll-service',

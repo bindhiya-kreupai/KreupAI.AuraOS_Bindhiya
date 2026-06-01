@@ -192,7 +192,20 @@ const mockTopErrors = [
   },
 ];
 
-export const GET = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
+  if (!permissions.includes('admin/api-analytics:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing admin/api-analytics:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   const { searchParams } = new URL(request.url);
   const period = searchParams.get('period') || '24h';
   const endpoint = searchParams.get('endpoint');

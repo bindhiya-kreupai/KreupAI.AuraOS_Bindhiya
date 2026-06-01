@@ -1,10 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
 export const GET = withEnhancedAuth(async (request, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('analytics:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing analytics:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
     const now = new Date();
 
@@ -19,7 +32,9 @@ export const GET = withEnhancedAuth(async (request, context) => {
       },
     });
 
-    const activeEmployees = employees.filter((e) => e.status.code === 'ACTIVE' || e.status.code === 'PROBATION');
+    const activeEmployees = employees.filter(
+      (e) => e.status.code === 'ACTIVE' || e.status.code === 'PROBATION'
+    );
     const totalActive = activeEmployees.length;
 
     const performanceReviews = await prisma.performanceReview.findMany({
@@ -43,7 +58,8 @@ export const GET = withEnhancedAuth(async (request, context) => {
     const lowRiskIds: string[] = [];
 
     for (const emp of activeEmployees) {
-      const tenureYears = (now.getTime() - new Date(emp.joiningDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+      const tenureYears =
+        (now.getTime() - new Date(emp.joiningDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000);
       const rating = latestRatingMap.get(emp.id) ?? 3;
 
       let riskScore = 0;
@@ -126,16 +142,19 @@ export const GET = withEnhancedAuth(async (request, context) => {
       attritionRisk: {
         highRisk: {
           count: highRiskEmployees.length,
-          percentage: totalActive > 0 ? Math.round((highRiskEmployees.length / totalActive) * 1000) / 10 : 0,
+          percentage:
+            totalActive > 0 ? Math.round((highRiskEmployees.length / totalActive) * 1000) / 10 : 0,
           employees: highRiskEmployees.slice(0, 5),
         },
         mediumRisk: {
           count: mediumRiskIds.length,
-          percentage: totalActive > 0 ? Math.round((mediumRiskIds.length / totalActive) * 1000) / 10 : 0,
+          percentage:
+            totalActive > 0 ? Math.round((mediumRiskIds.length / totalActive) * 1000) / 10 : 0,
         },
         lowRisk: {
           count: lowRiskIds.length,
-          percentage: totalActive > 0 ? Math.round((lowRiskIds.length / totalActive) * 1000) / 10 : 0,
+          percentage:
+            totalActive > 0 ? Math.round((lowRiskIds.length / totalActive) * 1000) / 10 : 0,
         },
         predictedTurnoverNext90Days: predictedTurnoverNext90,
         potentialCostImpact: predictedTurnoverNext90 * 45000,
@@ -173,10 +192,31 @@ export const GET = withEnhancedAuth(async (request, context) => {
         generatedAt: new Date().toISOString(),
         modelVersion: '1.0.0',
         confidence: 0,
-        attritionRisk: { highRisk: { count: 0, percentage: 0, employees: [] }, mediumRisk: { count: 0, percentage: 0 }, lowRisk: { count: 0, percentage: 0 }, predictedTurnoverNext90Days: 0, potentialCostImpact: 0 },
-        engagementForecast: { currentScore: 0, predictedNextQuarter: 0, trend: 'not_available', drivers: [], atRiskTeams: [] },
-        hiringForecast: { predictedOpeningsNext6Months: 0, byDepartment: [], estimatedTimeToFill: 0, estimatedCostToHire: 0 },
-        performanceInsights: { topPerformersAtRisk: 0, promotionReadiness: { ready: 0, developing: 0, notReady: 0 }, skillGapsTrending: [] },
+        attritionRisk: {
+          highRisk: { count: 0, percentage: 0, employees: [] },
+          mediumRisk: { count: 0, percentage: 0 },
+          lowRisk: { count: 0, percentage: 0 },
+          predictedTurnoverNext90Days: 0,
+          potentialCostImpact: 0,
+        },
+        engagementForecast: {
+          currentScore: 0,
+          predictedNextQuarter: 0,
+          trend: 'not_available',
+          drivers: [],
+          atRiskTeams: [],
+        },
+        hiringForecast: {
+          predictedOpeningsNext6Months: 0,
+          byDepartment: [],
+          estimatedTimeToFill: 0,
+          estimatedCostToHire: 0,
+        },
+        performanceInsights: {
+          topPerformersAtRisk: 0,
+          promotionReadiness: { ready: 0, developing: 0, notReady: 0 },
+          skillGapsTrending: [],
+        },
       },
     });
   }

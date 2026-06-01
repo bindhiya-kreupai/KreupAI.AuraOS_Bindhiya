@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -20,25 +21,41 @@ const encashLeaveSchema = z.object({
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('leave:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing leave:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
 
     // Validate request body
     const validationResult = encashLeaveSchema.safeParse(body);
     if (!validationResult.success) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'Validation failed',
-          details: { errors: validationResult.error.errors },
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Validation failed',
+            details: { errors: validationResult.error.errors },
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 400 });
+        { status: 400 }
+      );
     }
 
     const data = validationResult.data;
@@ -53,18 +70,21 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     });
 
     if (!employee) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'E3001',
-          message: 'Employee not found',
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E3001',
+            message: 'Employee not found',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 404 });
+        { status: 404 }
+      );
     }
 
     // Fetch the leave policy to verify encashment is allowed
@@ -77,51 +97,60 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     });
 
     if (!policy) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'E3002',
-          message: 'Leave policy not found',
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E3002',
+            message: 'Leave policy not found',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 404 });
+        { status: 404 }
+      );
     }
 
     if (!policy.allowEncashment) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'E4001',
-          message: 'Leave encashment not allowed for this leave type',
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4001',
+            message: 'Leave encashment not allowed for this leave type',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 400 });
+        { status: 400 }
+      );
     }
 
     // Check maximum encashment days
     const maxEncashDays = policy.maxEncashmentDays ? Number(policy.maxEncashmentDays) : null;
     if (maxEncashDays !== null && data.numberOfDays > maxEncashDays) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'E4003',
-          message: `Maximum encashment allowed is ${maxEncashDays} days`,
-          details: { maxEncashmentDays: maxEncashDays, requested: data.numberOfDays },
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4003',
+            message: `Maximum encashment allowed is ${maxEncashDays} days`,
+            details: { maxEncashmentDays: maxEncashDays, requested: data.numberOfDays },
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 400 });
+        { status: 400 }
+      );
     }
 
     // Get the employee's current leave balance
@@ -136,38 +165,44 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     });
 
     if (!balance) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'E4002',
-          message: 'No leave balance record found for this policy and year',
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4002',
+            message: 'No leave balance record found for this policy and year',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 400 });
+        { status: 400 }
+      );
     }
 
     const currentBalance = Number(balance.currentBalance);
     if (currentBalance < data.numberOfDays) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'E4002',
-          message: 'Insufficient leave balance for encashment',
-          details: {
-            currentBalance,
-            requested: data.numberOfDays,
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4002',
+            message: 'Insufficient leave balance for encashment',
+            details: {
+              currentBalance,
+              requested: data.numberOfDays,
+            },
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
           },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 400 });
+        { status: 400 }
+      );
     }
 
     // Calculate encashment amount
@@ -198,51 +233,57 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        id: encashment.id,
-        tenantId: encashment.tenantId,
-        employeeId: encashment.employeeId,
-        leaveTypeId: encashment.leaveTypeId,
-        policyId: encashment.policyId,
-        requestedDays: Number(encashment.requestedDays),
-        eligibleDays: Number(encashment.eligibleDays),
-        approvedDays: encashment.approvedDays ? Number(encashment.approvedDays) : null,
-        calculationBasis: encashment.calculationBasis,
-        dailyRate: Number(encashment.dailyRate),
-        totalAmount: Number(encashment.totalAmount),
-        encashmentRate: Number(encashment.encashmentRate),
-        trigger: encashment.trigger,
-        reason: encashment.reason,
-        status: encashment.status,
-        currentBalance,
-        balanceAfterEncashment: currentBalance - data.numberOfDays,
-        payrollMonth: encashment.payrollMonth,
-        createdAt: encashment.createdAt.toISOString(),
-        updatedAt: encashment.updatedAt.toISOString(),
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          id: encashment.id,
+          tenantId: encashment.tenantId,
+          employeeId: encashment.employeeId,
+          leaveTypeId: encashment.leaveTypeId,
+          policyId: encashment.policyId,
+          requestedDays: Number(encashment.requestedDays),
+          eligibleDays: Number(encashment.eligibleDays),
+          approvedDays: encashment.approvedDays ? Number(encashment.approvedDays) : null,
+          calculationBasis: encashment.calculationBasis,
+          dailyRate: Number(encashment.dailyRate),
+          totalAmount: Number(encashment.totalAmount),
+          encashmentRate: Number(encashment.encashmentRate),
+          trigger: encashment.trigger,
+          reason: encashment.reason,
+          status: encashment.status,
+          currentBalance,
+          balanceAfterEncashment: currentBalance - data.numberOfDays,
+          payrollMonth: encashment.payrollMonth,
+          createdAt: encashment.createdAt.toISOString(),
+          updatedAt: encashment.updatedAt.toISOString(),
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    }, { status: 201 });
+      { status: 201 }
+    );
   } catch (error) {
     console.error('[Leave Encashment API] POST Error:', error);
 
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to submit leave encashment request',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E5001',
+          message: 'Failed to submit leave encashment request',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    }, { status: 500 });
+      { status: 500 }
+    );
   }
 });

@@ -101,8 +101,21 @@ const mockPolicies = [
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-    const tenantId = user.tenantId;
+    const { user, permissions } = context;
+    if (!permissions.includes('admin/policies:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/policies:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
+    const _tenantId = user.tenantId;
 
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category') || undefined;
@@ -170,7 +183,9 @@ export const POST = withAudit(
             code: 'E2001',
             message: 'Validation failed: title, category, content, and applicableTo are required',
             details: {
-              missingFields: ['title', 'category', 'content', 'applicableTo'].filter((f) => !body[f]),
+              missingFields: ['title', 'category', 'content', 'applicableTo'].filter(
+                (f) => !body[f]
+              ),
             },
           },
           meta: {

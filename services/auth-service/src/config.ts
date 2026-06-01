@@ -94,3 +94,17 @@ export const config = {
     auditLogging: process.env.ENABLE_AUDIT_LOGGING === 'true',
   },
 } as const;
+
+// If SSO is enabled, at least one OAuth provider must be fully configured.
+// Empty-string client secrets silently fail OAuth code-exchange — refuse to start
+// rather than leave a misconfigured deployment running.
+if (config.features.sso) {
+  const providerConfigured = (p: { clientId: string; clientSecret: string }) =>
+    p.clientId.length > 0 && p.clientSecret.length > 0;
+  const { google, microsoft, okta } = config.oauth2;
+  if (![google, microsoft, okta].some(providerConfigured)) {
+    throw new Error(
+      'FATAL: ENABLE_SSO=true but no OAuth provider (Google, Microsoft, Okta) has a non-empty clientId + clientSecret.'
+    );
+  }
+}

@@ -59,6 +59,25 @@ export async function healthRoutes(server: FastifyInstance) {
     });
   });
 
+  // K8s-convention aliases (Phase 3 #40). Same semantics as /live and /ready
+  // but path-aligned with the rest of the AuraOS service mesh.
+  server.get('/healthz', async (_request, reply) => {
+    return reply.status(200).send({ status: 'alive', uptime: process.uptime() });
+  });
+
+  server.get('/readyz', async (_request, reply) => {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      await redis.ping();
+      return reply.status(200).send({ status: 'ready' });
+    } catch (error) {
+      return reply.status(503).send({
+        status: 'not_ready',
+        error: error instanceof Error ? error.message : 'unknown',
+      });
+    }
+  });
+
   // Metrics endpoint (for Prometheus)
   server.get('/metrics', async (_request, reply) => {
     const metrics = {

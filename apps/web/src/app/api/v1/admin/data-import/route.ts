@@ -1,12 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { withAudit } from '@/lib/middleware/audit.middleware';
 import { AuditAction } from '@/lib/audit/audit.service';
 
 export const POST = withAudit(
   withEnhancedAuth(async (request: NextRequest, context: any) => {
+    const { permissions } = context;
+    if (!permissions.includes('admin/data-import:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/data-import:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { user } = context;
-    const tenantId = user.tenantId;
+    const _tenantId = user.tenantId;
 
     const body = await request.json();
 
@@ -27,11 +42,11 @@ export const POST = withAudit(
         mapping: body.options?.mapping || {
           'First Name': 'firstName',
           'Last Name': 'lastName',
-          'Email': 'email',
-          'Department': 'department',
-          'Position': 'position',
+          Email: 'email',
+          Department: 'department',
+          Position: 'position',
           'Start Date': 'startDate',
-          'Salary': 'salary',
+          Salary: 'salary',
         },
       },
       preview: {
@@ -46,7 +61,12 @@ export const POST = withAudit(
         ],
         sampleWarnings: [
           { row: 12, field: 'salary', warning: 'Below range for position', value: '35000' },
-          { row: 45, field: 'email', warning: 'Possible duplicate', value: 'jane.smith@company.com' },
+          {
+            row: 45,
+            field: 'email',
+            warning: 'Possible duplicate',
+            value: 'jane.smith@company.com',
+          },
         ],
       },
       estimatedDuration: '2-3 minutes',

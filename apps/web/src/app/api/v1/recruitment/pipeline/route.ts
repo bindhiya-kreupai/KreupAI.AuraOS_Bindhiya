@@ -10,7 +10,7 @@ async function getTenantUserIds(tenantId: string): Promise<string[]> {
     where: { tenantId },
     select: { id: true },
   });
-  return users.map(u => u.id);
+  return users.map((u) => u.id);
 }
 
 const PIPELINE_STAGES = [
@@ -33,12 +33,27 @@ const PIPELINE_STAGES = [
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('recruitment:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing recruitment:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
     const jobPostingId = searchParams.get('jobPostingId') || undefined;
 
     const tenantUserIds = await getTenantUserIds(user.tenantId);
-    const tenantCreatedBy = { in: tenantUserIds.length > 0 ? tenantUserIds : ['__no_tenant_users__'] };
+    const tenantCreatedBy = {
+      in: tenantUserIds.length > 0 ? tenantUserIds : ['__no_tenant_users__'],
+    };
 
     const where: Record<string, unknown> = {
       jobPosting: { createdBy: tenantCreatedBy, isDeleted: false },
@@ -66,10 +81,10 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       stageGroups.set(stage, list);
     }
 
-    const pipeline = PIPELINE_STAGES.map(stage => ({
+    const pipeline = PIPELINE_STAGES.map((stage) => ({
       stage,
       count: stageGroups.get(stage)?.length || 0,
-      candidates: (stageGroups.get(stage) || []).slice(0, 10).map(app => ({
+      candidates: (stageGroups.get(stage) || []).slice(0, 10).map((app) => ({
         applicationId: app.id,
         candidateId: app.candidate.id,
         name: `${app.candidate.firstName} ${app.candidate.lastName}`,
@@ -84,9 +99,15 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       success: true,
       data: {
         totalApplications: applications.length,
-        stages: pipeline.filter(s => s.count > 0 || ['APPLIED', 'SCREENING', 'OFFER', 'HIRED'].includes(s.stage)),
+        stages: pipeline.filter(
+          (s) => s.count > 0 || ['APPLIED', 'SCREENING', 'OFFER', 'HIRED'].includes(s.stage)
+        ),
       },
-      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     });
   } catch (error) {
     console.error('[Pipeline API] GET Error:', error);

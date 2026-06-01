@@ -1,6 +1,13 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+/**
+ * INTENTIONALLY PUBLIC — marketing contact form endpoint.
+ * Accepts an unauthenticated POST containing { name, email, message, type }
+ * and forwards it to support. No tenant data is read or written.
+ * Rate limiting should be added at the edge / middleware layer (tracked in
+ * the Phase 1 unprotected-routes sweep, issue #31).
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

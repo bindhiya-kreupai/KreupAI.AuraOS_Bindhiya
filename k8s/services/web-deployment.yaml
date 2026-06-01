@@ -91,20 +91,23 @@ spec:
               cpu: "1000m"
               memory: "2Gi"
 
-          # Startup probe — allow 90s for Next.js cold start
+          # Startup probe — allow 90s for Next.js cold start.
+          # Uses /api/healthz (liveness endpoint) so the probe succeeds the
+          # moment the process is serving HTTP, regardless of dep state.
           startupProbe:
             httpGet:
-              path: /health
+              path: /api/healthz
               port: 3000
             initialDelaySeconds: 15
             periodSeconds: 5
             failureThreshold: 18
             successThreshold: 1
 
-          # Liveness probe
+          # Liveness — never depends on external systems (#42).
+          # If this fails repeatedly, k8s will restart the pod.
           livenessProbe:
             httpGet:
-              path: /health
+              path: /api/healthz
               port: 3000
             initialDelaySeconds: 30
             periodSeconds: 15
@@ -112,10 +115,11 @@ spec:
             failureThreshold: 3
             successThreshold: 1
 
-          # Readiness probe
+          # Readiness — full dep check; pulls pod out of LB if Postgres/Redis down.
+          # See /api/readyz handler for the critical-vs-non-critical split.
           readinessProbe:
             httpGet:
-              path: /health/ready
+              path: /api/readyz
               port: 3000
             initialDelaySeconds: 10
             periodSeconds: 10

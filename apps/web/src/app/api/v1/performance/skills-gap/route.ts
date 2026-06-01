@@ -6,7 +6,20 @@ import { withEnhancedAuth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export const GET = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
+  if (!permissions.includes('performance:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing performance:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { searchParams } = new URL(request.url);
     const employeeId = searchParams.get('employeeId');
