@@ -3,20 +3,24 @@
   "version": "0.1.0",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
+    "@sentry/node": "^7.110.0",
     "fastify": "^4.26.0",
-    "pdf-parse": "^1.1.1",
     "mammoth": "^1.6.0",
+    "ml-regression": "^5.0.0",
     "openai": "^4.24.0",
-    "ml-regression": "^5.0.0"
+    "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
+    "@types/node": "^20.11.0",
     "tsx": "^4.7.0",
-    "@types/node": "^20.11.0"
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
   }
 }
