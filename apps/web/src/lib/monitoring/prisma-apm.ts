@@ -106,7 +106,7 @@ export const prismaAPMTracker = new PrismaAPMTracker();
 /**
  * Prisma middleware for APM tracking
  */
-export const prismaAPMMiddleware: Prisma.Middleware = async (params, next) => {
+export const prismaAPMMiddleware: Prisma.Middleware = async (params: any, next: any) => {
   // Skip if APM is not enabled
   if (!apm.isEnabled()) {
     return next(params);

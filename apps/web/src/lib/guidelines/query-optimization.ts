@@ -281,7 +281,7 @@ export namespace BatchUpserts {
     });
 
     // 2. Create lookup map
-    const existingMap = new Map(existingRecords.map(r => [r.id, r]));
+    const existingMap = new Map(existingRecords.map((r: any) => [r.id, r]));
 
     // 3. Batch operations in transaction
     const output = await prisma.$transaction(

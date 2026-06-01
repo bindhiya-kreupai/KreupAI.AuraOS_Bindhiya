@@ -19,3 +19,14 @@ export interface ComplianceFinding { findingId: string; category: string; descri
 export interface CorrectiveAction { actionId: string; description: string; responsiblePerson: string; deadline: string; status: 'pending' | 'in_progress' | 'completed'; completionDate?: string; }
 export interface MaritimeSettings { settingsId: string; organizationId: string; crewSettings: { certificateExpiryWarningDays: number; medicalExpiryWarningDays: number; rotationPeriodDays: number; }; portSettings: { advanceNoticeDays: number; costTrackingEnabled: boolean; }; complianceSettings: { inspectionFrequencyDays: number; autoReminderEnabled: boolean; }; notifications: { certificateExpiring: boolean; portArrivalAlert: boolean; complianceIssue: boolean; }; updatedAt: string; }
 export interface MaritimeAlert { alertId: string; alertType: 'crew' | 'port' | 'compliance'; severity: 'low' | 'medium' | 'high' | 'critical'; title: string; message: string; relatedEntity: { entityType: string; entityId: string; entityName: string; }; status: 'active' | 'acknowledged' | 'resolved'; createdAt: string; }
+/**
+ * Toast notification shape — used by the dashboard's Toast/useToast
+ * components. Kept consistent across dashboards: id, type, message,
+ * optional duration in ms.
+ */
+export interface Toast {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+  duration?: number;
+}

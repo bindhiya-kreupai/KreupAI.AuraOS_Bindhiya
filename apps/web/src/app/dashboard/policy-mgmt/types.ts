@@ -5,3 +5,14 @@ export interface Approver { approverId: string; approverName: string; role: stri
 export interface Acknowledgement { employeeId: string; employeeName: string; acknowledgedDate?: string; status: AcknowledgementStatus; remindersSent: number; }
 export interface PolicySettings { settingsId: string; organizationId: string; approvalSettings: { levelsRequired: number; autoReminder: boolean; }; distributionSettings: { autoDistribute: boolean; reminderFrequencyDays: number; }; complianceSettings: { trackAcknowledgement: boolean; overdueThresholdDays: number; }; notifications: { policyPublished: boolean; acknowledgementDue: boolean; approvalRequired: boolean; }; updatedAt: string; }
 export interface PolicyAlert { alertId: string; alertType: 'approval' | 'acknowledgement' | 'expiry'; severity: 'low' | 'medium' | 'high'; title: string; message: string; relatedEntity: { entityType: string; entityId: string; }; status: 'active' | 'resolved'; createdAt: string; }
+/**
+ * Toast notification shape — used by the dashboard's Toast/useToast
+ * components. Kept consistent across dashboards: id, type, message,
+ * optional duration in ms.
+ */
+export interface Toast {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+  duration?: number;
+}

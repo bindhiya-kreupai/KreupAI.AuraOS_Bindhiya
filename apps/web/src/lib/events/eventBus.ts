@@ -165,7 +165,7 @@ class EventBus {
    */
   unsubscribe(subscriptionId: string): boolean {
     for (const [event, subscriptions] of this.subscriptions.entries()) {
-      const index = subscriptions.findIndex((s) => s.id === subscriptionId);
+      const index = subscriptions.findIndex((s: any) => s.id === subscriptionId);
       if (index !== -1) {
         subscriptions.splice(index, 1);
         if (subscriptions.length === 0) {

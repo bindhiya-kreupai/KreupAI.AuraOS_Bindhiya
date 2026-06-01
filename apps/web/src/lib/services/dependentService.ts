@@ -63,7 +63,7 @@ export class DependentService extends BaseService {
       orderBy: { createdAt: 'asc' },
     });
 
-    return dependents.map((d) => ({
+    return dependents.map((d: any) => ({
       id: d.id,
       employeeId: d.employeeId,
       firstName: d.firstName,

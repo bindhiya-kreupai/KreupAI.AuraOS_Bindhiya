@@ -192,10 +192,10 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       for (const [sid, entries] of shiftGroups) {
         const shiftInfo = shiftsMap.get(sid);
         const scheduledEmployees = entries.filter(
-          (e) => e.status === 'SCHEDULED' || e.status === 'COMPLETED'
+          (e: any) => e.status === 'SCHEDULED' || e.status === 'COMPLETED'
         );
         const cancelledEmployees = entries.filter(
-          (e) => e.status === 'CANCELLED' || e.status === 'SWAPPED'
+          (e: any) => e.status === 'CANCELLED' || e.status === 'SWAPPED'
         );
 
         const planned = entries.length;
@@ -209,7 +209,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
           shiftName: shiftInfo?.name || '',
           plannedStrength: planned,
           actualStrength: actual,
-          employees: scheduledEmployees.map((e) => {
+          employees: scheduledEmployees.map((e: any) => {
             const emp = employeeMap.get(e.employeeId);
             return {
               employeeId: e.employeeId,
@@ -222,7 +222,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
               isWeekOff: e.isWeekOff,
             };
           }),
-          absentEmployees: cancelledEmployees.map((e) => {
+          absentEmployees: cancelledEmployees.map((e: any) => {
             const emp = employeeMap.get(e.employeeId);
             return {
               employeeId: e.employeeId,

@@ -218,7 +218,7 @@ export class CostCenterService {
 
     // Calculate total employees across all departments
     const totalEmployees = costCenter.departments.reduce(
-      (sum, dept) => sum + (dept._count?.employees || 0),
+      (sum: any, dept: any) => sum + (dept._count?.employees || 0),
       0
     );
 
@@ -230,7 +230,7 @@ export class CostCenterService {
         totalDepartments: costCenter.departments.length,
         totalEmployees,
       },
-      departments: costCenter.departments.map((dept) => ({
+      departments: costCenter.departments.map((dept: any) => ({
         id: dept.id,
         code: dept.code,
         name: dept.name,

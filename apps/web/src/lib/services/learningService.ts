@@ -64,7 +64,7 @@ export class LearningService extends BaseService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return paths.map((p) => ({
+    return paths.map((p: any) => ({
       id: p.id,
       title: p.title,
       description: p.description,
@@ -152,7 +152,7 @@ export class LearningService extends BaseService {
     if (pathId) where.pathId = pathId;
 
     const progress = await this.prisma.learningProgress.findMany({ where });
-    return progress.map((p) => ({
+    return progress.map((p: any) => ({
       id: p.id, employeeId: p.employeeId, pathId: p.pathId, courseId: p.courseId, status: p.status as any, progressPercent: p.progressPercent, lastAccessedAt: p.lastAccessedAt || undefined, completedAt: p.completedAt || undefined,
     }));
   }
@@ -160,7 +160,7 @@ export class LearningService extends BaseService {
   async getRecommendations(employeeId: string): Promise<LearningPath[]> {
     // AI-based recommendations based on role, skills gap, and peer activity
     const employee = await this.prisma.employee.findUnique({ where: { id: employeeId }, select: { jobTitle: true, department: true } });
-    const enrolledPathIds = (await this.prisma.learningPathEnrollment.findMany({ where: { employeeId }, select: { pathId: true } })).map((e) => e.pathId);
+    const enrolledPathIds = (await this.prisma.learningPathEnrollment.findMany({ where: { employeeId }, select: { pathId: true } })).map((e: any) => e.pathId);
 
     const recommended = await this.prisma.learningPath.findMany({
       where: { id: { notIn: enrolledPathIds }, active: true },
@@ -168,7 +168,7 @@ export class LearningService extends BaseService {
       take: 5,
     });
 
-    return recommended.map((p) => ({
+    return recommended.map((p: any) => ({
       id: p.id, title: p.title, description: p.description, courses: (p.courses || []).map((c: any) => ({ id: c.id, title: c.title, type: c.type, duration: c.duration, order: c.order })), duration: p.duration, level: p.level as any, skills: (p.skills as string[]) || [], enrollmentCount: p.enrollmentCount || 0, active: p.active,
     }));
   }

@@ -61,7 +61,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       prisma.courseCertificate.count({ where }),
     ]);
 
-    const enriched = data.map((cert) => ({
+    const enriched = data.map((cert: any) => ({
       ...cert,
       isExpired: cert.expiresAt ? cert.expiresAt < new Date() : false,
       isExpiringSoon: cert.expiresAt

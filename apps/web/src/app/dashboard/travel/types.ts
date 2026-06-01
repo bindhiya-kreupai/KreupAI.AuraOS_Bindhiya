@@ -165,3 +165,13 @@ export interface TravelSettings {
   travelAgencyIntegration: boolean;
   notificationEmail: string;
 }
+/**
+ * Toast notification shape — used by the dashboard's Toast/useToast
+ * components. Kept consistent across dashboards.
+ */
+export interface Toast {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+  duration?: number;
+}

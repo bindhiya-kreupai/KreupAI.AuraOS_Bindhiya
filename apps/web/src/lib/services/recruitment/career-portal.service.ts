@@ -662,7 +662,7 @@ export class CareerPortalService {
     const totalApps = applications.length;
 
     const funnelStages: FunnelStage[] = stages.map(s => {
-      const count = applications.filter(a =>
+      const count = applications.filter((a: any) =>
         s.statuses.includes(a.status) ||
         // Include all candidates that reached this stage or beyond
         stages.findIndex(st => st.statuses.includes(a.status)) >=
@@ -678,7 +678,7 @@ export class CareerPortalService {
       };
     });
 
-    const hiredCount = applications.filter(a => a.status === 'HIRED').length;
+    const hiredCount = applications.filter((a: any) => a.status === 'HIRED').length;
 
     return {
       jobPostingId,

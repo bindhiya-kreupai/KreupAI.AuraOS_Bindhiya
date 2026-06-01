@@ -119,6 +119,6 @@ export class IDCardService {
       prisma.iDCard.count({ where: { tenantId, expiryDate: { lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), gte: new Date() } } }),
     ]);
 
-    return { total, byStatus: byStatus.map(s => ({ status: s.status, count: s._count })), byType: byType.map(t => ({ type: t.cardType, count: t._count })), expiringSoon };
+    return { total, byStatus: byStatus.map((s: any) => ({ status: s.status, count: s._count })), byType: byType.map((t: any) => ({ type: t.cardType, count: t._count })), expiringSoon };
   }
 }

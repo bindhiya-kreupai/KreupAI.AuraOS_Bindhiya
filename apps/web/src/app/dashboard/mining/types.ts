@@ -13,3 +13,14 @@ export interface HazardPayRule { ruleId: string; ruleName: string; hazardType: s
 export interface HazardPayment { paymentId: string; employeeId: string; employeeName: string; period: { startDate: string; endDate: string; }; hazardType: string; hoursWorked: number; baseRate: number; hazardMultiplier: number; totalAmount: number; approvedBy?: string; approvalDate?: string; paidDate?: string; status: 'pending' | 'approved' | 'paid'; createdAt: string; }
 export interface MiningSettings { settingsId: string; organizationId: string; fifoSettings: { advanceBookingDays: number; preferredAirlines: string[]; accommodationStandard: string; }; campSettings: { minimumCapacity: number; maintenanceScheduleDays: number; }; hazardSettings: { autoCalculation: boolean; approvalRequired: boolean; documentationMandatory: boolean; }; notifications: { flightReminder: boolean; accommodationConfirmation: boolean; hazardPayApproval: boolean; }; updatedAt: string; }
 export interface MiningAlert { alertId: string; alertType: 'fifo' | 'camp' | 'hazard'; severity: 'low' | 'medium' | 'high' | 'critical'; title: string; message: string; relatedEntity: { entityType: string; entityId: string; entityName: string; }; status: 'active' | 'acknowledged' | 'resolved'; createdAt: string; }
+/**
+ * Toast notification shape — used by the dashboard's Toast/useToast
+ * components. Kept consistent across dashboards: id, type, message,
+ * optional duration in ms.
+ */
+export interface Toast {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+  duration?: number;
+}

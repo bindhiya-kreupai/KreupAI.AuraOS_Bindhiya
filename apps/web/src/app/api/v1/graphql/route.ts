@@ -235,7 +235,7 @@ async function handlePOST(request: NextRequest, _context: any): Promise<NextResp
           error: {
             code: 'E2001',
             message: 'GraphQL query validation failed',
-            details: { errors: validationErrors.map((e) => e.message) },
+            details: { errors: validationErrors.map((e: any) => e.message) },
           },
         },
         { status: 400 }

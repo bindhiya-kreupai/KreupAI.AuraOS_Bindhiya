@@ -58,6 +58,6 @@ export class LetterService {
       prisma.letter.groupBy({ by: ['letterType'], where: { tenantId }, _count: true }),
       prisma.letter.groupBy({ by: ['status'], where: { tenantId }, _count: true }),
     ]);
-    return { total, byType: byType.map(t => ({ type: t.letterType, count: t._count })), byStatus: byStatus.map(s => ({ status: s.status, count: s._count })) };
+    return { total, byType: byType.map((t: any) => ({ type: t.letterType, count: t._count })), byStatus: byStatus.map((s: any) => ({ status: s.status, count: s._count })) };
   }
 }

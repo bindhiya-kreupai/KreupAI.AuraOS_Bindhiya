@@ -104,13 +104,13 @@ export default function JobMatchingPage() {
                                 <div>
                                     <h4 className="text-xs font-bold text-emerald-600 mb-2 flex items-center gap-1"><Check className="w-3 h-3" /> Strengths</h4>
                                     <ul className="text-sm text-slate-600 dark:text-slate-300 list-disc list-inside">
-                                        {match.strengths.map(s => <li key={s}>{s}</li>)}
+                                        {match.strengths.map((s: any) => <li key={s}>{s}</li>)}
                                     </ul>
                                 </div>
                                 <div>
                                     <h4 className="text-xs font-bold text-rose-500 mb-2 flex items-center gap-1"><X className="w-3 h-3" /> Gaps</h4>
                                     <ul className="text-sm text-slate-600 dark:text-slate-300 list-disc list-inside">
-                                        {match.gaps.map(s => <li key={s}>{s}</li>)}
+                                        {match.gaps.map((s: any) => <li key={s}>{s}</li>)}
                                     </ul>
                                 </div>
                             </div>

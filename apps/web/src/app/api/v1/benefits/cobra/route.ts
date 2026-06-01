@@ -71,7 +71,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     });
 
     const cobraEligible = exitRequests
-      .filter((exit) => exit.employee.benefitEnrollments.some((e) => e.plan.category === 'MEDICAL'))
+      .filter((exit) => exit.employee.benefitEnrollments.some((e: any) => e.plan.category === 'MEDICAL'))
       .map((exit) => {
         const lastWorkingDate = exit.lastWorkingDate || exit.updatedAt;
         const cobraDeadline = new Date(lastWorkingDate.getTime() + 60 * 24 * 60 * 60 * 1000);
@@ -93,8 +93,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           isEligible,
           status: isEligible ? 'ELIGIBLE' : 'DEADLINE_PASSED',
           eligiblePlans: exit.employee.benefitEnrollments
-            .filter((e) => e.plan.category === 'MEDICAL')
-            .map((e) => ({
+            .filter((e: any) => e.plan.category === 'MEDICAL')
+            .map((e: any) => ({
               planId: e.planId,
               planName: e.plan.planName,
               monthlyCost: Number(e.plan.employeePremium || 0) * 1.02, // COBRA typically adds 2% admin fee

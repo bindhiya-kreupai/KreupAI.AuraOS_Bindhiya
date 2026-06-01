@@ -131,7 +131,7 @@ export default function ResumeScreeningPage() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex gap-1 flex-wrap">
-                                            {c.skills.map(s => (
+                                            {c.skills.map((s: any) => (
                                                 <span key={s} className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold rounded">
                                                     {s}
                                                 </span>

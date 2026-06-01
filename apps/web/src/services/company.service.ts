@@ -795,9 +795,9 @@ export class CompanyService {
 
       const stats: CompanyStats = {
         totalCompanies: companies.length,
-        activeCompanies: companies.filter((c) => c.status === 'Active').length,
-        inactiveCompanies: companies.filter((c) => c.status === 'Inactive').length,
-        suspendedCompanies: companies.filter((c) => c.status === 'Suspended').length,
+        activeCompanies: companies.filter((c: any) => c.status === 'Active').length,
+        inactiveCompanies: companies.filter((c: any) => c.status === 'Inactive').length,
+        suspendedCompanies: companies.filter((c: any) => c.status === 'Suspended').length,
         companiesByIndustry: {},
         companiesByCountry: {},
         totalEmployees: 0,

@@ -190,7 +190,7 @@ export class ProbationService {
       total,
       active,
       ending,
-      byStatus: byStatus.map(s => ({ status: s.status, count: s._count })),
+      byStatus: byStatus.map((s: any) => ({ status: s.status, count: s._count })),
     };
   }
 }

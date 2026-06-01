@@ -92,7 +92,7 @@ export class LicenseService extends BaseService {
       ]);
 
       // Add utilization metrics
-      const licensesWithUtilization = licenses.map((license) =>
+      const licensesWithUtilization = licenses.map((license: any) =>
         this.calculateUtilization(license)
       );
 

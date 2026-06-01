@@ -54,7 +54,7 @@ function mapEmployee(employee: any) {
 
 export const GET = withEnhancedAuth(async (
   _request: NextRequest,
-  context,
+  context: any,
   { params }: { params: { employeeId: string } }
 ) => {
   try {
@@ -81,7 +81,7 @@ export const GET = withEnhancedAuth(async (
 
 const updateHandler = withEnhancedAuth(async (
   request: NextRequest,
-  context,
+  context: any,
   { params }: { params: { employeeId: string } }
 ) => {
   try {

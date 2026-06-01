@@ -245,8 +245,8 @@ export class TimeTrackingService {
       select: { workHours: true, overtimeHours: true },
     });
 
-    const totalWorkHours = records.reduce((sum, r) => sum + r.workHours, 0);
-    const totalOvertimeHours = records.reduce((sum, r) => sum + r.overtimeHours, 0);
+    const totalWorkHours = records.reduce((sum: any, r: any) => sum + r.workHours, 0);
+    const totalOvertimeHours = records.reduce((sum: any, r: any) => sum + r.overtimeHours, 0);
 
     return {
       total,
@@ -256,7 +256,7 @@ export class TimeTrackingService {
       pendingApproval,
       totalWorkHours: Math.round(totalWorkHours * 10) / 10,
       totalOvertimeHours: Math.round(totalOvertimeHours * 10) / 10,
-      byStatus: byStatus.map(s => ({ status: s.status, count: s._count })),
+      byStatus: byStatus.map((s: any) => ({ status: s.status, count: s._count })),
     };
   }
 

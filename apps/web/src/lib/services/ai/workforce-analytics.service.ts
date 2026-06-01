@@ -331,7 +331,7 @@ export class WorkforceAnalyticsService {
     }
 
     // Sort gaps by importance and gap size
-    gaps.sort((a, b) => {
+    gaps.sort((a: any, b: any) => {
       const importanceOrder = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
       const aScore = importanceOrder[a.importance] * 100 + a.gap;
       const bScore = importanceOrder[b.importance] * 100 + b.gap;
@@ -341,7 +341,7 @@ export class WorkforceAnalyticsService {
     return {
       totalSkillsAnalyzed: currentSkills.size,
       totalGaps: gaps.length,
-      criticalGaps: gaps.filter(g => g.importance === 'CRITICAL').length,
+      criticalGaps: gaps.filter((g: any) => g.importance === 'CRITICAL').length,
       gaps: gaps.slice(0, 20),
       surpluses: surpluses.slice(0, 10),
       readinessScore: this.calculateReadinessScore(gaps, requiredSkills.size),
@@ -400,7 +400,7 @@ export class WorkforceAnalyticsService {
   ): number {
     if (totalRequired === 0) return 100;
 
-    const gapPenalty = gaps.reduce((sum, gap) => {
+    const gapPenalty = gaps.reduce((sum: any, gap: any) => {
       const importanceMultiplier = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 }[gap.importance] || 1;
       return sum + (gap.gap * importanceMultiplier);
     }, 0);
@@ -419,13 +419,13 @@ export class WorkforceAnalyticsService {
   ): string[] {
     const recommendations: string[] = [];
 
-    const criticalGaps = gaps.filter(g => g.importance === 'CRITICAL');
+    const criticalGaps = gaps.filter((g: any) => g.importance === 'CRITICAL');
     if (criticalGaps.length > 0) {
       recommendations.push(`Address ${criticalGaps.length} critical skill gaps immediately`);
       recommendations.push(`Focus hiring on: ${criticalGaps.slice(0, 3).map(g => g.skill).join(', ')}`);
     }
 
-    const totalGap = gaps.reduce((sum, g) => sum + g.gap, 0);
+    const totalGap = gaps.reduce((sum: any, g) => sum + g.gap, 0);
     if (totalGap > 20) {
       recommendations.push('Develop comprehensive upskilling program');
       recommendations.push('Partner with training providers for accelerated skill development');

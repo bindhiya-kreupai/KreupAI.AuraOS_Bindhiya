@@ -115,7 +115,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     }
 
     const completedCount = exitRequest.clearanceItems.filter(
-      (item) => item.status === 'COMPLETED'
+      (item: any) => item.status === 'COMPLETED'
     ).length;
 
     return NextResponse.json({

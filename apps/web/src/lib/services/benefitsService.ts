@@ -46,7 +46,7 @@ export class BenefitsService extends BaseService {
       include: { coverageLevels: true },
     });
 
-    return plans.map((p) => ({
+    return plans.map((p: any) => ({
       id: p.id,
       name: p.name,
       type: p.type as BenefitPlan['type'],
@@ -92,7 +92,7 @@ export class BenefitsService extends BaseService {
     const enrollments = await this.prisma.benefitEnrollment.findMany({
       where: { employeeId, status: { not: 'terminated' } },
     });
-    return enrollments.map((e) => ({
+    return enrollments.map((e: any) => ({
       id: e.id,
       employeeId: e.employeeId,
       planId: e.planId,
@@ -334,7 +334,7 @@ export class BenefitsService extends BaseService {
       where: { id: { in: planIds } },
       include: { coverageLevels: true },
     });
-    return plans.map((p) => ({
+    return plans.map((p: any) => ({
       id: p.id,
       name: p.name,
       type: p.type as BenefitPlan['type'],

@@ -169,8 +169,8 @@ export class ExitService {
 
     return {
       total,
-      byType: byType.map(t => ({ type: t.exitType, count: t._count })),
-      byStatus: byStatus.map(s => ({ status: s.status, count: s._count })),
+      byType: byType.map((t: any) => ({ type: t.exitType, count: t._count })),
+      byStatus: byStatus.map((s: any) => ({ status: s.status, count: s._count })),
       pending,
       thisMonth,
     };

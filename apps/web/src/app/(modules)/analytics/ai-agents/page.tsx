@@ -221,7 +221,7 @@ export default function AIAgentsPage() {
                 <Label htmlFor="agentType">Agent Type</Label>
                 <Select
                   value={formData.agentType}
-                  onValueChange={(value) => setFormData({ ...formData, agentType: value })}
+                  onValueChange={(value: any) => setFormData({ ...formData, agentType: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />

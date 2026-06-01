@@ -271,7 +271,7 @@ export function createMonitoredPrismaClient(): PrismaClient {
  * Middleware to add query monitoring to existing Prisma client
  */
 export async function addQueryMonitoring(prisma: PrismaClient): Promise<void> {
-  prisma.$use(async (params, next) => {
+  prisma.$use(async (params: any, next: any) => {
     const startTime = Date.now();
 
     try {

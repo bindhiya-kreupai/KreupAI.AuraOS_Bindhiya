@@ -260,7 +260,7 @@ export default function PredictiveAnalyticsPage() {
                 <Label htmlFor="modelType">Model Type</Label>
                 <Select
                   value={formData.modelType}
-                  onValueChange={(value) => setFormData({ ...formData, modelType: value })}
+                  onValueChange={(value: any) => setFormData({ ...formData, modelType: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -297,7 +297,7 @@ export default function PredictiveAnalyticsPage() {
                   <Label htmlFor="algorithm">Algorithm</Label>
                   <Select
                     value={formData.algorithm}
-                    onValueChange={(value) => setFormData({ ...formData, algorithm: value })}
+                    onValueChange={(value: any) => setFormData({ ...formData, algorithm: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />
