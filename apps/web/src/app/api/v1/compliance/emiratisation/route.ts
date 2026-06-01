@@ -126,7 +126,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('[Emiratisation API] GET Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch emiratisation data' } },

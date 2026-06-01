@@ -44,7 +44,7 @@ export default function HRAnalyticsDashboardPage() {
         const widgetsData = await widgetsRes.json();
         setWidgets(widgetsData.data || []);
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);

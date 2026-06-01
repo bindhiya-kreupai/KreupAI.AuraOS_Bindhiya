@@ -217,7 +217,7 @@ export function useWellness(currentEmployeeId?: string): UseWellnessReturn {
         setTransactions(transactionsData);
       }
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to load wellness data');
+      setError(error instanceof Error ? error.message : 'Failed to load wellness data');
     } finally {
       setLoading(false);
     }

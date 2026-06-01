@@ -26,7 +26,7 @@ export const useMaritime = () => {
       if (operationsData.length === 0) { for (const o of samplePortOperations) await PortOperationsService.createOperation(o); setPortOperations(samplePortOperations); } else setPortOperations(operationsData);
       if (complianceData.length === 0) { for (const c of sampleOffshoreCompliance) await OffshoreComplianceService.createCompliance(c); setOffshoreCompliance(sampleOffshoreCompliance); } else setOffshoreCompliance(complianceData);
       if (!settingsData) { await MaritimeSettingsService.updateSettings(sampleMaritimeSettings); setSettings(sampleMaritimeSettings); } else setSettings(settingsData);
-    } catch (error) { setError(err instanceof Error ? err.message : 'Failed to load data'); addToast({ type: 'error', message: 'Failed to load maritime data' }); }
+    } catch (error) { setError(error instanceof Error ? error.message : 'Failed to load data'); addToast({ type: 'error', message: 'Failed to load maritime data' }); }
     finally { setLoading(false); }
   }, [addToast]);
 

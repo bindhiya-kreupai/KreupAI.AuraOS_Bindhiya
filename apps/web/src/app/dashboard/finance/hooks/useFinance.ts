@@ -167,7 +167,7 @@ export function useFinance(): UseFinanceReturn {
       setMetrics(metricsData);
       setSettings(settingsData);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to load finance data');
+      setError(error instanceof Error ? error.message : 'Failed to load finance data');
     } finally {
       setLoading(false);
     }

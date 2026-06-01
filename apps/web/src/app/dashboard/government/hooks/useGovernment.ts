@@ -75,7 +75,7 @@ export const useGovernment = () => {
         setSettings(settingsData);
       }
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+      setError(error instanceof Error ? error.message : 'Failed to load data');
       addToast({ type: 'error', message: 'Failed to load government data' });
     } finally {
       setLoading(false);

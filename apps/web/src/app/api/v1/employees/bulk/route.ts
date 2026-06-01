@@ -71,7 +71,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       },
       { status: 202 }
     );
-  } catch (_error) {
+  } catch (error) {
     console.error('[Employees Bulk Import API] POST Error:', error);
     return NextResponse.json(
       {

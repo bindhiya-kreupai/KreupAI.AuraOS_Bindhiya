@@ -128,7 +128,7 @@ export function useCollaboration(userId: string = 'user-001'): UseCollaborationR
       setAnalytics(analyticsData);
       setSettings(settingsData);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to load collaboration data');
+      setError(error instanceof Error ? error.message : 'Failed to load collaboration data');
     } finally {
       setLoading(false);
     }

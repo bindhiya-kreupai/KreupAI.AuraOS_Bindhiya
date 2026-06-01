@@ -130,7 +130,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     };
 
     return NextResponse.json(response, { status: 201 });
-  } catch (_error) {
+  } catch (error) {
     const response: ApiResponse = {
       success: false,
       error: {

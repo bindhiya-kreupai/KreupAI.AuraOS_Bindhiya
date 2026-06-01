@@ -115,7 +115,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('[Learning Progress API] PUT Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to update progress' } },

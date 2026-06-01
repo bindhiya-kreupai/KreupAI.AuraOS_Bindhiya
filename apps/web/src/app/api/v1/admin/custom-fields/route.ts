@@ -57,7 +57,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('[Custom Fields API] GET Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch custom fields' } },
@@ -174,7 +174,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       },
       { status: 201 }
     );
-  } catch (_error) {
+  } catch (error) {
     console.error('[Custom Fields API] POST Error:', error);
     return NextResponse.json(
       {

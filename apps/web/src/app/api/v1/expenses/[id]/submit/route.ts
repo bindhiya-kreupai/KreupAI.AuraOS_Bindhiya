@@ -85,7 +85,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
         apiVersion: 'v1',
       },
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('[Expense Submit API] POST Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to submit expense report' } },

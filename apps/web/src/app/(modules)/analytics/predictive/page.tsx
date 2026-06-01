@@ -58,7 +58,7 @@ export default function PredictiveAnalyticsPage() {
           activeModels: data.data?.filter((m: any) => m.isActive).length || 0,
         }));
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Error fetching models:', error);
     } finally {
       setLoading(false);
@@ -73,7 +73,7 @@ export default function PredictiveAnalyticsPage() {
         setPredictions(data.data || []);
         setStats((prev) => ({ ...prev, totalPredictions: data.meta?.total || 0 }));
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Error fetching predictions:', error);
     }
   };
@@ -101,7 +101,7 @@ export default function PredictiveAnalyticsPage() {
         });
         fetchModels();
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Error creating model:', error);
     }
   };
@@ -116,7 +116,7 @@ export default function PredictiveAnalyticsPage() {
         fetchModels();
         alert('Model training started successfully');
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Error training model:', error);
     }
   };

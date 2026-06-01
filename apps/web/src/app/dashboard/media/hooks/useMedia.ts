@@ -28,7 +28,7 @@ export const useMedia = () => {
       if (audData.length === 0) { for (const a of sampleAudienceMetrics) await AudienceMetricsService.createMetrics(a); setAudienceMetrics(sampleAudienceMetrics); } else setAudienceMetrics(audData);
       if (netopData.length === 0) { for (const n of sampleNetworkOperations) await NetworkOperationsService.createOperation(n); setNetworkOperations(sampleNetworkOperations); } else setNetworkOperations(netopData);
       if (!settingsData) { await MediaSettingsService.updateSettings(sampleMediaSettings); setSettings(sampleMediaSettings); } else setSettings(settingsData);
-    } catch (error) { setError(err instanceof Error ? err.message : 'Failed to load data'); addToast({ type: 'error', message: 'Failed to load media data' }); }
+    } catch (error) { setError(error instanceof Error ? error.message : 'Failed to load data'); addToast({ type: 'error', message: 'Failed to load media data' }); }
     finally { setLoading(false); }
   }, [addToast]);
 

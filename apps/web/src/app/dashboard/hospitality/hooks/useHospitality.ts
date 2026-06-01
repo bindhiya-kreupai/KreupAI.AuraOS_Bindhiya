@@ -22,7 +22,7 @@ export const useHospitality = () => {
       if (eventsData.length === 0) { for (const e of sampleEvents) await EventStaffingService.createEvent(e); setEvents(sampleEvents); } else setEvents(eventsData);
       if (tasksData.length === 0) { for (const t of sampleTasks) await HousekeepingService.createTask(t); setTasks(sampleTasks); } else setTasks(tasksData);
       if (!settingsData) { await HospitalitySettingsService.updateSettings(sampleHospitalitySettings); setSettings(sampleHospitalitySettings); } else setSettings(settingsData);
-    } catch (error) { setError(err instanceof Error ? err.message : 'Failed to load data'); addToast({ type: 'error', message: 'Failed to load hospitality data' }); }
+    } catch (error) { setError(error instanceof Error ? error.message : 'Failed to load data'); addToast({ type: 'error', message: 'Failed to load hospitality data' }); }
     finally { setLoading(false); }
   }, [addToast]);
   useEffect(() => { loadAllData(); }, [loadAllData]);

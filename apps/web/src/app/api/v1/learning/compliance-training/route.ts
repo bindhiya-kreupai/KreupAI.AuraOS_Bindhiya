@@ -102,7 +102,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('[Compliance Training API] GET Error:', error);
     return NextResponse.json(
       {
