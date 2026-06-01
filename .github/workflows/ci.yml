@@ -296,6 +296,106 @@ jobs:
           comment_mode: off
 
   # =============================================================================
+  # END-TO-END TESTS (Phase 4 #47)
+  # =============================================================================
+  # Runs the Playwright suite at apps/web/src/__tests__/e2e against a fully
+  # booted web app + Postgres + Redis. Kept separate from unit/integration
+  # jobs because it's slower (~3-5 min) and uses different infrastructure.
+  # Failures don't block PRs while the suite stabilises — set required: true
+  # after the team confirms the suite is reliable.
+  e2e-tests:
+    name: E2E Tests (Chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    continue-on-error: true  # remove once suite is reliable; tracked in #47
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: e2e
+          POSTGRES_PASSWORD: e2e
+          POSTGRES_DB: e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U e2e"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://e2e:e2e@localhost:5432/e2e?schema=public
+      DIRECT_URL: postgresql://e2e:e2e@localhost:5432/e2e?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: e2e-jwt-secret-must-be-at-least-32-chars-aaa
+      JWT_REFRESH_SECRET: e2e-refresh-secret-must-be-at-least-32-chars
+      MFA_ENCRYPTION_KEY: e2e-mfa-encryption-key-at-least-32-chars-xyz
+      SSN_ENCRYPTION_KEY: e2e-ssn-encryption-key-at-least-32-chars-xyz
+      LOG_LEVEL: error
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @aura/database exec prisma generate
+
+      - name: Apply migrations to test DB
+        run: pnpm --filter @aura/database exec prisma migrate deploy
+
+      - name: Install Playwright browsers
+        run: pnpm --filter web exec playwright install --with-deps chromium
+
+      - name: Build web app
+        run: pnpm --filter web build
+
+      - name: Run Playwright E2E tests
+        run: pnpm --filter web test:e2e
+        env:
+          CI: 'true'
+          PLAYWRIGHT_BROWSERS: chromium
+
+      - name: Upload Playwright HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 14
+
+      - name: Upload Playwright trace files
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: apps/web/test-results/
+          retention-days: 14
+
+  # =============================================================================
   # SECURITY AUDIT
   # =============================================================================
   security-audit:
@@ -455,7 +555,7 @@ jobs:
   ci-success:
     name: CI Success
     runs-on: ubuntu-latest
-    needs: [lint, unit-tests, integration-tests, security-audit, build, docker-build, coverage-report]
+    needs: [lint, unit-tests, integration-tests, e2e-tests, security-audit, build, docker-build, coverage-report]
     if: always()
 
     steps:
@@ -468,6 +568,12 @@ jobs:
              [ "${{ needs.docker-build.result }}" != "success" ]; then
             echo "CI pipeline failed"
             exit 1
+          fi
+          # e2e-tests is reported but not required-to-pass yet (continue-on-error
+          # is true on that job). When the suite stabilises, add the same check
+          # here. See issue #47.
+          if [ "${{ needs.e2e-tests.result }}" != "success" ]; then
+            echo "::warning::E2E suite did not pass (currently advisory, see #47)"
           fi
           echo "CI pipeline passed successfully"
 
