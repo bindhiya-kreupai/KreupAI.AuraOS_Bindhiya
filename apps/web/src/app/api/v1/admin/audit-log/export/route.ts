@@ -11,10 +11,25 @@ export const dynamic = 'force-dynamic';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('admin/audit-log:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/audit-log:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
-    const startDate = searchParams.get('startDate') || new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+    const startDate =
+      searchParams.get('startDate') ||
+      new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
     const endDate = searchParams.get('endDate') || new Date().toISOString().split('T')[0];
     const format = searchParams.get('format') || 'json';
     const actions = searchParams.get('actions')?.split(',').filter(Boolean);
@@ -35,42 +50,44 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     if (users?.length) where.userId = { in: users };
     if (modules?.length) where.resourceType = { in: modules };
 
-    const [entries, totalEvents, actionAgg, resourceTypeAgg, uniqueUsersResult] = await Promise.all([
-      prisma.auditLog.findMany({
-        where,
-        orderBy: { timestamp: 'desc' },
-        take: limit,
-        include: {
-          user: { select: { id: true, name: true, email: true } },
-        },
-      }),
-      prisma.auditLog.count({ where }),
-      prisma.auditLog.groupBy({
-        by: ['action'],
-        where,
-        _count: { id: true },
-        orderBy: { _count: { id: 'desc' } },
-      }),
-      prisma.auditLog.groupBy({
-        by: ['resourceType'],
-        where,
-        _count: { id: true },
-        orderBy: { _count: { id: 'desc' } },
-      }),
-      prisma.auditLog.groupBy({
-        by: ['userId'],
-        where: { ...where, userId: { not: null } },
-      }),
-    ]);
+    const [entries, totalEvents, actionAgg, resourceTypeAgg, uniqueUsersResult] = await Promise.all(
+      [
+        prisma.auditLog.findMany({
+          where,
+          orderBy: { timestamp: 'desc' },
+          take: limit,
+          include: {
+            user: { select: { id: true, name: true, email: true } },
+          },
+        }),
+        prisma.auditLog.count({ where }),
+        prisma.auditLog.groupBy({
+          by: ['action'],
+          where,
+          _count: { id: true },
+          orderBy: { _count: { id: 'desc' } },
+        }),
+        prisma.auditLog.groupBy({
+          by: ['resourceType'],
+          where,
+          _count: { id: true },
+          orderBy: { _count: { id: 'desc' } },
+        }),
+        prisma.auditLog.groupBy({
+          by: ['userId'],
+          where: { ...where, userId: { not: null } },
+        }),
+      ]
+    );
 
-    const byAction = actionAgg.map(a => ({ action: a.action, count: a._count.id }));
+    const byAction = actionAgg.map((a) => ({ action: a.action, count: a._count.id }));
     const byModule = resourceTypeAgg
-      .filter(r => r.resourceType)
-      .map(r => ({ module: r.resourceType, count: r._count.id }));
+      .filter((r) => r.resourceType)
+      .map((r) => ({ module: r.resourceType, count: r._count.id }));
 
-    const suspiciousActivities = entries.filter(e => !e.success).length;
+    const suspiciousActivities = entries.filter((e) => !e.success).length;
 
-    const formattedEntries = entries.map(e => ({
+    const formattedEntries = entries.map((e) => ({
       id: e.id,
       timestamp: e.timestamp.toISOString(),
       userId: e.userId,
@@ -82,9 +99,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       ipAddress: e.ipAddress,
       userAgent: e.userAgent,
       status: e.success ? 'success' : 'failed',
-      changes: e.beforeValues || e.afterValues
-        ? { before: e.beforeValues, after: e.afterValues }
-        : null,
+      changes:
+        e.beforeValues || e.afterValues ? { before: e.beforeValues, after: e.afterValues } : null,
     }));
 
     return NextResponse.json({
@@ -110,9 +126,10 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           suspiciousActivities,
         },
         entries: formattedEntries,
-        downloadUrl: format !== 'json'
-          ? `/api/v1/admin/audit-log/export/download?format=${format}&startDate=${startDate}&endDate=${endDate}`
-          : null,
+        downloadUrl:
+          format !== 'json'
+            ? `/api/v1/admin/audit-log/export/download?format=${format}&startDate=${startDate}&endDate=${endDate}`
+            : null,
         retentionPolicy: {
           currentRetention: '365 days',
           complianceStandard: 'SOC2',

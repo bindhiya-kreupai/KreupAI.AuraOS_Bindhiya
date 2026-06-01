@@ -10,6 +10,20 @@ export const dynamic = 'force-dynamic';
  * Get the learning course catalog
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { permissions } = context;
+  if (!permissions.includes('learning/courses:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing learning/courses:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { _user } = context;
     const { searchParams } = new URL(request.url);

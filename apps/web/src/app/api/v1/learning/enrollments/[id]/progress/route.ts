@@ -11,6 +11,20 @@ export const dynamic = 'force-dynamic';
  * Update progress for a course enrollment
  */
 export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { permissions } = context;
+  if (!permissions.includes('learning/enrollments:update')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing learning/enrollments:update permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { _user } = context;
     const { id } = context.params;

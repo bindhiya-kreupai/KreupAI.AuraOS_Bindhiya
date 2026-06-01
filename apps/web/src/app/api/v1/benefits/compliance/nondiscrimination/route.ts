@@ -20,7 +20,20 @@ const VALID_TEST_TYPES = [
   'CAFETERIA_PLAN_KEY_EMPLOYEE',
 ];
 
-export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
+  if (!permissions.includes('benefits/compliance:create')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing benefits/compliance:create permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const body = await request.json();
     const { planId, testType } = body;

@@ -3,12 +3,22 @@ import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
-export const GET = withEnhancedAuth(async (
-  request: NextRequest,
-  context: any
-) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('admin/workflows:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/workflows:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
     const id = context.params.id;
 
@@ -24,27 +34,31 @@ export const GET = withEnhancedAuth(async (
     });
 
     if (!workflow) {
-      return NextResponse.json(
-        { success: false, error: 'Workflow not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'Workflow not found' }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, data: workflow });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch workflow' },
-      { status: 500 }
-    );
+  } catch (_error) {
+    return NextResponse.json({ error: 'Failed to fetch workflow' }, { status: 500 });
   }
 });
 
-export const PUT = withEnhancedAuth(async (
-  request: NextRequest,
-  context: any
-) => {
+export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('admin/workflows:update')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/workflows:update permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
     const id = context.params.id;
     const body = await request.json();
@@ -54,10 +68,7 @@ export const PUT = withEnhancedAuth(async (
     });
 
     if (!existing) {
-      return NextResponse.json(
-        { success: false, error: 'Workflow not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'Workflow not found' }, { status: 404 });
     }
 
     const updatedWorkflow = await prisma.workflowDefinition.update({
@@ -79,20 +90,27 @@ export const PUT = withEnhancedAuth(async (
       data: updatedWorkflow,
       message: 'Workflow updated successfully',
     });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to update workflow' },
-      { status: 500 }
-    );
+  } catch (_error) {
+    return NextResponse.json({ error: 'Failed to update workflow' }, { status: 500 });
   }
 });
 
-export const DELETE = withEnhancedAuth(async (
-  request: NextRequest,
-  context: any
-) => {
+export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('admin/workflows:delete')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/workflows:delete permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
     const id = context.params.id;
 
@@ -101,10 +119,7 @@ export const DELETE = withEnhancedAuth(async (
     });
 
     if (!existing) {
-      return NextResponse.json(
-        { success: false, error: 'Workflow not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'Workflow not found' }, { status: 404 });
     }
 
     await prisma.workflowInstance.deleteMany({
@@ -120,10 +135,7 @@ export const DELETE = withEnhancedAuth(async (
       data: { id, deletedAt: new Date().toISOString() },
       message: 'Workflow deleted successfully',
     });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to delete workflow' },
-      { status: 500 }
-    );
+  } catch (_error) {
+    return NextResponse.json({ error: 'Failed to delete workflow' }, { status: 500 });
   }
 });

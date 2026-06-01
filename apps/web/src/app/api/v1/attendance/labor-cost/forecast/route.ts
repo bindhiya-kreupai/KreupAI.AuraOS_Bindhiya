@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -43,6 +44,20 @@ interface CostForecastEntry {
  * - benefitsRate (optional): Benefits as percentage of regular cost, defaults to 0.25
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+  const { permissions } = context;
+  if (!permissions.includes('attendance:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing attendance:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { searchParams } = new URL(request.url);
     const tenantId = context.user.tenantId;
@@ -50,9 +65,14 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     // Parse parameters with defaults
     const now = new Date();
     const currentQuarterStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
-    const currentQuarterEnd = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3 + 3, 0);
+    const currentQuarterEnd = new Date(
+      now.getFullYear(),
+      Math.floor(now.getMonth() / 3) * 3 + 3,
+      0
+    );
 
-    const startDateStr = searchParams.get('startDate') || currentQuarterStart.toISOString().split('T')[0];
+    const startDateStr =
+      searchParams.get('startDate') || currentQuarterStart.toISOString().split('T')[0];
     const endDateStr = searchParams.get('endDate') || currentQuarterEnd.toISOString().split('T')[0];
     const currency = searchParams.get('currency') || 'USD';
     const hourlyRate = parseFloat(searchParams.get('hourlyRate') || '40');
@@ -121,11 +141,12 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       cursor.setMonth(cursor.getMonth() + 1);
     }
 
-    const totalForecastCost = parseFloat(entries.reduce((sum, e) => sum + e.totalCost, 0).toFixed(2));
+    const totalForecastCost = parseFloat(
+      entries.reduce((sum, e) => sum + e.totalCost, 0).toFixed(2)
+    );
     const totalHeadcount = Math.max(...entries.map((e) => e.headcount), 0);
-    const averageCostPerEmployee = totalHeadcount > 0
-      ? parseFloat((totalForecastCost / totalHeadcount).toFixed(2))
-      : 0;
+    const averageCostPerEmployee =
+      totalHeadcount > 0 ? parseFloat((totalForecastCost / totalHeadcount).toFixed(2)) : 0;
 
     // Calculate comparison with previous period of same length
     const periodLengthMs = endDate.getTime() - startDate.getTime();

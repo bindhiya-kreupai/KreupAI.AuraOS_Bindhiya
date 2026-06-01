@@ -76,6 +76,20 @@ const AVAILABLE_REPORTS = [
  * List all available statutory reports
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, _context: any) => {
+  const { permissions } = context;
+  if (!permissions.includes('compliance/statutory-reports:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing compliance/statutory-reports:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { searchParams } = new URL(request.url);
     const country = searchParams.get('country') || undefined;

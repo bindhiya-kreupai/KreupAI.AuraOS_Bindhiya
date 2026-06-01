@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -6,7 +7,20 @@ export const dynamic = 'force-dynamic';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('benefits/hsa-fsa:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing benefits/hsa-fsa:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
     const accountType = searchParams.get('type');
     const page = parseInt(searchParams.get('page') || '1');
@@ -46,15 +60,16 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
     // Fetch recent transactions for all returned accounts
     const accountIds = accounts.map((a) => a.id);
-    const recentTransactions = accountIds.length > 0
-      ? await prisma.hSAFSATransaction.findMany({
-          where: {
-            accountId: { in: accountIds },
-          },
-          orderBy: { date: 'desc' },
-          take: 20,
-        })
-      : [];
+    const recentTransactions =
+      accountIds.length > 0
+        ? await prisma.hSAFSATransaction.findMany({
+            where: {
+              accountId: { in: accountIds },
+            },
+            orderBy: { date: 'desc' },
+            take: 20,
+          })
+        : [];
 
     // Map accounts to API response shape
     const mappedAccounts = accounts.map((account) => {

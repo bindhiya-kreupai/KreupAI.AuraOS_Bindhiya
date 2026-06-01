@@ -61,7 +61,23 @@ const employeeInclude = {
  * Get employee by ID — queries Prisma directly
  */
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, params }: { user: any; params: { id: string } }) => {
+  async (
+    request: NextRequest,
+    { user, params, permissions }: { user: any; params: { id: string } }
+  ) => {
+    if (!permissions.includes('employees:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing employees:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     try {
       const tenantId = user.tenantId;
       const { id } = params;
@@ -127,7 +143,23 @@ export const GET = withEnhancedAuth(
  */
 export const PUT = auditMiddleware.updateEmployee(
   withEnhancedAuth(
-    async (request: NextRequest, { user, params }: { user: any; params: { id: string } }) => {
+    async (
+      request: NextRequest,
+      { user, params, permissions }: { user: any; params: { id: string } }
+    ) => {
+      if (!permissions.includes('employees:update')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing employees:update permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
       try {
         const tenantId = user.tenantId;
         const { id } = params;
@@ -252,7 +284,23 @@ export const PUT = auditMiddleware.updateEmployee(
  */
 export const DELETE = auditMiddleware.deleteEmployee(
   withEnhancedAuth(
-    async (request: NextRequest, { user, params }: { user: any; params: { id: string } }) => {
+    async (
+      request: NextRequest,
+      { user, params, permissions }: { user: any; params: { id: string } }
+    ) => {
+      if (!permissions.includes('employees:delete')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing employees:delete permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
       try {
         const tenantId = user.tenantId;
         const { id } = params;

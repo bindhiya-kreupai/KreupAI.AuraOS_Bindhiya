@@ -1,10 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
 export const POST = withEnhancedAuth(async (request, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('analytics:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing analytics:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
     const body = await request.json();
 
@@ -16,10 +29,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     }
 
     if (!report && body.reportId) {
-      return NextResponse.json(
-        { success: false, error: 'Report not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'Report not found' }, { status: 404 });
     }
 
     const scheduleConfig = {
@@ -41,7 +51,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
         where: { id: report.id },
         data: {
           isScheduled: true,
-          scheduleConfig: scheduleConfig,
+          scheduleConfig,
         },
       });
     } else {
@@ -62,7 +72,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
           isPublic: false,
           createdBy: user.userId,
           isScheduled: true,
-          scheduleConfig: scheduleConfig,
+          scheduleConfig,
         },
       });
     }

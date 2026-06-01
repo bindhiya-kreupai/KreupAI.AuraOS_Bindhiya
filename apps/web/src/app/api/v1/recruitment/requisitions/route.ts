@@ -13,7 +13,20 @@ export const dynamic = 'force-dynamic';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('recruitment:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing recruitment:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get('page') || '1');
@@ -64,55 +77,78 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
  * POST /api/v1/recruitment/requisitions
  * Create a new job requisition
  */
-export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
+export const POST = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, permissions } = context;
+      if (!permissions.includes('recruitment:create')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing recruitment:create permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
+      const body = await request.json();
 
-    if (!body.jobTitle || !body.department) {
+      if (!body.jobTitle || !body.department) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: { code: 'E2001', message: 'jobTitle and department are required' },
+          },
+          { status: 400 }
+        );
+      }
+
+      const requisition = await prisma.jobRequisition.create({
+        data: {
+          tenantId: user.tenantId,
+          jobTitle: body.jobTitle,
+          department: body.department,
+          requestedBy: user.id,
+          numberOfPositions: body.numberOfPositions || 1,
+          employmentType: body.employmentType || null,
+          priority: body.priority || 'Medium',
+          status: 'Draft',
+          location: body.location || null,
+          salaryRange: body.salaryRange || null,
+          requiredSkills: body.requiredSkills || [],
+          description: body.description || null,
+          justification: body.justification || null,
+          approvalStatus: 'Pending',
+        },
+      });
+
       return NextResponse.json(
-        { success: false, error: { code: 'E2001', message: 'jobTitle and department are required' } },
-        { status: 400 }
+        {
+          success: true,
+          data: requisition,
+          message: 'Job requisition created successfully',
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        },
+        { status: 201 }
+      );
+    } catch (error) {
+      console.error('[Requisitions API] POST Error:', error);
+      return NextResponse.json(
+        { success: false, error: { code: 'E5001', message: 'Failed to create requisition' } },
+        { status: 500 }
       );
     }
-
-    const requisition = await prisma.jobRequisition.create({
-      data: {
-        tenantId: user.tenantId,
-        jobTitle: body.jobTitle,
-        department: body.department,
-        requestedBy: user.id,
-        numberOfPositions: body.numberOfPositions || 1,
-        employmentType: body.employmentType || null,
-        priority: body.priority || 'Medium',
-        status: 'Draft',
-        location: body.location || null,
-        salaryRange: body.salaryRange || null,
-        requiredSkills: body.requiredSkills || [],
-        description: body.description || null,
-        justification: body.justification || null,
-        approvalStatus: 'Pending',
-      },
-    });
-
-    return NextResponse.json(
-      {
-        success: true,
-        data: requisition,
-        message: 'Job requisition created successfully',
-        meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error('[Requisitions API] POST Error:', error);
-    return NextResponse.json(
-      { success: false, error: { code: 'E5001', message: 'Failed to create requisition' } },
-      { status: 500 }
-    );
+  }),
+  {
+    action: AuditAction.EMPLOYEE_CREATED,
+    resourceType: 'job_requisition',
+    captureRequestBody: true,
   }
-}), {
-  action: AuditAction.EMPLOYEE_CREATED,
-  resourceType: 'job_requisition',
-  captureRequestBody: true,
-});
+);

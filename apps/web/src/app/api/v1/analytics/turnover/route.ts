@@ -1,10 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
 export const GET = withEnhancedAuth(async (request, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('analytics:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing analytics:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || '12months';
@@ -52,9 +65,12 @@ export const GET = withEnhancedAuth(async (request, context) => {
     const voluntaryExits = allExitRequests.filter((e) => e.exitType === 'RESIGNATION').length;
     const involuntaryExits = totalExits - voluntaryExits;
 
-    const turnoverRate = totalEmployees > 0 ? Math.round((totalExits / totalEmployees) * 1000) / 10 : 0;
-    const voluntaryRate = totalEmployees > 0 ? Math.round((voluntaryExits / totalEmployees) * 1000) / 10 : 0;
-    const involuntaryRate = totalEmployees > 0 ? Math.round((involuntaryExits / totalEmployees) * 1000) / 10 : 0;
+    const turnoverRate =
+      totalEmployees > 0 ? Math.round((totalExits / totalEmployees) * 1000) / 10 : 0;
+    const voluntaryRate =
+      totalEmployees > 0 ? Math.round((voluntaryExits / totalEmployees) * 1000) / 10 : 0;
+    const involuntaryRate =
+      totalEmployees > 0 ? Math.round((involuntaryExits / totalEmployees) * 1000) / 10 : 0;
 
     const deptExitMap = new Map<string, { voluntary: number; involuntary: number; name: string }>();
     for (const exit of allExitRequests) {
@@ -83,7 +99,9 @@ export const GET = withEnhancedAuth(async (request, context) => {
       select: { id: true, name: true },
     });
     const deptIdNameMap = new Map(departments.map((d) => [d.id, d.name]));
-    const deptIdCountMap = new Map(deptHeadcounts.map((d) => [deptIdNameMap.get(d.departmentId) || '', d._count]));
+    const deptIdCountMap = new Map(
+      deptHeadcounts.map((d) => [deptIdNameMap.get(d.departmentId) || '', d._count])
+    );
 
     const byDepartment = Array.from(deptExitMap.values()).map((dept) => {
       const headcount = deptIdCountMap.get(dept.name) || 1;
@@ -119,7 +137,9 @@ export const GET = withEnhancedAuth(async (request, context) => {
     ];
 
     for (const exit of allExitRequests) {
-      const tenureDays = (new Date(exit.lastWorkingDate).getTime() - new Date(exit.employee.joiningDate).getTime()) / (24 * 60 * 60 * 1000);
+      const tenureDays =
+        (new Date(exit.lastWorkingDate).getTime() - new Date(exit.employee.joiningDate).getTime()) /
+        (24 * 60 * 60 * 1000);
       for (const bucket of tenureBuckets) {
         if (tenureDays <= bucket.maxDays) {
           bucket.count++;
@@ -160,7 +180,8 @@ export const GET = withEnhancedAuth(async (request, context) => {
     });
     const avgSalaryOfExits =
       salaryStructures.length > 0
-        ? salaryStructures.reduce((sum, s) => sum + Number(s.grossSalary), 0) / salaryStructures.length
+        ? salaryStructures.reduce((sum, s) => sum + Number(s.grossSalary), 0) /
+          salaryStructures.length
         : 0;
     const avgCostPerTurnover = Math.round(avgSalaryOfExits * 0.5);
 
@@ -193,7 +214,13 @@ export const GET = withEnhancedAuth(async (request, context) => {
       data: {
         period: '12months',
         generatedAt: new Date().toISOString(),
-        overall: { turnoverRate: 0, voluntaryRate: 0, involuntaryRate: 0, industryBenchmark: 0, trend: 'no_data' },
+        overall: {
+          turnoverRate: 0,
+          voluntaryRate: 0,
+          involuntaryRate: 0,
+          industryBenchmark: 0,
+          trend: 'no_data',
+        },
         byDepartment: [],
         reasons: [],
         byTenure: [],

@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -24,6 +25,20 @@ interface ApiResponse<T = unknown> {
  * List shift assignments for the tenant, joined with shift and employee info
  */
 export const GET = withEnhancedAuth(async (_request: NextRequest, context) => {
+  const { permissions } = context;
+  if (!permissions.includes('attendance:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing attendance:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const tenantId = context.user.tenantId;
 
@@ -101,6 +116,20 @@ export const GET = withEnhancedAuth(async (_request: NextRequest, context) => {
  * Create a new shift assignment
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+  const { permissions } = context;
+  if (!permissions.includes('attendance:create')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing attendance:create permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const tenantId = context.user.tenantId;
     const body = await request.json();
@@ -176,7 +205,9 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       startTime: assignment.shift.startTime,
       endTime: assignment.shift.endTime,
       effectiveFrom: assignment.effectiveFrom.toISOString().split('T')[0],
-      effectiveTo: assignment.effectiveTo ? assignment.effectiveTo.toISOString().split('T')[0] : null,
+      effectiveTo: assignment.effectiveTo
+        ? assignment.effectiveTo.toISOString().split('T')[0]
+        : null,
       isActive: assignment.isActive,
       assignedBy: assignment.assignedBy,
       reason: assignment.reason,

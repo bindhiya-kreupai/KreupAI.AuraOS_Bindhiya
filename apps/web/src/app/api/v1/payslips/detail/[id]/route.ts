@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -14,6 +15,20 @@ export const GET = withEnhancedAuth(
       const { id } = await context.params;
       const user = (context as unknown as { user: { tenantId: string; userId: string } }).user;
       const tenantId = user.tenantId;
+      const permissions = (context as unknown as { permissions: string[] }).permissions ?? [];
+      if (!permissions.includes('payslips:read')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing payslips:read permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
 
       const payslip = await prisma.payslip.findFirst({
         where: {
@@ -32,18 +47,21 @@ export const GET = withEnhancedAuth(
       });
 
       if (!payslip) {
-        return NextResponse.json({
-          success: false,
-          error: {
-            code: 'E3001',
-            message: 'Payslip not found',
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E3001',
+              message: 'Payslip not found',
+            },
+            meta: {
+              timestamp: new Date().toISOString(),
+              requestId: crypto.randomUUID(),
+              apiVersion: 'v1',
+            },
           },
-          meta: {
-            timestamp: new Date().toISOString(),
-            requestId: crypto.randomUUID(),
-            apiVersion: 'v1',
-          },
-        }, { status: 404 });
+          { status: 404 }
+        );
       }
 
       const data = {
@@ -99,31 +117,37 @@ export const GET = withEnhancedAuth(
         createdAt: payslip.createdAt.toISOString(),
       };
 
-      return NextResponse.json({
-        success: true,
-        data,
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
+      return NextResponse.json(
+        {
+          success: true,
+          data,
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-      }, { status: 200 });
+        { status: 200 }
+      );
     } catch (error) {
       console.error('[Payslip Detail API] GET Error:', error);
 
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'E5001',
-          message: 'Failed to fetch payslip',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E5001',
+            message: 'Failed to fetch payslip',
+            details: { error: error instanceof Error ? error.message : 'Unknown error' },
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 500 });
+        { status: 500 }
+      );
     }
   }
 );

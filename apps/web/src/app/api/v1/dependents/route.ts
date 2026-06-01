@@ -2,7 +2,20 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 
-export const GET = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
+  if (!permissions.includes('dependents:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing dependents:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '20');
@@ -60,7 +73,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { _user }: any)
   });
 });
 
-export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
+  if (!permissions.includes('dependents:create')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing dependents:create permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   const body = await request.json();
   const { name, relationship, dob, ssn } = body;
 

@@ -4,7 +4,8 @@
  * @project AURA HCM Platform
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { AssetService } from '@/lib/services/asset.service';
 import { z } from 'zod';
@@ -31,7 +32,20 @@ interface ApiResponse<T = any> {
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('asset-maintenance:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing asset-maintenance:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const daysAhead = parseInt(searchParams.get('daysAhead') || '30');
@@ -76,7 +90,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('asset-maintenance:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing asset-maintenance:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
 
     // Add tenant context

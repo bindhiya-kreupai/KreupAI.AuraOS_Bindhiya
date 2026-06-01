@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { PositionService } from '@/lib/services/position.service';
 import { z } from 'zod';
@@ -12,7 +13,20 @@ interface ApiResponse<T = any> {
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('positions:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing positions:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const filter = {
@@ -32,15 +46,28 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     const response: ApiResponse = {
       success: true,
       data: result.data,
-      meta: { pagination: result.pagination, timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      meta: {
+        pagination: result.pagination,
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     };
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     const response: ApiResponse = {
       success: false,
-      error: { code: 'E5001', message: 'Failed to fetch positions', details: { error: error instanceof Error ? error.message : 'Unknown error' } },
-      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      error: {
+        code: 'E5001',
+        message: 'Failed to fetch positions',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     };
     return NextResponse.json(response, { status: 500 });
   }
@@ -48,7 +75,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('positions:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing positions:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
     body.tenantId = user.tenantId;
     if (!body.requestedBy) body.requestedBy = user.userId;
@@ -58,7 +98,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     const response: ApiResponse = {
       success: true,
       data: position,
-      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     };
 
     return NextResponse.json(response, { status: 201 });
@@ -76,8 +120,16 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
 
     const response: ApiResponse = {
       success: false,
-      error: { code: errorCode, message: error instanceof Error ? error.message : 'Failed to create position', details: error instanceof z.ZodError ? { errors: error.errors } : undefined },
-      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      error: {
+        code: errorCode,
+        message: error instanceof Error ? error.message : 'Failed to create position',
+        details: error instanceof z.ZodError ? { errors: error.errors } : undefined,
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     };
 
     return NextResponse.json(response, { status: statusCode });

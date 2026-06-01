@@ -10,7 +10,20 @@ export const dynamic = 'force-dynamic';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('admin/custom-fields:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/custom-fields:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { id } = context.params;
 
     const field = await prisma.customField.findFirst({
@@ -46,7 +59,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
  */
 export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('admin/custom-fields:update')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/custom-fields:update permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { id } = context.params;
     const body = await request.json();
 
@@ -101,7 +127,20 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
  */
 export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('admin/custom-fields:delete')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/custom-fields:delete permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { id } = context.params;
 
     const field = await prisma.customField.findFirst({

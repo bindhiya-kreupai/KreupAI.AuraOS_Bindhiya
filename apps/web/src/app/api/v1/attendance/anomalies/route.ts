@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -45,6 +46,20 @@ interface Anomaly {
  * - anomalyTypes (optional): Comma-separated list of anomaly types to filter
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+  const { permissions } = context;
+  if (!permissions.includes('attendance:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing attendance:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { searchParams } = new URL(request.url);
     const tenantId = context.user.tenantId;
@@ -128,7 +143,12 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       const dateStr = record.date.toISOString().split('T')[0];
 
       // MISSING_CLOCK_OUT: Has clockIn but no clockOut
-      if (record.clockIn && !record.clockOut && record.status !== 'ABSENT' && record.status !== 'ON_LEAVE') {
+      if (
+        record.clockIn &&
+        !record.clockOut &&
+        record.status !== 'ABSENT' &&
+        record.status !== 'ON_LEAVE'
+      ) {
         anomalies.push({
           id: crypto.randomUUID(),
           type: 'MISSING_CLOCK_OUT',

@@ -13,7 +13,20 @@ interface ApiResponse<T = any> {
   meta?: any;
 }
 
-export const GET = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
+  if (!permissions.includes('benefits/compliance:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing benefits/compliance:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     // Simulated tenant isolation: tenantId would come from validated JWT
     const { searchParams } = new URL(request.url);

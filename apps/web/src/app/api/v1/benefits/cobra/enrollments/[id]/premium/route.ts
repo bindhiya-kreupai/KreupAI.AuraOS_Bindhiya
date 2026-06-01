@@ -16,7 +16,20 @@ const VALID_PAYMENT_METHODS = ['ACH', 'CHECK', 'CREDIT_CARD', 'DEBIT_CARD', 'MON
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('benefits/cobra:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing benefits/cobra:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
     const { id } = context.params as { id: string };
     const body = await request.json();

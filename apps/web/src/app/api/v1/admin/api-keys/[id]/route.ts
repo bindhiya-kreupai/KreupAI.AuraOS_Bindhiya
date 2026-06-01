@@ -1,15 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { withAudit } from '@/lib/middleware/audit.middleware';
 import { AuditAction } from '@/lib/audit/audit.service';
 
 export const DELETE = withAudit(
-  withEnhancedAuth(async (
-    request: NextRequest,
-    context: any
-  ) => {
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    const { permissions } = context;
+    if (!permissions.includes('admin/api-keys:delete')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/api-keys:delete permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { user, params } = context;
-    const tenantId = user.tenantId;
+    const _tenantId = user.tenantId;
     const { id } = params;
 
     const revokedKey = {
@@ -19,9 +31,7 @@ export const DELETE = withAudit(
       revokedBy: 'admin-001',
       revokeReason: 'Manually revoked by administrator',
       previousStatus: 'active',
-      affectedIntegrations: [
-        { name: 'Connected Service', lastActivity: '2026-01-22T18:00:00Z' },
-      ],
+      affectedIntegrations: [{ name: 'Connected Service', lastActivity: '2026-01-22T18:00:00Z' }],
       warning: 'Any services using this key will immediately lose access.',
     };
 

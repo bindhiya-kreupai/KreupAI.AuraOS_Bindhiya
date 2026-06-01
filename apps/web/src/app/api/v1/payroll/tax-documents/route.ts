@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -18,7 +19,20 @@ import { prisma } from '@aura/database';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('payroll:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing payroll:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
@@ -85,46 +99,58 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     }
 
     const summary = {
-      w2Count: (summaryMap['W2_GENERATED'] || 0) + (summaryMap['W2_DELIVERED'] || 0) + (summaryMap['W2_AMENDED'] || 0),
-      form1099Count: (summaryMap['1099_GENERATED'] || 0) + (summaryMap['1099_DELIVERED'] || 0) + (summaryMap['1099_AMENDED'] || 0),
+      w2Count:
+        (summaryMap['W2_GENERATED'] || 0) +
+        (summaryMap['W2_DELIVERED'] || 0) +
+        (summaryMap['W2_AMENDED'] || 0),
+      form1099Count:
+        (summaryMap['1099_GENERATED'] || 0) +
+        (summaryMap['1099_DELIVERED'] || 0) +
+        (summaryMap['1099_AMENDED'] || 0),
       pendingCount: (summaryMap['W2_GENERATED'] || 0) + (summaryMap['1099_GENERATED'] || 0),
       deliveredCount: (summaryMap['W2_DELIVERED'] || 0) + (summaryMap['1099_DELIVERED'] || 0),
     };
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        documents: data,
-        total,
-        summary,
-      },
-      meta: {
-        pagination: {
-          page,
-          limit,
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          documents: data,
           total,
-          totalPages: Math.ceil(total / limit),
+          summary,
         },
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
+        meta: {
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+          },
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
-    }, { status: 200 });
+      { status: 200 }
+    );
   } catch (error) {
     console.error('[Tax Documents API] GET Error:', error);
 
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to fetch tax documents',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E5001',
+          message: 'Failed to fetch tax documents',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    }, { status: 500 });
+      { status: 500 }
+    );
   }
 });

@@ -10,6 +10,20 @@ export const dynamic = 'force-dynamic';
  * Get the signing/acceptance status of a job offer
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { permissions } = context;
+  if (!permissions.includes('recruitment:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing recruitment:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { id } = await context.params;
 
@@ -51,7 +65,11 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         offerLetterUrl: offer.offerLetterUrl,
         isExpired: offer.expiryDate ? new Date() > offer.expiryDate : false,
       },
-      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     });
   } catch (error) {
     console.error('[Offer Signing Status API] GET Error:', error);

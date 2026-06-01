@@ -13,7 +13,20 @@ export const dynamic = 'force-dynamic';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('payroll:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing payroll:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get('page') || '1');
@@ -71,67 +84,83 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
  * POST /api/v1/payroll/salary-structures
  * Create a new salary structure
  */
-export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
+export const POST = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, permissions } = context;
+      if (!permissions.includes('payroll:create')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing payroll:create permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
+      const body = await request.json();
 
-    if (!body.name || !body.code) {
+      if (!body.name || !body.code) {
+        return NextResponse.json(
+          { success: false, error: { code: 'E2001', message: 'name and code are required' } },
+          { status: 400 }
+        );
+      }
+
+      const structure = await prisma.salaryStructure.create({
+        data: {
+          tenantId: user.tenantId,
+          name: body.name,
+          code: body.code,
+          gradeId: body.gradeId || null,
+          basicSalary: body.basicSalary || 0,
+          grossSalary: body.grossSalary || 0,
+          currency: body.currency || 'USD',
+          components: body.components || [],
+          effectiveFrom: body.effectiveFrom ? new Date(body.effectiveFrom) : new Date(),
+          effectiveTo: body.effectiveTo ? new Date(body.effectiveTo) : null,
+          status: 'Active',
+          createdBy: user.id,
+        },
+        include: {
+          grade: { select: { id: true, name: true, code: true } },
+        },
+      });
+
       return NextResponse.json(
-        { success: false, error: { code: 'E2001', message: 'name and code are required' } },
-        { status: 400 }
+        {
+          success: true,
+          data: structure,
+          message: 'Salary structure created successfully',
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        },
+        { status: 201 }
+      );
+    } catch (_error) {
+      console.error('[Salary Structures API] POST Error:', error);
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E5001',
+            message: 'Failed to create salary structure',
+            details: { error: error instanceof Error ? error.message : 'Unknown error' },
+          },
+        },
+        { status: 500 }
       );
     }
-
-    const structure = await prisma.salaryStructure.create({
-      data: {
-        tenantId: user.tenantId,
-        name: body.name,
-        code: body.code,
-        gradeId: body.gradeId || null,
-        basicSalary: body.basicSalary || 0,
-        grossSalary: body.grossSalary || 0,
-        currency: body.currency || 'USD',
-        components: body.components || [],
-        effectiveFrom: body.effectiveFrom ? new Date(body.effectiveFrom) : new Date(),
-        effectiveTo: body.effectiveTo ? new Date(body.effectiveTo) : null,
-        status: 'Active',
-        createdBy: user.id,
-      },
-      include: {
-        grade: { select: { id: true, name: true, code: true } },
-      },
-    });
-
-    return NextResponse.json(
-      {
-        success: true,
-        data: structure,
-        message: 'Salary structure created successfully',
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      },
-      { status: 201 }
-    );
-  } catch (_error) {
-    console.error('[Salary Structures API] POST Error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E5001',
-          message: 'Failed to create salary structure',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        },
-      },
-      { status: 500 }
-    );
+  }),
+  {
+    action: AuditAction.EMPLOYEE_UPDATED,
+    resourceType: 'salary_structure',
+    captureRequestBody: true,
   }
-}), {
-  action: AuditAction.EMPLOYEE_UPDATED,
-  resourceType: 'salary_structure',
-  captureRequestBody: true,
-});
+);

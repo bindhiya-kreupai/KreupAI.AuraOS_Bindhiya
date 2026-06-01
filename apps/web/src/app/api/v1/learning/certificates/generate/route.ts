@@ -3,7 +3,20 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { withEnhancedAuth } from '@/lib/auth';
 
-export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
+  if (!permissions.includes('learning/certificates:create')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing learning/certificates:create permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   const body = await request.json();
 
   const certificate = {

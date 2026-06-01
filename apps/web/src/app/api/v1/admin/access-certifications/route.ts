@@ -71,8 +71,21 @@ const mockCampaigns = [
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-    const tenantId = user.tenantId;
+    const { user, permissions } = context;
+    if (!permissions.includes('admin/access-certifications:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/access-certifications:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
+    const _tenantId = user.tenantId;
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || undefined;
@@ -117,7 +130,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('admin/access-certifications:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/access-certifications:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
 
     const body = await request.json();

@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -16,15 +17,25 @@ import { prisma } from '@aura/database';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('payroll:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing payroll:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
     const status = searchParams.get('status');
-    const limit = Math.min(
-      parseInt(searchParams.get('limit') || '12'),
-      24
-    );
+    const limit = Math.min(parseInt(searchParams.get('limit') || '12'), 24);
     const page = Math.max(parseInt(searchParams.get('page') || '1'), 1);
     const skip = (page - 1) * limit;
 
@@ -79,36 +90,42 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       createdAt: run.createdAt.toISOString(),
     }));
 
-    return NextResponse.json({
-      success: true,
-      data,
-      meta: {
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
+    return NextResponse.json(
+      {
+        success: true,
+        data,
+        meta: {
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+          },
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
         },
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
       },
-    }, { status: 200 });
+      { status: 200 }
+    );
   } catch (error) {
     console.error('[Payroll History API] GET Error:', error);
 
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to fetch payroll history',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E5001',
+          message: 'Failed to fetch payroll history',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    }, { status: 500 });
+      { status: 500 }
+    );
   }
 });

@@ -11,16 +11,26 @@ export const dynamic = 'force-dynamic';
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('notifications:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing notifications:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
     const { pushToken, deviceToken, platform, tokenType } = body;
 
     const token = pushToken || deviceToken;
     if (!token) {
-      return NextResponse.json(
-        { error: 'pushToken or deviceToken is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'pushToken or deviceToken is required' }, { status: 400 });
     }
 
     const record = await prisma.deviceToken.upsert({
@@ -51,9 +61,6 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     });
   } catch (error) {
     console.error('[register-device] Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to register device' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to register device' }, { status: 500 });
   }
 });

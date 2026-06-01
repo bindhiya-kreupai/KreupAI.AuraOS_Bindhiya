@@ -24,7 +24,20 @@ const procedureCostData: Record<string, { name: string; averageCost: number; cpt
   70553: { name: 'MRI Brain with Contrast', averageCost: 3500, cptCode: '70553' },
 };
 
-export const POST = withEnhancedAuth(async (request: NextRequest, { _user }: any) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
+  if (!permissions.includes('benefits/cost-estimate:create')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing benefits/cost-estimate:create permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const body = await request.json();
     const { procedureCode, providerId, planId } = body;

@@ -3,12 +3,22 @@ import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
-export const POST = withEnhancedAuth(async (
-  request: NextRequest,
-  context: any
-) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('admin/workflows:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/workflows:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
     const id = context.params.id;
     const body = await request.json();
@@ -63,10 +73,7 @@ export const POST = withEnhancedAuth(async (
       },
       { status: 201 }
     );
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to execute workflow' },
-      { status: 500 }
-    );
+  } catch (_error) {
+    return NextResponse.json({ error: 'Failed to execute workflow' }, { status: 500 });
   }
 });

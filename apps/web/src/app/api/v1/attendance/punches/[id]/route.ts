@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { TimeTrackingService } from '@/lib/services/time-tracking.service';
 import { withEnhancedAuth } from '@/lib/auth';
 import { withAudit } from '@/lib/middleware/audit.middleware';
@@ -6,7 +7,20 @@ import { AuditAction } from '@/lib/audit/audit.service';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, params } = context;
+    const { user, params, permissions } = context;
+    if (!permissions.includes('attendance:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing attendance:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { id } = params;
 
     const punch = await TimeTrackingService.findPunchById(id, user.tenantId);
@@ -26,56 +40,88 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
   }
 });
 
-export const PUT = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user, params } = context;
-    const { id } = params;
-    const body = await request.json();
+export const PUT = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, params, permissions } = context;
+      if (!permissions.includes('attendance:update')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing attendance:update permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
+      const { id } = params;
+      const body = await request.json();
 
-    const punch = await TimeTrackingService.updatePunch(id, user.tenantId, body);
-    if (!punch) {
+      const punch = await TimeTrackingService.updatePunch(id, user.tenantId, body);
+      if (!punch) {
+        return NextResponse.json(
+          { success: false, error: { code: 'E2001', message: 'Punch record not found' } },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({ success: true, data: punch });
+    } catch (error: any) {
       return NextResponse.json(
-        { success: false, error: { code: 'E2001', message: 'Punch record not found' } },
-        { status: 404 }
+        { success: false, error: { code: 'E5000', message: error.message } },
+        { status: 500 }
       );
     }
-
-    return NextResponse.json({ success: true, data: punch });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: { code: 'E5000', message: error.message } },
-      { status: 500 }
-    );
+  }),
+  {
+    action: AuditAction.ATTENDANCE_UPDATED,
+    resourceType: 'attendance_punch',
+    captureRequestBody: true,
+    extractResourceId: (req, ctx) => ctx?.params?.id,
   }
-}), {
-  action: AuditAction.ATTENDANCE_UPDATED,
-  resourceType: 'attendance_punch',
-  captureRequestBody: true,
-  extractResourceId: (req, ctx) => ctx?.params?.id,
-});
+);
 
-export const DELETE = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user, params } = context;
-    const { id } = params;
+export const DELETE = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, params, permissions } = context;
+      if (!permissions.includes('attendance:delete')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing attendance:delete permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
+      const { id } = params;
 
-    const punch = await TimeTrackingService.deletePunch(id, user.tenantId);
-    if (!punch) {
+      const punch = await TimeTrackingService.deletePunch(id, user.tenantId);
+      if (!punch) {
+        return NextResponse.json(
+          { success: false, error: { code: 'E2001', message: 'Punch record not found' } },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({ success: true, data: punch });
+    } catch (error: any) {
       return NextResponse.json(
-        { success: false, error: { code: 'E2001', message: 'Punch record not found' } },
-        { status: 404 }
+        { success: false, error: { code: 'E5000', message: error.message } },
+        { status: 500 }
       );
     }
-
-    return NextResponse.json({ success: true, data: punch });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: { code: 'E5000', message: error.message } },
-      { status: 500 }
-    );
+  }),
+  {
+    action: AuditAction.ATTENDANCE_UPDATED,
+    resourceType: 'attendance_punch',
+    extractResourceId: (req, ctx) => ctx?.params?.id,
   }
-}), {
-  action: AuditAction.ATTENDANCE_UPDATED,
-  resourceType: 'attendance_punch',
-  extractResourceId: (req, ctx) => ctx?.params?.id,
-});
+);

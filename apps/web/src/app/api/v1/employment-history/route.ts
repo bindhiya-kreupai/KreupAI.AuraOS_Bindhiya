@@ -4,7 +4,8 @@
  * @project AURA HCM Platform
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { EmploymentHistoryService } from '@/lib/services/employment-history.service';
 import { withAudit } from '@/lib/middleware/audit.middleware';
@@ -39,7 +40,20 @@ interface ApiResponse<T = any> {
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('employment-history:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing employment-history:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const filter = {
@@ -94,62 +108,79 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
  * POST /api/v1/employment-history
  * Create a new employment history record
  */
-export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
+export const POST = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context) => {
+    try {
+      const { user, permissions } = context;
+      if (!permissions.includes('employment-history:create')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing employment-history:create permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
+      const body = await request.json();
 
-    // Add tenant context
-    body.tenantId = user.tenantId;
+      // Add tenant context
+      body.tenantId = user.tenantId;
 
-    // Set requestedBy if not provided
-    if (!body.requestedBy) {
-      body.requestedBy = user.userId;
+      // Set requestedBy if not provided
+      if (!body.requestedBy) {
+        body.requestedBy = user.userId;
+      }
+
+      const record = await EmploymentHistoryService.create(body);
+
+      const response: ApiResponse = {
+        success: true,
+        data: record,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      };
+
+      return NextResponse.json(response, { status: 201 });
+    } catch (error) {
+      console.error('[Employment History API] POST Error:', error);
+
+      let statusCode = 500;
+      let errorCode = 'E5001';
+
+      if (error instanceof z.ZodError) {
+        statusCode = 400;
+        errorCode = 'E2001';
+      }
+
+      const response: ApiResponse = {
+        success: false,
+        error: {
+          code: errorCode,
+          message:
+            error instanceof Error ? error.message : 'Failed to create employment history record',
+          details: error instanceof z.ZodError ? { errors: error.errors } : undefined,
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      };
+
+      return NextResponse.json(response, { status: statusCode });
     }
-
-    const record = await EmploymentHistoryService.create(body);
-
-    const response: ApiResponse = {
-      success: true,
-      data: record,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 201 });
-  } catch (error) {
-    console.error('[Employment History API] POST Error:', error);
-
-    let statusCode = 500;
-    let errorCode = 'E5001';
-
-    if (error instanceof z.ZodError) {
-      statusCode = 400;
-      errorCode = 'E2001';
-    }
-
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: errorCode,
-        message: error instanceof Error ? error.message : 'Failed to create employment history record',
-        details: error instanceof z.ZodError ? { errors: error.errors } : undefined,
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: statusCode });
+  }),
+  {
+    action: AuditAction.EMPLOYEE_UPDATED,
+    resourceType: 'employment_history',
+    captureRequestBody: true,
+    captureResponseBody: true,
   }
-}), {
-  action: AuditAction.EMPLOYEE_UPDATED,
-  resourceType: 'employment_history',
-  captureRequestBody: true,
-  captureResponseBody: true,
-});
+);
