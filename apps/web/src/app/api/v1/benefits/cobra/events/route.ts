@@ -56,8 +56,21 @@ const mockCobraEvents = [
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-    const tenantId = user.tenantId;
+    const { user, permissions } = context;
+    if (!permissions.includes('benefits/cobra:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing benefits/cobra:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
+    const _tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || undefined;
     const eventType = searchParams.get('eventType') || undefined;
@@ -103,7 +116,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('benefits/cobra:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing benefits/cobra:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
     const body = await request.json();
     const { employeeId, eventType, qualifyingEventDate, beneficiaries } = body;

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -15,7 +16,20 @@ export const dynamic = 'force-dynamic';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('statutory:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing statutory:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
     const month = searchParams.get('month');
     const companyId = searchParams.get('companyId');
@@ -25,8 +39,15 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       return NextResponse.json(
         {
           success: false,
-          error: { code: 'E2001', message: 'month, companyId, and state are required in query parameters' },
-          meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+          error: {
+            code: 'E2001',
+            message: 'month, companyId, and state are required in query parameters',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
         { status: 400 }
       );
@@ -67,33 +88,36 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         select: { id: true },
       });
 
-      const runIds = payrollRuns.map(r => r.id);
+      const runIds = payrollRuns.map((r) => r.id);
 
       // Get payslips and check earnings JSON for PT deductions
-      const payslips = runIds.length > 0
-        ? await prisma.payslip.findMany({
-            where: { payrollRunId: { in: runIds } },
-            select: {
-              employeeId: true,
-              employeeCode: true,
-              employeeName: true,
-              grossSalary: true,
-              deductions: true,
-            },
-          })
-        : [];
+      const payslips =
+        runIds.length > 0
+          ? await prisma.payslip.findMany({
+              where: { payrollRunId: { in: runIds } },
+              select: {
+                employeeId: true,
+                employeeCode: true,
+                employeeName: true,
+                grossSalary: true,
+                deductions: true,
+              },
+            })
+          : [];
 
       // Extract PT from deductions JSON
       const ptEmployees = payslips
-        .map(p => {
+        .map((p) => {
           const deds = (p.deductions as Array<{ code: string; amount: number }>) || [];
-          const ptDed = deds.find(d => d.code === 'PT' || d.code === 'PROFESSIONAL_TAX');
-          return ptDed ? {
-            employeeCode: p.employeeCode,
-            employeeName: p.employeeName,
-            grossSalary: Number(p.grossSalary),
-            ptAmount: ptDed.amount,
-          } : null;
+          const ptDed = deds.find((d) => d.code === 'PT' || d.code === 'PROFESSIONAL_TAX');
+          return ptDed
+            ? {
+                employeeCode: p.employeeCode,
+                employeeName: p.employeeName,
+                grossSalary: Number(p.grossSalary),
+                ptAmount: ptDed.amount,
+              }
+            : null;
         })
         .filter(Boolean);
 
@@ -105,13 +129,15 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           month,
           companyId,
           state,
-          stateInfo: ptConfig ? {
-            code: ptConfig.stateCode,
-            name: ptConfig.stateName,
-            ptRegistrationNumber: ptConfig.ptRegistrationNumber,
-            slabs: ptConfig.slabs,
-            maxAnnualTax: Number(ptConfig.maxAnnualTax),
-          } : { code: state },
+          stateInfo: ptConfig
+            ? {
+                code: ptConfig.stateCode,
+                name: ptConfig.stateName,
+                ptRegistrationNumber: ptConfig.ptRegistrationNumber,
+                slabs: ptConfig.slabs,
+                maxAnnualTax: Number(ptConfig.maxAnnualTax),
+              }
+            : { code: state },
           summary: {
             totalEmployees: payslips.length,
             employeesLiable: ptEmployees.length,
@@ -120,12 +146,16 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           employees: ptEmployees,
           generatedAt: new Date().toISOString(),
         },
-        meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       });
     }
 
     const totalPT = deductions.reduce((sum, d) => sum + Number(d.taxAmount), 0);
-    const employeesLiable = deductions.filter(d => Number(d.taxAmount) > 0).length;
+    const employeesLiable = deductions.filter((d) => Number(d.taxAmount) > 0).length;
 
     return NextResponse.json({
       success: true,
@@ -133,19 +163,21 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         month,
         companyId,
         state,
-        stateInfo: ptConfig ? {
-          code: ptConfig.stateCode,
-          name: ptConfig.stateName,
-          ptRegistrationNumber: ptConfig.ptRegistrationNumber,
-          slabs: ptConfig.slabs,
-          maxAnnualTax: Number(ptConfig.maxAnnualTax),
-        } : { code: state },
+        stateInfo: ptConfig
+          ? {
+              code: ptConfig.stateCode,
+              name: ptConfig.stateName,
+              ptRegistrationNumber: ptConfig.ptRegistrationNumber,
+              slabs: ptConfig.slabs,
+              maxAnnualTax: Number(ptConfig.maxAnnualTax),
+            }
+          : { code: state },
         summary: {
           totalEmployees: deductions.length,
           employeesLiable,
           totalPT,
         },
-        employees: deductions.map(d => ({
+        employees: deductions.map((d) => ({
           employeeId: d.employeeId,
           employeeName: d.employeeName,
           grossSalary: Number(d.grossSalary),
@@ -155,15 +187,27 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         })),
         generatedAt: new Date().toISOString(),
       },
-      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     });
   } catch (error) {
     console.error('[PT Calculations API] GET Error:', error);
     return NextResponse.json(
       {
         success: false,
-        error: { code: 'E5001', message: 'Failed to fetch PT calculations', details: { error: error instanceof Error ? error.message : 'Unknown error' } },
-        meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+        error: {
+          code: 'E5001',
+          message: 'Failed to fetch PT calculations',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
       { status: 500 }
     );

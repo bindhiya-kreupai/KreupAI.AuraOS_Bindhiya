@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { LifeEventService } from '@/lib/services/life-event.service';
 import { z } from 'zod';
@@ -12,7 +13,20 @@ interface ApiResponse<T = any> {
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('life-events:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing life-events:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const filter = {
@@ -20,7 +34,9 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       employeeId: searchParams.get('employeeId') || undefined,
       eventType: searchParams.get('eventType') || undefined,
       status: searchParams.get('status') || undefined,
-      startDate: searchParams.get('startDate') ? new Date(searchParams.get('startDate')!) : undefined,
+      startDate: searchParams.get('startDate')
+        ? new Date(searchParams.get('startDate')!)
+        : undefined,
       endDate: searchParams.get('endDate') ? new Date(searchParams.get('endDate')!) : undefined,
       search: searchParams.get('search') || undefined,
       page: parseInt(searchParams.get('page') || '1'),
@@ -34,15 +50,28 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     const response: ApiResponse = {
       success: true,
       data: result.data,
-      meta: { pagination: result.pagination, timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      meta: {
+        pagination: result.pagination,
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     };
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     const response: ApiResponse = {
       success: false,
-      error: { code: 'E5001', message: 'Failed to fetch life events', details: { error: error instanceof Error ? error.message : 'Unknown error' } },
-      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      error: {
+        code: 'E5001',
+        message: 'Failed to fetch life events',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     };
     return NextResponse.json(response, { status: 500 });
   }
@@ -50,7 +79,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('life-events:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing life-events:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
     body.tenantId = user.tenantId;
     if (!body.createdBy) body.createdBy = user.userId;
@@ -60,7 +102,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     const response: ApiResponse = {
       success: true,
       data: lifeEvent,
-      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     };
 
     return NextResponse.json(response, { status: 201 });
@@ -75,8 +121,16 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
 
     const response: ApiResponse = {
       success: false,
-      error: { code: errorCode, message: error instanceof Error ? error.message : 'Failed to create life event', details: error instanceof z.ZodError ? { errors: error.errors } : undefined },
-      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      error: {
+        code: errorCode,
+        message: error instanceof Error ? error.message : 'Failed to create life event',
+        details: error instanceof z.ZodError ? { errors: error.errors } : undefined,
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     };
 
     return NextResponse.json(response, { status: statusCode });

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { queueService } from '@/lib/queue/queue.service';
 import { jobScheduler } from '@/lib/queue/scheduler';
@@ -28,11 +29,25 @@ interface ApiResponse<T = any> {
  * - type (optional): 'queues' | 'scheduled' | 'all' (default: 'all')
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+  const { permissions } = context;
+  if (!permissions.includes('system:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing system:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'all';
 
-    let jobData: any = {};
+    const jobData: any = {};
 
     // Queue Statistics
     if (type === 'all' || type === 'queues') {

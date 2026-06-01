@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { OvertimeService } from '@/lib/services/overtime.service';
 import { withAudit } from '@/lib/middleware/audit.middleware';
@@ -13,7 +14,20 @@ interface ApiResponse<T = any> {
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('overtime:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing overtime:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const filter = {
@@ -56,38 +70,89 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
   }
 });
 
-export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
-
-    const { employeeId, date, hours, reason } = body;
-
-    if (!employeeId || !date || !hours || !reason) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'Validation failed: employeeId, date, hours, and reason are required',
-          details: {
-            missingFields: ['employeeId', 'date', 'hours', 'reason'].filter(f => !body[f]),
+export const POST = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, permissions } = context;
+      if (!permissions.includes('overtime:create')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing overtime:create permission',
+              messageAr: 'ممنوع',
+            },
           },
-        },
+          { status: 403 }
+        );
+      }
+      const body = await request.json();
+
+      const { employeeId, date, hours, reason } = body;
+
+      if (!employeeId || !date || !hours || !reason) {
+        const response: ApiResponse = {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Validation failed: employeeId, date, hours, and reason are required',
+            details: {
+              missingFields: ['employeeId', 'date', 'hours', 'reason'].filter((f) => !body[f]),
+            },
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 400 });
+      }
+
+      if (typeof hours !== 'number' || hours <= 0 || hours > 24) {
+        const response: ApiResponse = {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Validation failed: hours must be a positive number not exceeding 24',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 400 });
+      }
+
+      const record = await OvertimeService.create({
+        tenantId: user.tenantId,
+        employeeId,
+        date,
+        requestedHours: hours,
+        reason,
+        ...body,
+      });
+
+      const response: ApiResponse = {
+        success: true,
+        data: record,
         meta: {
           timestamp: new Date().toISOString(),
           requestId: crypto.randomUUID(),
           apiVersion: 'v1',
         },
       };
-      return NextResponse.json(response, { status: 400 });
-    }
 
-    if (typeof hours !== 'number' || hours <= 0 || hours > 24) {
+      return NextResponse.json(response, { status: 201 });
+    } catch (error) {
       const response: ApiResponse = {
         success: false,
         error: {
-          code: 'E2001',
-          message: 'Validation failed: hours must be a positive number not exceeding 24',
+          code: 'E5001',
+          message: 'Failed to request OT pre-approval',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
         meta: {
           timestamp: new Date().toISOString(),
@@ -95,48 +160,13 @@ export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, cont
           apiVersion: 'v1',
         },
       };
-      return NextResponse.json(response, { status: 400 });
+      return NextResponse.json(response, { status: 500 });
     }
-
-    const record = await OvertimeService.create({
-      tenantId: user.tenantId,
-      employeeId,
-      date,
-      requestedHours: hours,
-      reason,
-      ...body,
-    });
-
-    const response: ApiResponse = {
-      success: true,
-      data: record,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 201 });
-  } catch (error) {
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to request OT pre-approval',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-    return NextResponse.json(response, { status: 500 });
+  }),
+  {
+    action: AuditAction.EMPLOYEE_UPDATED,
+    resourceType: 'overtime_request',
+    captureRequestBody: true,
+    captureResponseBody: true,
   }
-}), {
-  action: AuditAction.EMPLOYEE_UPDATED,
-  resourceType: 'overtime_request',
-  captureRequestBody: true,
-  captureResponseBody: true,
-});
+);

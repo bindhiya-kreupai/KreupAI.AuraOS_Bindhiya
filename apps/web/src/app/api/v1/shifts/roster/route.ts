@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -17,7 +18,20 @@ export const dynamic = 'force-dynamic';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('shifts:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing shifts:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
     const departmentId = searchParams.get('departmentId');
@@ -122,7 +136,10 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     });
 
     // Get unique shifts used in the roster
-    const shiftsMap = new Map<string, { id: string; code: string; name: string; startTime: string; endTime: string }>();
+    const shiftsMap = new Map<
+      string,
+      { id: string; code: string; name: string; startTime: string; endTime: string }
+    >();
     for (const entry of rosterEntries) {
       if (!shiftsMap.has(entry.shiftId)) {
         shiftsMap.set(entry.shiftId, {
@@ -174,8 +191,12 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
       for (const [sid, entries] of shiftGroups) {
         const shiftInfo = shiftsMap.get(sid);
-        const scheduledEmployees = entries.filter((e) => e.status === 'SCHEDULED' || e.status === 'COMPLETED');
-        const cancelledEmployees = entries.filter((e) => e.status === 'CANCELLED' || e.status === 'SWAPPED');
+        const scheduledEmployees = entries.filter(
+          (e) => e.status === 'SCHEDULED' || e.status === 'COMPLETED'
+        );
+        const cancelledEmployees = entries.filter(
+          (e) => e.status === 'CANCELLED' || e.status === 'SWAPPED'
+        );
 
         const planned = entries.length;
         const actual = scheduledEmployees.length;
@@ -221,7 +242,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         shifts: shiftsForDate,
         totalPlannedStrength: totalPlanned,
         totalActualStrength: totalActual,
-        attendancePercentage: totalPlanned > 0 ? Math.round((totalActual / totalPlanned) * 10000) / 100 : 0,
+        attendancePercentage:
+          totalPlanned > 0 ? Math.round((totalActual / totalPlanned) * 10000) / 100 : 0,
       });
 
       current.setDate(current.getDate() + 1);
@@ -233,9 +255,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     const weekendDays = roster.filter((d) => d.isWeekend).length;
     const holidays = roster.filter((d) => d.isHoliday).length;
     const totalStrengths = roster.map((d) => d.totalActualStrength);
-    const averageStrength = totalStrengths.length > 0 ? Math.round((totalStrengths.reduce((a, b) => a + b, 0) / totalStrengths.length) * 100) / 100 : 0;
-    const attendancePercentages = roster.filter((d) => d.totalPlannedStrength > 0).map((d) => d.attendancePercentage);
-    const averageAttendancePercentage = attendancePercentages.length > 0 ? Math.round((attendancePercentages.reduce((a, b) => a + b, 0) / attendancePercentages.length) * 100) / 100 : 0;
+    const averageStrength =
+      totalStrengths.length > 0
+        ? Math.round((totalStrengths.reduce((a, b) => a + b, 0) / totalStrengths.length) * 100) /
+          100
+        : 0;
+    const attendancePercentages = roster
+      .filter((d) => d.totalPlannedStrength > 0)
+      .map((d) => d.attendancePercentage);
+    const averageAttendancePercentage =
+      attendancePercentages.length > 0
+        ? Math.round(
+            (attendancePercentages.reduce((a, b) => a + b, 0) / attendancePercentages.length) * 100
+          ) / 100
+        : 0;
 
     const responseData = {
       companyId,

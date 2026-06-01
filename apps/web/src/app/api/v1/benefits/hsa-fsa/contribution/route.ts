@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -6,9 +7,22 @@ export const dynamic = 'force-dynamic';
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('benefits/hsa-fsa:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing benefits/hsa-fsa:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
-    const { accountId, accountType, contributionAmount, frequency, effectiveDate } = body;
+    const { accountId, _accountType, contributionAmount, frequency, effectiveDate } = body;
 
     if (!accountId || contributionAmount == null) {
       return NextResponse.json(
@@ -105,7 +119,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       prisma.hSAFSAAccount.update({
         where: { id: account.id },
         data: {
-          contributionAmount: contributionAmount,
+          contributionAmount,
           contributionFrequency: resolvedFrequency.toUpperCase(),
         },
       }),
@@ -131,7 +145,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       previousContribution: {
         amount: previousContributionAmount,
         frequency: previousFrequency.toLowerCase(),
-        annualTotal: previousContributionAmount * (previousFrequency.toUpperCase() === 'MONTHLY' ? 12 : 26),
+        annualTotal:
+          previousContributionAmount * (previousFrequency.toUpperCase() === 'MONTHLY' ? 12 : 26),
       },
       newContribution: {
         amount: contributionAmount,

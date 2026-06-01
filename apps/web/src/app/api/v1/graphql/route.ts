@@ -3,7 +3,8 @@
  * Single endpoint for all GraphQL queries and mutations
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { graphql, parse, validate } from 'graphql';
 import { schema } from '@/lib/graphql/schema';
 import { logger } from '@/lib/logger';
@@ -83,7 +84,7 @@ function createContext(request: NextRequest, user: any): GraphQLContext {
         ...input,
         updatedAt: new Date().toISOString(),
       }),
-      delete: async (id: string) => true,
+      delete: async (_id: string) => true,
     },
     department: {
       getById: async (id: string) => ({
@@ -146,7 +147,7 @@ function createContext(request: NextRequest, user: any): GraphQLContext {
       }),
     },
     attendance: {
-      getForEmployee: async (args: any) => [],
+      getForEmployee: async (_args: any) => [],
       clockIn: async (input: any) => ({
         id: crypto.randomUUID(),
         ...input,
@@ -185,7 +186,7 @@ function createContext(request: NextRequest, user: any): GraphQLContext {
  * POST /api/v1/graphql
  * Execute GraphQL queries and mutations
  */
-async function handlePOST(request: NextRequest, context: any): Promise<NextResponse> {
+async function handlePOST(request: NextRequest, _context: any): Promise<NextResponse> {
   const startTime = performance.now();
 
   try {
@@ -333,7 +334,7 @@ async function handlePOST(request: NextRequest, context: any): Promise<NextRespo
  * GET /api/v1/graphql
  * GraphQL playground (development only)
  */
-async function handleGET(request: NextRequest): Promise<NextResponse> {
+async function handleGET(_request: NextRequest): Promise<NextResponse> {
   // Return GraphiQL playground HTML
   const html = `
 <!DOCTYPE html>

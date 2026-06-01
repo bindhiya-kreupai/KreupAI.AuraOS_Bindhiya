@@ -98,23 +98,78 @@ const mockReviews = [
   },
 ];
 
-export const GET = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
-  try {
-    const { id } = params;
-    const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status') || undefined;
-    const reviewerId = searchParams.get('reviewerId') || undefined;
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
+export const GET = withEnhancedAuth(
+  async (request: NextRequest, { _user, params, permissions }: any) => {
+    if (!permissions.includes('admin/access-certifications:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/access-certifications:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
+    try {
+      const { id } = params;
+      const { searchParams } = new URL(request.url);
+      const status = searchParams.get('status') || undefined;
+      const reviewerId = searchParams.get('reviewerId') || undefined;
+      const page = parseInt(searchParams.get('page') || '1');
+      const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
 
-    // Simulated campaign lookup with tenant isolation
-    const knownCampaigns = ['cert-001', 'cert-002'];
-    if (!knownCampaigns.includes(id)) {
+      // Simulated campaign lookup with tenant isolation
+      const knownCampaigns = ['cert-001', 'cert-002'];
+      if (!knownCampaigns.includes(id)) {
+        const response: ApiResponse = {
+          success: false,
+          error: {
+            code: 'E4001',
+            message: `Access certification campaign with id '${id}' not found`,
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 404 });
+      }
+
+      let reviews = mockReviews.filter((r) => r.campaignId === id);
+      if (status) reviews = reviews.filter((r) => r.status === status.toUpperCase());
+      if (reviewerId) reviews = reviews.filter((r) => r.reviewerId === reviewerId);
+
+      const total = reviews.length;
+      const paginated = reviews.slice((page - 1) * limit, page * limit);
+
+      const response: ApiResponse = {
+        success: true,
+        data: paginated,
+        meta: {
+          pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+          campaignSummary: {
+            total: reviews.length,
+            pending: reviews.filter((r) => r.status === 'PENDING').length,
+            completed: reviews.filter((r) => r.status === 'COMPLETED').length,
+          },
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      };
+
+      return NextResponse.json(response, { status: 200 });
+    } catch (_error) {
       const response: ApiResponse = {
         success: false,
         error: {
-          code: 'E4001',
-          message: `Access certification campaign with id '${id}' not found`,
+          code: 'E5001',
+          message: 'Failed to get certification reviews',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
         meta: {
           timestamp: new Date().toISOString(),
@@ -122,64 +177,138 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { _user, params
           apiVersion: 'v1',
         },
       };
-      return NextResponse.json(response, { status: 404 });
+      return NextResponse.json(response, { status: 500 });
     }
-
-    let reviews = mockReviews.filter((r) => r.campaignId === id);
-    if (status) reviews = reviews.filter((r) => r.status === status.toUpperCase());
-    if (reviewerId) reviews = reviews.filter((r) => r.reviewerId === reviewerId);
-
-    const total = reviews.length;
-    const paginated = reviews.slice((page - 1) * limit, page * limit);
-
-    const response: ApiResponse = {
-      success: true,
-      data: paginated,
-      meta: {
-        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-        campaignSummary: {
-          total: reviews.length,
-          pending: reviews.filter((r) => r.status === 'PENDING').length,
-          completed: reviews.filter((r) => r.status === 'COMPLETED').length,
-        },
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 200 });
-  } catch (_error) {
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to get certification reviews',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-    return NextResponse.json(response, { status: 500 });
   }
-});
+);
 
-export const POST = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
-  try {
-    const { id } = params;
-    const body = await request.json();
-    const { reviewId, decision, justification } = body;
+export const POST = withEnhancedAuth(
+  async (request: NextRequest, { _user, params, permissions }: any) => {
+    if (!permissions.includes('admin/access-certifications:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/access-certifications:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
+    try {
+      const { id } = params;
+      const body = await request.json();
+      const { reviewId, decision, justification } = body;
 
-    if (!reviewId || !decision) {
+      if (!reviewId || !decision) {
+        const response: ApiResponse = {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Validation failed: reviewId and decision are required',
+            details: { missingFields: ['reviewId', 'decision'].filter((f) => !body[f]) },
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 400 });
+      }
+
+      if (!VALID_DECISIONS.includes(decision.toUpperCase())) {
+        const response: ApiResponse = {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: `Invalid decision. Must be one of: ${VALID_DECISIONS.join(', ')}`,
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 400 });
+      }
+
+      if (['REVOKE', 'ESCALATE'].includes(decision.toUpperCase()) && !justification) {
+        const response: ApiResponse = {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: `Justification is required when decision is ${decision.toUpperCase()}`,
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 400 });
+      }
+
+      // Simulated campaign lookup
+      const knownCampaigns = ['cert-001', 'cert-002'];
+      if (!knownCampaigns.includes(id)) {
+        const response: ApiResponse = {
+          success: false,
+          error: {
+            code: 'E4001',
+            message: `Access certification campaign with id '${id}' not found`,
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
+        };
+        return NextResponse.json(response, { status: 404 });
+      }
+
+      const reviewDecision = {
+        reviewId,
+        campaignId: id,
+        tenantId: 'tenant-1',
+        decision: decision.toUpperCase(),
+        justification: justification || null,
+        decidedBy: 'usr-current', // from auth context in production
+        decidedAt: new Date().toISOString(),
+        accessItemDecisions: body.accessItemDecisions || [],
+        followUpActions:
+          decision.toUpperCase() === 'REVOKE'
+            ? [
+                {
+                  action: 'REVOKE_ACCESS',
+                  system: 'all',
+                  scheduledFor: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                },
+              ]
+            : [],
+        updatedAt: new Date().toISOString(),
+      };
+
+      const response: ApiResponse = {
+        success: true,
+        data: reviewDecision,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      };
+
+      return NextResponse.json(response, { status: 201 });
+    } catch (_error) {
       const response: ApiResponse = {
         success: false,
         error: {
-          code: 'E2001',
-          message: 'Validation failed: reviewId and decision are required',
-          details: { missingFields: ['reviewId', 'decision'].filter((f) => !body[f]) },
+          code: 'E5001',
+          message: 'Failed to submit review decision',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
         meta: {
           timestamp: new Date().toISOString(),
@@ -187,106 +316,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { _user, param
           apiVersion: 'v1',
         },
       };
-      return NextResponse.json(response, { status: 400 });
+      return NextResponse.json(response, { status: 500 });
     }
-
-    if (!VALID_DECISIONS.includes(decision.toUpperCase())) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E2001',
-          message: `Invalid decision. Must be one of: ${VALID_DECISIONS.join(', ')}`,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 400 });
-    }
-
-    if (['REVOKE', 'ESCALATE'].includes(decision.toUpperCase()) && !justification) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E2001',
-          message: `Justification is required when decision is ${decision.toUpperCase()}`,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 400 });
-    }
-
-    // Simulated campaign lookup
-    const knownCampaigns = ['cert-001', 'cert-002'];
-    if (!knownCampaigns.includes(id)) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E4001',
-          message: `Access certification campaign with id '${id}' not found`,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    const reviewDecision = {
-      reviewId,
-      campaignId: id,
-      tenantId: 'tenant-1',
-      decision: decision.toUpperCase(),
-      justification: justification || null,
-      decidedBy: 'usr-current', // from auth context in production
-      decidedAt: new Date().toISOString(),
-      accessItemDecisions: body.accessItemDecisions || [],
-      followUpActions:
-        decision.toUpperCase() === 'REVOKE'
-          ? [
-              {
-                action: 'REVOKE_ACCESS',
-                system: 'all',
-                scheduledFor: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-              },
-            ]
-          : [],
-      updatedAt: new Date().toISOString(),
-    };
-
-    const response: ApiResponse = {
-      success: true,
-      data: reviewDecision,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 201 });
-  } catch (_error) {
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to submit review decision',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-    return NextResponse.json(response, { status: 500 });
   }
-});
+);

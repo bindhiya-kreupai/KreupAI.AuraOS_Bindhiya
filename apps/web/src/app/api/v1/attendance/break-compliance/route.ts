@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -38,6 +39,20 @@ interface BreakComplianceEntry {
  * - endDate (optional): Period end date (YYYY-MM-DD), defaults to end of current week
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+  const { permissions } = context;
+  if (!permissions.includes('attendance:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing attendance:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { searchParams } = new URL(request.url);
     const tenantId = context.user.tenantId;
@@ -64,11 +79,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         punchType: { in: ['BREAK_START', 'BREAK_END'] },
         punchDate: { gte: periodStart, lte: periodEnd },
       },
-      orderBy: [
-        { employeeId: 'asc' },
-        { punchDate: 'asc' },
-        { punchTime: 'asc' },
-      ],
+      orderBy: [{ employeeId: 'asc' }, { punchDate: 'asc' }, { punchTime: 'asc' }],
     });
 
     // Get unique employee IDs from break punches
@@ -86,10 +97,9 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     });
 
     // Combine all employee IDs
-    const allEmployeeIds = [...new Set([
-      ...employeeIds,
-      ...attendanceRecords.map((r) => r.employeeId),
-    ])];
+    const allEmployeeIds = [
+      ...new Set([...employeeIds, ...attendanceRecords.map((r) => r.employeeId)]),
+    ];
 
     // Look up employees
     const employees = await prisma.employee.findMany({
@@ -145,7 +155,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
           sortedPunches[i].punchType === 'BREAK_START' &&
           sortedPunches[i + 1]?.punchType === 'BREAK_END'
         ) {
-          const breakMs = sortedPunches[i + 1].punchTime.getTime() - sortedPunches[i].punchTime.getTime();
+          const breakMs =
+            sortedPunches[i + 1].punchTime.getTime() - sortedPunches[i].punchTime.getTime();
           actualBreakMinutes += Math.floor(breakMs / (1000 * 60));
         }
       }
@@ -206,9 +217,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     const compliantCount = entries.filter((e) => e.isCompliant).length;
     const nonCompliantCount = entries.filter((e) => !e.isCompliant).length;
     const totalEmployees = new Set(entries.map((e) => e.employeeId)).size;
-    const complianceRate = entries.length > 0
-      ? parseFloat(((compliantCount / entries.length) * 100).toFixed(1))
-      : 100;
+    const complianceRate =
+      entries.length > 0 ? parseFloat(((compliantCount / entries.length) * 100).toFixed(1)) : 100;
 
     const reportData = {
       reportDate: new Date().toISOString(),

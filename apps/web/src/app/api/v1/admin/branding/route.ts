@@ -1,9 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  const { user } = context;
-  const tenantId = user.tenantId;
+  const { user, permissions } = context;
+  if (!permissions.includes('admin/branding:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing admin/branding:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
+  const _tenantId = user.tenantId;
 
   const brandingConfig = {
     companyName: 'KreupAI Technologies',
@@ -63,8 +77,21 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
 });
 
 export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  const { user } = context;
-  const tenantId = user.tenantId;
+  const { user, permissions } = context;
+  if (!permissions.includes('admin/branding:update')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing admin/branding:update permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
+  const _tenantId = user.tenantId;
 
   const body = await request.json();
 

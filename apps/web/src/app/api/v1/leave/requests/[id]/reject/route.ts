@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { LeaveService } from '@/lib/services/leave.service';
 import { auditMiddleware } from '@/lib/middleware/audit.middleware';
@@ -10,7 +11,20 @@ import { auditMiddleware } from '@/lib/middleware/audit.middleware';
 export const PUT = auditMiddleware.rejectLeaveRequest(
   withEnhancedAuth(async (request: NextRequest, context: any) => {
     try {
-      const { user, params } = context;
+      const { user, params, permissions } = context;
+      if (!permissions.includes('leave:update')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing leave:update permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
       const body = await request.json();
 
       const { reason } = body;
@@ -49,9 +63,11 @@ export const PUT = auditMiddleware.rejectLeaveRequest(
         },
       });
     } catch (error: any) {
-      const status = error.message?.includes('not found') ? 404
-        : error.message?.includes('already processed') ? 409
-        : 400;
+      const status = error.message?.includes('not found')
+        ? 404
+        : error.message?.includes('already processed')
+          ? 409
+          : 400;
 
       return NextResponse.json(
         {

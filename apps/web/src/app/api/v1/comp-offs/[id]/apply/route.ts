@@ -1,10 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { OvertimeService } from '@/lib/services/overtime.service';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, params } = context;
+    const { user, params, permissions } = context;
+    if (!permissions.includes('comp-offs:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing comp-offs:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { id } = params;
     const body = await request.json();
     const { appliedDate } = body;
@@ -12,6 +26,9 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     const compOff = await OvertimeService.applyCompOff(id, user.tenantId, new Date(appliedDate));
     return NextResponse.json({ success: true, data: compOff });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: { code: 'E3001', message: error.message } }, { status: 400 });
+    return NextResponse.json(
+      { success: false, error: { code: 'E3001', message: error.message } },
+      { status: 400 }
+    );
   }
 });

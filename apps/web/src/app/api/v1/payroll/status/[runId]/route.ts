@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -8,7 +9,20 @@ import { prisma } from '@aura/database';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('payroll:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing payroll:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { runId } = context.params;
 
     const run = await prisma.payrollRun.findFirst({
@@ -21,7 +35,11 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         {
           success: false,
           error: { code: 'E4001', message: 'Payroll run not found' },
-          meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
         { status: 404 }
       );
@@ -49,7 +67,11 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         notes: run.notes,
         createdAt: run.createdAt.toISOString(),
       },
-      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     });
   } catch (error) {
     console.error('[Payroll Status API] GET Error:', error);
@@ -57,7 +79,11 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       {
         success: false,
         error: { code: 'E5001', message: 'Failed to fetch payroll status' },
-        meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
       { status: 500 }
     );

@@ -1,18 +1,31 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { ServiceProxy } from '@/lib/services/service-proxy';
 
 export const GET = withEnhancedAuth(async (request, context) => {
   try {
-    const { user } = context;
-    const tenantId = user.tenantId;
+    const { user, permissions } = context;
+    if (!permissions.includes('analytics:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing analytics:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
+    const _tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'current';
 
     // Fetch headcount analytics from microservice
     const result = await ServiceProxy.get('analytics', '/reports/headcount', {
       tenantId: user.tenantId,
-      period
+      period,
     });
 
     return NextResponse.json({ success: true, data: result });

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -6,7 +7,20 @@ export const dynamic = 'force-dynamic';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('benefits/enrollment:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing benefits/enrollment:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const now = new Date();
 
     // Find current active enrollment window
@@ -71,9 +85,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     if (currentWindow) {
       const daysRemaining = Math.max(
         0,
-        Math.ceil(
-          (currentWindow.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-        )
+        Math.ceil((currentWindow.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
       );
       currentPeriod = {
         id: currentWindow.id,
@@ -91,9 +103,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     }
 
     // Determine enrollment actions based on enrolled categories
-    const enrolledCategories = new Set(
-      employeeEnrollments.map((e) => e.plan.category)
-    );
+    const enrolledCategories = new Set(employeeEnrollments.map((e) => e.plan.category));
     const allBenefitCategories = [
       'HEALTH_INSURANCE',
       'DENTAL',
@@ -105,9 +115,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     const requiredActions = allBenefitCategories.map((cat) => {
       const catLower = cat.toLowerCase().replace(/_/g, '-');
       const isCompleted = enrolledCategories.has(cat);
-      const lastEnrollment = employeeEnrollments.find(
-        (e) => e.plan.category === cat
-      );
+      const lastEnrollment = employeeEnrollments.find((e) => e.plan.category === cat);
       return {
         action: `review_${catLower.replace(/-/g, '_')}_plan`,
         description: `Review and confirm ${catLower.replace(/-/g, ' ')} plan selection`,
@@ -118,13 +126,10 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
     const completedCount = requiredActions.filter((a) => a.completed).length;
     const completionPercentage =
-      requiredActions.length > 0
-        ? Math.round((completedCount / requiredActions.length) * 100)
-        : 0;
+      requiredActions.length > 0 ? Math.round((completedCount / requiredActions.length) * 100) : 0;
 
-    const lastActivity = employeeEnrollments.length > 0
-      ? employeeEnrollments[0].updatedAt.toISOString()
-      : null;
+    const lastActivity =
+      employeeEnrollments.length > 0 ? employeeEnrollments[0].updatedAt.toISOString() : null;
 
     // Build employee status
     const employeeStatus = {

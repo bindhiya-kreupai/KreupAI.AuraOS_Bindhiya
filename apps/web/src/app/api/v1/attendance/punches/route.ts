@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { TimeTrackingService } from '@/lib/services/time-tracking.service';
 import { withEnhancedAuth } from '@/lib/auth';
 import { withAudit } from '@/lib/middleware/audit.middleware';
@@ -6,7 +7,20 @@ import { AuditAction } from '@/lib/audit/audit.service';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('attendance:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing attendance:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const filter = {
@@ -39,23 +53,39 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
   }
 });
 
-export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
-    body.tenantId = user.tenantId;
+export const POST = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, permissions } = context;
+      if (!permissions.includes('attendance:create')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing attendance:create permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
+      const body = await request.json();
+      body.tenantId = user.tenantId;
 
-    const punch = await TimeTrackingService.createPunch(body);
+      const punch = await TimeTrackingService.createPunch(body);
 
-    return NextResponse.json({ success: true, data: punch }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: { code: 'E1001', message: error.message } },
-      { status: 400 }
-    );
+      return NextResponse.json({ success: true, data: punch }, { status: 201 });
+    } catch (error: any) {
+      return NextResponse.json(
+        { success: false, error: { code: 'E1001', message: error.message } },
+        { status: 400 }
+      );
+    }
+  }),
+  {
+    action: AuditAction.ATTENDANCE_MARKED,
+    resourceType: 'attendance_punch',
+    captureRequestBody: true,
   }
-}), {
-  action: AuditAction.ATTENDANCE_MARKED,
-  resourceType: 'attendance_punch',
-  captureRequestBody: true,
-});
+);

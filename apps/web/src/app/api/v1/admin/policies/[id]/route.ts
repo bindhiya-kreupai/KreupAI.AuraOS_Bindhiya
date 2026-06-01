@@ -55,8 +55,21 @@ const mockPolicyDetail: Record<string, any> = {
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, params } = context;
-    const tenantId = user.tenantId;
+    const { user, params, permissions } = context;
+    if (!permissions.includes('admin/policies:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing admin/policies:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
+    const _tenantId = user.tenantId;
     const { id } = params;
 
     const policy = mockPolicyDetail[id];
@@ -193,7 +206,7 @@ export const POST = withAudit(
   withEnhancedAuth(async (request: NextRequest, context: any) => {
     try {
       const { user, params } = context;
-      const tenantId = user.tenantId;
+      const _tenantId = user.tenantId;
       const { id } = params;
       const { searchParams } = new URL(request.url);
       const action = searchParams.get('action');

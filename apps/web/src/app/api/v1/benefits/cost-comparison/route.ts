@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -6,7 +7,20 @@ export const dynamic = 'force-dynamic';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('benefits/cost-comparison:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing benefits/cost-comparison:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category') || 'HEALTH_INSURANCE';
     const coverageLevel = searchParams.get('coverageLevel') || 'employee_only';
@@ -53,10 +67,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         : { individual: 0, family: 0 };
 
       // Estimate annual costs based on deductible and premiums
-      const employeeOnlyCoverage = coverageLevels.find(
-        (c) => c.level === 'employee_only'
-      );
-      const annualEmployeePremium = (employeeOnlyCoverage?.annualEmployeeCost ?? 0);
+      const employeeOnlyCoverage = coverageLevels.find((c) => c.level === 'employee_only');
+      const annualEmployeePremium = employeeOnlyCoverage?.annualEmployeeCost ?? 0;
       const estimatedAnnualCost = {
         low: annualEmployeePremium + deductible.individual * 0.1,
         medium: annualEmployeePremium + deductible.individual * 0.5,
@@ -65,7 +77,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
       // Determine HSA eligibility from coverage JSON or plan tier
       const coverageData = plan.coverage as Record<string, unknown> | null;
-      const hsaEligible = coverageData?.hsaEligible === true ||
+      const hsaEligible =
+        coverageData?.hsaEligible === true ||
         plan.planTier === 'BASIC' ||
         (plan.deductible != null && plan.deductible >= 1600);
 
@@ -96,12 +109,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         return { planId: p.planId, cost: level?.annualEmployeeCost ?? 0 };
       });
 
-      const minCost = annualCosts.reduce((min, c) =>
-        c.cost < min.cost ? c : min
-      );
-      const maxCost = annualCosts.reduce((max, c) =>
-        c.cost > max.cost ? c : max
-      );
+      const minCost = annualCosts.reduce((min, c) => (c.cost < min.cost ? c : min));
+      const maxCost = annualCosts.reduce((max, c) => (c.cost > max.cost ? c : max));
 
       savings = {
         lowestCostPlan: minCost.planId,
@@ -176,7 +185,7 @@ function buildCoverageLevels(plan: {
   }[] = [];
 
   // Check if premium rates exist for detailed tier pricing
-  const ratesByLevel = new Map<string, typeof plan.premiumRates[0]>();
+  const ratesByLevel = new Map<string, (typeof plan.premiumRates)[0]>();
   for (const rate of plan.premiumRates) {
     const levelKey = rate.coverageLevel.toLowerCase();
     if (!ratesByLevel.has(levelKey)) {
@@ -215,9 +224,7 @@ function buildCoverageLevels(plan: {
     const rate = ratesByLevel.get(tier.enumKey.toLowerCase()) || ratesByLevel.get(tier.level);
     const employeeMonthlyCost = rate ? rate.employeePremium : tier.defaultEmployee;
     const employerMonthlyCost = rate ? rate.employerPremium : tier.defaultEmployer;
-    const totalMonthlyCost = rate
-      ? rate.totalPremium
-      : employeeMonthlyCost + employerMonthlyCost;
+    const totalMonthlyCost = rate ? rate.totalPremium : employeeMonthlyCost + employerMonthlyCost;
 
     levels.push({
       level: tier.level,

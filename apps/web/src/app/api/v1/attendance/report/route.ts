@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -40,6 +41,20 @@ interface ApiResponse<T = unknown> {
  * - limit (optional): Records per page (default: 20, max: 100)
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+  const { permissions } = context;
+  if (!permissions.includes('attendance:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing attendance:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { searchParams } = new URL(request.url);
     const tenantId = context.user.tenantId;
@@ -158,14 +173,17 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     }
 
     // Calculate total working days in the range
-    const totalDaysInRange = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const totalDaysInRange =
+      Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
     // Build report for each employee
     const report = employees.map((emp) => {
       const empRecords = recordsByEmployee.get(emp.id) || [];
       const empRegs = regByEmployee.get(emp.id) || { total: 0, pending: 0 };
 
-      const presentDays = empRecords.filter((r) => ['PRESENT', 'LATE', 'EARLY_OUT'].includes(r.status)).length;
+      const presentDays = empRecords.filter((r) =>
+        ['PRESENT', 'LATE', 'EARLY_OUT'].includes(r.status)
+      ).length;
       const absentDays = empRecords.filter((r) => r.status === 'ABSENT').length;
       const leaveDays = empRecords.filter((r) => r.status === 'ON_LEAVE').length;
       const halfDays = empRecords.filter((r) => r.status === 'HALF_DAY').length;
@@ -175,14 +193,15 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       const earlyLeaveDays = empRecords.filter((r) => r.isEarlyOut).length;
 
       const totalWorkMinutes = Math.round(empRecords.reduce((sum, r) => sum + r.workHours * 60, 0));
-      const totalOvertimeMinutes = Math.round(empRecords.reduce((sum, r) => sum + r.overtimeHours * 60, 0));
+      const totalOvertimeMinutes = Math.round(
+        empRecords.reduce((sum, r) => sum + r.overtimeHours * 60, 0)
+      );
       const overtimeDays = empRecords.filter((r) => r.overtimeHours > 0).length;
 
       // For late/early metrics, we approximate from the records
       const workingDays = totalDaysInRange - weekendDays - holidays;
-      const attendancePercentage = workingDays > 0
-        ? parseFloat(((presentDays / workingDays) * 100).toFixed(2))
-        : 0;
+      const attendancePercentage =
+        workingDays > 0 ? parseFloat(((presentDays / workingDays) * 100).toFixed(2)) : 0;
 
       return {
         employeeId: emp.id,
@@ -203,7 +222,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         totalEarlyLeaveMinutes: 0,
         overtimeDays,
         totalOvertimeMinutes,
-        averageOvertimeMinutes: overtimeDays > 0 ? Math.round(totalOvertimeMinutes / overtimeDays) : 0,
+        averageOvertimeMinutes:
+          overtimeDays > 0 ? Math.round(totalOvertimeMinutes / overtimeDays) : 0,
         totalWorkMinutes,
         attendancePercentage,
         regularizationRequests: empRegs.total,

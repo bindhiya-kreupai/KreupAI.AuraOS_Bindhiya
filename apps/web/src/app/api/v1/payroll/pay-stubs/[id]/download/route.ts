@@ -18,7 +18,20 @@ interface RouteContext {
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('payroll:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing payroll:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { id } = await (context as RouteContext).params;
 
     // Fetch payslip with payroll run (for tenant check + month + config)
@@ -64,8 +77,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     ]);
 
     // Parse earnings and deductions JSON
-    const earningsJson = (payslip.earnings as Array<{ code: string; name: string; nameAr?: string; amount: number }>) || [];
-    const deductionsJson = (payslip.deductions as Array<{ code: string; name: string; nameAr?: string; amount: number }>) || [];
+    const earningsJson =
+      (payslip.earnings as Array<{
+        code: string;
+        name: string;
+        nameAr?: string;
+        amount: number;
+      }>) || [];
+    const deductionsJson =
+      (payslip.deductions as Array<{
+        code: string;
+        name: string;
+        nameAr?: string;
+        amount: number;
+      }>) || [];
 
     // Build statutory deductions from individual fields
     const statutoryDeductions: ServicePayslip['statutoryDeductions'] = [];
@@ -74,28 +99,42 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     if (countryCode === 'IN') {
       if (Number(payslip.employeePF) > 0 || Number(payslip.employerPF) > 0) {
         statutoryDeductions.push({
-          code: 'PF', name: 'Provident Fund', nameAr: 'صندوق التوفير',
-          employeeAmount: Number(payslip.employeePF), employerAmount: Number(payslip.employerPF),
+          code: 'PF',
+          name: 'Provident Fund',
+          nameAr: 'صندوق التوفير',
+          employeeAmount: Number(payslip.employeePF),
+          employerAmount: Number(payslip.employerPF),
           totalAmount: Number(payslip.employeePF) + Number(payslip.employerPF),
-          basis: Number(payslip.basicSalary), rate: 12,
+          basis: Number(payslip.basicSalary),
+          rate: 12,
         });
       }
       if (Number(payslip.employeeESI) > 0 || Number(payslip.employerESI) > 0) {
         statutoryDeductions.push({
-          code: 'ESI', name: 'Employee State Insurance', nameAr: 'التأمين الصحي',
-          employeeAmount: Number(payslip.employeeESI), employerAmount: Number(payslip.employerESI),
+          code: 'ESI',
+          name: 'Employee State Insurance',
+          nameAr: 'التأمين الصحي',
+          employeeAmount: Number(payslip.employeeESI),
+          employerAmount: Number(payslip.employerESI),
           totalAmount: Number(payslip.employeeESI) + Number(payslip.employerESI),
-          basis: Number(payslip.grossSalary), rate: 0.75,
+          basis: Number(payslip.grossSalary),
+          rate: 0.75,
         });
       }
     } else if (countryCode === 'SA') {
       if (Number(payslip.employeePension) > 0 || Number(payslip.employerGOSI) > 0) {
         statutoryDeductions.push({
-          code: 'GOSI', name: 'GOSI Contribution', nameAr: 'اشتراك التأمينات',
+          code: 'GOSI',
+          name: 'GOSI Contribution',
+          nameAr: 'اشتراك التأمينات',
           employeeAmount: Number(payslip.employeePension) + Number(payslip.employeeSaned),
           employerAmount: Number(payslip.employerGOSI),
-          totalAmount: Number(payslip.employeePension) + Number(payslip.employeeSaned) + Number(payslip.employerGOSI),
-          basis: Number(payslip.basicSalary), rate: 9.75,
+          totalAmount:
+            Number(payslip.employeePension) +
+            Number(payslip.employeeSaned) +
+            Number(payslip.employerGOSI),
+          basis: Number(payslip.basicSalary),
+          rate: 9.75,
         });
       }
     }
@@ -118,7 +157,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       unpaidLeaveDays: 0,
       lopDays: Number(payslip.lopDays),
       basicSalary: Number(payslip.basicSalary),
-      earnings: earningsJson.map(e => ({
+      earnings: earningsJson.map((e) => ({
         componentCode: e.code,
         componentName: e.name,
         componentNameAr: e.nameAr || e.name,
@@ -128,7 +167,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         isTaxable: true,
       })),
       totalEarnings: Number(payslip.totalEarnings),
-      deductions: deductionsJson.map(d => ({
+      deductions: deductionsJson.map((d) => ({
         componentCode: d.code,
         componentName: d.name,
         componentNameAr: d.nameAr || d.name,

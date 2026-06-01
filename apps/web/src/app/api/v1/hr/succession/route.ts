@@ -10,6 +10,20 @@ export const dynamic = 'force-dynamic';
  * Get succession plans for key positions
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { permissions } = context;
+  if (!permissions.includes('hr/succession:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing hr/succession:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { _user } = context;
     const { searchParams } = new URL(request.url);

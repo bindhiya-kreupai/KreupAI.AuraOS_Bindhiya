@@ -10,6 +10,20 @@ export const dynamic = 'force-dynamic';
  * Mark a compliance training as complete (manual completion for offline/external training)
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  const { permissions } = context;
+  if (!permissions.includes('learning/compliance-training:create')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing learning/compliance-training:create permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const { _user } = context;
     const { id } = context.params; // enrollment ID

@@ -1,10 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { ConfirmationService } from '@/lib/services/confirmation.service';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, params } = context;
+    const { user, params, permissions } = context;
+    if (!permissions.includes('confirmations:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing confirmations:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { id } = params;
 
     const confirmation = await ConfirmationService.findById(id, user.tenantId);
@@ -26,7 +40,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
 
 export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, params } = context;
+    const { user, params, permissions } = context;
+    if (!permissions.includes('confirmations:update')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing confirmations:update permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { id } = params;
     const body = await request.json();
 
@@ -49,7 +76,20 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
 
 export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, params } = context;
+    const { user, params, permissions } = context;
+    if (!permissions.includes('confirmations:delete')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing confirmations:delete permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { id } = params;
 
     const confirmation = await ConfirmationService.delete(id, user.tenantId);

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { ShiftManagementService } from '@/lib/services/shift-management.service';
 import { withEnhancedAuth } from '@/lib/auth';
 import { withAudit } from '@/lib/middleware/audit.middleware';
@@ -6,12 +7,30 @@ import { AuditAction } from '@/lib/audit/audit.service';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('shifts:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing shifts:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
 
     const filter = {
       tenantId: user.tenantId,
-      isActive: searchParams.get('isActive') === 'true' ? true : searchParams.get('isActive') === 'false' ? false : undefined,
+      isActive:
+        searchParams.get('isActive') === 'true'
+          ? true
+          : searchParams.get('isActive') === 'false'
+            ? false
+            : undefined,
       page: Number(searchParams.get('page')) || 1,
       limit: Number(searchParams.get('limit')) || 20,
       sortBy: searchParams.get('sortBy') || 'name',
@@ -37,23 +56,39 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
   }
 });
 
-export const POST = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
-    body.tenantId = user.tenantId;
+export const POST = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, permissions } = context;
+      if (!permissions.includes('shifts:create')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing shifts:create permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
+      const body = await request.json();
+      body.tenantId = user.tenantId;
 
-    const shift = await ShiftManagementService.createShift(body);
+      const shift = await ShiftManagementService.createShift(body);
 
-    return NextResponse.json({ success: true, data: shift }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: { code: 'E1001', message: error.message } },
-      { status: 400 }
-    );
+      return NextResponse.json({ success: true, data: shift }, { status: 201 });
+    } catch (error: any) {
+      return NextResponse.json(
+        { success: false, error: { code: 'E1001', message: error.message } },
+        { status: 400 }
+      );
+    }
+  }),
+  {
+    action: AuditAction.EMPLOYEE_UPDATED,
+    resourceType: 'shift',
+    captureRequestBody: true,
   }
-}), {
-  action: AuditAction.EMPLOYEE_UPDATED,
-  resourceType: 'shift',
-  captureRequestBody: true,
-});
+);

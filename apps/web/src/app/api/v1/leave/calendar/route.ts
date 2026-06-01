@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -17,7 +18,20 @@ export const dynamic = 'force-dynamic';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('leave:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing leave:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
     const departmentId = searchParams.get('departmentId');
@@ -26,35 +40,41 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     const view = searchParams.get('view') || 'team';
 
     if (!companyId || !startDate || !endDate) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'companyId, startDate, and endDate are required in query parameters',
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'companyId, startDate, and endDate are required in query parameters',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 400 });
+        { status: 400 }
+      );
     }
 
     // Validate date format
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'Invalid date format. Use YYYY-MM-DD',
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Invalid date format. Use YYYY-MM-DD',
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            apiVersion: 'v1',
+          },
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      }, { status: 400 });
+        { status: 400 }
+      );
     }
 
     const rangeStart = new Date(startDate);
@@ -74,7 +94,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       where: employeeWhere,
       select: { id: true },
     });
-    const employeeIds = employees.map(e => e.id);
+    const employeeIds = employees.map((e) => e.id);
     const totalTeamSize = employeeIds.length;
 
     // Get approved leave requests in date range for matching employees
@@ -100,20 +120,21 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     });
 
     // Get employee details for the ones on leave
-    const leaveEmployeeIds = [...new Set(leaveRequests.map(lr => lr.employeeId))];
-    const leaveEmployees = leaveEmployeeIds.length > 0
-      ? await prisma.employee.findMany({
-          where: { id: { in: leaveEmployeeIds } },
-          select: {
-            id: true,
-            employeeCode: true,
-            firstName: true,
-            lastName: true,
-            department: { select: { name: true } },
-          },
-        })
-      : [];
-    const employeeMap = new Map(leaveEmployees.map(e => [e.id, e]));
+    const leaveEmployeeIds = [...new Set(leaveRequests.map((lr) => lr.employeeId))];
+    const leaveEmployees =
+      leaveEmployeeIds.length > 0
+        ? await prisma.employee.findMany({
+            where: { id: { in: leaveEmployeeIds } },
+            select: {
+              id: true,
+              employeeCode: true,
+              firstName: true,
+              lastName: true,
+              department: { select: { name: true } },
+            },
+          })
+        : [];
+    const employeeMap = new Map(leaveEmployees.map((e) => [e.id, e]));
 
     // Get holidays in the date range
     const holidays = await prisma.holiday.findMany({
@@ -130,13 +151,16 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         type: true,
       },
     });
-    const holidayMap = new Map(holidays.map(h => [h.date, h]));
+    const holidayMap = new Map(holidays.map((h) => [h.date, h]));
 
     // Build day-by-day calendar
-    const dayMap = new Map<string, {
-      employees: any[];
-      publicHoliday: any;
-    }>();
+    const dayMap = new Map<
+      string,
+      {
+        employees: any[];
+        publicHoliday: any;
+      }
+    >();
 
     // Initialize all dates in range
     const current = new Date(rangeStart);
@@ -219,9 +243,12 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
       const onLeave = dayEntry.employees.length;
       const present = isHoliday || isWeekend ? 0 : Math.max(0, totalTeamSize - onLeave);
-      const percentage = totalTeamSize > 0
-        ? (isHoliday || isWeekend ? 0 : Math.round((present / totalTeamSize) * 100 * 10) / 10)
-        : 0;
+      const percentage =
+        totalTeamSize > 0
+          ? isHoliday || isWeekend
+            ? 0
+            : Math.round((present / totalTeamSize) * 100 * 10) / 10
+          : 0;
 
       if (!isWeekend && !isHoliday) {
         totalStrengthPercentage += percentage;
@@ -247,51 +274,56 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     }
 
     const totalDays = leaves.length;
-    const averageTeamStrength = workingDayCount > 0
-      ? Math.round((totalStrengthPercentage / workingDayCount) * 10) / 10
-      : 0;
+    const averageTeamStrength =
+      workingDayCount > 0 ? Math.round((totalStrengthPercentage / workingDayCount) * 10) / 10 : 0;
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        companyId,
-        departmentId,
-        startDate,
-        endDate,
-        view,
-        leaves,
-        summary: {
-          totalDays,
-          workingDays: totalWorkingDays,
-          publicHolidays: totalPublicHolidays,
-          weekendDays: totalWeekendDays,
-          averageTeamStrength,
-          peakAbsenceDate: peakAbsenceDate || null,
-          peakAbsenceCount,
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          companyId,
+          departmentId,
+          startDate,
+          endDate,
+          view,
+          leaves,
+          summary: {
+            totalDays,
+            workingDays: totalWorkingDays,
+            publicHolidays: totalPublicHolidays,
+            weekendDays: totalWeekendDays,
+            averageTeamStrength,
+            peakAbsenceDate: peakAbsenceDate || null,
+            peakAbsenceCount,
+          },
+          generatedAt: new Date().toISOString(),
         },
-        generatedAt: new Date().toISOString(),
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    }, { status: 200 });
+      { status: 200 }
+    );
   } catch (error) {
     console.error('[Leave Calendar API] GET Error:', error);
 
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to fetch leave calendar',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E5001',
+          message: 'Failed to fetch leave calendar',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
       },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    }, { status: 500 });
+      { status: 500 }
+    );
   }
 });

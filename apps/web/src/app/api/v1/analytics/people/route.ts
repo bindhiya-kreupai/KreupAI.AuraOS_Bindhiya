@@ -1,10 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
 export const GET = withEnhancedAuth(async (request, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('analytics:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing analytics:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
     const department = searchParams.get('department');
@@ -30,7 +43,9 @@ export const GET = withEnhancedAuth(async (request, context) => {
       },
     });
 
-    const activeEmployees = employees.filter((e) => e.status.code === 'ACTIVE' || e.status.code === 'PROBATION');
+    const activeEmployees = employees.filter(
+      (e) => e.status.code === 'ACTIVE' || e.status.code === 'PROBATION'
+    );
     const totalEmployees = employees.length;
     const activeCount = activeEmployees.length;
 
@@ -50,7 +65,10 @@ export const GET = withEnhancedAuth(async (request, context) => {
       activeEmployees.length > 0
         ? Math.round(
             (activeEmployees.reduce(
-              (sum, e) => sum + (now.getTime() - new Date(e.joiningDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000),
+              (sum, e) =>
+                sum +
+                (now.getTime() - new Date(e.joiningDate).getTime()) /
+                  (365.25 * 24 * 60 * 60 * 1000),
               0
             ) /
               activeEmployees.length) *
@@ -58,7 +76,9 @@ export const GET = withEnhancedAuth(async (request, context) => {
           ) / 10
         : 0;
 
-    const newHiresThisMonth = employees.filter((e) => new Date(e.joiningDate) >= thisMonthStart).length;
+    const newHiresThisMonth = employees.filter(
+      (e) => new Date(e.joiningDate) >= thisMonthStart
+    ).length;
 
     const exitRequests = await prisma.exitRequest.findMany({
       where: {
@@ -113,11 +133,20 @@ export const GET = withEnhancedAuth(async (request, context) => {
       Array.from(deptMap.entries()).map(async ([deptName, empIds]) => {
         const headcount = empIds.length;
         const deptSalaries = empIds.map((id) => salaryMap.get(id) ?? 0).filter((s) => s > 0);
-        const avgSalary = deptSalaries.length > 0 ? Math.round(deptSalaries.reduce((s, v) => s + v, 0) / deptSalaries.length) : 0;
+        const avgSalary =
+          deptSalaries.length > 0
+            ? Math.round(deptSalaries.reduce((s, v) => s + v, 0) / deptSalaries.length)
+            : 0;
         const deptTenures = activeEmployees
           .filter((e) => empIds.includes(e.id))
-          .map((e) => (now.getTime() - new Date(e.joiningDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
-        const avgTenureDept = deptTenures.length > 0 ? Math.round((deptTenures.reduce((s, v) => s + v, 0) / deptTenures.length) * 10) / 10 : 0;
+          .map(
+            (e) =>
+              (now.getTime() - new Date(e.joiningDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000)
+          );
+        const avgTenureDept =
+          deptTenures.length > 0
+            ? Math.round((deptTenures.reduce((s, v) => s + v, 0) / deptTenures.length) * 10) / 10
+            : 0;
 
         const deptExits = await prisma.exitRequest.count({
           where: {
@@ -145,11 +174,15 @@ export const GET = withEnhancedAuth(async (request, context) => {
     );
 
     const allRatings = Array.from(latestRatingMap.values());
-    const avgRating = allRatings.length > 0 ? Math.round((allRatings.reduce((a, b) => a + b, 0) / allRatings.length) * 10) / 10 : 0;
+    const avgRating =
+      allRatings.length > 0
+        ? Math.round((allRatings.reduce((a, b) => a + b, 0) / allRatings.length) * 10) / 10
+        : 0;
 
-    const completedReviews = performanceReviews.filter((r) => r.finalRating !== null).length;
+    const _completedReviews = performanceReviews.filter((r) => r.finalRating !== null).length;
     const uniqueReviewedEmployees = new Set(performanceReviews.map((r) => r.employeeId)).size;
-    const reviewCompletionRate = totalEmployees > 0 ? Math.round((uniqueReviewedEmployees / totalEmployees) * 100) : 0;
+    const reviewCompletionRate =
+      totalEmployees > 0 ? Math.round((uniqueReviewedEmployees / totalEmployees) * 100) : 0;
 
     const highPerformers = allRatings.filter((r) => r >= 4.5).length;
     const solidPerformers = allRatings.filter((r) => r >= 3 && r < 4.5).length;
@@ -157,9 +190,21 @@ export const GET = withEnhancedAuth(async (request, context) => {
 
     const ratingDistribution = [
       { rating: 'Exceptional', count: allRatings.filter((r) => r >= 4.5).length, percentage: 0 },
-      { rating: 'Exceeds Expectations', count: allRatings.filter((r) => r >= 3.5 && r < 4.5).length, percentage: 0 },
-      { rating: 'Meets Expectations', count: allRatings.filter((r) => r >= 2.5 && r < 3.5).length, percentage: 0 },
-      { rating: 'Needs Improvement', count: allRatings.filter((r) => r >= 1.5 && r < 2.5).length, percentage: 0 },
+      {
+        rating: 'Exceeds Expectations',
+        count: allRatings.filter((r) => r >= 3.5 && r < 4.5).length,
+        percentage: 0,
+      },
+      {
+        rating: 'Meets Expectations',
+        count: allRatings.filter((r) => r >= 2.5 && r < 3.5).length,
+        percentage: 0,
+      },
+      {
+        rating: 'Needs Improvement',
+        count: allRatings.filter((r) => r >= 1.5 && r < 2.5).length,
+        percentage: 0,
+      },
       { rating: 'Unsatisfactory', count: allRatings.filter((r) => r < 1.5).length, percentage: 0 },
     ];
     const totalRatings = allRatings.length;
@@ -174,9 +219,14 @@ export const GET = withEnhancedAuth(async (request, context) => {
       where: { tenantId, exitType: 'RESIGNATION', status: { in: ['APPROVED', 'COMPLETED'] } },
     });
     const involuntaryExits = totalExitRequests - voluntaryExits;
-    const overallRetentionRate = totalEmployees > 0 ? Math.round(((totalEmployees - totalExitRequests) / totalEmployees) * 1000) / 10 : 100;
-    const voluntaryTurnoverRate = totalEmployees > 0 ? Math.round((voluntaryExits / totalEmployees) * 1000) / 10 : 0;
-    const involuntaryTurnoverRate = totalEmployees > 0 ? Math.round((involuntaryExits / totalEmployees) * 1000) / 10 : 0;
+    const overallRetentionRate =
+      totalEmployees > 0
+        ? Math.round(((totalEmployees - totalExitRequests) / totalEmployees) * 1000) / 10
+        : 100;
+    const voluntaryTurnoverRate =
+      totalEmployees > 0 ? Math.round((voluntaryExits / totalEmployees) * 1000) / 10 : 0;
+    const involuntaryTurnoverRate =
+      totalEmployees > 0 ? Math.round((involuntaryExits / totalEmployees) * 1000) / 10 : 0;
 
     const peopleAnalytics = {
       workforce: {
@@ -188,7 +238,10 @@ export const GET = withEnhancedAuth(async (request, context) => {
         newHiresThisMonth,
         separationsThisMonth,
         netGrowth: newHiresThisMonth - separationsThisMonth,
-        growthRate: totalEmployees > 0 ? Math.round(((newHiresThisMonth - separationsThisMonth) / totalEmployees) * 1000) / 10 : 0,
+        growthRate:
+          totalEmployees > 0
+            ? Math.round(((newHiresThisMonth - separationsThisMonth) / totalEmployees) * 1000) / 10
+            : 0,
         openPositions,
         timeToFill: 0,
       },
@@ -247,14 +300,59 @@ export const GET = withEnhancedAuth(async (request, context) => {
     return NextResponse.json({
       success: true,
       data: {
-        workforce: { totalEmployees: 0, activeEmployees: 0, onLeave: 0, averageTenure: 0, averageAge: 0, newHiresThisMonth: 0, separationsThisMonth: 0, netGrowth: 0, growthRate: 0, openPositions: 0, timeToFill: 0 },
+        workforce: {
+          totalEmployees: 0,
+          activeEmployees: 0,
+          onLeave: 0,
+          averageTenure: 0,
+          averageAge: 0,
+          newHiresThisMonth: 0,
+          separationsThisMonth: 0,
+          netGrowth: 0,
+          growthRate: 0,
+          openPositions: 0,
+          timeToFill: 0,
+        },
         demographics: { gender: [], ageDistribution: [], tenureDistribution: [] },
         departmentBreakdown: [],
-        engagement: { overallScore: 0, responseRate: 0, enps: 0, trend: [], topDrivers: [], areasOfConcern: [] },
-        performance: { averageRating: 0, reviewCompletionRate: 0, highPerformers: 0, solidPerformers: 0, lowPerformers: 0, ratingDistribution: [] },
-        retention: { overallRetentionRate: 0, voluntaryTurnoverRate: 0, involuntaryTurnoverRate: 0, avgTimeToTermination: 0, retentionByTenure: [], topExitReasons: [] },
-        costMetrics: { avgCostPerHire: 0, avgCostPerTermination: 0, trainingInvestmentPerEmployee: 0, revenuePerEmployee: 0, laborCostAsPercentOfRevenue: 0 },
-        riskIndicators: { attritionRisk: { high: 0, medium: 0, low: 0 }, criticalRolesAtRisk: 0, successionCoverage: 0, burnoutRisk: 0, complianceIssues: 0 },
+        engagement: {
+          overallScore: 0,
+          responseRate: 0,
+          enps: 0,
+          trend: [],
+          topDrivers: [],
+          areasOfConcern: [],
+        },
+        performance: {
+          averageRating: 0,
+          reviewCompletionRate: 0,
+          highPerformers: 0,
+          solidPerformers: 0,
+          lowPerformers: 0,
+          ratingDistribution: [],
+        },
+        retention: {
+          overallRetentionRate: 0,
+          voluntaryTurnoverRate: 0,
+          involuntaryTurnoverRate: 0,
+          avgTimeToTermination: 0,
+          retentionByTenure: [],
+          topExitReasons: [],
+        },
+        costMetrics: {
+          avgCostPerHire: 0,
+          avgCostPerTermination: 0,
+          trainingInvestmentPerEmployee: 0,
+          revenuePerEmployee: 0,
+          laborCostAsPercentOfRevenue: 0,
+        },
+        riskIndicators: {
+          attritionRisk: { high: 0, medium: 0, low: 0 },
+          criticalRolesAtRisk: 0,
+          successionCoverage: 0,
+          burnoutRisk: 0,
+          complianceIssues: 0,
+        },
         generatedAt: new Date().toISOString(),
         period: 'current',
         filters: { department: null },

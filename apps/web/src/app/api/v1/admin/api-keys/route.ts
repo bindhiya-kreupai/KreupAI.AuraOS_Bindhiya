@@ -1,11 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { withAudit } from '@/lib/middleware/audit.middleware';
 import { AuditAction } from '@/lib/audit/audit.service';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  const { user } = context;
-  const tenantId = user.tenantId;
+  const { user, permissions } = context;
+  if (!permissions.includes('admin/api-keys:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing admin/api-keys:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
+  const _tenantId = user.tenantId;
 
   const apiKeys = [
     {
@@ -79,7 +93,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
 export const POST = withAudit(
   withEnhancedAuth(async (request: NextRequest, context: any) => {
     const { user } = context;
-    const tenantId = user.tenantId;
+    const _tenantId = user.tenantId;
 
     const body = await request.json();
 
@@ -101,7 +115,11 @@ export const POST = withAudit(
     };
 
     return NextResponse.json(
-      { success: true, data: newKey, message: 'API key generated successfully. Store it securely.' },
+      {
+        success: true,
+        data: newKey,
+        message: 'API key generated successfully. Store it securely.',
+      },
       { status: 201 }
     );
   }),

@@ -13,7 +13,20 @@ import { withEnhancedAuth } from '@/lib/auth';
  * GET /api/v1/employment-types
  * List all employment types for the authenticated user's tenant
  */
-export const GET = withEnhancedAuth(async (request: NextRequest, { user }: any) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }: any) => {
+  if (!permissions.includes('employment-types:read')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing employment-types:read permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     logger.info({ tenantId: user.tenantId }, 'Fetching employment types list');
 

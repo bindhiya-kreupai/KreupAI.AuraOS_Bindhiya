@@ -126,45 +126,60 @@ const mockDeliveryLogs: Record<string, DeliveryLog[]> = {
   ],
 };
 
-export const GET = withEnhancedAuth(async (request: NextRequest, { _user, params }: any) => {
-  const { id } = await params;
-  const { searchParams } = new URL(request.url);
+export const GET = withEnhancedAuth(
+  async (request: NextRequest, { _user, params, permissions }: any) => {
+    if (!permissions.includes('webhooks:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing webhooks:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
+    const { id } = await params;
+    const { searchParams } = new URL(request.url);
 
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const limit = parseInt(searchParams.get('limit') || '20', 10);
-  const statusFilter = searchParams.get('status');
-  const eventFilter = searchParams.get('event');
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '20', 10);
+    const statusFilter = searchParams.get('status');
+    const eventFilter = searchParams.get('event');
 
-  const logs = mockDeliveryLogs[id];
+    const logs = mockDeliveryLogs[id];
 
-  if (!logs) {
-    return NextResponse.json({ error: `Webhook with id '${id}' not found` }, { status: 404 });
+    if (!logs) {
+      return NextResponse.json({ error: `Webhook with id '${id}' not found` }, { status: 404 });
+    }
+
+    let filtered = [...logs];
+
+    if (statusFilter) {
+      filtered = filtered.filter((log) => log.status === statusFilter);
+    }
+
+    if (eventFilter) {
+      filtered = filtered.filter((log) => log.event === eventFilter);
+    }
+
+    // Sort by timestamp descending (most recent first)
+    filtered.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    const total = filtered.length;
+    const totalPages = Math.ceil(total / limit);
+    const startIndex = (page - 1) * limit;
+    const paginated = filtered.slice(startIndex, startIndex + limit);
+
+    const pagination: PaginationMeta = {
+      page,
+      limit,
+      total,
+      totalPages,
+    };
+
+    return NextResponse.json({ data: paginated, pagination });
   }
-
-  let filtered = [...logs];
-
-  if (statusFilter) {
-    filtered = filtered.filter((log) => log.status === statusFilter);
-  }
-
-  if (eventFilter) {
-    filtered = filtered.filter((log) => log.event === eventFilter);
-  }
-
-  // Sort by timestamp descending (most recent first)
-  filtered.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-
-  const total = filtered.length;
-  const totalPages = Math.ceil(total / limit);
-  const startIndex = (page - 1) * limit;
-  const paginated = filtered.slice(startIndex, startIndex + limit);
-
-  const pagination: PaginationMeta = {
-    page,
-    limit,
-    total,
-    totalPages,
-  };
-
-  return NextResponse.json({ data: paginated, pagination });
-});
+);

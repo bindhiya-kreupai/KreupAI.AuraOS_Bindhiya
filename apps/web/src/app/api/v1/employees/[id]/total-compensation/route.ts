@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -10,7 +11,20 @@ export const dynamic = 'force-dynamic';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('employees:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing employees:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const url = new URL(request.url);
     const pathParts = url.pathname.split('/');
     const employeeId = pathParts[pathParts.indexOf('employees') + 1];
@@ -54,10 +68,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         employeeId,
         isActive: true,
         effectiveFrom: { lte: new Date(`${year}-12-31`) },
-        OR: [
-          { effectiveTo: null },
-          { effectiveTo: { gte: new Date(`${year}-01-01`) } },
-        ],
+        OR: [{ effectiveTo: null }, { effectiveTo: { gte: new Date(`${year}-01-01`) } }],
       },
       orderBy: { effectiveFrom: 'desc' },
     });
@@ -69,10 +80,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         employeeId,
         status: 'ACTIVE',
         effectiveFrom: { lte: new Date(`${year}-12-31`) },
-        OR: [
-          { effectiveTo: null },
-          { effectiveTo: { gte: new Date(`${year}-01-01`) } },
-        ],
+        OR: [{ effectiveTo: null }, { effectiveTo: { gte: new Date(`${year}-01-01`) } }],
       },
       include: {
         plan: {
@@ -95,7 +103,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     const payFrequency = salaryStructure?.payFrequency || 'MONTHLY';
 
     // Determine multiplier for annualizing salary
-    const annualMultiplier = payFrequency === 'MONTHLY' ? 12 : payFrequency === 'BIWEEKLY' ? 26 : 52;
+    const annualMultiplier =
+      payFrequency === 'MONTHLY' ? 12 : payFrequency === 'BIWEEKLY' ? 26 : 52;
     const annualBaseSalary = basicSalary * annualMultiplier;
     const annualGrossSalary = grossSalary * annualMultiplier;
 
@@ -115,26 +124,54 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     // Calculate annual employer benefits contribution
     const totalEmployerBenefits = benefitEnrollments.reduce((sum, enrollment) => {
       const freq = enrollment.paymentFrequency;
-      const multiplier = freq === 'MONTHLY' ? 12 : freq === 'BIWEEKLY' ? 26 : freq === 'WEEKLY' ? 52 : freq === 'QUARTERLY' ? 4 : 1;
-      return sum + (enrollment.employerPremium * multiplier);
+      const multiplier =
+        freq === 'MONTHLY'
+          ? 12
+          : freq === 'BIWEEKLY'
+            ? 26
+            : freq === 'WEEKLY'
+              ? 52
+              : freq === 'QUARTERLY'
+                ? 4
+                : 1;
+      return sum + enrollment.employerPremium * multiplier;
     }, 0);
 
     const totalEmployeeBenefits = benefitEnrollments.reduce((sum, enrollment) => {
       const freq = enrollment.paymentFrequency;
-      const multiplier = freq === 'MONTHLY' ? 12 : freq === 'BIWEEKLY' ? 26 : freq === 'WEEKLY' ? 52 : freq === 'QUARTERLY' ? 4 : 1;
-      return sum + (enrollment.employeePremium * multiplier);
+      const multiplier =
+        freq === 'MONTHLY'
+          ? 12
+          : freq === 'BIWEEKLY'
+            ? 26
+            : freq === 'WEEKLY'
+              ? 52
+              : freq === 'QUARTERLY'
+                ? 4
+                : 1;
+      return sum + enrollment.employeePremium * multiplier;
     }, 0);
 
     // Insurance from salary structure
-    const medicalInsurance = salaryStructure ? Number(salaryStructure.medicalInsurance) * annualMultiplier : 0;
-    const lifeInsurance = salaryStructure ? Number(salaryStructure.lifeInsurance) * annualMultiplier : 0;
+    const medicalInsurance = salaryStructure
+      ? Number(salaryStructure.medicalInsurance) * annualMultiplier
+      : 0;
+    const lifeInsurance = salaryStructure
+      ? Number(salaryStructure.lifeInsurance) * annualMultiplier
+      : 0;
 
     // Other allowances
-    const otherAllowances = salaryStructure?.otherAllowances as Array<{ code: string; name: string; amount: number }> | null;
-    const totalOtherAllowances = (otherAllowances || []).reduce((sum, a) => sum + (a.amount || 0), 0) * annualMultiplier;
+    const otherAllowances = salaryStructure?.otherAllowances as Array<{
+      code: string;
+      name: string;
+      amount: number;
+    }> | null;
+    const totalOtherAllowances =
+      (otherAllowances || []).reduce((sum, a) => sum + (a.amount || 0), 0) * annualMultiplier;
 
     // Total compensation
-    const totalCompensation = annualGrossSalary + totalEmployerBenefits + medicalInsurance + lifeInsurance;
+    const totalCompensation =
+      annualGrossSalary + totalEmployerBenefits + medicalInsurance + lifeInsurance;
 
     const compensationData = {
       employeeId,

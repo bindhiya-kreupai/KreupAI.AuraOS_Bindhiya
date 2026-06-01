@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -26,7 +27,11 @@ const attendanceRecordSchema = z.object({
   employeeCode: z.string().min(1),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   clockInTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/),
-  clockOutTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/).optional().nullable(),
+  clockOutTime: z
+    .string()
+    .regex(/^\d{2}:\d{2}:\d{2}$/)
+    .optional()
+    .nullable(),
   status: z.enum(['PRESENT', 'ABSENT', 'HALF_DAY', 'ON_LEAVE', 'WEEKLY_OFF', 'HOLIDAY']).optional(),
   notes: z.string().max(500).optional().nullable(),
 });
@@ -56,6 +61,20 @@ interface ImportWarning {
  * Import attendance records in bulk from CSV/Excel
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+  const { permissions } = context;
+  if (!permissions.includes('attendance:create')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E4030',
+          message: 'Forbidden: missing attendance:create permission',
+          messageAr: 'ممنوع',
+        },
+      },
+      { status: 403 }
+    );
+  }
   try {
     const body = await request.json();
     const tenantId = context.user.tenantId;
@@ -133,7 +152,9 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
 
       const recordDate = new Date(record.date);
       const clockIn = new Date(`${record.date}T${record.clockInTime}`);
-      const clockOut = record.clockOutTime ? new Date(`${record.date}T${record.clockOutTime}`) : null;
+      const clockOut = record.clockOutTime
+        ? new Date(`${record.date}T${record.clockOutTime}`)
+        : null;
 
       // Calculate work hours
       let workMinutes = 0;

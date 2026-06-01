@@ -42,7 +42,11 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     return NextResponse.json({
       success: true,
       data: job,
-      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
+        apiVersion: 'v1',
+      },
     });
   } catch (error) {
     console.error('[Job Posting API] GET Error:', error);
@@ -57,50 +61,70 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
  * PUT /api/v1/recruitment/jobs/[id]
  * Update a job posting
  */
-export const PUT = withAudit(withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user } = context;
-    const { id } = await context.params;
-    const body = await request.json();
+export const PUT = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, permissions } = context;
+      if (!permissions.includes('recruitment:update')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing recruitment:update permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
+      const { id } = await context.params;
+      const body = await request.json();
 
-    const job = await prisma.jobPosting.findFirst({ where: { id, isDeleted: false } });
+      const job = await prisma.jobPosting.findFirst({ where: { id, isDeleted: false } });
 
-    if (!job) {
+      if (!job) {
+        return NextResponse.json(
+          { success: false, error: { code: 'E4001', message: 'Job posting not found' } },
+          { status: 404 }
+        );
+      }
+
+      const updated = await prisma.jobPosting.update({
+        where: { id },
+        data: {
+          title: body.title,
+          department: body.department,
+          location: body.location,
+          type: body.type,
+          status: body.status,
+          description: body.description,
+          channels: body.channels,
+          updatedBy: user.id,
+          postedDate: body.status === 'Active' && !job.postedDate ? new Date() : job.postedDate,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: updated,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      });
+    } catch (error) {
+      console.error('[Job Posting API] PUT Error:', error);
       return NextResponse.json(
-        { success: false, error: { code: 'E4001', message: 'Job posting not found' } },
-        { status: 404 }
+        { success: false, error: { code: 'E5001', message: 'Failed to update job posting' } },
+        { status: 500 }
       );
     }
-
-    const updated = await prisma.jobPosting.update({
-      where: { id },
-      data: {
-        title: body.title,
-        department: body.department,
-        location: body.location,
-        type: body.type,
-        status: body.status,
-        description: body.description,
-        channels: body.channels,
-        updatedBy: user.id,
-        postedDate: body.status === 'Active' && !job.postedDate ? new Date() : job.postedDate,
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      data: updated,
-      meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
-    });
-  } catch (error) {
-    console.error('[Job Posting API] PUT Error:', error);
-    return NextResponse.json(
-      { success: false, error: { code: 'E5001', message: 'Failed to update job posting' } },
-      { status: 500 }
-    );
+  }),
+  {
+    action: AuditAction.EMPLOYEE_UPDATED,
+    resourceType: 'job_posting',
+    captureRequestBody: true,
   }
-}), {
-  action: AuditAction.EMPLOYEE_UPDATED,
-  resourceType: 'job_posting',
-  captureRequestBody: true,
-});
+);

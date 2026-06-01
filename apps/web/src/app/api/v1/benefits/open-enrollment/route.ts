@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@aura/database';
 
@@ -6,7 +7,20 @@ export const dynamic = 'force-dynamic';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('benefits/open-enrollment:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing benefits/open-enrollment:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
     const isActive = searchParams.get('isActive');
     const planYear = searchParams.get('planYear');
@@ -49,9 +63,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         });
 
         const completionRate =
-          eligibleCount > 0
-            ? Math.round((enrolledCount / eligibleCount) * 100 * 10) / 10
-            : 0;
+          eligibleCount > 0 ? Math.round((enrolledCount / eligibleCount) * 100 * 10) / 10 : 0;
 
         let status: string;
         if (isCompleted) {
@@ -118,9 +130,33 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('benefits/open-enrollment:create')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing benefits/open-enrollment:create permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
-    const { name, startDate, endDate, effectiveDate, windowType, planYear, description, instructions, eligibleCategories, notifyEmployees } = body;
+    const {
+      name,
+      startDate,
+      endDate,
+      effectiveDate,
+      windowType,
+      planYear,
+      description,
+      instructions,
+      eligibleCategories,
+      notifyEmployees,
+    } = body;
 
     if (!startDate || !endDate) {
       return NextResponse.json(
@@ -183,7 +219,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       }
     }
 
-    const resolvedPlanYear = planYear || (effectiveDate ? new Date(effectiveDate).getFullYear() : start.getFullYear());
+    const resolvedPlanYear =
+      planYear || (effectiveDate ? new Date(effectiveDate).getFullYear() : start.getFullYear());
     const resolvedName = name || `Open Enrollment ${resolvedPlanYear}`;
 
     const window = await prisma.enrollmentWindow.create({
