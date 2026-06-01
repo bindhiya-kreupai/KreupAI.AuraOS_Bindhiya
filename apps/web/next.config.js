@@ -1,10 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // FIXME(#29): both `ignoreDuringBuilds` and `ignoreBuildErrors` mask real errors.
-  // Baseline as of 2026-06-01 in apps/web: 3,926 TypeScript errors + 644 ESLint errors.
-  // Flipping these to `false` today blocks every build until the backlog is cleared.
-  // Treat this as a multi-week initiative — see GitHub issue #29 for the rollout plan
-  // and current error breakdown. DO NOT add code that depends on these staying true.
+  // #29 — Build-error ratchet.
+  // Baseline 2026-06-01: 3,926 TS errors. Today (2026-06-02): 473 TS errors
+  // remaining (~88% reduction). The rest are tracked under #29 sub-issues
+  // (#29a–#29z) and concentrated in API routes / lib services with active
+  // Prisma schema drift.
+  //
+  // We keep `ignoreBuildErrors: true` so the build doesn't gate on the
+  // remaining 473, but `scripts/typecheck-ratchet.sh` (run in CI) enforces
+  // a strict ceiling from `apps/web/.typecheck-baseline` — any PR that
+  // INCREASES the count fails. Each fix wave should LOWER the baseline.
+  //
+  // To flip `ignoreBuildErrors: false`: drive the count to 0, then change
+  // both flags here AND remove the ratchet script.
+  //
+  // DO NOT add code that depends on these staying true.
   eslint: {
     ignoreDuringBuilds: true,
   },
