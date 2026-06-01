@@ -65,7 +65,7 @@ export class FeedbackService extends BaseService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return feedbacks.map((f) => ({
+    return feedbacks.map((f: any) => ({
       id: f.id,
       fromEmployeeId: f.isAnonymous ? 'anonymous' : f.fromEmployeeId,
       toEmployeeId: f.toEmployeeId,
@@ -83,7 +83,7 @@ export class FeedbackService extends BaseService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return feedbacks.map((f) => ({
+    return feedbacks.map((f: any) => ({
       id: f.id,
       fromEmployeeId: f.fromEmployeeId,
       toEmployeeId: f.toEmployeeId,
@@ -131,7 +131,7 @@ export class FeedbackService extends BaseService {
       take: limit,
     });
 
-    return recognitions.map((r) => ({
+    return recognitions.map((r: any) => ({
       id: r.id,
       fromEmployeeId: r.fromEmployeeId,
       toEmployeeId: r.toEmployeeId,
@@ -163,7 +163,7 @@ export class FeedbackService extends BaseService {
       take: 20,
     });
 
-    return results.map((r) => ({
+    return results.map((r: any) => ({
       employeeId: r.toEmployeeId,
       totalPoints: r._sum.points || 0,
       recognitionCount: r._count,

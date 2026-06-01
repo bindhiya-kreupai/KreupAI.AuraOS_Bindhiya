@@ -51,7 +51,7 @@ export class WorkflowService extends BaseService {
       orderBy: { updatedAt: 'desc' },
     });
 
-    return workflows.map((w) => ({
+    return workflows.map((w: any) => ({
       id: w.id,
       name: w.name,
       description: w.description,

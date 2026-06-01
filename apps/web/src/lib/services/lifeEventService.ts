@@ -362,7 +362,7 @@ export class LifeEventService extends BaseService {
       verified,
       processed,
       rejected,
-      byType: byType.map((item) => ({ eventType: item.eventType, count: item._count })),
+      byType: byType.map((item: any) => ({ eventType: item.eventType, count: item._count })),
     };
   }
 }

@@ -52,7 +52,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('[Payroll Run API] GET/:id Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch payroll run' } },
@@ -125,7 +125,7 @@ export const PUT = withAudit(
           apiVersion: 'v1',
         },
       });
-    } catch (_error) {
+    } catch (error) {
       console.error('[Payroll Run API] PUT/:id Error:', error);
       return NextResponse.json(
         { success: false, error: { code: 'E5001', message: 'Failed to update payroll run' } },

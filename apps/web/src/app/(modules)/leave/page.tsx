@@ -325,7 +325,7 @@ function OverviewTab() {
                     <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-sm font-black text-indigo-600">
                       {req.name
                         .split(' ')
-                        .map((n) => n[0])
+                        .map((n: any) => n[0])
                         .join('')}
                     </div>
                     <div>

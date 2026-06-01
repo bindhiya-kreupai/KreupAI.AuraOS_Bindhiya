@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 
-export const POST = withEnhancedAuth(async (_request, context, { params }) => {
+export const POST = withEnhancedAuth(async (_request: any, context: any, { params }) => {
   try {
     const { user } = context;
     const updateId = params?.updateId;

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ShieldCheck, Languages, Upload, Scan, FileSearch, FileText, Eye, Download, Clock, ChevronRight, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, Languages, Upload, Scan, FileSearch, FileText, Eye, Download, Clock, ChevronRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@aura/ui/utils';
 import { DocumentService } from '@/app/dashboard/core-hr/services';
 import { EmployeeDocument } from '@/app/dashboard/core-hr/types';

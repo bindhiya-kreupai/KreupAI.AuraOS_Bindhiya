@@ -61,7 +61,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       prisma.courseCertificate.count({ where }),
     ]);
 
-    const enriched = data.map((cert) => ({
+    const enriched = data.map((cert: any) => ({
       ...cert,
       isExpired: cert.expiresAt ? cert.expiresAt < new Date() : false,
       isExpiringSoon: cert.expiresAt
@@ -80,7 +80,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('[Learning Certifications API] GET Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch certifications' } },

@@ -23,7 +23,7 @@ import {
   ExpenseSettingsService
 } from '../services';
 import { expenseData } from '../data';
-import { useToast } from '../../components/Toast';
+import { useToast } from '../components/Toast';
 
 export const useExpenses = () => {
   const [reports, setReports] = useState<ExpenseReport[]>([]);

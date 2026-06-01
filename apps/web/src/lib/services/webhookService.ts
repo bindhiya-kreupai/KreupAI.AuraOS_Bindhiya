@@ -90,7 +90,7 @@ export class WebhookService extends BaseService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return webhooks.map((w) => ({
+    return webhooks.map((w: any) => ({
       id: w.id,
       url: w.url,
       secret: w.secret,
@@ -219,7 +219,7 @@ export class WebhookService extends BaseService {
       orderBy: { createdAt: 'desc' },
       take: limit,
     });
-    return logs.map((l) => ({
+    return logs.map((l: any) => ({
       id: l.id,
       webhookId: l.webhookId,
       event: l.event,

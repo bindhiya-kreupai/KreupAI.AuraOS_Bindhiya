@@ -61,7 +61,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       departmentName: departmentId
         .replace('dept-', '')
         .replace('-', ' ')
-        .replace(/\b\w/g, (l) => l.toUpperCase()),
+        .replace(/\b\w/g, (l: any) => l.toUpperCase()),
       period,
       generatedAt: new Date().toISOString(),
       summary: {
@@ -141,7 +141,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (_error) {
+  } catch (error) {
     const response: ApiResponse = {
       success: false,
       error: {

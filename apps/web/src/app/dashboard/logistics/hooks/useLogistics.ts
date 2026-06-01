@@ -30,7 +30,7 @@ export const useLogistics = () => {
       if (incidentsData.length === 0) { for (const i of sampleSafetyIncidents) await SafetyManagementService.createIncident(i); setSafetyIncidents(sampleSafetyIncidents); } else setSafetyIncidents(incidentsData);
       if (workersData.length === 0) { for (const w of sampleWarehouseWorkers) await WarehouseStaffingService.createWorker(w); setWarehouseWorkers(sampleWarehouseWorkers); } else setWarehouseWorkers(workersData);
       if (!settingsData) { await LogisticsSettingsService.updateSettings(sampleLogisticsSettings); setSettings(sampleLogisticsSettings); } else setSettings(settingsData);
-    } catch (error) { setError(err instanceof Error ? err.message : 'Failed to load data'); addToast({ type: 'error', message: 'Failed to load logistics data' }); }
+    } catch (error) { setError(error instanceof Error ? error.message : 'Failed to load data'); addToast({ type: 'error', message: 'Failed to load logistics data' }); }
     finally { setLoading(false); }
   }, [addToast]);
 

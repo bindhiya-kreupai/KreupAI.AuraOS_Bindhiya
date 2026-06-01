@@ -51,7 +51,7 @@ export default function TalentMatrixPage() {
         return {
             id: i + 1,
             name: c.employeeName || `Candidate ${i + 1}`,
-            role: c.currentPosition || 'N/A',
+            role: c.currentPositionId || 'N/A',
             box,
         };
     });

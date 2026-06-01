@@ -52,8 +52,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       data: flags,
       meta: {
         total: flags.length,
-        enabled: flags.filter((f) => f.isEnabled).length,
-        disabled: flags.filter((f) => !f.isEnabled).length,
+        enabled: flags.filter((f: any) => f.isEnabled).length,
+        disabled: flags.filter((f: any) => !f.isEnabled).length,
         timestamp: new Date().toISOString(),
         requestId: crypto.randomUUID(),
         apiVersion: 'v1',

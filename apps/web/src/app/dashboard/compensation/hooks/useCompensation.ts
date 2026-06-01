@@ -247,8 +247,8 @@ export function useCompensation(): UseCompensationReturn {
       setSettings(await CompensationSettingsService.getSettings());
 
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to load compensation data');
-      console.error('Error initializing compensation data:', err);
+      setError(error instanceof Error ? error.message : 'Failed to load compensation data');
+      console.error('Error initializing compensation data:', error);
     } finally {
       setLoading(false);
     }
@@ -265,7 +265,7 @@ export function useCompensation(): UseCompensationReturn {
       setComponents(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get components');
+      setError(error instanceof Error ? error.message : 'Failed to get components');
       return [];
     }
   };
@@ -274,7 +274,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await SalaryComponentService.getComponentById(id);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get component');
+      setError(error instanceof Error ? error.message : 'Failed to get component');
       return null;
     }
   };
@@ -286,7 +286,7 @@ export function useCompensation(): UseCompensationReturn {
       setComponents(await SalaryComponentService.getComponents());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create component');
+      setError(error instanceof Error ? error.message : 'Failed to create component');
       throw error;
     } finally {
       setLoading(false);
@@ -299,7 +299,7 @@ export function useCompensation(): UseCompensationReturn {
       await SalaryComponentService.updateComponent(id, updates);
       setComponents(await SalaryComponentService.getComponents());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update component');
+      setError(error instanceof Error ? error.message : 'Failed to update component');
       throw error;
     } finally {
       setLoading(false);
@@ -312,7 +312,7 @@ export function useCompensation(): UseCompensationReturn {
       await SalaryComponentService.deleteComponent(id);
       setComponents(await SalaryComponentService.getComponents());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to delete component');
+      setError(error instanceof Error ? error.message : 'Failed to delete component');
       throw error;
     } finally {
       setLoading(false);
@@ -326,7 +326,7 @@ export function useCompensation(): UseCompensationReturn {
       setGrades(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get grades');
+      setError(error instanceof Error ? error.message : 'Failed to get grades');
       return [];
     }
   };
@@ -335,7 +335,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await GradeService.getGradeById(id);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get grade');
+      setError(error instanceof Error ? error.message : 'Failed to get grade');
       return null;
     }
   };
@@ -347,7 +347,7 @@ export function useCompensation(): UseCompensationReturn {
       setGrades(await GradeService.getGrades());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create grade');
+      setError(error instanceof Error ? error.message : 'Failed to create grade');
       throw error;
     } finally {
       setLoading(false);
@@ -360,7 +360,7 @@ export function useCompensation(): UseCompensationReturn {
       await GradeService.updateGrade(id, updates);
       setGrades(await GradeService.getGrades());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update grade');
+      setError(error instanceof Error ? error.message : 'Failed to update grade');
       throw error;
     } finally {
       setLoading(false);
@@ -373,7 +373,7 @@ export function useCompensation(): UseCompensationReturn {
       await GradeService.deleteGrade(id);
       setGrades(await GradeService.getGrades());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to delete grade');
+      setError(error instanceof Error ? error.message : 'Failed to delete grade');
       throw error;
     } finally {
       setLoading(false);
@@ -387,7 +387,7 @@ export function useCompensation(): UseCompensationReturn {
       setStructures(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get structures');
+      setError(error instanceof Error ? error.message : 'Failed to get structures');
       return [];
     }
   };
@@ -396,7 +396,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await SalaryStructureService.getStructureById(id);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get structure');
+      setError(error instanceof Error ? error.message : 'Failed to get structure');
       return null;
     }
   };
@@ -408,7 +408,7 @@ export function useCompensation(): UseCompensationReturn {
       setStructures(await SalaryStructureService.getStructures());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create structure');
+      setError(error instanceof Error ? error.message : 'Failed to create structure');
       throw error;
     } finally {
       setLoading(false);
@@ -421,7 +421,7 @@ export function useCompensation(): UseCompensationReturn {
       await SalaryStructureService.updateStructure(id, updates);
       setStructures(await SalaryStructureService.getStructures());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update structure');
+      setError(error instanceof Error ? error.message : 'Failed to update structure');
       throw error;
     } finally {
       setLoading(false);
@@ -434,7 +434,7 @@ export function useCompensation(): UseCompensationReturn {
       await SalaryStructureService.deleteStructure(id);
       setStructures(await SalaryStructureService.getStructures());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to delete structure');
+      setError(error instanceof Error ? error.message : 'Failed to delete structure');
       throw error;
     } finally {
       setLoading(false);
@@ -448,7 +448,7 @@ export function useCompensation(): UseCompensationReturn {
       setStructures(await SalaryStructureService.getStructures());
       return cloned;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to clone structure');
+      setError(error instanceof Error ? error.message : 'Failed to clone structure');
       throw error;
     } finally {
       setLoading(false);
@@ -462,7 +462,7 @@ export function useCompensation(): UseCompensationReturn {
       setEmployeeCompensations(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get employee compensations');
+      setError(error instanceof Error ? error.message : 'Failed to get employee compensations');
       return [];
     }
   };
@@ -471,7 +471,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await EmployeeCompensationService.getCompensationById(id);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get compensation');
+      setError(error instanceof Error ? error.message : 'Failed to get compensation');
       return null;
     }
   };
@@ -480,7 +480,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await EmployeeCompensationService.getByEmployeeId(employeeId);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get employee compensation');
+      setError(error instanceof Error ? error.message : 'Failed to get employee compensation');
       return null;
     }
   };
@@ -492,7 +492,7 @@ export function useCompensation(): UseCompensationReturn {
       setEmployeeCompensations(await EmployeeCompensationService.getCompensations());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create compensation');
+      setError(error instanceof Error ? error.message : 'Failed to create compensation');
       throw error;
     } finally {
       setLoading(false);
@@ -505,7 +505,7 @@ export function useCompensation(): UseCompensationReturn {
       await EmployeeCompensationService.updateCompensation(id, updates);
       setEmployeeCompensations(await EmployeeCompensationService.getCompensations());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update compensation');
+      setError(error instanceof Error ? error.message : 'Failed to update compensation');
       throw error;
     } finally {
       setLoading(false);
@@ -518,7 +518,7 @@ export function useCompensation(): UseCompensationReturn {
       await EmployeeCompensationService.reviseCompensation(id, newSalary, effectiveDate, reason);
       setEmployeeCompensations(await EmployeeCompensationService.getCompensations());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to revise compensation');
+      setError(error instanceof Error ? error.message : 'Failed to revise compensation');
       throw error;
     } finally {
       setLoading(false);
@@ -532,7 +532,7 @@ export function useCompensation(): UseCompensationReturn {
       setIncrementCycles(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get increment cycles');
+      setError(error instanceof Error ? error.message : 'Failed to get increment cycles');
       return [];
     }
   };
@@ -541,7 +541,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await IncrementCycleService.getCycleById(id);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get increment cycle');
+      setError(error instanceof Error ? error.message : 'Failed to get increment cycle');
       return null;
     }
   };
@@ -553,7 +553,7 @@ export function useCompensation(): UseCompensationReturn {
       setIncrementCycles(await IncrementCycleService.getCycles());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create increment cycle');
+      setError(error instanceof Error ? error.message : 'Failed to create increment cycle');
       throw error;
     } finally {
       setLoading(false);
@@ -566,7 +566,7 @@ export function useCompensation(): UseCompensationReturn {
       await IncrementCycleService.updateCycle(id, updates);
       setIncrementCycles(await IncrementCycleService.getCycles());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update increment cycle');
+      setError(error instanceof Error ? error.message : 'Failed to update increment cycle');
       throw error;
     } finally {
       setLoading(false);
@@ -579,7 +579,7 @@ export function useCompensation(): UseCompensationReturn {
       await IncrementCycleService.approveCycle(id);
       setIncrementCycles(await IncrementCycleService.getCycles());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to approve increment cycle');
+      setError(error instanceof Error ? error.message : 'Failed to approve increment cycle');
       throw error;
     } finally {
       setLoading(false);
@@ -593,7 +593,7 @@ export function useCompensation(): UseCompensationReturn {
       setIncrementCycles(await IncrementCycleService.getCycles());
       setEmployeeCompensations(await EmployeeCompensationService.getCompensations());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to process increment cycle');
+      setError(error instanceof Error ? error.message : 'Failed to process increment cycle');
       throw error;
     } finally {
       setLoading(false);
@@ -607,7 +607,7 @@ export function useCompensation(): UseCompensationReturn {
       setIncrementProposals(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get increment proposals');
+      setError(error instanceof Error ? error.message : 'Failed to get increment proposals');
       return [];
     }
   };
@@ -616,7 +616,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await IncrementProposalService.getProposalById(id);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get proposal');
+      setError(error instanceof Error ? error.message : 'Failed to get proposal');
       return null;
     }
   };
@@ -626,7 +626,7 @@ export function useCompensation(): UseCompensationReturn {
       const all = await IncrementProposalService.getProposals();
       return all.filter(p => p.cycleId === cycleId);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get proposals by cycle');
+      setError(error instanceof Error ? error.message : 'Failed to get proposals by cycle');
       return [];
     }
   };
@@ -638,7 +638,7 @@ export function useCompensation(): UseCompensationReturn {
       setIncrementProposals(await IncrementProposalService.getProposals());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create increment proposal');
+      setError(error instanceof Error ? error.message : 'Failed to create increment proposal');
       throw error;
     } finally {
       setLoading(false);
@@ -651,7 +651,7 @@ export function useCompensation(): UseCompensationReturn {
       await IncrementProposalService.updateProposal(id, updates);
       setIncrementProposals(await IncrementProposalService.getProposals());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update increment proposal');
+      setError(error instanceof Error ? error.message : 'Failed to update increment proposal');
       throw error;
     } finally {
       setLoading(false);
@@ -664,7 +664,7 @@ export function useCompensation(): UseCompensationReturn {
       await IncrementProposalService.approveProposal(id, approvedBy);
       setIncrementProposals(await IncrementProposalService.getProposals());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to approve increment proposal');
+      setError(error instanceof Error ? error.message : 'Failed to approve increment proposal');
       throw error;
     } finally {
       setLoading(false);
@@ -677,7 +677,7 @@ export function useCompensation(): UseCompensationReturn {
       await IncrementProposalService.rejectProposal(id, reason);
       setIncrementProposals(await IncrementProposalService.getProposals());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to reject increment proposal');
+      setError(error instanceof Error ? error.message : 'Failed to reject increment proposal');
       throw error;
     } finally {
       setLoading(false);
@@ -691,7 +691,7 @@ export function useCompensation(): UseCompensationReturn {
       setBonusSchemes(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get bonus schemes');
+      setError(error instanceof Error ? error.message : 'Failed to get bonus schemes');
       return [];
     }
   };
@@ -700,7 +700,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await BonusService.getSchemeById(id);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get bonus scheme');
+      setError(error instanceof Error ? error.message : 'Failed to get bonus scheme');
       return null;
     }
   };
@@ -712,7 +712,7 @@ export function useCompensation(): UseCompensationReturn {
       setBonusSchemes(await BonusService.getSchemes());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create bonus scheme');
+      setError(error instanceof Error ? error.message : 'Failed to create bonus scheme');
       throw error;
     } finally {
       setLoading(false);
@@ -725,7 +725,7 @@ export function useCompensation(): UseCompensationReturn {
       await BonusService.updateScheme(id, updates);
       setBonusSchemes(await BonusService.getSchemes());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update bonus scheme');
+      setError(error instanceof Error ? error.message : 'Failed to update bonus scheme');
       throw error;
     } finally {
       setLoading(false);
@@ -738,7 +738,7 @@ export function useCompensation(): UseCompensationReturn {
       setBonusPayouts(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get bonus payouts');
+      setError(error instanceof Error ? error.message : 'Failed to get bonus payouts');
       return [];
     }
   };
@@ -750,7 +750,7 @@ export function useCompensation(): UseCompensationReturn {
       setBonusPayouts(await BonusService.getPayouts());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create bonus payout');
+      setError(error instanceof Error ? error.message : 'Failed to create bonus payout');
       throw error;
     } finally {
       setLoading(false);
@@ -763,7 +763,7 @@ export function useCompensation(): UseCompensationReturn {
       await BonusService.approvePayout(id, approvedBy);
       setBonusPayouts(await BonusService.getPayouts());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to approve bonus payout');
+      setError(error instanceof Error ? error.message : 'Failed to approve bonus payout');
       throw error;
     } finally {
       setLoading(false);
@@ -777,7 +777,7 @@ export function useCompensation(): UseCompensationReturn {
       setStockGrants(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get stock grants');
+      setError(error instanceof Error ? error.message : 'Failed to get stock grants');
       return [];
     }
   };
@@ -786,7 +786,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await StockGrantService.getGrantById(id);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get stock grant');
+      setError(error instanceof Error ? error.message : 'Failed to get stock grant');
       return null;
     }
   };
@@ -795,7 +795,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await StockGrantService.getGrantsByEmployee(employeeId);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get employee stock grants');
+      setError(error instanceof Error ? error.message : 'Failed to get employee stock grants');
       return [];
     }
   };
@@ -807,7 +807,7 @@ export function useCompensation(): UseCompensationReturn {
       setStockGrants(await StockGrantService.getGrants());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create stock grant');
+      setError(error instanceof Error ? error.message : 'Failed to create stock grant');
       throw error;
     } finally {
       setLoading(false);
@@ -820,7 +820,7 @@ export function useCompensation(): UseCompensationReturn {
       await StockGrantService.updateGrant(id, updates);
       setStockGrants(await StockGrantService.getGrants());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update stock grant');
+      setError(error instanceof Error ? error.message : 'Failed to update stock grant');
       throw error;
     } finally {
       setLoading(false);
@@ -834,7 +834,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoanSchemes(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get loan schemes');
+      setError(error instanceof Error ? error.message : 'Failed to get loan schemes');
       return [];
     }
   };
@@ -843,7 +843,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await LoanService.getSchemeById(id);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get loan scheme');
+      setError(error instanceof Error ? error.message : 'Failed to get loan scheme');
       return null;
     }
   };
@@ -855,7 +855,7 @@ export function useCompensation(): UseCompensationReturn {
       setLoanSchemes(await LoanService.getSchemes());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create loan scheme');
+      setError(error instanceof Error ? error.message : 'Failed to create loan scheme');
       throw error;
     } finally {
       setLoading(false);
@@ -868,7 +868,7 @@ export function useCompensation(): UseCompensationReturn {
       setEmployeeLoans(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get employee loans');
+      setError(error instanceof Error ? error.message : 'Failed to get employee loans');
       return [];
     }
   };
@@ -877,7 +877,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await LoanService.getLoanById(id);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get loan');
+      setError(error instanceof Error ? error.message : 'Failed to get loan');
       return null;
     }
   };
@@ -886,7 +886,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await LoanService.getLoansByEmployee(employeeId);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get employee loans');
+      setError(error instanceof Error ? error.message : 'Failed to get employee loans');
       return [];
     }
   };
@@ -898,7 +898,7 @@ export function useCompensation(): UseCompensationReturn {
       setEmployeeLoans(await LoanService.getLoans());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create employee loan');
+      setError(error instanceof Error ? error.message : 'Failed to create employee loan');
       throw error;
     } finally {
       setLoading(false);
@@ -911,7 +911,7 @@ export function useCompensation(): UseCompensationReturn {
       await LoanService.approveLoan(id, approvedBy);
       setEmployeeLoans(await LoanService.getLoans());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to approve loan');
+      setError(error instanceof Error ? error.message : 'Failed to approve loan');
       throw error;
     } finally {
       setLoading(false);
@@ -925,7 +925,7 @@ export function useCompensation(): UseCompensationReturn {
       setArrearsRequests(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get arrears requests');
+      setError(error instanceof Error ? error.message : 'Failed to get arrears requests');
       return [];
     }
   };
@@ -934,7 +934,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await ArrearsService.getRequestById(id);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get arrears request');
+      setError(error instanceof Error ? error.message : 'Failed to get arrears request');
       return null;
     }
   };
@@ -946,7 +946,7 @@ export function useCompensation(): UseCompensationReturn {
       setArrearsRequests(await ArrearsService.getRequests());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create arrears request');
+      setError(error instanceof Error ? error.message : 'Failed to create arrears request');
       throw error;
     } finally {
       setLoading(false);
@@ -959,7 +959,7 @@ export function useCompensation(): UseCompensationReturn {
       await ArrearsService.approveRequest(id, approvedBy);
       setArrearsRequests(await ArrearsService.getRequests());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to approve arrears request');
+      setError(error instanceof Error ? error.message : 'Failed to approve arrears request');
       throw error;
     } finally {
       setLoading(false);
@@ -973,7 +973,7 @@ export function useCompensation(): UseCompensationReturn {
       setTotalRewardsStatements(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get total rewards statements');
+      setError(error instanceof Error ? error.message : 'Failed to get total rewards statements');
       return [];
     }
   };
@@ -982,7 +982,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await TotalRewardsService.getStatementById(id);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get rewards statement');
+      setError(error instanceof Error ? error.message : 'Failed to get rewards statement');
       return null;
     }
   };
@@ -991,7 +991,7 @@ export function useCompensation(): UseCompensationReturn {
     try {
       return await TotalRewardsService.getStatementByEmployee(employeeId, fiscalYear);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get employee rewards statement');
+      setError(error instanceof Error ? error.message : 'Failed to get employee rewards statement');
       return null;
     }
   };
@@ -1003,7 +1003,7 @@ export function useCompensation(): UseCompensationReturn {
       setTotalRewardsStatements(await TotalRewardsService.getStatements());
       return generated;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to generate rewards statement');
+      setError(error instanceof Error ? error.message : 'Failed to generate rewards statement');
       throw error;
     } finally {
       setLoading(false);
@@ -1017,16 +1017,16 @@ export function useCompensation(): UseCompensationReturn {
       setMarketBenchmarks(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get market benchmarks');
+      setError(error instanceof Error ? error.message : 'Failed to get market benchmarks');
       return [];
     }
   };
 
   const getBenchmarkById = async (id: string): Promise<MarketBenchmark | null> => {
     try {
-      return await MarketBenchmarkService.getBenchmarkById(id);
+      return await MarketBenchmarkService.getBenchmarks(id);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get market benchmark');
+      setError(error instanceof Error ? error.message : 'Failed to get market benchmark');
       return null;
     }
   };
@@ -1038,7 +1038,7 @@ export function useCompensation(): UseCompensationReturn {
       setMarketBenchmarks(await MarketBenchmarkService.getBenchmarks());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create market benchmark');
+      setError(error instanceof Error ? error.message : 'Failed to create market benchmark');
       throw error;
     } finally {
       setLoading(false);
@@ -1052,7 +1052,7 @@ export function useCompensation(): UseCompensationReturn {
       setMetrics(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get metrics');
+      setError(error instanceof Error ? error.message : 'Failed to get metrics');
       throw error;
     }
   };
@@ -1063,7 +1063,7 @@ export function useCompensation(): UseCompensationReturn {
       const data = await CompensationAnalyticsService.getMetrics();
       setMetrics(data);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to refresh metrics');
+      setError(error instanceof Error ? error.message : 'Failed to refresh metrics');
       throw error;
     } finally {
       setLoading(false);
@@ -1077,7 +1077,7 @@ export function useCompensation(): UseCompensationReturn {
       setSettings(data);
       return data;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get settings');
+      setError(error instanceof Error ? error.message : 'Failed to get settings');
       throw error;
     }
   };
@@ -1088,7 +1088,7 @@ export function useCompensation(): UseCompensationReturn {
       await CompensationSettingsService.updateSettings(updates);
       setSettings(await CompensationSettingsService.getSettings());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update settings');
+      setError(error instanceof Error ? error.message : 'Failed to update settings');
       throw error;
     } finally {
       setLoading(false);

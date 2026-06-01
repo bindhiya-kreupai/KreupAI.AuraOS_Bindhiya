@@ -55,6 +55,10 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
     const performanceData: any = {};
 
+    // Hoisted so the overview block (below) can reference cache health
+    // without re-fetching when type === 'all'
+    let cacheStats: { isConnected: boolean; keysCount?: number } = { isConnected: false };
+
     // API Performance Metrics
     if (type === 'all' || type === 'api') {
       const apiStats = getPerformanceStats({ lastMinutes });
@@ -115,7 +119,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
     // Cache Metrics
     if (type === 'all' || type === 'cache') {
-      const cacheStats = await cacheService.getStats();
+      cacheStats = await cacheService.getStats();
 
       performanceData.cache = {
         status: cacheStats.isConnected ? 'CONNECTED' : 'DISCONNECTED',

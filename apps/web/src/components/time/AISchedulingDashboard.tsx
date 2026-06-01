@@ -1064,31 +1064,31 @@ export default function AISchedulingDashboard() {
                         label: 'Coverage',
                         value: scenarioImpact.coverageChange,
                         fmt: (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`,
-                        good: (v) => v >= 0,
+                        good: (v: any) => v >= 0,
                       },
                       {
                         label: 'Cost Change',
                         value: scenarioImpact.costChange,
                         fmt: (v: number) => `${v > 0 ? '+' : ''}${fmtCurrency(v)}`,
-                        good: (v) => v <= 0,
+                        good: (v: any) => v <= 0,
                       },
                       {
                         label: 'Overtime Hours',
                         value: scenarioImpact.overtimeChange,
                         fmt: (v: number) => `${v > 0 ? '+' : ''}${v}h`,
-                        good: (v) => v <= 0,
+                        good: (v: any) => v <= 0,
                       },
                       {
                         label: 'Fatigue Change',
                         value: scenarioImpact.fatigueChange,
                         fmt: (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(1)}`,
-                        good: (v) => v <= 0,
+                        good: (v: any) => v <= 0,
                       },
                       {
                         label: 'Fairness Change',
                         value: scenarioImpact.fairnessChange,
                         fmt: (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(1)}`,
-                        good: (v) => v >= 0,
+                        good: (v: any) => v >= 0,
                       },
                     ].map((item) => {
                       const isGood = item.good(item.value);

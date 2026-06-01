@@ -350,6 +350,12 @@ export const useChatbot = () => {
     }
   };
 
+  // Agent Methods
+  const loadAgents = async () => {
+    const data = await AgentService.getAllAgents();
+    setAgents(data);
+  };
+
   // Language Methods
   const loadLanguages = async () => {
     const data = await LanguageService.getAllLanguages();

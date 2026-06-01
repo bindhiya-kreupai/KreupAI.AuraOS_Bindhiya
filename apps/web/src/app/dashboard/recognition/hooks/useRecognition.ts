@@ -240,8 +240,8 @@ export function useRecognition(): UseRecognitionReturn {
       setUnreadCount(sampleNotifications.filter(n => !n.isRead).length);
 
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to load recognition data');
-      console.error('Error initializing recognition data:', err);
+      setError(error instanceof Error ? error.message : 'Failed to load recognition data');
+      console.error('Error initializing recognition data:', error);
     } finally {
       setLoading(false);
     }
@@ -260,7 +260,7 @@ export function useRecognition(): UseRecognitionReturn {
       setRecognitions(await RecognitionService.getRecognitions());
       return created;
     } catch (error) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create recognition';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create recognition';
       setError(errorMessage);
       throw error;
     } finally {
@@ -274,7 +274,7 @@ export function useRecognition(): UseRecognitionReturn {
       await RecognitionService.approveRecognition(recognitionId, approverId, approverName);
       setRecognitions(await RecognitionService.getRecognitions());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to approve recognition');
+      setError(error instanceof Error ? error.message : 'Failed to approve recognition');
       throw error;
     } finally {
       setLoading(false);
@@ -287,7 +287,7 @@ export function useRecognition(): UseRecognitionReturn {
       await RecognitionService.declineRecognition(recognitionId, reason);
       setRecognitions(await RecognitionService.getRecognitions());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to decline recognition');
+      setError(error instanceof Error ? error.message : 'Failed to decline recognition');
       throw error;
     } finally {
       setLoading(false);
@@ -300,7 +300,7 @@ export function useRecognition(): UseRecognitionReturn {
       await RecognitionService.publishRecognition(recognitionId);
       setRecognitions(await RecognitionService.getRecognitions());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to publish recognition');
+      setError(error instanceof Error ? error.message : 'Failed to publish recognition');
       throw error;
     } finally {
       setLoading(false);
@@ -311,7 +311,7 @@ export function useRecognition(): UseRecognitionReturn {
     try {
       return await RecognitionService.getRecognitionById(recognitionId);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get recognition');
+      setError(error instanceof Error ? error.message : 'Failed to get recognition');
       return null;
     }
   };
@@ -320,16 +320,16 @@ export function useRecognition(): UseRecognitionReturn {
     try {
       return await RecognitionService.getRecognitionsByEmployee(employeeId);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get employee recognitions');
+      setError(error instanceof Error ? error.message : 'Failed to get employee recognitions');
       return [];
     }
   };
 
   const getRecognitionsByType = async (type: RecognitionType): Promise<Recognition[]> => {
     try {
-      return await RecognitionService.getRecognitionsByType(type);
+      return await RecognitionService.getRecognitions(type);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get recognitions by type');
+      setError(error instanceof Error ? error.message : 'Failed to get recognitions by type');
       return [];
     }
   };
@@ -338,7 +338,7 @@ export function useRecognition(): UseRecognitionReturn {
     try {
       return await RecognitionService.getRecognitionsByCategory(category);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get recognitions by category');
+      setError(error instanceof Error ? error.message : 'Failed to get recognitions by category');
       return [];
     }
   };
@@ -354,7 +354,7 @@ export function useRecognition(): UseRecognitionReturn {
       await RecognitionService.addReaction(recognitionId, userId, userName, emoji, reactionType as any);
       setRecognitions(await RecognitionService.getRecognitions());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to add reaction');
+      setError(error instanceof Error ? error.message : 'Failed to add reaction');
       throw error;
     }
   };
@@ -370,7 +370,7 @@ export function useRecognition(): UseRecognitionReturn {
       await RecognitionService.addComment(recognitionId, userId, userName, comment, mentions);
       setRecognitions(await RecognitionService.getRecognitions());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to add comment');
+      setError(error instanceof Error ? error.message : 'Failed to add comment');
       throw error;
     }
   };
@@ -381,7 +381,7 @@ export function useRecognition(): UseRecognitionReturn {
       await RecognitionService.deleteRecognition(recognitionId);
       setRecognitions(await RecognitionService.getRecognitions());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to delete recognition');
+      setError(error instanceof Error ? error.message : 'Failed to delete recognition');
       throw error;
     } finally {
       setLoading(false);
@@ -396,7 +396,7 @@ export function useRecognition(): UseRecognitionReturn {
       setBadges(await BadgeService.getBadges());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create badge');
+      setError(error instanceof Error ? error.message : 'Failed to create badge');
       throw error;
     } finally {
       setLoading(false);
@@ -426,7 +426,7 @@ export function useRecognition(): UseRecognitionReturn {
       setEmployeeBadges(await BadgeService.getEmployeeBadges());
       return awarded;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to award badge');
+      setError(error instanceof Error ? error.message : 'Failed to award badge');
       throw error;
     } finally {
       setLoading(false);
@@ -437,7 +437,7 @@ export function useRecognition(): UseRecognitionReturn {
     try {
       return await BadgeService.getEmployeeBadgesByEmployee(employeeId);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get employee badges');
+      setError(error instanceof Error ? error.message : 'Failed to get employee badges');
       return [];
     }
   };
@@ -446,7 +446,7 @@ export function useRecognition(): UseRecognitionReturn {
     try {
       return await BadgeService.getBadges();
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get badges');
+      setError(error instanceof Error ? error.message : 'Failed to get badges');
       return [];
     }
   };
@@ -457,7 +457,7 @@ export function useRecognition(): UseRecognitionReturn {
       await BadgeService.updateBadge(badgeId, updates);
       setBadges(await BadgeService.getBadges());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update badge');
+      setError(error instanceof Error ? error.message : 'Failed to update badge');
       throw error;
     } finally {
       setLoading(false);
@@ -472,7 +472,7 @@ export function useRecognition(): UseRecognitionReturn {
       setCatalogItems(await RedemptionService.getCatalogItems());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create catalog item');
+      setError(error instanceof Error ? error.message : 'Failed to create catalog item');
       throw error;
     } finally {
       setLoading(false);
@@ -485,7 +485,7 @@ export function useRecognition(): UseRecognitionReturn {
       await RedemptionService.updateCatalogItem(itemId, updates);
       setCatalogItems(await RedemptionService.getCatalogItems());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update catalog item');
+      setError(error instanceof Error ? error.message : 'Failed to update catalog item');
       throw error;
     } finally {
       setLoading(false);
@@ -500,7 +500,7 @@ export function useRecognition(): UseRecognitionReturn {
       setEmployeePoints(await PointsService.getAllEmployeePoints());
       return redeemed;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to redeem reward');
+      setError(error instanceof Error ? error.message : 'Failed to redeem reward');
       throw error;
     } finally {
       setLoading(false);
@@ -518,7 +518,7 @@ export function useRecognition(): UseRecognitionReturn {
       await RedemptionService.processRedemption(redemptionId, status, processedBy, notes);
       setRedemptions(await RedemptionService.getRedemptions());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to process redemption');
+      setError(error instanceof Error ? error.message : 'Failed to process redemption');
       throw error;
     } finally {
       setLoading(false);
@@ -535,7 +535,7 @@ export function useRecognition(): UseRecognitionReturn {
       await RedemptionService.updateShipping(redemptionId, trackingNumber, estimatedDelivery);
       setRedemptions(await RedemptionService.getRedemptions());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update shipping');
+      setError(error instanceof Error ? error.message : 'Failed to update shipping');
       throw error;
     } finally {
       setLoading(false);
@@ -546,7 +546,7 @@ export function useRecognition(): UseRecognitionReturn {
     try {
       return await RedemptionService.getRedemptionsByEmployee(employeeId);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get employee redemptions');
+      setError(error instanceof Error ? error.message : 'Failed to get employee redemptions');
       return [];
     }
   };
@@ -557,7 +557,7 @@ export function useRecognition(): UseRecognitionReturn {
       await RedemptionService.cancelRedemption(redemptionId, cancelledBy, reason);
       setRedemptions(await RedemptionService.getRedemptions());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to cancel redemption');
+      setError(error instanceof Error ? error.message : 'Failed to cancel redemption');
       throw error;
     } finally {
       setLoading(false);
@@ -569,16 +569,16 @@ export function useRecognition(): UseRecognitionReturn {
     try {
       return await PointsService.getEmployeePoints(employeeId);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get employee points');
+      setError(error instanceof Error ? error.message : 'Failed to get employee points');
       return null;
     }
   };
 
   const getPointsTransactions = async (employeeId: string): Promise<PointsTransaction[]> => {
     try {
-      return await PointsService.getPointsTransactions(employeeId);
+      return await PointsService.getTransactions(employeeId);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get points transactions');
+      setError(error instanceof Error ? error.message : 'Failed to get points transactions');
       return [];
     }
   };
@@ -596,7 +596,7 @@ export function useRecognition(): UseRecognitionReturn {
       await PointsService.addPoints(employeeId, employeeName, points, source, relatedId, description);
       setEmployeePoints(await PointsService.getAllEmployeePoints());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to add points');
+      setError(error instanceof Error ? error.message : 'Failed to add points');
       throw error;
     } finally {
       setLoading(false);
@@ -616,7 +616,7 @@ export function useRecognition(): UseRecognitionReturn {
       await PointsService.deductPoints(employeeId, employeeName, points, source, relatedId, description);
       setEmployeePoints(await PointsService.getAllEmployeePoints());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to deduct points');
+      setError(error instanceof Error ? error.message : 'Failed to deduct points');
       throw error;
     } finally {
       setLoading(false);
@@ -627,7 +627,7 @@ export function useRecognition(): UseRecognitionReturn {
     try {
       return await PointsService.getPointsBalance(employeeId);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get points balance');
+      setError(error instanceof Error ? error.message : 'Failed to get points balance');
       return 0;
     }
   };
@@ -640,7 +640,7 @@ export function useRecognition(): UseRecognitionReturn {
       setPrograms(await RecognitionProgramService.getPrograms());
       return created;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create program');
+      setError(error instanceof Error ? error.message : 'Failed to create program');
       throw error;
     } finally {
       setLoading(false);
@@ -653,7 +653,7 @@ export function useRecognition(): UseRecognitionReturn {
       await RecognitionProgramService.updateProgram(programId, updates);
       setPrograms(await RecognitionProgramService.getPrograms());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update program');
+      setError(error instanceof Error ? error.message : 'Failed to update program');
       throw error;
     } finally {
       setLoading(false);
@@ -662,18 +662,18 @@ export function useRecognition(): UseRecognitionReturn {
 
   const getProgramById = async (programId: string): Promise<RecognitionProgram | null> => {
     try {
-      return await RecognitionProgramService.getProgramById(programId);
+      return await RecognitionProgramService.getPrograms(programId);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get program');
+      setError(error instanceof Error ? error.message : 'Failed to get program');
       return null;
     }
   };
 
   const getActivePrograms = async (): Promise<RecognitionProgram[]> => {
     try {
-      return await RecognitionProgramService.getActivePrograms();
+      return await RecognitionProgramService.activateProgram();
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get active programs');
+      setError(error instanceof Error ? error.message : 'Failed to get active programs');
       return [];
     }
   };
@@ -681,10 +681,10 @@ export function useRecognition(): UseRecognitionReturn {
   const updateProgramStatus = async (programId: string, status: ProgramStatus): Promise<void> => {
     try {
       setLoading(true);
-      await RecognitionProgramService.updateProgramStatus(programId, status);
+      await RecognitionProgramService.updateProgram(programId, status);
       setPrograms(await RecognitionProgramService.getPrograms());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update program status');
+      setError(error instanceof Error ? error.message : 'Failed to update program status');
       throw error;
     } finally {
       setLoading(false);
@@ -698,7 +698,7 @@ export function useRecognition(): UseRecognitionReturn {
       // TODO: Implement nomination service
       return nomination;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to create nomination');
+      setError(error instanceof Error ? error.message : 'Failed to create nomination');
       throw error;
     } finally {
       setLoading(false);
@@ -710,7 +710,7 @@ export function useRecognition(): UseRecognitionReturn {
       // TODO: Implement nomination service
       return sampleNominations.filter(n => n.programId === programId);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get nominations');
+      setError(error instanceof Error ? error.message : 'Failed to get nominations');
       return [];
     }
   };
@@ -720,7 +720,7 @@ export function useRecognition(): UseRecognitionReturn {
       setLoading(true);
       // TODO: Implement nomination service
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update nomination status');
+      setError(error instanceof Error ? error.message : 'Failed to update nomination status');
       throw error;
     } finally {
       setLoading(false);
@@ -734,7 +734,7 @@ export function useRecognition(): UseRecognitionReturn {
       setMetrics(metrics);
       return metrics;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get metrics');
+      setError(error instanceof Error ? error.message : 'Failed to get metrics');
       throw error;
     }
   };
@@ -745,7 +745,7 @@ export function useRecognition(): UseRecognitionReturn {
       setLeaderboard(lb);
       return lb;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get leaderboard');
+      setError(error instanceof Error ? error.message : 'Failed to get leaderboard');
       throw error;
     }
   };
@@ -754,7 +754,7 @@ export function useRecognition(): UseRecognitionReturn {
     try {
       return await RecognitionAnalyticsService.generateReport(reportType as any, filters);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to generate report');
+      setError(error instanceof Error ? error.message : 'Failed to generate report');
       throw error;
     }
   };
@@ -766,7 +766,7 @@ export function useRecognition(): UseRecognitionReturn {
       setSettings(settings);
       return settings;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get settings');
+      setError(error instanceof Error ? error.message : 'Failed to get settings');
       throw error;
     }
   };
@@ -777,7 +777,7 @@ export function useRecognition(): UseRecognitionReturn {
       await RecognitionSettingsService.updateSettings(updates);
       setSettings(await RecognitionSettingsService.getSettings());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to update settings');
+      setError(error instanceof Error ? error.message : 'Failed to update settings');
       throw error;
     } finally {
       setLoading(false);
@@ -788,7 +788,7 @@ export function useRecognition(): UseRecognitionReturn {
     try {
       return sampleCoreValues;
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get core values');
+      setError(error instanceof Error ? error.message : 'Failed to get core values');
       return [];
     }
   };
@@ -798,7 +798,7 @@ export function useRecognition(): UseRecognitionReturn {
     try {
       return sampleNotifications.filter(n => n.recipientId === userId);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to get notifications');
+      setError(error instanceof Error ? error.message : 'Failed to get notifications');
       return [];
     }
   };
@@ -811,7 +811,7 @@ export function useRecognition(): UseRecognitionReturn {
       setNotifications(updated);
       setUnreadCount(updated.filter(n => !n.isRead).length);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to mark notification read');
+      setError(error instanceof Error ? error.message : 'Failed to mark notification read');
       throw error;
     }
   };
@@ -824,7 +824,7 @@ export function useRecognition(): UseRecognitionReturn {
       setNotifications(updated);
       setUnreadCount(0);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to mark all notifications read');
+      setError(error instanceof Error ? error.message : 'Failed to mark all notifications read');
       throw error;
     }
   };
@@ -842,10 +842,10 @@ export function useRecognition(): UseRecognitionReturn {
     try {
       const points = await PointsService.getEmployeePoints(employeeId);
       setCurrentEmployeePoints(points);
-      const transactions = await PointsService.getPointsTransactions(employeeId);
+      const transactions = await PointsService.getTransactions(employeeId);
       setPointsTransactions(transactions);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to set current employee');
+      setError(error instanceof Error ? error.message : 'Failed to set current employee');
     }
   };
 

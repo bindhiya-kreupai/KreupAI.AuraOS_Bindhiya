@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
           params.isMuslim
         );
         result = {
-          isEligible: hajjLeave.isEligible,
+          isEligible: hajjLeave.eligible,
           days: hajjLeave.days,
           countryCode,
         };

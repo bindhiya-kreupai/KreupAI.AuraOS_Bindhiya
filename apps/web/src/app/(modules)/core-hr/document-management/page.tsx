@@ -373,10 +373,10 @@ export default function DocumentManagementPage() {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errors: ValidationErrors = {};
-        error.errors.forEach((err) => {
-          const field = err.path[0]?.toString();
+        error.errors.forEach((error) => {
+          const field = error.path[0]?.toString();
           if (field) {
-            errors[field] = err.message;
+            errors[field] = error.message;
           }
         });
         setValidationErrors(errors);

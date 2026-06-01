@@ -284,13 +284,13 @@ export class AnalyticsService {
       throw new Error('Widget not found');
     }
 
-    if (!widget.reportId) {
+    if (!widget.report) {
       throw new Error('Widget has no associated report');
     }
 
     // Execute the report and return fresh data
     const { results } = await this.executeReport(
-      widget.reportId,
+      widget.report,
       tenantId,
       'SYSTEM',
       {}

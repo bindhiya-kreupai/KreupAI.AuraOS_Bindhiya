@@ -41,27 +41,27 @@ export class TimeTrackingService {
     if (punchType) where.punchType = punchType;
 
     const [data, total] = await Promise.all([
-      prisma.attendancePunch.findMany({
+      prisma.attendance.findMany({
         where,
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { [sortBy]: sortOrder },
       }),
-      prisma.attendancePunch.count({ where }),
+      prisma.attendance.count({ where }),
     ]);
 
     return { data, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
   }
 
   static async findPunchById(id: string, tenantId: string) {
-    return prisma.attendancePunch.findFirst({
+    return prisma.attendance.findFirst({
       where: { id, tenantId },
     });
   }
 
   static async createPunch(data: z.infer<typeof createAttendancePunchSchema>) {
     const validated = createAttendancePunchSchema.parse(data);
-    return prisma.attendancePunch.create({
+    return prisma.attendance.create({
       data: {
         ...validated,
         punchDate: new Date(validated.punchDate),
@@ -72,27 +72,27 @@ export class TimeTrackingService {
 
   static async updatePunch(id: string, tenantId: string, data: z.infer<typeof updateAttendancePunchSchema>) {
     const validated = updateAttendancePunchSchema.parse(data);
-    const existing = await prisma.attendancePunch.findFirst({ where: { id, tenantId } });
+    const existing = await prisma.attendance.findFirst({ where: { id, tenantId } });
     if (!existing) return null;
 
     const updateData: any = { ...validated };
     if (validated.punchDate) updateData.punchDate = new Date(validated.punchDate);
     if (validated.punchTime) updateData.punchTime = new Date(validated.punchTime);
 
-    return prisma.attendancePunch.update({ where: { id }, data: updateData });
+    return prisma.attendance.update({ where: { id }, data: updateData });
   }
 
   static async deletePunch(id: string, tenantId: string) {
-    const existing = await prisma.attendancePunch.findFirst({ where: { id, tenantId } });
+    const existing = await prisma.attendance.findFirst({ where: { id, tenantId } });
     if (!existing) return null;
-    return prisma.attendancePunch.delete({ where: { id } });
+    return prisma.attendance.delete({ where: { id } });
   }
 
   static async verifyPunch(id: string, tenantId: string, verifiedBy: string) {
-    const punch = await prisma.attendancePunch.findFirst({ where: { id, tenantId } });
+    const punch = await prisma.attendance.findFirst({ where: { id, tenantId } });
     if (!punch) throw new Error('Punch record not found');
 
-    return prisma.attendancePunch.update({
+    return prisma.attendance.update({
       where: { id },
       data: {
         isVerified: true,
@@ -245,8 +245,8 @@ export class TimeTrackingService {
       select: { workHours: true, overtimeHours: true },
     });
 
-    const totalWorkHours = records.reduce((sum, r) => sum + r.workHours, 0);
-    const totalOvertimeHours = records.reduce((sum, r) => sum + r.overtimeHours, 0);
+    const totalWorkHours = records.reduce((sum: any, r: any) => sum + r.workHours, 0);
+    const totalOvertimeHours = records.reduce((sum: any, r: any) => sum + r.overtimeHours, 0);
 
     return {
       total,
@@ -256,7 +256,7 @@ export class TimeTrackingService {
       pendingApproval,
       totalWorkHours: Math.round(totalWorkHours * 10) / 10,
       totalOvertimeHours: Math.round(totalOvertimeHours * 10) / 10,
-      byStatus: byStatus.map(s => ({ status: s.status, count: s._count })),
+      byStatus: byStatus.map((s: any) => ({ status: s.status, count: s._count })),
     };
   }
 
@@ -266,7 +266,7 @@ export class TimeTrackingService {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    return prisma.attendancePunch.findMany({
+    return prisma.attendance.findMany({
       where: {
         tenantId,
         employeeId,

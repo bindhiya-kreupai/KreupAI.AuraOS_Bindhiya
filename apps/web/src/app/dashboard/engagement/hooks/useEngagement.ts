@@ -32,7 +32,7 @@ export function useEngagement() {
       setMetrics(await EngagementAnalyticsService.getMetrics());
       setSettings(await EngagementSettingsService.getSettings());
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to load engagement data');
+      setError(error instanceof Error ? error.message : 'Failed to load engagement data');
     } finally {
       setLoading(false);
     }

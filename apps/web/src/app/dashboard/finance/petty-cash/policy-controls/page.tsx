@@ -72,7 +72,7 @@ export default function PolicyControlsPage() {
             try {
                 setLoading(true);
                 const data = await PettyCashService.getFunds();
-                setPolicies(data as any[]);
+                setSpendingLimits(data as any[]);
             } catch (error) {
                 console.error('Error:', error);
             } finally {

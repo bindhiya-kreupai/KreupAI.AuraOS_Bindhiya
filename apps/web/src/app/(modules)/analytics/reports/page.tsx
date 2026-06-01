@@ -190,7 +190,7 @@ export default function CustomReportsPage() {
                   <Label htmlFor="category">Category</Label>
                   <Select
                     value={formData.category}
-                    onValueChange={(value) => setFormData({ ...formData, category: value })}
+                    onValueChange={(value: any) => setFormData({ ...formData, category: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -210,7 +210,7 @@ export default function CustomReportsPage() {
                   <Label htmlFor="chartType">Chart Type</Label>
                   <Select
                     value={formData.chartType}
-                    onValueChange={(value) => setFormData({ ...formData, chartType: value })}
+                    onValueChange={(value: any) => setFormData({ ...formData, chartType: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />

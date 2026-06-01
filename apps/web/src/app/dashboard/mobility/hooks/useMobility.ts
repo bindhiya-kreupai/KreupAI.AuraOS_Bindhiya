@@ -141,7 +141,7 @@ export function useMobility(): UseMobilityReturn {
     setVisaLoading(true);
     setVisaError(null);
     try {
-      const applications = await VisaImmigrationService.getAllVisaApplications();
+      const applications = await VisaImmigrationService.getVisaApplications();
       setVisaApplications(applications);
     } catch (error) {
       setVisaError(error instanceof Error ? error.message : 'Failed to fetch visa applications');
@@ -524,7 +524,7 @@ export function useMobility(): UseMobilityReturn {
     setTaxLoading(true);
     setTaxError(null);
     try {
-      const profile = await ExpatTaxService.getExpatTaxProfileById(profileId);
+      const profile = await ExpatTaxService.getTaxProfileById(profileId);
       setSelectedExpatTaxProfile(profile);
     } catch (error) {
       setTaxError(error instanceof Error ? error.message : 'Failed to fetch expat tax profile');
@@ -537,7 +537,7 @@ export function useMobility(): UseMobilityReturn {
     setTaxLoading(true);
     setTaxError(null);
     try {
-      const newProfile = await ExpatTaxService.createExpatTaxProfile(profile);
+      const newProfile = await ExpatTaxService.createTaxProfile(profile);
       setExpatTaxProfiles((prev) => [...prev, newProfile]);
       return newProfile;
     } catch (error) {
@@ -553,7 +553,7 @@ export function useMobility(): UseMobilityReturn {
       setTaxLoading(true);
       setTaxError(null);
       try {
-        const updatedProfile = await ExpatTaxService.updateExpatTaxProfile(profileId, updates);
+        const updatedProfile = await ExpatTaxService.updateTaxProfile(profileId, updates);
         setExpatTaxProfiles((prev) =>
           prev.map((profile) => (profile.profileId === profileId ? updatedProfile : profile))
         );
@@ -576,7 +576,7 @@ export function useMobility(): UseMobilityReturn {
       setTaxLoading(true);
       setTaxError(null);
       try {
-        await ExpatTaxService.deleteExpatTaxProfile(profileId);
+        await ExpatTaxService.deleteTaxProfile(profileId);
         setExpatTaxProfiles((prev) => prev.filter((profile) => profile.profileId !== profileId));
         if (selectedExpatTaxProfile?.profileId === profileId) {
           setSelectedExpatTaxProfile(null);
@@ -656,7 +656,7 @@ export function useMobility(): UseMobilityReturn {
       setTaxLoading(true);
       setTaxError(null);
       try {
-        const updatedProfile = await ExpatTaxService.createTaxProjection(profileId, projection);
+        const updatedProfile = await ExpatTaxService.createProjection(profileId, projection);
         setExpatTaxProfiles((prev) =>
           prev.map((profile) => (profile.profileId === profileId ? updatedProfile : profile))
         );

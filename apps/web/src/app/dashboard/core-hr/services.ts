@@ -3,8 +3,7 @@
 import { APIClient } from '@/lib/api-client';
 import type {
   Asset, AssetAssignment, CoreHRSettings,
-  InterCompanyTransfer, SharedServiceRequest
-} from './types';
+  InterCompanyTransfer, SharedServiceRequest, CostCenter, IDCard, ExitProcess, ClearanceItem, Anniversary, ProbationRecord, ConfirmationLetter, Employee, OrganizationUnit, EmploymentHistory, EmployeeDocument, DocumentTemplate, Position, LifeEvent, MassUpdate, LetterRequest, AutoNumberSequence } from './types';
 
 function mapAssetAssignment(raw: any): AssetAssignment {
   return {

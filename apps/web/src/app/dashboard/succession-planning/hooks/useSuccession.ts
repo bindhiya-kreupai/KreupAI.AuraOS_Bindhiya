@@ -231,7 +231,7 @@ export const useSuccession = () => {
     const deleteCandidate = useCallback(async (id: string) => {
         try {
             setIsSaving(true);
-            await SuccessionCandidateService.deleteCandidate(id);
+            await SuccessionCandidateService.getCandidates(id);
             setCandidates(prev => prev.filter(c => c.id !== id));
             
             // Refresh metrics

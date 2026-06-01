@@ -360,14 +360,14 @@ export class OvertimeService {
       select: { totalHours: true, actualHours: true },
     });
 
-    const totalOvertimeHours = overtimeRecords.reduce((sum, r) => sum + (r.actualHours || r.totalHours), 0);
+    const totalOvertimeHours = overtimeRecords.reduce((sum: any, r: any) => sum + (r.actualHours || r.totalHours), 0);
 
     const compOffRecords = await prisma.compOffRequest.findMany({
       where: { ...where, status: 'EARNED' },
       select: { earnedHours: true },
     });
 
-    const totalCompOffHours = compOffRecords.reduce((sum, r) => sum + r.earnedHours, 0);
+    const totalCompOffHours = compOffRecords.reduce((sum: any, r: any) => sum + r.earnedHours, 0);
 
     return {
       totalOvertime,

@@ -17,3 +17,14 @@ export interface Technician { technicianId: string; technicianName: string; spec
 export interface ImpactAssessment { severity: 'none' | 'low' | 'medium' | 'high' | 'critical'; affectedServices: string[]; estimatedDowntime?: number; customerImpact: number; }
 export interface MediaSettings { settingsId: string; organizationId: string; contentSettings: { rightsExpiryWarningDays: number; autoRenewalEnabled: boolean; }; bandwidthSettings: { alertThreshold: number; costTrackingEnabled: boolean; }; audienceSettings: { metricsUpdateFrequency: number; retentionPeriodDays: number; }; networkSettings: { maintenanceWindowEnabled: boolean; incidentResponseTime: number; }; notifications: { rightsExpiring: boolean; bandwidthAlert: boolean; networkIncident: boolean; }; updatedAt: string; }
 export interface MediaAlert { alertId: string; alertType: 'rights' | 'bandwidth' | 'audience' | 'network'; severity: 'low' | 'medium' | 'high' | 'critical'; title: string; message: string; relatedEntity: { entityType: string; entityId: string; entityName: string; }; status: 'active' | 'acknowledged' | 'resolved'; createdAt: string; }
+/**
+ * Toast notification shape — used by the dashboard's Toast/useToast
+ * components. Kept consistent across dashboards: id, type, message,
+ * optional duration in ms.
+ */
+export interface Toast {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+  duration?: number;
+}

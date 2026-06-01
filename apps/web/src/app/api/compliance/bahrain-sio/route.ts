@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     // Calculate contributions for all employees
     const results = employees.map(employee => {
-      const contribution = BahrainSIOService.calculateContribution(employee);
+      const contribution = BahrainSIOService.calculateContributions(employee);
       return {
         employeeId: employee.employeeId,
         employeeName: employee.employeeName,

@@ -760,7 +760,7 @@ export class EmployeeSelfService {
 
     const presentIds = new Set(todayAttendance.filter(
       (a: any) => ['PRESENT', 'LATE', 'EARLY_OUT', 'HALF_DAY'].includes(a.status)
-    ).map(a => a.employeeId));
+    ).map((a: any) => a.employeeId));
 
     // Get today's leaves
     const todayLeaves = await prisma.leaveRequest.findMany({

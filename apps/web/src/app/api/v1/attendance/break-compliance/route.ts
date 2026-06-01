@@ -148,7 +148,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
       // Calculate actual break duration
       let actualBreakMinutes = 0;
-      const sortedPunches = punches.sort((a, b) => a.punchTime.getTime() - b.punchTime.getTime());
+      const sortedPunches = punches.sort((a: any, b: any) => a.punchTime.getTime() - b.punchTime.getTime());
 
       for (let i = 0; i < sortedPunches.length - 1; i += 2) {
         if (

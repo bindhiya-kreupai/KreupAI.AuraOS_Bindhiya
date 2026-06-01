@@ -287,7 +287,7 @@ export const useOnboarding = () => {
     async (id: string) => {
       try {
         setIsSaving(true);
-        const activated = await OnboardingProgramService.activateProgram(id);
+        const activated = await OnboardingProgramService.createProgram(id);
         setPrograms((prev) => prev.map((p) => (p.id === id ? activated : p)));
         toast.success('Program activated successfully');
         return activated;

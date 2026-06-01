@@ -175,7 +175,7 @@ export class ConfirmationService {
       pending,
       approved,
       confirmed,
-      byStatus: byStatus.map(s => ({ status: s.status, count: s._count })),
+      byStatus: byStatus.map((s: any) => ({ status: s.status, count: s._count })),
     };
   }
 }

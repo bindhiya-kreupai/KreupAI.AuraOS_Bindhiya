@@ -121,7 +121,7 @@ export class ShiftManagementService {
     if (!existing) return null;
 
     // Check if shift is assigned
-    const assignmentCount = await prisma.shiftAssignment.count({ where: { shiftId: id } });
+    const assignmentCount = await prisma.assignment.count({ where: { shiftId: id } });
     if (assignmentCount > 0) {
       throw new Error('Cannot delete shift that has active assignments');
     }
@@ -157,14 +157,14 @@ export class ShiftManagementService {
     if (isActive !== undefined) where.isActive = isActive;
 
     const [data, total] = await Promise.all([
-      prisma.shiftAssignment.findMany({
+      prisma.assignment.findMany({
         where,
         include: { shift: true },
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { effectiveFrom: 'desc' },
       }),
-      prisma.shiftAssignment.count({ where }),
+      prisma.assignment.count({ where }),
     ]);
 
     return { data, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
@@ -174,7 +174,7 @@ export class ShiftManagementService {
     const validated = createShiftAssignmentSchema.parse(data);
 
     // Deactivate existing assignments for this employee if any
-    await prisma.shiftAssignment.updateMany({
+    await prisma.assignment.updateMany({
       where: {
         tenantId: validated.tenantId,
         employeeId: validated.employeeId,
@@ -183,7 +183,7 @@ export class ShiftManagementService {
       data: { isActive: false, effectiveTo: new Date() },
     });
 
-    return prisma.shiftAssignment.create({
+    return prisma.assignment.create({
       data: {
         ...validated,
         effectiveFrom: new Date(validated.effectiveFrom),
@@ -195,20 +195,20 @@ export class ShiftManagementService {
   }
 
   static async updateAssignment(id: string, tenantId: string, data: any) {
-    const existing = await prisma.shiftAssignment.findFirst({ where: { id, tenantId } });
+    const existing = await prisma.assignment.findFirst({ where: { id, tenantId } });
     if (!existing) return null;
 
     const updateData: any = { ...data };
     if (data.effectiveFrom) updateData.effectiveFrom = new Date(data.effectiveFrom);
     if (data.effectiveTo) updateData.effectiveTo = new Date(data.effectiveTo);
 
-    return prisma.shiftAssignment.update({ where: { id }, data: updateData });
+    return prisma.assignment.update({ where: { id }, data: updateData });
   }
 
   static async deleteAssignment(id: string, tenantId: string) {
-    const existing = await prisma.shiftAssignment.findFirst({ where: { id, tenantId } });
+    const existing = await prisma.assignment.findFirst({ where: { id, tenantId } });
     if (!existing) return null;
-    return prisma.shiftAssignment.delete({ where: { id } });
+    return prisma.assignment.delete({ where: { id } });
   }
 
   // ==================== SHIFT ROSTER ====================
@@ -434,8 +434,8 @@ export class ShiftManagementService {
     const [totalShifts, activeShifts, totalAssignments, activeAssignments, pendingSwaps] = await Promise.all([
       prisma.shift.count({ where: { tenantId } }),
       prisma.shift.count({ where: { tenantId, isActive: true } }),
-      prisma.shiftAssignment.count({ where: { tenantId } }),
-      prisma.shiftAssignment.count({ where: { tenantId, isActive: true } }),
+      prisma.assignment.count({ where: { tenantId } }),
+      prisma.assignment.count({ where: { tenantId, isActive: true } }),
       prisma.shiftSwapRequest.count({ where: { tenantId, status: 'PENDING' } }),
     ]);
 

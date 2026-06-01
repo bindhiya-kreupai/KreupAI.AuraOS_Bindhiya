@@ -120,9 +120,9 @@ export default function CostCenterPage() {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errors: ValidationErrors = {};
-        error.errors.forEach((err) => {
-          const field = err.path[0]?.toString();
-          if (field) errors[field] = err.message;
+        error.errors.forEach((error) => {
+          const field = error.path[0]?.toString();
+          if (field) errors[field] = error.message;
         });
         setValidationErrors(errors);
         const firstError = Object.values(errors)[0];

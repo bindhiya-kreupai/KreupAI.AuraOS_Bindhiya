@@ -134,7 +134,7 @@ export function useWorkforcePlanning(): UseWorkforcePlanningReturn {
       setMetrics(metricsData);
       setSettings(settingsData);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to load workforce planning data');
+      setError(error instanceof Error ? error.message : 'Failed to load workforce planning data');
     } finally {
       setLoading(false);
     }

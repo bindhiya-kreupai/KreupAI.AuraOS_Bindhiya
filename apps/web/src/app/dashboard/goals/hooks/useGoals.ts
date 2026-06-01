@@ -22,7 +22,7 @@ import {
   GoalSettingsService
 } from '../services';
 import { goalData } from '../data';
-import { useToast } from '../../components/Toast';
+import { useToast } from '../components/Toast';
 
 export const useGoals = () => {
   const [goals, setGoals] = useState<Goal[]>([]);

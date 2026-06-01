@@ -151,7 +151,7 @@ export function useManagerSelfService(managerId: string = 'manager-001'): UseMan
       setAnalytics(analyticsData);
       setSettings(settingsData);
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to load manager data');
+      setError(error instanceof Error ? error.message : 'Failed to load manager data');
     } finally {
       setLoading(false);
     }

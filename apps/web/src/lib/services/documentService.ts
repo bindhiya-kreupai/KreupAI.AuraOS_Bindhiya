@@ -483,7 +483,7 @@ export class DocumentService extends BaseService {
       orderBy: { version: 'desc' },
     });
 
-    return versions.map((v) => ({
+    return versions.map((v: any) => ({
       id: v.id,
       version: v.version || 1,
       fileName: v.fileName,

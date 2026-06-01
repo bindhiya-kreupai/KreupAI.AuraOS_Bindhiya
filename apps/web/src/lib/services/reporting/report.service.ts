@@ -445,7 +445,7 @@ export class ReportService {
 
     for (const [label, values] of groups) {
       labels.push(label);
-      dataPoints.push(values.reduce((a, b) => a + b, 0) / values.length);
+      dataPoints.push(values.reduce((a: any, b: any) => a + b, 0) / values.length);
     }
 
     return {

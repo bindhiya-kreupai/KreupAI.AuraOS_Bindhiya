@@ -77,7 +77,7 @@ export const useConstruction = () => {
       } else setSettings(settingsData);
 
     } catch (error) {
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+      setError(error instanceof Error ? error.message : 'Failed to load data');
       addToast({ type: 'error', message: 'Failed to load construction data' });
     } finally {
       setLoading(false);

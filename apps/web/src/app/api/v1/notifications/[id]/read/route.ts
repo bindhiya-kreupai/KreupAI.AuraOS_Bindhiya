@@ -56,7 +56,7 @@ export const PATCH = withEnhancedAuth(async (request: NextRequest, context: any)
         apiVersion: 'v1',
       },
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('[Notification Read API] PATCH Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to mark notification as read' } },

@@ -102,7 +102,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       },
       { status: 201 }
     );
-  } catch (_error) {
+  } catch (error) {
     console.error('[Attendance Clock API] POST Error:', error);
     return NextResponse.json(
       {

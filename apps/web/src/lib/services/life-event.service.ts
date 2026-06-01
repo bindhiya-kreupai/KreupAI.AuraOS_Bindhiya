@@ -302,8 +302,8 @@ export class LifeEventService {
 
     return {
       total,
-      byType: byType.map((item) => ({ eventType: item.eventType, count: item._count })),
-      byStatus: byStatus.map((item) => ({ status: item.status, count: item._count })),
+      byType: byType.map((item: any) => ({ eventType: item.eventType, count: item._count })),
+      byStatus: byStatus.map((item: any) => ({ status: item.status, count: item._count })),
       pending,
       verified,
       processed,

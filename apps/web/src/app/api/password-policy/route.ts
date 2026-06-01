@@ -11,7 +11,7 @@ import { logger } from '@/lib/logger';
 export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
     // Check permission
-    const permissionError = requirePermission(Resource.SYSTEM_CONFIG, Action.READ, permissions);
+    const permissionError = requirePermission(Resource.SSO_CONFIG, Action.READ, permissions);
     if (permissionError) return permissionError;
 
     // Fetch the first (and typically only) password policy
@@ -53,7 +53,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
 export const POST = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
     // Check permission
-    const permissionError = requirePermission(Resource.SYSTEM_CONFIG, Action.CREATE, permissions);
+    const permissionError = requirePermission(Resource.SSO_CONFIG, Action.CREATE, permissions);
     if (permissionError) return permissionError;
 
     // Validate request body
@@ -119,7 +119,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
     // Check permission
-    const permissionError = requirePermission(Resource.SYSTEM_CONFIG, Action.UPDATE, permissions);
+    const permissionError = requirePermission(Resource.SSO_CONFIG, Action.UPDATE, permissions);
     if (permissionError) return permissionError;
 
     // Validate request body
@@ -183,7 +183,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
 export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
     // Check permission
-    const permissionError = requirePermission(Resource.SYSTEM_CONFIG, Action.DELETE, permissions);
+    const permissionError = requirePermission(Resource.SSO_CONFIG, Action.DELETE, permissions);
     if (permissionError) return permissionError;
 
     // Fetch existing policy

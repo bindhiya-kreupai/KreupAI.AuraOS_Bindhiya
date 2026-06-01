@@ -12,3 +12,14 @@ export interface StaffAssignment { assignmentId: string; employeeId: string; emp
 export interface HousekeepingTask { taskId: string; roomNumber: string; roomType: string; taskType: 'clean' | 'inspect' | 'deep_clean' | 'turndown' | 'maintenance'; assignedTo?: string; priority: 'low' | 'medium' | 'high' | 'urgent'; status: RoomStatus; scheduledTime: string; startTime?: string; completionTime?: string; duration?: number; inspectionScore?: number; notes?: string; createdAt: string; }
 export interface HospitalitySettings { settingsId: string; organizationId: string; tipSettings: { autoDistribution: boolean; distributionFrequency: string; minimumPoolAmount: number; }; eventSettings: { advanceBookingDays: number; cancellationPenaltyPercent: number; staffingBuffer: number; }; housekeepingSettings: { roomsPerHousekeeper: number; deepCleanFrequency: number; inspectionRequired: boolean; }; notifications: { tipDistribution: boolean; eventStaffing: boolean; taskAssignment: boolean; }; updatedAt: string; }
 export interface HospitalityAlert { alertId: string; alertType: 'tip_pool' | 'event_staffing' | 'room_status'; severity: 'low' | 'medium' | 'high'; title: string; message: string; status: 'active' | 'acknowledged' | 'resolved'; createdAt: string; }
+/**
+ * Toast notification shape — used by the dashboard's Toast/useToast
+ * components. Kept consistent across dashboards: id, type, message,
+ * optional duration in ms.
+ */
+export interface Toast {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+  duration?: number;
+}

@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Timesheet, Project, Task, Client, TimeTrackingMetrics, TimeTrackingSettings, TimeEntry, TimerSession } from '../types';
 import { TimesheetService, ProjectService, TaskService, ClientService, TimerService, TimeTrackingAnalyticsService, TimeTrackingSettingsService } from '../services';
 import { timeTrackingData } from '../data';
-import { useToast } from '../../components/Toast';
+import { useToast } from '../components/Toast';
 
 export const useTimeTracking = () => {
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);

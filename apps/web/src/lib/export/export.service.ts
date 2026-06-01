@@ -330,8 +330,8 @@ export class ExportService {
     return payslips.map(p => ({
       employeeCode: p.employeeCode,
       employeeName: p.employeeName,
-      month: p.payrollRun?.month && p.payrollRun?.year
-        ? `${p.payrollRun.year}-${String(p.payrollRun.month).padStart(2, '0')}`
+      month: p.payrollRunId?.month && p.payrollRunId?.year
+        ? `${p.payrollRunId.year}-${String(p.payrollRunId.month).padStart(2, '0')}`
         : p.payrollRun?.periodStart?.toISOString().substring(0, 7) || '',
       basicSalary: Number(p.basicSalary),
       grossPay: Number(p.grossSalary),

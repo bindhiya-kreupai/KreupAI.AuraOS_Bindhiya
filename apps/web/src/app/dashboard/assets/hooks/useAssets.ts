@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Asset, AssetRequest, AssetMetrics, AssetSettings } from '../types';
 import { AssetService, AssetRequestService, AssetAnalyticsService, AssetSettingsService } from '../services';
 import { assetData } from '../data';
-import { useToast } from '../../components/Toast';
+import { useToast } from '../components/Toast';
 
 export const useAssets = () => {
   const [assets, setAssets] = useState<Asset[]>([]);

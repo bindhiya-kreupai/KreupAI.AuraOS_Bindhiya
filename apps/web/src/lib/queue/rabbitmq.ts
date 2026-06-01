@@ -71,7 +71,7 @@ class RabbitMQClient {
       logger.info('RabbitMQ connected successfully');
 
       // Setup event handlers
-      this.connection.on('error', (error) => {
+      this.connection.on('error', (error: any) => {
         logger.error({ error }, 'RabbitMQ connection error');
         this.isConnected = false;
       });
@@ -82,7 +82,7 @@ class RabbitMQClient {
         this.handleReconnect();
       });
 
-      this.channel.on('error', (error) => {
+      this.channel.on('error', (error: any) => {
         logger.error({ error }, 'RabbitMQ channel error');
       });
 
@@ -237,7 +237,7 @@ class RabbitMQClient {
     try {
       const consumer = await this.channel!.consume(
         queue,
-        async (msg) => {
+        async (msg: any) => {
           if (!msg) {
             logger.warn({ queue }, 'Received null message');
             return;

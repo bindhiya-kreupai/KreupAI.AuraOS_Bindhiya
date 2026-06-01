@@ -525,7 +525,7 @@ export class CareerPortalService {
       candidateName: '', // Would be populated from join
       jobTitle: '',
       interviewType: interview.interviewType,
-      scheduledAt: interview.scheduledAt,
+      scheduledAt: interview.scheduledDate,
       durationMinutes: interview.durationMinutes,
       interviewers: [],
       location: interview.location || undefined,
@@ -561,7 +561,7 @@ export class CareerPortalService {
       });
 
       if (existingInterview) {
-        conflicts.push(`Interviewer ${interviewerId} has a conflict at ${existingInterview.scheduledAt.toISOString()}`);
+        conflicts.push(`Interviewer ${interviewerId} has a conflict at ${existingInterview.scheduledDate.toISOString()}`);
       }
     }
 
@@ -662,7 +662,7 @@ export class CareerPortalService {
     const totalApps = applications.length;
 
     const funnelStages: FunnelStage[] = stages.map(s => {
-      const count = applications.filter(a =>
+      const count = applications.filter((a: any) =>
         s.statuses.includes(a.status) ||
         // Include all candidates that reached this stage or beyond
         stages.findIndex(st => st.statuses.includes(a.status)) >=
@@ -678,7 +678,7 @@ export class CareerPortalService {
       };
     });
 
-    const hiredCount = applications.filter(a => a.status === 'HIRED').length;
+    const hiredCount = applications.filter((a: any) => a.status === 'HIRED').length;
 
     return {
       jobPostingId,

@@ -772,7 +772,7 @@ export default function EmployeeRelationsDashboard() {
     try {
       const [cases, analytics, disciplinary] = await Promise.all([
         EmployeeRelationsService.getCases(),
-        EmployeeRelationsService.getAnalytics(),
+        EmployeeRelationsService.getCaseAnalytics(),
         EmployeeRelationsService.getDisciplinaryActions
           ? EmployeeRelationsService.getDisciplinaryActions()
           : Promise.resolve([]),

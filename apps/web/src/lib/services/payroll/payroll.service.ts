@@ -15,7 +15,7 @@ import type {
   PayrollValidationWarning,
   EmployeeSalaryStructure,
   TaxDetails,
-  TaxRegime} from './types';
+  TaxRegime, TaxExemption } from './types';
 import {
   PayrollStatus,
   PayslipStatus,

@@ -664,10 +664,10 @@ export default function SuccessionPlanningDashboard() {
       const [analytics, keyPositions, candidates, plans, devPlans, reviews] = await Promise.all([
         SuccessionService.getAnalytics(),
         SuccessionService.getKeyPositions(),
-        SuccessionService.getAllCandidates(),
-        SuccessionService.getSuccessionPlans(),
-        SuccessionService.getDevelopmentPlans
-          ? SuccessionService.getDevelopmentPlans()
+        SuccessionService.getCandidates(),
+        SuccessionService.getSuccessionPlan(),
+        SuccessionService.getDevelopmentPlan
+          ? SuccessionService.getDevelopmentPlan()
           : Promise.resolve([]),
         SuccessionService.getTalentReviews
           ? SuccessionService.getTalentReviews()

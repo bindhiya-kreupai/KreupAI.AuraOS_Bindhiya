@@ -225,7 +225,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       const emp = employeeMap.get(empId);
       if (!emp) continue;
 
-      const sorted = empRecords.sort((a, b) => a.date.getTime() - b.date.getTime());
+      const sorted = empRecords.sort((a: any, b: any) => a.date.getTime() - b.date.getTime());
       let consecutiveAbsent = 0;
       let absenceStart: Date | null = null;
 

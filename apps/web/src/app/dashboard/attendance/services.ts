@@ -467,8 +467,8 @@ function normalizeWFHPayload(request: Partial<WFHRequest>) {
   if (request.recurringPattern) {
     payload.recurringDays = request.recurringPattern
       .split(',')
-      .map(value => Number.parseInt(value.trim(), 10))
-      .filter(value => !Number.isNaN(value));
+      .map((value: any) => Number.parseInt(value.trim(), 10))
+      .filter((value: any) => !Number.isNaN(value));
   }
 
   const employeeId = normalizePlaceholderEmployeeId(request.employeeId);

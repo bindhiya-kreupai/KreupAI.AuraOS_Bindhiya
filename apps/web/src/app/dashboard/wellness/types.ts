@@ -1240,3 +1240,13 @@ export interface Attachment {
   uploadedBy: string;
   uploadedDate: string;
 }
+/**
+ * Toast notification shape — used by the dashboard's Toast/useToast
+ * components. Kept consistent across dashboards.
+ */
+export interface Toast {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+  duration?: number;
+}

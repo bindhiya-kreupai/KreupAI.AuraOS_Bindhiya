@@ -164,7 +164,7 @@ export class PerformancePredictionService {
       predictedRatingAr: rating.labelAr,
       confidence,
       trend,
-      contributingFactors: factors.sort((a, b) => b.score * b.weight - a.score * a.weight),
+      contributingFactors: factors.sort((a: any, b: any) => b.score * b.weight - a.score * a.weight),
       recommendations: this.generateRecommendations(factors, employeeData),
       nextReviewDate: this.calculateNextReviewDate(),
       predictedAt: new Date(),
@@ -417,7 +417,7 @@ export class PerformancePredictionService {
     const recommendations: DevelopmentRecommendation[] = [];
 
     // Identify areas needing improvement (score < 60)
-    const weakAreas = factors.filter(f => f.score < 60);
+    const weakAreas = factors.filter((f: any) => f.score < 60);
 
     for (const area of weakAreas) {
       const rec = this.getRecommendation(area.factor, area.score, data);

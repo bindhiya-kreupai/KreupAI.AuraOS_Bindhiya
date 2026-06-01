@@ -33,7 +33,7 @@ export const useFinancial = () => {
       if (policiesData.length === 0) { for (const pol of sampleInsurancePolicies) await InsuranceService.createPolicy(pol); setInsurancePolicies(sampleInsurancePolicies); } else setInsurancePolicies(policiesData);
       if (portfoliosData.length === 0) { for (const port of samplePortfolios) await WealthManagementService.createPortfolio(port); setPortfolios(samplePortfolios); } else setPortfolios(portfoliosData);
       if (!settingsData) { await FinancialSettingsService.updateSettings(sampleFinancialSettings); setSettings(sampleFinancialSettings); } else setSettings(settingsData);
-    } catch (error) { setError(err instanceof Error ? err.message : 'Failed to load data'); addToast({ type: 'error', message: 'Failed to load financial data' }); }
+    } catch (error) { setError(error instanceof Error ? error.message : 'Failed to load data'); addToast({ type: 'error', message: 'Failed to load financial data' }); }
     finally { setLoading(false); }
   }, [addToast]);
 

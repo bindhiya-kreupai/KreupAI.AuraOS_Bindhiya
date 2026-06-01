@@ -1342,7 +1342,7 @@ export class RosterManagementService {
   ): Promise<RosterTemplate | null> {
     // Look for template in the configuration table
     // Since RosterTemplate is not in the schema, we store templates as JSON config
-    const config = await prisma.configuration.findFirst({
+    const config = await prisma.wPSConfiguration.findFirst({
       where: {
         tenantId,
         category: 'ROSTER_TEMPLATE',

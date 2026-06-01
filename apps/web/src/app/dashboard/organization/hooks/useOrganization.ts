@@ -26,7 +26,7 @@ import {
   OrgChartService
 } from '../services';
 import { organizationData } from '../data';
-import { useToast } from '../../components/Toast';
+import { useToast } from '../components/Toast';
 
 export const useOrganization = () => {
   const [departments, setDepartments] = useState<Department[]>([]);

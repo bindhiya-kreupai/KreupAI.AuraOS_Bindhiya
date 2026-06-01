@@ -25,7 +25,7 @@ export class TaxDocumentService extends BaseService {
       orderBy: [{ taxYear: 'desc' }, { type: 'asc' }],
     });
 
-    return docs.map((d) => ({
+    return docs.map((d: any) => ({
       id: d.id,
       employeeId: d.employeeId,
       type: d.type as TaxDocument['type'],
@@ -85,7 +85,7 @@ export class TaxDocumentService extends BaseService {
       distinct: ['taxYear'],
       orderBy: { taxYear: 'desc' },
     });
-    return docs.map((d) => d.taxYear);
+    return docs.map((d: any) => d.taxYear);
   }
 }
 

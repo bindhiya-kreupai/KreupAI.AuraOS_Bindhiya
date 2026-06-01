@@ -109,7 +109,7 @@ const EmployeeType = new GraphQLObjectType({
     lastName: { type: new GraphQLNonNull(GraphQLString) },
     fullName: {
       type: GraphQLString,
-      resolve: (employee) =>
+      resolve: (employee: any) =>
         [employee.firstName, employee.middleName, employee.lastName]
           .filter(Boolean)
           .join(' '),
@@ -273,7 +273,7 @@ const RootQuery = new GraphQLObjectType({
     employee: {
       type: EmployeeType,
       args: { id: { type: new GraphQLNonNull(GraphQLID) } },
-      resolve: async (_, { id }, context) => {
+      resolve: async (_: any, { id }: any, context: any) => {
         // TODO: Implement with actual service
         return context.services.employee.getById(id);
       },
@@ -287,7 +287,7 @@ const RootQuery = new GraphQLObjectType({
         departmentId: { type: GraphQLID },
         search: { type: GraphQLString },
       },
-      resolve: async (_, args, context) => {
+      resolve: async (_: any, args: any, context: any) => {
         // TODO: Implement with actual service
         return context.services.employee.list(args);
       },
@@ -297,13 +297,13 @@ const RootQuery = new GraphQLObjectType({
     department: {
       type: DepartmentType,
       args: { id: { type: new GraphQLNonNull(GraphQLID) } },
-      resolve: async (_, { id }, context) => {
+      resolve: async (_, { id }: any, context) => {
         return context.services.department.getById(id);
       },
     },
     departments: {
       type: new GraphQLList(DepartmentType),
-      resolve: async (_, args, context) => {
+      resolve: async (_, args: any, context) => {
         return context.services.department.list();
       },
     },
@@ -312,7 +312,7 @@ const RootQuery = new GraphQLObjectType({
     leaveRequest: {
       type: LeaveRequestType,
       args: { id: { type: new GraphQLNonNull(GraphQLID) } },
-      resolve: async (_, { id }, context) => {
+      resolve: async (_, { id }: any, context) => {
         return context.services.leave.getRequestById(id);
       },
     },
@@ -367,7 +367,7 @@ const RootMutation = new GraphQLObjectType({
     createEmployee: {
       type: EmployeeType,
       args: { input: { type: new GraphQLNonNull(CreateEmployeeInput) } },
-      resolve: async (_, { input }, context) => {
+      resolve: async (_, { input }: any, context) => {
         return context.services.employee.create(input);
       },
     },
@@ -377,7 +377,7 @@ const RootMutation = new GraphQLObjectType({
         id: { type: new GraphQLNonNull(GraphQLID) },
         input: { type: new GraphQLNonNull(UpdateEmployeeInput) },
       },
-      resolve: async (_, { id, input }, context) => {
+      resolve: async (_, { id, input }: any, context) => {
         return context.services.employee.update(id, input);
       },
     },
@@ -394,7 +394,7 @@ const RootMutation = new GraphQLObjectType({
     createLeaveRequest: {
       type: LeaveRequestType,
       args: { input: { type: new GraphQLNonNull(CreateLeaveRequestInput) } },
-      resolve: async (_, { input }, context) => {
+      resolve: async (_, { input }: any, context) => {
         return context.services.leave.createRequest(input);
       },
     },
@@ -404,7 +404,7 @@ const RootMutation = new GraphQLObjectType({
         id: { type: new GraphQLNonNull(GraphQLID) },
         approverId: { type: new GraphQLNonNull(GraphQLID) },
       },
-      resolve: async (_, { id, approverId }, context) => {
+      resolve: async (_, { id, approverId }: any, context) => {
         return context.services.leave.approveRequest(id, approverId);
       },
     },
@@ -415,7 +415,7 @@ const RootMutation = new GraphQLObjectType({
         approverId: { type: new GraphQLNonNull(GraphQLID) },
         reason: { type: new GraphQLNonNull(GraphQLString) },
       },
-      resolve: async (_, { id, approverId, reason }, context) => {
+      resolve: async (_, { id, approverId, reason }: any, context) => {
         return context.services.leave.rejectRequest(id, approverId, reason);
       },
     },
@@ -427,7 +427,7 @@ const RootMutation = new GraphQLObjectType({
         employeeId: { type: new GraphQLNonNull(GraphQLID) },
         location: { type: GraphQLString },
       },
-      resolve: async (_, { employeeId, location }, context) => {
+      resolve: async (_, { employeeId, location }: any, context) => {
         return context.services.attendance.clockIn({ employeeId, location });
       },
     },
@@ -437,7 +437,7 @@ const RootMutation = new GraphQLObjectType({
         employeeId: { type: new GraphQLNonNull(GraphQLID) },
         location: { type: GraphQLString },
       },
-      resolve: async (_, { employeeId, location }, context) => {
+      resolve: async (_, { employeeId, location }: any, context) => {
         return context.services.attendance.clockOut({ employeeId, location });
       },
     },

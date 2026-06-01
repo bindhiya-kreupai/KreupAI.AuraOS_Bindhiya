@@ -166,7 +166,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { _user, permis
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (_error) {
+  } catch (error) {
     const response: ApiResponse = {
       success: false,
       error: {
