@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { authenticator } from 'otplib';
@@ -12,7 +12,12 @@ import { logger } from '@/lib/logger';
  * Requires authentication
  */
 
-const ENCRYPTION_KEY = process.env.MFA_ENCRYPTION_KEY || 'default-key-change-in-production';
+if (!process.env.MFA_ENCRYPTION_KEY) {
+  throw new Error(
+    'FATAL: MFA_ENCRYPTION_KEY environment variable is not set. Refusing to start with an insecure default.'
+  );
+}
+const ENCRYPTION_KEY = process.env.MFA_ENCRYPTION_KEY;
 
 /**
  * Simple decryption for TOTP secrets
@@ -26,7 +31,10 @@ function decryptSecret(encrypted: string): string {
 
 // Validation Schema
 const VerifyMFASchema = z.object({
-  code: z.string().length(6, 'TOTP code must be 6 digits').regex(/^\d{6}$/, 'Code must be numeric'),
+  code: z
+    .string()
+    .length(6, 'TOTP code must be 6 digits')
+    .regex(/^\d{6}$/, 'Code must be numeric'),
 });
 
 /**
@@ -77,10 +85,13 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
     });
 
     if (!isValid) {
-      logger.warn({
-        userId: user.userId,
-        ipAddress,
-      }, 'Invalid MFA verification code attempt');
+      logger.warn(
+        {
+          userId: user.userId,
+          ipAddress,
+        },
+        'Invalid MFA verification code attempt'
+      );
 
       return NextResponse.json(
         { success: false, error: 'Invalid verification code' },
@@ -111,14 +122,18 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
       },
     });
 
-    logger.info({
-      userId: user.userId,
-      ipAddress,
-    }, 'MFA successfully enabled');
+    logger.info(
+      {
+        userId: user.userId,
+        ipAddress,
+      },
+      'MFA successfully enabled'
+    );
 
     return NextResponse.json({
       success: true,
-      message: 'MFA successfully enabled. You will now be required to enter a code when logging in.',
+      message:
+        'MFA successfully enabled. You will now be required to enter a code when logging in.',
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -130,9 +145,6 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
 
     logger.error({ error, userId: user.userId }, 'Error verifying MFA');
 
-    return NextResponse.json(
-      { success: false, error: 'Failed to verify MFA' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to verify MFA' }, { status: 500 });
   }
 });
