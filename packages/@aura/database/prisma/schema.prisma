@@ -6354,6 +6354,45 @@ model SalaryComponent {
   @@map("aura_salary_component")
 }
 
+// Generated statutory report — UAE MOHRE/WPS, KSA GOSI/Mudad/Nitaqat, India
+// Form-16/24Q/PF-ECR/ESI/PT, etc. Holds the payload + submission reference
+// returned by the government portal.
+model StatutoryReport {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  code                String    // UAE_MOHRE | UAE_WPS_RECON | KSA_GOSI_RECON | IND_FORM_16 | IND_PF_ECR | ...
+  countryCode         String    // ISO-3166-1 alpha-2
+  periodStart         DateTime
+  periodEnd           DateTime
+  format              String    @default("json")  // json | excel | pdf | csv | sif | fvu
+  status              String    @default("DRAFT") // DRAFT | GENERATED | SUBMITTED | ACKNOWLEDGED | FAILED
+  payload             Json      @default("{}")
+  fileUrl             String?
+  submissionReference String?   // real authority-issued reference, NOT a placeholder
+  errorMessage        String?   @db.Text
+  generatedAt         DateTime?
+  submittedAt         DateTime?
+  acknowledgedAt      DateTime?
+  generatedById       String?
+  submittedById       String?
+  metadata            Json      @default("{}")
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  isDeleted           Boolean   @default(false)
+  deletedAt           DateTime?
+
+  @@index([tenantId])
+  @@index([code])
+  @@index([countryCode])
+  @@index([status])
+  @@index([periodStart, periodEnd])
+  @@index([tenantId, code, periodStart])
+  @@map("aura_statutory_report")
+}
+
 // Visa, permit, and identity-document tracking. Covers passports, visas,
 // Emirates IDs, Iqamas, work permits, labor cards, medical certificates.
 // Drives expiry alerts and renewal workflows.
