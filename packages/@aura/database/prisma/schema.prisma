@@ -6354,6 +6354,43 @@ model SalaryComponent {
   @@map("aura_salary_component")
 }
 
+// Employee-initiated profile change request (bank, address, emergency contact,
+// dependents, personal). Two-step workflow: DRAFT → SUBMITTED → APPROVED/REJECTED,
+// with APPLIED set once the underlying record is mutated. Cancel allowed by
+// requester at any non-terminal state.
+model ProfileChangeRequest {
+  id            String    @id @default(uuid())
+  tenantId      String
+  employeeId    String
+  requestedById String
+  category      String    // bank | address | emergency_contact | dependent | personal | tax
+  fieldPath     String?   // dotted field path inside category, optional
+  beforeValues  Json      @default("{}")
+  afterValues   Json      @default("{}")
+  justification String?   @db.Text
+  attachmentIds Json      @default("[]")
+  effectiveDate DateTime?
+  status        String    @default("DRAFT") // DRAFT | SUBMITTED | APPROVED | REJECTED | APPLIED | CANCELED
+  submittedAt   DateTime?
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewNotes   String?   @db.Text
+  appliedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  isDeleted     Boolean   @default(false)
+  deletedAt     DateTime?
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([category])
+  @@index([tenantId, status])
+  @@map("aura_profile_change_request")
+}
+
 // Multi-component salary structure (basic + HRA + DA + transport + ...).
 // Referenced by /api/v1/payroll/salary-structures route. components is a JSON
 // array of { code, name, type: "earning"|"deduction", calc: "fixed"|"percent"|"slab", value, basedOn? }.
