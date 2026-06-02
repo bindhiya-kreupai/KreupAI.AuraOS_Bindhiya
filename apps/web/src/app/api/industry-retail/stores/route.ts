@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 // Mock data in-memory storage
-let stores = [
+const stores = [
     { id: '1', name: 'Downtown Flagship', location: 'New York, NY', manager: 'John Doe', status: 'open', weeklySales: 125000, footTraffic: 8500 },
     { id: '2', name: 'Westside Mall', location: 'Los Angeles, CA', manager: 'Jane Smith', status: 'open', weeklySales: 98000, footTraffic: 12000 },
     { id: '3', name: 'North Shore Outlet', location: 'Chicago, IL', manager: 'Bob Wilson', status: 'maintenance', weeklySales: 45000, footTraffic: 3000 }

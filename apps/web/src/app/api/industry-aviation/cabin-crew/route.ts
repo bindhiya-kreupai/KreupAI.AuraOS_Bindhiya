@@ -1,11 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
-let members = [
+const members = [
     { id: '1', name: 'Emily Blunt', position: 'Senior Pursuer', status: 'on-duty', flightId: 'AF123' },
     { id: '2', name: 'Tom Hardy', position: 'Flight Attendant', status: 'rest', flightId: null }
 ];
 
-let assignments = [
+const assignments = [
     { id: '1', crewId: '1', flightNumber: 'AF123', departure: 'CDG', arrival: 'JFK', date: '2024-03-20' }
 ];
 

@@ -22,6 +22,7 @@ export default function SuccessionScenariosPage() {
     const [candidates, setCandidates] = useState<SuccessionCandidate[]>([]);
     const [metrics, setMetrics] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [activeScenarioId, setActiveScenarioId] = useState<string>('');
 
     useEffect(() => {
         const loadData = async () => {
@@ -66,8 +67,8 @@ export default function SuccessionScenariosPage() {
         successors: cands,
     }));
 
-    const [activeScenarioId, setActiveScenarioId] = useState<string>(scenarios.length > 0 ? scenarios[0].id : '');
-    const activeScenario = scenarios.find(s => s.id === activeScenarioId) || scenarios[0];
+    const effectiveActiveId = activeScenarioId || (scenarios.length > 0 ? scenarios[0].id : '');
+    const activeScenario = scenarios.find(s => s.id === effectiveActiveId) || scenarios[0];
 
     const readinessScore = metrics?.benchStrength || (candidates.length > 0 ? Math.round((candidates.filter(c => c.readinessLevel === 'ready_now').length / candidates.length) * 100) : 0);
 
@@ -102,7 +103,7 @@ export default function SuccessionScenariosPage() {
                             <div
                                 key={scenario.id}
                                 onClick={() => setActiveScenarioId(scenario.id)}
-                                className={`p-4 rounded-xl border cursor-pointer transition-all ${activeScenarioId === scenario.id
+                                className={`p-4 rounded-xl border cursor-pointer transition-all ${effectiveActiveId === scenario.id
                                         ? 'bg-white dark:bg-stellar-blue border-celestial-indigo shadow-md ring-1 ring-celestial-indigo/20'
                                         : 'bg-slate-50 dark:bg-deep-cosmos/30 border-cloud dark:border-nebula-purple/20 hover:bg-white dark:hover:bg-deep-cosmos/50'
                                     }`}
@@ -117,7 +118,7 @@ export default function SuccessionScenariosPage() {
                                     </div>
                                     <MoreVertical className="w-4 h-4 text-slate-400" />
                                 </div>
-                                <h4 className={`font-bold text-sm mb-1 ${activeScenarioId === scenario.id ? 'text-celestial-indigo' : 'text-ink-black dark:text-pearl'}`}>
+                                <h4 className={`font-bold text-sm mb-1 ${effectiveActiveId === scenario.id ? 'text-celestial-indigo' : 'text-ink-black dark:text-pearl'}`}>
                                     {scenario.title}
                                 </h4>
                                 <div className="text-xs text-silver-mist flex items-center gap-1.5">

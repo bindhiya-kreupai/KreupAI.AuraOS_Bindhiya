@@ -4,7 +4,8 @@
  * Provides real-time query performance metrics
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { queryMonitor } from '@/lib/monitoring/query-monitor';
 import { withEnhancedAuth, Resource, Action } from '@/lib/auth';
 import { logger } from '@/lib/logger';

@@ -12,7 +12,8 @@
  * - 2.4.7 Focus Visible (Level AA)
  */
 
-import { test, expect, Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3006';
 const API_URL = process.env.API_URL || 'http://localhost:3006/api/v1';

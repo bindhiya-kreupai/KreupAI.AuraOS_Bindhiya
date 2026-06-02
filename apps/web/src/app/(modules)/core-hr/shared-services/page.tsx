@@ -5,7 +5,7 @@ import React from 'react';
 import { cn } from '@aura/ui/utils';
 import { FileText, Monitor, CreditCard, HelpCircle, Search, Clock, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
 import { SharedServiceRequestService } from '@/app/dashboard/core-hr/services';
-import { SharedServiceRequest } from '@/app/dashboard/core-hr/types';
+import type { SharedServiceRequest } from '@/app/dashboard/core-hr/types';
 import { formatDistanceToNow } from 'date-fns';
 
 const SERVICE_CATEGORIES = [

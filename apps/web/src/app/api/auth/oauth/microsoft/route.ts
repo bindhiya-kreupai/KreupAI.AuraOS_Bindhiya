@@ -3,7 +3,8 @@
  * Initiates Microsoft OAuth2 flow using @aura/auth
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { createMicrosoftProvider } from '@aura/auth';
 import { oauth2StateService } from '@/lib/auth/oauth-state.service';
 import { logger } from '@/lib/logger';

@@ -267,7 +267,7 @@ test.describe('Role-Based Access Control (RBAC)', () => {
     // Try to access admin API endpoint
     const response = await request.get(`${BASE_URL}/api/admin/users`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -285,7 +285,7 @@ test.describe('Privilege Escalation', () => {
 
     // Try to access employee2's data
     const response = await request.get(`${BASE_URL}/api/employees/employee2-id`, {
-      headers: { 'Authorization': `Bearer ${token1}` },
+      headers: { Authorization: `Bearer ${token1}` },
     });
 
     // Should be forbidden or not found
@@ -301,7 +301,7 @@ test.describe('Privilege Escalation', () => {
 
     // Try to promote self to admin
     const response = await request.patch(`${BASE_URL}/api/users/me/role`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: { role: 'admin' },
     });
 
@@ -317,7 +317,7 @@ test.describe('Privilege Escalation', () => {
 
     // Try to change another user's role
     const response = await request.patch(`${BASE_URL}/api/users/some-user-id/role`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: { role: 'hr' },
     });
 
@@ -360,7 +360,7 @@ test.describe('JWT Security', () => {
 
     // Try to use tampered token
     const response = await request.get(`${BASE_URL}/api/users/me`, {
-      headers: { 'Authorization': `Bearer ${tamperedToken}` },
+      headers: { Authorization: `Bearer ${tamperedToken}` },
     });
 
     expect([401, 403]).toContain(response.status());
@@ -375,7 +375,7 @@ test.describe('JWT Security', () => {
   test('should reject invalid Authorization format', async ({ request }) => {
     const response = await request.get(`${BASE_URL}/api/employees`, {
       headers: {
-        'Authorization': 'InvalidFormat some-token',
+        Authorization: 'InvalidFormat some-token',
       },
     });
 

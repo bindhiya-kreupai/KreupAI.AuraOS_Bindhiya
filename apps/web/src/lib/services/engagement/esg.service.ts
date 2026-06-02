@@ -1,4 +1,5 @@
-import { BaseService, ServiceResponse } from '../base.service';
+import type { ServiceResponse } from '../base.service';
+import { BaseService } from '../base.service';
 
 /**
  * ESG Service - Environmental, Social, and Governance metrics and reporting

@@ -7,7 +7,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
+import type {
   Recognition,
   Badge,
   EmployeeBadge,
@@ -24,13 +24,15 @@ import {
   CoreValue,
   RecognitionNotification,
   RecognitionReport,
-  RecognitionStatus,
   RedemptionStatus,
   RecognitionType,
   RecognitionCategory,
-  RewardType,
-  VisibilityType,
   ProgramStatus
+} from '../types';
+import {
+  RecognitionStatus,
+  RewardType,
+  VisibilityType
 } from '../types';
 import {
   RecognitionService,

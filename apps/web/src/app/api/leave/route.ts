@@ -184,7 +184,7 @@ export const POST = withEnhancedAuth(
         success: true,
         data: leaveRequest,
         request: leaveRequest,
-        leaveRequest: leaveRequest,
+        leaveRequest,
       });
     } catch (error: any) {
       logger.error('Error submitting leave request:', error);

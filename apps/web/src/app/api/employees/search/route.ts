@@ -3,7 +3,8 @@
  * Uses @aura/search for full-text search
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { employeeSearchService } from '@/lib/search/employee-search.service';
 import { logger } from '@/lib/logger';
 

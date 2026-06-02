@@ -4,7 +4,8 @@
  * Wrapper for publishing and subscribing to domain events
  */
 
-import { EventBus, DomainEvent, EventHandler } from '@aura/events';
+import type { DomainEvent, EventHandler } from '@aura/events';
+import { EventBus } from '@aura/events';
 import { logger } from '@/lib/logger';
 
 /**

@@ -3,7 +3,7 @@
  * Generates consistent test data for user entities
  */
 
-import { User, UserRole } from '@prisma/client';
+import type { User, UserRole } from '@prisma/client';
 
 let userIdCounter = 1;
 

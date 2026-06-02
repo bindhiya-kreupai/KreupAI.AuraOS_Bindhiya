@@ -1503,7 +1503,7 @@ export class HRAnalyticsEngineService {
     // By Country (using module as proxy since modules are often country-specific)
     const countryModuleMap: Record<string, string[]> = {
       'United Arab Emirates': ['WPS', 'GOSI', 'EOSB'],
-      'India': ['PF', 'ESI', 'TDS', 'PT'],
+      India: ['PF', 'ESI', 'TDS', 'PT'],
       'Saudi Arabia': ['WPS', 'GOSI', 'NITAQAT'],
     };
     const byCountry = Object.entries(countryModuleMap).map(([country, mods]) => {

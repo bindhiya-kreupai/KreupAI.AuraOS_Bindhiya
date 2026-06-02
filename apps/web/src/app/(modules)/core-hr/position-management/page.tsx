@@ -2,7 +2,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DataPage, FormField, type RowAction } from '@aura/ui';
+import type { FormField} from '@aura/ui';
+import { DataPage, type RowAction } from '@aura/ui';
 import {
   Building2, Users, DollarSign, TrendingUp,
   CheckCircle2, XCircle, Pause, FileText,
@@ -121,7 +122,7 @@ export default function PositionManagementPage() {
     if (!amount) return '-';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currency,
+      currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);

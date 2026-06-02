@@ -5,7 +5,8 @@
 
 export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { createGoogleProvider } from '@aura/auth';
 import { oauth2StateService } from '@/lib/auth/oauth-state.service';
 import { userProvisioningService } from '@/lib/auth/user-provisioning.service';

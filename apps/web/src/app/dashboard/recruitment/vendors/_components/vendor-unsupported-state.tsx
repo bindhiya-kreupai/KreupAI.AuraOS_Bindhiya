@@ -1,7 +1,8 @@
 "use client";
 
 import React from 'react';
-import { AlertCircle, CheckCircle2, Link2, LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Link2 } from 'lucide-react';
 
 type VendorUnsupportedStateProps = {
     title: string;

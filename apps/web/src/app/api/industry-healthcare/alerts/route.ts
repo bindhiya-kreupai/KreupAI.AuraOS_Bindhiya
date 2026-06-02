@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 // In-memory storage for alerts
-let alertsData: any[] = [];
+const alertsData: any[] = [];
 
 /**
  * GET /api/industry-healthcare/alerts

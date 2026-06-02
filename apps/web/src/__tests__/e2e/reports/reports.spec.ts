@@ -14,7 +14,8 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/DashboardPage';
-import { ReportsPage, ReportConfig } from '../pages/ReportsPage';
+import type { ReportConfig } from '../pages/ReportsPage';
+import { ReportsPage } from '../pages/ReportsPage';
 import { testUsers } from '../fixtures/test-users';
 
 test.describe('Reports Management - Generate Reports', () => {

@@ -485,9 +485,9 @@ export class TaxCalculationEngine extends BaseService {
     const localRates: Record<string, number> = {
       'New York City': 0.03876,
       'San Francisco': 0.015,
-      'Philadelphia': 0.038,
-      'Detroit': 0.024,
-      'Columbus': 0.025,
+      Philadelphia: 0.038,
+      Detroit: 0.024,
+      Columbus: 0.025,
     };
 
     if (jurisdiction.locality && localRates[jurisdiction.locality]) {

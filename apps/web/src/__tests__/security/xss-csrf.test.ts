@@ -226,7 +226,7 @@ test.describe('CSRF Protection Tests', () => {
     const response = await page.request.delete(`${BASE_URL}/api/employees/1`, {
       headers: {
         // Include session cookie but no CSRF token
-        'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; '),
+        Cookie: cookies.map(c => `${c.name}=${c.value}`).join('; '),
       },
     });
 
@@ -402,7 +402,7 @@ test.describe('CORS Configuration Tests', () => {
   test('should not allow credentials with wildcard origin', async ({ request }) => {
     const response = await request.get(`${BASE_URL}/api/health`, {
       headers: {
-        'Origin': 'http://example.com',
+        Origin: 'http://example.com',
       },
     });
 
@@ -423,7 +423,7 @@ test.describe('CORS Configuration Tests', () => {
     for (const origin of maliciousOrigins) {
       const response = await request.options(`${BASE_URL}/api/employees`, {
         headers: {
-          'Origin': origin,
+          Origin: origin,
           'Access-Control-Request-Method': 'POST',
         },
       });
@@ -438,7 +438,7 @@ test.describe('CORS Configuration Tests', () => {
   test('should restrict allowed methods', async ({ request }) => {
     const response = await request.options(`${BASE_URL}/api/employees`, {
       headers: {
-        'Origin': BASE_URL,
+        Origin: BASE_URL,
         'Access-Control-Request-Method': 'GET',
       },
     });

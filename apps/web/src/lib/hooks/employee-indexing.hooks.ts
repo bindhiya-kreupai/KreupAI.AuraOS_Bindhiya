@@ -3,7 +3,8 @@
  * Automatically index employees in Elasticsearch when they are created/updated
  */
 
-import { employeeSearchService, EmployeeSearchDocument } from '@/lib/search/employee-search.service';
+import type { EmployeeSearchDocument } from '@/lib/search/employee-search.service';
+import { employeeSearchService } from '@/lib/search/employee-search.service';
 import { logger } from '@/lib/logger';
 
 /**

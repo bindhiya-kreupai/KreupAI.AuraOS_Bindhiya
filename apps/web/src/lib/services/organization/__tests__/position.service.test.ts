@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { positionService, PositionService } from '../position.service';
+import type { PositionService } from '../position.service';
+import { positionService } from '../position.service';
 import { prisma } from '@/lib/database';
 
 // Mock Prisma

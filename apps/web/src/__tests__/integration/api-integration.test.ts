@@ -61,7 +61,7 @@ test.describe('API Integration Tests - Authentication Flow', () => {
     // Step 3: Refresh token
     const refreshResponse = await request.post(`${API_BASE}/auth/refresh`, {
       data: {
-        refreshToken: refreshToken
+        refreshToken
       }
     });
 
@@ -562,7 +562,7 @@ test.describe('API Integration Tests - Organization Structure', () => {
       data: {
         code: 'CHILD-DEPT',
         name: 'Child Department',
-        parentId: parentId,
+        parentId,
         status: 'Active'
       }
     });

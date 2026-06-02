@@ -69,7 +69,7 @@ export default function GrievancePage() {
                 category: newForm.category,
                 subject: newForm.subject,
                 description: newForm.description,
-                severity: severity,
+                severity,
             });
             if (res?.success && res.data) {
                 setGrievances(prev => [{
@@ -78,7 +78,7 @@ export default function GrievancePage() {
                     subject: newForm.subject,
                     date: new Date().toISOString().split('T')[0],
                     status: 'Open',
-                    severity: severity,
+                    severity,
                     description: newForm.description,
                     updates: [{ date: new Date().toLocaleString(), author: 'You', text: 'Ticket raised.' }],
                 }, ...prev]);

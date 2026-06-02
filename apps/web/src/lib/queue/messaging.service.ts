@@ -3,7 +3,8 @@
  * Replaces custom RabbitMQ implementation
  */
 
-import { getQueueManager, QUEUES, MessagePayload } from '@aura/messaging';
+import type { MessagePayload } from '@aura/messaging';
+import { getQueueManager, QUEUES } from '@aura/messaging';
 import { logger } from '@/lib/logger';
 import { redis } from '@/lib/cache/redis';
 

@@ -56,7 +56,7 @@ test.describe('Circuit Breaker Pattern', () => {
 
   test('should enter half-open state after timeout', async ({ page, context }) => {
     let requestCount = 0;
-    let requestTimes: number[] = [];
+    const requestTimes: number[] = [];
 
     await context.route('**/api/external-service', async (route) => {
       requestCount++;

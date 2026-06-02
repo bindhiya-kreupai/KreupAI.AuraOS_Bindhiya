@@ -8,7 +8,8 @@
  * - Authentication state
  */
 
-import { chromium, FullConfig } from '@playwright/test';
+import type { FullConfig } from '@playwright/test';
+import { chromium } from '@playwright/test';
 import { PrismaClient } from '@prisma/client';
 
 async function globalSetup(config: FullConfig) {

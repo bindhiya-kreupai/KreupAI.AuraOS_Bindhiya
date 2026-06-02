@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 // In-memory storage for mock data
-let locumProviders: any[] = [];
-let locumAssignments: any[] = [];
+const locumProviders: any[] = [];
+const locumAssignments: any[] = [];
 
 /**
  * GET /api/industry-healthcare/locum

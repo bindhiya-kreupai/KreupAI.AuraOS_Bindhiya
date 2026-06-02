@@ -16,7 +16,8 @@
  * authentication via withEnhancedAuth.
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { jobScheduler } from '@/lib/queue/scheduler';
 import { initializeScheduler, shutdownScheduler } from '@/lib/init/scheduler';
 import { logger } from '@/lib/logger';

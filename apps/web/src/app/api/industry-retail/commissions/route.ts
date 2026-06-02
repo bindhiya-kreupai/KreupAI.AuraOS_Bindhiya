@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
-let commissions = [
+const commissions = [
     { id: '1', employeeName: 'Alice Johnson', amount: 1250, target: 10000, achieved: 12500, status: 'approved', date: '2024-03-01' },
     { id: '2', employeeName: 'Bob Smith', amount: 850, target: 8000, achieved: 7500, status: 'pending', date: '2024-03-05' }
 ];

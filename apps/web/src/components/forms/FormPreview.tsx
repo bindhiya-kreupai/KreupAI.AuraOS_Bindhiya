@@ -49,8 +49,8 @@ interface FormPreviewProps {
 
 function mapApiFieldType(type: string): FormField["type"] {
   const typeMap: Record<string, FormField["type"]> = {
-    "select": "dropdown",
-    "textarea": "text",
+    select: "dropdown",
+    textarea: "text",
   };
   return (typeMap[type] || type) as FormField["type"];
 }

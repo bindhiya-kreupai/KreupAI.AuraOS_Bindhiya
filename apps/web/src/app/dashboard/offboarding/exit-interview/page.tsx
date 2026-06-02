@@ -46,10 +46,10 @@ interface InterviewRecord {
 
 const SENTIMENT_COLORS: Record<string, string> = {
     'Better Opportunity': '#6366f1',
-    'Compensation': '#10b981',
-    'Management': '#f59e0b',
-    'Personal': '#ec4899',
-    'Relocation': '#64748b',
+    Compensation: '#10b981',
+    Management: '#f59e0b',
+    Personal: '#ec4899',
+    Relocation: '#64748b',
     'Not specified': '#94a3b8',
 };
 

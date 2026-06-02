@@ -6,13 +6,14 @@
 
 'use client';
 
+import type {
+  ReactNode} from 'react';
 import React, {
   createContext,
   useContext,
   useState,
   useEffect,
-  useCallback,
-  ReactNode,
+  useCallback
 } from 'react';
 
 export interface ActivityItem {

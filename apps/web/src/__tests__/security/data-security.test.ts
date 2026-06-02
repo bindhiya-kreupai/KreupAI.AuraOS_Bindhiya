@@ -137,7 +137,7 @@ test.describe('PII Handling', () => {
 
     if (token) {
       const auditResponse = await request.get(`${BASE_URL}/api/audit-logs`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
         params: { action: 'pii_access', limit: 10 },
       });
 
@@ -168,7 +168,7 @@ test.describe('Password Storage', () => {
     // For now, we verify passwords are not returned in API
     const response = await request.get(`${BASE_URL}/api/users/me`, {
       headers: {
-        'Authorization': 'Bearer valid-token', // You'd need to get this from login
+        Authorization: 'Bearer valid-token', // You'd need to get this from login
       },
     });
 

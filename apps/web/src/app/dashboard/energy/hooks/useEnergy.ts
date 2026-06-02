@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
+import type {
   SmartMeter, EnergyConsumption, LoadManagement, GridEvent, WaterMeter, WaterUsage,
   LeakDetection, ConservationInitiative, RenewableAsset, EnergyProduction,
   UtilityAccount, UtilityBill, Payment, EnergySettings, Toast

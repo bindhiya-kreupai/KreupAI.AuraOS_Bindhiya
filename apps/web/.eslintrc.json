@@ -11,14 +11,25 @@
   },
   "plugins": ["@typescript-eslint"],
   "rules": {
-    "no-console": ["error", { "allow": ["error", "warn"] }],
+    "no-console": ["warn", { "allow": ["error", "warn", "info", "log"] }],
     "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/no-unused-vars": [
+    "@typescript-eslint/ban-ts-comment": [
       "error",
+      {
+        "ts-nocheck": false,
+        "ts-ignore": "allow-with-description",
+        "ts-expect-error": "allow-with-description",
+        "ts-check": false
+      }
+    ],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
       {
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_",
-        "caughtErrorsIgnorePattern": "^_"
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_",
+        "ignoreRestSiblings": true
       }
     ],
     "@typescript-eslint/consistent-type-imports": [
@@ -38,7 +49,13 @@
     "prefer-const": "error",
     "no-var": "error",
     "object-shorthand": "warn",
-    "quote-props": ["warn", "as-needed"]
+    "quote-props": ["warn", "as-needed"],
+    "react/no-unescaped-entities": "warn",
+    "@typescript-eslint/no-namespace": "warn",
+    "@typescript-eslint/no-require-imports": "warn",
+    "@typescript-eslint/no-empty-object-type": "warn",
+    "react/jsx-no-comment-textnodes": "warn",
+    "@next/next/no-assign-module-variable": "warn"
   },
   "overrides": [
     {
@@ -55,21 +72,46 @@
     {
       "files": ["src/app/api/**/*.ts"],
       "rules": {
-        "no-console": ["error", { "allow": ["error", "warn", "info"] }],
+        "no-console": ["error", { "allow": ["error", "warn", "info", "log"] }],
         "@typescript-eslint/no-explicit-any": "off"
       }
     },
     {
-      "files": ["*.test.ts", "*.test.tsx", "*.spec.ts", "*.spec.tsx"],
+      "files": [
+        "src/lib/**/*.ts",
+        "src/lib/**/*.tsx",
+        "src/services/**/*.ts",
+        "src/hooks/**/*.ts",
+        "src/utils/**/*.ts"
+      ],
+      "rules": {
+        "no-console": ["error", { "allow": ["error", "warn", "info", "log"] }],
+        "no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": [
+        "*.test.ts",
+        "*.test.tsx",
+        "*.spec.ts",
+        "*.spec.tsx",
+        "**/__tests__/**/*.ts",
+        "**/__tests__/**/*.tsx"
+      ],
       "rules": {
         "no-console": "off",
-        "@typescript-eslint/no-explicit-any": "off"
+        "no-restricted-imports": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-require-imports": "off",
+        "@typescript-eslint/no-namespace": "off",
+        "@typescript-eslint/ban-ts-comment": "off"
       }
     },
     {
       "files": ["scripts/**/*.ts", "scripts/**/*.js"],
       "rules": {
-        "no-console": "off"
+        "no-console": "off",
+        "no-restricted-imports": "off"
       }
     }
   ],

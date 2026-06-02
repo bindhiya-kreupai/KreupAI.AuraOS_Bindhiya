@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 // In-memory storage for locum providers
-let locumProviders: any[] = [];
+const locumProviders: any[] = [];
 
 /**
  * GET /api/industry-healthcare/locum/providers

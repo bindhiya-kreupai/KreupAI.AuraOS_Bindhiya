@@ -68,7 +68,7 @@ export default function AutoNumberingPage() {
 
     const handleChange = (index: number, field: string, value: string) => {
         const newSettings = [...settings];
-        // @ts-ignore
+        // @ts-ignore — schema drift, pending #29
         newSettings[index][field] = field === 'digits' ? Number(value) : value;
         // Update example
         const item = newSettings[index];

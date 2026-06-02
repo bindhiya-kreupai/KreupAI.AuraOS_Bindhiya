@@ -3,7 +3,8 @@
  * Automatically validates JWT session tokens for protected routes
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { sessionService } from '@/lib/auth/session.service';
 import { logger } from '@/lib/logger';
 

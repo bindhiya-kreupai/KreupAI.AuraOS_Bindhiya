@@ -4,7 +4,8 @@
  * Orchestrates chaos experiments with proper setup, execution, and rollback
  */
 
-import { chromium, Browser, BrowserContext, Page } from '@playwright/test';
+import type { Browser, BrowserContext, Page } from '@playwright/test';
+import { chromium } from '@playwright/test';
 import chaosConfig from '../chaos.config.json';
 
 interface ExperimentResult {

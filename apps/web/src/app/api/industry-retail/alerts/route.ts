@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
-let alerts = [
+const alerts = [
     { id: '1', type: 'performance', severity: 'high', title: 'Low Inventory', message: 'Store 1 is below threshold for key items.', status: 'active', createdAt: new Date().toISOString() },
     { id: '2', type: 'hiring', severity: 'medium', title: 'Hiring Target', message: 'Store 2 is 20% behind on seasonal hiring.', status: 'active', createdAt: new Date().toISOString() }
 ];

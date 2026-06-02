@@ -8,9 +8,9 @@
  * - Navigation after login
  */
 
-import { Page, Locator } from '@playwright/test';
+import type { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
-import { TestUser } from '../fixtures/test-users';
+import type { TestUser } from '../fixtures/test-users';
 
 export class LoginPage extends BasePage {
   // Locators

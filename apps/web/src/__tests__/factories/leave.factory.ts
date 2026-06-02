@@ -3,7 +3,7 @@
  * Generates consistent test data for leave/time-off entities
  */
 
-import { Leave, LeaveStatus, LeaveType } from '@prisma/client';
+import type { Leave, LeaveStatus, LeaveType } from '@prisma/client';
 
 let leaveIdCounter = 1;
 

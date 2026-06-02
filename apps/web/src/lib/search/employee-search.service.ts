@@ -3,7 +3,8 @@
  * Integrates with @aura/search for employee search functionality
  */
 
-import { getSearchClient, SearchQuery, SearchResult } from '@aura/search';
+import type { SearchQuery} from '@aura/search';
+import { getSearchClient, SearchResult } from '@aura/search';
 import { logger } from '@/lib/logger';
 
 const EMPLOYEE_INDEX = 'aura_employees';

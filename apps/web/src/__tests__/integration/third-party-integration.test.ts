@@ -362,7 +362,7 @@ test.describe('Third-Party Integration - Payment Gateway', () => {
       const refundResponse = await request.post(`${API_BASE}/payments/refunds`, {
         headers,
         data: {
-          paymentIntentId: paymentIntentId,
+          paymentIntentId,
           amount: 3000 // Full refund
         }
       });

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { departmentService, DepartmentService } from '../department.service';
+import type { DepartmentService } from '../department.service';
+import { departmentService } from '../department.service';
 import { prisma } from '@/lib/database';
 
 // Mock Prisma

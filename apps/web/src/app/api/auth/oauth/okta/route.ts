@@ -3,7 +3,8 @@
  * Initiates Okta OAuth2 flow using @aura/auth
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { createOktaProvider } from '@aura/auth';
 import { logger } from '@/lib/logger';
 

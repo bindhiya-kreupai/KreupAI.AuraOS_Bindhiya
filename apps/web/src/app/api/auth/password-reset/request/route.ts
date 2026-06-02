@@ -3,7 +3,8 @@
  * Generates a password reset token and sends reset email
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { passwordResetService } from '@/lib/auth/password-reset.service';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';

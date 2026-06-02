@@ -36,7 +36,7 @@ export const GET = withEnhancedAuth(
       return NextResponse.json({
         success: true,
         types: leaveTypes,
-        leaveTypes: leaveTypes,
+        leaveTypes,
         data: leaveTypes,
         meta: { total: leaveTypes.length },
       });

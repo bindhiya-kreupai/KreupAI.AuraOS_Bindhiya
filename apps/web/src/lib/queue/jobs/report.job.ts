@@ -4,7 +4,8 @@
  * Handles async report generation for large datasets
  */
 
-import { Job, JobResult, queueService } from '../queue.service';
+import type { Job, JobResult} from '../queue.service';
+import { queueService } from '../queue.service';
 import { QUEUE_NAMES } from '../rabbitmq';
 import { logger } from '@/lib/logger';
 import { prisma } from '@aura/database';

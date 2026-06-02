@@ -14,7 +14,8 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/DashboardPage';
-import { PayrollPage, PayrollProcessData } from '../pages/PayrollPage';
+import type { PayrollProcessData } from '../pages/PayrollPage';
+import { PayrollPage } from '../pages/PayrollPage';
 import { testUsers } from '../fixtures/test-users';
 
 test.describe('Payroll Management - View Payslips', () => {

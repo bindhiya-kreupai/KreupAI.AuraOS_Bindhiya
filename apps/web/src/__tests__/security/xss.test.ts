@@ -112,7 +112,7 @@ test.describe('XSS Security Tests', () => {
         // Create employee with XSS payload in first name
         const createResponse = await request.post(`${API_URL}/employees`, {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
             'Content-Type': 'application/json',
           },
           data: {
@@ -160,7 +160,7 @@ test.describe('XSS Security Tests', () => {
           // Cleanup
           await request.delete(`${API_URL}/employees/${employeeId}`, {
             headers: {
-              'Authorization': `Bearer ${authToken}`,
+              Authorization: `Bearer ${authToken}`,
             },
           });
         }
@@ -172,7 +172,7 @@ test.describe('XSS Security Tests', () => {
 
       const response = await request.post(`${API_URL}/employees`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          Authorization: `Bearer ${authToken}`,
           'Content-Type': 'application/json',
         },
         data: {
@@ -190,7 +190,7 @@ test.describe('XSS Security Tests', () => {
         // Verify the data is stored but escaped
         const getResponse = await request.get(`${API_URL}/employees/${employee.data.id}`, {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         });
 
@@ -203,7 +203,7 @@ test.describe('XSS Security Tests', () => {
         // Cleanup
         await request.delete(`${API_URL}/employees/${employee.data.id}`, {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         });
       }
@@ -324,7 +324,7 @@ test.describe('XSS Security Tests', () => {
 
       const response = await request.get(`${API_URL}/employees?search=${encodeURIComponent(payload)}`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       });
 
@@ -346,7 +346,7 @@ test.describe('XSS Security Tests', () => {
     test('should set proper Content-Type headers', async ({ request }) => {
       const response = await request.get(`${API_URL}/employees`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       });
 
@@ -362,7 +362,7 @@ test.describe('XSS Security Tests', () => {
     test('should set X-Content-Type-Options header', async ({ request }) => {
       const response = await request.get(`${API_URL}/employees`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       });
 
@@ -385,7 +385,7 @@ test.describe('XSS Security Tests', () => {
 
       const response = await request.post(`${API_URL}/employees`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          Authorization: `Bearer ${authToken}`,
           'Content-Type': 'application/json',
         },
         data: {
@@ -403,7 +403,7 @@ test.describe('XSS Security Tests', () => {
         // Retrieve the employee
         const getResponse = await request.get(`${API_URL}/employees/${employee.data.id}`, {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         });
 
@@ -421,7 +421,7 @@ test.describe('XSS Security Tests', () => {
         // Cleanup
         await request.delete(`${API_URL}/employees/${employee.data.id}`, {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         });
       }
@@ -451,7 +451,7 @@ test.describe('XSS Security Tests', () => {
       // Trigger an error with XSS in parameter
       const response = await request.get(`${API_URL}/employees/${encodeURIComponent(payload)}`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       });
 
@@ -468,7 +468,7 @@ test.describe('XSS Security Tests', () => {
 
       const response = await request.get(`${API_URL}/employees`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          Authorization: `Bearer ${authToken}`,
           'X-Custom-Header': payload,
           'User-Agent': payload,
         },

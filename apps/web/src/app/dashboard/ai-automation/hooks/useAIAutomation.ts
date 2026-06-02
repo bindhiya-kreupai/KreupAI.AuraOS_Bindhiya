@@ -4,7 +4,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
+import type {
   OrgHealthPrediction,
   CoachingSession,
   GeneratedWorkflow,
