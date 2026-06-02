@@ -22,6 +22,9 @@ export const SCORM12_ERROR_CODES = {
   INCORRECT_DATA_TYPE: '405',
 } as const;
 
+export type SCORM12ErrorCode =
+  (typeof SCORM12_ERROR_CODES)[keyof typeof SCORM12_ERROR_CODES];
+
 // ── Data Model Types ───────────────────────────────────────────────────────
 
 export type LessonStatus =
@@ -63,7 +66,7 @@ export type LoadCallback    = () => Promise<Partial<SCORM12DataModel>>;
 export class SCORM12API {
   private _initialized = false;
   private _finished    = false;
-  private _lastError   = SCORM12_ERROR_CODES.NO_ERROR;
+  private _lastError: SCORM12ErrorCode = SCORM12_ERROR_CODES.NO_ERROR;
   private _dataModel: SCORM12DataModel;
   private _persistCallback?: PersistCallback;
   private _loadCallback?: LoadCallback;

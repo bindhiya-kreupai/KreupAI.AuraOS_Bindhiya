@@ -36,6 +36,9 @@ export const SCORM2004_ERROR_CODES = {
   DEPENDENCY_NOT_ESTABLISHED: '408',
 } as const;
 
+export type SCORM2004ErrorCode =
+  (typeof SCORM2004_ERROR_CODES)[keyof typeof SCORM2004_ERROR_CODES];
+
 // ── Data Model Types ───────────────────────────────────────────────────────
 
 export type CompletionStatus = 'completed' | 'incomplete' | 'not attempted' | 'unknown';
@@ -95,7 +98,7 @@ export type LoadCallback2004    = () => Promise<Partial<SCORM2004DataModel>>;
 export class SCORM2004API {
   private _initialized = false;
   private _terminated  = false;
-  private _lastError   = SCORM2004_ERROR_CODES.NO_ERROR;
+  private _lastError: SCORM2004ErrorCode = SCORM2004_ERROR_CODES.NO_ERROR;
   private _dataModel: SCORM2004DataModel;
   private _persistCallback?: PersistCallback2004;
   private _loadCallback?: LoadCallback2004;

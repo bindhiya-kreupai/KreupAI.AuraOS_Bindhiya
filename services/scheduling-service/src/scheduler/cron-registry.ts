@@ -469,7 +469,7 @@ async function handleDataCleanup(): Promise<void> {
     const deletedAuditLogs = await prisma.auditLog.deleteMany({
       where: {
         timestamp: { lt: ninetyDaysAgo },
-        action: { notIn: ['DELETE', 'LOGIN', 'PERMISSION_CHANGE'] },
+        action: { notIn: ['DELETE', 'LOGIN', 'ROLE_ASSIGNED', 'ROLE_REMOVED', 'PERMISSION_GRANTED', 'PERMISSION_REVOKED'] },
       },
     });
     totalCleaned += deletedAuditLogs.count;
@@ -738,6 +738,8 @@ async function handleReportGeneration(): Promise<void> {
 
   try {
     // Find all report definitions with daily schedule
+    // `schedule` is a Json column on ReportDefinition; Prisma's typed where
+    // clauses don't expose JSON-path filters directly, so cast through `any`.
     const scheduledReports = await prisma.reportDefinition.findMany({
       where: {
         isActive: true,
@@ -745,7 +747,7 @@ async function handleReportGeneration(): Promise<void> {
           path: ['frequency'],
           equals: 'daily',
         },
-      },
+      } as any,
       select: { id: true, tenantId: true, name: true, category: true, columns: true, filters: true },
     });
 
@@ -757,7 +759,7 @@ async function handleReportGeneration(): Promise<void> {
             reportId: report.id,
             tenantId: report.tenantId,
             executedBy: 'system:report-generation-cron',
-            parameters: (report.filters as Record<string, unknown>) || {},
+            parameters: (report.filters as any) ?? {},
             status: 'RUNNING',
             exportFormat: 'CSV',
           },
