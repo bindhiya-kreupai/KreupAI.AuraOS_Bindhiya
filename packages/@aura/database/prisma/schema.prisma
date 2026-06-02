@@ -266,6 +266,7 @@ model Grade {
   previousEmploymentHistory EmploymentHistory[] @relation("PreviousGrade")
   newEmploymentHistory      EmploymentHistory[] @relation("NewGrade")
   Position                  Position[]
+  salaryStructures          SalaryStructure[]
   @@map("aura_grade")
 }
 
@@ -342,6 +343,10 @@ model Employee {
   sharedServiceRequests SharedServiceRequest[] @relation("ServiceRequestor")
   assignedServices      SharedServiceRequest[] @relation("ServiceAssignee")
 
+  // Compensation
+  salaryStructureId String?
+  salaryStructure   SalaryStructure? @relation("EmployeeSalaryStructure", fields: [salaryStructureId], references: [id])
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   createdBy String?
@@ -362,6 +367,7 @@ model Employee {
   @@index([email])
   @@index([employeeCode])
   @@index([companyId, isDeleted])
+  @@index([salaryStructureId])
   @@map("aura_employee")
 }
 
@@ -6346,6 +6352,39 @@ model SalaryComponent {
   @@unique([tenantId, componentCode])
   @@index([tenantId])
   @@map("aura_salary_component")
+}
+
+// Multi-component salary structure (basic + HRA + DA + transport + ...).
+// Referenced by /api/v1/payroll/salary-structures route. components is a JSON
+// array of { code, name, type: "earning"|"deduction", calc: "fixed"|"percent"|"slab", value, basedOn? }.
+model SalaryStructure {
+  id            String    @id @default(uuid())
+  tenantId      String
+  name          String
+  code          String
+  gradeId       String?
+  grade         Grade?    @relation(fields: [gradeId], references: [id])
+  basicSalary   Decimal   @default(0)
+  grossSalary   Decimal   @default(0)
+  currency      String    @default("USD")
+  components    Json      @default("[]")
+  effectiveFrom DateTime  @default(now())
+  effectiveTo   DateTime?
+  status        String    @default("Active")
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  isDeleted     Boolean   @default(false)
+  deletedAt     DateTime?
+
+  employees Employee[] @relation("EmployeeSalaryStructure")
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([gradeId])
+  @@index([status])
+  @@map("aura_salary_structure")
 }
 
 model CompensationBand {
