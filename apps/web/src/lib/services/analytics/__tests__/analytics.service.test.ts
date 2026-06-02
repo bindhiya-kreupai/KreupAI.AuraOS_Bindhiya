@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database';
 import { AnalyticsService } from '../analytics.service';
 
-vi.mock('@/lib/prisma', () => ({
+vi.mock('@aura/database', () => ({
   prisma: {
     employee: {
       count: vi.fn(),

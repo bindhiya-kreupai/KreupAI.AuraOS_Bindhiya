@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database';
 import { ShiftManagementService } from '../shift-management.service';
 
-vi.mock('@/lib/prisma', () => ({
+vi.mock('@aura/database', () => ({
   prisma: {
     shift: {
       create: vi.fn(),

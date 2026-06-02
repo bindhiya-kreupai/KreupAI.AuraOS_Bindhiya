@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database';
 import { ReportService } from '../report.service';
 
 // Mock PDF and Excel generation libraries
@@ -25,7 +25,7 @@ vi.mock('exceljs', () => ({
   })),
 }));
 
-vi.mock('@/lib/prisma', () => ({
+vi.mock('@aura/database', () => ({
   prisma: {
     report: {
       create: vi.fn(),
