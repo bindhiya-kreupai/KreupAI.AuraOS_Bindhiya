@@ -148,6 +148,25 @@ with a zod schema at startup and throws if anything required is missing.
 The schema also enforces production-only requirements (REDIS_URL,
 SENTRY_DSN, etc. mandatory in `NODE_ENV=production`).
 
+#### Workspace-root `.env` propagation to `services/*` (issue #51)
+
+The Fastify services in `services/*` boot in their own processes and do
+not inherit the workspace-root `.env` automatically. Each service's
+`dev` script in `package.json` uses tsx's `--env-file` flag to load the
+root `.env` explicitly:
+
+```json
+"dev": "tsx watch --env-file=../../.env src/index.ts"
+```
+
+This means a single shared `JWT_SECRET` (and any other workspace-level
+vars) propagates to every service when you run `pnpm dev`. Per-service
+overrides live in `services/<name>/.env.production.example`.
+
+Each service still fails fast at boot if a required value is missing —
+e.g. `services/auth-service/src/config.ts` throws on a missing
+`JWT_SECRET` rather than starting with an insecure default.
+
 ### Production (long-form)
 
 ```ts
