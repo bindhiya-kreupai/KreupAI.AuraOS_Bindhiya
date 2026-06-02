@@ -6755,6 +6755,7 @@ model Course {
   level           String   @default("beginner")
   type            String   @default("online")
   duration        Int?
+  durationHours   Float?   // Required for compliance reporting (SOC 2, OSHA)
   instructor      String?
   thumbnailUrl    String?
   contentUrl      String?
@@ -6766,6 +6767,12 @@ model Course {
   rating          Float?
   enrollmentCount Int      @default(0)
   completionRate  Float?
+  // Compliance training extension (#110)
+  isMandatory              Boolean  @default(false)
+  complianceCategory       String?  // SOX | HIPAA | OSHA | GDPR | PDPL | CODE_OF_CONDUCT
+  certificationValidMonths Int?     // null = perpetual; otherwise expires after N months
+  requiredForRoles         String[] @default([])
+  requiredForCountries     String[] @default([])
   createdBy       String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -6775,6 +6782,8 @@ model Course {
   @@index([tenantId])
   @@index([status])
   @@index([category])
+  @@index([isMandatory])
+  @@index([complianceCategory])
   @@map("aura_course")
 }
 
@@ -6783,7 +6792,7 @@ model CourseEnrollment {
   courseId      String
   employeeId    String
   tenantId      String
-  status        String    @default("enrolled")
+  status        String    @default("ENROLLED") // ENROLLED | IN_PROGRESS | COMPLETED | OVERDUE | DROPPED | EXPIRED
   progress      Float     @default(0)
   enrolledAt    DateTime  @default(now())
   startedAt     DateTime?
@@ -6791,13 +6800,22 @@ model CourseEnrollment {
   score         Float?
   certificateId String?
 
+  // Compliance training extension (#110)
+  isMandatory   Boolean   @default(false)
+  dueDate       DateTime?
+  expiresAt     DateTime? // Set on completion = completedAt + course.certificationValidMonths
+  assignedBy    String?
+  assignedAt    DateTime?
+
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([courseId, employeeId])
   @@index([courseId])
   @@index([employeeId])
   @@index([tenantId])
-
+  @@index([dueDate])
+  @@index([expiresAt])
+  @@index([tenantId, isMandatory, status])
   @@map("aura_course_enrollment")
 }
 
