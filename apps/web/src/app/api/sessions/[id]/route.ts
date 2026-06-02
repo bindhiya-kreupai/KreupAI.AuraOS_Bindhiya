@@ -51,10 +51,11 @@ export const DELETE = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
-          module: 'Session Management',
-          details: `Revoked session: ${sessionId}`,
+          resourceType: 'Session Management',
+          metadata: { description: `Revoked session: ${sessionId}` } as any,
           ipAddress,
         },
       });

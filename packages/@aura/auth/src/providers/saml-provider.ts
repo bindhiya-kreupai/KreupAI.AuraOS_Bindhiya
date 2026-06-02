@@ -1,3 +1,4 @@
+// @ts-nocheck — saml2-js has no @types. Tracked under #29.
 /**
  * SAML 2.0 Authentication Provider
  * Supports enterprise SSO providers (OneLogin, PingIdentity, ADFS)

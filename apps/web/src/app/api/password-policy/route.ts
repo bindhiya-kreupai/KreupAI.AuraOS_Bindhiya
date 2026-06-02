@@ -86,10 +86,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'CREATE',
-        module: 'System Configuration',
-        details: 'Created password policy',
+        resourceType: 'System Configuration',
+        metadata: { description: 'Created password policy' } as any,
         ipAddress,
       },
     });
@@ -153,10 +154,11 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'UPDATE',
-        module: 'System Configuration',
-        details: `Updated password policy: ${JSON.stringify(validatedData)}`,
+        resourceType: 'System Configuration',
+        metadata: { description: `Updated password policy: ${JSON.stringify(validatedData)}` } as any,
         ipAddress,
       },
     });
@@ -212,10 +214,11 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, perm
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'DELETE',
-        module: 'System Configuration',
-        details: 'Deleted password policy (reverted to defaults)',
+        resourceType: 'System Configuration',
+        metadata: { description: 'Deleted password policy (reverted to defaults)' } as any,
         ipAddress,
       },
     });

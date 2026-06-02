@@ -137,10 +137,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Off-Cycle Payments',
-          details: `Created off-cycle payment: ${data.type} - $${data.amount}`,
+          resourceType: 'Payroll - Off-Cycle Payments',
+          metadata: { description: `Created off-cycle payment: ${data.type} - $${data.amount}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -207,10 +208,11 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Payroll - Off-Cycle Payments',
-          details: `Updated off-cycle payment status to: ${status}`,
+          resourceType: 'Payroll - Off-Cycle Payments',
+          metadata: { description: `Updated off-cycle payment status to: ${status}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

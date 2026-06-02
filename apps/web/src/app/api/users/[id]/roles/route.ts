@@ -192,10 +192,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'User Role Assignment',
-          details: `Assigned role ${role.code} (${role.name}) to user ${targetUser.email}${validatedData.expiresAt ? ` (expires: ${validatedData.expiresAt})` : ''}`,
+          resourceType: 'User Role Assignment',
+          metadata: { description: `Assigned role ${role.code} (${role.name}) to user ${targetUser.email}${validatedData.expiresAt ? ` (expires: ${validatedData.expiresAt})` : ''}` } as any,
           ipAddress,
         },
       });
@@ -318,10 +319,11 @@ export const DELETE = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
-          module: 'User Role Assignment',
-          details: `Removed role ${userRole.role.code} (${userRole.role.name}) from user ${targetUser.email}`,
+          resourceType: 'User Role Assignment',
+          metadata: { description: `Removed role ${userRole.role.code} (${userRole.role.name}) from user ${targetUser.email}` } as any,
           ipAddress,
         },
       });

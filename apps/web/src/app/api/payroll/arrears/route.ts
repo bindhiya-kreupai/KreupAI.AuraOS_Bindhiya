@@ -106,10 +106,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Arrears Management',
-          details: `Created arrear: ${data.type} - $${data.amount}`,
+          resourceType: 'Payroll - Arrears Management',
+          metadata: { description: `Created arrear: ${data.type} - $${data.amount}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

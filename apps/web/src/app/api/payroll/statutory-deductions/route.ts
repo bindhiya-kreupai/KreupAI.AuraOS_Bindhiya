@@ -136,10 +136,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Payroll - Statutory Deductions',
-          details: `Marked ${existing.statutoryType} payment as PAID for ${existing.paymentMonth}${challanNumber ? ` - Challan: ${challanNumber}` : ''}`,
+          resourceType: 'Payroll - Statutory Deductions',
+          metadata: { description: `Marked ${existing.statutoryType} payment as PAID for ${existing.paymentMonth}${challanNumber ? ` - Challan: ${challanNumber}` : ''}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

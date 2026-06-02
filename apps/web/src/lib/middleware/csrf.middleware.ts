@@ -147,7 +147,7 @@ export function withCSRFProtection<T = any>(
   handler: (
     request: NextRequest,
     context: {
-      user: { userId: string; email: string; tenantId: string };
+      user: { userId: string; email: string; tenantId?: string };
       csrfToken: string;
     }
   ) => Promise<NextResponse<T>>

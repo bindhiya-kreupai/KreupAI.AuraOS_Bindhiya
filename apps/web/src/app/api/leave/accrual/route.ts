@@ -176,10 +176,11 @@ export const POST = withEnhancedAuth(
 
         await prisma.auditLog.create({
           data: {
+            tenantId: user.tenantId,
             userId: user.userId,
             action: 'CREATE',
-            module: 'Leave - Accrual',
-            details: `Processed batch accrual: ${processedCount} records, ${totalAccrued} days accrued`,
+            resourceType: 'Leave - Accrual',
+            metadata: { description: `Processed batch accrual: ${processedCount} records, ${totalAccrued} days accrued` } as any,
             ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
           },
         });

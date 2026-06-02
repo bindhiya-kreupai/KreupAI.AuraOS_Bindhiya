@@ -71,10 +71,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Leave - Types',
-          details: `Created leave type: ${data.name} (${data.code})`,
+          resourceType: 'Leave - Types',
+          metadata: { description: `Created leave type: ${data.name} (${data.code})` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

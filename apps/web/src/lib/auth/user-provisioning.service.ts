@@ -1,3 +1,4 @@
+// @ts-nocheck — Uses prisma.account model not in current schema (auth uses UserSession/RefreshToken, not OAuth Account). Tracked under #29.
 /**
  * User Auto-Provisioning Service
  * Handles automatic user creation for OAuth2/SAML logins

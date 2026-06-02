@@ -169,10 +169,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'DELETE',
-        module: 'User Management',
-        details: `Deactivated user: ${targetUser.email}. Reason: ${validatedData.reason}`,
+        resourceType: 'User Management',
+        metadata: { description: `Deactivated user: ${targetUser.email}. Reason: ${validatedData.reason}` } as any,
         ipAddress,
       },
     });

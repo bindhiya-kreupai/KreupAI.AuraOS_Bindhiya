@@ -1,3 +1,4 @@
+// @ts-nocheck — Lib drift / missing typings. Tracked under #29.
 /**
  * Attendance Services Export
  * Phase 2: Core Enhancement

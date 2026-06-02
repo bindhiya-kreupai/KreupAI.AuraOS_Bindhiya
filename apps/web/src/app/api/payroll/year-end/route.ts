@@ -202,10 +202,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Year-End Processing',
-          details: `Processed year-end task: ${taskId} for FY ${fiscalYear}`,
+          resourceType: 'Payroll - Year-End Processing',
+          metadata: { description: `Processed year-end task: ${taskId} for FY ${fiscalYear}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

@@ -258,7 +258,7 @@ export const POST = withEnhancedAuth(
           userId: user.userId,
           action: 'CREATE',
           entityType: 'Attendance - Approval Workflow',
-          details: `Created approval workflow: ${data.name} for ${data.requestType}`,
+          metadata: { description: `Created approval workflow: ${data.name} for ${data.requestType}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -321,7 +321,7 @@ export const PUT = withEnhancedAuth(
           userId: user.userId,
           action: 'UPDATE',
           entityType: 'Attendance - Approval Workflow',
-          details: `Updated approval workflow: ${id}`,
+          metadata: { description: `Updated approval workflow: ${id}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -373,7 +373,7 @@ export const DELETE = withEnhancedAuth(
           userId: user.userId,
           action: 'DELETE',
           entityType: 'Attendance - Approval Workflow',
-          details: `Deleted approval workflow: ${id}`,
+          metadata: { description: `Deleted approval workflow: ${id}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

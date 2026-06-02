@@ -272,7 +272,7 @@ export const POST = withEnhancedAuth(
           userId: user.id || user.userId,
           action: 'CREATE',
           entityType: 'Attendance - Time Capture',
-          details: `Captured time: ${data.type} at ${timestamp}`,
+          metadata: { description: `Captured time: ${data.type} at ${timestamp}` } as any,
           ipAddress,
         },
       });
@@ -324,7 +324,7 @@ export const PUT = withEnhancedAuth(
           userId: user.id || user.userId,
           action: 'UPDATE',
           entityType: 'Attendance - Time Capture',
-          details: `Updated time capture: ${id}`,
+          metadata: { description: `Updated time capture: ${id}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -363,7 +363,7 @@ export const DELETE = withEnhancedAuth(
           userId: user.id || user.userId,
           action: 'DELETE',
           entityType: 'Attendance - Time Capture',
-          details: `Deleted time capture: ${id}`,
+          metadata: { description: `Deleted time capture: ${id}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

@@ -109,10 +109,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Leave - Encashment',
-          details: `Created encashment request for ${data.requestedDays} days, amount: ${data.totalAmount}`,
+          resourceType: 'Leave - Encashment',
+          metadata: { description: `Created encashment request for ${data.requestedDays} days, amount: ${data.totalAmount}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

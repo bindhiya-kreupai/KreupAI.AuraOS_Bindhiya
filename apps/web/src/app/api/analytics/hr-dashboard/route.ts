@@ -61,37 +61,37 @@ export const GET = withEnhancedAuth(
 
       switch (action) {
         case 'dashboard': {
-          const data = await HRAnalyticsEngineService.getDashboardMetrics(user.tenantId, filters);
+          const data = await HRAnalyticsEngineService.getDashboardMetrics(user.tenantId, filters as any);
           return NextResponse.json({ success: true, data });
         }
 
         case 'headcount': {
-          const data = await HRAnalyticsEngineService.getHeadcountAnalytics(user.tenantId, filters);
+          const data = await HRAnalyticsEngineService.getHeadcountAnalytics(user.tenantId, filters as any);
           return NextResponse.json({ success: true, data });
         }
 
         case 'turnover': {
-          const data = await HRAnalyticsEngineService.getTurnoverAnalytics(user.tenantId, filters);
+          const data = await HRAnalyticsEngineService.getTurnoverAnalytics(user.tenantId, filters as any);
           return NextResponse.json({ success: true, data });
         }
 
         case 'attendance': {
-          const data = await HRAnalyticsEngineService.getAttendanceAnalytics(user.tenantId, filters);
+          const data = await HRAnalyticsEngineService.getAttendanceAnalytics(user.tenantId, filters as any);
           return NextResponse.json({ success: true, data });
         }
 
         case 'payroll': {
-          const data = await HRAnalyticsEngineService.getPayrollAnalytics(user.tenantId, filters);
+          const data = await HRAnalyticsEngineService.getPayrollAnalytics(user.tenantId, filters as any);
           return NextResponse.json({ success: true, data });
         }
 
         case 'leave': {
-          const data = await HRAnalyticsEngineService.getLeaveAnalytics(user.tenantId, filters);
+          const data = await HRAnalyticsEngineService.getLeaveAnalytics(user.tenantId, filters as any);
           return NextResponse.json({ success: true, data });
         }
 
         case 'recruitment': {
-          const data = await HRAnalyticsEngineService.getRecruitmentAnalytics(user.tenantId, filters);
+          const data = await HRAnalyticsEngineService.getRecruitmentAnalytics(user.tenantId, filters as any);
           return NextResponse.json({ success: true, data });
         }
 
@@ -101,7 +101,7 @@ export const GET = withEnhancedAuth(
         }
 
         case 'executive': {
-          const data = await HRAnalyticsEngineService.getExecutiveSummary(user.tenantId, filters);
+          const data = await HRAnalyticsEngineService.getExecutiveSummary(user.tenantId, filters as any);
           return NextResponse.json({ success: true, data });
         }
 
@@ -135,7 +135,7 @@ export const POST = withEnhancedAuth(
         case 'drilldown': {
           const data = DrillDownSchema.parse(body);
           const result = await HRAnalyticsEngineService.drillDown(
-            user.tenantId, data.metric, data.dimension, data.filters
+            user.tenantId, data.metric, { dimension: data.dimension, ...data.filters } as any
           );
           return NextResponse.json({ success: true, data: result });
         }
@@ -143,7 +143,7 @@ export const POST = withEnhancedAuth(
         case 'export': {
           const data = ExportSchema.parse(body);
           const result = await HRAnalyticsEngineService.exportAnalyticsReport(
-            user.tenantId, data.format, data.sections, data.filters
+            user.tenantId, data.sections, data.format as any
           );
           return NextResponse.json({ success: true, data: result });
         }

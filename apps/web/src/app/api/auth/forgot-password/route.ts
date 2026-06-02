@@ -113,10 +113,11 @@ export async function POST(request: NextRequest) {
     // Create audit log
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.id,
         action: 'PASSWORD_RESET_REQUESTED',
         entityType: 'Authentication',
-        details: `Password reset requested for ${user.email}`,
+        metadata: { description: `Password reset requested for ${user.email}` } as any,
         ipAddress,
       },
     });

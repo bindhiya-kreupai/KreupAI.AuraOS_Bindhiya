@@ -119,10 +119,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Loan Recovery',
-          details: `Created loan: ${data.loanType} - $${data.principalAmount} for ${data.tenure} months, EMI: $${Math.round(emiAmount * 100) / 100}`,
+          resourceType: 'Payroll - Loan Recovery',
+          metadata: { description: `Created loan: ${data.loanType} - $${data.principalAmount} for ${data.tenure} months, EMI: $${Math.round(emiAmount * 100) / 100}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

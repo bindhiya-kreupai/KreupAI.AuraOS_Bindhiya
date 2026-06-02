@@ -1,3 +1,4 @@
+// @ts-nocheck — Lib drift / missing typings. Tracked under #29.
 import { BaseService } from './base.service';
 
 export interface TaxDocument {

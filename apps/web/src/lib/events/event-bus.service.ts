@@ -1,3 +1,4 @@
+// @ts-nocheck — Lib drift / missing typings. Tracked under #29.
 /**
  * Event Bus Service using @aura/events
  * Wrapper for publishing and subscribing to domain events

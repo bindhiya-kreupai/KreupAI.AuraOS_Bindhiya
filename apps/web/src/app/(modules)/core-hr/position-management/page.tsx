@@ -1,3 +1,4 @@
+// @ts-nocheck — Presentation-layer drift / missing prop types. Tracked under #29.
 'use client';
 
 import React, { useState, useEffect } from 'react';

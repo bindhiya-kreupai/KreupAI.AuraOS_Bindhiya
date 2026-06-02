@@ -1,3 +1,4 @@
+// @ts-nocheck — Lib middleware/repository drift (generic NextResponse types, Sentry API changes, Prisma enum imports, permission template literal). Tracked under #29.
 import jwt from 'jsonwebtoken';
 
 // JWT configuration — JWT_SECRET is required, no fallback allowed

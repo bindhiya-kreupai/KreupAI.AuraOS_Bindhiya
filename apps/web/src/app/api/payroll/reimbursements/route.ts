@@ -112,10 +112,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Reimbursements',
-          details: `Created reimbursement claim: ${data.type} - $${data.amount}`,
+          resourceType: 'Payroll - Reimbursements',
+          metadata: { description: `Created reimbursement claim: ${data.type} - $${data.amount}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -186,10 +187,11 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Payroll - Reimbursements',
-          details: `Updated reimbursement claim status to: ${status}`,
+          resourceType: 'Payroll - Reimbursements',
+          metadata: { description: `Updated reimbursement claim status to: ${status}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

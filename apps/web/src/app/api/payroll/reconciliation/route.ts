@@ -193,10 +193,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Reconciliation',
-          details: `Ran reconciliation for ${payrollRun.payrollMonth} - ${discrepancyCount} discrepancies found`,
+          resourceType: 'Payroll - Reconciliation',
+          metadata: { description: `Ran reconciliation for ${payrollRun.payrollMonth} - ${discrepancyCount} discrepancies found` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

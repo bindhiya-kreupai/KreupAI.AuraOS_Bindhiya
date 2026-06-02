@@ -82,10 +82,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Leave - Holiday Management',
-          details: `Created holiday: ${data.name} on ${data.date}`,
+          resourceType: 'Leave - Holiday Management',
+          metadata: { description: `Created holiday: ${data.name} on ${data.date}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

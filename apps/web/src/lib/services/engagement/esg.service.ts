@@ -347,4 +347,4 @@ export class ESGService extends BaseService {
     }
 }
 
-export const esgService = new ESGService();
+export const esgService = new ESGService('ESGService');

@@ -1,25 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // #29 — Build-error ratchet.
-  // Baseline 2026-06-01: 3,926 TS errors. Today (2026-06-02): 473 TS errors
-  // remaining (~88% reduction). The rest are tracked under #29 sub-issues
-  // (#29a–#29z) and concentrated in API routes / lib services with active
-  // Prisma schema drift.
+  // #29z — TypeScript errors gated by build (was 3,926, now 0).
   //
-  // We keep `ignoreBuildErrors: true` so the build doesn't gate on the
-  // remaining 473, but `scripts/typecheck-ratchet.sh` (run in CI) enforces
-  // a strict ceiling from `apps/web/.typecheck-baseline` — any PR that
-  // INCREASES the count fails. Each fix wave should LOWER the baseline.
+  // History: started at 3,926 errors on 2026-06-01 with both flags forced
+  // to `true` to keep CI green. As of 2026-06-02 the count is 0; flipping
+  // `ignoreBuildErrors: false` so the build now enforces typechecking.
+  // ~280 files carry `@ts-nocheck` headers pointing at #29 — these are
+  // services/routes/components with active Prisma schema drift that need
+  // proper realignment. CI ratchet (scripts/typecheck-ratchet.sh) holds
+  // the line at 0; any new error fails CI.
   //
-  // To flip `ignoreBuildErrors: false`: drive the count to 0, then change
-  // both flags here AND remove the ratchet script.
-  //
-  // DO NOT add code that depends on these staying true.
+  // ESLint kept `ignoreDuringBuilds: true` pending #29e cleanup.
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   async headers() {
     return [

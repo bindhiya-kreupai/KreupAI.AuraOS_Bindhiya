@@ -203,10 +203,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'CREATE',
-        module: 'Role Management',
-        details: `Created role: ${newRole.code} (${newRole.name})`,
+        resourceType: 'Role Management',
+        metadata: { description: `Created role: ${newRole.code} (${newRole.name})` } as any,
         ipAddress,
       },
     });

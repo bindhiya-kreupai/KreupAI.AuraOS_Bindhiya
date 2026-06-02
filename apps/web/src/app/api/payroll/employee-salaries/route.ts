@@ -134,10 +134,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Employee Salaries',
-          details: `Created salary structure for employee: ${data.employeeId} - CTC: ${data.ctc}`,
+          resourceType: 'Payroll - Employee Salaries',
+          metadata: { description: `Created salary structure for employee: ${data.employeeId} - CTC: ${data.ctc}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -217,10 +218,11 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Payroll - Employee Salaries',
-          details: `Updated salary structure for employee: ${existing.employeeId}`,
+          resourceType: 'Payroll - Employee Salaries',
+          metadata: { description: `Updated salary structure for employee: ${existing.employeeId}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

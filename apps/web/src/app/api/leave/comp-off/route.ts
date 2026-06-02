@@ -89,10 +89,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Leave - Comp-off',
-          details: `Requested comp-off for ${data.workedDate} - ${data.workedHours} hours`,
+          resourceType: 'Leave - Comp-off',
+          metadata: { description: `Requested comp-off for ${data.workedDate} - ${data.workedHours} hours` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -165,10 +166,11 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Leave - Comp-off',
-          details: `${status} comp-off request: ${id}`,
+          resourceType: 'Leave - Comp-off',
+          metadata: { description: `${status} comp-off request: ${id}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

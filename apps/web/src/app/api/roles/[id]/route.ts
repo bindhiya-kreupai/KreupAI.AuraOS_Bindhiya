@@ -181,10 +181,11 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Role Management',
-          details: `Updated role: ${updatedRole.code} (${updatedRole.name})`,
+          resourceType: 'Role Management',
+          metadata: { description: `Updated role: ${updatedRole.code} (${updatedRole.name})` } as any,
           ipAddress,
         },
       });
@@ -287,10 +288,11 @@ export const DELETE = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
-          module: 'Role Management',
-          details: `Deactivated role: ${existingRole.code} (${existingRole.name})`,
+          resourceType: 'Role Management',
+          metadata: { description: `Deactivated role: ${existingRole.code} (${existingRole.name})` } as any,
           ipAddress,
         },
       });

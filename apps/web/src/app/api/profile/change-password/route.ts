@@ -47,7 +47,7 @@ export const POST = withAuth(async (request: NextRequest, { user }) => {
         {
           success: false,
           error: 'Password does not meet strength requirements',
-          details: strengthErrors,
+          metadata: { description: strengthErrors } as any,
         },
         { status: 400 }
       );
@@ -92,10 +92,11 @@ export const POST = withAuth(async (request: NextRequest, { user }) => {
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'UPDATE',
-        module: 'Profile',
-        details: 'Password changed successfully',
+        resourceType: 'Profile',
+        metadata: { description: 'Password changed successfully' } as any,
         ipAddress,
       },
     });

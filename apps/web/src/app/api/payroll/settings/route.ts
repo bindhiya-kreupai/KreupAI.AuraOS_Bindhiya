@@ -102,10 +102,11 @@ export const PUT = withEnhancedAuth(
 
           await prisma.auditLog.create({
             data: {
+              tenantId: user.tenantId,
               userId: user.userId,
               action: 'CREATE',
-              module: 'Payroll - Settings',
-              details: `Created payroll configuration for ${updateFields.countryCode || 'IN'}`,
+              resourceType: 'Payroll - Settings',
+              metadata: { description: `Created payroll configuration for ${updateFields.countryCode || 'IN'}` } as any,
               ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
             },
           });
@@ -139,10 +140,11 @@ export const PUT = withEnhancedAuth(
 
         await prisma.auditLog.create({
           data: {
+            tenantId: user.tenantId,
             userId: user.userId,
             action: 'UPDATE',
-            module: 'Payroll - Settings',
-            details: `Updated payroll configuration: ${existing.countryCode}`,
+            resourceType: 'Payroll - Settings',
+            metadata: { description: `Updated payroll configuration: ${existing.countryCode}` } as any,
             ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
           },
         });
@@ -187,10 +189,11 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Payroll - Settings',
-          details: `Updated payroll configuration: ${existing.countryCode}`,
+          resourceType: 'Payroll - Settings',
+          metadata: { description: `Updated payroll configuration: ${existing.countryCode}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

@@ -34,10 +34,11 @@ export const POST = withAuth(async (request: NextRequest, { user }) => {
     // Create audit log
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'LOGOUT',
         entityType: 'Authentication',
-        details: `User logged out from ${ipAddress}`,
+        metadata: { description: `User logged out from ${ipAddress}` } as any,
         ipAddress,
       },
     });

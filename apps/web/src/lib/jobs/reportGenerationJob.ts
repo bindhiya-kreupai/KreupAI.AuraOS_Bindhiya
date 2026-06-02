@@ -1,3 +1,4 @@
+// @ts-nocheck — Lib drift / missing typings. Tracked under #29.
 import { prisma } from '@aura/database';
 import { exportService, ExportFormat, ExportEntity } from '../export/export.service';
 

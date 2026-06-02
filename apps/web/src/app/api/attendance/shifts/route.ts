@@ -122,7 +122,7 @@ export const POST = withEnhancedAuth(
           userId: user.userId,
           action: 'CREATE',
           entityType: 'Attendance - Shift Management',
-          details: `Created shift: ${data.name} (${data.code})`,
+          metadata: { description: `Created shift: ${data.name} (${data.code})` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

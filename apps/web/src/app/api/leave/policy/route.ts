@@ -132,10 +132,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Leave - Policy',
-          details: `Created leave policy: ${data.name} (${data.code})`,
+          resourceType: 'Leave - Policy',
+          metadata: { description: `Created leave policy: ${data.name} (${data.code})` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

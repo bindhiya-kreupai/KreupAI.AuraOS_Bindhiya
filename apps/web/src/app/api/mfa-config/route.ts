@@ -87,10 +87,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'CREATE',
-        module: 'System Configuration',
-        details: `Created MFA configuration (Enabled: ${validatedData.enabled})`,
+        resourceType: 'System Configuration',
+        metadata: { description: `Created MFA configuration (Enabled: ${validatedData.enabled})` } as any,
         ipAddress,
       },
     });
@@ -154,10 +155,11 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'UPDATE',
-        module: 'System Configuration',
-        details: `Updated MFA configuration (Enabled: ${validatedData.enabled}, Enforce for All: ${validatedData.enforceForAll})`,
+        resourceType: 'System Configuration',
+        metadata: { description: `Updated MFA configuration (Enabled: ${validatedData.enabled}, Enforce for All: ${validatedData.enforceForAll})` } as any,
         ipAddress,
       },
     });
@@ -213,10 +215,11 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, perm
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'DELETE',
-        module: 'System Configuration',
-        details: 'Deleted MFA configuration',
+        resourceType: 'System Configuration',
+        metadata: { description: 'Deleted MFA configuration' } as any,
         ipAddress,
       },
     });

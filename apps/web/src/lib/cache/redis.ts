@@ -137,6 +137,27 @@ class RedisClient {
     }
   }
 
+  /** Alias for `del` — kept for callers that use the longer name. */
+  async delete(key: string): Promise<boolean> {
+    return this.del(key);
+  }
+
+  /**
+   * List keys matching a glob pattern. Prefer `delPattern` for delete
+   * workflows; this is for cases that need to inspect each key first.
+   */
+  async keys(pattern: string): Promise<string[]> {
+    if (!this.isReady()) {
+      return [];
+    }
+    try {
+      return await this.client!.keys(pattern);
+    } catch (error: any) {
+      logger.error({ error, pattern }, 'Redis KEYS error');
+      return [];
+    }
+  }
+
   /**
    * Delete multiple keys from cache
    */

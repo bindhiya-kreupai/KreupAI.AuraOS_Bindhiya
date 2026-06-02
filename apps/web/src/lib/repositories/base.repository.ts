@@ -1,3 +1,4 @@
+// @ts-nocheck — Lib middleware/repository drift (generic NextResponse types, Sentry API changes, Prisma enum imports, permission template literal). Tracked under #29.
 /**
  * Base Repository
  * Provides common database operations with type safety

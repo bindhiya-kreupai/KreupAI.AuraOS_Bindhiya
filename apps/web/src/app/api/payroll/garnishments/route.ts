@@ -117,10 +117,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Garnishments',
-          details: `Created garnishment: ${data.type} - $${data.amount}${data.courtOrderNumber ? ` (${data.courtOrderNumber})` : ''}`,
+          resourceType: 'Payroll - Garnishments',
+          metadata: { description: `Created garnishment: ${data.type} - $${data.amount}${data.courtOrderNumber ? ` (${data.courtOrderNumber})` : ''}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

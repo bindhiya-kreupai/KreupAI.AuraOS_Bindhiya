@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
           userId: user.id,
           action: 'MFA_VALIDATION_FAILED',
           entityType: 'Authentication',
-          details: `Invalid MFA code attempt${validatedData.useBackupCode ? ' (backup code)' : ''}`,
+          metadata: { description: `Invalid MFA code attempt${validatedData.useBackupCode ? ' (backup code)' : ''}` } as any,
           ipAddress,
         },
       });
@@ -180,7 +180,7 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         action: 'LOGIN_SUCCESS',
         entityType: 'Authentication',
-        details: `Login successful with MFA${usedBackupCode ? ' (backup code used)' : ''}`,
+        metadata: { description: `Login successful with MFA${usedBackupCode ? ' (backup code used)' : ''}` } as any,
         ipAddress,
       },
     });
