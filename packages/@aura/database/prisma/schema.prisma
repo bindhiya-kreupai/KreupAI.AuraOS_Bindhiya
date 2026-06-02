@@ -6354,6 +6354,62 @@ model SalaryComponent {
   @@map("aura_salary_component")
 }
 
+// Full & Final settlement record. Computed at exit and frozen at PROCESSED.
+// Per-jurisdiction rules (UAE/KSA/India/...) live in the FullFinalService;
+// breakdown holds the explicit line items: unpaid salary, leave encashment,
+// EOSB/gratuity, bonus pro-rata, loan recovery, notice period, tax.
+model FullFinalSettlement {
+  id              String    @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  exitRequestId   String?
+  countryCode     String    // ISO-3166-1 alpha-2, drives jurisdiction rules
+  lastWorkingDay  DateTime
+  joiningDate     DateTime
+  serviceMonths   Int
+  basicSalary     Decimal
+  grossSalary     Decimal
+  currency        String    @default("USD")
+
+  // Line items
+  unpaidSalary    Decimal   @default(0)
+  leaveEncashment Decimal   @default(0)
+  gratuity        Decimal   @default(0)
+  bonusProRata    Decimal   @default(0)
+  loanRecovery    Decimal   @default(0)
+  noticeRecovery  Decimal   @default(0)
+  otherEarnings   Decimal   @default(0)
+  otherDeductions Decimal   @default(0)
+  taxAmount       Decimal   @default(0)
+
+  grossPayable    Decimal   @default(0)
+  totalDeductions Decimal   @default(0)
+  netPayable      Decimal   @default(0)
+
+  breakdown       Json      @default("[]")  // [{ code, label, kind: "earning"|"deduction"|"tax", amount, source }]
+  notes           String?   @db.Text
+  status          String    @default("DRAFT") // DRAFT | CALCULATED | APPROVED | PROCESSED | CANCELED
+  calculatedAt    DateTime?
+  approvedById    String?
+  approvedAt      DateTime?
+  processedAt     DateTime?
+  payrollRunId    String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([countryCode])
+  @@index([tenantId, status])
+  @@map("aura_full_final_settlement")
+}
+
 // Employee-initiated profile change request (bank, address, emergency contact,
 // dependents, personal). Two-step workflow: DRAFT → SUBMITTED → APPROVED/REJECTED,
 // with APPLIED set once the underlying record is mutated. Cancel allowed by
