@@ -54,6 +54,7 @@ export default defineConfig({
         'src/lib/services/i18n/**/*.ts',
         'src/lib/services/integrations/connection.service.ts',
         'src/lib/services/integrations/registry.service.ts',
+        'src/lib/services/integrations/marketplace-governance.service.ts',
         'src/lib/services/analytics/model-calibration.service.ts',
         'src/lib/services/employment-history.service.ts',
         // Root-level service modules that have tests today.
