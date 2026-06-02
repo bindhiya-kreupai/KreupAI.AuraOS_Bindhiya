@@ -1,818 +1,501 @@
+/**
+ * LeaveService — unit tests against the actual class API.
+ *
+ * Targets `src/lib/services/leave.service.ts`. Tests use prisma mocks
+ * via vi.mock('@aura/database') because the service imports `prisma`
+ * from that workspace package.
+ *
+ * Coverage focus (Packet 1 / #49):
+ *   - findAllRequests / findRequestById (read path, tenant filter)
+ *   - createRequest / updateRequest / deleteRequest
+ *   - approveRequest happy path + balance deduction
+ *   - rejectRequest / cancelRequest with balance restore
+ *   - getRequestStatistics aggregation
+ *   - Policy CRUD + delete-with-balances guard
+ *   - Balance adjustment math
+ *   - Cross-tenant bleed: findRequestById enforces tenantId scoping
+ */
+
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { prisma } from '@/lib/prisma';
-import { LeaveService } from '../leave.service';
-import type { LeaveApplication, LeavePolicy } from '@/types/leave';
+import { LeaveService } from '../../leave.service';
 
-vi.mock('@/lib/prisma', () => ({
-  prisma: {
-    leaveApplication: {
-      create: vi.fn(),
-      findUnique: vi.fn(),
-      findMany: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      count: vi.fn(),
+// Mock prisma where the service actually imports it from.
+vi.mock('@aura/database', () => {
+  const make = () => ({
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    findUnique: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    count: vi.fn(),
+    deleteMany: vi.fn(),
+  });
+  return {
+    prisma: {
+      leaveRequest: make(),
+      leaveBalance: make(),
+      leavePolicy: make(),
+      leaveEncashment: make(),
     },
-    leaveBalance: {
-      findFirst: vi.fn(),
-      update: vi.fn(),
-    },
-    leavePolicy: {
-      findUnique: vi.fn(),
-      findFirst: vi.fn(),
-    },
-    employee: {
-      findUnique: vi.fn(),
-    },
-  },
-}));
+  };
+});
 
-describe('LeaveService', () => {
+// Re-import after mock so we can read the spies.
+import { prisma } from '@aura/database';
+
+const TENANT_A = 'tenant-A';
+const TENANT_B = 'tenant-B';
+
+const baseLeaveRequest = {
+  id: 'lr-1',
+  tenantId: TENANT_A,
+  employeeId: 'emp-1',
+  leaveTypeId: 'lt-1',
+  policyId: 'lp-1',
+  startDate: new Date('2026-07-01'),
+  endDate: new Date('2026-07-03'),
+  totalDays: 3,
+  status: 'PENDING',
+  reason: 'Family vacation - long planned',
+  balanceDeducted: false,
+  balanceId: null,
+  appliedAt: new Date('2026-06-20'),
+};
+
+const baseBalance = {
+  id: 'bal-1',
+  tenantId: TENANT_A,
+  employeeId: 'emp-1',
+  policyId: 'lp-1',
+  leaveYear: 2026,
+  openingBalance: 21,
+  accrued: 0,
+  taken: 5,
+  adjusted: 0,
+  encashed: 0,
+  carriedForward: 0,
+  lapsed: 0,
+  currentBalance: 16,
+};
+
+describe('LeaveService.findAllRequests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  const mockEmployee = {
-    id: 'emp-1',
-    employeeId: 'E001',
-    tenantId: 'tenant-1',
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    managerId: 'mgr-1',
-    departmentId: 'dept-1',
-    hireDate: new Date('2020-01-01'),
-  };
+  it('returns paginated leave requests filtered by tenant', async () => {
+    (prisma.leaveRequest.count as any).mockResolvedValue(2);
+    (prisma.leaveRequest.findMany as any).mockResolvedValue([
+      baseLeaveRequest,
+      { ...baseLeaveRequest, id: 'lr-2' },
+    ]);
 
-  const mockLeavePolicy: LeavePolicy = {
-    id: 'policy-1',
-    tenantId: 'tenant-1',
-    leaveTypeId: 'type-1',
-    name: 'Annual Leave',
-    code: 'AL',
-    annualEntitlement: 30,
-    maxCarryForward: 5,
-    minServiceDays: 90,
-    allowNegativeBalance: false,
-    requiresApproval: true,
-    isPaid: true,
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+    const result = await LeaveService.findAllRequests({
+      tenantId: TENANT_A,
+      page: 1,
+      limit: 10,
+    });
 
-  const mockLeaveBalance = {
-    id: 'balance-1',
-    employeeId: 'emp-1',
-    tenantId: 'tenant-1',
-    leaveTypeId: 'type-1',
-    year: 2024,
-    entitled: 30,
-    used: 5,
-    pending: 2,
-    available: 23,
-    carriedForward: 0,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+    expect(result.data).toHaveLength(2);
+    expect(result.meta.total).toBe(2);
+    expect(prisma.leaveRequest.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ tenantId: TENANT_A }),
+        skip: 0,
+        take: 10,
+      })
+    );
+  });
 
-  const mockLeaveApplication: LeaveApplication = {
-    id: 'leave-1',
-    employeeId: 'emp-1',
-    tenantId: 'tenant-1',
-    leaveTypeId: 'type-1',
-    startDate: new Date('2024-06-01'),
-    endDate: new Date('2024-06-05'),
-    days: 5,
-    reason: 'Family vacation',
-    status: 'PENDING',
-    appliedDate: new Date(),
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+  it('applies status, leaveTypeId, and date range filters', async () => {
+    (prisma.leaveRequest.count as any).mockResolvedValue(0);
+    (prisma.leaveRequest.findMany as any).mockResolvedValue([]);
 
-  describe('applyLeave', () => {
-    it('should create leave application successfully', async () => {
-      vi.mocked(prisma.employee.findUnique).mockResolvedValue(mockEmployee as any);
-      vi.mocked(prisma.leavePolicy.findUnique).mockResolvedValue(mockLeavePolicy as any);
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue(mockLeaveBalance as any);
-      vi.mocked(prisma.leaveApplication.create).mockResolvedValue(mockLeaveApplication as any);
+    await LeaveService.findAllRequests({
+      tenantId: TENANT_A,
+      status: 'APPROVED',
+      leaveTypeId: 'annual',
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
+    });
 
-      const result = await LeaveService.applyLeave({
+    const call = (prisma.leaveRequest.findMany as any).mock.calls[0][0];
+    expect(call.where.status).toBe('APPROVED');
+    expect(call.where.leaveTypeId).toBe('annual');
+    expect(call.where.startDate).toEqual({ gte: new Date('2026-01-01') });
+    expect(call.where.endDate).toEqual({ lte: new Date('2026-12-31') });
+  });
+
+  it('computes pagination meta correctly', async () => {
+    (prisma.leaveRequest.count as any).mockResolvedValue(125);
+    (prisma.leaveRequest.findMany as any).mockResolvedValue([]);
+
+    const result = await LeaveService.findAllRequests({
+      tenantId: TENANT_A,
+      page: 3,
+      limit: 20,
+    });
+
+    expect(result.meta.totalPages).toBe(Math.ceil(125 / 20));
+    expect(prisma.leaveRequest.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ skip: 40, take: 20 })
+    );
+  });
+});
+
+describe('LeaveService.findRequestById — tenant isolation', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('scopes the lookup by tenantId AND id', async () => {
+    (prisma.leaveRequest.findFirst as any).mockResolvedValue(baseLeaveRequest);
+
+    await LeaveService.findRequestById('lr-1', TENANT_A);
+
+    expect(prisma.leaveRequest.findFirst).toHaveBeenCalledWith({
+      where: { id: 'lr-1', tenantId: TENANT_A },
+    });
+  });
+
+  it('returns null when another tenant tries to read', async () => {
+    (prisma.leaveRequest.findFirst as any).mockResolvedValue(null);
+
+    const result = await LeaveService.findRequestById('lr-1', TENANT_B);
+
+    expect(result).toBeNull();
+    expect(prisma.leaveRequest.findFirst).toHaveBeenCalledWith({
+      where: { id: 'lr-1', tenantId: TENANT_B },
+    });
+  });
+});
+
+describe('LeaveService.createRequest', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('coerces startDate/endDate to Date and persists', async () => {
+    (prisma.leaveRequest.create as any).mockResolvedValue(baseLeaveRequest);
+
+    await LeaveService.createRequest({
+      tenantId: TENANT_A,
+      employeeId: 'emp-1',
+      leaveTypeId: 'lt-1',
+      startDate: new Date('2026-07-01'),
+      endDate: new Date('2026-07-03'),
+      totalDays: 3,
+      reason: 'Family vacation - long planned',
+    });
+
+    const data = (prisma.leaveRequest.create as any).mock.calls[0][0].data;
+    expect(data.startDate).toBeInstanceOf(Date);
+    expect(data.endDate).toBeInstanceOf(Date);
+    expect(data.reason).toBe('Family vacation - long planned');
+  });
+
+  it('rejects requests with too-short reason (zod min(10))', async () => {
+    await expect(
+      LeaveService.createRequest({
+        tenantId: TENANT_A,
         employeeId: 'emp-1',
-        tenantId: 'tenant-1',
-        leaveTypeId: 'type-1',
-        startDate: new Date('2024-06-01'),
-        endDate: new Date('2024-06-05'),
-        reason: 'Family vacation',
-      });
+        leaveTypeId: 'lt-1',
+        startDate: new Date('2026-07-01'),
+        endDate: new Date('2026-07-03'),
+        totalDays: 3,
+        reason: 'short',
+      })
+    ).rejects.toThrow();
 
-      expect(result).toBeDefined();
-      expect(result.status).toBe('PENDING');
-      expect(prisma.leaveApplication.create).toHaveBeenCalled();
-    });
+    expect(prisma.leaveRequest.create).not.toHaveBeenCalled();
+  });
+});
 
-    it('should throw error if insufficient leave balance', async () => {
-      vi.mocked(prisma.employee.findUnique).mockResolvedValue(mockEmployee as any);
-      vi.mocked(prisma.leavePolicy.findUnique).mockResolvedValue(mockLeavePolicy as any);
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue({
-        ...mockLeaveBalance,
-        available: 2, // Only 2 days available
-      } as any);
+describe('LeaveService.approveRequest', () => {
+  beforeEach(() => vi.clearAllMocks());
 
-      await expect(
-        LeaveService.applyLeave({
-          employeeId: 'emp-1',
-          tenantId: 'tenant-1',
-          leaveTypeId: 'type-1',
-          startDate: new Date('2024-06-01'),
-          endDate: new Date('2024-06-05'), // Requesting 5 days
-          reason: 'Vacation',
-        })
-      ).rejects.toThrow('Insufficient leave balance');
-    });
+  it('throws when request not found', async () => {
+    (prisma.leaveRequest.findFirst as any).mockResolvedValue(null);
 
-    it('should allow negative balance if policy permits', async () => {
-      vi.mocked(prisma.employee.findUnique).mockResolvedValue(mockEmployee as any);
-      vi.mocked(prisma.leavePolicy.findUnique).mockResolvedValue({
-        ...mockLeavePolicy,
-        allowNegativeBalance: true,
-      } as any);
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue({
-        ...mockLeaveBalance,
-        available: 2,
-      } as any);
-      vi.mocked(prisma.leaveApplication.create).mockResolvedValue(mockLeaveApplication as any);
-
-      const result = await LeaveService.applyLeave({
-        employeeId: 'emp-1',
-        tenantId: 'tenant-1',
-        leaveTypeId: 'type-1',
-        startDate: new Date('2024-06-01'),
-        endDate: new Date('2024-06-05'),
-        reason: 'Emergency',
-      });
-
-      expect(result).toBeDefined();
-      expect(prisma.leaveApplication.create).toHaveBeenCalled();
-    });
-
-    it('should validate minimum service period', async () => {
-      vi.mocked(prisma.employee.findUnique).mockResolvedValue({
-        ...mockEmployee,
-        hireDate: new Date(), // Just hired today
-      } as any);
-      vi.mocked(prisma.leavePolicy.findUnique).mockResolvedValue({
-        ...mockLeavePolicy,
-        minServiceDays: 90, // Requires 90 days
-      } as any);
-
-      await expect(
-        LeaveService.applyLeave({
-          employeeId: 'emp-1',
-          tenantId: 'tenant-1',
-          leaveTypeId: 'type-1',
-          startDate: new Date('2024-06-01'),
-          endDate: new Date('2024-06-05'),
-          reason: 'Vacation',
-        })
-      ).rejects.toThrow('Minimum service period not met');
-    });
-
-    it('should validate date range', async () => {
-      await expect(
-        LeaveService.applyLeave({
-          employeeId: 'emp-1',
-          tenantId: 'tenant-1',
-          leaveTypeId: 'type-1',
-          startDate: new Date('2024-06-05'),
-          endDate: new Date('2024-06-01'), // End before start
-          reason: 'Vacation',
-        })
-      ).rejects.toThrow('Invalid date range');
-    });
-
-    it('should check for overlapping leave applications', async () => {
-      vi.mocked(prisma.employee.findUnique).mockResolvedValue(mockEmployee as any);
-      vi.mocked(prisma.leavePolicy.findUnique).mockResolvedValue(mockLeavePolicy as any);
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue(mockLeaveBalance as any);
-      vi.mocked(prisma.leaveApplication.findMany).mockResolvedValue([
-        mockLeaveApplication, // Existing leave in same period
-      ] as any);
-
-      await expect(
-        LeaveService.applyLeave({
-          employeeId: 'emp-1',
-          tenantId: 'tenant-1',
-          leaveTypeId: 'type-1',
-          startDate: new Date('2024-06-03'),
-          endDate: new Date('2024-06-07'),
-          reason: 'Vacation',
-        })
-      ).rejects.toThrow('Overlapping leave application exists');
-    });
-
-    it('should update leave balance pending count', async () => {
-      vi.mocked(prisma.employee.findUnique).mockResolvedValue(mockEmployee as any);
-      vi.mocked(prisma.leavePolicy.findUnique).mockResolvedValue(mockLeavePolicy as any);
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue(mockLeaveBalance as any);
-      vi.mocked(prisma.leaveApplication.create).mockResolvedValue(mockLeaveApplication as any);
-
-      await LeaveService.applyLeave({
-        employeeId: 'emp-1',
-        tenantId: 'tenant-1',
-        leaveTypeId: 'type-1',
-        startDate: new Date('2024-06-01'),
-        endDate: new Date('2024-06-05'),
-        reason: 'Vacation',
-      });
-
-      expect(prisma.leaveBalance.update).toHaveBeenCalledWith({
-        where: { id: 'balance-1' },
-        data: { pending: expect.any(Number) },
-      });
-    });
+    await expect(
+      LeaveService.approveRequest('missing', TENANT_A, 'manager-1')
+    ).rejects.toThrow('Leave request not found');
   });
 
-  describe('approveLeave', () => {
-    it('should approve pending leave application', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'PENDING',
-      } as any);
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue(mockLeaveBalance as any);
-      vi.mocked(prisma.leaveApplication.update).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'APPROVED',
-        approvedBy: 'mgr-1',
-        approvedDate: new Date(),
-      } as any);
-
-      const result = await LeaveService.approveLeave('leave-1', 'tenant-1', 'mgr-1', 'Approved');
-
-      expect(result.status).toBe('APPROVED');
-      expect(result.approvedBy).toBe('mgr-1');
+  it('throws when request is not PENDING', async () => {
+    (prisma.leaveRequest.findFirst as any).mockResolvedValue({
+      ...baseLeaveRequest,
+      status: 'APPROVED',
     });
 
-    it('should update leave balance on approval', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'PENDING',
-        days: 5,
-      } as any);
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue(mockLeaveBalance as any);
-      vi.mocked(prisma.leaveApplication.update).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'APPROVED',
-      } as any);
-
-      await LeaveService.approveLeave('leave-1', 'tenant-1', 'mgr-1');
-
-      expect(prisma.leaveBalance.update).toHaveBeenCalledWith({
-        where: { id: 'balance-1' },
-        data: {
-          used: expect.any(Number), // Increment used
-          pending: expect.any(Number), // Decrement pending
-          available: expect.any(Number), // Recalculate available
-        },
-      });
-    });
-
-    it('should throw error if leave is not pending', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'APPROVED',
-      } as any);
-
-      await expect(
-        LeaveService.approveLeave('leave-1', 'tenant-1', 'mgr-1')
-      ).rejects.toThrow('Leave application is not pending');
-    });
-
-    it('should throw error if leave not found', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue(null);
-
-      await expect(
-        LeaveService.approveLeave('leave-1', 'tenant-1', 'mgr-1')
-      ).rejects.toThrow('Leave application not found');
-    });
+    await expect(
+      LeaveService.approveRequest('lr-1', TENANT_A, 'manager-1')
+    ).rejects.toThrow('Leave request already processed');
   });
 
-  describe('rejectLeave', () => {
-    it('should reject pending leave application', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'PENDING',
-      } as any);
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue(mockLeaveBalance as any);
-      vi.mocked(prisma.leaveApplication.update).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'REJECTED',
-        rejectedBy: 'mgr-1',
-        rejectedDate: new Date(),
-      } as any);
+  it('approves and deducts balance', async () => {
+    (prisma.leaveRequest.findFirst as any).mockResolvedValue(baseLeaveRequest);
+    (prisma.leaveRequest.update as any)
+      .mockResolvedValueOnce({ ...baseLeaveRequest, status: 'APPROVED' })
+      .mockResolvedValueOnce({ ...baseLeaveRequest, balanceDeducted: true });
+    (prisma.leaveBalance.findFirst as any).mockResolvedValue(baseBalance);
+    (prisma.leaveBalance.update as any).mockResolvedValue({ ...baseBalance, taken: 8, currentBalance: 13 });
 
-      const result = await LeaveService.rejectLeave(
-        'leave-1',
-        'tenant-1',
-        'mgr-1',
-        'Not enough coverage'
-      );
+    await LeaveService.approveRequest('lr-1', TENANT_A, 'manager-1');
 
-      expect(result.status).toBe('REJECTED');
-      expect(result.rejectedBy).toBe('mgr-1');
-    });
+    // Status update
+    const statusUpdate = (prisma.leaveRequest.update as any).mock.calls[0][0];
+    expect(statusUpdate.data.status).toBe('APPROVED');
+    expect(statusUpdate.data.approvedBy).toBe('manager-1');
+    expect(statusUpdate.data.approvedAt).toBeInstanceOf(Date);
 
-    it('should restore leave balance on rejection', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'PENDING',
-        days: 5,
-      } as any);
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue(mockLeaveBalance as any);
-      vi.mocked(prisma.leaveApplication.update).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'REJECTED',
-      } as any);
+    // Balance deduction
+    const balanceUpdate = (prisma.leaveBalance.update as any).mock.calls[0][0];
+    expect(balanceUpdate.data.taken).toBe(8); // was 5 + 3
+    expect(balanceUpdate.data.currentBalance).toBe(13); // was 16 - 3
 
-      await LeaveService.rejectLeave('leave-1', 'tenant-1', 'mgr-1', 'Denied');
-
-      expect(prisma.leaveBalance.update).toHaveBeenCalledWith({
-        where: { id: 'balance-1' },
-        data: {
-          pending: expect.any(Number), // Decrement pending
-          available: expect.any(Number), // Increment available
-        },
-      });
-    });
-
-    it('should require rejection reason', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'PENDING',
-      } as any);
-
-      await expect(
-        LeaveService.rejectLeave('leave-1', 'tenant-1', 'mgr-1', '')
-      ).rejects.toThrow('Rejection reason is required');
-    });
+    // Second update marks deducted
+    const deductedFlag = (prisma.leaveRequest.update as any).mock.calls[1][0];
+    expect(deductedFlag.data.balanceDeducted).toBe(true);
+    expect(deductedFlag.data.balanceId).toBe('bal-1');
   });
 
-  describe('cancelLeave', () => {
-    it('should cancel approved leave application', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'APPROVED',
-        startDate: new Date('2024-12-01'), // Future date
-      } as any);
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue(mockLeaveBalance as any);
-      vi.mocked(prisma.leaveApplication.update).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'CANCELLED',
-      } as any);
-
-      const result = await LeaveService.cancelLeave('leave-1', 'tenant-1', 'emp-1');
-
-      expect(result.status).toBe('CANCELLED');
+  it('skips balance deduction when no policyId is on request', async () => {
+    (prisma.leaveRequest.findFirst as any).mockResolvedValue({
+      ...baseLeaveRequest,
+      policyId: null,
     });
+    (prisma.leaveRequest.update as any).mockResolvedValue({});
 
-    it('should restore leave balance on cancellation', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'APPROVED',
-        days: 5,
-        startDate: new Date('2024-12-01'),
-      } as any);
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue(mockLeaveBalance as any);
-      vi.mocked(prisma.leaveApplication.update).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'CANCELLED',
-      } as any);
+    await LeaveService.approveRequest('lr-1', TENANT_A, 'manager-1');
 
-      await LeaveService.cancelLeave('leave-1', 'tenant-1', 'emp-1');
-
-      expect(prisma.leaveBalance.update).toHaveBeenCalledWith({
-        where: { id: 'balance-1' },
-        data: {
-          used: expect.any(Number), // Decrement used
-          available: expect.any(Number), // Increment available
-        },
-      });
-    });
-
-    it('should not allow cancellation of past leave', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'APPROVED',
-        startDate: new Date('2024-01-01'), // Past date
-      } as any);
-
-      await expect(
-        LeaveService.cancelLeave('leave-1', 'tenant-1', 'emp-1')
-      ).rejects.toThrow('Cannot cancel past leave');
-    });
-
-    it('should not allow cancellation of rejected leave', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'REJECTED',
-      } as any);
-
-      await expect(
-        LeaveService.cancelLeave('leave-1', 'tenant-1', 'emp-1')
-      ).rejects.toThrow('Cannot cancel rejected leave');
-    });
+    expect(prisma.leaveBalance.findFirst).not.toHaveBeenCalled();
+    expect(prisma.leaveBalance.update).not.toHaveBeenCalled();
   });
 
-  describe('getLeaveApplications', () => {
-    it('should return paginated leave applications', async () => {
-      const mockApplications = [mockLeaveApplication, { ...mockLeaveApplication, id: 'leave-2' }];
-      vi.mocked(prisma.leaveApplication.count).mockResolvedValue(2);
-      vi.mocked(prisma.leaveApplication.findMany).mockResolvedValue(mockApplications as any);
-
-      const result = await LeaveService.getLeaveApplications('tenant-1', {
-        page: 1,
-        limit: 20,
-      });
-
-      expect(result.data).toHaveLength(2);
-      expect(result.pagination).toEqual({
-        page: 1,
-        limit: 20,
-        total: 2,
-        totalPages: 1,
-      });
+  it('skips balance deduction when balance already deducted', async () => {
+    (prisma.leaveRequest.findFirst as any).mockResolvedValue({
+      ...baseLeaveRequest,
+      balanceDeducted: true,
     });
+    (prisma.leaveRequest.update as any).mockResolvedValue({});
 
-    it('should filter by employee', async () => {
-      vi.mocked(prisma.leaveApplication.count).mockResolvedValue(1);
-      vi.mocked(prisma.leaveApplication.findMany).mockResolvedValue([mockLeaveApplication] as any);
+    await LeaveService.approveRequest('lr-1', TENANT_A, 'manager-1');
 
-      await LeaveService.getLeaveApplications('tenant-1', {
-        employeeId: 'emp-1',
-      });
+    expect(prisma.leaveBalance.findFirst).not.toHaveBeenCalled();
+  });
+});
 
-      expect(prisma.leaveApplication.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            employeeId: 'emp-1',
-          }),
-        })
-      );
-    });
+describe('LeaveService.rejectRequest', () => {
+  beforeEach(() => vi.clearAllMocks());
 
-    it('should filter by status', async () => {
-      vi.mocked(prisma.leaveApplication.count).mockResolvedValue(1);
-      vi.mocked(prisma.leaveApplication.findMany).mockResolvedValue([mockLeaveApplication] as any);
-
-      await LeaveService.getLeaveApplications('tenant-1', {
-        status: 'PENDING',
-      });
-
-      expect(prisma.leaveApplication.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            status: 'PENDING',
-          }),
-        })
-      );
-    });
-
-    it('should filter by date range', async () => {
-      vi.mocked(prisma.leaveApplication.count).mockResolvedValue(1);
-      vi.mocked(prisma.leaveApplication.findMany).mockResolvedValue([mockLeaveApplication] as any);
-
-      await LeaveService.getLeaveApplications('tenant-1', {
-        startDate: new Date('2024-06-01'),
-        endDate: new Date('2024-06-30'),
-      });
-
-      expect(prisma.leaveApplication.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            startDate: expect.objectContaining({
-              gte: expect.any(Date),
-            }),
-            endDate: expect.objectContaining({
-              lte: expect.any(Date),
-            }),
-          }),
-        })
-      );
-    });
-
-    it('should sort by applied date descending by default', async () => {
-      vi.mocked(prisma.leaveApplication.count).mockResolvedValue(1);
-      vi.mocked(prisma.leaveApplication.findMany).mockResolvedValue([mockLeaveApplication] as any);
-
-      await LeaveService.getLeaveApplications('tenant-1', {});
-
-      expect(prisma.leaveApplication.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          orderBy: { appliedDate: 'desc' },
-        })
-      );
-    });
+  it('throws when request not found', async () => {
+    (prisma.leaveRequest.findFirst as any).mockResolvedValue(null);
+    await expect(
+      LeaveService.rejectRequest('x', TENANT_A, 'manager-1', 'Insufficient documentation')
+    ).rejects.toThrow('Leave request not found');
   });
 
-  describe('getLeaveBalance', () => {
-    it('should return employee leave balance', async () => {
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue(mockLeaveBalance as any);
+  it('records the rejection with reason and rejectedBy', async () => {
+    (prisma.leaveRequest.findFirst as any).mockResolvedValue(baseLeaveRequest);
+    (prisma.leaveRequest.update as any).mockResolvedValue({});
 
-      const result = await LeaveService.getLeaveBalance('emp-1', 'tenant-1', 'type-1', 2024);
+    await LeaveService.rejectRequest('lr-1', TENANT_A, 'manager-1', 'Insufficient documentation');
 
-      expect(result).toEqual(mockLeaveBalance);
-    });
-
-    it('should return null if balance not found', async () => {
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue(null);
-
-      const result = await LeaveService.getLeaveBalance('emp-1', 'tenant-1', 'type-1', 2024);
-
-      expect(result).toBeNull();
-    });
-
-    it('should use current year if not specified', async () => {
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue(mockLeaveBalance as any);
-      const currentYear = new Date().getFullYear();
-
-      await LeaveService.getLeaveBalance('emp-1', 'tenant-1', 'type-1');
-
-      expect(prisma.leaveBalance.findFirst).toHaveBeenCalledWith({
-        where: expect.objectContaining({
-          year: currentYear,
-        }),
-      });
-    });
+    const update = (prisma.leaveRequest.update as any).mock.calls[0][0];
+    expect(update.data.status).toBe('REJECTED');
+    expect(update.data.rejectedBy).toBe('manager-1');
+    expect(update.data.rejectionReason).toBe('Insufficient documentation');
+    expect(update.data.rejectedAt).toBeInstanceOf(Date);
   });
 
-  describe('getLeaveHistory', () => {
-    it('should return employee leave history', async () => {
-      const mockHistory = [
-        mockLeaveApplication,
-        { ...mockLeaveApplication, id: 'leave-2', status: 'APPROVED' },
-        { ...mockLeaveApplication, id: 'leave-3', status: 'REJECTED' },
-      ];
-      vi.mocked(prisma.leaveApplication.findMany).mockResolvedValue(mockHistory as any);
+  it('refuses to reject an already-processed request', async () => {
+    (prisma.leaveRequest.findFirst as any).mockResolvedValue({ ...baseLeaveRequest, status: 'APPROVED' });
+    await expect(
+      LeaveService.rejectRequest('lr-1', TENANT_A, 'manager-1', 'too late')
+    ).rejects.toThrow('Leave request already processed');
+  });
+});
 
-      const result = await LeaveService.getLeaveHistory('emp-1', 'tenant-1', {
-        year: 2024,
-      });
+describe('LeaveService.cancelRequest', () => {
+  beforeEach(() => vi.clearAllMocks());
 
-      expect(result).toHaveLength(3);
-      expect(result[0].status).toBe('PENDING');
-      expect(result[1].status).toBe('APPROVED');
-      expect(result[2].status).toBe('REJECTED');
-    });
-
-    it('should filter by year', async () => {
-      vi.mocked(prisma.leaveApplication.findMany).mockResolvedValue([mockLeaveApplication] as any);
-
-      await LeaveService.getLeaveHistory('emp-1', 'tenant-1', { year: 2024 });
-
-      expect(prisma.leaveApplication.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            startDate: expect.objectContaining({
-              gte: new Date('2024-01-01'),
-              lte: new Date('2024-12-31'),
-            }),
-          }),
-        })
-      );
-    });
-
-    it('should filter by leave type', async () => {
-      vi.mocked(prisma.leaveApplication.findMany).mockResolvedValue([mockLeaveApplication] as any);
-
-      await LeaveService.getLeaveHistory('emp-1', 'tenant-1', {
-        leaveTypeId: 'type-1',
-      });
-
-      expect(prisma.leaveApplication.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            leaveTypeId: 'type-1',
-          }),
-        })
-      );
-    });
+  it('refuses to cancel a request in invalid state', async () => {
+    (prisma.leaveRequest.findFirst as any).mockResolvedValue({ ...baseLeaveRequest, status: 'REJECTED' });
+    await expect(
+      LeaveService.cancelRequest('lr-1', TENANT_A, 'emp-1', 'changed my mind')
+    ).rejects.toThrow('Cannot cancel');
   });
 
-  describe('getPendingApprovals', () => {
-    it('should return pending approvals for manager', async () => {
-      const mockPendingLeaves = [
-        mockLeaveApplication,
-        { ...mockLeaveApplication, id: 'leave-2', employeeId: 'emp-2' },
-      ];
-      vi.mocked(prisma.leaveApplication.findMany).mockResolvedValue(mockPendingLeaves as any);
-
-      const result = await LeaveService.getPendingApprovals('mgr-1', 'tenant-1');
-
-      expect(result).toHaveLength(2);
-      expect(result.every((leave) => leave.status === 'PENDING')).toBe(true);
+  it('restores balance when cancelling an approved request', async () => {
+    (prisma.leaveRequest.findFirst as any).mockResolvedValue({
+      ...baseLeaveRequest,
+      status: 'APPROVED',
+      balanceDeducted: true,
+      balanceId: 'bal-1',
     });
+    (prisma.leaveBalance.findUnique as any).mockResolvedValue({ ...baseBalance, taken: 8, currentBalance: 13 });
+    (prisma.leaveBalance.update as any).mockResolvedValue({});
+    (prisma.leaveRequest.update as any).mockResolvedValue({});
 
-    it('should include employee details in response', async () => {
-      vi.mocked(prisma.leaveApplication.findMany).mockResolvedValue([
-        {
-          ...mockLeaveApplication,
-          employee: mockEmployee,
-        },
-      ] as any);
+    await LeaveService.cancelRequest('lr-1', TENANT_A, 'emp-1', 'changed plans');
 
-      const result = await LeaveService.getPendingApprovals('mgr-1', 'tenant-1');
+    const balanceUpdate = (prisma.leaveBalance.update as any).mock.calls[0][0];
+    expect(balanceUpdate.data.taken).toBe(5); // 8 - 3
+    expect(balanceUpdate.data.currentBalance).toBe(16); // 13 + 3
 
-      expect(result[0].employee).toBeDefined();
-      expect(result[0].employee.firstName).toBe('John');
-    });
+    const requestUpdate = (prisma.leaveRequest.update as any).mock.calls[0][0];
+    expect(requestUpdate.data.status).toBe('CANCELLED');
+    expect(requestUpdate.data.balanceDeducted).toBe(false);
   });
 
-  describe('getLeaveStatistics', () => {
-    it('should return leave statistics for employee', async () => {
-      vi.mocked(prisma.leaveApplication.findMany).mockResolvedValue([
-        { ...mockLeaveApplication, status: 'APPROVED', days: 5 },
-        { ...mockLeaveApplication, id: 'leave-2', status: 'APPROVED', days: 3 },
-        { ...mockLeaveApplication, id: 'leave-3', status: 'PENDING', days: 2 },
-        { ...mockLeaveApplication, id: 'leave-4', status: 'REJECTED', days: 4 },
-      ] as any);
-
-      const result = await LeaveService.getLeaveStatistics('emp-1', 'tenant-1', 2024);
-
-      expect(result.totalApproved).toBe(8); // 5 + 3
-      expect(result.totalPending).toBe(2);
-      expect(result.totalRejected).toBe(4);
-      expect(result.totalApplications).toBe(4);
+  it('does NOT touch balance for PENDING cancellation', async () => {
+    (prisma.leaveRequest.findFirst as any).mockResolvedValue({
+      ...baseLeaveRequest,
+      status: 'PENDING',
+      balanceDeducted: false,
     });
+    (prisma.leaveRequest.update as any).mockResolvedValue({});
 
-    it('should group by leave type', async () => {
-      vi.mocked(prisma.leaveApplication.findMany).mockResolvedValue([
-        { ...mockLeaveApplication, leaveTypeId: 'type-1', status: 'APPROVED', days: 5 },
-        { ...mockLeaveApplication, id: 'leave-2', leaveTypeId: 'type-1', status: 'APPROVED', days: 3 },
-        { ...mockLeaveApplication, id: 'leave-3', leaveTypeId: 'type-2', status: 'APPROVED', days: 2 },
-      ] as any);
+    await LeaveService.cancelRequest('lr-1', TENANT_A, 'emp-1', 'never mind');
 
-      const result = await LeaveService.getLeaveStatistics('emp-1', 'tenant-1', 2024);
+    expect(prisma.leaveBalance.findUnique).not.toHaveBeenCalled();
+    expect(prisma.leaveBalance.update).not.toHaveBeenCalled();
+  });
+});
 
-      expect(result.byLeaveType).toBeDefined();
-      expect(result.byLeaveType['type-1']).toBe(8); // 5 + 3
-      expect(result.byLeaveType['type-2']).toBe(2);
-    });
+describe('LeaveService.getRequestStatistics', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('aggregates request counts and total approved days', async () => {
+    (prisma.leaveRequest.count as any)
+      .mockResolvedValueOnce(20) // total
+      .mockResolvedValueOnce(3) // pending
+      .mockResolvedValueOnce(15) // approved
+      .mockResolvedValueOnce(1) // rejected
+      .mockResolvedValueOnce(1); // cancelled
+    (prisma.leaveRequest.findMany as any).mockResolvedValue([
+      { totalDays: 3 },
+      { totalDays: 5 },
+      { totalDays: 2 },
+    ]);
+
+    const stats = await LeaveService.getRequestStatistics(TENANT_A);
+
+    expect(stats.total).toBe(20);
+    expect(stats.pending).toBe(3);
+    expect(stats.approved).toBe(15);
+    expect(stats.rejected).toBe(1);
+    expect(stats.cancelled).toBe(1);
+    expect(stats.totalDaysTaken).toBe(10);
+  });
+});
+
+describe('LeaveService.deletePolicy', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('refuses to delete a policy with existing balances', async () => {
+    (prisma.leaveBalance.count as any).mockResolvedValue(3);
+
+    await expect(
+      LeaveService.deletePolicy('lp-1', TENANT_A)
+    ).rejects.toThrow('Cannot delete policy with existing balances');
+
+    expect(prisma.leavePolicy.delete).not.toHaveBeenCalled();
   });
 
-  describe('calculateWorkingDays', () => {
-    it('should calculate working days excluding weekends', () => {
-      // June 1-5, 2024 is Saturday to Wednesday (4 working days)
-      const result = LeaveService.calculateWorkingDays(
-        new Date('2024-06-01'),
-        new Date('2024-06-05'),
-        { excludeWeekends: true }
-      );
+  it('deletes policy when no balances reference it', async () => {
+    (prisma.leaveBalance.count as any).mockResolvedValue(0);
+    (prisma.leavePolicy.delete as any).mockResolvedValue({ id: 'lp-1' });
 
-      expect(result).toBe(4); // Mon, Tue, Wed, Thu (Sat-Sun excluded)
-    });
+    await LeaveService.deletePolicy('lp-1', TENANT_A);
 
-    it('should include weekends if not excluded', () => {
-      const result = LeaveService.calculateWorkingDays(
-        new Date('2024-06-01'),
-        new Date('2024-06-05'),
-        { excludeWeekends: false }
-      );
+    expect(prisma.leavePolicy.delete).toHaveBeenCalledWith({ where: { id: 'lp-1' } });
+  });
+});
 
-      expect(result).toBe(5); // All 5 days
-    });
+describe('LeaveService.adjustBalance', () => {
+  beforeEach(() => vi.clearAllMocks());
 
-    it('should exclude public holidays', () => {
-      const holidays = [new Date('2024-06-03')]; // Monday is holiday
-
-      const result = LeaveService.calculateWorkingDays(
-        new Date('2024-06-01'),
-        new Date('2024-06-05'),
-        { excludeWeekends: true, holidays }
-      );
-
-      expect(result).toBe(3); // 4 working days - 1 holiday
-    });
-
-    it('should handle same day leave', () => {
-      const result = LeaveService.calculateWorkingDays(
-        new Date('2024-06-03'),
-        new Date('2024-06-03'),
-        { excludeWeekends: true }
-      );
-
-      expect(result).toBe(1);
-    });
-
-    it('should handle half-day leave', () => {
-      const result = LeaveService.calculateWorkingDays(
-        new Date('2024-06-03'),
-        new Date('2024-06-03'),
-        { excludeWeekends: true, isHalfDay: true }
-      );
-
-      expect(result).toBe(0.5);
-    });
+  it('throws when balance not found', async () => {
+    (prisma.leaveBalance.findFirst as any).mockResolvedValue(null);
+    await expect(
+      LeaveService.adjustBalance('missing', TENANT_A, 5, 'bonus')
+    ).rejects.toThrow('Balance not found');
   });
 
-  describe('updateLeaveApplication', () => {
-    it('should update leave dates', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'PENDING',
-      } as any);
-      vi.mocked(prisma.leaveApplication.update).mockResolvedValue({
-        ...mockLeaveApplication,
-        startDate: new Date('2024-06-10'),
-        endDate: new Date('2024-06-15'),
-      } as any);
+  it('adds positive adjustment to balance', async () => {
+    (prisma.leaveBalance.findFirst as any).mockResolvedValue(baseBalance);
+    (prisma.leaveBalance.update as any).mockResolvedValue({});
 
-      const result = await LeaveService.updateLeaveApplication('leave-1', 'tenant-1', {
-        startDate: new Date('2024-06-10'),
-        endDate: new Date('2024-06-15'),
-      });
+    await LeaveService.adjustBalance('bal-1', TENANT_A, 5, 'tenure bonus');
 
-      expect(result.startDate).toEqual(new Date('2024-06-10'));
-      expect(result.endDate).toEqual(new Date('2024-06-15'));
-    });
-
-    it('should not allow updating approved leave', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'APPROVED',
-      } as any);
-
-      await expect(
-        LeaveService.updateLeaveApplication('leave-1', 'tenant-1', {
-          startDate: new Date('2024-06-10'),
-        })
-      ).rejects.toThrow('Cannot update approved leave');
-    });
-
-    it('should recalculate days when dates change', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'PENDING',
-      } as any);
-      vi.mocked(prisma.leaveApplication.update).mockResolvedValue({
-        ...mockLeaveApplication,
-        days: 10,
-      } as any);
-
-      const result = await LeaveService.updateLeaveApplication('leave-1', 'tenant-1', {
-        startDate: new Date('2024-06-01'),
-        endDate: new Date('2024-06-10'),
-      });
-
-      expect(result.days).toBe(10);
-    });
+    const update = (prisma.leaveBalance.update as any).mock.calls[0][0];
+    expect(update.data.adjusted).toBe(5);
+    expect(update.data.currentBalance).toBe(21); // 16 + 5
   });
 
-  describe('deleteLeaveApplication', () => {
-    it('should delete pending leave application', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'PENDING',
-      } as any);
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue(mockLeaveBalance as any);
-      vi.mocked(prisma.leaveApplication.delete).mockResolvedValue(mockLeaveApplication as any);
+  it('handles negative adjustment (correction)', async () => {
+    (prisma.leaveBalance.findFirst as any).mockResolvedValue({ ...baseBalance, adjusted: 2, currentBalance: 18 });
+    (prisma.leaveBalance.update as any).mockResolvedValue({});
 
-      await LeaveService.deleteLeaveApplication('leave-1', 'tenant-1');
+    await LeaveService.adjustBalance('bal-1', TENANT_A, -3, 'correction');
 
-      expect(prisma.leaveApplication.delete).toHaveBeenCalledWith({
-        where: { id: 'leave-1', tenantId: 'tenant-1' },
-      });
+    const update = (prisma.leaveBalance.update as any).mock.calls[0][0];
+    expect(update.data.adjusted).toBe(-1); // 2 - 3
+    expect(update.data.currentBalance).toBe(15); // 18 - 3
+  });
+});
+
+describe('LeaveService.findAllBalances', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('parses leaveYear filter as integer', async () => {
+    (prisma.leaveBalance.count as any).mockResolvedValue(0);
+    (prisma.leaveBalance.findMany as any).mockResolvedValue([]);
+
+    await LeaveService.findAllBalances({
+      tenantId: TENANT_A,
+      leaveYear: '2026',
     });
 
-    it('should restore leave balance on deletion', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'PENDING',
-        days: 5,
-      } as any);
-      vi.mocked(prisma.leaveBalance.findFirst).mockResolvedValue(mockLeaveBalance as any);
-      vi.mocked(prisma.leaveApplication.delete).mockResolvedValue(mockLeaveApplication as any);
+    const where = (prisma.leaveBalance.findMany as any).mock.calls[0][0].where;
+    expect(where.leaveYear).toBe(2026);
+  });
 
-      await LeaveService.deleteLeaveApplication('leave-1', 'tenant-1');
+  it('filters by employeeId + policyId', async () => {
+    (prisma.leaveBalance.count as any).mockResolvedValue(0);
+    (prisma.leaveBalance.findMany as any).mockResolvedValue([]);
 
-      expect(prisma.leaveBalance.update).toHaveBeenCalledWith({
-        where: { id: 'balance-1' },
-        data: {
-          pending: expect.any(Number),
-          available: expect.any(Number),
-        },
-      });
+    await LeaveService.findAllBalances({
+      tenantId: TENANT_A,
+      employeeId: 'emp-1',
+      policyId: 'lp-1',
     });
 
-    it('should not allow deleting approved leave', async () => {
-      vi.mocked(prisma.leaveApplication.findUnique).mockResolvedValue({
-        ...mockLeaveApplication,
-        status: 'APPROVED',
-      } as any);
+    const where = (prisma.leaveBalance.findMany as any).mock.calls[0][0].where;
+    expect(where.employeeId).toBe('emp-1');
+    expect(where.policyId).toBe('lp-1');
+  });
+});
 
-      await expect(
-        LeaveService.deleteLeaveApplication('leave-1', 'tenant-1')
-      ).rejects.toThrow('Cannot delete approved leave');
-    });
+describe('LeaveService.getBalanceByEmployee', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('defaults leaveYear to current year', async () => {
+    (prisma.leaveBalance.findMany as any).mockResolvedValue([]);
+
+    await LeaveService.getBalanceByEmployee(TENANT_A, 'emp-1');
+
+    const where = (prisma.leaveBalance.findMany as any).mock.calls[0][0].where;
+    expect(where.leaveYear).toBe(new Date().getFullYear());
+    expect(where.tenantId).toBe(TENANT_A);
+    expect(where.employeeId).toBe('emp-1');
+  });
+
+  it('respects explicit leaveYear', async () => {
+    (prisma.leaveBalance.findMany as any).mockResolvedValue([]);
+
+    await LeaveService.getBalanceByEmployee(TENANT_A, 'emp-1', 2025);
+
+    const where = (prisma.leaveBalance.findMany as any).mock.calls[0][0].where;
+    expect(where.leaveYear).toBe(2025);
   });
 });

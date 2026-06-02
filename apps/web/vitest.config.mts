@@ -52,6 +52,9 @@ export default defineConfig({
         'src/lib/services/analytics/**/*.ts',
         'src/lib/services/reporting/**/*.ts',
         'src/lib/services/employment-history.service.ts',
+        // Root-level service modules that have tests today.
+        'src/lib/services/leave.service.ts',
+        'src/lib/services/attendance.service.ts',
         'src/lib/audit/**/*.ts',
       ],
       exclude: [
@@ -75,13 +78,10 @@ export default defineConfig({
         '**/index.ts',
       ],
       // Per-domain thresholds. Floor = "the team commits to never drop
-      // below this". These match the ACTUAL coverage today (2026-06-02)
-      // rounded down for headroom. Each rises as Copilot delivers a
-      // handoff packet. See docs/implementation/COVERAGE-HANDOFF-49.md.
-      //
-      // Domains without working tests today (leave, attendance, employee,
-      // analytics, reporting) are NOT in this list — they'll be added when
-      // their first test lands.
+      // below this". These match the ACTUAL coverage today
+      // (post-Packet-1, 2026-06-02) rounded down for headroom. Each
+      // rises as additional packets land.
+      // See docs/implementation/COVERAGE-HANDOFF-49.md.
       thresholds: {
         // Audit — anchor; was the original well-covered domain
         'src/lib/audit/**': {
@@ -91,8 +91,6 @@ export default defineConfig({
           statements: 85,
         },
         // Payroll — money + regulatory (Priority 1)
-        // Failing tests in salary-components and tax suites are flagged
-        // for the Copilot packet. Floor reflects what passes today.
         'src/lib/services/payroll/**': {
           lines: 65,
           functions: 75,
@@ -119,6 +117,27 @@ export default defineConfig({
           functions: 25,
           branches: 20,
           statements: 25,
+        },
+        // Employee — Packet 1 just landed
+        'src/lib/services/employee/**': {
+          lines: 90,
+          functions: 95,
+          branches: 90,
+          statements: 90,
+        },
+        // Leave subdir — accrual + encashment via Packet 1
+        'src/lib/services/leave/**': {
+          lines: 15,
+          functions: 65,
+          branches: 10,
+          statements: 15,
+        },
+        // Leave service at root level — Packet 1
+        'src/lib/services/leave.service.ts': {
+          lines: 40,
+          functions: 95,
+          branches: 30,
+          statements: 40,
         },
       },
       clean: true,

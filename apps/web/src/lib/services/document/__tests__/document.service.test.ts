@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database';
 import { DocumentService } from '../document.service';
 
 // Mock file storage
@@ -11,7 +11,7 @@ vi.mock('@/lib/storage/file-storage', () => ({
   },
 }));
 
-vi.mock('@/lib/prisma', () => ({
+vi.mock('@aura/database', () => ({
   prisma: {
     document: {
       create: vi.fn(),
