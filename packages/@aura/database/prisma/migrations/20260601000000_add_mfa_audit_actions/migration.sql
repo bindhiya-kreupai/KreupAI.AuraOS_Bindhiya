@@ -5,9 +5,18 @@
 --   apps/web/src/app/api/auth/mfa/disable/route.ts (MFA_DISABLED)
 --   services/auth-service/src/services/mfa.service.ts (MFA_VERIFIED, MFA_DISABLED)
 --
--- Postgres requires ALTER TYPE ... ADD VALUE to run outside an explicit transaction,
--- so each statement runs in its own implicit transaction.
+-- Defensive: some databases were built via `prisma db push`, which stores enums
+-- as TEXT columns instead of Postgres ENUM types. In that case the "AuditAction"
+-- type simply does not exist and the ALTER TYPE calls below are NO-OPs.
+-- The DO block lets us short-circuit cleanly without failing the migration.
 
-ALTER TYPE "AuditAction" ADD VALUE IF NOT EXISTS 'MFA_ENABLED';
-ALTER TYPE "AuditAction" ADD VALUE IF NOT EXISTS 'MFA_VERIFIED';
-ALTER TYPE "AuditAction" ADD VALUE IF NOT EXISTS 'MFA_DISABLED';
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'AuditAction') THEN
+    -- ALTER TYPE … ADD VALUE is supported inside a DO block on Postgres 12+
+    -- as long as the new value isn't used in the same transaction.
+    ALTER TYPE "AuditAction" ADD VALUE IF NOT EXISTS 'MFA_ENABLED';
+    ALTER TYPE "AuditAction" ADD VALUE IF NOT EXISTS 'MFA_VERIFIED';
+    ALTER TYPE "AuditAction" ADD VALUE IF NOT EXISTS 'MFA_DISABLED';
+  END IF;
+END $$;
