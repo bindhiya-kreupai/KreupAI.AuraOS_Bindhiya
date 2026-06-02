@@ -6354,6 +6354,76 @@ model SalaryComponent {
   @@map("aura_salary_component")
 }
 
+// Visa, permit, and identity-document tracking. Covers passports, visas,
+// Emirates IDs, Iqamas, work permits, labor cards, medical certificates.
+// Drives expiry alerts and renewal workflows.
+model VisaPermit {
+  id                String    @id @default(uuid())
+  tenantId          String
+  employeeId        String
+  documentType      String    // passport | visa | emirates_id | iqama | work_permit | labor_card | medical | residence_permit
+  documentNumber    String
+  countryCode       String    // ISO-3166-1 alpha-2 — issuing country
+  issuingAuthority  String?
+  issueDate         DateTime
+  expiryDate        DateTime
+  category          String?   // employment / family / visit / business / etc.
+  status            String    @default("ACTIVE") // ACTIVE | EXPIRED | CANCELED | RENEWED | REVOKED
+  attachmentIds     Json      @default("[]")
+  notes             String?   @db.Text
+  metadata          Json      @default("{}")  // sponsor, visa class, etc.
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  isDeleted         Boolean   @default(false)
+  deletedAt         DateTime?
+
+  renewals          VisaRenewal[]
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([documentType])
+  @@index([status])
+  @@index([expiryDate])
+  @@index([tenantId, expiryDate])
+  @@map("aura_visa_permit")
+}
+
+model VisaRenewal {
+  id                String    @id @default(uuid())
+  tenantId          String
+  visaPermitId      String
+  visaPermit        VisaPermit @relation(fields: [visaPermitId], references: [id])
+  employeeId        String
+  status            String    @default("REQUESTED") // REQUESTED | IN_PROGRESS | COMPLETED | REJECTED | CANCELED
+  requestedBy       String
+  assignedTo        String?
+  newDocumentNumber String?
+  newIssueDate      DateTime?
+  newExpiryDate     DateTime?
+  estimatedCost     Decimal?
+  actualCost        Decimal?
+  vendorName        String?
+  startedAt         DateTime  @default(now())
+  completedAt       DateTime?
+  notes             String?   @db.Text
+  metadata          Json      @default("{}")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  isDeleted         Boolean   @default(false)
+  deletedAt         DateTime?
+
+  @@index([tenantId])
+  @@index([visaPermitId])
+  @@index([employeeId])
+  @@index([status])
+  @@map("aura_visa_renewal")
+}
+
 // Full & Final settlement record. Computed at exit and frozen at PROCESSED.
 // Per-jurisdiction rules (UAE/KSA/India/...) live in the FullFinalService;
 // breakdown holds the explicit line items: unpaid salary, leave encashment,
