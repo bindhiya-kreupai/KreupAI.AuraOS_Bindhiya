@@ -22,7 +22,7 @@ export class DiversityMetricsService {
   static async getAllMetrics(): Promise<DiversityMetric[]> {
     try {
       return await APIClient.get<DiversityMetric[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -30,7 +30,7 @@ export class DiversityMetricsService {
   static async getMetricById(metricId: string): Promise<DiversityMetric | null> {
     try {
       return await APIClient.get<DiversityMetric>(`${this.endpoint}/${metricId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -38,7 +38,7 @@ export class DiversityMetricsService {
   static async createMetric(metricData: Partial<DiversityMetric>): Promise<DiversityMetric> {
     try {
       return await APIClient.post<DiversityMetric>(this.endpoint, metricData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -46,7 +46,7 @@ export class DiversityMetricsService {
   static async updateMetric(metricId: string, updates: Partial<DiversityMetric>): Promise<DiversityMetric> {
     try {
       return await APIClient.put<DiversityMetric>(`${this.endpoint}/${metricId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -54,7 +54,7 @@ export class DiversityMetricsService {
   static async calculateMetric(metricId: string): Promise<DiversityMetric> {
     try {
       return await APIClient.post<DiversityMetric>(`${this.endpoint}/${metricId}/calculate`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -62,7 +62,7 @@ export class DiversityMetricsService {
   static async getDashboards(): Promise<DiversityDashboard[]> {
     try {
       return await APIClient.get<DiversityDashboard[]>(`${this.endpoint}/dashboards`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -70,7 +70,7 @@ export class DiversityMetricsService {
   static async generateReport(reportData: Partial<DiversityReport>): Promise<DiversityReport> {
     try {
       return await APIClient.post<DiversityReport>(`${this.endpoint}/reports`, reportData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -86,7 +86,7 @@ export class InclusionSurveyService {
   static async getAllSurveys(): Promise<InclusionSurvey[]> {
     try {
       return await APIClient.get<InclusionSurvey[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -94,7 +94,7 @@ export class InclusionSurveyService {
   static async getSurveyById(surveyId: string): Promise<InclusionSurvey | null> {
     try {
       return await APIClient.get<InclusionSurvey>(`${this.endpoint}/${surveyId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -102,7 +102,7 @@ export class InclusionSurveyService {
   static async createSurvey(surveyData: Partial<InclusionSurvey>): Promise<InclusionSurvey> {
     try {
       return await APIClient.post<InclusionSurvey>(this.endpoint, surveyData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -110,7 +110,7 @@ export class InclusionSurveyService {
   static async updateSurvey(surveyId: string, updates: Partial<InclusionSurvey>): Promise<InclusionSurvey> {
     try {
       return await APIClient.put<InclusionSurvey>(`${this.endpoint}/${surveyId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -118,7 +118,7 @@ export class InclusionSurveyService {
   static async launchSurvey(surveyId: string): Promise<InclusionSurvey> {
     try {
       return await APIClient.post<InclusionSurvey>(`${this.endpoint}/${surveyId}/launch`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -126,7 +126,7 @@ export class InclusionSurveyService {
   static async submitResponse(responseData: Partial<SurveyResponse>): Promise<SurveyResponse> {
     try {
       return await APIClient.post<SurveyResponse>(`${this.endpoint}/responses`, responseData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -134,7 +134,7 @@ export class InclusionSurveyService {
   static async getAnalytics(surveyId: string): Promise<SurveyAnalytics | null> {
     try {
       return await APIClient.get<SurveyAnalytics>(`${this.endpoint}/${surveyId}/analytics`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -150,7 +150,7 @@ export class PayEquityService {
   static async getAllAnalyses(): Promise<PayEquityAnalysis[]> {
     try {
       return await APIClient.get<PayEquityAnalysis[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -158,7 +158,7 @@ export class PayEquityService {
   static async getAnalysisById(analysisId: string): Promise<PayEquityAnalysis | null> {
     try {
       return await APIClient.get<PayEquityAnalysis>(`${this.endpoint}/${analysisId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -166,7 +166,7 @@ export class PayEquityService {
   static async createAnalysis(analysisData: Partial<PayEquityAnalysis>): Promise<PayEquityAnalysis> {
     try {
       return await APIClient.post<PayEquityAnalysis>(this.endpoint, analysisData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -174,7 +174,7 @@ export class PayEquityService {
   static async runAnalysis(analysisId: string): Promise<PayEquityAnalysis> {
     try {
       return await APIClient.post<PayEquityAnalysis>(`${this.endpoint}/${analysisId}/run`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -182,7 +182,7 @@ export class PayEquityService {
   static async getAllAdjustments(): Promise<PayAdjustment[]> {
     try {
       return await APIClient.get<PayAdjustment[]>(`${this.endpoint}/adjustments`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -190,7 +190,7 @@ export class PayEquityService {
   static async createAdjustment(adjustmentData: Partial<PayAdjustment>): Promise<PayAdjustment> {
     try {
       return await APIClient.post<PayAdjustment>(`${this.endpoint}/adjustments`, adjustmentData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -198,7 +198,7 @@ export class PayEquityService {
   static async approveAdjustment(adjustmentId: string, approvedBy: string): Promise<PayAdjustment> {
     try {
       return await APIClient.post<PayAdjustment>(`${this.endpoint}/adjustments/${adjustmentId}/approve`, { approvedBy });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -214,7 +214,7 @@ export class BiasTrainingService {
   static async getAllTrainings(): Promise<BiasTraining[]> {
     try {
       return await APIClient.get<BiasTraining[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -222,7 +222,7 @@ export class BiasTrainingService {
   static async getTrainingById(trainingId: string): Promise<BiasTraining | null> {
     try {
       return await APIClient.get<BiasTraining>(`${this.endpoint}/${trainingId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -230,7 +230,7 @@ export class BiasTrainingService {
   static async createTraining(trainingData: Partial<BiasTraining>): Promise<BiasTraining> {
     try {
       return await APIClient.post<BiasTraining>(this.endpoint, trainingData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -238,7 +238,7 @@ export class BiasTrainingService {
   static async updateTraining(trainingId: string, updates: Partial<BiasTraining>): Promise<BiasTraining> {
     try {
       return await APIClient.put<BiasTraining>(`${this.endpoint}/${trainingId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -246,7 +246,7 @@ export class BiasTrainingService {
   static async enrollEmployee(enrollmentData: Partial<TrainingEnrollment>): Promise<TrainingEnrollment> {
     try {
       return await APIClient.post<TrainingEnrollment>(`${this.endpoint}/enrollments`, enrollmentData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -254,7 +254,7 @@ export class BiasTrainingService {
   static async updateEnrollment(enrollmentId: string, updates: Partial<TrainingEnrollment>): Promise<TrainingEnrollment> {
     try {
       return await APIClient.put<TrainingEnrollment>(`${this.endpoint}/enrollments/${enrollmentId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -262,7 +262,7 @@ export class BiasTrainingService {
   static async getTrainingAnalytics(trainingId: string): Promise<TrainingAnalytics | null> {
     try {
       return await APIClient.get<TrainingAnalytics>(`${this.endpoint}/${trainingId}/analytics`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -278,7 +278,7 @@ export class ERGService {
   static async getAllERGs(): Promise<EmployeeResourceGroup[]> {
     try {
       return await APIClient.get<EmployeeResourceGroup[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -286,7 +286,7 @@ export class ERGService {
   static async getERGById(ergId: string): Promise<EmployeeResourceGroup | null> {
     try {
       return await APIClient.get<EmployeeResourceGroup>(`${this.endpoint}/${ergId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -294,7 +294,7 @@ export class ERGService {
   static async createERG(ergData: Partial<EmployeeResourceGroup>): Promise<EmployeeResourceGroup> {
     try {
       return await APIClient.post<EmployeeResourceGroup>(this.endpoint, ergData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -302,7 +302,7 @@ export class ERGService {
   static async updateERG(ergId: string, updates: Partial<EmployeeResourceGroup>): Promise<EmployeeResourceGroup> {
     try {
       return await APIClient.put<EmployeeResourceGroup>(`${this.endpoint}/${ergId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -310,7 +310,7 @@ export class ERGService {
   static async addMember(ergId: string, employeeId: string, employeeName: string, role: string): Promise<EmployeeResourceGroup> {
     try {
       return await APIClient.post<EmployeeResourceGroup>(`${this.endpoint}/${ergId}/members`, { employeeId, employeeName, role });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -318,7 +318,7 @@ export class ERGService {
   static async recordMeeting(ergId: string, meetingData: any): Promise<EmployeeResourceGroup> {
     try {
       return await APIClient.post<EmployeeResourceGroup>(`${this.endpoint}/${ergId}/meetings`, meetingData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -334,7 +334,7 @@ export class MentorshipService {
   static async getAllPrograms(): Promise<MentorshipProgram[]> {
     try {
       return await APIClient.get<MentorshipProgram[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -342,7 +342,7 @@ export class MentorshipService {
   static async getProgramById(programId: string): Promise<MentorshipProgram | null> {
     try {
       return await APIClient.get<MentorshipProgram>(`${this.endpoint}/${programId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -350,7 +350,7 @@ export class MentorshipService {
   static async createProgram(programData: Partial<MentorshipProgram>): Promise<MentorshipProgram> {
     try {
       return await APIClient.post<MentorshipProgram>(this.endpoint, programData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -358,7 +358,7 @@ export class MentorshipService {
   static async updateProgram(programId: string, updates: Partial<MentorshipProgram>): Promise<MentorshipProgram> {
     try {
       return await APIClient.put<MentorshipProgram>(`${this.endpoint}/${programId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -366,7 +366,7 @@ export class MentorshipService {
   static async getAllMentors(): Promise<MentorProfile[]> {
     try {
       return await APIClient.get<MentorProfile[]>(`${this.endpoint}/mentors`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -374,7 +374,7 @@ export class MentorshipService {
   static async createMentorProfile(profileData: Partial<MentorProfile>): Promise<MentorProfile> {
     try {
       return await APIClient.post<MentorProfile>(`${this.endpoint}/mentors`, profileData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -382,7 +382,7 @@ export class MentorshipService {
   static async getAllMentees(): Promise<MenteeProfile[]> {
     try {
       return await APIClient.get<MenteeProfile[]>(`${this.endpoint}/mentees`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -390,7 +390,7 @@ export class MentorshipService {
   static async createMenteeProfile(profileData: Partial<MenteeProfile>): Promise<MenteeProfile> {
     try {
       return await APIClient.post<MenteeProfile>(`${this.endpoint}/mentees`, profileData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -398,7 +398,7 @@ export class MentorshipService {
   static async createPair(pairData: Partial<MentorshipPair>): Promise<MentorshipPair> {
     try {
       return await APIClient.post<MentorshipPair>(`${this.endpoint}/pairs`, pairData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -406,7 +406,7 @@ export class MentorshipService {
   static async updatePair(pairId: string, updates: Partial<MentorshipPair>): Promise<MentorshipPair> {
     try {
       return await APIClient.put<MentorshipPair>(`${this.endpoint}/pairs/${pairId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -422,7 +422,7 @@ export class AccessibilityService {
   static async getAllRequests(): Promise<AccessibilityRequest[]> {
     try {
       return await APIClient.get<AccessibilityRequest[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -430,7 +430,7 @@ export class AccessibilityService {
   static async getRequestById(requestId: string): Promise<AccessibilityRequest | null> {
     try {
       return await APIClient.get<AccessibilityRequest>(`${this.endpoint}/${requestId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -438,7 +438,7 @@ export class AccessibilityService {
   static async createRequest(requestData: Partial<AccessibilityRequest>): Promise<AccessibilityRequest> {
     try {
       return await APIClient.post<AccessibilityRequest>(this.endpoint, requestData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -446,7 +446,7 @@ export class AccessibilityService {
   static async updateRequest(requestId: string, updates: Partial<AccessibilityRequest>): Promise<AccessibilityRequest> {
     try {
       return await APIClient.put<AccessibilityRequest>(`${this.endpoint}/${requestId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -454,7 +454,7 @@ export class AccessibilityService {
   static async approveRequest(requestId: string, approvedBy: string): Promise<AccessibilityRequest> {
     try {
       return await APIClient.post<AccessibilityRequest>(`${this.endpoint}/${requestId}/approve`, { approvedBy });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -462,7 +462,7 @@ export class AccessibilityService {
   static async getAllAssessments(): Promise<AccessibilityAssessment[]> {
     try {
       return await APIClient.get<AccessibilityAssessment[]>(`${this.endpoint}/assessments`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -470,7 +470,7 @@ export class AccessibilityService {
   static async createAssessment(assessmentData: Partial<AccessibilityAssessment>): Promise<AccessibilityAssessment> {
     try {
       return await APIClient.post<AccessibilityAssessment>(`${this.endpoint}/assessments`, assessmentData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -478,7 +478,7 @@ export class AccessibilityService {
   static async getAllResources(): Promise<AccessibilityResource[]> {
     try {
       return await APIClient.get<AccessibilityResource[]>(`${this.endpoint}/resources`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -486,7 +486,7 @@ export class AccessibilityService {
   static async createResource(resourceData: Partial<AccessibilityResource>): Promise<AccessibilityResource> {
     try {
       return await APIClient.post<AccessibilityResource>(`${this.endpoint}/resources`, resourceData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -502,7 +502,7 @@ export class DEIGoalsService {
   static async getAllGoals(): Promise<DEIGoal[]> {
     try {
       return await APIClient.get<DEIGoal[]>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -510,7 +510,7 @@ export class DEIGoalsService {
   static async getGoalById(goalId: string): Promise<DEIGoal | null> {
     try {
       return await APIClient.get<DEIGoal>(`${this.endpoint}/${goalId}`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -518,7 +518,7 @@ export class DEIGoalsService {
   static async createGoal(goalData: Partial<DEIGoal>): Promise<DEIGoal> {
     try {
       return await APIClient.post<DEIGoal>(this.endpoint, goalData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -526,7 +526,7 @@ export class DEIGoalsService {
   static async updateGoal(goalId: string, updates: Partial<DEIGoal>): Promise<DEIGoal> {
     try {
       return await APIClient.put<DEIGoal>(`${this.endpoint}/${goalId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -534,7 +534,7 @@ export class DEIGoalsService {
   static async addUpdate(goalId: string, updateData: any): Promise<DEIGoal> {
     try {
       return await APIClient.post<DEIGoal>(`${this.endpoint}/${goalId}/updates`, updateData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -542,7 +542,7 @@ export class DEIGoalsService {
   static async getAllInitiatives(): Promise<DEIInitiative[]> {
     try {
       return await APIClient.get<DEIInitiative[]>(`${this.endpoint}/initiatives`);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -550,7 +550,7 @@ export class DEIGoalsService {
   static async createInitiative(initiativeData: Partial<DEIInitiative>): Promise<DEIInitiative> {
     try {
       return await APIClient.post<DEIInitiative>(`${this.endpoint}/initiatives`, initiativeData);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -558,7 +558,7 @@ export class DEIGoalsService {
   static async updateInitiative(initiativeId: string, updates: Partial<DEIInitiative>): Promise<DEIInitiative> {
     try {
       return await APIClient.put<DEIInitiative>(`${this.endpoint}/initiatives/${initiativeId}`, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -574,7 +574,7 @@ export class DEISettingsService {
   static async getSettings(): Promise<DEISettings> {
     try {
       return await APIClient.get<DEISettings>(this.endpoint);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -582,7 +582,7 @@ export class DEISettingsService {
   static async updateSettings(updates: Partial<DEISettings>): Promise<DEISettings> {
     try {
       return await APIClient.put<DEISettings>(this.endpoint, updates);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }

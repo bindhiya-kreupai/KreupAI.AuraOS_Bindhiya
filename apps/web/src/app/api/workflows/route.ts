@@ -99,7 +99,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
           { status: 400 }
         );
     }
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to fetch workflow data', errorAr: 'فشل في جلب بيانات سير العمل' },
       { status: 500 }
@@ -235,7 +235,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
           { status: 400 }
         );
     }
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process workflow',

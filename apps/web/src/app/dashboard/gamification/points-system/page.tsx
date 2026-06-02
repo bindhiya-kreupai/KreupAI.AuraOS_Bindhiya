@@ -22,7 +22,7 @@ export default function PointsSystemPage() {
                 setLoading(true);
                 const data = await PointsService.getAllAccounts();
                 setTransactions(Array.isArray(data) ? data : []);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

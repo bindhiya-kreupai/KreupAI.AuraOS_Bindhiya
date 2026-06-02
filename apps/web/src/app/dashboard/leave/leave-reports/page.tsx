@@ -24,7 +24,7 @@ export default function LeaveReportsPage() {
             setLoading(true);
             const result = await LeaveAnalyticsService.getStats();
             setStats(result);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

@@ -29,7 +29,7 @@ export default function ExpenseReimbursementPage() {
       setLoading(true);
       const data = await APIClient.get<Expense[]>('/compensation/expense-claims');
       setExpenses(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching expense claims:', error);
     } finally {
       setLoading(false);

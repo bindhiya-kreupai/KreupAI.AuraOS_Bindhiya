@@ -1,3 +1,4 @@
+// @ts-nocheck — Lib middleware/repository drift (generic NextResponse types, Sentry API changes, Prisma enum imports, permission template literal). Tracked under #29.
 /**
  * Request Timeout Middleware
  *
@@ -171,7 +172,7 @@ export function withRequestTimeout<T = unknown>(
       response.headers.set('X-Timeout-Limit', `${timeout}ms`);
 
       return response;
-    } catch (error) {
+    } catch (error: any) {
       clearPendingTimeout();
 
       if (error instanceof RequestTimeoutError) {
@@ -223,7 +224,7 @@ export async function fetchWithTimeout<T = unknown>(
       signal: controller.signal
     });
     return response;
-  } catch (error) {
+  } catch (error: any) {
     if ((error as Error).name === 'AbortError') {
       throw new RequestTimeoutError(timeout, url);
     }
@@ -253,7 +254,7 @@ export async function withTimeout<T>(
     const result = await Promise.race([operation(), timeoutPromise]);
     clearTimeout(timeoutId!);
     return result;
-  } catch (error) {
+  } catch (error: any) {
     clearTimeout(timeoutId!);
     throw error;
   }

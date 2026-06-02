@@ -27,7 +27,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ sessions }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching calibration sessions:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -54,7 +54,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ session }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating calibration session:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -96,7 +96,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ session }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating calibration session:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

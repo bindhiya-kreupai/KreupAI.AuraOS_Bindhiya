@@ -99,7 +99,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Notification Preferences API] GET Error:', error);
     return NextResponse.json(
       {
@@ -177,7 +177,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Notification Preferences API] PUT Error:', error);
     return NextResponse.json(
       {

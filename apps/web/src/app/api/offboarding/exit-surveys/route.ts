@@ -63,7 +63,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       { success: true, surveys },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching exit surveys:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch exit surveys' },
@@ -94,7 +94,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       { success: true, survey },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating exit survey:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create exit survey' },
@@ -148,7 +148,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       { success: true, survey },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating exit survey:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update exit survey' },

@@ -87,7 +87,7 @@ export class SessionService {
         refreshToken,
         expiresIn: SESSION_TTL,
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, userId: sessionData.userId }, 'Error creating session');
       throw error;
     }
@@ -108,7 +108,7 @@ export class SessionService {
         tenantId: decoded.tenantId,
         roles: decoded.roles,
       };
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof jwt.TokenExpiredError) {
         logger.warn('Access token expired');
       } else if (error instanceof jwt.JsonWebTokenError) {
@@ -161,7 +161,7 @@ export class SessionService {
       logger.info({ userId: storedData.userId }, 'Session refreshed');
 
       return tokens;
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof jwt.TokenExpiredError) {
         logger.warn('Refresh token expired');
       } else if (error instanceof jwt.JsonWebTokenError) {
@@ -188,7 +188,7 @@ export class SessionService {
       logger.info({ userId: decoded.userId }, 'Session revoked');
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Error revoking session');
       return false;
     }
@@ -211,7 +211,7 @@ export class SessionService {
       }
 
       logger.info({ userId }, 'All user sessions revoked');
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, userId }, 'Error revoking all user sessions');
       throw error;
     }

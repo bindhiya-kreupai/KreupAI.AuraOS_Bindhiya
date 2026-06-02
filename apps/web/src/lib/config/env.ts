@@ -168,7 +168,7 @@ function parseEnv(): Env {
 
   try {
     return envSchema.parse(process.env);
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       const formatted = error.errors.map((error) => {
         const path = error.path.join('.');

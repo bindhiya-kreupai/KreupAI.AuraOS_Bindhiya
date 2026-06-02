@@ -43,7 +43,7 @@ export default function EquityPage() {
                     }))
                 );
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading equity data:', error);
         } finally {
             setLoading(false);

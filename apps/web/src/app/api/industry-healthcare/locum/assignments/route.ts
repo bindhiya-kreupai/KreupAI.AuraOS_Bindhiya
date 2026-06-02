@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
             assignments: locumAssignments,
             count: locumAssignments.length,
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Locum assignments API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             assignment: newAssignment,
         }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Locum assignments API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

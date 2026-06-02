@@ -837,7 +837,7 @@ export default function CompetencyCatalogPage() {
                 // Cast data to local type since service uses shared types
                 setCompetencies(result.data as any);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch competencies:', error);
         } finally {
@@ -912,7 +912,7 @@ export default function CompetencyCatalogPage() {
             
             setIsSheetOpen(false);
             setEditingCompetency(null);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to save competency:', error);
         } finally {
@@ -927,7 +927,7 @@ export default function CompetencyCatalogPage() {
                 if (result.success) {
                     setCompetencies(prev => prev.filter(c => c.id !== id));
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Failed to delete competency:', error);
             }

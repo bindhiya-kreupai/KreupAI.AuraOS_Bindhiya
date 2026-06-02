@@ -19,7 +19,7 @@ export default function SkillGapAnalysisPage() {
                 setLoading(true);
                 const result = await SkillGapService.getSkillGapAnalysis();
                 setData(result);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
                 setData([]);
             } finally {

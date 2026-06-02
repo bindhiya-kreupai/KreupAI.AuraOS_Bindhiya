@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 /**
  * Workforce Planning Module - Sample Data
  * Comprehensive sample data for strategic workforce planning

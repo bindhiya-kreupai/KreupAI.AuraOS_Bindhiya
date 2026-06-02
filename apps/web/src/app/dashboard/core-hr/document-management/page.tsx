@@ -33,7 +33,7 @@ export default function DocumentManagementPage() {
       setLoading(true);
       const data = await DocumentService.getAllDocuments();
       setDocuments(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -79,7 +79,7 @@ export default function DocumentManagementPage() {
       try {
         await DocumentService.verifyDocument(docId || '', 'deleted');
         await fetchDocuments();
-      } catch (error) {
+      } catch (error: any) {
         console.error('Delete failed:', error);
       }
     }
@@ -281,7 +281,7 @@ export default function DocumentManagementPage() {
                     } as any);
                     setShowUploadModal(false);
                     await fetchDocuments();
-                  } catch (error) {
+                  } catch (error: any) {
                     console.error('Upload failed:', error);
                   } finally {
                     setUploading(false);

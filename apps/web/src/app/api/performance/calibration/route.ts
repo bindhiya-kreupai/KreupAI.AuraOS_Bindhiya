@@ -87,7 +87,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching calibration sessions:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -148,7 +148,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       { session },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation error', details: error.errors },
@@ -213,7 +213,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       { session },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation error', details: error.errors },
@@ -274,7 +274,7 @@ export const DELETE = withEnhancedAuth(async (request, context) => {
       { message: 'Calibration session deleted successfully' },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting calibration session:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

@@ -45,7 +45,7 @@ export default function LeaveApplicationPage() {
                 if (requestsRes?.success && Array.isArray(requestsRes.data)) {
                     setRecentLeaves(requestsRes.data);
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Failed to fetch leave data:', err);
             } finally {
                 setFetching(false);

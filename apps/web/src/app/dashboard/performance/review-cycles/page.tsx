@@ -20,7 +20,7 @@ export default function ReviewCyclesPage() {
             try {
                 const data = await ReviewCycleService.getCycles();
                 setCycles(data);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load review cycles:', error);
             } finally {
                 setLoading(false);

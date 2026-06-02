@@ -150,7 +150,7 @@ export function useManagerSelfService(managerId: string = 'manager-001'): UseMan
       setDelegationSettings(delSettingsData);
       setAnalytics(analyticsData);
       setSettings(settingsData);
-    } catch (error) {
+    } catch (error: any) {
       setError(error instanceof Error ? error.message : 'Failed to load manager data');
     } finally {
       setLoading(false);

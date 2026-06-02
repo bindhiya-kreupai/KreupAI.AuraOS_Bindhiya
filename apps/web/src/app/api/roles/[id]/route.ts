@@ -20,7 +20,7 @@ const UpdateRoleSchema = z.object({
 
 // GET - Fetch single role by ID
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       if (!permissions.includes('roles:read') && !permissions.includes('roles:manage')) {
@@ -84,7 +84,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: role,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, userId: user.userId, roleId: params.id }, 'Error fetching role');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch role' },
@@ -96,7 +96,7 @@ export const GET = withEnhancedAuth(
 
 // PUT - Update role
 export const PUT = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       if (!permissions.includes('roles:update') && !permissions.includes('roles:manage')) {
@@ -181,10 +181,11 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Role Management',
-          details: `Updated role: ${updatedRole.code} (${updatedRole.name})`,
+          resourceType: 'Role Management',
+          metadata: { description: `Updated role: ${updatedRole.code} (${updatedRole.name})` } as any,
           ipAddress,
         },
       });
@@ -200,7 +201,7 @@ export const PUT = withEnhancedAuth(
         data: updatedRole,
         message: 'Role updated successfully',
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation failed', details: error.errors },
@@ -219,7 +220,7 @@ export const PUT = withEnhancedAuth(
 
 // DELETE - Delete role (soft delete by deactivation)
 export const DELETE = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       if (!permissions.includes('roles:delete') && !permissions.includes('roles:manage')) {
@@ -287,10 +288,11 @@ export const DELETE = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
-          module: 'Role Management',
-          details: `Deactivated role: ${existingRole.code} (${existingRole.name})`,
+          resourceType: 'Role Management',
+          metadata: { description: `Deactivated role: ${existingRole.code} (${existingRole.name})` } as any,
           ipAddress,
         },
       });
@@ -305,7 +307,7 @@ export const DELETE = withEnhancedAuth(
         success: true,
         message: 'Role deactivated successfully',
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, userId: user.userId, roleId: params.id }, 'Error deleting role');
       return NextResponse.json(
         { success: false, error: 'Failed to delete role' },

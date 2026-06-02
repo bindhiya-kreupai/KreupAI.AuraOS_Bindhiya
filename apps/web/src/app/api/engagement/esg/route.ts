@@ -31,7 +31,7 @@ export const GET = withEnhancedAuth(
       const esgData = getDefaultESGData(user.tenantId);
 
       return NextResponse.json(esgData);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('ESG API error:', error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
@@ -61,7 +61,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ report }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('ESG Report API error:', error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

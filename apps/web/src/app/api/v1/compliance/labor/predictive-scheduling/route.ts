@@ -215,7 +215,7 @@ export const POST = withAudit(
           apiVersion: 'v1',
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Predictive Scheduling API] POST Error:', error);
       return NextResponse.json(
         {

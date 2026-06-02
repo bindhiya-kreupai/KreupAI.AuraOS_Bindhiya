@@ -113,10 +113,11 @@ export async function POST(request: NextRequest) {
     // Create audit log
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.id,
         action: 'PASSWORD_RESET_REQUESTED',
         entityType: 'Authentication',
-        details: `Password reset requested for ${user.email}`,
+        metadata: { description: `Password reset requested for ${user.email}` } as any,
         ipAddress,
       },
     });
@@ -146,7 +147,7 @@ export async function POST(request: NextRequest) {
         devWarning: 'Token is provided for development testing only. Remove in production!',
       }),
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Invalid email address', details: error.errors },

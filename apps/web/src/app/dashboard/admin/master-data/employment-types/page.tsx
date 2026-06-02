@@ -42,7 +42,7 @@ export default function EmploymentTypesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch employment types:', error);
         } finally {
@@ -78,7 +78,7 @@ export default function EmploymentTypesPage() {
             } else {
                 alert('Failed to save employment type');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving employment type:', error);
             alert('Error saving employment type');
@@ -97,7 +97,7 @@ export default function EmploymentTypesPage() {
                 } else {
                     alert('Failed to delete employment type');
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting employment type:', error);
                 alert('Error deleting employment type');

@@ -9,7 +9,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       { success: true, data: { acknowledgements: [] }, tenantId: user.tenantId },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching acknowledgements:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
@@ -35,7 +35,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       { success: true, data: { acknowledgement } },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating acknowledgement:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },

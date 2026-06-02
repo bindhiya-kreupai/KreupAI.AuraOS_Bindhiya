@@ -65,7 +65,7 @@ export function encodeCursor(data: CursorData): string {
   try {
     const json = JSON.stringify(data);
     return Buffer.from(json).toString('base64url');
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error, data }, 'Failed to encode cursor');
     throw new Error('Failed to encode cursor');
   }
@@ -78,7 +78,7 @@ export function decodeCursor(cursor: string): CursorData | null {
   try {
     const json = Buffer.from(cursor, 'base64url').toString('utf-8');
     return JSON.parse(json) as CursorData;
-  } catch (error) {
+  } catch (error: any) {
     logger.warn({ error, cursor }, 'Failed to decode cursor');
     return null;
   }

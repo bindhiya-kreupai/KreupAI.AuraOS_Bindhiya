@@ -59,7 +59,7 @@ export default function ContractsPage() {
                 setLoading(true);
                 const data = await VendorContractService.getContracts();
                 setContracts(data as any[]);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

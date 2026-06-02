@@ -49,7 +49,7 @@ export default function RecruitmentPage() {
         }));
       setTopCandidates(matched);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load recruitment data:', error);
     } finally {
       setIsLoading(false);

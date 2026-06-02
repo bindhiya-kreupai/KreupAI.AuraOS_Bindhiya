@@ -320,7 +320,7 @@ export const POST = withAudit(
         },
         { status: 201 }
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('[WPS Generate API] POST Error:', error);
       return NextResponse.json(
         {

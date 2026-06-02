@@ -38,7 +38,7 @@ export class ResignationService {
         filters
       );
       return response.resignations || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -49,7 +49,7 @@ export class ResignationService {
         `/offboarding/resignations/${id}`
       );
       return response.resignation || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -61,7 +61,7 @@ export class ResignationService {
         resignation
       );
       return response.resignation || resignation;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -76,7 +76,7 @@ export class ResignationService {
         updates
       );
       return response.resignation || { ...updates, id } as ResignationLetter;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -143,7 +143,7 @@ export class TerminationService {
         filters
       );
       return response.terminations || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -154,7 +154,7 @@ export class TerminationService {
         `/offboarding/terminations/${id}`
       );
       return response.termination || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -166,7 +166,7 @@ export class TerminationService {
         termination
       );
       return response.termination || termination;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -181,7 +181,7 @@ export class TerminationService {
         updates
       );
       return response.termination || { ...updates, id } as TerminationNotice;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -203,7 +203,7 @@ export class OffboardingInstanceService {
         filters
       );
       return response.instances || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -214,7 +214,7 @@ export class OffboardingInstanceService {
         `/offboarding/instances/${id}`
       );
       return response.instance || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -226,7 +226,7 @@ export class OffboardingInstanceService {
         instance
       );
       return response.instance || instance;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -241,7 +241,7 @@ export class OffboardingInstanceService {
         updates
       );
       return response.instance || { ...updates, id } as OffboardingInstance;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -280,7 +280,7 @@ export class OffboardingInstanceService {
         overdueTasks: instance.tasks.filter((t) => t.status === 'overdue').length,
         progress,
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -313,7 +313,7 @@ export class OffboardingTaskService {
 
       await OffboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
       return OffboardingInstanceService.updateProgress(instanceId);
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -325,7 +325,7 @@ export class OffboardingTaskService {
 
       instance.tasks.push(task);
       return OffboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -337,7 +337,7 @@ export class OffboardingTaskService {
 
       instance.tasks = instance.tasks.filter((t) => t.id !== taskId);
       return OffboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -374,7 +374,7 @@ export class EquipmentReturnService {
       return OffboardingInstanceService.updateInstance(instanceId, {
         equipmentReturns: instance.equipmentReturns,
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -401,7 +401,7 @@ export class EquipmentReturnService {
       return OffboardingInstanceService.updateInstance(instanceId, {
         equipmentReturns: instance.equipmentReturns,
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -429,7 +429,7 @@ export class EquipmentReturnService {
       return OffboardingInstanceService.updateInstance(instanceId, {
         equipmentReturns: instance.equipmentReturns,
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -462,7 +462,7 @@ export class AccessRevocationService {
       return OffboardingInstanceService.updateInstance(instanceId, {
         accessRevocations: instance.accessRevocations,
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -491,7 +491,7 @@ export class AccessRevocationService {
       return OffboardingInstanceService.updateInstance(instanceId, {
         accessRevocations: instance.accessRevocations,
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -526,7 +526,7 @@ export class ClearanceService {
       return OffboardingInstanceService.updateInstance(instanceId, {
         clearances: instance.clearances,
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -560,7 +560,7 @@ export class ClearanceService {
       return OffboardingInstanceService.updateInstance(instanceId, {
         clearances: instance.clearances,
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -581,7 +581,7 @@ export class KnowledgeTransferService {
         filters
       );
       return response.transfers || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -593,7 +593,7 @@ export class KnowledgeTransferService {
         transfer
       );
       return response.transfer || transfer;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -608,7 +608,7 @@ export class KnowledgeTransferService {
         updates
       );
       return response.transfer || { ...updates, id } as KnowledgeTransfer;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -624,7 +624,7 @@ export class KnowledgeTransferService {
 
       const sessions = [...transfer.sessions, session];
       return this.updateKnowledgeTransfer(id, { sessions });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -652,7 +652,7 @@ export class KnowledgeTransferService {
         completedItems,
         progress,
       });
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -673,7 +673,7 @@ export class ExitInterviewService {
         filters
       );
       return response.interviews || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -685,7 +685,7 @@ export class ExitInterviewService {
         interview
       );
       return response.interview || interview;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -700,7 +700,7 @@ export class ExitInterviewService {
         updates
       );
       return response.interview || { ...updates, id } as ExitInterview;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -732,7 +732,7 @@ export class ExitSurveyService {
         filters
       );
       return response.surveys || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -744,7 +744,7 @@ export class ExitSurveyService {
         survey
       );
       return response.survey || survey;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -771,7 +771,7 @@ export class ExitSurveyService {
         }
       );
       return response.survey || { id, status: 'completed' } as ExitSurvey;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -792,7 +792,7 @@ export class FinalSettlementService {
         filters
       );
       return response.settlements || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -804,7 +804,7 @@ export class FinalSettlementService {
         settlement
       );
       return response.settlement || settlement;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -819,7 +819,7 @@ export class FinalSettlementService {
         updates
       );
       return response.settlement || { ...updates, id } as FinalSettlement;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -861,7 +861,7 @@ export class AlumniService {
         filters
       );
       return response.alumni || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -873,7 +873,7 @@ export class AlumniService {
         record
       );
       return response.alumniRecord || record;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -888,7 +888,7 @@ export class AlumniService {
         updates
       );
       return response.alumniRecord || { ...updates, id } as AlumniRecord;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -942,7 +942,7 @@ export class OffboardingAnalyticsService {
         costPerOffboarding: 0,
         retentionRiskDepartments: [],
       };
-    } catch (error) {
+    } catch (error: any) {
             return {} as OffboardingMetrics;
     }
   }
@@ -982,7 +982,7 @@ export class OffboardingSettingsService {
         itNotificationEmail: 'it@company.com',
         financeNotificationEmail: 'finance@company.com',
       };
-    } catch (error) {
+    } catch (error: any) {
             return {} as OffboardingSettings;
     }
   }
@@ -996,7 +996,7 @@ export class OffboardingSettingsService {
         updates
       );
       return response.settings || updates as OffboardingSettings;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }

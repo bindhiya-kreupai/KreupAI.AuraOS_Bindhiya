@@ -113,7 +113,7 @@ export const GET = withEnhancedAuth(
       };
 
       return NextResponse.json(response, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       const response: ApiResponse = {
         success: false,
         error: {

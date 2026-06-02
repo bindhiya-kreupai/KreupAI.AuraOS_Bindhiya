@@ -32,7 +32,7 @@ export default function JobFunctionsPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch job functions:', error);
         } finally {
@@ -68,7 +68,7 @@ export default function JobFunctionsPage() {
             } else {
                 alert('Failed to save job function');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving job function:', error);
             alert('Error saving job function');
@@ -87,7 +87,7 @@ export default function JobFunctionsPage() {
                 } else {
                     alert('Failed to delete job function');
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting job function:', error);
                 alert('Error deleting job function');

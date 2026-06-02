@@ -25,7 +25,7 @@ export default function ClaimsPage() {
             const response = await ClaimService.getClaims();
             const data = response?.data || response || [];
             setClaims(Array.isArray(data) ? data : []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching claims:', error);
             setClaims([]);
         } finally {

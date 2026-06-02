@@ -44,7 +44,7 @@ export default function BanksPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch banks:', error);
         } finally {
@@ -78,7 +78,7 @@ export default function BanksPage() {
             } else {
                 alert('Failed to save bank');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving bank:', error);
             alert('Error saving bank');
@@ -97,7 +97,7 @@ export default function BanksPage() {
                 } else {
                     alert('Failed to delete bank');
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting bank:', error);
                 alert('Error deleting bank');

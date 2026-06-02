@@ -322,7 +322,7 @@ export function TrainingAssignment({ onAssigned }: TrainingAssignmentProps) {
       });
       setErrors({});
       return true;
-    } catch (err) {
+    } catch (err: any) {
       if (err instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
         err.errors.forEach((e) => {

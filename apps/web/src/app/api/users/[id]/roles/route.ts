@@ -22,7 +22,7 @@ const RemoveRoleSchema = z.object({
 
 // GET - Fetch all roles assigned to a user
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       if (!permissions.includes('users:read') && !permissions.includes('users:manage')) {
@@ -85,7 +85,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: userRoles,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, userId: user.userId, targetUserId: params.id }, 'Error fetching user roles');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch user roles' },
@@ -97,7 +97,7 @@ export const GET = withEnhancedAuth(
 
 // POST - Assign a role to a user
 export const POST = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       if (!permissions.includes('users:update') && !permissions.includes('users:manage')) {
@@ -192,10 +192,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'User Role Assignment',
-          details: `Assigned role ${role.code} (${role.name}) to user ${targetUser.email}${validatedData.expiresAt ? ` (expires: ${validatedData.expiresAt})` : ''}`,
+          resourceType: 'User Role Assignment',
+          metadata: { description: `Assigned role ${role.code} (${role.name}) to user ${targetUser.email}${validatedData.expiresAt ? ` (expires: ${validatedData.expiresAt})` : ''}` } as any,
           ipAddress,
         },
       });
@@ -216,7 +217,7 @@ export const POST = withEnhancedAuth(
         },
         { status: 201 }
       );
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation failed', details: error.errors },
@@ -235,7 +236,7 @@ export const POST = withEnhancedAuth(
 
 // DELETE - Remove a role from a user
 export const DELETE = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       if (!permissions.includes('users:update') && !permissions.includes('users:manage')) {
@@ -318,10 +319,11 @@ export const DELETE = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
-          module: 'User Role Assignment',
-          details: `Removed role ${userRole.role.code} (${userRole.role.name}) from user ${targetUser.email}`,
+          resourceType: 'User Role Assignment',
+          metadata: { description: `Removed role ${userRole.role.code} (${userRole.role.name}) from user ${targetUser.email}` } as any,
           ipAddress,
         },
       });
@@ -337,7 +339,7 @@ export const DELETE = withEnhancedAuth(
         success: true,
         message: 'Role removed successfully',
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation failed', details: error.errors },

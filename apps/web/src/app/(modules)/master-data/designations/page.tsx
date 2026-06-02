@@ -63,7 +63,7 @@ export default function DesignationsPage() {
         : '/api/master-data/designations';
       const response = await fetch(url);
       if (response.ok) setData(await response.json());
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch designations:', error);
     } finally {
       setIsLoading(false);
@@ -83,7 +83,7 @@ export default function DesignationsPage() {
         body: JSON.stringify(record),
       });
       if (response.ok) fetchDesignations();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving designation:', error);
     }
   };
@@ -95,7 +95,7 @@ export default function DesignationsPage() {
           method: 'DELETE',
         });
         if (response.ok) fetchDesignations();
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error deleting designation:', error);
       }
     }

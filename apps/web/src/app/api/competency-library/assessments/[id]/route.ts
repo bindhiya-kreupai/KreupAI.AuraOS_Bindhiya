@@ -53,7 +53,7 @@ export async function GET(
             success: true,
             data: assessment
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error fetching assessment:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch assessment' },
@@ -139,7 +139,7 @@ export async function PUT(
             data: assessment,
             message: 'Assessment updated successfully'
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error updating assessment:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to update assessment' },
@@ -180,7 +180,7 @@ export async function DELETE(
             success: true,
             message: 'Assessment deleted successfully'
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error deleting assessment:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to delete assessment' },

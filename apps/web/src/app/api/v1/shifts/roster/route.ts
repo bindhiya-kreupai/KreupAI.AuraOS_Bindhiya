@@ -300,7 +300,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Shift Roster API] GET Error:', error);
     return NextResponse.json(
       {

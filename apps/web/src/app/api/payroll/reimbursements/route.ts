@@ -71,7 +71,7 @@ export const GET = withEnhancedAuth(
         claims,
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching reimbursements:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch reimbursements' },
@@ -112,10 +112,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Reimbursements',
-          details: `Created reimbursement claim: ${data.type} - $${data.amount}`,
+          resourceType: 'Payroll - Reimbursements',
+          metadata: { description: `Created reimbursement claim: ${data.type} - $${data.amount}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -125,7 +126,7 @@ export const POST = withEnhancedAuth(
         data: adjustment,
         claim: adjustment,
       }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -186,16 +187,17 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Payroll - Reimbursements',
-          details: `Updated reimbursement claim status to: ${status}`,
+          resourceType: 'Payroll - Reimbursements',
+          metadata: { description: `Updated reimbursement claim status to: ${status}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
 
       return NextResponse.json({ success: true, data: updated, claim: updated });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating reimbursement:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update reimbursement' },

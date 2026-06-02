@@ -35,7 +35,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       success: true,
       data: { overtime, summary },
     });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to fetch overtime records' },
       { status: 500 }
@@ -139,7 +139,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
           { status: 400 }
         );
     }
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to process overtime' },
       { status: 500 }

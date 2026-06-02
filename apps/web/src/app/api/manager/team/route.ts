@@ -171,7 +171,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ members, metrics }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching team data:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

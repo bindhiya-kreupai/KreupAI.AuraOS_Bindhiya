@@ -68,7 +68,7 @@ export default function AnalyticsPage() {
                     }))
                 );
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading predictive analytics:', error);
         } finally {
             setLoading(false);

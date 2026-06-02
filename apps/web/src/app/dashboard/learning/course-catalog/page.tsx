@@ -22,7 +22,7 @@ export default function CourseCatalogPage() {
                 setLoading(true);
                 const result = await CourseService.getCourses();
                 setData(result);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
                 setData([]);
             } finally {

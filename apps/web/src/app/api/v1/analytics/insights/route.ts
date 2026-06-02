@@ -28,7 +28,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error('[AIInsights API] Error:', error);
     // Return early with empty data rather than failing completely for the dashboard
     return NextResponse.json({

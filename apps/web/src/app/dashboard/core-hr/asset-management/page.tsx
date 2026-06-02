@@ -102,7 +102,7 @@ export default function AssetManagementPage() {
     try {
       const data = await AssetService.getAllAssets();
       setAssetsData(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -290,7 +290,7 @@ export default function AssetManagementPage() {
                       assignedTo: '',
                     });
                     await fetchAssets();
-                  } catch (error) {
+                  } catch (error: any) {
                     console.error('Failed to create asset:', error);
                   } finally {
                     setCreating(false);

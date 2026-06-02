@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
       },
       message: 'CSRF token generated successfully',
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error generating CSRF token');
 
     return NextResponse.json(

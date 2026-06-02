@@ -128,7 +128,7 @@ export const GET = withEnhancedAuth(
         data: { overtime: data, summary },
         meta: { total: data.length },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch overtime management data' },

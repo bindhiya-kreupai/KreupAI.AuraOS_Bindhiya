@@ -76,7 +76,7 @@ export const GET = withEnhancedAuth(
         data,
         meta: { total: data.length },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch shifts' },
@@ -122,7 +122,7 @@ export const POST = withEnhancedAuth(
           userId: user.userId,
           action: 'CREATE',
           entityType: 'Attendance - Shift Management',
-          details: `Created shift: ${data.name} (${data.code})`,
+          metadata: { description: `Created shift: ${data.name} (${data.code})` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -143,7 +143,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: responseData }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

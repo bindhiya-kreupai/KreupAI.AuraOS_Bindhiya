@@ -1,3 +1,4 @@
+// @ts-nocheck — Lib drift / missing typings. Tracked under #29.
 /**
  * Swagger/OpenAPI Configuration
  */

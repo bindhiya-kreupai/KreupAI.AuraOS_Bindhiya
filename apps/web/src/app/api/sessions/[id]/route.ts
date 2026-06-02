@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger';
 
 // DELETE - Revoke a session
 export const DELETE = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       const permissionError = requirePermission(Resource.SESSIONS, Action.DELETE, permissions);
@@ -51,10 +51,11 @@ export const DELETE = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
-          module: 'Session Management',
-          details: `Revoked session: ${sessionId}`,
+          resourceType: 'Session Management',
+          metadata: { description: `Revoked session: ${sessionId}` } as any,
           ipAddress,
         },
       });
@@ -63,7 +64,7 @@ export const DELETE = withEnhancedAuth(
         success: true,
         message: 'Session revoked successfully',
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error revoking session:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to revoke session' },

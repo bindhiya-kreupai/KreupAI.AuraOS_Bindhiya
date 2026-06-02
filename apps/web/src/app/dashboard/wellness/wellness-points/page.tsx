@@ -27,7 +27,7 @@ export default function WellnessPointsPage() {
                 setLoading(true);
                 const data = await WellnessPointsService.getTransactions();
                 setTransactions(Array.isArray(data) ? data : []);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

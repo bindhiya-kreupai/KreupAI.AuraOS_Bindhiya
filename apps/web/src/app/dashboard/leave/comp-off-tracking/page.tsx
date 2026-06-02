@@ -24,7 +24,7 @@ export default function CompOffTrackingPage() {
             setLoading(true);
             const result = await CompOffService.getCompOffs();
             setCompOffs(result);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

@@ -49,7 +49,7 @@ export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) 
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Requisitions API] GET [id] Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch requisition' } },
@@ -137,7 +137,7 @@ export const PUT = withAudit(
           apiVersion: 'v1',
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Requisitions API] PUT [id] Error:', error);
       return NextResponse.json(
         { success: false, error: { code: 'E5001', message: 'Failed to update requisition' } },

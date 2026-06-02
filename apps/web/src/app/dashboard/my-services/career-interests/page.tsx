@@ -57,7 +57,7 @@ export default function CareerInterestsPage() {
             match: r.matchScore || Math.floor(Math.random() * 20) + 75,
           })));
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to fetch career data:', err);
       } finally {
         setFetching(false);
@@ -77,7 +77,7 @@ export default function CareerInterestsPage() {
         interests: updated,
         goals: careerGoals,
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save interest:', err);
     }
   };

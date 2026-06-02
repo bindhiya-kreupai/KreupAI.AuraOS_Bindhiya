@@ -20,7 +20,7 @@ export default function GovernancePage() {
         try {
             await generateReport(new Date().getFullYear());
             toast.success('Governance report generated successfully');
-        } catch (error) {
+        } catch (error: any) {
             toast.error('Failed to generate report');
         }
     };

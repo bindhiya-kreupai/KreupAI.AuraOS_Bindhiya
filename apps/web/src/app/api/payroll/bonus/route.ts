@@ -83,7 +83,7 @@ export const GET = withEnhancedAuth(
         cycles: Array.from(cycleMap.values()),
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching bonus cycles:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch bonus cycles' },
@@ -124,10 +124,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Bonus Processing',
-          details: `Created bonus: ${data.name} - $${data.amount}`,
+          resourceType: 'Payroll - Bonus Processing',
+          metadata: { description: `Created bonus: ${data.name} - $${data.amount}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -137,7 +138,7 @@ export const POST = withEnhancedAuth(
         data: adjustment,
         bonus: adjustment,
       }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

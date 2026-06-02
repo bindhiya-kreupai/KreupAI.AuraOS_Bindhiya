@@ -87,7 +87,7 @@ export class APIClient {
       }
 
       return isJSON ? await response.json() : ({} as T);
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof APIError) {
         throw error;
       }

@@ -198,7 +198,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { _user, permis
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error fetching skills gap data:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch skills gap data' },

@@ -42,7 +42,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     }));
 
     return NextResponse.json({ sequences }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching auto-number sequences:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -70,7 +70,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

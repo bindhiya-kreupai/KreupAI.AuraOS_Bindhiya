@@ -20,7 +20,7 @@ export default function TravelAnalyticsPage() {
             setLoading(true);
             const metrics = await TravelAnalyticsService.getMetrics();
             setData(metrics);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

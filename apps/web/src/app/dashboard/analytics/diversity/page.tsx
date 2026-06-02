@@ -30,7 +30,7 @@ export default function DiversityPage() {
                 setDeptBreakdown(data.departmentBreakdown || []);
                 setTenureData(data.tenure?.distribution || []);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading diversity data:', error);
         } finally {
             setLoading(false);

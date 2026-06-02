@@ -32,7 +32,7 @@ export default function EmployeeIDCardsPage() {
       const response = await fetch('/api/v1/id-cards/stats');
       const result = await response.json();
       if (result.success) setStats(result.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch stats:', error);
     }
   };

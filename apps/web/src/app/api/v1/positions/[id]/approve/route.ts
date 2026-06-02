@@ -54,7 +54,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     let statusCode = 500;
     let errorCode = 'E5001';
     let message = 'Failed to approve position';

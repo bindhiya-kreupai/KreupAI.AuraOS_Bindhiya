@@ -69,7 +69,7 @@ export const POST = withAudit(
       };
 
       return NextResponse.json(response, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Employment History Reject API] POST Error:', error);
 
       const statusCode = error instanceof Error && error.message.includes('not found') ? 404 : 500;

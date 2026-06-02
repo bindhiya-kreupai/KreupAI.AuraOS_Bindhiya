@@ -1,6 +1,6 @@
 import { prisma } from '@aura/database';
 import type { PrismaClient, Prisma } from '@prisma/client';
-import { createLogger, _logServiceError, logAudit } from '@/lib/logger';
+import { createLogger, logAudit } from '@/lib/logger';
 import { DatabaseError } from '@/lib/errors';
 
 /**
@@ -21,7 +21,9 @@ export abstract class BaseService {
    */
   protected async createAuditLog(params: {
     userId: string;
-    action: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT';
+    // Accept any AuditAction enum value (string) — domain services may use
+    // module-specific actions like ESG_REPORT_GENERATED.
+    action: string;
     module: string;
     details: string;
     ipAddress?: string;
@@ -33,7 +35,7 @@ export abstract class BaseService {
     try {
       // Log to application logger
       logAudit(
-        params.action,
+        params.action as any,
         params.module,
         params.userId,
         params.details,
@@ -46,16 +48,16 @@ export abstract class BaseService {
         data: {
           tenantId: params.tenantId || 'system',
           userId: params.userId,
-          action: params.action,
+          action: params.action as any,
           resourceType: params.module,
           resourceId: params.resourceId || null,
-          details: params.details,
+          metadata: { details: params.details } as Prisma.InputJsonValue,
           ipAddress: params.ipAddress || 'unknown',
-          beforeValues: params.beforeValues || undefined,
-          afterValues: params.afterValues || undefined,
+          beforeValues: (params.beforeValues ?? undefined) as Prisma.InputJsonValue | undefined,
+          afterValues: (params.afterValues ?? undefined) as Prisma.InputJsonValue | undefined,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error({ error }, 'Failed to create audit log');
       throw new DatabaseError('Failed to create audit log', { error });
     }
@@ -77,7 +79,7 @@ export abstract class BaseService {
       }
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       const duration = Date.now() - startTime;
       this.logger.error({ error, duration }, `Transaction failed after ${duration}ms`);
       throw new DatabaseError('Transaction failed', { error });

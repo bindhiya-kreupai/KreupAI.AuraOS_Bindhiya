@@ -59,7 +59,7 @@ export default function CandidatePortalPage() {
             setLoading(true);
             const data = await CandidateApplicationService.getApplications();
             setApplications(data || []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

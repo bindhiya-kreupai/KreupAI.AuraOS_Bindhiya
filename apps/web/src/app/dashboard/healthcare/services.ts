@@ -15,7 +15,7 @@ export class CredentialingService {
     try {
       const response = await APIClient.get<{ providers?: HealthcareProvider[] }>(this.endpoint);
       return response.providers || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -26,7 +26,7 @@ export class CredentialingService {
         `${this.endpoint}/${id}`
       );
       return response.provider || null;
-    } catch (_error) {
+    } catch (_error: any) {
       return null;
     }
   }
@@ -55,7 +55,7 @@ export class NurseRosteringService {
     try {
       const response = await APIClient.get<{ schedules?: NurseSchedule[] }>(this.endpoint);
       return response.schedules || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -64,7 +64,7 @@ export class NurseRosteringService {
     try {
       const response = await APIClient.get<{ schedule?: NurseSchedule }>(`${this.endpoint}/${id}`);
       return response.schedule || null;
-    } catch (_error) {
+    } catch (_error: any) {
       return null;
     }
   }
@@ -92,7 +92,7 @@ export class LocumManagementService {
         `${this.endpoint}/providers`
       );
       return response.providers || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -103,7 +103,7 @@ export class LocumManagementService {
         `${this.endpoint}/providers/${id}`
       );
       return response.provider || null;
-    } catch (_error) {
+    } catch (_error: any) {
       return null;
     }
   }
@@ -133,7 +133,7 @@ export class LocumManagementService {
         `${this.endpoint}/assignments`
       );
       return response.assignments || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -154,7 +154,7 @@ export class HealthcareSettingsService {
     try {
       const response = await APIClient.get<{ settings?: HealthcareSettings }>(this.endpoint);
       return response.settings || null;
-    } catch (_error) {
+    } catch (_error: any) {
       return null;
     }
   }
@@ -172,7 +172,7 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: HealthcareAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }

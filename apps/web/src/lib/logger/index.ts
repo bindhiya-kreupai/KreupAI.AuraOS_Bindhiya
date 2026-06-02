@@ -183,7 +183,7 @@ export function logAuthEvent(
  * Logs audit trail events
  */
 export function logAudit(
-  action: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE',
+  action: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT',
   module: string,
   userId: string,
   details: string,

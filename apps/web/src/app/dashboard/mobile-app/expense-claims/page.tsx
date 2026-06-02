@@ -27,7 +27,7 @@ export default function ExpenseClaimsPage() {
                 setLoading(true);
                 const data = await MobileApprovalsService.getAllApprovals();
                 setApprovals(data as any[]);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

@@ -67,7 +67,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         apiVersion: 'v1',
       },
     });
-  } catch (_error) {
+  } catch (_error: any) {
     console.error('[HR Transfers API] GET Error:', _error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch transfer requests' } },
@@ -152,7 +152,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       },
       { status: 201 }
     );
-  } catch (_error) {
+  } catch (_error: any) {
     console.error('[HR Transfers API] POST Error:', _error);
     return NextResponse.json(
       {

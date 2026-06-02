@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 /**
  * Collaboration Module - Sample Data
  * Comprehensive sample data for immediate testing and development

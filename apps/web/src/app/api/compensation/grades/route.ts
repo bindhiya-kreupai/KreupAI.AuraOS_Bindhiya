@@ -44,7 +44,7 @@ export const GET = withEnhancedAuth(
       }));
 
       return NextResponse.json({ success: true, data });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching grades:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch grades' }, { status: 500 });
     }
@@ -88,7 +88,7 @@ export const POST = withEnhancedAuth(
           updatedAt: new Date().toISOString(),
         },
       }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error creating grade:', error);
       return NextResponse.json({ success: false, error: 'Failed to create grade' }, { status: 500 });
     }
@@ -127,7 +127,7 @@ export const PUT = withEnhancedAuth(
           level: grade.level,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating grade:', error);
       return NextResponse.json({ success: false, error: 'Failed to update grade' }, { status: 500 });
     }
@@ -152,7 +152,7 @@ export const DELETE = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, message: 'Grade deleted' });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error deleting grade:', error);
       return NextResponse.json({ success: false, error: 'Failed to delete grade' }, { status: 500 });
     }

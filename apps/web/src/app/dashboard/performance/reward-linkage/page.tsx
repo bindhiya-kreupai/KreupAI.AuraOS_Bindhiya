@@ -36,7 +36,7 @@ export default function RewardsMarketplacePage() {
                 // The rewards catalog would typically come from a settings/config endpoint
                 // For now, show empty state until a rewards catalog is configured
                 setRewards([]);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load rewards data:', error);
             } finally {
                 setLoading(false);

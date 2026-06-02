@@ -30,7 +30,7 @@ export default function MobileApprovalsPage() {
             if (result.length > 0) {
                 setApprovals(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

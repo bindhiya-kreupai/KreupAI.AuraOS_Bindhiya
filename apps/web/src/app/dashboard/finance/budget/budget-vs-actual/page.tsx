@@ -25,7 +25,7 @@ export default function BudgetVsActualPage() {
                 ]);
                 setReports(reportsData);
                 setMetrics(metricsData);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

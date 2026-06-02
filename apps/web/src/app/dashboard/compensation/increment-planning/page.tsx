@@ -31,7 +31,7 @@ export default function CompPlanningPage() {
             ]);
             setCycles(cyclesData);
             setProposals(proposalsData);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

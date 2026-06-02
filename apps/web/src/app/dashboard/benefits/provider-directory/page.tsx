@@ -24,7 +24,7 @@ export default function ProviderDirectoryPage() {
             setLoading(true);
             const data = await ProviderService.getProviders();
             setProviders(Array.isArray(data) ? data : []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching providers:', error);
             setProviders([]);
         } finally {

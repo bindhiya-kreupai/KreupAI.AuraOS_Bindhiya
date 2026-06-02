@@ -31,7 +31,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     });
 
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error('[LearningProgress API] Error:', error);
     return NextResponse.json({
       success: true,

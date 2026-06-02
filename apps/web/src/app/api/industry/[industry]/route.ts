@@ -51,7 +51,7 @@ export async function GET(
             metrics: metricsResult.data,
             complianceRequirements: complianceResult.data,
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Industry API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -98,7 +98,7 @@ export async function PUT(
             success: true,
             data: result.data,
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Industry API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

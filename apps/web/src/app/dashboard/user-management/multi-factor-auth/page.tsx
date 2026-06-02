@@ -48,7 +48,7 @@ export default function MFAPage() {
             } else {
                 alert('Failed to save configuration');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving MFA config:', error);
             alert('Error saving configuration');

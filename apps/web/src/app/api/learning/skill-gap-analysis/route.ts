@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
         });
 
         return NextResponse.json(transformed);
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching skill gap analyses:', error);
         return NextResponse.json([]);
     }
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
             createdAt: gapAnalysis.createdAt.toISOString(),
             updatedAt: gapAnalysis.updatedAt.toISOString(),
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating skill gap analysis:', error);
         return NextResponse.json(
             { error: 'Failed to create skill gap analysis' },

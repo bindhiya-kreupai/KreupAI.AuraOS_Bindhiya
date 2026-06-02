@@ -114,7 +114,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       { success: true, instances },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching offboarding instances:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch offboarding instances' },
@@ -197,7 +197,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       { success: true, instance },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating offboarding instance:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create offboarding instance' },
@@ -303,7 +303,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       { success: true, instance },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating offboarding instance:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update offboarding instance' },

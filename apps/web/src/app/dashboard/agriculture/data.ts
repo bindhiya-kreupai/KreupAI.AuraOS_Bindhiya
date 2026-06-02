@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 // Agriculture Module - Sample Data
 // Comprehensive mock data for testing and development
 

@@ -123,7 +123,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       },
       { status: 202 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Admin Bulk Import API] POST Error:', error);
     return NextResponse.json(
       {

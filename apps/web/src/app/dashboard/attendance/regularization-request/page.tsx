@@ -51,7 +51,7 @@ export default function RegularizationRequestPage() {
             // Using RegularizationService.getPendingRequests() for regularization requests
             const result = await RegularizationService.getPendingRequests();
             setRequests((result || []) as any);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
@@ -71,7 +71,7 @@ export default function RegularizationRequestPage() {
             } as any);
             await fetchRequests();
             setForm({ date: '', type: 'Missed Punch', checkIn: '', checkOut: '', reason: '' });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

@@ -173,7 +173,7 @@ export const POST = withAudit(
           apiVersion: 'v1',
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Meal Breaks API] POST Error:', error);
       return NextResponse.json(
         {

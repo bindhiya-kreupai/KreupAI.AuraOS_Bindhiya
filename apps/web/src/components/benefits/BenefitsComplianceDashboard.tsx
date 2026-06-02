@@ -209,7 +209,7 @@ export default function BenefitsComplianceDashboard() {
       setComplianceSummary(summary);
       setSection125(s125);
       setForm8889(f8889);
-    } catch (err) {
+    } catch (err: any) {
       console.error('BenefitsComplianceDashboard load error:', err);
     }
   }, []);
@@ -233,7 +233,7 @@ export default function BenefitsComplianceDashboard() {
         NDT_TESTS.map((t) => benefitsComplianceService.runNondiscriminationTest(t.plan, t.type))
       );
       setNdtResults(results);
-    } catch (err) {
+    } catch (err: any) {
       console.error('NDT error:', err);
     } finally {
       setRunningTests(false);
@@ -245,7 +245,7 @@ export default function BenefitsComplianceDashboard() {
     try {
       const spd = await benefitsComplianceService.getERISASPD(planId);
       setSelectedSPD(selectedSPD?.planId === planId ? null : spd);
-    } catch (err) {
+    } catch (err: any) {
       console.error('SPD error:', err);
     } finally {
       setSpdLoading(null);

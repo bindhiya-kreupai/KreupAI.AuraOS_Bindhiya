@@ -25,7 +25,7 @@ export default function TeamViewPage() {
                 setLoading(true);
                 const data = await MobileProfileService.getProfile();
                 setProfile(data as any);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

@@ -17,7 +17,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     }
 
     return NextResponse.json({ notification }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching notification:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -39,7 +39,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
     await prisma.notification.delete({ where: { id } });
 
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting notification:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

@@ -31,7 +31,7 @@ export const GET = withEnhancedAuth(async (_request: NextRequest, { _user, permi
         'Access-Control-Allow-Origin': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3006',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[OpenAPI] Error generating spec:', error);
 
     return NextResponse.json(

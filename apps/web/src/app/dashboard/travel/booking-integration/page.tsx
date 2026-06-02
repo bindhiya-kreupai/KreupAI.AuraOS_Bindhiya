@@ -17,7 +17,7 @@ export default function BookingIntegrationPage() {
             setLoading(true);
             const result = await TravelBookingService.createBooking({} as any).catch(() => null);
             setBookings([]);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

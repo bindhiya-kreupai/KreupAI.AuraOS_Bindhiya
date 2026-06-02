@@ -461,7 +461,7 @@ export async function migrateEmployees(
       } else {
         migratedRecords++;
       }
-    } catch (err) {
+    } catch (err: any) {
       failedRecords++;
       errors.push({ row: i + 2, message: String(err), record });
     }
@@ -524,7 +524,7 @@ export async function migratePayroll(
         await new Promise((r) => setTimeout(r, 1));
       }
       migratedRecords++;
-    } catch (err) {
+    } catch (err: any) {
       failedRecords++;
       errors.push({ row: i + 2, message: String(err), record });
     }
@@ -586,7 +586,7 @@ export async function migrateLeave(
         await new Promise((r) => setTimeout(r, 1));
       }
       migratedRecords++;
-    } catch (err) {
+    } catch (err: any) {
       failedRecords++;
       errors.push({ row: i + 2, message: String(err), record });
     }

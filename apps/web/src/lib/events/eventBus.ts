@@ -81,7 +81,7 @@ class EventBus {
     for (const subscription of allSubscribers) {
       try {
         await subscription.handler(payload);
-      } catch (err) {
+      } catch (err: any) {
         allDelivered = false;
         const errorMessage = err instanceof Error ? err.message : String(err);
 

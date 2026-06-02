@@ -58,7 +58,7 @@ export default function NineBoxGridPage() {
                         };
                     });
                 setEmployees(mapped);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load nine-box data:', error);
             } finally {
                 setLoading(false);

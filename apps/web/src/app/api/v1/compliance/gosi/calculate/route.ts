@@ -252,7 +252,7 @@ export const POST = withAudit(
         },
         { status: 201 }
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('[GOSI Calculate API] POST Error:', error);
       return NextResponse.json(
         {

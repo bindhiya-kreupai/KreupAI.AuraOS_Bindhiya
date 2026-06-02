@@ -24,7 +24,7 @@ export default function BellCurvePage() {
             try {
                 const data = await PerformanceAnalyticsService.getStats();
                 setStats(data);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load bell curve data:', error);
             } finally {
                 setLoading(false);

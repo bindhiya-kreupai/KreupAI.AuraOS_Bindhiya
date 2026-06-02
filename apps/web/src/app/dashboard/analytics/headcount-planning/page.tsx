@@ -42,7 +42,7 @@ export default function HeadcountPlanningPage() {
         setTotalOpen(depts.reduce((s: number, d: DeptPlan) => s + d.openReqs, 0));
         setTrends(data.trends || []);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading headcount data:', error);
     } finally {
       setLoading(false);

@@ -58,7 +58,7 @@ export default function LeaveTypesPage() {
         : '/api/master-data/leave-types';
       const response = await fetch(url);
       if (response.ok) setData(await response.json());
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch leave types:', error);
     } finally {
       setIsLoading(false);
@@ -78,7 +78,7 @@ export default function LeaveTypesPage() {
         body: JSON.stringify(record),
       });
       if (response.ok) fetchLeaveTypes();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving leave type:', error);
     }
   };
@@ -90,7 +90,7 @@ export default function LeaveTypesPage() {
           method: 'DELETE',
         });
         if (response.ok) fetchLeaveTypes();
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error deleting leave type:', error);
       }
     }

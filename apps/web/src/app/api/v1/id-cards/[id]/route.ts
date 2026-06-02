@@ -27,7 +27,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         { status: 404 }
       );
     return NextResponse.json({ success: true, data: card });
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch card' } },
       { status: 500 }
@@ -60,7 +60,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
         { status: 404 }
       );
     return NextResponse.json({ success: true, data: card });
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to update card' } },
       { status: 500 }
@@ -92,7 +92,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
         { status: 404 }
       );
     return NextResponse.json({ success: true, data: { message: 'Card deleted' } });
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to delete card' } },
       { status: 500 }

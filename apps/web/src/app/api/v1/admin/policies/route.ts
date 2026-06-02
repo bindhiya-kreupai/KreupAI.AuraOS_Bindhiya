@@ -149,7 +149,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (_error) {
+  } catch (_error: any) {
     const response: ApiResponse = {
       success: false,
       error: {
@@ -246,7 +246,7 @@ export const POST = withAudit(
       };
 
       return NextResponse.json(response, { status: 201 });
-    } catch (_error) {
+    } catch (_error: any) {
       const response: ApiResponse = {
         success: false,
         error: {

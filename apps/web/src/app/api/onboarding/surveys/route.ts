@@ -68,7 +68,7 @@ export const GET = withEnhancedAuth(
         .flat();
 
       return NextResponse.json({ surveys }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching surveys:', error);
       return NextResponse.json(
         { error: 'Failed to fetch surveys' },
@@ -136,7 +136,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ survey: surveyEntry }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting survey:', error);
       return NextResponse.json(
         { error: 'Failed to submit survey' },
@@ -202,7 +202,7 @@ export const PUT = withEnhancedAuth(
       );
 
       return NextResponse.json({ survey: updatedSurvey }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating survey:', error);
       return NextResponse.json(
         { error: 'Failed to update survey' },

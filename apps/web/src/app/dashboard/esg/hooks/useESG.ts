@@ -30,7 +30,7 @@ export const useESG = () => {
             setMetrics(metricsData);
             setInitiatives(initiativesData);
             setGoals(goalsData);
-        } catch (err) {
+        } catch (err: any) {
             setError(err instanceof Error ? err.message : 'Failed to load ESG data');
         } finally {
             setLoading(false);
@@ -47,7 +47,7 @@ export const useESG = () => {
             const newInitiative = await ESGInitiativeService.create(data);
             setInitiatives(prev => [...prev, newInitiative]);
             return newInitiative;
-        } catch (err) {
+        } catch (err: any) {
             setError(err instanceof Error ? err.message : 'Failed to create initiative');
             throw err;
         } finally {
@@ -60,7 +60,7 @@ export const useESG = () => {
         try {
             const report = await ESGReportService.generateReport({ year, quarter });
             return report;
-        } catch (err) {
+        } catch (err: any) {
             setError(err instanceof Error ? err.message : 'Failed to generate report');
             throw err;
         } finally {

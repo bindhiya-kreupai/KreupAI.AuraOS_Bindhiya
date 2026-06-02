@@ -186,7 +186,7 @@ export const POST = withAudit(
           apiVersion: 'v1',
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Payroll Calculate API] POST Error:', error);
 
       // Reset run status on failure

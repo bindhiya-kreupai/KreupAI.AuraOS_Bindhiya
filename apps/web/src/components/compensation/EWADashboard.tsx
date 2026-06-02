@@ -151,7 +151,7 @@ const WithdrawalForm: FC<{
       await requestEarlyPay(eligibility.employeeId, amount, method);
       setSuccess(true);
       setTimeout(onSuccess, 1_500);
-    } catch (err) {
+    } catch (err: any) {
       setError(err instanceof Error ? err.message : 'Request failed');
     } finally {
       setIsSubmitting(false);

@@ -74,7 +74,7 @@ export default function MentorshipPage() {
                     progress: p.progress || 0,
                 }));
                 setPairs(derivedPairs);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load mentorship data:', error);
             } finally {
                 setLoading(false);

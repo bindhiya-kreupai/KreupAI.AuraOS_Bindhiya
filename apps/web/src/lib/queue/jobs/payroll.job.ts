@@ -206,7 +206,7 @@ export async function processPayrollJob(job: Job<PayrollJobData>): Promise<JobRe
       data: result,
       duration,
     };
-  } catch (error) {
+  } catch (error: any) {
     const duration = Math.round(performance.now() - startTime);
 
     logger.error(

@@ -53,7 +53,7 @@ export default function CrossModuleReportsPage() {
                 const direction = r > 0 ? 'positive' : 'negative';
                 setCorrelation(`${strength} ${direction} correlation (${r.toFixed(2)}) between Headcount and Avg Salary`);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading cross-module data:', error);
         } finally {
             setLoading(false);

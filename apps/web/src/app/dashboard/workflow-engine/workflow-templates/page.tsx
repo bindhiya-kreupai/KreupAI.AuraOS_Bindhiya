@@ -31,7 +31,7 @@ export default function WorkflowTemplatesPage() {
                 color: CATEGORY_COLORS[wf.trigger] || 'bg-indigo-500',
                 description: wf.description,
             })));
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

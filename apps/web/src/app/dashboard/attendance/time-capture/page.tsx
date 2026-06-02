@@ -51,7 +51,7 @@ export default function TimeCapturePage() {
           setStatus('OUT');
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     }
   };
@@ -71,7 +71,7 @@ export default function TimeCapturePage() {
       } as any);
 
       await fetchCaptures();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);

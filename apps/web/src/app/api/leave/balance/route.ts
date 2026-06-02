@@ -51,7 +51,7 @@ export const GET = withEnhancedAuth(
           summary,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching leave balance:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch leave balance' },

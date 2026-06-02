@@ -70,7 +70,7 @@ export const GET = withEnhancedAuth(
         data: garnishments,
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching garnishments:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch garnishments' },
@@ -117,16 +117,17 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Garnishments',
-          details: `Created garnishment: ${data.type} - $${data.amount}${data.courtOrderNumber ? ` (${data.courtOrderNumber})` : ''}`,
+          resourceType: 'Payroll - Garnishments',
+          metadata: { description: `Created garnishment: ${data.type} - $${data.amount}${data.courtOrderNumber ? ` (${data.courtOrderNumber})` : ''}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
 
       return NextResponse.json({ success: true, data: adjustment }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

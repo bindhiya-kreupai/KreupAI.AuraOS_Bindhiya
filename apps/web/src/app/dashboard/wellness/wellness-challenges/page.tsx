@@ -60,7 +60,7 @@ export default function WellnessChallengesPage() {
                 setLoading(true);
                 const data = await ChallengeService.getChallenges();
                 setChallenges(Array.isArray(data) ? data : []);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

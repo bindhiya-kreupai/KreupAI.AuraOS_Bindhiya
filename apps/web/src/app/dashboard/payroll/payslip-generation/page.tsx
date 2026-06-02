@@ -32,7 +32,7 @@ export default function PayslipGenerationPage() {
             ]);
             setPayslips(slips);
             setPayrollRuns(runs);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

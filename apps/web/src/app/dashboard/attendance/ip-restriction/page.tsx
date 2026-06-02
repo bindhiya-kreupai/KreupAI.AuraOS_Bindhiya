@@ -44,7 +44,7 @@ export default function IPRestrictionPage() {
             setWhitelist((result || []) as any);
             const blockedResult = await IPRestrictionService.getBlockedAttempts();
             setBlockedAttempts((blockedResult || []) as any);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
@@ -59,7 +59,7 @@ export default function IPRestrictionPage() {
                 await IPRestrictionService.removeIPWhitelist(String(ruleToDelete.id));
                 await fetchIPRules();
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

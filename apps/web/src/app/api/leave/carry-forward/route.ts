@@ -56,7 +56,7 @@ export const GET = withEnhancedAuth(
           records: carryForwards,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching carry forward data:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch carry forward data' },
@@ -168,10 +168,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Leave - Carry Forward',
-          details: `Processed carry forward for year ${fromYear} -> ${toYear}: ${processedCount} balances, ${totalDaysCarried} days carried`,
+          resourceType: 'Leave - Carry Forward',
+          metadata: { description: `Processed carry forward for year ${fromYear} -> ${toYear}: ${processedCount} balances, ${totalDaysCarried} days carried` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -189,7 +190,7 @@ export const POST = withEnhancedAuth(
         data: result,
         carryForward: result,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error processing carry forward:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to process carry forward' },

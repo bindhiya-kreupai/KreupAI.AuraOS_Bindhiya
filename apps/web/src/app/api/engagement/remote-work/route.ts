@@ -57,7 +57,7 @@ export const GET = withEnhancedAuth(
         default:
           return NextResponse.json(data);
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Remote Work API error:', error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
@@ -81,7 +81,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ request: newRequest }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Remote Work Request API error:', error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
@@ -111,7 +111,7 @@ export const PUT = withEnhancedAuth(
       };
 
       return NextResponse.json({ request: updatedRequest });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Remote Work Review API error:', error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

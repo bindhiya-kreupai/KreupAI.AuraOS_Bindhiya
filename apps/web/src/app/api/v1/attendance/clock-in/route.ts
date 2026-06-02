@@ -267,7 +267,7 @@ export const POST = withAudit(
       };
 
       return NextResponse.json(response, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Clock-In API] POST Error:', error);
 
       if (error instanceof Error && error.message.includes('already clocked in')) {

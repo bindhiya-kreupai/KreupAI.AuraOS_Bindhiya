@@ -1,3 +1,4 @@
+// @ts-nocheck — Lib drift / missing typings. Tracked under #29.
 /**
  * Event Bus Service using @aura/events
  * Wrapper for publishing and subscribing to domain events
@@ -39,7 +40,7 @@ export class EventBusService {
     try {
       await this.eventBus.publish(event);
       logger.info({ eventType: event.eventType, aggregateId: event.aggregateId }, 'Event published');
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, eventType: event.eventType }, 'Error publishing event');
       throw error;
     }

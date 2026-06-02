@@ -50,7 +50,7 @@ export async function GET(
             success: true,
             data: gapAnalysis
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error fetching gap analysis:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch gap analysis' },
@@ -117,7 +117,7 @@ export async function PUT(
             data: gapAnalysis,
             message: 'Gap analysis updated successfully'
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error updating gap analysis:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to update gap analysis' },
@@ -155,7 +155,7 @@ export async function DELETE(
             success: true,
             message: 'Gap analysis deleted successfully'
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error deleting gap analysis:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to delete gap analysis' },

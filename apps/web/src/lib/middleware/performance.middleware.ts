@@ -88,7 +88,7 @@ export function withPerformanceMonitoring<
           'X-Performance-Level': getPerformanceLevel(duration),
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       const duration = Math.round(performance.now() - startTime);
 
       logger.error(

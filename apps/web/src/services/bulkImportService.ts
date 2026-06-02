@@ -658,7 +658,7 @@ export async function executeBulkImport(
       if (response.errors?.length) {
         allErrors.push(...response.errors);
       }
-    } catch (err) {
+    } catch (err: any) {
       const msg = err instanceof Error ? err.message : 'Unknown batch error';
       allErrors.push(`Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${msg}`);
     }

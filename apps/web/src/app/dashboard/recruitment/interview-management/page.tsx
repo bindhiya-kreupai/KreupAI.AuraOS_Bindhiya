@@ -72,7 +72,7 @@ export default function InterviewSchedulingPage() {
             setLoading(true);
             const data = await InterviewService.getInterviews();
             setInterviews(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
@@ -83,7 +83,7 @@ export default function InterviewSchedulingPage() {
         try {
             await InterviewService.scheduleInterview(interviewData);
             await fetchInterviews();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         }
     };

@@ -159,7 +159,7 @@ export class IntegrationConnectionService {
         success: true,
         latency: Date.now() - startTime,
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Connection test failed',

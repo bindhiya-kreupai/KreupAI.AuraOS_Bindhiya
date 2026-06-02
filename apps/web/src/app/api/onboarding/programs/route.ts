@@ -24,7 +24,7 @@ export const GET = withEnhancedAuth(
       });
 
       return NextResponse.json({ programs }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching onboarding programs:', error);
       return NextResponse.json(
         { error: 'Failed to fetch onboarding programs' },
@@ -67,7 +67,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ program }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating onboarding program:', error);
       return NextResponse.json(
         { error: 'Failed to create onboarding program' },
@@ -129,7 +129,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ program }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating onboarding program:', error);
       return NextResponse.json(
         { error: 'Failed to update onboarding program' },

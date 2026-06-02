@@ -17,7 +17,7 @@ export default function ExportOptionsPage() {
             const json = await res.json();
             const data = json?.data || [];
             setReportCount(data.length);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading export data:', error);
         } finally {
             setLoading(false);

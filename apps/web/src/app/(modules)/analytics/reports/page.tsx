@@ -50,7 +50,7 @@ export default function CustomReportsPage() {
         setReports(data.data || []);
         setStats((prev) => ({ ...prev, total: data.meta?.total || 0 }));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching reports:', error);
     } finally {
       setLoading(false);
@@ -65,7 +65,7 @@ export default function CustomReportsPage() {
         setExecutions(data.data || []);
         setStats((prev) => ({ ...prev, executions: data.meta?.total || 0 }));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching executions:', error);
     }
   };
@@ -93,7 +93,7 @@ export default function CustomReportsPage() {
         });
         fetchReports();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating report:', error);
     }
   };
@@ -110,7 +110,7 @@ export default function CustomReportsPage() {
         fetchExecutions();
         alert('Report executed successfully');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error executing report:', error);
     }
   };

@@ -27,7 +27,7 @@ export default function RatingScalesPage() {
             try {
                 const data = await PerformanceAnalyticsService.getStats();
                 setStats(data);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load rating stats:', error);
             } finally {
                 setLoading(false);

@@ -58,7 +58,7 @@ export default function AIAgentsPage() {
           setSelectedConversation(data.data[0]);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching conversations:', error);
     } finally {
       setLoading(false);
@@ -72,7 +72,7 @@ export default function AIAgentsPage() {
         const data = await res.json();
         setMessages(data.data || []);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching messages:', error);
     }
   };
@@ -92,7 +92,7 @@ export default function AIAgentsPage() {
         fetchConversations();
         setSelectedConversation(data.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating conversation:', error);
     }
   };
@@ -132,7 +132,7 @@ export default function AIAgentsPage() {
 
         fetchMessages(selectedConversation.id);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
     }
   };

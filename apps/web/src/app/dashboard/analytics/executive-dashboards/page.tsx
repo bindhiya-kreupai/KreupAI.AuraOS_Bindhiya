@@ -62,7 +62,7 @@ export default function ExecutiveDashboardsPage() {
                 setTotalPayroll(comp.summary?.totalPayroll ?? 0);
                 setAvgSalary(comp.summary?.averageSalary ?? 0);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading executive data:', error);
         } finally {
             setLoading(false);

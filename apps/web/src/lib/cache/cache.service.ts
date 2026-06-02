@@ -102,7 +102,7 @@ export class CacheService {
       });
 
       return fresh;
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, key }, 'Cache getOrSet error - falling back to fetch');
       return fetchFn();
     }
@@ -223,7 +223,7 @@ export class CacheService {
         isConnected: true,
         keysCount: dbSize,
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Failed to get cache stats');
       return { isConnected: false };
     }

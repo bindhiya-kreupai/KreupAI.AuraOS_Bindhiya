@@ -98,7 +98,7 @@ export const GET = withEnhancedAuth(
         data: { compOffs: data, summary },
         meta: { total: data.length },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Error fetching comp-off management data:');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch comp-off management data' },
@@ -207,7 +207,7 @@ export const POST = withEnhancedAuth(
           createdAt: updated.createdAt.toISOString(),
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Error updating comp-off management data:');
       return NextResponse.json(
         { success: false, error: 'Failed to update comp-off management data' },

@@ -77,7 +77,7 @@ export default function JobBoardsPage() {
             ]);
 
             setIntegrations(mapIntegrations(settings, activePostings.length));
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             setIntegrations([]);
         } finally {

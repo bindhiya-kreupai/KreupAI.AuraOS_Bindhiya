@@ -12,7 +12,7 @@ export default function TravelPage() {
         async function init() {
             try {
                 await TravelAnalyticsService.getMetrics();
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

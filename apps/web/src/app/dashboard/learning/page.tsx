@@ -15,7 +15,7 @@ export default function LearningDevelopmentPage() {
         setLoading(true);
         const result = await LearningAnalyticsService.getAnalytics();
         setAnalytics(result);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error:', error);
       } finally {
         setLoading(false);

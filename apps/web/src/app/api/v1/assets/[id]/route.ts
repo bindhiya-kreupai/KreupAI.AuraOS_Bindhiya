@@ -78,7 +78,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Asset API] GET Error:', error);
 
     const response: ApiResponse = {
@@ -139,7 +139,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Asset API] PUT Error:', error);
 
     let statusCode = 500;
@@ -208,7 +208,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Asset API] DELETE Error:', error);
 
     const statusCode = error instanceof Error && error.message.includes('not found') ? 404 : 500;

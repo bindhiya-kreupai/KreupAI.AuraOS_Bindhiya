@@ -17,7 +17,7 @@ export default function AdvanceRequestPage() {
             setLoading(true);
             const requests = await TravelRequestService.getRequests({ status: 'approved' });
             setAdvances(Array.isArray(requests) ? requests : []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

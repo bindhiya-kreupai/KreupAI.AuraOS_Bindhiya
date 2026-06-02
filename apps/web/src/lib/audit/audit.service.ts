@@ -174,7 +174,7 @@ export class AuditService {
       );
 
       return id;
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, entry }, 'Failed to create audit log entry');
       throw error;
     }

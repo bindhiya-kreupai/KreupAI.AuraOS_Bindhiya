@@ -65,7 +65,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         };
 
         return NextResponse.json({ success: true, items: [pipeline] }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
         return NextResponse.json(
             { error: 'Failed to fetch pipeline data' },
             { status: 500 }
@@ -103,7 +103,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
         };
 
         return NextResponse.json({ success: true, data: newPipeline, items: [newPipeline] }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
         return NextResponse.json(
             { error: 'Failed to create pipeline' },
             { status: 500 }

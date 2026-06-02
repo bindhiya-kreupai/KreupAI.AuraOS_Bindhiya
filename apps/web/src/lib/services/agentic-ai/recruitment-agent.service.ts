@@ -390,7 +390,7 @@ export class RecruitmentAgentService {
       try {
         await this.updateCandidateStatus(candidateId, tenantId, 'SHORTLISTED', 'SCREENING');
         shortlisted++;
-      } catch (error) {
+      } catch (error: any) {
         errors.push({
           id: candidateId,
           error: error instanceof Error ? error.message : 'Unknown error',
@@ -724,7 +724,7 @@ export class RecruitmentAgentService {
       try {
         await this.sendCandidateUpdate(id, tenantId, 'APPLICATION_RECEIVED');
         sent++;
-      } catch (error) {
+      } catch (error: any) {
         errors.push({
           id,
           error: error instanceof Error ? error.message : 'Failed to send',

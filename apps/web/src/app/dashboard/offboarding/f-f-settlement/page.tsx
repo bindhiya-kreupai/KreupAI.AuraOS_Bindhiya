@@ -55,7 +55,7 @@ export default function FnFSettlementPage() {
                 }));
 
                 setSettlements(mapped);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching settlements:', error);
             } finally {
                 setLoading(false);

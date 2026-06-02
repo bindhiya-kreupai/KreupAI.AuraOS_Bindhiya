@@ -83,7 +83,7 @@ export const GET = withEnhancedAuth(
           },
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching payslips:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch payslips', errorAr: 'فشل في جلب كشوف الرواتب' },
@@ -136,10 +136,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Payslip Generation',
-          details: `Generated payslip ${format} for employee: ${payslip.employeeName}`,
+          resourceType: 'Payroll - Payslip Generation',
+          metadata: { description: `Generated payslip ${format} for employee: ${payslip.employeeName}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -155,7 +156,7 @@ export const POST = withEnhancedAuth(
           generatedAt: new Date().toISOString(),
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error generating payslip:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to generate payslip', errorAr: 'فشل في إنشاء كشف الراتب' },

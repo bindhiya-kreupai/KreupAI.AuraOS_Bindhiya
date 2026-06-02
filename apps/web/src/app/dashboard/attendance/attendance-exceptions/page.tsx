@@ -58,7 +58,7 @@ export default function AttendanceExceptionsPage() {
                 earlyOut,
                 absent,
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
@@ -70,7 +70,7 @@ export default function AttendanceExceptionsPage() {
         try {
             await AttendanceAnalyticsService.resolveException(id, action);
             await fetchExceptions();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

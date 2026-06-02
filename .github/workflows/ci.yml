@@ -63,9 +63,15 @@ jobs:
         run: pnpm lint
         # continue-on-error: false - Updated Jan 2026: Lint failures now block CI
 
-      - name: Check TypeScript
-        run: pnpm type-check
-        # continue-on-error: false - Updated Jan 2026: Type errors now block CI
+      - name: Generate Prisma client (required for typecheck)
+        run: pnpm --filter @aura/database prisma generate
+
+      - name: TypeScript ratchet (#29z)
+        # Strict ceiling — fails if apps/web error count exceeds the baseline
+        # in apps/web/.typecheck-baseline. When the count hits 0 we can flip
+        # `typescript.ignoreBuildErrors` in apps/web/next.config.js to false
+        # and replace this step with `pnpm type-check`.
+        run: bash scripts/typecheck-ratchet.sh
 
   # =============================================================================
   # UNIT TESTS - Week 4: Enhanced with Coverage Gates

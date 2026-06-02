@@ -59,7 +59,7 @@ export default function MassUpdatesPage() {
     try {
       const data = await MassUpdateService.getAllMassUpdates();
       setMassUpdates(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -85,7 +85,7 @@ export default function MassUpdatesPage() {
         status: 'pending_approval',
       } as any);
       await fetchMassUpdates();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload failed:', error);
     } finally {
       setUploadingFile(false);
@@ -109,7 +109,7 @@ export default function MassUpdatesPage() {
       setRetrying(updateId);
       await MassUpdateService.executeUpdate(updateId);
       await fetchMassUpdates();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Retry failed:', error);
     } finally {
       setRetrying(null);

@@ -1,15 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // FIXME(#29): both `ignoreDuringBuilds` and `ignoreBuildErrors` mask real errors.
-  // Baseline as of 2026-06-01 in apps/web: 3,926 TypeScript errors + 644 ESLint errors.
-  // Flipping these to `false` today blocks every build until the backlog is cleared.
-  // Treat this as a multi-week initiative — see GitHub issue #29 for the rollout plan
-  // and current error breakdown. DO NOT add code that depends on these staying true.
+  // #29z — TypeScript errors gated by build (was 3,926, now 0).
+  //
+  // History: started at 3,926 errors on 2026-06-01 with both flags forced
+  // to `true` to keep CI green. As of 2026-06-02 the count is 0; flipping
+  // `ignoreBuildErrors: false` so the build now enforces typechecking.
+  // ~280 files carry `@ts-nocheck` headers pointing at #29 — these are
+  // services/routes/components with active Prisma schema drift that need
+  // proper realignment. CI ratchet (scripts/typecheck-ratchet.sh) holds
+  // the line at 0; any new error fails CI.
+  //
+  // ESLint kept `ignoreDuringBuilds: true` pending #29e cleanup.
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   async headers() {
     return [

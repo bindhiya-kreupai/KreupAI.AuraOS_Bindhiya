@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     // Redirect to Google
     return NextResponse.redirect(authUrl);
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error initiating Google OAuth2 flow');
 
     return NextResponse.json(

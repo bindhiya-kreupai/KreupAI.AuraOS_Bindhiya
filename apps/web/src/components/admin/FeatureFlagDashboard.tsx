@@ -208,7 +208,7 @@ function FlagDetailPanel({
       };
       const updated = await FeatureFlagService.updateFlag(flag.key, update);
       onUpdate(updated);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
     } finally {
       setSaving(false);
@@ -533,7 +533,7 @@ export function FeatureFlagDashboard() {
       setLoading(true);
       const data = await FeatureFlagService.getFlags();
       setFlags(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
     } finally {
       setLoading(false);
@@ -566,7 +566,7 @@ export function FeatureFlagDashboard() {
       setTogglingKey(key);
       const updated = await FeatureFlagService.toggleFlag(key);
       setFlags((prev) => prev.map((f) => (f.key === key ? updated : f)));
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
     } finally {
       setTogglingKey(null);

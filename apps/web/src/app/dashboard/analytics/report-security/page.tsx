@@ -33,7 +33,7 @@ export default function ReportSecurityPage() {
                 { name: 'Team Lead', access: 'Team View Only', users: Math.min(Math.round(total * 0.05), 50) },
                 { name: 'Employee', access: 'Self View Only', users: Math.max(0, total - Math.min(3, total) - Math.min(Math.round(total * 0.01), 20) - Math.min(Math.round(total * 0.05), 50)) },
             ]);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading security data:', error);
             setRoles([
                 { name: 'Super Admin', access: 'Full Access', users: 0 },

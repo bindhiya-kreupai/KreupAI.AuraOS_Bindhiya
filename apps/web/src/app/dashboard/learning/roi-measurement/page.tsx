@@ -17,7 +17,7 @@ export default function ROIMeasurementPage() {
                 setLoading(true);
                 const result = await LearningAnalyticsService.getAnalytics();
                 setData(result);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
                 setData(null);
             } finally {

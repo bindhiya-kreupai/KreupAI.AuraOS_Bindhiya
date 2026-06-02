@@ -52,7 +52,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       data: workflows,
       meta: { total, active, inactive },
     });
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json({ error: 'Failed to fetch workflows' }, { status: 500 });
   }
 });
@@ -99,7 +99,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       { success: true, data: workflow, message: 'Workflow created successfully' },
       { status: 201 }
     );
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json({ error: 'Failed to create workflow' }, { status: 500 });
   }
 });

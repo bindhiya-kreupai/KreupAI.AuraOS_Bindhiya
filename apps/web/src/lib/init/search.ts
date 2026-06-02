@@ -14,7 +14,7 @@ export async function initializeSearch(): Promise<void> {
     logger.info('Initializing search infrastructure...');
     await employeeSearchService.initialize();
     logger.info('Search infrastructure initialized successfully');
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Failed to initialize search infrastructure');
     // Don't throw - allow app to start even if Elasticsearch is unavailable
     // Search functionality will be unavailable but app will still function
@@ -29,7 +29,7 @@ export async function shutdownSearch(): Promise<void> {
     logger.info('Shutting down search infrastructure...');
     await employeeSearchService.disconnect();
     logger.info('Search infrastructure shut down successfully');
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error shutting down search infrastructure');
   }
 }

@@ -17,7 +17,7 @@ export const GET = withEnhancedAuth(
           tenantId: user.tenantId,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching surveys:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch surveys' }, { status: 500 });
     }
@@ -40,7 +40,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: newSurvey }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error creating survey:', error);
       return NextResponse.json({ success: false, error: 'Failed to create survey' }, { status: 500 });
     }
@@ -63,7 +63,7 @@ export const PUT = withEnhancedAuth(
           modifiedBy: user.userId,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating survey:', error);
       return NextResponse.json({ success: false, error: 'Failed to update survey' }, { status: 500 });
     }

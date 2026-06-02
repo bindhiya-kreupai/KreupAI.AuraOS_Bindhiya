@@ -101,7 +101,7 @@ export default function GOSIPage() {
       } else {
         setError(result.error || 'Failed to load GOSI reference data');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching GOSI data:', err);
       setError('Failed to connect to GOSI service');
     } finally {
@@ -183,7 +183,7 @@ export default function GOSIPage() {
           warnings: result.warnings || [],
         });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error calculating GOSI:', err);
       setError('Failed to calculate GOSI contributions');
     } finally {

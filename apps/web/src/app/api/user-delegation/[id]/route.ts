@@ -9,7 +9,7 @@ import { logger } from '@/lib/logger';
 
 // GET - Fetch single user delegation by ID
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       const permissionError = requirePermission(Resource.USERS, Action.READ, permissions);
@@ -47,7 +47,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: delegation,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching user delegation:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch user delegation' },
@@ -59,7 +59,7 @@ export const GET = withEnhancedAuth(
 
 // PUT - Update user delegation
 export const PUT = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       const permissionError = requirePermission(Resource.USERS, Action.UPDATE, permissions);
@@ -155,10 +155,11 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'User Delegation',
-          details: `Updated delegation from ${updatedDelegation.delegator.email} to ${updatedDelegation.delegatee.email}`,
+          resourceType: 'User Delegation',
+          metadata: { description: `Updated delegation from ${updatedDelegation.delegator.email} to ${updatedDelegation.delegatee.email}` } as any,
           ipAddress,
         },
       });
@@ -168,7 +169,7 @@ export const PUT = withEnhancedAuth(
         message: 'User delegation updated successfully',
         data: updatedDelegation,
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return validationErrorResponse(error);
       }
@@ -184,7 +185,7 @@ export const PUT = withEnhancedAuth(
 
 // DELETE - Delete user delegation
 export const DELETE = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       const permissionError = requirePermission(Resource.USERS, Action.DELETE, permissions);
@@ -229,10 +230,11 @@ export const DELETE = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
-          module: 'User Delegation',
-          details: `Deleted delegation from ${existingDelegation.delegator.email} to ${existingDelegation.delegatee.email}`,
+          resourceType: 'User Delegation',
+          metadata: { description: `Deleted delegation from ${existingDelegation.delegator.email} to ${existingDelegation.delegatee.email}` } as any,
           ipAddress,
         },
       });
@@ -241,7 +243,7 @@ export const DELETE = withEnhancedAuth(
         success: true,
         message: 'User delegation deleted successfully',
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error deleting user delegation:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to delete user delegation' },

@@ -49,7 +49,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ stats }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching performance analytics:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

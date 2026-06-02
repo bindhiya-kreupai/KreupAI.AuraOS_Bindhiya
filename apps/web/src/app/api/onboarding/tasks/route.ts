@@ -32,7 +32,7 @@ export const GET = withEnhancedAuth(
       });
 
       return NextResponse.json({ tasks }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching onboarding tasks:', error);
       return NextResponse.json(
         { error: 'Failed to fetch onboarding tasks' },
@@ -86,7 +86,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ task }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating onboarding task:', error);
       return NextResponse.json(
         { error: 'Failed to create onboarding task' },
@@ -148,7 +148,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ task }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating onboarding task:', error);
       return NextResponse.json(
         { error: 'Failed to update onboarding task' },

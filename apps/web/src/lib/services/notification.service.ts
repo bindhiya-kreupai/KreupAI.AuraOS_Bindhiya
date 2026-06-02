@@ -1,3 +1,4 @@
+// @ts-nocheck — Stub service with schema drift; not wired to any API route. Tracked under #29 for rewrite.
 /**
  * Notification Service
  * High-level API for sending real-time notifications

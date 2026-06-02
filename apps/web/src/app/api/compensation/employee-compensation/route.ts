@@ -79,7 +79,7 @@ export const GET = withEnhancedAuth(
       }));
 
       return NextResponse.json({ success: true, data: compensations });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching employee compensation:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch employee compensation' }, { status: 500 });
     }
@@ -117,7 +117,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: compensation }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error creating employee compensation:', error);
       return NextResponse.json({ success: false, error: 'Failed to create employee compensation' }, { status: 500 });
     }
@@ -154,7 +154,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: compensation });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating employee compensation:', error);
       return NextResponse.json({ success: false, error: 'Failed to update employee compensation' }, { status: 500 });
     }

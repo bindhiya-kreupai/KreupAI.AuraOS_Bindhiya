@@ -44,15 +44,15 @@ export const GET = withEnhancedAuth(async (request, context) => {
             lastName: true,
             email: true,
             departmentId: true,
-            positionId: true,
-            dateOfJoining: true,
+            jobProfileId: true,
+            joiningDate: true,
           },
         },
       },
     });
 
     const alumni = exitRequests.map((req) => {
-      const joinDate = req.employee?.dateOfJoining;
+      const joinDate = req.employee?.joiningDate;
       const exitDate = req.lastWorkingDate;
       const tenure = joinDate
         ? Math.round(
@@ -90,7 +90,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       { success: true, alumni },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching alumni:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch alumni records' },
@@ -127,7 +127,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       { success: true, alumniRecord },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating alumni record:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create alumni record' },
@@ -176,7 +176,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       { success: true, alumniRecord },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating alumni record:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update alumni record' },

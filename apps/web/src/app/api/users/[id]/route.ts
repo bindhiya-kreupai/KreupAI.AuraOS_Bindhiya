@@ -9,7 +9,7 @@ import { logger } from '@/lib/logger';
 
 // GET - Fetch single user by ID
 export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       const permissionError = requirePermission(Resource.USERS, Action.READ, permissions);
@@ -35,7 +35,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: result.data,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching user:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch user' },
@@ -47,7 +47,7 @@ export const GET = withEnhancedAuth(
 
 // PUT - Update user
 export const PUT = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       const permissionError = requirePermission(Resource.USERS, Action.UPDATE, permissions);
@@ -97,7 +97,7 @@ export const PUT = withEnhancedAuth(
         data: result.data,
         message: 'User updated successfully',
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return validationErrorResponse(error);
       }
@@ -113,7 +113,7 @@ export const PUT = withEnhancedAuth(
 
 // DELETE - Delete user
 export const DELETE = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions, params }: { params: { id: string } }) => {
+  async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
       const permissionError = requirePermission(Resource.USERS, Action.DELETE, permissions);
@@ -161,7 +161,7 @@ export const DELETE = withEnhancedAuth(
         success: true,
         message: 'User deactivated successfully',
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error deleting user:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to delete user' },

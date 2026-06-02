@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 import type { AuditLog, RolePermission, SecuritySettings } from './types';
 export const sampleAuditLogs: AuditLog[] = [{ logId: 'log-001', timestamp: '2024-12-13T10:30:00Z', userId: 'user-001', userName: 'John Admin', action: 'update', resource: 'Employee', resourceId: 'emp-123', ipAddress: '192.168.1.100', userAgent: 'Mozilla/5.0', status: 'success', details: 'Updated employee salary information' }];
 export const sampleRoles: RolePermission[] = [{ roleId: 'role-001', roleName: 'HR Manager', permissions: [{ resource: 'Employee', accessLevel: 'write' }, { resource: 'Payroll', accessLevel: 'read' }, { resource: 'Reports', accessLevel: 'read' }], assignedUsers: 5, createdAt: '2024-01-01T00:00:00Z' }];

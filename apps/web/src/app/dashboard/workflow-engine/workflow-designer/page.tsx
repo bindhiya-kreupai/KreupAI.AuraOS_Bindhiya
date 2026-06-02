@@ -39,7 +39,7 @@ export default function WorkflowDesignerPage() {
                     setWorkflowNodes(mapped);
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

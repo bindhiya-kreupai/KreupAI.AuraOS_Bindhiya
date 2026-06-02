@@ -198,7 +198,7 @@ export default function EmploymentHistoryPage() {
             setLoading(true);
             const data = await EmploymentHistoryService.getAllHistory();
             setHistory(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

@@ -33,7 +33,7 @@ export default function DisciplinaryPage() {
             if (data.length > 0) {
                 setRecords(data);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

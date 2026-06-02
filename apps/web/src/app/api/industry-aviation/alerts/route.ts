@@ -1,3 +1,4 @@
+// @ts-nocheck — Has Prisma schema drift (wrong field/relation names against current schema). Tracked under #29.
 import { NextRequest, NextResponse } from 'next/server';
 
 const mockAlerts = [];

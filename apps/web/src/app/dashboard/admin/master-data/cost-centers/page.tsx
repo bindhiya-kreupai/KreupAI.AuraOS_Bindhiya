@@ -32,7 +32,7 @@ export default function CostCentersPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch cost centers:', error);
         } finally {
@@ -68,7 +68,7 @@ export default function CostCentersPage() {
             } else {
                 alert('Failed to save cost center');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving cost center:', error);
             alert('Error saving cost center');
@@ -87,7 +87,7 @@ export default function CostCentersPage() {
                 } else {
                     alert('Failed to delete cost center');
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting cost center:', error);
                 alert('Error deleting cost center');

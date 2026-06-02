@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: tasks,
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { success: false, error: 'Failed to fetch tasks' },
       { status: 500 }
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: task,
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { success: false, error: 'Failed to create task' },
       { status: 500 }

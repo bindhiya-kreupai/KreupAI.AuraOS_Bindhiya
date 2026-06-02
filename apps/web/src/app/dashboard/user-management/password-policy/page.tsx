@@ -50,7 +50,7 @@ export default function PasswordPolicyPage() {
             } else {
                 alert('Failed to save policy');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving policy:', error);
             alert('Error saving policy');

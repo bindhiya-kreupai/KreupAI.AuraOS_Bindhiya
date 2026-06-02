@@ -16,7 +16,7 @@ export default function ConfirmationLettersPage() {
     try {
       const data = await ConfirmationLetterService.getAllConfirmationLetters();
       setConfirmationLetters(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -41,7 +41,7 @@ export default function ConfirmationLettersPage() {
           l.letterId === id ? { ...l, status: 'issued', issuedDate: new Date() } : l
         )
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to issue letter:', error);
     } finally {
       setIssuing(null);

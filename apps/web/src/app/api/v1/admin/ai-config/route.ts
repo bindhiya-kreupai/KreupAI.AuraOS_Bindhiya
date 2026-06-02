@@ -81,7 +81,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     };
 
     return NextResponse.json({ success: true, data: config });
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json(
       { success: false, error: 'Failed to fetch AI configuration' },
       { status: 500 }
@@ -125,7 +125,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
       data: updatedConfig,
       message: 'AI configuration updated successfully',
     });
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json(
       { success: false, error: 'Failed to update AI configuration' },
       { status: 500 }

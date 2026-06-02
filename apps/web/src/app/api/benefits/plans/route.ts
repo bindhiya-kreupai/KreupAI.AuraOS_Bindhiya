@@ -138,7 +138,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching benefit plans:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
@@ -210,7 +210,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       { success: true, data: plan },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Validation error', details: error.errors },
@@ -291,7 +291,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       { success: true, data: plan },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Validation error', details: error.errors },
@@ -345,7 +345,7 @@ export const DELETE = withEnhancedAuth(async (request, context) => {
       { success: true, message: 'Benefit plan archived successfully', data: plan },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting benefit plan:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },

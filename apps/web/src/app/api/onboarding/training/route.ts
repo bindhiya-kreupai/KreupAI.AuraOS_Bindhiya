@@ -73,7 +73,7 @@ export const GET = withEnhancedAuth(
       });
 
       return NextResponse.json({ training }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching onboarding training:', error);
       return NextResponse.json(
         { error: 'Failed to fetch onboarding training' },
@@ -142,7 +142,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ training }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating training:', error);
       return NextResponse.json(
         { error: 'Failed to create training' },
@@ -200,7 +200,7 @@ export const PUT = withEnhancedAuth(
       };
 
       return NextResponse.json({ training }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating training:', error);
       return NextResponse.json(
         { error: 'Failed to update training' },

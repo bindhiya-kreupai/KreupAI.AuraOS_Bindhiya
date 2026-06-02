@@ -38,7 +38,7 @@ export async function authenticate(
     let decoded: JWTPayload;
     try {
       decoded = verifyToken(token);
-    } catch (error) {
+    } catch (error: any) {
       return {
         user: null,
         error: NextResponse.json(
@@ -119,7 +119,7 @@ export async function authenticate(
     }
 
     return { user: decoded, error: null };
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Authentication error');
     return {
       user: null,

@@ -35,7 +35,7 @@ export default function JobFamiliesPage() {
 
             if (familiesRes.ok) setData(await familiesRes.json());
             if (functionsRes.ok) setJobFunctions(await functionsRes.json());
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch data:', error);
         } finally {
@@ -83,7 +83,7 @@ export default function JobFamiliesPage() {
             } else {
                 alert('Failed to save job family');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving job family:', error);
             alert('Error saving job family');
@@ -102,7 +102,7 @@ export default function JobFamiliesPage() {
                 } else {
                     alert('Failed to delete job family');
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting job family:', error);
                 alert('Error deleting job family');

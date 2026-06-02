@@ -31,7 +31,7 @@ export default function EmployeeLifeEventsPage() {
       const response = await fetch('/api/v1/life-events/stats');
       const result = await response.json();
       if (result.success) setStats(result.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch stats:', error);
     }
   };

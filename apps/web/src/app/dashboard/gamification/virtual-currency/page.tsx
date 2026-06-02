@@ -21,7 +21,7 @@ export default function VirtualCurrencyPage() {
                 setLoading(true);
                 const data = await VirtualCurrencyService.getCurrencies();
                 setCurrencies(data as any);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

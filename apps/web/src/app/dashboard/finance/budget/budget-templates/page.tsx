@@ -23,7 +23,7 @@ export default function BudgetTemplatesPage() {
             if (result.length > 0) {
                 setTemplates(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

@@ -69,7 +69,7 @@ export default function JobRequisitionsPage() {
             setLoading(true);
             const data = await JobRequisitionService.getRequisitions();
             setRequisitions(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

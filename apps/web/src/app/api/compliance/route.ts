@@ -125,7 +125,7 @@ export async function GET() {
         ],
       },
     });
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json(
       {
         error: 'Failed to fetch compliance API overview',

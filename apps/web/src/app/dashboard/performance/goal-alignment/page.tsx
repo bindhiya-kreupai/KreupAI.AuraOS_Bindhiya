@@ -88,7 +88,7 @@ export default function GoalAlignmentPage() {
       try {
         const data = await GoalService.getGoals();
         setGoals(data);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to load goals:', error);
       } finally {
         setLoading(false);

@@ -57,7 +57,7 @@ export default function TeamAnalyticsPage() {
         const data = await res.json();
         setAnalytics(data);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch analytics:', err);
     } finally {
       setLoading(false);

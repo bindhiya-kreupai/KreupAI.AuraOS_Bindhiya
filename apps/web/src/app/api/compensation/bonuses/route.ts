@@ -52,7 +52,7 @@ export const GET = withEnhancedAuth(
       }));
 
       return NextResponse.json({ success: true, data });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching bonuses:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch bonuses' }, { status: 500 });
     }
@@ -86,7 +86,7 @@ export const POST = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: bonus }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error creating bonus:', error);
       return NextResponse.json({ success: false, error: 'Failed to create bonus' }, { status: 500 });
     }
@@ -126,7 +126,7 @@ export const PUT = withEnhancedAuth(
       });
 
       return NextResponse.json({ success: true, data: bonus });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating bonus:', error);
       return NextResponse.json({ success: false, error: 'Failed to update bonus' }, { status: 500 });
     }

@@ -25,7 +25,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         });
 
         return NextResponse.json({ success: true, data: requisitions, items: requisitions }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
         return NextResponse.json(
             { success: false, error: 'Failed to fetch requisitions' },
             { status: 500 }
@@ -63,7 +63,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
         });
 
         return NextResponse.json({ success: true, data: requisition, items: [requisition] }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
         return NextResponse.json(
             { success: false, error: 'Failed to create requisition' },
             { status: 500 }
@@ -124,7 +124,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
         });
 
         return NextResponse.json({ success: true, data: requisition }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
         return NextResponse.json(
             { success: false, error: 'Failed to update requisition' },
             { status: 500 }

@@ -41,7 +41,7 @@ export class OrgChartService {
     try {
       const response = await APIClient.get<{ charts?: OrgChart[] }>(this.endpoint);
       return response.charts || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -50,7 +50,7 @@ export class OrgChartService {
     try {
       const response = await APIClient.get<{ chart?: OrgChart }>(`${this.endpoint}/${chartId}`);
       return response.chart || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -59,7 +59,7 @@ export class OrgChartService {
     try {
       const response = await APIClient.get<{ chart?: OrgChart }>(`${this.endpoint}/current`);
       return response.chart || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -102,7 +102,7 @@ export class OrgChartService {
     try {
       const response = await APIClient.get<{ views?: OrgChartView[] }>(`${this.endpoint}/${chartId}/views`);
       return response.views || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -129,7 +129,7 @@ export class ScenarioService {
     try {
       const response = await APIClient.get<{ scenarios?: Scenario[] }>(this.endpoint);
       return response.scenarios || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -138,7 +138,7 @@ export class ScenarioService {
     try {
       const response = await APIClient.get<{ scenario?: Scenario }>(`${this.endpoint}/${scenarioId}`);
       return response.scenario || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -194,7 +194,7 @@ export class SpanOfControlService {
     try {
       const response = await APIClient.get<{ analyses?: SpanOfControl[] }>(this.endpoint);
       return response.analyses || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -203,7 +203,7 @@ export class SpanOfControlService {
     try {
       const response = await APIClient.get<{ analysis?: SpanOfControl }>(`${this.endpoint}/${analysisId}`);
       return response.analysis || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -368,7 +368,7 @@ export class PositionHierarchyService {
     try {
       const response = await APIClient.get<{ hierarchies?: PositionHierarchy[] }>('/org-design/hierarchies');
       return response.hierarchies || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -377,7 +377,7 @@ export class PositionHierarchyService {
     try {
       const response = await APIClient.get<{ hierarchy?: PositionHierarchy }>(`/org-design/hierarchies/${hierarchyId}`);
       return response.hierarchy || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -386,7 +386,7 @@ export class PositionHierarchyService {
     try {
       const response = await APIClient.get<{ positions?: Position[] }>(this.endpoint);
       return response.positions || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -395,7 +395,7 @@ export class PositionHierarchyService {
     try {
       const response = await APIClient.get<{ position?: Position }>(`${this.endpoint}/${positionId}`);
       return response.position || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -418,7 +418,7 @@ export class PositionHierarchyService {
     try {
       const response = await APIClient.get<{ positions?: Position[] }>(`${this.endpoint}/search`, { query, ...filters });
       return response.positions || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -427,7 +427,7 @@ export class PositionHierarchyService {
     try {
       const response = await APIClient.get<{ positions?: Position[] }>(`${this.endpoint}/tree`, { rootPositionId });
       return response.positions || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -444,7 +444,7 @@ export class MatrixStructureService {
     try {
       const response = await APIClient.get<{ structures?: MatrixStructure[] }>(this.endpoint);
       return response.structures || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -453,7 +453,7 @@ export class MatrixStructureService {
     try {
       const response = await APIClient.get<{ structure?: MatrixStructure }>(`${this.endpoint}/${matrixId}`);
       return response.structure || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -494,7 +494,7 @@ export class SuccessionPoolService {
     try {
       const response = await APIClient.get<{ pools?: SuccessionPool[] }>(this.endpoint);
       return response.pools || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -503,7 +503,7 @@ export class SuccessionPoolService {
     try {
       const response = await APIClient.get<{ pool?: SuccessionPool }>(`${this.endpoint}/${poolId}`);
       return response.pool || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -549,7 +549,7 @@ export class OrgAnalyticsService {
     try {
       const response = await APIClient.get<{ analytics?: OrgAnalytics }>(this.endpoint, { chartId });
       return response.analytics || {} as OrgAnalytics;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -571,7 +571,7 @@ export class ChangeManagementService {
     try {
       const response = await APIClient.get<{ changes?: ChangeManagement[] }>(this.endpoint);
       return response.changes || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -580,7 +580,7 @@ export class ChangeManagementService {
     try {
       const response = await APIClient.get<{ change?: ChangeManagement }>(`${this.endpoint}/${changeId}`);
       return response.change || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -621,7 +621,7 @@ export class OrgDesignSettingsService {
     try {
       const response = await APIClient.get<{ settings?: OrgDesignSettings }>(this.endpoint);
       return response.settings || {} as OrgDesignSettings;
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }

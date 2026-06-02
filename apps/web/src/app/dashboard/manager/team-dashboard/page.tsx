@@ -77,7 +77,7 @@ export default function TeamManagerPage() {
                     const data = await approvalsRes.value.json();
                     setApprovals(data.approvals || []);
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Failed to fetch team data:', err);
             } finally {
                 setLoading(false);

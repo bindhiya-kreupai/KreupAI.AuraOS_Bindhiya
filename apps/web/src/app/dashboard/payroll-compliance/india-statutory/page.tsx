@@ -159,7 +159,7 @@ export default function IndiaStatutoryPage() {
       if (data.success) {
         setPFResult(data.data);
       }
-    } catch (error) {
+    } catch (error: any) {
             console.error('Error:', error);
           }
     setLoading(false);
@@ -183,7 +183,7 @@ export default function IndiaStatutoryPage() {
       if (data.success) {
         setESIResult(data.data);
       }
-    } catch (error) {
+    } catch (error: any) {
             console.error('Error:', error);
           }
     setLoading(false);
@@ -212,7 +212,7 @@ export default function IndiaStatutoryPage() {
       if (data.success) {
         setTDSResult(data.data);
       }
-    } catch (error) {
+    } catch (error: any) {
             console.error('Error:', error);
           }
     setLoading(false);
@@ -237,7 +237,7 @@ export default function IndiaStatutoryPage() {
       if (data.success) {
         setPTResult(data.data);
       }
-    } catch (error) {
+    } catch (error: any) {
             console.error('Error:', error);
           }
     setLoading(false);

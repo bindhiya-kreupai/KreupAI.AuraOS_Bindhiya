@@ -9,7 +9,7 @@ export class GrievanceService {
     try {
       const response = await APIClient.get<{ grievances?: Grievance[] }>(this.endpoint, filters);
       return response.grievances || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -89,7 +89,7 @@ export class GrievanceAnalyticsService {
         grievancesByType: [], grievancesBySeverity: [], grievancesByDepartment: [],
         resolutionRate: 0, satisfactionScore: 0, escalationRate: 0, repeatGrievances: 0
       };
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -106,7 +106,7 @@ export class GrievanceSettingsService {
         escalationThresholdDays: 7, slaTracking: true, satisfactionSurveyEnabled: true,
         confidentialityByDefault: false, notificationEmail: 'hr@company.com', hrEmail: 'hr@company.com'
       };
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }

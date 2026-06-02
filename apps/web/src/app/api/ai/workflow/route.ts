@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json({ error: 'Failed to process workflow request' }, { status: 500 });
   }
 }
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
         activeWorkflows: 38,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json({ error: 'Failed to fetch workflows' }, { status: 500 });
   }
 }

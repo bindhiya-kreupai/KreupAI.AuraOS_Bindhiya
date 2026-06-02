@@ -75,7 +75,7 @@ export default function FileUploadStep({ onFileParsed }: FileUploadStepProps) {
 
         setParsed(result);
         onFileParsed(result, entityType);
-      } catch (err) {
+      } catch (err: any) {
         setError(err instanceof Error ? err.message : 'Failed to parse file.');
       } finally {
         setParsing(false);

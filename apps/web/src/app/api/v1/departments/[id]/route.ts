@@ -79,7 +79,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { params, permi
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Department API] GET Error:', error);
 
     const response: ApiResponse = {
@@ -160,7 +160,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { params, permi
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Department API] PUT Error:', error);
 
     // Check for specific error types
@@ -258,7 +258,7 @@ export const DELETE = withEnhancedAuth(
       };
 
       return NextResponse.json(response, { status: 204 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Department API] DELETE Error:', error);
 
       if (error instanceof Error) {

@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
             pageSize,
             totalPages: Math.ceil(total / pageSize)
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error fetching competencies:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch competencies' },

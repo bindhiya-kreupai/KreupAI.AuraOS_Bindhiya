@@ -93,7 +93,7 @@ export const GET = createProtectedRoute(
           help: 'Database query latency in milliseconds',
         }
       );
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Database metrics collection failed');
       metrics.push({
         name: 'database_connection_status',

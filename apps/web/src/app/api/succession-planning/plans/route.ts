@@ -35,7 +35,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         tenantId: user.tenantId,
       },
     }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { success: false, error: 'Failed to fetch succession plans' },
       { status: 500 }
@@ -57,7 +57,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     };
 
     return NextResponse.json({ success: true, data: plan }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { success: false, error: 'Failed to create succession plan' },
       { status: 500 }

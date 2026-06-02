@@ -80,7 +80,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { params, permi
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Document API] GET Error:', error);
 
     const response: ApiResponse = {
@@ -141,7 +141,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { params, permi
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Document API] PUT Error:', error);
 
     let statusCode = 500;
@@ -211,7 +211,7 @@ export const DELETE = withEnhancedAuth(
       };
 
       return NextResponse.json(response, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Document API] DELETE Error:', error);
 
       const statusCode = error instanceof Error && error.message.includes('not found') ? 404 : 500;

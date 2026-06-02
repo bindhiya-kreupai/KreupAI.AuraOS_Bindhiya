@@ -343,7 +343,7 @@ export const POST = withAudit(
       };
 
       return NextResponse.json(response, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Clock-Out API] POST Error:', error);
 
       if (error instanceof Error && error.message.includes('not clocked in')) {

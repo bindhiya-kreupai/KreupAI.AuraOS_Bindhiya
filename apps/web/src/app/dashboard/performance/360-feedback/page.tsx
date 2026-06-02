@@ -47,7 +47,7 @@ export default function ThreeSixtyFeedbackPage() {
             try {
                 const data = await PerformanceReviewService.getReviews();
                 setReviews(data);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load 360 feedback data:', error);
             } finally {
                 setLoading(false);

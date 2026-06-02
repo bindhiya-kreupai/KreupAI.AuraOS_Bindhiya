@@ -104,7 +104,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
     // Determine multiplier for annualizing salary
     const annualMultiplier =
-      payFrequency === 'MONTHLY' ? 12 : payFrequency === 'BIWEEKLY' ? 26 : 52;
+      payFrequency === 'MONTHLY' ? 12 : payFrequency === 'BI_WEEKLY' ? 26 : 52;
     const annualBaseSalary = basicSalary * annualMultiplier;
     const annualGrossSalary = grossSalary * annualMultiplier;
 
@@ -123,11 +123,11 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
     // Calculate annual employer benefits contribution
     const totalEmployerBenefits = benefitEnrollments.reduce((sum, enrollment) => {
-      const freq = enrollment.paymentFrequency;
+      const freq = enrollment.paymentFrequency as string;
       const multiplier =
         freq === 'MONTHLY'
           ? 12
-          : freq === 'BIWEEKLY'
+          : freq === 'BI_WEEKLY'
             ? 26
             : freq === 'WEEKLY'
               ? 52
@@ -138,11 +138,11 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     }, 0);
 
     const totalEmployeeBenefits = benefitEnrollments.reduce((sum, enrollment) => {
-      const freq = enrollment.paymentFrequency;
+      const freq = enrollment.paymentFrequency as string;
       const multiplier =
         freq === 'MONTHLY'
           ? 12
-          : freq === 'BIWEEKLY'
+          : freq === 'BI_WEEKLY'
             ? 26
             : freq === 'WEEKLY'
               ? 52
@@ -224,7 +224,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Total Compensation API] GET Error:', error);
     return NextResponse.json(
       {

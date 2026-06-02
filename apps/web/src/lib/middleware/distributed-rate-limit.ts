@@ -123,7 +123,7 @@ export async function checkRateLimit(
       retryAfter,
       total: count,
     };
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error, identifier }, 'Rate limit check failed');
     // On error, allow the request
     return {

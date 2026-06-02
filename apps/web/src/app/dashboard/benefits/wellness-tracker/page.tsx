@@ -54,7 +54,7 @@ export default function WellnessTrackerPage() {
         setChallenges([]);
         setWellnessScore(0);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching wellness data:', error);
       setMetrics([]);
       setChallenges([]);

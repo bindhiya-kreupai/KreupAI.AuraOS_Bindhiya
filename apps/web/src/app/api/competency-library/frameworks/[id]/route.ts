@@ -31,7 +31,7 @@ export async function GET(
             success: true,
             data: framework
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error fetching framework:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to fetch framework' },
@@ -94,7 +94,7 @@ export async function PUT(
             data: framework,
             message: 'Framework updated successfully'
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error updating framework:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to update framework' },
@@ -146,7 +146,7 @@ export async function DELETE(
             success: true,
             message: 'Framework deleted successfully'
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error deleting framework:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to delete framework' },

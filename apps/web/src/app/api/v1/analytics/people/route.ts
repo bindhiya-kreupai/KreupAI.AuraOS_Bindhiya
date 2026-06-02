@@ -295,7 +295,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     };
 
     return NextResponse.json({ success: true, data: peopleAnalytics });
-  } catch (error) {
+  } catch (error: any) {
     console.error('People analytics error:', error);
     return NextResponse.json({
       success: true,

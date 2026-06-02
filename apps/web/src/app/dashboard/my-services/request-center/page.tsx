@@ -32,7 +32,7 @@ export default function RequestCenterPage() {
                         priority: t.priority || 'Medium',
                     })));
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Failed to fetch requests:', err);
             } finally {
                 setFetching(false);

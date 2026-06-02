@@ -75,7 +75,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
         totalPages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
@@ -209,10 +209,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'CREATE',
-        module: 'User Delegation',
-        details: `Created delegation from ${delegator.email} to ${delegatee.email} for role: ${validatedData.role}`,
+        resourceType: 'User Delegation',
+        metadata: { description: `Created delegation from ${delegator.email} to ${delegatee.email} for role: ${validatedData.role}` } as any,
         ipAddress,
       },
     });
@@ -225,7 +226,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }

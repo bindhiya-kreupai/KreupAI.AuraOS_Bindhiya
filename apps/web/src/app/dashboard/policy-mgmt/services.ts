@@ -9,7 +9,7 @@ export class PolicyService {
     try {
       const response = await APIClient.get<{ policies?: Policy[] }>(this.endpoint);
       return response.policies || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -36,7 +36,7 @@ export class PolicySettingsService {
     try {
       const response = await APIClient.get<{ settings?: PolicySettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -54,7 +54,7 @@ export class AcknowledgementService {
     try {
       const response = await APIClient.get<{ acknowledgements?: any[] }>(this.endpoint);
       return response.acknowledgements || [];
-    } catch (error) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -72,7 +72,7 @@ export class PolicyAnalyticsService {
     try {
       const response = await APIClient.get<any>(this.endpoint);
       return response;
-    } catch (error) {
+    } catch (error: any) {
       return null;
     }
   }
@@ -85,7 +85,7 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: PolicyAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }

@@ -175,7 +175,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       { success: true, metrics },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching offboarding metrics:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch offboarding metrics' },

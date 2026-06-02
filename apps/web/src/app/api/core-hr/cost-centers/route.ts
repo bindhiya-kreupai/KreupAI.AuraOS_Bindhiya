@@ -62,7 +62,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     }));
 
     return NextResponse.json({ costCenters: mappedCostCenters }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('GET /api/core-hr/cost-centers error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -123,7 +123,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('POST /api/core-hr/cost-centers error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -189,7 +189,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('PUT /api/core-hr/cost-centers error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

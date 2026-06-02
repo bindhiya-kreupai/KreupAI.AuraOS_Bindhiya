@@ -47,7 +47,7 @@ export const useRemoteWork = () => {
       setPolicies(polData);
       setSettings(settingsData || sampleRemoteWorkSettings);
       setAlerts(alertsData);
-    } catch (_error) {
+    } catch (_error: any) {
       setError(_error instanceof Error ? _error.message : 'Failed to load data');
       addToast({ type: 'error', message: 'Failed to load remote work data' });
     } finally {
@@ -66,7 +66,7 @@ export const useRemoteWork = () => {
       await loadAllData();
       addToast({ type: 'success', message: 'Policy created' });
       return pol;
-    } catch (_error) {
+    } catch (_error: any) {
       addToast({ type: 'error', message: 'Failed to create policy' });
       throw _error;
     } finally {
@@ -81,7 +81,7 @@ export const useRemoteWork = () => {
       await loadAllData();
       addToast({ type: 'success', message: 'Policy updated' });
       return pol;
-    } catch (_error) {
+    } catch (_error: any) {
       addToast({ type: 'error', message: 'Failed to update policy' });
       throw _error;
     } finally {

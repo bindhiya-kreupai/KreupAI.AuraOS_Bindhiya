@@ -63,7 +63,7 @@ class RedisClient {
       this.client.on('reconnecting', () => {
         logger.info('Redis reconnecting...');
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Failed to initialize Redis client');
     }
   }
@@ -96,7 +96,7 @@ class RedisClient {
         return null;
       }
       return JSON.parse(value) as T;
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, key }, 'Redis GET error');
       return null;
     }
@@ -114,7 +114,7 @@ class RedisClient {
       const serialized = JSON.stringify(value);
       await this.client!.setex(key, ttl, serialized);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, key }, 'Redis SET error');
       return false;
     }
@@ -131,9 +131,30 @@ class RedisClient {
     try {
       await this.client!.del(key);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, key }, 'Redis DEL error');
       return false;
+    }
+  }
+
+  /** Alias for `del` — kept for callers that use the longer name. */
+  async delete(key: string): Promise<boolean> {
+    return this.del(key);
+  }
+
+  /**
+   * List keys matching a glob pattern. Prefer `delPattern` for delete
+   * workflows; this is for cases that need to inspect each key first.
+   */
+  async keys(pattern: string): Promise<string[]> {
+    if (!this.isReady()) {
+      return [];
+    }
+    try {
+      return await this.client!.keys(pattern);
+    } catch (error: any) {
+      logger.error({ error, pattern }, 'Redis KEYS error');
+      return [];
     }
   }
 
@@ -148,7 +169,7 @@ class RedisClient {
     try {
       await this.client!.del(...keys);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, keys }, 'Redis DEL MANY error');
       return false;
     }
@@ -168,7 +189,7 @@ class RedisClient {
         await this.client!.del(...keys);
       }
       return true;
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, pattern }, 'Redis DEL PATTERN error');
       return false;
     }
@@ -185,7 +206,7 @@ class RedisClient {
     try {
       const result = await this.client!.exists(key);
       return result === 1;
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, key }, 'Redis EXISTS error');
       return false;
     }
@@ -202,7 +223,7 @@ class RedisClient {
     try {
       await this.client!.expire(key, ttl);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, key, ttl }, 'Redis EXPIRE error');
       return false;
     }
@@ -218,7 +239,7 @@ class RedisClient {
 
     try {
       return await this.client!.ttl(key);
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, key }, 'Redis TTL error');
       return -1;
     }
@@ -234,7 +255,7 @@ class RedisClient {
 
     try {
       return await this.client!.incr(key);
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, key }, 'Redis INCR error');
       return null;
     }
@@ -250,7 +271,7 @@ class RedisClient {
 
     try {
       return await this.client!.decr(key);
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error, key }, 'Redis DECR error');
       return null;
     }
@@ -268,7 +289,7 @@ class RedisClient {
       await this.client!.flushall();
       logger.warn('Redis FLUSHALL executed - all keys deleted');
       return true;
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, 'Redis FLUSHALL error');
       return false;
     }

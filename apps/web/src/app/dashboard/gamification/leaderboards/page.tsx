@@ -21,7 +21,7 @@ export default function LeaderboardsPage() {
                 setLoading(true);
                 const data = await LeaderboardsService.getLeaderboards();
                 setLeaderboards(data as any);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

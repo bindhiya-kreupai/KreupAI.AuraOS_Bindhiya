@@ -26,7 +26,7 @@ export default function ProfileManagementPage() {
             if (result) {
                 setProfile(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

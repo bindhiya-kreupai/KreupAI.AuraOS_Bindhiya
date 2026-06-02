@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       success: true,
       templates: [],
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to fetch templates' },
       { status: 500 }
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to create template' },
       { status: 500 }
@@ -77,7 +77,7 @@ export async function PUT(request: NextRequest) {
         lastModified: new Date().toISOString(),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to update template' },
       { status: 500 }
@@ -105,7 +105,7 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Template deleted successfully',
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to delete template' },
       { status: 500 }

@@ -245,7 +245,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating report:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

@@ -25,7 +25,7 @@ export default function IntentLibraryPage() {
             if (result.length > 0) {
                 setIntents(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

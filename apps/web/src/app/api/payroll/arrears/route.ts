@@ -67,7 +67,7 @@ export const GET = withEnhancedAuth(
         data: arrears,
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching arrears:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch arrears' },
@@ -106,16 +106,17 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Arrears Management',
-          details: `Created arrear: ${data.type} - $${data.amount}`,
+          resourceType: 'Payroll - Arrears Management',
+          metadata: { description: `Created arrear: ${data.type} - $${data.amount}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
 
       return NextResponse.json({ success: true, data: adjustment }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

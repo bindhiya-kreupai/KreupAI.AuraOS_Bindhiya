@@ -45,7 +45,7 @@ export default function CalibrationPage() {
             try {
                 const reviewData = await PerformanceReviewService.getReviews();
                 setReviews(reviewData);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load calibration data:', error);
             } finally {
                 setLoading(false);

@@ -121,7 +121,7 @@ export class ESGService extends BaseService {
             };
 
             return { success: true, data: metrics };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching ESG metrics:', error);
             return { success: false, error: 'Failed to fetch ESG metrics' };
         }
@@ -205,7 +205,7 @@ export class ESGService extends BaseService {
             }
 
             return { success: true, data: initiatives };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching ESG initiatives:', error);
             return { success: false, error: 'Failed to fetch initiatives' };
         }
@@ -265,7 +265,7 @@ export class ESGService extends BaseService {
             ];
 
             return { success: true, data: goals };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching ESG goals:', error);
             return { success: false, error: 'Failed to fetch goals' };
         }
@@ -309,7 +309,7 @@ export class ESGService extends BaseService {
             });
 
             return { success: true, data: report };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error generating ESG report:', error);
             return { success: false, error: 'Failed to generate report' };
         }
@@ -340,11 +340,11 @@ export class ESGService extends BaseService {
             });
 
             return { success: true, data: newInitiative };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error creating ESG initiative:', error);
             return { success: false, error: 'Failed to create initiative' };
         }
     }
 }
 
-export const esgService = new ESGService();
+export const esgService = new ESGService('ESGService');

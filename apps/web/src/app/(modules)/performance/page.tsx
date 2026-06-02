@@ -185,7 +185,7 @@ export default function PerformanceCommandCenter() {
             }))
           );
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to load performance data:', error);
       } finally {
         setLoading(false);
@@ -349,7 +349,7 @@ function ReviewsTab({ reviewCycles }: { reviewCycles: any[] }) {
             },
           ]);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to load feedback stats:', error);
       }
     }
@@ -596,7 +596,7 @@ function GoalsTab() {
                 }));
           setGoals(mapped);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to load goals:', error);
       }
     }
@@ -753,7 +753,7 @@ function NineBoxTab() {
             }))
           );
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to load talent data:', error);
       }
     }
@@ -992,7 +992,7 @@ function CalibrationTab() {
             }))
           );
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to load calibration data:', error);
       }
     }

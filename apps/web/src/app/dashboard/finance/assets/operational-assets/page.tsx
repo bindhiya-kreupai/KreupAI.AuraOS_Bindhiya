@@ -63,7 +63,7 @@ export default function OperationalAssetsPage() {
                 setLoading(true);
                 const data = await FinancialAssetService.getAssets();
                 setAssets(data as unknown as OperationalAsset[]);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

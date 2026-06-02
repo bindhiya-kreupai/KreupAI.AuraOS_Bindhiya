@@ -56,7 +56,7 @@ export default function LocationsPage() {
             if (locsRes.ok) setData(await locsRes.json());
             if (compsRes.ok) setCompanies(await compsRes.json());
             if (addrRes.ok) setAddresses(await addrRes.json());
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch data:', error);
         } finally {
@@ -123,7 +123,7 @@ export default function LocationsPage() {
             } else {
                 alert('Failed to save location');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving location:', error);
             alert('Error saving location');
@@ -142,7 +142,7 @@ export default function LocationsPage() {
                 } else {
                     alert('Failed to delete location');
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting location:', error);
                 alert('Error deleting location');

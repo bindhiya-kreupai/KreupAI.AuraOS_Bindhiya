@@ -31,7 +31,7 @@ export async function GET(
       success: true,
       data: task,
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { success: false, error: 'Failed to fetch task' },
       { status: 500 }
@@ -83,7 +83,7 @@ export async function PATCH(
       success: true,
       data: task,
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       {
         success: false,

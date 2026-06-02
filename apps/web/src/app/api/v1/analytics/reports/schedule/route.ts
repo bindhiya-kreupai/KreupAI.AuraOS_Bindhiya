@@ -128,7 +128,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       { success: true, data: schedule, message: 'Report schedule created successfully' },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Schedule report error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create report schedule' },

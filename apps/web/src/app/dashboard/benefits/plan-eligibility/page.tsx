@@ -23,7 +23,7 @@ export default function PlanEligibilityPage() {
             setLoading(true);
             const data = await EligibilityService.getEmployeeEligibility('EMP-001');
             setEligibilityRules(Array.isArray(data) ? data : []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching eligibility:', error);
             setEligibilityRules([]);
         } finally {

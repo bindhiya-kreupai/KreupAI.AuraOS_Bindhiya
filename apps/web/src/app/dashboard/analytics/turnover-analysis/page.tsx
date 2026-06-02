@@ -60,7 +60,7 @@ export default function TurnoverAnalysisPage() {
           totalYTD: data.costOfTurnover?.totalCostYTD ?? 0,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading turnover data:', error);
     } finally {
       setLoading(false);

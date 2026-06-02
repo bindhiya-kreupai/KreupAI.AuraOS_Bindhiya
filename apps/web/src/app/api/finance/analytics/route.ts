@@ -76,7 +76,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         lastUpdated: new Date().toISOString(),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to fetch analytics' },
       { status: 500 }

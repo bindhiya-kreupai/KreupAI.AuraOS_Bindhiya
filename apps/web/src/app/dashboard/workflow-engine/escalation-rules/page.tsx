@@ -26,7 +26,7 @@ export default function EscalationRulesPage() {
                     severity: exec.status === 'FAILED' ? 'High' : 'Medium',
                 }));
             setEscalations(escalationData);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

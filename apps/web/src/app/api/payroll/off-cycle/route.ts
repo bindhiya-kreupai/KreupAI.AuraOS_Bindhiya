@@ -82,7 +82,7 @@ export const GET = withEnhancedAuth(
         data: payments,
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching off-cycle payments:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch off-cycle payments' },
@@ -137,16 +137,17 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Off-Cycle Payments',
-          details: `Created off-cycle payment: ${data.type} - $${data.amount}`,
+          resourceType: 'Payroll - Off-Cycle Payments',
+          metadata: { description: `Created off-cycle payment: ${data.type} - $${data.amount}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
 
       return NextResponse.json({ success: true, data: adjustment }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -207,16 +208,17 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Payroll - Off-Cycle Payments',
-          details: `Updated off-cycle payment status to: ${status}`,
+          resourceType: 'Payroll - Off-Cycle Payments',
+          metadata: { description: `Updated off-cycle payment status to: ${status}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating off-cycle payment:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update off-cycle payment' },

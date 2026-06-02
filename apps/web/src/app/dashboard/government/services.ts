@@ -14,7 +14,7 @@ export class CivilServiceGradeService {
     try {
       const response = await APIClient.get<{ grades?: CivilServiceGrade[] }>(this.endpoint);
       return response.grades || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -33,7 +33,7 @@ export class CivilServiceGradeService {
     try {
       const response = await APIClient.get<{ grade?: CivilServiceGrade }>(`${this.endpoint}/employee/${employeeId}`);
       return response.grade || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -46,7 +46,7 @@ export class SecurityClearanceService {
     try {
       const response = await APIClient.get<{ clearances?: SecurityClearance[] }>(this.endpoint);
       return response.clearances || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -65,7 +65,7 @@ export class SecurityClearanceService {
     try {
       const response = await APIClient.get<{ clearance?: SecurityClearance }>(`${this.endpoint}/employee/${employeeId}`);
       return response.clearance || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -74,7 +74,7 @@ export class SecurityClearanceService {
     try {
       const response = await APIClient.get<{ clearances?: SecurityClearance[] }>(`${this.endpoint}/expiring`, { days });
       return response.clearances || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -87,7 +87,7 @@ export class PensionSchemeService {
     try {
       const response = await APIClient.get<{ pensions?: PensionScheme[] }>(this.endpoint);
       return response.pensions || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -106,7 +106,7 @@ export class PensionSchemeService {
     try {
       const response = await APIClient.get<{ pension?: PensionScheme }>(`${this.endpoint}/employee/${employeeId}`);
       return response.pension || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -115,7 +115,7 @@ export class PensionSchemeService {
     try {
       const response = await APIClient.get<{ pensions?: PensionScheme[] }>(`${this.endpoint}/retirement-eligible`);
       return response.pensions || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -128,7 +128,7 @@ export class GovernmentSettingsService {
     try {
       const response = await APIClient.get<{ settings?: GovernmentSettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -146,7 +146,7 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: GovernmentAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }

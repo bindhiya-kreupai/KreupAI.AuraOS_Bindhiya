@@ -153,7 +153,7 @@ export default function COBRAAdministration() {
       setEnrollments(enrs);
       setNotices(ntcs);
       setAudit(adt);
-    } catch (err) {
+    } catch (err: any) {
       console.error('COBRAAdministration load error:', err);
     }
   }, []);
@@ -174,7 +174,7 @@ export default function COBRAAdministration() {
     try {
       await cobraService.generateCobraNotice(enrollmentId);
       await loadData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Initiate COBRA error:', err);
     } finally {
       setInitiatingId(null);

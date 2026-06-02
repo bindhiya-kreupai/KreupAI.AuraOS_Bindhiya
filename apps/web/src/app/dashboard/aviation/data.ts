@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 /**
  * Aviation Module - Sample Data
  * Comprehensive sample data for Cabin Crew, Pilot Training, and Ground Operations

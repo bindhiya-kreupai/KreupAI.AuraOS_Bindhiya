@@ -34,7 +34,7 @@ export default function RetirementPage() {
       } else {
         setPlans([]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching retirement data:', error);
       setPlans([]);
     } finally {

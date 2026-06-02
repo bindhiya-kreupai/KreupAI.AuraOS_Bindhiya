@@ -83,7 +83,7 @@ export default function JobPostingsPage() {
             try {
                 const data = await JobPostingService.getPostings();
                 setJobs(data.map(mapJobPosting));
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
                 setError('Could not load job postings. Please try again later.');
             } finally {

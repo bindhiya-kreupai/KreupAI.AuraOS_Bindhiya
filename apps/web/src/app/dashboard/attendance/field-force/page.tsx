@@ -61,7 +61,7 @@ export default function FieldForcePage() {
             setAgents((agentsResult || []) as any);
             const visitsResult = await FieldForceService.getVisitLogs();
             setVisitLogs((visitsResult || []) as any);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

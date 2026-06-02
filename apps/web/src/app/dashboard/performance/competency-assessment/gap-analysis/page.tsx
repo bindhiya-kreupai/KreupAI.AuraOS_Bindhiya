@@ -99,7 +99,7 @@ export default function GapAnalysisPage() {
                     }));
 
                 setData(radarData);
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Failed to fetch gap analysis data:', err);
                 setError('Failed to load gap analysis data');
             } finally {

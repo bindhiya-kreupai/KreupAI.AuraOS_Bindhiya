@@ -25,7 +25,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       data: result.data,
       meta: { pagination: result.pagination },
     });
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed' } },
       { status: 500 }

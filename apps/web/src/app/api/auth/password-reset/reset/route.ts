@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
         userId: result.userId,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error resetting password');
 
     return NextResponse.json(

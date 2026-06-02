@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 import type {
   DiversityMetric, InclusionSurvey, SurveyAnalytics, PayEquityAnalysis,
   BiasTraining, EmployeeResourceGroup, MentorshipProgram, MentorProfile, MenteeProfile,

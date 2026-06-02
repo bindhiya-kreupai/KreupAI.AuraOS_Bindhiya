@@ -87,7 +87,7 @@ export default function ExitInterviewsPage() {
 
                 setInterviews(mapped);
                 setMetrics(metricsData);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching exit interviews:', error);
             } finally {
                 setLoading(false);

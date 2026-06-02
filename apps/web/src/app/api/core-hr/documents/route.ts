@@ -83,7 +83,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
         totalPages: Math.ceil(total / limit),
       },
     }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching documents:', error);
     return NextResponse.json(
       { error: 'Failed to fetch documents' },
@@ -128,7 +128,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ document }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

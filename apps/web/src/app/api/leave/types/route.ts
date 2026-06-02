@@ -40,7 +40,7 @@ export const GET = withEnhancedAuth(
         data: leaveTypes,
         meta: { total: leaveTypes.length },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching leave types:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch leave types' },
@@ -71,10 +71,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Leave - Types',
-          details: `Created leave type: ${data.name} (${data.code})`,
+          resourceType: 'Leave - Types',
+          metadata: { description: `Created leave type: ${data.name} (${data.code})` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -83,7 +84,7 @@ export const POST = withEnhancedAuth(
         { success: true, data: newLeaveType, type: newLeaveType, leaveType: newLeaveType },
         { status: 201 }
       );
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

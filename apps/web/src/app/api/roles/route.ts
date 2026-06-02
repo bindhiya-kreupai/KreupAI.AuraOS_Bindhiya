@@ -111,7 +111,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
         totalPages: Math.ceil(total / query.limit),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Invalid query parameters', details: error.errors },
@@ -203,10 +203,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'CREATE',
-        module: 'Role Management',
-        details: `Created role: ${newRole.code} (${newRole.name})`,
+        resourceType: 'Role Management',
+        metadata: { description: `Created role: ${newRole.code} (${newRole.name})` } as any,
         ipAddress,
       },
     });
@@ -226,7 +227,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Validation failed', details: error.errors },

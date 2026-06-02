@@ -61,7 +61,7 @@ export default function OvertimePage() {
                 totalEarnings: recordsArr.reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
                 pendingEarnings: recordsArr.filter((r: any) => r.status === 'Pending').reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
@@ -79,7 +79,7 @@ export default function OvertimePage() {
             } as any);
             await fetchOvertimeData();
             setShowForm(false);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

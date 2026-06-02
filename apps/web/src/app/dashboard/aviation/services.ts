@@ -35,7 +35,7 @@ export class CabinCrewService {
         `${this.endpoint}/members`
       );
       return response.crewMembers || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -46,7 +46,7 @@ export class CabinCrewService {
         `${this.endpoint}/members/${crewId}`
       );
       return response.crewMember || null;
-    } catch (_error) {
+    } catch (_error: any) {
       return null;
     }
   }
@@ -84,7 +84,7 @@ export class CabinCrewService {
         `${this.endpoint}/assignments`
       );
       return response.assignments || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -95,7 +95,7 @@ export class CabinCrewService {
         `${this.endpoint}/assignments/${assignmentId}`
       );
       return response.assignment || null;
-    } catch (_error) {
+    } catch (_error: any) {
       return null;
     }
   }
@@ -106,7 +106,7 @@ export class CabinCrewService {
         `${this.endpoint}/members/${crewId}/assignments`
       );
       return response.assignments || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -139,7 +139,7 @@ export class CabinCrewService {
         `${this.endpoint}/duty-times`
       );
       return response.dutyTimes || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -150,7 +150,7 @@ export class CabinCrewService {
         `${this.endpoint}/members/${crewId}/duty-times`
       );
       return response.dutyTimes || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -170,7 +170,7 @@ export class CabinCrewService {
         `${this.endpoint}/rest-periods`
       );
       return response.restPeriods || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -181,7 +181,7 @@ export class CabinCrewService {
         `${this.endpoint}/members/${crewId}/rest-periods`
       );
       return response.restPeriods || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -210,7 +210,7 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<{ pilots?: PilotProfile[] }>(`${this.endpoint}/pilots`);
       return response.pilots || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -221,7 +221,7 @@ export class PilotTrainingService {
         `${this.endpoint}/pilots/${pilotId}`
       );
       return response.pilot || null;
-    } catch (_error) {
+    } catch (_error: any) {
       return null;
     }
   }
@@ -254,7 +254,7 @@ export class PilotTrainingService {
         `${this.endpoint}/training-records`
       );
       return response.trainingRecords || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -265,7 +265,7 @@ export class PilotTrainingService {
         `${this.endpoint}/pilots/${pilotId}/training-records`
       );
       return response.trainingRecords || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -299,7 +299,7 @@ export class PilotTrainingService {
         `${this.endpoint}/simulator-sessions`
       );
       return response.simulatorSessions || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -310,7 +310,7 @@ export class PilotTrainingService {
         `${this.endpoint}/pilots/${pilotId}/simulator-sessions`
       );
       return response.simulatorSessions || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -343,7 +343,7 @@ export class PilotTrainingService {
         `${this.endpoint}/proficiency-checks`
       );
       return response.proficiencyChecks || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -354,7 +354,7 @@ export class PilotTrainingService {
         `${this.endpoint}/pilots/${pilotId}/proficiency-checks`
       );
       return response.proficiencyChecks || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -391,7 +391,7 @@ export class GroundOperationsService {
         `${this.endpoint}/staff`
       );
       return response.groundStaff || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -402,7 +402,7 @@ export class GroundOperationsService {
         `${this.endpoint}/staff/${staffId}`
       );
       return response.groundStaff || null;
-    } catch (_error) {
+    } catch (_error: any) {
       return null;
     }
   }
@@ -440,7 +440,7 @@ export class GroundOperationsService {
         `${this.endpoint}/turnarounds`
       );
       return response.turnarounds || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -451,7 +451,7 @@ export class GroundOperationsService {
         `${this.endpoint}/turnarounds/${assignmentId}`
       );
       return response.turnaround || null;
-    } catch (_error) {
+    } catch (_error: any) {
       return null;
     }
   }
@@ -484,7 +484,7 @@ export class GroundOperationsService {
         `${this.endpoint}/equipment`
       );
       return response.equipment || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -495,7 +495,7 @@ export class GroundOperationsService {
         `${this.endpoint}/equipment/${equipmentId}`
       );
       return response.equipment || null;
-    } catch (_error) {
+    } catch (_error: any) {
       return null;
     }
   }
@@ -539,7 +539,7 @@ export class GroundOperationsService {
         `${this.endpoint}/procedures`
       );
       return response.procedures || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -550,7 +550,7 @@ export class GroundOperationsService {
         `${this.endpoint}/procedures/${procedureId}`
       );
       return response.procedure || null;
-    } catch (_error) {
+    } catch (_error: any) {
       return null;
     }
   }
@@ -583,7 +583,7 @@ export class GroundOperationsService {
         `${this.endpoint}/safety-compliance`
       );
       return response.safetyCompliance || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }
@@ -594,7 +594,7 @@ export class GroundOperationsService {
         `${this.endpoint}/safety-compliance/${complianceId}`
       );
       return response.safetyCompliance || null;
-    } catch (_error) {
+    } catch (_error: any) {
       return null;
     }
   }
@@ -632,7 +632,7 @@ export class AviationSettingsService {
     try {
       const response = await APIClient.get<{ settings?: AviationSettings }>(this.endpoint);
       return response.settings || null;
-    } catch (_error) {
+    } catch (_error: any) {
       return null;
     }
   }
@@ -654,7 +654,7 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: Alert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (_error) {
+    } catch (_error: any) {
       return [];
     }
   }

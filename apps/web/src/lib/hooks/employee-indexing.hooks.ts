@@ -43,7 +43,7 @@ export async function indexEmployeeOnCreate(employee: {
     await employeeSearchService.indexEmployee(searchDocument);
 
     logger.info({ employeeId: employee.id }, 'Employee indexed in Elasticsearch');
-  } catch (error) {
+  } catch (error: any) {
     // Don't throw - indexing failure shouldn't break employee creation
     logger.error({ error, employeeId: employee.id }, 'Failed to index employee');
   }
@@ -65,7 +65,7 @@ export async function updateEmployeeIndex(
     await employeeSearchService.updateEmployee(employeeId, updates);
 
     logger.info({ employeeId }, 'Employee index updated in Elasticsearch');
-  } catch (error) {
+  } catch (error: any) {
     // Don't throw - indexing failure shouldn't break employee update
     logger.error({ error, employeeId }, 'Failed to update employee index');
   }
@@ -79,7 +79,7 @@ export async function removeEmployeeFromIndex(employeeId: string): Promise<void>
     await employeeSearchService.deleteEmployee(employeeId);
 
     logger.info({ employeeId }, 'Employee removed from Elasticsearch index');
-  } catch (error) {
+  } catch (error: any) {
     // Don't throw - indexing failure shouldn't break employee deletion
     logger.error({ error, employeeId }, 'Failed to remove employee from index');
   }
@@ -123,7 +123,7 @@ export async function bulkReindexEmployees(employees: Array<{
     await employeeSearchService.bulkIndexEmployees(searchDocuments);
 
     logger.info({ count: employees.length }, 'Employees bulk indexed in Elasticsearch');
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error, count: employees.length }, 'Failed to bulk index employees');
     throw error;
   }

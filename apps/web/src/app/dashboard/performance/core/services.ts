@@ -16,7 +16,7 @@ export class PerformanceReviewService {
         try {
             const response = await APIClient.get<{ reviews?: PerformanceReview[] }>(this.endpoint, filters);
             return response.reviews || [];
-        } catch (error) {
+        } catch (error: any) {
                         return [];
         }
     }
@@ -44,7 +44,7 @@ export class ReviewCycleService {
         try {
             const response = await APIClient.get<{ cycles?: ReviewCycle[] }>(this.endpoint, filters);
             return response.cycles || [];
-        } catch (error) {
+        } catch (error: any) {
                         return [];
         }
     }
@@ -62,7 +62,7 @@ export class GoalService {
         try {
             const response = await APIClient.get<{ goals?: Goal[] }>(this.endpoint, filters);
             return response.goals || [];
-        } catch (error) {
+        } catch (error: any) {
                         return [];
         }
     }
@@ -85,7 +85,7 @@ export class CompetencyService {
         try {
             const response = await APIClient.get<{ competencies?: Competency[] }>(this.endpoint);
             return response.competencies || [];
-        } catch (error) {
+        } catch (error: any) {
                         return [];
         }
     }
@@ -103,7 +103,7 @@ export class DevelopmentPlanService {
         try {
             const response = await APIClient.get<{ plans?: DevelopmentPlan[] }>(this.endpoint, filters);
             return response.plans || [];
-        } catch (error) {
+        } catch (error: any) {
                         return [];
         }
     }
@@ -121,7 +121,7 @@ export class CalibrationService {
         try {
             const response = await APIClient.get<{ sessions?: CalibrationSession[] }>(this.endpoint, filters);
             return response.sessions || [];
-        } catch (error) {
+        } catch (error: any) {
                         return [];
         }
     }
@@ -139,7 +139,7 @@ export class PerformanceAnalyticsService {
         try {
             const response = await APIClient.get<{ stats: PerformanceStats }>(this.endpoint);
             return response.stats;
-        } catch (error) {
+        } catch (error: any) {
                         return {
                 totalReviews: 0,
                 completedReviews: 0,
@@ -158,7 +158,7 @@ export class OneOnOneMeetingService {
         try {
             const response = await APIClient.get<{ meetings?: any[] }>(this.endpoint, filters);
             return response.meetings || [];
-        } catch (error) {
+        } catch (error: any) {
             return [];
         }
     }

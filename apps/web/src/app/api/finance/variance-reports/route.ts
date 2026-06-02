@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
         criticalVariances: 0,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to fetch variance reports' },
       { status: 500 }
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
         createdDate: new Date().toISOString(),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { error: 'Failed to generate variance report' },
       { status: 500 }

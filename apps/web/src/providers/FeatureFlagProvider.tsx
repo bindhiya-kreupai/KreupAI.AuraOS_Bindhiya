@@ -85,7 +85,7 @@ export function FeatureFlagProvider({
       setFlags(flagMap);
       setError(null);
       setLastRefreshed(new Date());
-    } catch (err) {
+    } catch (err: any) {
       setError('Failed to load feature flags. Using fallback values.');
       console.error('[FeatureFlagProvider] Failed to fetch flags:', err);
     } finally {

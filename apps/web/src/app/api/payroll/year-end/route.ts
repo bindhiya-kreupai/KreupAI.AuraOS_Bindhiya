@@ -127,7 +127,7 @@ export const GET = withEnhancedAuth(
         success: true,
         data: yearEndData,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching year-end data:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch year-end data' },
@@ -202,10 +202,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Year-End Processing',
-          details: `Processed year-end task: ${taskId} for FY ${fiscalYear}`,
+          resourceType: 'Payroll - Year-End Processing',
+          metadata: { description: `Processed year-end task: ${taskId} for FY ${fiscalYear}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -220,7 +221,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ success: true, data: result });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error processing year-end task:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to process year-end task' },

@@ -29,7 +29,7 @@ export default function ConditionalLogicPage() {
                     }));
             });
             setRules(extracted);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

@@ -111,7 +111,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('GET /api/core-hr/employment-history error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -207,7 +207,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ record }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('POST /api/core-hr/employment-history error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

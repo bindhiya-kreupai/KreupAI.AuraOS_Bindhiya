@@ -26,7 +26,7 @@ export default function SalaryBandsPage() {
             setLoading(true);
             const data = await GradeService.getGrades();
             setGrades(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

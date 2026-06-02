@@ -42,7 +42,7 @@ export const GET = withEnhancedAuth(
       }));
 
       return NextResponse.json({ packages }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching pre-boarding packages:', error);
       return NextResponse.json(
         { error: 'Failed to fetch pre-boarding packages' },
@@ -109,7 +109,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ package: preBoardingPackage }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating pre-boarding package:', error);
       return NextResponse.json(
         { error: 'Failed to create pre-boarding package' },
@@ -166,7 +166,7 @@ export const PUT = withEnhancedAuth(
       };
 
       return NextResponse.json({ package: preBoardingPackage }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating pre-boarding package:', error);
       return NextResponse.json(
         { error: 'Failed to update pre-boarding package' },

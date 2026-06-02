@@ -46,7 +46,7 @@ export default function PremiumSharingPage() {
             } else {
                 setDeductions([]);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching premium data:', error);
             setDeductions([]);
         } finally {

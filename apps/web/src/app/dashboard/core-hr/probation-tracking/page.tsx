@@ -46,7 +46,7 @@ export default function ProbationTrackingPage() {
       setLoading(true);
       const data = await ProbationService.getAllProbationRecords();
       setProbationRecords(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -70,7 +70,7 @@ export default function ProbationTrackingPage() {
           reviewedAt: new Date(),
         } as any);
         await fetchProbationRecords();
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to confirm:', error);
       } finally {
         setActionLoading((prev) => ({ ...prev, [recordId]: false }));
@@ -87,7 +87,7 @@ export default function ProbationTrackingPage() {
           reason || 'Extended by manager'
         );
         await fetchProbationRecords();
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to extend:', error);
       } finally {
         setActionLoading((prev) => ({ ...prev, [recordId]: false }));

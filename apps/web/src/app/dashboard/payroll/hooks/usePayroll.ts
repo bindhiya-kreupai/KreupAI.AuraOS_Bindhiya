@@ -161,7 +161,7 @@ export const usePayroll = () => {
             const statsData = await PayrollAnalyticsService.getStats();
             setStats(statsData);
 
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to load payroll data');
         } finally {
             setIsLoading(false);
@@ -175,7 +175,7 @@ export const usePayroll = () => {
     const getPayrollRun = useCallback(async (id: string): Promise<PayrollRun | null> => {
         try {
             return await PayrollRunService.getPayrollRun(id);
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to load payroll run');
             return null;
         }
@@ -188,7 +188,7 @@ export const usePayroll = () => {
             setPayrollRuns(prev => [run, ...prev]);
             toast.success('Payroll run created successfully!');
             return run;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to create payroll run');
             throw error;
         } finally {
@@ -203,7 +203,7 @@ export const usePayroll = () => {
             setPayrollRuns(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
             toast.success('Payroll run updated successfully!');
             return updated;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to update payroll run');
             throw error;
         } finally {
@@ -217,7 +217,7 @@ export const usePayroll = () => {
             await PayrollRunService.deletePayrollRun(id);
             setPayrollRuns(prev => prev.filter(r => r.id !== id));
             toast.success('Payroll run deleted successfully!');
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to delete payroll run');
             throw error;
         } finally {
@@ -232,7 +232,7 @@ export const usePayroll = () => {
             setPayrollRuns(prev => prev.map(r => r.id === id ? updated : r));
             toast.success(`Moved to ${step.replace('_', ' ')} step`);
             return updated;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to process payroll step');
             throw error;
         } finally {
@@ -247,7 +247,7 @@ export const usePayroll = () => {
             setPayrollRuns(prev => prev.map(r => r.id === id ? updated : r));
             toast.success('Payroll approved and ready for disbursement!');
             return updated;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to approve payroll');
             throw error;
         } finally {
@@ -262,7 +262,7 @@ export const usePayroll = () => {
     const getPayslips = useCallback(async (employeeId?: string): Promise<Payslip[]> => {
         try {
             return await PayslipService.getPayslips(employeeId);
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to load payslips');
             return [];
         }
@@ -278,7 +278,7 @@ export const usePayroll = () => {
             a.click();
             URL.revokeObjectURL(url);
             toast.success('Payslip downloaded successfully!');
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to download payslip');
             throw error;
         }
@@ -295,7 +295,7 @@ export const usePayroll = () => {
             setEmployeeSalaries(prev => prev.map(s => s.employeeId === employeeId ? { ...s, ...updates } : s));
             toast.success('Salary updated successfully!');
             return updated;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to update salary');
             throw error;
         } finally {
@@ -320,7 +320,7 @@ export const usePayroll = () => {
             });
             toast.success('Tax declaration saved successfully!');
             return saved;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to save tax declaration');
             throw error;
         } finally {
@@ -334,7 +334,7 @@ export const usePayroll = () => {
             const url = await TaxDeclarationService.uploadProof(declarationId, categoryId, file);
             toast.success('Tax proof uploaded successfully!');
             return url;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to upload tax proof');
             throw error;
         } finally {
@@ -353,7 +353,7 @@ export const usePayroll = () => {
             setReimbursements(prev => [claim, ...prev]);
             toast.success('Reimbursement claim submitted successfully!');
             return claim;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to create reimbursement claim');
             throw error;
         } finally {
@@ -373,7 +373,7 @@ export const usePayroll = () => {
             setReimbursements(prev => prev.map(r => r.id === id ? updated : r));
             toast.success(`Claim ${status} successfully!`);
             return updated;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to update claim status');
             throw error;
         } finally {
@@ -392,7 +392,7 @@ export const usePayroll = () => {
             setLoans(prev => [loan, ...prev]);
             toast.success('Loan created successfully!');
             return loan;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to create loan');
             throw error;
         } finally {
@@ -407,7 +407,7 @@ export const usePayroll = () => {
             setLoans(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l));
             toast.success('Loan updated successfully!');
             return updated;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to update loan');
             throw error;
         } finally {
@@ -426,7 +426,7 @@ export const usePayroll = () => {
             setBonuses(prev => [bonus, ...prev]);
             toast.success('Bonus created successfully!');
             return bonus;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to create bonus');
             throw error;
         } finally {
@@ -441,7 +441,7 @@ export const usePayroll = () => {
             setBonuses(prev => prev.map(b => b.id === id ? updated : b));
             toast.success(`Bonus ${status} successfully!`);
             return updated;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to update bonus status');
             throw error;
         } finally {
@@ -460,7 +460,7 @@ export const usePayroll = () => {
             setSettings(updated);
             toast.success('Payroll settings updated successfully!');
             return updated;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to update settings');
             throw error;
         } finally {
@@ -477,7 +477,7 @@ export const usePayroll = () => {
             const statsData = await PayrollAnalyticsService.getStats();
             setStats(statsData);
             return statsData;
-        } catch (error) {
+        } catch (error: any) {
             toast.error((error as Error).message || 'Failed to load statistics');
             return null;
         }

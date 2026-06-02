@@ -296,7 +296,7 @@ export async function processDocument(
 
       doc.updatedAt = new Date().toISOString();
       results.push({ type: op.type, success: true, durationMs: Date.now() - start });
-    } catch (err) {
+    } catch (err: any) {
       results.push({
         type: op.type,
         success: false,

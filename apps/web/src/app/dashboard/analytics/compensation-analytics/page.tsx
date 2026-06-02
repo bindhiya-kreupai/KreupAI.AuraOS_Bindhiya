@@ -33,7 +33,7 @@ export default function CompensationAnalyticsPage() {
           }))
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading compensation data:', error);
     } finally {
       setLoading(false);

@@ -65,7 +65,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     };
 
     return NextResponse.json(response, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Asset Assign API] POST Error:', error);
 
     let statusCode = 500;

@@ -69,7 +69,7 @@ export default function OfferManagementPage() {
             const accepted = data.filter((offer) => offer.status === 'accepted').length;
             const pending = data.filter((offer) => offer.status === 'pending_approval' || offer.status === 'draft').length;
             setStats({ pending, accepted, awaitingSignature });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
@@ -80,7 +80,7 @@ export default function OfferManagementPage() {
         try {
             await JobOfferService.sendOffer(offerId);
             await fetchOffers();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         }
     };

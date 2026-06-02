@@ -45,7 +45,7 @@ export default function CompetencyLibraryPage() {
             try {
                 const data = await CompetencyService.getCompetencies();
                 setCompetencies(data as CompetencyItem[]);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to load competencies:', error);
             } finally {
                 setLoading(false);

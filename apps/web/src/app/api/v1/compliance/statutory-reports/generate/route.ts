@@ -89,7 +89,7 @@ export const POST = withAudit(
         },
         { status: 202 }
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Statutory Reports Generate API] POST Error:', error);
       return NextResponse.json(
         {

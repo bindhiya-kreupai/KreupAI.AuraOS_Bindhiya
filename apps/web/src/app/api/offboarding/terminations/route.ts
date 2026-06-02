@@ -72,7 +72,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       { success: true, terminations },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching terminations:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch terminations' },
@@ -136,7 +136,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
       { success: true, termination },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating termination:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create termination' },
@@ -236,7 +236,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       { success: true, termination },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating termination:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update termination' },

@@ -62,7 +62,7 @@ export class LeaveAccrualService {
 
           // Update balance
           await this.updateLeaveBalance(employee.id, policy.leaveTypeCode, result, processDate);
-        } catch (error) {
+        } catch (error: any) {
           errors.push({
             employeeId: employee.id,
             employeeName: employee.name,
@@ -264,7 +264,7 @@ export class LeaveAccrualService {
             toYear
           );
           results.push(result);
-        } catch (error) {
+        } catch (error: any) {
           errors.push({
             employeeId: employee.id,
             employeeName: employee.name,

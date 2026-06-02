@@ -283,7 +283,7 @@ export async function addQueryMonitoring(prisma: PrismaClient): Promise<void> {
       queryMonitor.trackQuery(query, duration, params.args);
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       const duration = Date.now() - startTime;
 
       // Log failed query
@@ -319,7 +319,7 @@ export async function getConnectionPoolMetrics(
       // These would need to be tracked via database-specific queries
       // For now, just return null to indicate metrics are not available
     };
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Failed to get connection pool metrics');
     return null;
   }

@@ -106,7 +106,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       },
       { status: 202 } // Accepted
     );
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Export request failed');
 
     return NextResponse.json(

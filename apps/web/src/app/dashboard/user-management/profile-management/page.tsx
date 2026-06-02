@@ -46,7 +46,7 @@ export default function ProfilePage() {
             } else {
                 alert('Failed to update profile');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error updating profile:', error);
             alert('Error updating profile');

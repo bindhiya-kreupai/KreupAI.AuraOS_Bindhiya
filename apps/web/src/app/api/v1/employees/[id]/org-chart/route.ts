@@ -71,7 +71,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { params, permi
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Org Chart API] GET Error:', error);
 
     const response: ApiResponse = {

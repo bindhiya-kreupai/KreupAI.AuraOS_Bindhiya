@@ -71,7 +71,7 @@ export const GET = withEnhancedAuth(
         loans,
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching loan recovery:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch loan recovery' },
@@ -119,10 +119,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Loan Recovery',
-          details: `Created loan: ${data.loanType} - $${data.principalAmount} for ${data.tenure} months, EMI: $${Math.round(emiAmount * 100) / 100}`,
+          resourceType: 'Payroll - Loan Recovery',
+          metadata: { description: `Created loan: ${data.loanType} - $${data.principalAmount} for ${data.tenure} months, EMI: $${Math.round(emiAmount * 100) / 100}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -138,7 +139,7 @@ export const POST = withEnhancedAuth(
         },
         loan: adjustment,
       }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

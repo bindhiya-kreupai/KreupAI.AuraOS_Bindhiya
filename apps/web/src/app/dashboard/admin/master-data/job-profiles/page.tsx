@@ -47,7 +47,7 @@ export default function JobProfilesPage() {
             if (profilesRes.ok) setData(await profilesRes.json());
             if (familiesRes.ok) setJobFamilies(await familiesRes.json());
             if (gradesRes.ok) setGrades(await gradesRes.json());
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch data:', error);
         } finally {
@@ -105,7 +105,7 @@ export default function JobProfilesPage() {
             } else {
                 alert('Failed to save job profile');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving job profile:', error);
             alert('Error saving job profile');
@@ -124,7 +124,7 @@ export default function JobProfilesPage() {
                 } else {
                     alert('Failed to delete job profile');
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting job profile:', error);
                 alert('Error deleting job profile');

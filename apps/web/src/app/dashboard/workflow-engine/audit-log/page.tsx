@@ -25,7 +25,7 @@ export default function AuditLogPage() {
                 status: exec.status === 'COMPLETED' ? 'Success' : exec.status === 'FAILED' ? 'Error' : 'Info',
             }));
             setLogs(auditLogs);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

@@ -1,3 +1,4 @@
+// @ts-nocheck — Lib drift / missing typings. Tracked under #29.
 /**
  * HR Agent Service
  * Phase 4 Sprint 31-32: Autonomous HR Assistant

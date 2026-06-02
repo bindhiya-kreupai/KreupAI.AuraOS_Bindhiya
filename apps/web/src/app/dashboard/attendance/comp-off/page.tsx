@@ -58,7 +58,7 @@ export default function CompOffPage() {
                     expiring: 0
                 });
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

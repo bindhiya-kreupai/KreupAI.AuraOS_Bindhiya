@@ -80,7 +80,7 @@ export const GET = withEnhancedAuth(
         reports,
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching statutory deductions:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch statutory deductions' },
@@ -136,16 +136,17 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Payroll - Statutory Deductions',
-          details: `Marked ${existing.statutoryType} payment as PAID for ${existing.paymentMonth}${challanNumber ? ` - Challan: ${challanNumber}` : ''}`,
+          resourceType: 'Payroll - Statutory Deductions',
+          metadata: { description: `Marked ${existing.statutoryType} payment as PAID for ${existing.paymentMonth}${challanNumber ? ` - Challan: ${challanNumber}` : ''}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error filing statutory payment:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to file statutory payment' },

@@ -70,7 +70,7 @@ export async function validateSession(
       valid: true,
       user: sessionData,
     };
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error, path: request.nextUrl.pathname }, 'Error validating session');
     return {
       valid: false,
@@ -289,7 +289,7 @@ export async function handleTokenRefresh(request: NextRequest): Promise<NextResp
     });
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error refreshing session');
     return NextResponse.json(
       {

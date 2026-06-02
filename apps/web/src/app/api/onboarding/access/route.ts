@@ -62,7 +62,7 @@ export const GET = withEnhancedAuth(
       });
 
       return NextResponse.json({ access }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching onboarding access:', error);
       return NextResponse.json(
         { error: 'Failed to fetch onboarding access' },
@@ -129,7 +129,7 @@ export const POST = withEnhancedAuth(
       };
 
       return NextResponse.json({ access }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error requesting access:', error);
       return NextResponse.json(
         { error: 'Failed to request access' },
@@ -186,7 +186,7 @@ export const PUT = withEnhancedAuth(
       };
 
       return NextResponse.json({ access }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating access:', error);
       return NextResponse.json(
         { error: 'Failed to update access' },

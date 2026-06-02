@@ -23,7 +23,7 @@ export class RecognitionService {
     try {
       const response = await APIClient.get<{ recognitions?: Recognition[] }>(this.endpoint, filters);
       return response.recognitions || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -32,7 +32,7 @@ export class RecognitionService {
     try {
       const response = await APIClient.get<{ recognition?: Recognition }>(`${this.endpoint}/${id}`);
       return response.recognition || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -79,7 +79,7 @@ export class RecognitionService {
   static async incrementViewCount(id: string): Promise<void> {
     try {
       await APIClient.post(`${this.endpoint}/${id}/view`);
-    } catch (error) {
+    } catch (error: any) {
           }
   }
 }
@@ -91,7 +91,7 @@ export class BadgeService {
     try {
       const response = await APIClient.get<{ badges?: Badge[] }>(this.endpoint, filters);
       return response.badges || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -114,7 +114,7 @@ export class BadgeService {
     try {
       const response = await APIClient.get<{ employeeBadges?: EmployeeBadge[] }>(`${this.endpoint}/employee`, { employeeId });
       return response.employeeBadges || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -144,7 +144,7 @@ export class RedemptionService {
     try {
       const response = await APIClient.get<{ items?: RewardsCatalog[] }>('/recognition/catalog', filters);
       return response.items || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -167,7 +167,7 @@ export class RedemptionService {
     try {
       const response = await APIClient.get<{ redemptions?: Redemption[] }>(this.endpoint, filters);
       return response.redemptions || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -218,7 +218,7 @@ export class PointsService {
         expiringSoon: 0,
         transactions: []
       };
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -239,7 +239,7 @@ export class PointsService {
     try {
       const response = await APIClient.get<{ employeePoints?: EmployeePoints[] }>(`${this.endpoint}/all`);
       return response.employeePoints || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -248,7 +248,7 @@ export class PointsService {
     try {
       const response = await APIClient.get<{ transactions?: PointsTransaction[] }>(`${this.endpoint}/transactions`, { employeeId });
       return response.transactions || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -261,7 +261,7 @@ export class RecognitionProgramService {
     try {
       const response = await APIClient.get<{ programs?: RecognitionProgram[] }>(this.endpoint, filters);
       return response.programs || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -325,7 +325,7 @@ export class RecognitionAnalyticsService {
         sentimentScore: 0,
         trends: []
       };
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -340,7 +340,7 @@ export class RecognitionAnalyticsService {
         rankings: [],
         lastUpdated: new Date().toISOString()
       };
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }
@@ -388,7 +388,7 @@ export class RecognitionSettingsService {
         enableMobileApp: true,
         enableIntegrations: false
       };
-    } catch (error) {
+    } catch (error: any) {
             throw error;
     }
   }

@@ -65,7 +65,7 @@ export const GET = withEnhancedAuth(
           summary,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching encashment requests:', error);
       return NextResponse.json(
         { error: 'Failed to fetch encashment requests', errorAr: 'فشل في جلب طلبات صرف الإجازات' },
@@ -109,10 +109,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Leave - Encashment',
-          details: `Created encashment request for ${data.requestedDays} days, amount: ${data.totalAmount}`,
+          resourceType: 'Leave - Encashment',
+          metadata: { description: `Created encashment request for ${data.requestedDays} days, amount: ${data.totalAmount}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -123,7 +124,7 @@ export const POST = withEnhancedAuth(
         encashment,
         leaveEncashment: encashment,
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

@@ -46,7 +46,7 @@ export default function DepartmentsPage() {
             if (depsRes.ok) setData(await depsRes.json());
             if (compsRes.ok) setCompanies(await compsRes.json());
             if (costsRes.ok) setCostCenters(await costsRes.json());
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch data:', error);
         } finally {
@@ -116,7 +116,7 @@ export default function DepartmentsPage() {
             } else {
                 alert('Failed to save department');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving department:', error);
             alert('Error saving department');
@@ -135,7 +135,7 @@ export default function DepartmentsPage() {
                 } else {
                     alert('Failed to delete department');
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting department:', error);
                 alert('Error deleting department');

@@ -54,7 +54,7 @@ export default function PersonalInfoPage() {
                         bankRoutingNumber: res.data.bankRoutingNumber || '',
                     });
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Failed to fetch profile:', err);
             } finally {
                 setFetching(false);
@@ -71,7 +71,7 @@ export default function PersonalInfoPage() {
                 setProfile(res.data);
                 alert("Changes saved successfully!");
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to save profile:', err);
             alert("Failed to save changes. Please try again.");
         } finally {

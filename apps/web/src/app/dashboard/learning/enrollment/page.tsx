@@ -19,7 +19,7 @@ export default function EnrollmentPage() {
                 setLoading(true);
                 const result = await EnrollmentService.getEnrollments();
                 setData(result);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
                 setData([]);
             } finally {

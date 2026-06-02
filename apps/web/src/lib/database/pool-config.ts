@@ -239,7 +239,7 @@ class PoolMonitor {
           }
           logger.warn('Database pool health check failed');
         }
-      } catch (error) {
+      } catch (error: any) {
         this.health.isHealthy = false;
         this.health.errors.push(`Health check error: ${(error as Error).message}`);
         logger.error({ error }, 'Database pool health check error');

@@ -29,7 +29,7 @@ export default function MultiStatePayrollPage() {
             ]);
             setPayrollRuns(runs);
             setSalaries(sals);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

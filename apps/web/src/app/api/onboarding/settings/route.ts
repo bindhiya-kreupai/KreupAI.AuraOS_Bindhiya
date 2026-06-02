@@ -45,7 +45,7 @@ export const GET = withEnhancedAuth(
       };
 
       return NextResponse.json({ settings }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching onboarding settings:', error);
       return NextResponse.json(
         { error: 'Failed to fetch onboarding settings' },
@@ -104,7 +104,7 @@ export const PUT = withEnhancedAuth(
       };
 
       return NextResponse.json({ settings }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating onboarding settings:', error);
       return NextResponse.json(
         { error: 'Failed to update onboarding settings' },

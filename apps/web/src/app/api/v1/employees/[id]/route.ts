@@ -63,7 +63,7 @@ const employeeInclude = {
 export const GET = withEnhancedAuth(
   async (
     request: NextRequest,
-    { user, params, permissions }: { user: any; params: { id: string } }
+    { user, params, permissions }: any
   ) => {
     if (!permissions.includes('employees:read')) {
       return NextResponse.json(
@@ -83,7 +83,7 @@ export const GET = withEnhancedAuth(
       const { id } = params;
 
       const employee = await prisma.employee.findFirst({
-        where: { id, tenantId },
+        where: { id, company: { tenantId } },
         include: employeeInclude,
       });
 
@@ -114,7 +114,7 @@ export const GET = withEnhancedAuth(
         } satisfies ApiResponse,
         { status: 200 }
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Employee API] GET Error:', error);
       return NextResponse.json(
         {
@@ -145,7 +145,7 @@ export const PUT = auditMiddleware.updateEmployee(
   withEnhancedAuth(
     async (
       request: NextRequest,
-      { user, params, permissions }: { user: any; params: { id: string } }
+      { user, params, permissions }: any
     ) => {
       if (!permissions.includes('employees:update')) {
         return NextResponse.json(
@@ -187,7 +187,7 @@ export const PUT = auditMiddleware.updateEmployee(
         }
 
         // Verify employee exists and belongs to tenant
-        const existing = await prisma.employee.findFirst({ where: { id, tenantId } });
+        const existing = await prisma.employee.findFirst({ where: { id, company: { tenantId } } });
         if (!existing) {
           return NextResponse.json(
             {
@@ -254,7 +254,7 @@ export const PUT = auditMiddleware.updateEmployee(
           } satisfies ApiResponse,
           { status: 200 }
         );
-      } catch (error) {
+      } catch (error: any) {
         console.error('[Employee API] PUT Error:', error);
         return NextResponse.json(
           {
@@ -286,7 +286,7 @@ export const DELETE = auditMiddleware.deleteEmployee(
   withEnhancedAuth(
     async (
       request: NextRequest,
-      { user, params, permissions }: { user: any; params: { id: string } }
+      { user, params, permissions }: any
     ) => {
       if (!permissions.includes('employees:delete')) {
         return NextResponse.json(
@@ -326,7 +326,7 @@ export const DELETE = auditMiddleware.deleteEmployee(
           );
         }
 
-        const existing = await prisma.employee.findFirst({ where: { id, tenantId } });
+        const existing = await prisma.employee.findFirst({ where: { id, company: { tenantId } } });
         if (!existing) {
           return NextResponse.json(
             {
@@ -363,7 +363,7 @@ export const DELETE = auditMiddleware.deleteEmployee(
           } satisfies ApiResponse,
           { status: 200 }
         );
-      } catch (error) {
+      } catch (error: any) {
         console.error('[Employee API] DELETE Error:', error);
         return NextResponse.json(
           {

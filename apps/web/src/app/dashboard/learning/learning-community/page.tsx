@@ -15,7 +15,7 @@ export default function LearningCommunityPage() {
         setLoading(true);
         const result = await KnowledgeBaseService.getKnowledgeArticles();
         setArticles(result);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error:', error);
         setArticles([]);
       } finally {

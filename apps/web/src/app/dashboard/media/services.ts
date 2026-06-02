@@ -8,7 +8,7 @@ export class ContentRightsService {
     try {
       const response = await APIClient.get<{ rights?: ContentRights[] }>(this.endpoint);
       return response.rights || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -31,7 +31,7 @@ export class BandwidthAnalyticsService {
     try {
       const response = await APIClient.get<{ metrics?: BandwidthMetrics[] }>(this.endpoint);
       return response.metrics || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -49,7 +49,7 @@ export class AudienceMetricsService {
     try {
       const response = await APIClient.get<{ metrics?: AudienceMetrics[] }>(this.endpoint);
       return response.metrics || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -67,7 +67,7 @@ export class NetworkOperationsService {
     try {
       const response = await APIClient.get<{ operations?: NetworkOperations[] }>(this.endpoint);
       return response.operations || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }
@@ -90,7 +90,7 @@ export class MediaSettingsService {
     try {
       const response = await APIClient.get<{ settings?: MediaSettings }>(this.endpoint);
       return response.settings || null;
-    } catch (error) {
+    } catch (error: any) {
             return null;
     }
   }
@@ -108,7 +108,7 @@ export class AlertsService {
     try {
       const response = await APIClient.get<{ alerts?: MediaAlert[] }>(this.endpoint);
       return response.alerts || [];
-    } catch (error) {
+    } catch (error: any) {
             return [];
     }
   }

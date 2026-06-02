@@ -25,7 +25,7 @@ export default function LetterGenerationPage() {
     try {
       const data = await LetterService.getAllLetterRequests();
       setLetterRequests(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -40,7 +40,7 @@ export default function LetterGenerationPage() {
         setActionLoading(requestId);
         await LetterService.approveRequest(requestId, 'current-user', 'current-user');
         await fetchLetterRequests();
-      } catch (error) {
+      } catch (error: any) {
         console.error('Approve failed:', error);
       } finally {
         setActionLoading(null);

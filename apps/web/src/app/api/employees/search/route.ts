@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
         took: result.took,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error in employee search API');
 
     return NextResponse.json(

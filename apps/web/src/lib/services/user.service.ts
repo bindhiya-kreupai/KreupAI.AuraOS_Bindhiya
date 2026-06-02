@@ -1,7 +1,8 @@
 import type { ServiceResponse, ListOptions } from './base.service';
 import { BaseService } from './base.service';
 import { hashPassword } from '@/lib/auth/password';
-import type { User, UserStatus } from '@prisma/client';
+import type { User } from '@prisma/client';
+type UserStatus = string;
 
 export interface CreateUserInput {
   email: string;
@@ -73,7 +74,7 @@ export class UserService extends BaseService {
                 id: true,
                 firstName: true,
                 lastName: true,
-                employeeId: true,
+                employeeCode: true,
               },
             },
           },
@@ -89,7 +90,7 @@ export class UserService extends BaseService {
         data: users,
         meta: this.buildPaginationMeta(total, page, limit),
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error({ error, options }, 'Failed to list users');
       return {
         success: false,
@@ -119,7 +120,7 @@ export class UserService extends BaseService {
               id: true,
               firstName: true,
               lastName: true,
-              employeeId: true,
+              employeeCode: true,
             },
           },
         },
@@ -136,7 +137,7 @@ export class UserService extends BaseService {
         success: true,
         data: user,
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error({ error, userId }, 'Failed to get user by ID');
       return {
         success: false,
@@ -192,10 +193,11 @@ export class UserService extends BaseService {
         // Create audit log
         await tx.auditLog.create({
           data: {
+            tenantId: input.tenantId,
             userId: createdBy,
             action: 'CREATE',
-            module: 'User Management',
-            details: `Created user: ${newUser.email}`,
+            resourceType: 'User',
+            metadata: { description: `Created user: ${newUser.email}` },
             ipAddress,
           },
         });
@@ -209,7 +211,7 @@ export class UserService extends BaseService {
         success: true,
         data: result,
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error({ error, input: { email: input.email } }, 'Failed to create user');
       return {
         success: false,
@@ -281,10 +283,11 @@ export class UserService extends BaseService {
         // Create audit log
         await tx.auditLog.create({
           data: {
+            tenantId: existingUser.tenantId,
             userId: updatedBy,
             action: 'UPDATE',
-            module: 'User Management',
-            details: `Updated user: ${updatedUser.email}`,
+            resourceType: 'User',
+            metadata: { description: `Updated user: ${updatedUser.email}` },
             ipAddress,
           },
         });
@@ -298,7 +301,7 @@ export class UserService extends BaseService {
         success: true,
         data: result,
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error({ error, userId, input }, 'Failed to update user');
       return {
         success: false,
@@ -337,10 +340,11 @@ export class UserService extends BaseService {
         // Create audit log
         await tx.auditLog.create({
           data: {
+            tenantId: existingUser.tenantId,
             userId: deletedBy,
             action: 'DELETE',
-            module: 'User Management',
-            details: `Deleted user: ${existingUser.email}`,
+            resourceType: 'User',
+            metadata: { description: `Deleted user: ${existingUser.email}` },
             ipAddress,
           },
         });
@@ -351,7 +355,7 @@ export class UserService extends BaseService {
       return {
         success: true,
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error({ error, userId, deletedBy }, 'Failed to delete user');
       return {
         success: false,

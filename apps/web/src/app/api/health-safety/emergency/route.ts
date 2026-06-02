@@ -18,7 +18,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       { success: true, data: defaultContacts },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching emergency contacts:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },

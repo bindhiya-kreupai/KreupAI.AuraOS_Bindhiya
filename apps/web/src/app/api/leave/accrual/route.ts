@@ -67,7 +67,7 @@ export const GET = withEnhancedAuth(
           },
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching accrual history:', error);
       return NextResponse.json(
         { error: 'Failed to fetch accrual history', errorAr: 'فشل في جلب سجل الاستحقاق' },
@@ -176,10 +176,11 @@ export const POST = withEnhancedAuth(
 
         await prisma.auditLog.create({
           data: {
+            tenantId: user.tenantId,
             userId: user.userId,
             action: 'CREATE',
-            module: 'Leave - Accrual',
-            details: `Processed batch accrual: ${processedCount} records, ${totalAccrued} days accrued`,
+            resourceType: 'Leave - Accrual',
+            metadata: { description: `Processed batch accrual: ${processedCount} records, ${totalAccrued} days accrued` } as any,
             ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
           },
         });
@@ -219,7 +220,7 @@ export const POST = withEnhancedAuth(
         success: true,
         data: accrual,
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },

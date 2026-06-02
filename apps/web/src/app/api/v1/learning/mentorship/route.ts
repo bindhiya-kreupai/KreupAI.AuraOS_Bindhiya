@@ -65,7 +65,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         availableMentors: [],
       },
     });
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json({
       success: true,
       data: {
@@ -116,7 +116,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       { success: true, data: program, message: 'Mentorship request submitted successfully' },
       { status: 201 }
     );
-  } catch (_error) {
+  } catch (_error: any) {
     return NextResponse.json(
       { success: false, error: 'Failed to create mentoring program' },
       { status: 500 }

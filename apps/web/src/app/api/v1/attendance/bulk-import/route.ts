@@ -253,7 +253,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
 
         if (!minDate || record.date < minDate) minDate = record.date;
         if (!maxDate || record.date > maxDate) maxDate = record.date;
-      } catch (dbError) {
+      } catch (dbError: any) {
         errors.push({
           row: rowNum,
           employeeCode: record.employeeCode,
@@ -296,7 +296,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     // Return 207 Multi-Status if there are partial failures
     const statusCode = errors.length > 0 ? 207 : 201;
     return NextResponse.json(response, { status: statusCode });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Attendance Bulk Import API] POST Error:', error);
 
     if (error instanceof Error && error.message.includes('too many records')) {

@@ -59,7 +59,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       success: true,
       data: { id: record.id, token: record.token, platform: record.platform },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[register-device] Error:', error);
     return NextResponse.json({ error: 'Failed to register device' }, { status: 500 });
   }

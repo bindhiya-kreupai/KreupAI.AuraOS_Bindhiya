@@ -96,7 +96,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         };
 
         return NextResponse.json(settings, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
         return NextResponse.json(
             { error: 'Failed to fetch settings' },
             { status: 500 }
@@ -124,7 +124,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
         };
 
         return NextResponse.json(updatedSettings, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
         return NextResponse.json(
             { error: 'Failed to update settings' },
             { status: 500 }

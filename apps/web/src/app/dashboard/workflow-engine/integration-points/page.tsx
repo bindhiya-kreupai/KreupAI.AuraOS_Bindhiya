@@ -24,7 +24,7 @@ export default function IntegrationPointsPage() {
                 icon: 'bg-indigo-500',
             }));
             setApps(integrations);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

@@ -26,7 +26,7 @@ export default function TravelDashboardPage() {
             ]);
             setMetrics(metricsData);
             setTrips(Array.isArray(requestsData) ? requestsData : []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

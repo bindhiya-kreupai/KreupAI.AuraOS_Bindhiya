@@ -64,7 +64,7 @@ export default function PerksMarketplacePage() {
       } else {
         setPerks([]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching perks:', error);
       setPerks([]);
     } finally {

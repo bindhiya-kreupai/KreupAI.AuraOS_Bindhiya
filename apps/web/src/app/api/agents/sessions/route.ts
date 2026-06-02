@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         messages: session.messages,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { success: false, error: 'Failed to start session' },
       { status: 500 }
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: [],
     });
-  } catch (error) {
+  } catch (error: any) {
         return NextResponse.json(
       { success: false, error: 'Failed to fetch sessions' },
       { status: 500 }

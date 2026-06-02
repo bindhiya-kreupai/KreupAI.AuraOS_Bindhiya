@@ -30,7 +30,7 @@ export default function SalaryStructurePage() {
             ]);
             setStructures(structData);
             setComponents(compData);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

@@ -105,7 +105,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Benefits Open Enrollment API] GET Error:', error);
     return NextResponse.json(
       {
@@ -285,7 +285,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     }
 
     return NextResponse.json(response, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Benefits Open Enrollment API] POST Error:', error);
     return NextResponse.json(
       {

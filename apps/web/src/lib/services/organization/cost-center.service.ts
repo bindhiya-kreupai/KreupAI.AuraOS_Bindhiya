@@ -91,7 +91,7 @@ export class CostCenterService {
   /**
    * Find cost center by ID
    */
-  async findById(id: string): Promise<CostCenter | null> {
+  async findById(id: string): Promise<any> {
     return prisma.costCenter.findUnique({
       where: { id },
       include: {

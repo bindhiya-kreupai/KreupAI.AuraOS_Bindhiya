@@ -61,7 +61,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Maintenance Complete API] POST Error:', error);
 
     const statusCode = error instanceof Error && error.message.includes('not found') ? 404 : 500;

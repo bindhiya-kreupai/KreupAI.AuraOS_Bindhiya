@@ -14,7 +14,7 @@ export async function initializeMessaging(): Promise<void> {
     logger.info('Initializing messaging infrastructure...');
     await messagingService.initialize();
     logger.info('Messaging infrastructure initialized successfully');
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Failed to initialize messaging infrastructure');
     // Don't throw - allow app to start even if RabbitMQ is unavailable
     // The messaging service will auto-reconnect and fall back to sync processing
@@ -29,7 +29,7 @@ export async function shutdownMessaging(): Promise<void> {
     logger.info('Shutting down messaging infrastructure...');
     await messagingService.disconnect();
     logger.info('Messaging infrastructure shut down successfully');
-  } catch (error) {
+  } catch (error: any) {
     logger.error({ error }, 'Error shutting down messaging infrastructure');
   }
 }

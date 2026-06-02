@@ -23,7 +23,7 @@ export default function LeadershipPage() {
                 setLoading(true);
                 const result = await LearningPathService.getLearningPaths();
                 setData(result);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
                 setData([]);
             } finally {

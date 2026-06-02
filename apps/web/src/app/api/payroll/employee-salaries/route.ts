@@ -78,7 +78,7 @@ export const GET = withEnhancedAuth(
         data: { salaries },
         meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error fetching employee salaries:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch employee salaries' },
@@ -134,10 +134,11 @@ export const POST = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
-          module: 'Payroll - Employee Salaries',
-          details: `Created salary structure for employee: ${data.employeeId} - CTC: ${data.ctc}`,
+          resourceType: 'Payroll - Employee Salaries',
+          metadata: { description: `Created salary structure for employee: ${data.employeeId} - CTC: ${data.ctc}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -147,7 +148,7 @@ export const POST = withEnhancedAuth(
         data: structure,
         salary: structure,
       }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -217,10 +218,11 @@ export const PUT = withEnhancedAuth(
 
       await prisma.auditLog.create({
         data: {
+          tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
-          module: 'Payroll - Employee Salaries',
-          details: `Updated salary structure for employee: ${existing.employeeId}`,
+          resourceType: 'Payroll - Employee Salaries',
+          metadata: { description: `Updated salary structure for employee: ${existing.employeeId}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -230,7 +232,7 @@ export const PUT = withEnhancedAuth(
         data: updated,
         salary: updated,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating salary structure:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update salary structure' },

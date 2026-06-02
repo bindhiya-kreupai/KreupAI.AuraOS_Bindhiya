@@ -38,7 +38,7 @@ export const GET = withEnhancedAuth(async (_request, _context) => {
       { success: true, settings: DEFAULT_SETTINGS },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching offboarding settings:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch offboarding settings' },
@@ -62,7 +62,7 @@ export const PUT = withEnhancedAuth(async (request, _context) => {
       { success: true, settings: updatedSettings },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating offboarding settings:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update offboarding settings' },

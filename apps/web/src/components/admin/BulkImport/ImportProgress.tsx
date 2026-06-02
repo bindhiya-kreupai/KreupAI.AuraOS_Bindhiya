@@ -60,7 +60,7 @@ export default function ImportProgress({
       setProcessed(totalRows);
       setResult(jobResult);
       onComplete?.(jobResult);
-    } catch (err) {
+    } catch (err: any) {
       setError(err instanceof Error ? err.message : 'Import failed unexpectedly.');
     } finally {
       setRunning(false);

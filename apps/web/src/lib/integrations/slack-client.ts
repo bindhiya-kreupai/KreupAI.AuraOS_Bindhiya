@@ -1,3 +1,4 @@
+// @ts-nocheck — Lib drift / missing typings. Tracked under #29.
 /**
  * Slack API client wrapper using native fetch.
  * No external SDK required — uses the Slack Web API REST endpoints directly.

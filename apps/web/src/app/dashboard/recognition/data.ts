@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 /**
  * Employee Recognition & Rewards Module - Sample Data
  * Comprehensive sample data for immediate testing

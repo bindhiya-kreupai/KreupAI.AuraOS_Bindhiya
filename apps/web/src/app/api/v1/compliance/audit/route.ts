@@ -27,7 +27,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     });
 
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error('[ComplianceAudit API] GET Error:', error);
     return NextResponse.json(
       {
@@ -65,7 +65,7 @@ export const POST = withAudit(
       });
 
       return NextResponse.json(result);
-    } catch (error) {
+    } catch (error: any) {
       console.error('[ComplianceAudit API] POST Error:', error);
       return NextResponse.json(
         { success: false, error: { code: 'E5001', message: 'Failed to report violation' } },

@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
             industries: INDUSTRIES,
             total: INDUSTRIES.length,
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Industry list API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

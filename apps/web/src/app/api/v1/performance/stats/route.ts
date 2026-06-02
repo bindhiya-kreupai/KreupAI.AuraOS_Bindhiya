@@ -26,7 +26,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error('[PerformanceStats API] Error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch performance statistics' },

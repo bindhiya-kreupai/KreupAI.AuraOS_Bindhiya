@@ -41,7 +41,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       success: true,
       data: config,
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error fetching MFA configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch MFA configuration' },
@@ -87,10 +87,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'CREATE',
-        module: 'System Configuration',
-        details: `Created MFA configuration (Enabled: ${validatedData.enabled})`,
+        resourceType: 'System Configuration',
+        metadata: { description: `Created MFA configuration (Enabled: ${validatedData.enabled})` } as any,
         ipAddress,
       },
     });
@@ -103,7 +104,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
@@ -154,10 +155,11 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'UPDATE',
-        module: 'System Configuration',
-        details: `Updated MFA configuration (Enabled: ${validatedData.enabled}, Enforce for All: ${validatedData.enforceForAll})`,
+        resourceType: 'System Configuration',
+        metadata: { description: `Updated MFA configuration (Enabled: ${validatedData.enabled}, Enforce for All: ${validatedData.enforceForAll})` } as any,
         ipAddress,
       },
     });
@@ -167,7 +169,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
       message: 'MFA configuration updated successfully',
       data: updatedConfig,
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
@@ -213,10 +215,11 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, perm
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'DELETE',
-        module: 'System Configuration',
-        details: 'Deleted MFA configuration',
+        resourceType: 'System Configuration',
+        metadata: { description: 'Deleted MFA configuration' } as any,
         ipAddress,
       },
     });
@@ -225,7 +228,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, perm
       success: true,
       message: 'MFA configuration deleted successfully. MFA is now disabled.',
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error deleting MFA configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to delete MFA configuration' },

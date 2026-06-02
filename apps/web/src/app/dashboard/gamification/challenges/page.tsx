@@ -21,7 +21,7 @@ export default function ChallengesPage() {
                 setLoading(true);
                 const data = await ChallengesService.getChallenges();
                 setChallenges(data as any);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

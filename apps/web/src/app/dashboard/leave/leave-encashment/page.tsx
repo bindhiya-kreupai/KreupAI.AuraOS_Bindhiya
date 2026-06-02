@@ -23,7 +23,7 @@ export default function LeaveEncashmentPage() {
             setLoading(true);
             const result = await EncashmentService.getEncashments();
             setEncashments(result);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

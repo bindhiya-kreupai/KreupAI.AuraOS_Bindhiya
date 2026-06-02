@@ -52,7 +52,7 @@ export default function TaxDeclarationsPage() {
             setLoading(true);
             const result = await TaxDeclarationService.getTaxDeclarations();
             setDeclarations(result);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

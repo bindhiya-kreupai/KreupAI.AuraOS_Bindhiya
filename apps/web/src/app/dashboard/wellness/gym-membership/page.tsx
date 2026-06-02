@@ -20,7 +20,7 @@ export default function GymMembershipPage() {
                 setLoading(true);
                 const data = await GymMembershipService.getMemberships();
                 setMemberships(Array.isArray(data) ? data : []);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);

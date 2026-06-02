@@ -40,7 +40,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       success: true,
       data: policy,
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error fetching password policy:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch password policy' },
@@ -86,10 +86,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'CREATE',
-        module: 'System Configuration',
-        details: 'Created password policy',
+        resourceType: 'System Configuration',
+        metadata: { description: 'Created password policy' } as any,
         ipAddress,
       },
     });
@@ -102,7 +103,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
@@ -153,10 +154,11 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'UPDATE',
-        module: 'System Configuration',
-        details: `Updated password policy: ${JSON.stringify(validatedData)}`,
+        resourceType: 'System Configuration',
+        metadata: { description: `Updated password policy: ${JSON.stringify(validatedData)}` } as any,
         ipAddress,
       },
     });
@@ -166,7 +168,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
       message: 'Password policy updated successfully',
       data: updatedPolicy,
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
@@ -212,10 +214,11 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, perm
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'DELETE',
-        module: 'System Configuration',
-        details: 'Deleted password policy (reverted to defaults)',
+        resourceType: 'System Configuration',
+        metadata: { description: 'Deleted password policy (reverted to defaults)' } as any,
         ipAddress,
       },
     });
@@ -224,7 +227,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, perm
       success: true,
       message: 'Password policy deleted successfully. System will use default values.',
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error deleting password policy:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to delete password policy' },

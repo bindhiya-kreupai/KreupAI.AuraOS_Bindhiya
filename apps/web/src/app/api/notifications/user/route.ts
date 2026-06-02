@@ -13,7 +13,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     });
 
     return NextResponse.json({ notifications: recipients }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching user notifications:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

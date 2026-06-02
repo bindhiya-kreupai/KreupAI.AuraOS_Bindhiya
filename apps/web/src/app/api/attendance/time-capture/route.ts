@@ -165,7 +165,7 @@ export const GET = withEnhancedAuth(
         data: { captures: filteredData, summary },
         meta: { total: filteredData.length },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to fetch time captures' },
@@ -272,13 +272,13 @@ export const POST = withEnhancedAuth(
           userId: user.id || user.userId,
           action: 'CREATE',
           entityType: 'Attendance - Time Capture',
-          details: `Captured time: ${data.type} at ${timestamp}`,
+          metadata: { description: `Captured time: ${data.type} at ${timestamp}` } as any,
           ipAddress,
         },
       });
 
       return NextResponse.json({ success: true, data: newCapture }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           { success: false, error: 'Validation error', details: error.errors },
@@ -324,13 +324,13 @@ export const PUT = withEnhancedAuth(
           userId: user.id || user.userId,
           action: 'UPDATE',
           entityType: 'Attendance - Time Capture',
-          details: `Updated time capture: ${id}`,
+          metadata: { description: `Updated time capture: ${id}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to update time capture' },
@@ -363,13 +363,13 @@ export const DELETE = withEnhancedAuth(
           userId: user.id || user.userId,
           action: 'DELETE',
           entityType: 'Attendance - Time Capture',
-          details: `Deleted time capture: ${id}`,
+          metadata: { description: `Deleted time capture: ${id}` } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
 
       return NextResponse.json({ success: true, message: 'Time capture deleted successfully' });
-    } catch (error) {
+    } catch (error: any) {
       logger.error({ error }, '');
       return NextResponse.json(
         { success: false, error: 'Failed to delete time capture' },

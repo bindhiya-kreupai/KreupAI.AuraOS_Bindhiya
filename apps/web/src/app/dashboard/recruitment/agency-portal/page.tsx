@@ -25,7 +25,7 @@ export default function AgencyPortalPage() {
             setLoading(true);
             const data = await JobPostingService.getPostings();
             setJobs(data || []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             setJobs([]);
         } finally {

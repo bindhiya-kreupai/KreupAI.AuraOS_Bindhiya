@@ -55,7 +55,7 @@ export default function LifeEventsPage() {
         try {
             const data = await LifeEventService.getAllLifeEvents();
             setLifeEvents(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

@@ -44,7 +44,7 @@ export default function CurrenciesPage() {
                 const result = await response.json();
                 setData(result);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Failed to fetch currencies:', error);
         } finally {
@@ -78,7 +78,7 @@ export default function CurrenciesPage() {
             } else {
                 alert('Failed to save currency');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
             console.error('Error saving currency:', error);
             alert('Error saving currency');
@@ -97,7 +97,7 @@ export default function CurrenciesPage() {
                 } else {
                     alert('Failed to delete currency');
                 }
-            } catch (error) {
+            } catch (error: any) {
             console.error('Error:', error);
                 console.error('Error deleting currency:', error);
                 alert('Error deleting currency');

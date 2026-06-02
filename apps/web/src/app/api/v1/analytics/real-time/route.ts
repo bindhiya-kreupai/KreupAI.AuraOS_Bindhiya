@@ -25,7 +25,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     });
 
     return NextResponse.json({ success: true, data: result });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Real-time analytics error:', error);
     return NextResponse.json({
       success: true,

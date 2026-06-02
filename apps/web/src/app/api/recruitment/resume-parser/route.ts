@@ -169,7 +169,7 @@ export const POST = withEnhancedAuth(
             { status: 400 }
           );
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Resume parser API error:', error);
       return NextResponse.json(
         { error: 'Failed to process resume parser request', errorAr: 'فشل في معالجة طلب تحليل السيرة الذاتية' },

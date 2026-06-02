@@ -36,7 +36,7 @@ export default function DependentsPage() {
           }));
           setDependents(mapped);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to fetch dependents:', err);
       } finally {
         setFetching(false);

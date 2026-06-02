@@ -37,7 +37,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       success: true,
       data: config,
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error fetching SSO configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch SSO configuration' },
@@ -83,10 +83,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'CREATE',
-        module: 'System Configuration',
-        details: `Created SSO configuration (Provider: ${validatedData.provider})`,
+        resourceType: 'System Configuration',
+        metadata: { description: `Created SSO configuration (Provider: ${validatedData.provider})` } as any,
         ipAddress,
       },
     });
@@ -99,7 +100,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
@@ -150,10 +151,11 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'UPDATE',
-        module: 'System Configuration',
-        details: `Updated SSO configuration (Provider: ${validatedData.provider}, Enabled: ${validatedData.enabled})`,
+        resourceType: 'System Configuration',
+        metadata: { description: `Updated SSO configuration (Provider: ${validatedData.provider}, Enabled: ${validatedData.enabled})` } as any,
         ipAddress,
       },
     });
@@ -163,7 +165,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
       message: 'SSO configuration updated successfully',
       data: updatedConfig,
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
@@ -209,10 +211,11 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, perm
 
     await prisma.auditLog.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.userId,
         action: 'DELETE',
-        module: 'System Configuration',
-        details: 'Deleted SSO configuration',
+        resourceType: 'System Configuration',
+        metadata: { description: 'Deleted SSO configuration' } as any,
         ipAddress,
       },
     });
@@ -221,7 +224,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, perm
       success: true,
       message: 'SSO configuration deleted successfully. SSO is now disabled.',
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error deleting SSO configuration:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to delete SSO configuration' },

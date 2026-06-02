@@ -38,7 +38,7 @@ export default function TimeTrackingPage() {
       if (result.success) {
         setStats(result.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch stats:', error);
     }
   };
@@ -51,7 +51,7 @@ export default function TimeTrackingPage() {
       if (result.success) {
         setTodayPunches(result.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch today punches:', error);
     }
   };
@@ -73,7 +73,7 @@ export default function TimeTrackingPage() {
         fetchTodayPunches();
         fetchStats();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Clock action failed:', error);
     }
   };

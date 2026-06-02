@@ -63,7 +63,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, _context: any) 
         apiVersion: 'v1',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Interviews API] GET Error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'E5001', message: 'Failed to fetch interviews' } },
@@ -154,7 +154,7 @@ export const POST = withAudit(
         },
         { status: 201 }
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Interviews API] POST Error:', error);
       return NextResponse.json(
         {

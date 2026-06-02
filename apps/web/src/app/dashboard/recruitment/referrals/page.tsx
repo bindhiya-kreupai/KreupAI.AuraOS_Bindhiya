@@ -43,7 +43,7 @@ export default function ReferralsPage() {
                 app.source?.toLowerCase() === 'referral'
             );
             setReferrals(referralApps);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);

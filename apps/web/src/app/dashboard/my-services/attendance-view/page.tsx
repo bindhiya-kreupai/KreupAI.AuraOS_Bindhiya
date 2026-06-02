@@ -31,7 +31,7 @@ export default function AttendanceViewPage() {
                 } else if (res?.data?.records && Array.isArray(res.data.records)) {
                     setRecords(res.data.records);
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Failed to fetch attendance:', err);
             } finally {
                 setFetching(false);

@@ -36,7 +36,7 @@ export default function ApprovalWorkflowPage() {
             setLoading(true);
             const result = await ApprovalWorkflowService.getWorkflows();
             setWorkflows(result || []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
@@ -55,7 +55,7 @@ export default function ApprovalWorkflowPage() {
                 ]
             });
             await fetchWorkflows();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
                     } finally {
             setLoading(false);

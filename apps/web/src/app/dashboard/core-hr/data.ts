@@ -1,3 +1,4 @@
+// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 import type {
   Employee, OrganizationUnit, EmploymentHistory, EmployeeDocument, Position,
   CostCenter, LifeEvent, MassUpdate, IDCard, LetterRequest, ExitProcess,
