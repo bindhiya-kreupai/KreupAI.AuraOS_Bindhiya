@@ -51,6 +51,7 @@ export default defineConfig({
         'src/lib/services/dashboard/**/*.ts',
         'src/lib/services/analytics/**/*.ts',
         'src/lib/services/reporting/**/*.ts',
+        'src/lib/services/i18n/**/*.ts',
         'src/lib/services/employment-history.service.ts',
         // Root-level service modules that have tests today.
         'src/lib/services/leave.service.ts',
