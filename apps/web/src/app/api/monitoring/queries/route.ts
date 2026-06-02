@@ -4,7 +4,7 @@
  * Provides real-time query performance metrics
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { queryMonitor } from '@/lib/monitoring/query-monitor';
 import { withEnhancedAuth, Resource, Action } from '@/lib/auth';
@@ -70,22 +70,22 @@ import { logger } from '@/lib/logger';
  *       403:
  *         description: Forbidden - Admin access required
  */
-export const GET = withEnhancedAuth(async (request: NextRequest) => {
-  try {
-    const summary = queryMonitor.getSummary();
-    
-    return NextResponse.json({
-      success: true,
-      data: summary,
-    });
-  } catch (error: any) {
-    logger.error('Error fetching query stats:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}, {
+export const GET = withEnhancedAuth(
+  async (request: NextRequest) => {
+    try {
+      const summary = queryMonitor.getSummary();
+
+      return NextResponse.json({
+        success: true,
+        data: summary,
+      });
+    } catch (error: any) {
+      logger.error('Error fetching query stats:', error);
+      return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
+    }
+  },
+  {
     resource: Resource.SYSTEM_SETTINGS,
-    action: Action.READ
-});
+    action: Action.READ,
+  }
+);

@@ -3,7 +3,7 @@
  * Phase 3: Intelligence Layer - Recruitment Automation
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -64,9 +64,7 @@ export async function POST(request: NextRequest) {
               { date: '2025-01-03', slots: ['09:00', '11:00', '16:00'] },
               { date: '2025-01-06', slots: ['10:30', '13:00', '14:30'] },
             ],
-            busySlots: [
-              { date: '2025-01-02', time: '11:30', reason: 'Team meeting' },
-            ],
+            busySlots: [{ date: '2025-01-02', time: '11:30', reason: 'Team meeting' }],
           },
         });
 
@@ -85,7 +83,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
   } catch (error: any) {
-        return NextResponse.json({ error: 'Failed to process interview scheduling' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process interview scheduling' }, { status: 500 });
   }
 }
 
@@ -124,6 +122,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json({ error: 'Failed to fetch interviews' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch interviews' }, { status: 500 });
   }
 }

@@ -1,61 +1,62 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import {
+  forbidden,
+  safeJson,
+  serverError,
+  successItem,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-export const POST = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
-  if (!permissions.includes('recruitment:create')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing recruitment:create permission',
-          messageAr: 'ممنوع',
-        },
+const SKILL_VOCAB = [
+  'javascript',
+  'typescript',
+  'python',
+  'java',
+  'sql',
+  'aws',
+  'azure',
+  'gcp',
+  'docker',
+  'kubernetes',
+  'react',
+  'node',
+  'c++',
+  'c#',
+  'machine learning',
+  'data analysis',
+  'excel',
+  'accounting',
+  'payroll',
+  'recruiting',
+];
+
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('recruitment:resume:parse'))
+      return forbidden('recruitment:resume:parse');
+    const body = await safeJson(request);
+    if (!body?.text) return validationError({ message: 'text required' });
+    const text = String(body.text).toLowerCase();
+    const emails = Array.from(text.matchAll(/[\w.+-]+@[\w-]+\.[\w.-]+/g)).map((m) => m[0]);
+    const phones = Array.from(text.matchAll(/\+?\d[\d\s().-]{7,}\d/g)).map((m) => m[0]);
+    const years = Array.from(text.matchAll(/(\d+)\+?\s*years?/g)).map((m) => Number(m[1]));
+    const totalYears = years.reduce((a, b) => a + b, 0);
+    const skills = SKILL_VOCAB.filter((s) => text.includes(s));
+    const output = { emails, phones, totalExperienceYears: totalYears, skills };
+    await prisma.aIRunRecord.create({
+      data: {
+        tenantId: user.tenantId,
+        runType: 'resume_parse',
+        output: output as any,
+        completedAt: new Date(),
+        durationMs: 0,
       },
-      { status: 403 }
-    );
+    });
+    return successItem(output);
+  } catch (error: any) {
+    return serverError(error, 'parse resume');
   }
-  const formData = await request.formData();
-  const file = formData.get('file');
-
-  if (!file) {
-    return NextResponse.json({ success: false, error: 'No file provided' }, { status: 400 });
-  }
-
-  return NextResponse.json({
-    success: true,
-    data: {
-      id: 'parsed-resume-001',
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      phone: '+1-555-0123',
-      experience: [
-        {
-          title: 'Senior Software Engineer',
-          company: 'Tech Corp',
-          startDate: '2021-01-01',
-          endDate: '2024-12-31',
-          description: 'Led development of microservices architecture',
-        },
-        {
-          title: 'Software Engineer',
-          company: 'StartupXYZ',
-          startDate: '2018-06-01',
-          endDate: '2020-12-31',
-          description: 'Full-stack development with React and Node.js',
-        },
-      ],
-      education: [
-        {
-          degree: 'Bachelor of Science in Computer Science',
-          institution: 'State University',
-          graduationYear: 2018,
-          gpa: 3.8,
-        },
-      ],
-      skills: ['TypeScript', 'React', 'Node.js', 'Python', 'AWS', 'Docker', 'PostgreSQL'],
-      parsedAt: new Date().toISOString(),
-    },
-  });
 });

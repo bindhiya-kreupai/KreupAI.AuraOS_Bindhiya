@@ -1,149 +1,40 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-import crypto from 'crypto';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
-
-// Tenant isolation is enforced via tenantId extracted from auth context
-
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: { code: string; message: string; details?: Record<string, unknown> };
-  meta?: any;
-}
-
-const VALID_PAYMENT_METHODS = ['ACH', 'CHECK', 'CREDIT_CARD', 'DEBIT_CARD', 'MONEY_ORDER'];
+import {
+  forbidden,
+  notFound,
+  safeJson,
+  serverError,
+  successItem,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, permissions } = context;
-    if (!permissions.includes('benefits/cobra:create')) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'E4030',
-            message: 'Forbidden: missing benefits/cobra:create permission',
-            messageAr: 'ممنوع',
-          },
-        },
-        { status: 403 }
-      );
-    }
-    const tenantId = user.tenantId;
-    const { id } = context.params as { id: string };
-    const body = await request.json();
-    const { amount, paymentMethod, paymentDate } = body;
-
-    if (!amount || !paymentMethod || !paymentDate) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'Validation failed: amount, paymentMethod, and paymentDate are required',
-          details: {
-            missingFields: ['amount', 'paymentMethod', 'paymentDate'].filter((f) => !body[f]),
-          },
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 400 });
-    }
-
-    if (typeof amount !== 'number' || amount <= 0) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E2001',
-          message: 'Validation failed: amount must be a positive number',
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 400 });
-    }
-
-    if (!VALID_PAYMENT_METHODS.includes(paymentMethod)) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E2001',
-          message: `Invalid paymentMethod. Must be one of: ${VALID_PAYMENT_METHODS.join(', ')}`,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 400 });
-    }
-
-    // Simulated enrollment lookup — in production would query DB with tenant isolation
-    const mockEnrollmentIds = ['enr-001', 'enr-002', 'enr-003'];
-    if (!mockEnrollmentIds.includes(id)) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E4001',
-          message: `COBRA enrollment with id '${id}' not found`,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    const payment = {
-      id: `pmt-${crypto.randomUUID().slice(0, 8)}`,
-      enrollmentId: id,
-      tenantId,
-      amount,
-      paymentMethod,
-      paymentDate,
-      transactionId: `TXN-${Date.now()}`,
-      status: 'PROCESSED',
-      gracePeriodExtendedTo: null,
-      receiptNumber: `RCP-${crypto.randomBytes(3).toString('hex').toUpperCase()}`,
-      processedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-    };
-
-    const response: ApiResponse = {
-      success: true,
-      data: payment,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 201 });
+    const { user, params, permissions } = context;
+    if (!permissions.includes('benefits:cobra:write')) return forbidden('benefits:cobra:write');
+    const body = await safeJson(request);
+    if (!body?.amount) return validationError({ message: 'amount required' });
+    // record COBRA premium payment against the BenefitEnrollment (or BenefitClaim if used for this)
+    const enrollment = await prisma.benefitEnrollment.findFirst({
+      where: { id: params.id, tenantId: user.tenantId },
+    });
+    if (!enrollment) return notFound('COBRA enrollment');
+    const claim = await prisma.benefitClaim.create({
+      data: {
+        tenantId: user.tenantId,
+        employeeId: enrollment.employeeId,
+        enrollmentId: enrollment.id,
+        claimType: 'COBRA_PREMIUM' as any,
+        amount: body.amount,
+        status: 'PAID' as any,
+        paidAt: new Date(),
+        description: `COBRA premium payment for period ${body.coveragePeriod || 'current'}`,
+      } as any,
+    });
+    return successItem(claim, { status: 201 });
   } catch (error: any) {
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to process COBRA premium payment',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-    return NextResponse.json(response, { status: 500 });
+    return serverError(error, 'record premium');
   }
 });

@@ -13,8 +13,8 @@ export class StoreOperationsService {
 
   static async getAllStores(): Promise<Store[]> {
     try {
-      const response = await APIClient.get<{ stores?: Store[] }>(this.endpoint);
-      return response.stores || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<Store>(response, 'stores');
     } catch (_: any) {
       return [];
     }
@@ -36,8 +36,8 @@ export class CommissionService {
 
   static async getAllPlans(): Promise<CommissionPlan[]> {
     try {
-      const response = await APIClient.get<{ plans?: CommissionPlan[] }>(`${this.endpoint}/plans`);
-      return response.plans || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/plans`);
+      return APIClient.unwrapList<CommissionPlan>(response, 'plans');
     } catch (_: any) {
       return [];
     }
@@ -50,8 +50,8 @@ export class CommissionService {
 
   static async getAllCommissions(): Promise<SalesCommission[]> {
     try {
-      const response = await APIClient.get<{ commissions?: SalesCommission[] }>(this.endpoint);
-      return response.commissions || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<SalesCommission>(response, 'commissions');
     } catch (_: any) {
       return [];
     }
@@ -79,8 +79,8 @@ export class SeasonalHiringService {
 
   static async getAllHires(): Promise<SeasonalHire[]> {
     try {
-      const response = await APIClient.get<{ hires?: SeasonalHire[] }>(this.endpoint);
-      return response.hires || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<SeasonalHire>(response, 'hires');
     } catch (_: any) {
       return [];
     }
@@ -105,8 +105,8 @@ export class RetailSettingsService {
 
   static async getSettings(): Promise<RetailSettings | null> {
     try {
-      const response = await APIClient.get<{ settings?: RetailSettings }>(this.endpoint);
-      return response.settings || null;
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapItem<RetailSettings>(response, 'settings');
     } catch (_: any) {
       return null;
     }
@@ -123,8 +123,8 @@ export class AlertsService {
 
   static async getAll(): Promise<RetailAlert[]> {
     try {
-      const response = await APIClient.get<{ alerts?: RetailAlert[] }>(this.endpoint);
-      return response.alerts || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<RetailAlert>(response, 'alerts');
     } catch (_: any) {
       return [];
     }

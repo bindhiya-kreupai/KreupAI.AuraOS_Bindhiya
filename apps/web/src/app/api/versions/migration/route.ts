@@ -3,9 +3,9 @@
  * Provides migration guides between API versions
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import type { ApiVersion} from '@/lib/middleware/api-version';
+import type { ApiVersion } from '@/lib/middleware/api-version';
 import { isValidVersion } from '@/lib/middleware/api-version';
 import { MigrationGuide } from '@/lib/versioning/version-manager';
 import { logger } from '@/lib/logger';
@@ -135,10 +135,7 @@ export async function GET(request: NextRequest) {
       toVersion as ApiVersion
     );
 
-    logger.info(
-      { fromVersion, toVersion },
-      'Migration guide accessed'
-    );
+    logger.info({ fromVersion, toVersion }, 'Migration guide accessed');
 
     return NextResponse.json({
       success: true,

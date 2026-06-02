@@ -3,7 +3,7 @@
  * Finance Module - Scenario Planning
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 /**
@@ -17,10 +17,7 @@ export async function GET(request: NextRequest) {
       scenarios: [],
     });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to fetch scenarios' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch scenarios' }, { status: 500 });
   }
 }
 
@@ -36,10 +33,7 @@ export async function POST(request: NextRequest) {
     if (action === 'run') {
       const { scenarioId } = body;
       if (!scenarioId) {
-        return NextResponse.json(
-          { error: 'scenarioId is required' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'scenarioId is required' }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -62,10 +56,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to process scenario' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to process scenario' }, { status: 500 });
   }
 }
 
@@ -80,10 +71,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Scenario ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Scenario ID is required' }, { status: 400 });
     }
 
     return NextResponse.json({
@@ -95,10 +83,7 @@ export async function PUT(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to update scenario' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update scenario' }, { status: 500 });
   }
 }
 
@@ -112,10 +97,7 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Scenario ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Scenario ID is required' }, { status: 400 });
     }
 
     return NextResponse.json({
@@ -123,9 +105,6 @@ export async function DELETE(request: NextRequest) {
       message: 'Scenario deleted successfully',
     });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to delete scenario' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to delete scenario' }, { status: 500 });
   }
 }

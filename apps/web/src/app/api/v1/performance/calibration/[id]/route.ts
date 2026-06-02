@@ -1,84 +1,49 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import {
+  forbidden,
+  notFound,
+  safeJson,
+  serverError,
+  successItem,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
 export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) => {
-  const { permissions } = context;
-  if (!permissions.includes('performance:read')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing performance:read permission',
-          messageAr: 'ممنوع',
-        },
-      },
-      { status: 403 }
-    );
+  try {
+    const { user, params, permissions } = context;
+    if (!permissions.includes('performance/calibration:read'))
+      return forbidden('performance/calibration:read');
+    const row = await prisma.calibrationSession.findFirst({
+      where: { id: params.id, tenantId: user.tenantId },
+    });
+    if (!row) return notFound('Calibration session');
+    return successItem(row);
+  } catch (error: any) {
+    return serverError(error, 'fetch calibration');
   }
-  const { id } = await context.params;
+});
 
-  return NextResponse.json({
-    success: true,
-    data: {
-      id,
-      title: 'Q4 2025 Performance Calibration',
-      department: 'Engineering',
-      facilitatorName: 'HR Director',
-      participants: [
-        { id: 'emp-201', name: 'VP Engineering', role: 'reviewer' },
-        { id: 'emp-202', name: 'Engineering Manager', role: 'reviewer' },
-        { id: 'emp-203', name: 'Tech Lead', role: 'reviewer' },
-      ],
-      reviewPeriod: '2025-Q4',
-      employees: [
-        {
-          id: 'emp-101',
-          name: 'Jane Smith',
-          initialRating: 'exceedsExpectations',
-          calibratedRating: 'exceedsExpectations',
-          notes: 'Consistent high performer, led major project successfully',
-        },
-        {
-          id: 'emp-102',
-          name: 'Tom Brown',
-          initialRating: 'exceptional',
-          calibratedRating: 'exceedsExpectations',
-          notes: 'Strong performer, adjusted for consistency across teams',
-        },
-        {
-          id: 'emp-103',
-          name: 'Sarah Connor',
-          initialRating: 'meetsExpectations',
-          calibratedRating: 'meetsExpectations',
-          notes: 'Solid contributor, on track for growth',
-        },
-        {
-          id: 'emp-104',
-          name: 'Michael Lee',
-          initialRating: 'exceedsExpectations',
-          calibratedRating: 'exceptional',
-          notes: 'Outstanding innovation contributions, upgraded after calibration',
-        },
-        {
-          id: 'emp-105',
-          name: 'David Lee',
-          initialRating: 'meetsExpectations',
-          calibratedRating: 'meetsExpectations',
-          notes: 'Good first-year performance, building skills',
-        },
-      ],
-      ratingDistribution: {
-        exceptional: 1,
-        exceedsExpectations: 2,
-        meetsExpectations: 2,
-        needsImprovement: 0,
-        unsatisfactory: 0,
-      },
-      status: 'completed',
-      scheduledDate: '2026-02-01T10:00:00Z',
-      completedAt: '2026-02-01T12:30:00Z',
-    },
-  });
+export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, params, permissions } = context;
+    if (!permissions.includes('performance/calibration:update'))
+      return forbidden('performance/calibration:update');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    delete body.id;
+    delete body.tenantId;
+    const result = await prisma.calibrationSession.updateMany({
+      where: { id: params.id, tenantId: user.tenantId },
+      data: body,
+    });
+    if (result.count === 0) return notFound('Calibration session');
+    const updated = await prisma.calibrationSession.findFirst({
+      where: { id: params.id, tenantId: user.tenantId },
+    });
+    return successItem(updated);
+  } catch (error: any) {
+    return serverError(error, 'update calibration');
+  }
 });

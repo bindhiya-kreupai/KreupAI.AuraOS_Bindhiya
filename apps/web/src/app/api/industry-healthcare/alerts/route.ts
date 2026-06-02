@@ -1,52 +1,57 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
+import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-// In-memory storage for alerts
-const alertsData: any[] = [];
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-healthcare/alerts:read'))
+      return forbidden('industry-healthcare/alerts:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).healthcareAlert.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).healthcareAlert.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error({ err: error, route: 'industry-healthcare/alerts/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
+  }
+});
 
-/**
- * GET /api/industry-healthcare/alerts
- * Get all healthcare alerts
- */
-export async function GET(request: NextRequest) {
-    try {
-        return NextResponse.json({
-            alerts: alertsData,
-            count: alertsData.length,
-        });
-    } catch (error: any) {
-        console.error('Healthcare alerts API error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
-    }
-}
-
-/**
- * POST /api/industry-healthcare/alerts
- * Create a new healthcare alert
- */
-export async function POST(request: NextRequest) {
-    try {
-        const body = await request.json();
-
-        const newAlert = {
-            id: `alert-${Date.now()}`,
-            ...body,
-            createdAt: new Date().toISOString(),
-        };
-
-        alertsData.push(newAlert);
-
-        return NextResponse.json({
-            alert: newAlert,
-        }, { status: 201 });
-    } catch (error: any) {
-        console.error('Healthcare alerts API error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
-    }
-}
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-healthcare/alerts:create'))
+      return forbidden('industry-healthcare/alerts:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).healthcareAlert.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error({ err: error, route: 'industry-healthcare/alerts/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
+  }
+});

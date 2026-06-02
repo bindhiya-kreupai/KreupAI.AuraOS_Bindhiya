@@ -1,48 +1,48 @@
-// @ts-nocheck — Has Prisma schema drift (wrong field/relation names against current schema). Tracked under #29.
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import {
+  forbidden,
+  safeJson,
+  serverError,
+  successItem,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (request, context) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const screenings = [];
-    return NextResponse.json({ screenings }, { status: 200 });
+    const { user, permissions } = context;
+    if (!permissions.includes('ai-automation:write')) return forbidden('ai-automation:write');
+    const body = await safeJson(request);
+    if (!body?.applicationId) return validationError({ message: 'applicationId required' });
+    const app: any = await prisma.candidateApplication.findFirst({
+      where: { id: body.applicationId },
+      include: { candidate: true } as any,
+    });
+    if (!app) return validationError({ message: 'Application not found' });
+    const candidate = app.candidate;
+    const required: string[] = body.requiredSkills || [];
+    const candidateSkills: string[] = (candidate?.skills as string[]) || [];
+    const overlap = required.filter((s) => candidateSkills.includes(s)).length;
+    const score = required.length ? Math.round((overlap / required.length) * 100) : 0;
+    await prisma.aIRunRecord.create({
+      data: {
+        tenantId: user.tenantId,
+        runType: 'resume_screening',
+        inputContext: { applicationId: body.applicationId } as any,
+        output: { score, overlap } as any,
+        completedAt: new Date(),
+        durationMs: 0,
+      },
+    });
+    return successItem({
+      applicationId: body.applicationId,
+      score,
+      overlap,
+      requiredSkills: required.length,
+      candidateSkills,
+    });
   } catch (error: any) {
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-});
-
-export const POST = withEnhancedAuth(async (request, context) => {
-  try {
-    const body = await request.json();
-    const screening = {
-      screeningId: `screen-${Date.now()}`,
-      jobId: body.jobId || '',
-      jobTitle: body.jobTitle || '',
-      candidateId: body.candidateId || '',
-      candidateName: body.candidateName || '',
-      resumeUrl: body.resumeUrl || '',
-      overallScore: Math.floor(Math.random() * 40) + 60,
-      overallRanking: 0,
-      recommendation: 'good_match',
-      skillsMatch: { requiredSkills: [], preferredSkills: [], additionalSkills: [], overallMatchPercentage: 75, topMatchingSkills: [], missingCriticalSkills: [] },
-      experienceMatch: { totalYearsRequired: 5, totalYearsFound: 6, relevantExperienceYears: 5, industryMatch: true, seniorityMatch: true, careerProgression: 'good', relevantCompanies: [] },
-      educationMatch: { degreeRequired: "Bachelor's", degreeFound: "Bachelor's", degreeMismatch: false, institutions: [], certifications: [], continualLearning: true },
-      cultureFitScore: 80,
-      extractedData: { contactInfo: {}, summary: '', workHistory: [], education: [], skills: [], certifications: [], languages: [], achievements: [] },
-      redFlags: [],
-      strengths: [],
-      interviewRecommended: true,
-      interviewType: 'technical',
-      suggestedInterviewers: [],
-      interviewFocusAreas: [],
-      modelVersion: 'v1.5.0',
-      confidenceLevel: 'high',
-      processingTime: 1250,
-      screeningDate: new Date().toISOString(),
-      reviewedByHuman: false
-    };
-    return NextResponse.json({ screening }, { status: 201 });
-  } catch (error: any) {
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return serverError(error, 'screen resume');
   }
 });

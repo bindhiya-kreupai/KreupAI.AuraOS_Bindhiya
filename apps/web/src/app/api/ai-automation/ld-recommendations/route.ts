@@ -14,10 +14,10 @@ export const GET = withEnhancedAuth(async (request, context) => {
       skillGaps: [],
       careerPath: [],
       priority: 'medium',
-      generatedDate: new Date().toISOString()
+      generatedDate: new Date().toISOString(),
     };
     return NextResponse.json({ recommendation }, { status: 200 });
   } catch (error: any) {
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

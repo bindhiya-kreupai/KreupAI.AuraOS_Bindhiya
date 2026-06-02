@@ -3,7 +3,7 @@
  * Phase 3: Intelligence Layer - External Recruitment
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -14,10 +14,7 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'post':
         if (!body.jobId || !body.boards) {
-          return NextResponse.json(
-            { error: 'jobId and boards are required' },
-            { status: 400 }
-          );
+          return NextResponse.json({ error: 'jobId and boards are required' }, { status: 400 });
         }
 
         return NextResponse.json({
@@ -58,7 +55,7 @@ export async function POST(request: NextRequest) {
                 views: 8500,
                 applications: 156,
                 conversionRate: 0.018,
-                costPerApplicant: 12.50,
+                costPerApplicant: 12.5,
                 quality: 4.2,
               },
               {
@@ -76,7 +73,7 @@ export async function POST(request: NextRequest) {
                 views: 5200,
                 applications: 89,
                 conversionRate: 0.017,
-                costPerApplicant: 15.20,
+                costPerApplicant: 15.2,
                 quality: 4.5,
               },
             ],
@@ -92,7 +89,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
   } catch (error: any) {
-        return NextResponse.json({ error: 'Failed to process job boards request' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process job boards request' }, { status: 500 });
   }
 }
 
@@ -116,7 +113,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json({ error: 'Failed to fetch job boards data' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch job boards data' }, { status: 500 });
   }
 }
 
@@ -137,6 +134,6 @@ export async function DELETE(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json({ error: 'Failed to delete job posting' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to delete job posting' }, { status: 500 });
   }
 }

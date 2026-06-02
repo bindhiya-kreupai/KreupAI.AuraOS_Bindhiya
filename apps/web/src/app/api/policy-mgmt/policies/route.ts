@@ -1,44 +1,57 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        policies: [],
-        tenantId: user.tenantId,
-      },
-    }, { status: 200 });
+    const { user, permissions } = context;
+    if (!permissions.includes('policy-mgmt/policies:read'))
+      return forbidden('policy-mgmt/policies:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).policyDocument.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).policyDocument.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch policies' },
-      { status: 500 }
-    );
+    logger.error({ err: error, route: 'policy-mgmt/policies/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
   }
 });
 
-export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-    const body = await request.json();
-
-    const policy = {
-      ...body,
-      policyId: `pol-${Date.now()}`,
-      tenantId: user.tenantId,
-      createdAt: new Date().toISOString(),
-      status: body.status || 'draft',
-    };
-
-    return NextResponse.json({ success: true, data: { policy } }, { status: 201 });
+    const { user, permissions } = context;
+    if (!permissions.includes('policy-mgmt/policies:create'))
+      return forbidden('policy-mgmt/policies:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).policyDocument.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to create policy' },
-      { status: 500 }
-    );
+    logger.error({ err: error, route: 'policy-mgmt/policies/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
   }
 });

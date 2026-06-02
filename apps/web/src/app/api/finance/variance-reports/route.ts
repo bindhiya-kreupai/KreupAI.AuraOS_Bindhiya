@@ -3,7 +3,7 @@
  * Finance Module - Variance Analysis
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 /**
@@ -26,10 +26,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to fetch variance reports' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch variance reports' }, { status: 500 });
   }
 }
 
@@ -43,10 +40,7 @@ export async function POST(request: NextRequest) {
     const { budgetId, periodEnd } = body;
 
     if (!budgetId || !periodEnd) {
-      return NextResponse.json(
-        { error: 'budgetId and periodEnd are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'budgetId and periodEnd are required' }, { status: 400 });
     }
 
     return NextResponse.json({
@@ -60,9 +54,6 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to generate variance report' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to generate variance report' }, { status: 500 });
   }
 }

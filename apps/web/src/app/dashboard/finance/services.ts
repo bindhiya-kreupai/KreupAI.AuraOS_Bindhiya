@@ -28,19 +28,19 @@ export class BudgetService {
 
   static async getBudgets(): Promise<Budget[]> {
     try {
-      const response = await APIClient.get<{ budgets?: Budget[] }>(this.endpoint);
-      return response.budgets || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<Budget>(response, 'budgets');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getBudgetById(id: string): Promise<Budget | null> {
     try {
-      const response = await APIClient.get<{ budget?: Budget }>(`${this.endpoint}/${id}`);
-      return response.budget || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<Budget>(response, 'budget');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -75,7 +75,10 @@ export class BudgetService {
     });
   }
 
-  static async createFromTemplate(templateId: string, budgetData: Partial<Budget>): Promise<Budget> {
+  static async createFromTemplate(
+    templateId: string,
+    budgetData: Partial<Budget>
+  ): Promise<Budget> {
     const response = await APIClient.post<{ budget: Budget }>(`${this.endpoint}/from-template`, {
       templateId,
       budgetData,
@@ -93,27 +96,33 @@ export class BudgetVarianceService {
 
   static async getReports(): Promise<BudgetVarianceReport[]> {
     try {
-      const response = await APIClient.get<{ reports?: BudgetVarianceReport[] }>(this.endpoint);
-      return response.reports || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<BudgetVarianceReport>(response, 'reports');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getReportById(id: string): Promise<BudgetVarianceReport | null> {
     try {
-      const response = await APIClient.get<{ report?: BudgetVarianceReport }>(`${this.endpoint}/${id}`);
-      return response.report || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<BudgetVarianceReport>(response, 'report');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
-  static async generateVarianceReport(budgetId: string, periodEnd: string): Promise<BudgetVarianceReport> {
-    const response = await APIClient.post<{ report: BudgetVarianceReport }>(`${this.endpoint}/generate`, {
-      budgetId,
-      periodEnd,
-    });
+  static async generateVarianceReport(
+    budgetId: string,
+    periodEnd: string
+  ): Promise<BudgetVarianceReport> {
+    const response = await APIClient.post<{ report: BudgetVarianceReport }>(
+      `${this.endpoint}/generate`,
+      {
+        budgetId,
+        periodEnd,
+      }
+    );
     return response.report;
   }
 }
@@ -127,19 +136,19 @@ export class BudgetTemplateService {
 
   static async getTemplates(): Promise<BudgetTemplate[]> {
     try {
-      const response = await APIClient.get<{ templates?: BudgetTemplate[] }>(this.endpoint);
-      return response.templates || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<BudgetTemplate>(response, 'templates');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getTemplateById(id: string): Promise<BudgetTemplate | null> {
     try {
-      const response = await APIClient.get<{ template?: BudgetTemplate }>(`${this.endpoint}/${id}`);
-      return response.template || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<BudgetTemplate>(response, 'template');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -148,8 +157,14 @@ export class BudgetTemplateService {
     return response.template;
   }
 
-  static async updateTemplate(id: string, updates: Partial<BudgetTemplate>): Promise<BudgetTemplate> {
-    const response = await APIClient.put<{ template: BudgetTemplate }>(`${this.endpoint}/${id}`, updates);
+  static async updateTemplate(
+    id: string,
+    updates: Partial<BudgetTemplate>
+  ): Promise<BudgetTemplate> {
+    const response = await APIClient.put<{ template: BudgetTemplate }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.template;
   }
 
@@ -167,19 +182,19 @@ export class BudgetScenarioService {
 
   static async getScenarios(): Promise<BudgetScenario[]> {
     try {
-      const response = await APIClient.get<{ scenarios?: BudgetScenario[] }>(this.endpoint);
-      return response.scenarios || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<BudgetScenario>(response, 'scenarios');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getScenarioById(id: string): Promise<BudgetScenario | null> {
     try {
-      const response = await APIClient.get<{ scenario?: BudgetScenario }>(`${this.endpoint}/${id}`);
-      return response.scenario || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<BudgetScenario>(response, 'scenario');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -188,8 +203,14 @@ export class BudgetScenarioService {
     return response.scenario;
   }
 
-  static async updateScenario(id: string, updates: Partial<BudgetScenario>): Promise<BudgetScenario> {
-    const response = await APIClient.put<{ scenario: BudgetScenario }>(`${this.endpoint}/${id}`, updates);
+  static async updateScenario(
+    id: string,
+    updates: Partial<BudgetScenario>
+  ): Promise<BudgetScenario> {
+    const response = await APIClient.put<{ scenario: BudgetScenario }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.scenario;
   }
 
@@ -198,7 +219,10 @@ export class BudgetScenarioService {
   }
 
   static async runScenario(id: string): Promise<BudgetScenario> {
-    const response = await APIClient.post<{ scenario: BudgetScenario }>(`${this.endpoint}/${id}/run`, {});
+    const response = await APIClient.post<{ scenario: BudgetScenario }>(
+      `${this.endpoint}/${id}/run`,
+      {}
+    );
     return response.scenario;
   }
 }
@@ -212,19 +236,19 @@ export class VendorService {
 
   static async getVendors(): Promise<Vendor[]> {
     try {
-      const response = await APIClient.get<{ vendors?: Vendor[] }>(this.endpoint);
-      return response.vendors || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<Vendor>(response, 'vendors');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getVendorById(id: string): Promise<Vendor | null> {
     try {
-      const response = await APIClient.get<{ vendor?: Vendor }>(`${this.endpoint}/${id}`);
-      return response.vendor || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<Vendor>(response, 'vendor');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -268,19 +292,19 @@ export class VendorContractService {
 
   static async getContracts(): Promise<VendorContract[]> {
     try {
-      const response = await APIClient.get<{ contracts?: VendorContract[] }>(this.endpoint);
-      return response.contracts || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<VendorContract>(response, 'contracts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getContractById(id: string): Promise<VendorContract | null> {
     try {
-      const response = await APIClient.get<{ contract?: VendorContract }>(`${this.endpoint}/${id}`);
-      return response.contract || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<VendorContract>(response, 'contract');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -289,8 +313,14 @@ export class VendorContractService {
     return response.contract;
   }
 
-  static async updateContract(id: string, updates: Partial<VendorContract>): Promise<VendorContract> {
-    const response = await APIClient.put<{ contract: VendorContract }>(`${this.endpoint}/${id}`, updates);
+  static async updateContract(
+    id: string,
+    updates: Partial<VendorContract>
+  ): Promise<VendorContract> {
+    const response = await APIClient.put<{ contract: VendorContract }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.contract;
   }
 
@@ -298,7 +328,11 @@ export class VendorContractService {
     await APIClient.delete(`${this.endpoint}/${id}`);
   }
 
-  static async recordPayment(contractId: string, scheduleId: string, invoiceNumber: string): Promise<void> {
+  static async recordPayment(
+    contractId: string,
+    scheduleId: string,
+    invoiceNumber: string
+  ): Promise<void> {
     await APIClient.post(`${this.endpoint}/${contractId}/payment`, {
       scheduleId,
       invoiceNumber,
@@ -315,19 +349,19 @@ export class PettyCashService {
 
   static async getFunds(): Promise<PettyCashFund[]> {
     try {
-      const response = await APIClient.get<{ funds?: PettyCashFund[] }>(this.endpoint);
-      return response.funds || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<PettyCashFund>(response, 'funds');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getFundById(id: string): Promise<PettyCashFund | null> {
     try {
-      const response = await APIClient.get<{ fund?: PettyCashFund }>(`${this.endpoint}/${id}`);
-      return response.fund || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<PettyCashFund>(response, 'fund');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -337,26 +371,37 @@ export class PettyCashService {
   }
 
   static async updateFund(id: string, updates: Partial<PettyCashFund>): Promise<PettyCashFund> {
-    const response = await APIClient.put<{ fund: PettyCashFund }>(`${this.endpoint}/${id}`, updates);
+    const response = await APIClient.put<{ fund: PettyCashFund }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.fund;
   }
 
   static async getTransactions(fundId?: string): Promise<PettyCashTransaction[]> {
     try {
-      const url = fundId ? `${this.endpoint}/transactions?fundId=${fundId}` : `${this.endpoint}/transactions`;
-      const response = await APIClient.get<{ transactions?: PettyCashTransaction[] }>(url);
-      return response.transactions || [];
+      const url = fundId
+        ? `${this.endpoint}/transactions?fundId=${fundId}`
+        : `${this.endpoint}/transactions`;
+      const response = await APIClient.get<unknown>(url);
+      return APIClient.unwrapList<PettyCashTransaction>(response, 'transactions');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async createTransaction(data: PettyCashTransaction): Promise<PettyCashTransaction> {
-    const response = await APIClient.post<{ transaction: PettyCashTransaction }>(`${this.endpoint}/transactions`, data);
+    const response = await APIClient.post<{ transaction: PettyCashTransaction }>(
+      `${this.endpoint}/transactions`,
+      data
+    );
     return response.transaction;
   }
 
-  static async approveTransaction(transactionId: string, approvedBy: string): Promise<PettyCashTransaction> {
+  static async approveTransaction(
+    transactionId: string,
+    approvedBy: string
+  ): Promise<PettyCashTransaction> {
     const response = await APIClient.put<{ transaction: PettyCashTransaction }>(
       `${this.endpoint}/transactions/${transactionId}/approve`,
       { approvedBy }
@@ -366,16 +411,16 @@ export class PettyCashService {
 
   static async getReconciliations(): Promise<PettyCashReconciliation[]> {
     try {
-      const response = await APIClient.get<{ reconciliations?: PettyCashReconciliation[] }>(
-        `${this.endpoint}/reconciliations`
-      );
-      return response.reconciliations || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/reconciliations`);
+      return APIClient.unwrapList<PettyCashReconciliation>(response, 'reconciliations');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async createReconciliation(data: PettyCashReconciliation): Promise<PettyCashReconciliation> {
+  static async createReconciliation(
+    data: PettyCashReconciliation
+  ): Promise<PettyCashReconciliation> {
     const response = await APIClient.post<{ reconciliation: PettyCashReconciliation }>(
       `${this.endpoint}/reconciliations`,
       data
@@ -393,19 +438,19 @@ export class FinancialAssetService {
 
   static async getAssets(): Promise<FinancialAsset[]> {
     try {
-      const response = await APIClient.get<{ assets?: FinancialAsset[] }>(this.endpoint);
-      return response.assets || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<FinancialAsset>(response, 'assets');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getAssetById(id: string): Promise<FinancialAsset | null> {
     try {
-      const response = await APIClient.get<{ asset?: FinancialAsset }>(`${this.endpoint}/${id}`);
-      return response.asset || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<FinancialAsset>(response, 'asset');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -415,7 +460,10 @@ export class FinancialAssetService {
   }
 
   static async updateAsset(id: string, updates: Partial<FinancialAsset>): Promise<FinancialAsset> {
-    const response = await APIClient.put<{ asset: FinancialAsset }>(`${this.endpoint}/${id}`, updates);
+    const response = await APIClient.put<{ asset: FinancialAsset }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.asset;
   }
 
@@ -424,7 +472,10 @@ export class FinancialAssetService {
   }
 
   static async calculateDepreciation(assetId: string): Promise<number> {
-    const response = await APIClient.post<{ depreciation: number }>(`${this.endpoint}/${assetId}/depreciation`, {});
+    const response = await APIClient.post<{ depreciation: number }>(
+      `${this.endpoint}/${assetId}/depreciation`,
+      {}
+    );
     return response.depreciation;
   }
 }
@@ -476,7 +527,7 @@ export class FinanceAnalyticsService {
         lastUpdated: new Date().toISOString(),
       };
     } catch (error: any) {
-            return {
+      return {
         totalBudgets: 0,
         activeBudgets: 0,
         totalBudgetAmount: 0,
@@ -521,10 +572,10 @@ export class FinanceSettingsService {
 
   static async getSettings(): Promise<FinanceSettings | null> {
     try {
-      const response = await APIClient.get<{ settings?: FinanceSettings }>(this.endpoint);
-      return response.settings || null;
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapItem<FinanceSettings>(response, 'settings');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 

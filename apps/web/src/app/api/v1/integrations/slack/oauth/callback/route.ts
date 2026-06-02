@@ -1,13 +1,55 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
-/**
- * GET /api/v1/integrations/slack/oauth/callback
- * OAuth redirect from Slack — no JWT auth (user redirected from Slack)
- * Security: validated via OAuth state parameter
- */
+async function exchangeSlackCode(code: string, redirectUri: string) {
+  const clientId = process.env.SLACK_CLIENT_ID;
+  const clientSecret = process.env.SLACK_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
+    throw new Error('Slack OAuth credentials not configured');
+  }
+  const res = await fetch('https://slack.com/api/oauth.v2.access', {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      code,
+      client_id: clientId,
+      client_secret: clientSecret,
+      redirect_uri: redirectUri,
+    }),
+  });
+  const data: any = await res.json();
+  if (!data.ok) throw new Error(data.error || 'slack_exchange_failed');
+  return data;
+}
+
+async function persistSlackConnection(tenantId: string, userId: string | undefined, data: any) {
+  await (prisma as any).integrationConnection?.upsert?.({
+    where: { tenantId_provider: { tenantId, provider: 'slack' } },
+    create: {
+      tenantId,
+      provider: 'slack',
+      status: 'CONNECTED',
+      externalAccountId: data.team?.id,
+      externalAccountName: data.team?.name,
+      accessTokenEncrypted: data.access_token,
+      scopes: typeof data.scope === 'string' ? data.scope.split(',') : [],
+      connectedBy: userId,
+      connectedAt: new Date(),
+    },
+    update: {
+      status: 'CONNECTED',
+      externalAccountId: data.team?.id,
+      externalAccountName: data.team?.name,
+      accessTokenEncrypted: data.access_token,
+      scopes: typeof data.scope === 'string' ? data.scope.split(',') : [],
+      connectedAt: new Date(),
+    },
+  });
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
@@ -20,28 +62,33 @@ export async function GET(request: NextRequest) {
       new URL('/dashboard/integration-hub?error=slack_denied', request.url)
     );
   }
-
   if (!code || !state) {
     return NextResponse.json({ error: 'Missing code or state parameter' }, { status: 400 });
   }
 
-  // TODO: Validate state parameter against stored CSRF state in Redis
-  // TODO: Exchange code for access token via Slack API
-  const _tokenData = {
-    access_token: 'xoxb-mock-token',
-    team: { id: 'T12345', name: 'Mock Workspace' },
-    scope: 'chat:write,channels:read,users:read',
-  };
-
-  // TODO: Store integration credentials in DB with tenant association
-
-  return NextResponse.redirect(new URL('/dashboard/integration-hub?connected=slack', request.url));
+  try {
+    const stateRow: any = await (prisma as any).oAuthState?.findUnique?.({ where: { state } });
+    if (!stateRow || stateRow.expiresAt < new Date()) {
+      return NextResponse.redirect(
+        new URL('/dashboard/integration-hub?error=invalid_state', request.url)
+      );
+    }
+    const data = await exchangeSlackCode(
+      code,
+      `${new URL(request.url).origin}/api/v1/integrations/slack/oauth/callback`
+    );
+    await persistSlackConnection(stateRow.tenantId, stateRow.userId, data);
+    return NextResponse.redirect(
+      new URL('/dashboard/integration-hub?connected=slack', request.url)
+    );
+  } catch (err: any) {
+    logger.error({ err }, 'Slack OAuth callback failed');
+    return NextResponse.redirect(
+      new URL('/dashboard/integration-hub?error=slack_failed', request.url)
+    );
+  }
 }
 
-/**
- * POST /api/v1/integrations/slack/oauth/callback
- * Manual code exchange — requires authentication
- */
 export const POST = withEnhancedAuth(async (request: NextRequest, { user, permissions }: any) => {
   if (!permissions.includes('integrations:create')) {
     return NextResponse.json(
@@ -57,21 +104,36 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
     );
   }
   const body = await request.json();
-  const { code } = body;
+  const { code, redirectUri } = body;
+  if (!code) return NextResponse.json({ error: 'Authorization code required' }, { status: 400 });
 
-  if (!code) {
-    return NextResponse.json({ error: 'Authorization code required' }, { status: 400 });
+  try {
+    const data = await exchangeSlackCode(
+      code,
+      redirectUri || `${new URL(request.url).origin}/api/v1/integrations/slack/oauth/callback`
+    );
+    await persistSlackConnection(user.tenantId, user.userId, data);
+    return NextResponse.json({
+      success: true,
+      data: {
+        integration: 'slack',
+        status: 'connected',
+        workspace: data.team?.name,
+        connectedAt: new Date().toISOString(),
+      },
+    });
+  } catch (err: any) {
+    logger.error({ err, tenantId: user.tenantId }, 'Slack code exchange failed');
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E5020',
+          message: err.message || 'Slack exchange failed',
+          messageAr: 'فشل تبادل سلاك',
+        },
+      },
+      { status: 502 }
+    );
   }
-
-  logger.info({ tenantId: user.tenantId }, 'Slack integration code exchange');
-
-  return NextResponse.json({
-    success: true,
-    data: {
-      integration: 'slack',
-      status: 'connected',
-      workspace: 'Mock Workspace',
-      connectedAt: new Date().toISOString(),
-    },
-  });
 });

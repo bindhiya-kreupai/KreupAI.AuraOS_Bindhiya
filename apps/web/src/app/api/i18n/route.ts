@@ -121,7 +121,10 @@ export async function GET(request: NextRequest) {
           );
         }
         const result = ArabicLocalizationService.toArabicDigits(numberStr);
-        return NextResponse.json({ success: true, data: { input: numberStr, arabicDigits: result } });
+        return NextResponse.json({
+          success: true,
+          data: { input: numberStr, arabicDigits: result },
+        });
       }
 
       default:
@@ -151,10 +154,7 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'validateForm': {
         const validated = ValidateFormSchema.parse(body);
-        const result = ArabicLocalizationService.validateForm(
-          validated.fields,
-          validated.locale
-        );
+        const result = ArabicLocalizationService.validateForm(validated.fields, validated.locale);
         return NextResponse.json({ success: true, data: result });
       }
 
@@ -182,7 +182,12 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: false, error: 'Validation error', errorAr: 'خطأ في التحقق', details: error.errors },
+        {
+          success: false,
+          error: 'Validation error',
+          errorAr: 'خطأ في التحقق',
+          details: error.errors,
+        },
         { status: 400 }
       );
     }

@@ -44,7 +44,7 @@ export class MobileAppConfigService {
       const response = await APIClient.get<{ config?: MobileAppConfig }>(this.endpoint);
       return response.config || ({} as MobileAppConfig);
     } catch (error: any) {
-            return {} as MobileAppConfig;
+      return {} as MobileAppConfig;
     }
   }
 
@@ -53,7 +53,7 @@ export class MobileAppConfigService {
       const response = await APIClient.put<{ config: MobileAppConfig }>(this.endpoint, updates);
       return response.config;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -80,37 +80,47 @@ export class PushNotificationService {
 
   static async getAllNotifications(): Promise<PushNotification[]> {
     try {
-      const response = await APIClient.get<{ notifications?: PushNotification[] }>(this.endpoint);
-      return response.notifications || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<PushNotification>(response, 'notifications');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getNotificationById(notificationId: string): Promise<PushNotification> {
     try {
-      const response = await APIClient.get<{ notification?: PushNotification }>(`${this.endpoint}/${notificationId}`);
+      const response = await APIClient.get<{ notification?: PushNotification }>(
+        `${this.endpoint}/${notificationId}`
+      );
       return response.notification || ({} as PushNotification);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
-  static async createNotification(notification: Partial<PushNotification>): Promise<PushNotification> {
+  static async createNotification(
+    notification: Partial<PushNotification>
+  ): Promise<PushNotification> {
     try {
-      const response = await APIClient.post<{ notification: PushNotification }>(this.endpoint, notification);
+      const response = await APIClient.post<{ notification: PushNotification }>(
+        this.endpoint,
+        notification
+      );
       return response.notification;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async sendNotification(notificationId: string): Promise<PushNotification> {
     try {
-      const response = await APIClient.post<{ notification: PushNotification }>(`${this.endpoint}/${notificationId}/send`, {});
+      const response = await APIClient.post<{ notification: PushNotification }>(
+        `${this.endpoint}/${notificationId}/send`,
+        {}
+      );
       return response.notification;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -118,26 +128,31 @@ export class PushNotificationService {
     try {
       await APIClient.delete(`${this.endpoint}/${notificationId}`);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   // Template methods
   static async getTemplates(): Promise<NotificationTemplate[]> {
     try {
-      const response = await APIClient.get<{ templates?: NotificationTemplate[] }>(this.templatesEndpoint);
-      return response.templates || [];
+      const response = await APIClient.get<unknown>(this.templatesEndpoint);
+      return APIClient.unwrapList<NotificationTemplate>(response, 'templates');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async createTemplate(template: Partial<NotificationTemplate>): Promise<NotificationTemplate> {
+  static async createTemplate(
+    template: Partial<NotificationTemplate>
+  ): Promise<NotificationTemplate> {
     try {
-      const response = await APIClient.post<{ template: NotificationTemplate }>(this.templatesEndpoint, template);
+      const response = await APIClient.post<{ template: NotificationTemplate }>(
+        this.templatesEndpoint,
+        template
+      );
       return response.template;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -155,7 +170,7 @@ export class OfflineModeService {
       const response = await APIClient.get<{ config?: OfflineConfig }>(this.configEndpoint);
       return response.config || ({} as OfflineConfig);
     } catch (error: any) {
-            return {} as OfflineConfig;
+      return {} as OfflineConfig;
     }
   }
 
@@ -164,7 +179,7 @@ export class OfflineModeService {
       const response = await APIClient.put<{ config: OfflineConfig }>(this.configEndpoint, updates);
       return response.config;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -173,16 +188,19 @@ export class OfflineModeService {
       const response = await APIClient.get<{ status?: SyncStatus }>(`${this.syncEndpoint}/status`);
       return response.status || ({} as SyncStatus);
     } catch (error: any) {
-            return {} as SyncStatus;
+      return {} as SyncStatus;
     }
   }
 
   static async syncData(): Promise<SyncStatus> {
     try {
-      const response = await APIClient.post<{ status: SyncStatus }>(`${this.syncEndpoint}/sync`, {});
+      const response = await APIClient.post<{ status: SyncStatus }>(
+        `${this.syncEndpoint}/sync`,
+        {}
+      );
       return response.status;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -200,43 +218,54 @@ export class BiometricService {
       const response = await APIClient.get<{ config?: BiometricConfig }>(this.configEndpoint);
       return response.config || ({} as BiometricConfig);
     } catch (error: any) {
-            return {} as BiometricConfig;
+      return {} as BiometricConfig;
     }
   }
 
   static async updateConfig(updates: Partial<BiometricConfig>): Promise<BiometricConfig> {
     try {
-      const response = await APIClient.put<{ config: BiometricConfig }>(this.configEndpoint, updates);
+      const response = await APIClient.put<{ config: BiometricConfig }>(
+        this.configEndpoint,
+        updates
+      );
       return response.config;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async getAllEnrollments(): Promise<BiometricEnrollment[]> {
     try {
-      const response = await APIClient.get<{ enrollments?: BiometricEnrollment[] }>(this.enrollmentsEndpoint);
-      return response.enrollments || [];
+      const response = await APIClient.get<unknown>(this.enrollmentsEndpoint);
+      return APIClient.unwrapList<BiometricEnrollment>(response, 'enrollments');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async enrollBiometric(enrollment: Partial<BiometricEnrollment>): Promise<BiometricEnrollment> {
+  static async enrollBiometric(
+    enrollment: Partial<BiometricEnrollment>
+  ): Promise<BiometricEnrollment> {
     try {
-      const response = await APIClient.post<{ enrollment: BiometricEnrollment }>(this.enrollmentsEndpoint, enrollment);
+      const response = await APIClient.post<{ enrollment: BiometricEnrollment }>(
+        this.enrollmentsEndpoint,
+        enrollment
+      );
       return response.enrollment;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async revokeBiometric(enrollmentId: string, reason: string): Promise<BiometricEnrollment> {
     try {
-      const response = await APIClient.post<{ enrollment: BiometricEnrollment }>(`${this.enrollmentsEndpoint}/${enrollmentId}/revoke`, { reason });
+      const response = await APIClient.post<{ enrollment: BiometricEnrollment }>(
+        `${this.enrollmentsEndpoint}/${enrollmentId}/revoke`,
+        { reason }
+      );
       return response.enrollment;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -254,34 +283,40 @@ export class GPSAttendanceService {
       const response = await APIClient.get<{ config?: GPSAttendanceConfig }>(this.configEndpoint);
       return response.config || ({} as GPSAttendanceConfig);
     } catch (error: any) {
-            return {} as GPSAttendanceConfig;
+      return {} as GPSAttendanceConfig;
     }
   }
 
   static async updateConfig(updates: Partial<GPSAttendanceConfig>): Promise<GPSAttendanceConfig> {
     try {
-      const response = await APIClient.put<{ config: GPSAttendanceConfig }>(this.configEndpoint, updates);
+      const response = await APIClient.put<{ config: GPSAttendanceConfig }>(
+        this.configEndpoint,
+        updates
+      );
       return response.config;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async getAllCheckIns(): Promise<GPSCheckIn[]> {
     try {
-      const response = await APIClient.get<{ checkins?: GPSCheckIn[] }>(this.checkinsEndpoint);
-      return response.checkins || [];
+      const response = await APIClient.get<unknown>(this.checkinsEndpoint);
+      return APIClient.unwrapList<GPSCheckIn>(response, 'checkins');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async recordCheckIn(checkIn: Partial<GPSCheckIn>): Promise<GPSCheckIn> {
     try {
-      const response = await APIClient.post<{ checkin: GPSCheckIn }>(this.checkinsEndpoint, checkIn);
+      const response = await APIClient.post<{ checkin: GPSCheckIn }>(
+        this.checkinsEndpoint,
+        checkIn
+      );
       return response.checkin;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -295,37 +330,45 @@ export class MobileApprovalsService {
 
   static async getAllApprovals(): Promise<MobileApproval[]> {
     try {
-      const response = await APIClient.get<{ approvals?: MobileApproval[] }>(this.endpoint);
-      return response.approvals || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<MobileApproval>(response, 'approvals');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getApprovalById(approvalId: string): Promise<MobileApproval> {
     try {
-      const response = await APIClient.get<{ approval?: MobileApproval }>(`${this.endpoint}/${approvalId}`);
+      const response = await APIClient.get<{ approval?: MobileApproval }>(
+        `${this.endpoint}/${approvalId}`
+      );
       return response.approval || ({} as MobileApproval);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async approveRequest(approvalId: string, comments?: string): Promise<MobileApproval> {
     try {
-      const response = await APIClient.post<{ approval: MobileApproval }>(`${this.endpoint}/${approvalId}/approve`, { comments });
+      const response = await APIClient.post<{ approval: MobileApproval }>(
+        `${this.endpoint}/${approvalId}/approve`,
+        { comments }
+      );
       return response.approval;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async rejectRequest(approvalId: string, comments: string): Promise<MobileApproval> {
     try {
-      const response = await APIClient.post<{ approval: MobileApproval }>(`${this.endpoint}/${approvalId}/reject`, { comments });
+      const response = await APIClient.post<{ approval: MobileApproval }>(
+        `${this.endpoint}/${approvalId}/reject`,
+        { comments }
+      );
       return response.approval;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -343,25 +386,28 @@ export class DocumentUploadService {
       const response = await APIClient.get<{ config?: DocumentUploadConfig }>(this.configEndpoint);
       return response.config || ({} as DocumentUploadConfig);
     } catch (error: any) {
-            return {} as DocumentUploadConfig;
+      return {} as DocumentUploadConfig;
     }
   }
 
   static async uploadDocument(document: Partial<UploadedDocument>): Promise<UploadedDocument> {
     try {
-      const response = await APIClient.post<{ document: UploadedDocument }>(this.documentsEndpoint, document);
+      const response = await APIClient.post<{ document: UploadedDocument }>(
+        this.documentsEndpoint,
+        document
+      );
       return response.document;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async getAllDocuments(): Promise<UploadedDocument[]> {
     try {
-      const response = await APIClient.get<{ documents?: UploadedDocument[] }>(this.documentsEndpoint);
-      return response.documents || [];
+      const response = await APIClient.get<unknown>(this.documentsEndpoint);
+      return APIClient.unwrapList<UploadedDocument>(response, 'documents');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 }
@@ -375,28 +421,33 @@ export class MobileTimesheetsService {
 
   static async getAllTimesheets(): Promise<MobileTimesheet[]> {
     try {
-      const response = await APIClient.get<{ timesheets?: MobileTimesheet[] }>(this.endpoint);
-      return response.timesheets || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<MobileTimesheet>(response, 'timesheets');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getTimesheetById(timesheetId: string): Promise<MobileTimesheet> {
     try {
-      const response = await APIClient.get<{ timesheet?: MobileTimesheet }>(`${this.endpoint}/${timesheetId}`);
+      const response = await APIClient.get<{ timesheet?: MobileTimesheet }>(
+        `${this.endpoint}/${timesheetId}`
+      );
       return response.timesheet || ({} as MobileTimesheet);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async submitTimesheet(timesheetId: string): Promise<MobileTimesheet> {
     try {
-      const response = await APIClient.post<{ timesheet: MobileTimesheet }>(`${this.endpoint}/${timesheetId}/submit`, {});
+      const response = await APIClient.post<{ timesheet: MobileTimesheet }>(
+        `${this.endpoint}/${timesheetId}/submit`,
+        {}
+      );
       return response.timesheet;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -410,19 +461,25 @@ export class QuickActionsService {
 
   static async getAllQuickActions(): Promise<QuickAction[]> {
     try {
-      const response = await APIClient.get<{ actions?: QuickAction[] }>(this.endpoint);
-      return response.actions || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<QuickAction>(response, 'actions');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async updateQuickAction(actionId: string, updates: Partial<QuickAction>): Promise<QuickAction> {
+  static async updateQuickAction(
+    actionId: string,
+    updates: Partial<QuickAction>
+  ): Promise<QuickAction> {
     try {
-      const response = await APIClient.put<{ action: QuickAction }>(`${this.endpoint}/${actionId}`, updates);
+      const response = await APIClient.put<{ action: QuickAction }>(
+        `${this.endpoint}/${actionId}`,
+        updates
+      );
       return response.action;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -440,25 +497,30 @@ export class VoiceCommandsService {
       const response = await APIClient.get<{ config?: VoiceCommandConfig }>(this.configEndpoint);
       return response.config || ({} as VoiceCommandConfig);
     } catch (error: any) {
-            return {} as VoiceCommandConfig;
+      return {} as VoiceCommandConfig;
     }
   }
 
-  static async recordInteraction(interaction: Partial<VoiceInteraction>): Promise<VoiceInteraction> {
+  static async recordInteraction(
+    interaction: Partial<VoiceInteraction>
+  ): Promise<VoiceInteraction> {
     try {
-      const response = await APIClient.post<{ interaction: VoiceInteraction }>(this.interactionsEndpoint, interaction);
+      const response = await APIClient.post<{ interaction: VoiceInteraction }>(
+        this.interactionsEndpoint,
+        interaction
+      );
       return response.interaction;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async getAllInteractions(): Promise<VoiceInteraction[]> {
     try {
-      const response = await APIClient.get<{ interactions?: VoiceInteraction[] }>(this.interactionsEndpoint);
-      return response.interactions || [];
+      const response = await APIClient.get<unknown>(this.interactionsEndpoint);
+      return APIClient.unwrapList<VoiceInteraction>(response, 'interactions');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 }
@@ -476,7 +538,7 @@ export class MobileAnalyticsService {
       const response = await APIClient.get<{ analytics?: MobileAnalytics }>(this.endpoint);
       return response.analytics || ({} as MobileAnalytics);
     } catch (error: any) {
-            return {} as MobileAnalytics;
+      return {} as MobileAnalytics;
     }
   }
 
@@ -484,7 +546,7 @@ export class MobileAnalyticsService {
     try {
       await APIClient.post(this.sessionsEndpoint, session);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -499,28 +561,31 @@ export class ChatService {
 
   static async getAllConversations(): Promise<ChatConversation[]> {
     try {
-      const response = await APIClient.get<{ conversations?: ChatConversation[] }>(this.conversationsEndpoint);
-      return response.conversations || [];
+      const response = await APIClient.get<unknown>(this.conversationsEndpoint);
+      return APIClient.unwrapList<ChatConversation>(response, 'conversations');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async sendMessage(message: Partial<ChatMessage>): Promise<ChatMessage> {
     try {
-      const response = await APIClient.post<{ message: ChatMessage }>(this.messagesEndpoint, message);
+      const response = await APIClient.post<{ message: ChatMessage }>(
+        this.messagesEndpoint,
+        message
+      );
       return response.message;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async getAllMessages(): Promise<ChatMessage[]> {
     try {
-      const response = await APIClient.get<{ messages?: ChatMessage[] }>(this.messagesEndpoint);
-      return response.messages || [];
+      const response = await APIClient.get<unknown>(this.messagesEndpoint);
+      return APIClient.unwrapList<ChatMessage>(response, 'messages');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 }
@@ -537,7 +602,7 @@ export class MobileProfileService {
       const response = await APIClient.get<{ profile?: MobileUserProfile }>(this.endpoint);
       return response.profile || ({} as MobileUserProfile);
     } catch (error: any) {
-            return {} as MobileUserProfile;
+      return {} as MobileUserProfile;
     }
   }
 
@@ -546,7 +611,7 @@ export class MobileProfileService {
       const response = await APIClient.put<{ profile: MobileUserProfile }>(this.endpoint, updates);
       return response.profile;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -563,7 +628,7 @@ export class MobileSettingsService {
       const response = await APIClient.get<{ settings?: MobileAppSettings }>(this.endpoint);
       return response.settings || ({} as MobileAppSettings);
     } catch (error: any) {
-            return {} as MobileAppSettings;
+      return {} as MobileAppSettings;
     }
   }
 
@@ -572,7 +637,7 @@ export class MobileSettingsService {
       const response = await APIClient.put<{ settings: MobileAppSettings }>(this.endpoint, updates);
       return response.settings;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }

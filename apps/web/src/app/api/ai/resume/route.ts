@@ -35,10 +35,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const resumeData = await ResumeParserService.parseResume(
-          body.resumeText,
-          body.fileName
-        );
+        const resumeData = await ResumeParserService.parseResume(body.resumeText, body.fileName);
 
         return NextResponse.json({
           success: true,
@@ -57,10 +54,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const score = await ResumeParserService.scoreCandidate(
-          body.resume,
-          body.jobRequirements
-        );
+        const score = await ResumeParserService.scoreCandidate(body.resume, body.jobRequirements);
 
         return NextResponse.json({
           success: true,
@@ -186,7 +180,8 @@ export async function POST(request: NextRequest) {
               strongFit: ranked.filter((r: any) => r.recommendation === 'STRONG_FIT').length,
               goodFit: ranked.filter((r: any) => r.recommendation === 'GOOD_FIT').length,
               partialFit: ranked.filter((r: any) => r.recommendation === 'PARTIAL_FIT').length,
-              notRecommended: ranked.filter((r: any) => r.recommendation === 'NOT_RECOMMENDED').length,
+              notRecommended: ranked.filter((r: any) => r.recommendation === 'NOT_RECOMMENDED')
+                .length,
             },
           },
         });

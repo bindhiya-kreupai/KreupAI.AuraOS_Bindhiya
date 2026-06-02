@@ -3,7 +3,7 @@
  * Provides CSRF tokens for authenticated users
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { sessionService } from '@/lib/auth/session.service';
 import { generateCSRFToken } from '@/lib/middleware/csrf.middleware';
@@ -55,10 +55,7 @@ export async function GET(request: NextRequest) {
     // Generate CSRF token
     const csrfToken = await generateCSRFToken(sessionData.userId);
 
-    logger.info(
-      { userId: sessionData.userId },
-      'CSRF token generated for user'
-    );
+    logger.info({ userId: sessionData.userId }, 'CSRF token generated for user');
 
     return NextResponse.json({
       success: true,

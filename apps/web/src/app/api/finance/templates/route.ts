@@ -3,7 +3,7 @@
  * Finance Module - Budget Templates
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 /**
@@ -20,10 +20,7 @@ export async function GET(request: NextRequest) {
       templates: [],
     });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to fetch templates' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch templates' }, { status: 500 });
   }
 }
 
@@ -45,10 +42,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to create template' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to create template' }, { status: 500 });
   }
 }
 
@@ -63,10 +57,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Template ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Template ID is required' }, { status: 400 });
     }
 
     return NextResponse.json({
@@ -78,10 +69,7 @@ export async function PUT(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to update template' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update template' }, { status: 500 });
   }
 }
 
@@ -95,10 +83,7 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Template ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Template ID is required' }, { status: 400 });
     }
 
     return NextResponse.json({
@@ -106,9 +91,6 @@ export async function DELETE(request: NextRequest) {
       message: 'Template deleted successfully',
     });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to delete template' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to delete template' }, { status: 500 });
   }
 }

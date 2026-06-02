@@ -45,79 +45,83 @@ const FlightRiskSchema = z.object({
 });
 
 // POST - Run predictive analytics
-export const POST = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ANALYTICS, Action.READ, permissions);
-      if (permissionError) return permissionError;
+export const POST = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
+  try {
+    const permissionError = requirePermission(Resource.ANALYTICS, Action.READ, permissions);
+    if (permissionError) return permissionError;
 
-      const body = await request.json();
-      const { action } = body;
+    const body = await request.json();
+    const { action } = body;
 
-      switch (action) {
-        case 'attritionRisk': {
-          const data = AttritionRiskSchema.parse(body);
-          const result = await PredictiveAnalyticsService.predictAttritionRisk(
-            user.tenantId, data.employeeId
-          );
-          return NextResponse.json({ success: true, data: result });
-        }
-
-        case 'performance': {
-          const data = PerformanceSchema.parse(body);
-          const result = await PredictiveAnalyticsService.predictPerformance(
-            user.tenantId, data.employeeId
-          );
-          return NextResponse.json({ success: true, data: result });
-        }
-
-        case 'headcount': {
-          const data = HeadcountForecastSchema.parse(body);
-          const result = await PredictiveAnalyticsService.forecastHeadcount(
-            user.tenantId, data.months, data.departmentId
-          );
-          return NextResponse.json({ success: true, data: result });
-        }
-
-        case 'compensation': {
-          const data = CompensationSchema.parse(body);
-          const result = await PredictiveAnalyticsService.analyzeCompensation(
-            user.tenantId, data.departmentId
-          );
-          return NextResponse.json({ success: true, data: result });
-        }
-
-        case 'insights': {
-          const result = await PredictiveAnalyticsService.generateWorkforceInsights(user.tenantId);
-          return NextResponse.json({ success: true, data: result });
-        }
-
-        case 'flightRisk': {
-          const data = FlightRiskSchema.parse(body);
-          const result = await PredictiveAnalyticsService.identifyFlightRisk(
-            user.tenantId, data.threshold
-          );
-          return NextResponse.json({ success: true, data: result });
-        }
-
-        default:
-          return NextResponse.json(
-            { error: `Unknown action: ${action}`, errorAr: `إجراء غير معروف: ${action}` },
-            { status: 400 }
-          );
+    switch (action) {
+      case 'attritionRisk': {
+        const data = AttritionRiskSchema.parse(body);
+        const result = await PredictiveAnalyticsService.predictAttritionRisk(
+          user.tenantId,
+          data.employeeId
+        );
+        return NextResponse.json({ success: true, data: result });
       }
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
+
+      case 'performance': {
+        const data = PerformanceSchema.parse(body);
+        const result = await PredictiveAnalyticsService.predictPerformance(
+          user.tenantId,
+          data.employeeId
+        );
+        return NextResponse.json({ success: true, data: result });
+      }
+
+      case 'headcount': {
+        const data = HeadcountForecastSchema.parse(body);
+        const result = await PredictiveAnalyticsService.forecastHeadcount(
+          user.tenantId,
+          data.months,
+          data.departmentId
+        );
+        return NextResponse.json({ success: true, data: result });
+      }
+
+      case 'compensation': {
+        const data = CompensationSchema.parse(body);
+        const result = await PredictiveAnalyticsService.analyzeCompensation(
+          user.tenantId,
+          data.departmentId
+        );
+        return NextResponse.json({ success: true, data: result });
+      }
+
+      case 'insights': {
+        const result = await PredictiveAnalyticsService.generateWorkforceInsights(user.tenantId);
+        return NextResponse.json({ success: true, data: result });
+      }
+
+      case 'flightRisk': {
+        const data = FlightRiskSchema.parse(body);
+        const result = await PredictiveAnalyticsService.identifyFlightRisk(
+          user.tenantId,
+          data.threshold
+        );
+        return NextResponse.json({ success: true, data: result });
+      }
+
+      default:
         return NextResponse.json(
-          { success: false, error: 'Validation error', details: error.errors },
+          { error: `Unknown action: ${action}`, errorAr: `إجراء غير معروف: ${action}` },
           { status: 400 }
         );
-      }
-      logger.error({ error }, 'Error in predictive analytics');
+    }
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: false, error: 'Failed to process predictive analytics request' },
-        { status: 500 }
+        { success: false, error: 'Validation error', details: error.errors },
+        { status: 400 }
       );
     }
+    logger.error({ error }, 'Error in predictive analytics');
+    return NextResponse.json(
+      { success: false, error: 'Failed to process predictive analytics request' },
+      { status: 500 }
+    );
   }
-);
+});

@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { redis } from '@/lib/cache/redis';
@@ -58,9 +58,12 @@ export async function GET(request: NextRequest) {
 
     // Determine overall status
     const criticalServicesHealthy = dbStatus === 'healthy' && redisStatus === 'healthy';
-    const phase3ServicesHealthy = phase3Health.messaging && phase3Health.search && phase3Health.events;
+    const phase3ServicesHealthy =
+      phase3Health.messaging && phase3Health.search && phase3Health.events;
     const overallStatus = criticalServicesHealthy
-      ? (phase3ServicesHealthy ? 'healthy' : 'degraded')
+      ? phase3ServicesHealthy
+        ? 'healthy'
+        : 'degraded'
       : 'unhealthy';
 
     const healthData = {
@@ -105,8 +108,8 @@ export async function GET(request: NextRequest) {
       },
       features,
       environmentVariables: {
-        required: envSummary.required.map(v => ({ key: v.key, present: v.present })),
-        optionalMissing: envSummary.optional.filter(v => !v.present).map(v => v.key),
+        required: envSummary.required.map((v) => ({ key: v.key, present: v.present })),
+        optionalMissing: envSummary.optional.filter((v) => !v.present).map((v) => v.key),
       },
     };
 

@@ -1,21 +1,63 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
+import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-const plans = [
-    { id: '1', name: 'Standard Sales Plan', rate: 0.05, threshold: 5000, type: 'percentage' },
-    { id: '2', name: 'High Performer Tier', rate: 0.08, threshold: 20000, type: 'tier' }
-];
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-retail/commissions:read'))
+      return forbidden('industry-retail/commissions:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).retailCommissionPlan.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).retailCommissionPlan.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error(
+      { err: error, route: 'industry-retail/commissions/plans/route.ts' },
+      'Failed to list'
+    );
+    return serverError(error, 'list');
+  }
+});
 
-export async function GET(req: NextRequest) {
-    return NextResponse.json({ plans });
-}
-
-export async function POST(req: NextRequest) {
-    const data = await req.json();
-    const newPlan = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data
-    };
-    plans.push(newPlan);
-    return NextResponse.json({ plan: newPlan });
-}
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-retail/commissions:create'))
+      return forbidden('industry-retail/commissions:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).retailCommissionPlan.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error(
+      { err: error, route: 'industry-retail/commissions/plans/route.ts' },
+      'Failed to create'
+    );
+    return serverError(error, 'create');
+  }
+});

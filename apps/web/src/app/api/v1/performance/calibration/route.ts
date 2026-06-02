@@ -1,50 +1,57 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-export const POST = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
-  if (!permissions.includes('performance:create')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing performance:create permission',
-          messageAr: 'ممنوع',
-        },
-      },
-      { status: 403 }
-    );
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('performance/calibration:read'))
+      return forbidden('performance/calibration:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).calibrationSession.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).calibrationSession.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error({ err: error, route: 'v1/performance/calibration/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
   }
-  const body = await request.json();
+});
 
-  return NextResponse.json({
-    success: true,
-    data: {
-      id: 'cal-001',
-      title: body.title || 'Q4 2025 Performance Calibration',
-      department: body.department || 'Engineering',
-      facilitatorId: body.facilitatorId || 'emp-200',
-      facilitatorName: 'HR Director',
-      participants: body.participants || ['emp-201', 'emp-202', 'emp-203'],
-      reviewPeriod: body.reviewPeriod || '2025-Q4',
-      employeesUnderReview: body.employeeIds || [
-        'emp-101',
-        'emp-102',
-        'emp-103',
-        'emp-104',
-        'emp-105',
-      ],
-      ratingDistribution: {
-        exceptional: 0,
-        exceedsExpectations: 0,
-        meetsExpectations: 0,
-        needsImprovement: 0,
-        unsatisfactory: 0,
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('performance/calibration:create'))
+      return forbidden('performance/calibration:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).calibrationSession.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
       },
-      status: 'scheduled',
-      scheduledDate: body.scheduledDate || '2026-02-01T10:00:00Z',
-      createdAt: new Date().toISOString(),
-    },
-  });
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error({ err: error, route: 'v1/performance/calibration/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
+  }
 });

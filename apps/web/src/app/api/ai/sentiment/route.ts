@@ -3,7 +3,7 @@
  * Phase 3: Intelligence Layer - Employee Insights
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { SentimentAnalysisService } from '@/lib/services/ai';
 
@@ -35,10 +35,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const result = await SentimentAnalysisService.analyzeSentiment(
-          body.text,
-          body.context
-        );
+        const result = await SentimentAnalysisService.analyzeSentiment(body.text, body.context);
 
         return NextResponse.json({
           success: true,
@@ -133,14 +130,15 @@ export async function POST(request: NextRequest) {
         // Extract action items from feedback
         if (!body.feedbackTexts || !Array.isArray(body.feedbackTexts)) {
           return NextResponse.json(
-            { error: 'feedbackTexts array is required', errorAr: 'مصفوفة نصوص التغذية الراجعة مطلوبة' },
+            {
+              error: 'feedbackTexts array is required',
+              errorAr: 'مصفوفة نصوص التغذية الراجعة مطلوبة',
+            },
             { status: 400 }
           );
         }
 
-        const actionItems = await SentimentAnalysisService.extractActionItems(
-          body.feedbackTexts
-        );
+        const actionItems = await SentimentAnalysisService.extractActionItems(body.feedbackTexts);
 
         return NextResponse.json({
           success: true,
@@ -162,7 +160,7 @@ export async function POST(request: NextRequest) {
         );
     }
   } catch (error: any) {
-        return NextResponse.json(
+    return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to analyze sentiment',
         errorAr: 'فشل في تحليل المشاعر',
@@ -210,7 +208,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json(
+    return NextResponse.json(
       { error: 'Failed to fetch sentiment data', errorAr: 'فشل في جلب بيانات المشاعر' },
       { status: 500 }
     );

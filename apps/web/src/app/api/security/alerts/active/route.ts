@@ -1,31 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { forbidden, parsePagination, serverError, successList } from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (request, context) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const alerts = [
-      {
-        alertId: `alert-${Date.now()}`,
-        alertType: 'failed_login',
-        severity: 'high',
-        title: 'Multiple Failed Login Attempts',
-        message: 'User attempted to login 5 times with incorrect password',
-        userId: 'user-001',
-        userName: 'John Doe',
-        ipAddress: '192.168.1.100',
-        timestamp: new Date().toISOString(),
-        status: 'active',
-        acknowledgedBy: null,
-        acknowledgedAt: null,
-        resolvedBy: null,
-        resolvedAt: null,
-        resolution: null,
-        createdAt: new Date().toISOString()
-      }
-    ];
-
-    return NextResponse.json({ alerts }, { status: 200 });
+    const { user, permissions } = context;
+    if (!permissions.includes('security:read')) return forbidden('security:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId, status: { in: ['OPEN', 'INVESTIGATING'] } };
+    const [rows, total] = await Promise.all([
+      prisma.securityAlert.findMany({ where, orderBy: { detectedAt: 'desc' }, skip, take: limit }),
+      prisma.securityAlert.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
   } catch (error: any) {
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return serverError(error, 'list active security alerts');
   }
 });

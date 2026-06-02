@@ -1,45 +1,56 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        tickets: [],
-        tenantId: user.tenantId,
-      },
-    }, { status: 200 });
+    const { user, permissions } = context;
+    if (!permissions.includes('helpdesk/tickets:read')) return forbidden('helpdesk/tickets:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).helpdeskTicket.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).helpdeskTicket.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch helpdesk tickets' },
-      { status: 500 }
-    );
+    logger.error({ err: error, route: 'helpdesk/tickets/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
   }
 });
 
-export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-    const body = await request.json();
-
-    const ticket = {
-      ...body,
-      ticketId: `ticket-${Date.now()}`,
-      ticketNumber: `TKT-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`,
-      tenantId: user.tenantId,
-      createdAt: new Date().toISOString(),
-      status: body.status || 'new',
-    };
-
-    return NextResponse.json({ success: true, data: ticket }, { status: 201 });
+    const { user, permissions } = context;
+    if (!permissions.includes('helpdesk/tickets:create'))
+      return forbidden('helpdesk/tickets:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).helpdeskTicket.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to create helpdesk ticket' },
-      { status: 500 }
-    );
+    logger.error({ err: error, route: 'helpdesk/tickets/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
   }
 });

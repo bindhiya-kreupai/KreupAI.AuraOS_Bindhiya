@@ -1,36 +1,63 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
+import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-const hires = [
-    { id: '1', candidateName: 'Sarah Connor', position: 'Sales Associate', status: 'hired', startDate: '2024-11-01', storeId: '1' },
-    { id: '2', candidateName: 'Kyle Reese', position: 'Warehouse Support', status: 'interviewing', startDate: '2024-11-15', storeId: '2' }
-];
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-retail/seasonal-hiring:read'))
+      return forbidden('industry-retail/seasonal-hiring:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).retailSeasonalHiring.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).retailSeasonalHiring.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error(
+      { err: error, route: 'industry-retail/seasonal-hiring/route.ts' },
+      'Failed to list'
+    );
+    return serverError(error, 'list');
+  }
+});
 
-export async function GET(req: NextRequest) {
-    return NextResponse.json({ hires });
-}
-
-export async function POST(req: NextRequest) {
-    const data = await req.json();
-    const newHire = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data,
-        status: 'applied',
-    };
-    hires.push(newHire);
-    return NextResponse.json({ hire: newHire });
-}
-
-export async function PUT(req: NextRequest) {
-    const { pathname } = new URL(req.url);
-    const id = pathname.split('/').pop();
-    const updates = await req.json();
-
-    const index = hires.findIndex(h => h.id === id);
-    if (index !== -1) {
-        hires[index] = { ...hires[index], ...updates };
-        return NextResponse.json({ hire: hires[index] });
-    }
-
-    return NextResponse.json({ error: 'Hire record not found' }, { status: 404 });
-}
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-retail/seasonal-hiring:create'))
+      return forbidden('industry-retail/seasonal-hiring:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).retailSeasonalHiring.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error(
+      { err: error, route: 'industry-retail/seasonal-hiring/route.ts' },
+      'Failed to create'
+    );
+    return serverError(error, 'create');
+  }
+});

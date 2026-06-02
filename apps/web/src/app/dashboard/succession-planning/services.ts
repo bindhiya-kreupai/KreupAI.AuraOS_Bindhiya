@@ -6,266 +6,322 @@
 
 import { APIClient } from '@/lib/api-client';
 import type {
-    CriticalPosition,
-    SuccessionCandidate,
-    SuccessionPool,
-    DevelopmentPlan,
-    TalentReview,
-    CareerPath,
-    EmergencySuccession,
-    SuccessionMetrics,
-    SuccessionRiskAnalysis,
-    SuccessionSettings,
-    CandidateStatus,
-    ReadinessLevel,
+  CriticalPosition,
+  SuccessionCandidate,
+  SuccessionPool,
+  DevelopmentPlan,
+  TalentReview,
+  CareerPath,
+  EmergencySuccession,
+  SuccessionMetrics,
+  SuccessionRiskAnalysis,
+  SuccessionSettings,
+  CandidateStatus,
+  ReadinessLevel,
 } from './types';
 
 export class CriticalPositionService {
-    private static endpoint = '/succession-planning/critical-positions';
+  private static endpoint = '/succession-planning/critical-positions';
 
-    static async getPositions(filters?: { departmentId?: string; criticality?: string }): Promise<CriticalPosition[]> {
-        try {
-            const response = await APIClient.get<{ positions?: CriticalPosition[] }>(this.endpoint, filters);
-            return response.positions || [];
-        } catch (error: any) {
-                        return [];
-        }
+  static async getPositions(filters?: {
+    departmentId?: string;
+    criticality?: string;
+  }): Promise<CriticalPosition[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint, filters);
+      return APIClient.unwrapList<CriticalPosition>(response, 'positions');
+    } catch (error: any) {
+      return [];
     }
+  }
 
-    static async createPosition(data: CriticalPosition): Promise<CriticalPosition> {
-        const response = await APIClient.post<{ position: CriticalPosition }>(this.endpoint, data);
-        return response.position;
-    }
+  static async createPosition(data: CriticalPosition): Promise<CriticalPosition> {
+    const response = await APIClient.post<{ position: CriticalPosition }>(this.endpoint, data);
+    return response.position;
+  }
 
-    static async updatePosition(id: string, updates: Partial<CriticalPosition>): Promise<CriticalPosition> {
-        const response = await APIClient.put<{ position: CriticalPosition }>(`${this.endpoint}/${id}`, updates);
-        return response.position;
-    }
+  static async updatePosition(
+    id: string,
+    updates: Partial<CriticalPosition>
+  ): Promise<CriticalPosition> {
+    const response = await APIClient.put<{ position: CriticalPosition }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
+    return response.position;
+  }
 
-    static async deletePosition(id: string): Promise<void> {
-        await APIClient.delete(`${this.endpoint}/${id}`);
-    }
+  static async deletePosition(id: string): Promise<void> {
+    await APIClient.delete(`${this.endpoint}/${id}`);
+  }
 }
 
 export class SuccessionCandidateService {
-    private static endpoint = '/succession-planning/candidates';
+  private static endpoint = '/succession-planning/candidates';
 
-    static async getCandidates(filters?: { targetPositionId?: string; readinessLevel?: ReadinessLevel; status?: CandidateStatus }): Promise<SuccessionCandidate[]> {
-        try {
-            const response = await APIClient.get<{ candidates?: SuccessionCandidate[] }>(this.endpoint, filters);
-            return response.candidates || [];
-        } catch (error: any) {
-                        return [];
-        }
+  static async getCandidates(filters?: {
+    targetPositionId?: string;
+    readinessLevel?: ReadinessLevel;
+    status?: CandidateStatus;
+  }): Promise<SuccessionCandidate[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint, filters);
+      return APIClient.unwrapList<SuccessionCandidate>(response, 'candidates');
+    } catch (error: any) {
+      return [];
     }
+  }
 
-    static async createCandidate(data: SuccessionCandidate): Promise<SuccessionCandidate> {
-        const response = await APIClient.post<{ candidate: SuccessionCandidate }>(this.endpoint, data);
-        return response.candidate;
-    }
+  static async createCandidate(data: SuccessionCandidate): Promise<SuccessionCandidate> {
+    const response = await APIClient.post<{ candidate: SuccessionCandidate }>(this.endpoint, data);
+    return response.candidate;
+  }
 
-    static async updateCandidate(id: string, updates: Partial<SuccessionCandidate>): Promise<SuccessionCandidate> {
-        const response = await APIClient.put<{ candidate: SuccessionCandidate }>(`${this.endpoint}/${id}`, updates);
-        return response.candidate;
-    }
+  static async updateCandidate(
+    id: string,
+    updates: Partial<SuccessionCandidate>
+  ): Promise<SuccessionCandidate> {
+    const response = await APIClient.put<{ candidate: SuccessionCandidate }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
+    return response.candidate;
+  }
 
-    static async approveCandidate(id: string, approvedBy: string): Promise<SuccessionCandidate> {
-        const response = await APIClient.post<{ candidate: SuccessionCandidate }>(`${this.endpoint}/${id}/approve`, { approvedBy });
-        return response.candidate;
-    }
+  static async approveCandidate(id: string, approvedBy: string): Promise<SuccessionCandidate> {
+    const response = await APIClient.post<{ candidate: SuccessionCandidate }>(
+      `${this.endpoint}/${id}/approve`,
+      { approvedBy }
+    );
+    return response.candidate;
+  }
 
-    private static async updateSuccessionDepth(positionId: string): Promise<void> {
-        try {
-            await APIClient.post(`${this.endpoint}/update-succession-depth`, { positionId });
-        } catch (error: any) {
-                    }
-    }
+  private static async updateSuccessionDepth(positionId: string): Promise<void> {
+    try {
+      await APIClient.post(`${this.endpoint}/update-succession-depth`, { positionId });
+    } catch (error: any) {}
+  }
 }
 
 export class SuccessionPoolService {
-    private static endpoint = '/succession-planning/pools';
+  private static endpoint = '/succession-planning/pools';
 
-    static async getPools(filters?: { targetLevel?: string }): Promise<SuccessionPool[]> {
-        try {
-            const response = await APIClient.get<{ pools?: SuccessionPool[] }>(this.endpoint, filters);
-            return response.pools || [];
-        } catch (error: any) {
-                        return [];
-        }
+  static async getPools(filters?: { targetLevel?: string }): Promise<SuccessionPool[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint, filters);
+      return APIClient.unwrapList<SuccessionPool>(response, 'pools');
+    } catch (error: any) {
+      return [];
     }
+  }
 
-    static async createPool(data: SuccessionPool): Promise<SuccessionPool> {
-        const response = await APIClient.post<{ pool: SuccessionPool }>(this.endpoint, data);
-        return response.pool;
-    }
+  static async createPool(data: SuccessionPool): Promise<SuccessionPool> {
+    const response = await APIClient.post<{ pool: SuccessionPool }>(this.endpoint, data);
+    return response.pool;
+  }
 
-    static async updatePool(id: string, updates: Partial<SuccessionPool>): Promise<SuccessionPool> {
-        const response = await APIClient.put<{ pool: SuccessionPool }>(`${this.endpoint}/${id}`, updates);
-        return response.pool;
-    }
+  static async updatePool(id: string, updates: Partial<SuccessionPool>): Promise<SuccessionPool> {
+    const response = await APIClient.put<{ pool: SuccessionPool }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
+    return response.pool;
+  }
 }
 
 export class DevelopmentPlanService {
-    private static endpoint = '/succession-planning/development-plans';
+  private static endpoint = '/succession-planning/development-plans';
 
-    static async getPlans(filters?: { employeeId?: string; targetPositionId?: string; status?: string }): Promise<DevelopmentPlan[]> {
-        try {
-            const response = await APIClient.get<{ plans?: DevelopmentPlan[] }>(this.endpoint, filters);
-            return response.plans || [];
-        } catch (error: any) {
-                        return [];
-        }
+  static async getPlans(filters?: {
+    employeeId?: string;
+    targetPositionId?: string;
+    status?: string;
+  }): Promise<DevelopmentPlan[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint, filters);
+      return APIClient.unwrapList<DevelopmentPlan>(response, 'plans');
+    } catch (error: any) {
+      return [];
     }
+  }
 
-    static async createPlan(data: DevelopmentPlan): Promise<DevelopmentPlan> {
-        const response = await APIClient.post<{ plan: DevelopmentPlan }>(this.endpoint, data);
-        return response.plan;
-    }
+  static async createPlan(data: DevelopmentPlan): Promise<DevelopmentPlan> {
+    const response = await APIClient.post<{ plan: DevelopmentPlan }>(this.endpoint, data);
+    return response.plan;
+  }
 
-    static async updatePlan(id: string, updates: Partial<DevelopmentPlan>): Promise<DevelopmentPlan> {
-        const response = await APIClient.put<{ plan: DevelopmentPlan }>(`${this.endpoint}/${id}`, updates);
-        return response.plan;
-    }
+  static async updatePlan(id: string, updates: Partial<DevelopmentPlan>): Promise<DevelopmentPlan> {
+    const response = await APIClient.put<{ plan: DevelopmentPlan }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
+    return response.plan;
+  }
 
-    static async activatePlan(id: string): Promise<DevelopmentPlan> {
-        const response = await APIClient.post<{ plan: DevelopmentPlan }>(`${this.endpoint}/${id}/activate`);
-        return response.plan;
-    }
+  static async activatePlan(id: string): Promise<DevelopmentPlan> {
+    const response = await APIClient.post<{ plan: DevelopmentPlan }>(
+      `${this.endpoint}/${id}/activate`
+    );
+    return response.plan;
+  }
 
-    static async completePlan(id: string): Promise<DevelopmentPlan> {
-        const response = await APIClient.post<{ plan: DevelopmentPlan }>(`${this.endpoint}/${id}/complete`);
-        return response.plan;
-    }
+  static async completePlan(id: string): Promise<DevelopmentPlan> {
+    const response = await APIClient.post<{ plan: DevelopmentPlan }>(
+      `${this.endpoint}/${id}/complete`
+    );
+    return response.plan;
+  }
 }
 
 export class TalentReviewService {
-    private static endpoint = '/succession-planning/talent-reviews';
+  private static endpoint = '/succession-planning/talent-reviews';
 
-    static async getTalentReviews(filters?: { fiscalYear?: string; departmentId?: string }): Promise<TalentReview[]> {
-        try {
-            const response = await APIClient.get<{ reviews?: TalentReview[] }>(this.endpoint, filters);
-            return response.reviews || [];
-        } catch (error: any) {
-                        return [];
-        }
+  static async getTalentReviews(filters?: {
+    fiscalYear?: string;
+    departmentId?: string;
+  }): Promise<TalentReview[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint, filters);
+      return APIClient.unwrapList<TalentReview>(response, 'reviews');
+    } catch (error: any) {
+      return [];
     }
+  }
 
-    static async createTalentReview(data: TalentReview): Promise<TalentReview> {
-        const response = await APIClient.post<{ review: TalentReview }>(this.endpoint, data);
-        return response.review;
-    }
+  static async createTalentReview(data: TalentReview): Promise<TalentReview> {
+    const response = await APIClient.post<{ review: TalentReview }>(this.endpoint, data);
+    return response.review;
+  }
 
-    static async updateTalentReview(id: string, updates: Partial<TalentReview>): Promise<TalentReview> {
-        const response = await APIClient.put<{ review: TalentReview }>(`${this.endpoint}/${id}`, updates);
-        return response.review;
-    }
+  static async updateTalentReview(
+    id: string,
+    updates: Partial<TalentReview>
+  ): Promise<TalentReview> {
+    const response = await APIClient.put<{ review: TalentReview }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
+    return response.review;
+  }
 
-    static async completeTalentReview(id: string): Promise<TalentReview> {
-        const response = await APIClient.post<{ review: TalentReview }>(`${this.endpoint}/${id}/complete`);
-        return response.review;
-    }
+  static async completeTalentReview(id: string): Promise<TalentReview> {
+    const response = await APIClient.post<{ review: TalentReview }>(
+      `${this.endpoint}/${id}/complete`
+    );
+    return response.review;
+  }
 }
 
 export class CareerPathService {
-    private static endpoint = '/succession-planning/career-paths';
+  private static endpoint = '/succession-planning/career-paths';
 
-    static async getCareerPaths(filters?: { isActive?: boolean }): Promise<CareerPath[]> {
-        try {
-            const response = await APIClient.get<{ paths?: CareerPath[] }>(this.endpoint, filters);
-            return response.paths || [];
-        } catch (error: any) {
-                        return [];
-        }
+  static async getCareerPaths(filters?: { isActive?: boolean }): Promise<CareerPath[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint, filters);
+      return APIClient.unwrapList<CareerPath>(response, 'paths');
+    } catch (error: any) {
+      return [];
     }
+  }
 
-    static async createCareerPath(data: CareerPath): Promise<CareerPath> {
-        const response = await APIClient.post<{ path: CareerPath }>(this.endpoint, data);
-        return response.path;
-    }
+  static async createCareerPath(data: CareerPath): Promise<CareerPath> {
+    const response = await APIClient.post<{ path: CareerPath }>(this.endpoint, data);
+    return response.path;
+  }
 
-    static async updateCareerPath(id: string, updates: Partial<CareerPath>): Promise<CareerPath> {
-        const response = await APIClient.put<{ path: CareerPath }>(`${this.endpoint}/${id}`, updates);
-        return response.path;
-    }
+  static async updateCareerPath(id: string, updates: Partial<CareerPath>): Promise<CareerPath> {
+    const response = await APIClient.put<{ path: CareerPath }>(`${this.endpoint}/${id}`, updates);
+    return response.path;
+  }
 }
 
 export class EmergencySuccessionService {
-    private static endpoint = '/succession-planning/emergency-succession';
+  private static endpoint = '/succession-planning/emergency-succession';
 
-    static async getEmergencyPlans(filters?: { criticalPositionId?: string }): Promise<EmergencySuccession[]> {
-        try {
-            const response = await APIClient.get<{ plans?: EmergencySuccession[] }>(this.endpoint, filters);
-            return response.plans || [];
-        } catch (error: any) {
-                        return [];
-        }
+  static async getEmergencyPlans(filters?: {
+    criticalPositionId?: string;
+  }): Promise<EmergencySuccession[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint, filters);
+      return APIClient.unwrapList<EmergencySuccession>(response, 'plans');
+    } catch (error: any) {
+      return [];
     }
+  }
 
-    static async createEmergencyPlan(data: EmergencySuccession): Promise<EmergencySuccession> {
-        const response = await APIClient.post<{ plan: EmergencySuccession }>(this.endpoint, data);
-        return response.plan;
-    }
+  static async createEmergencyPlan(data: EmergencySuccession): Promise<EmergencySuccession> {
+    const response = await APIClient.post<{ plan: EmergencySuccession }>(this.endpoint, data);
+    return response.plan;
+  }
 
-    static async updateEmergencyPlan(id: string, updates: Partial<EmergencySuccession>): Promise<EmergencySuccession> {
-        const response = await APIClient.put<{ plan: EmergencySuccession }>(`${this.endpoint}/${id}`, updates);
-        return response.plan;
-    }
+  static async updateEmergencyPlan(
+    id: string,
+    updates: Partial<EmergencySuccession>
+  ): Promise<EmergencySuccession> {
+    const response = await APIClient.put<{ plan: EmergencySuccession }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
+    return response.plan;
+  }
 }
 
 export class SuccessionAnalyticsService {
-    private static endpoint = '/succession-planning/analytics';
+  private static endpoint = '/succession-planning/analytics';
 
-    static async getMetrics(): Promise<SuccessionMetrics> {
-        try {
-            const response = await APIClient.get<{ metrics?: SuccessionMetrics }>(`${this.endpoint}/metrics`);
-            return response.metrics || {} as SuccessionMetrics;
-        } catch (error: any) {
-                        throw error;
-        }
+  static async getMetrics(): Promise<SuccessionMetrics> {
+    try {
+      const response = await APIClient.get<unknown>(`${this.endpoint}/metrics`);
+      return (
+        APIClient.unwrapItem<SuccessionMetrics>(response, 'metrics') || ({} as SuccessionMetrics)
+      );
+    } catch (error: any) {
+      throw error;
     }
+  }
 
-    static async getRiskAnalysis(): Promise<SuccessionRiskAnalysis[]> {
-        try {
-            const response = await APIClient.get<{ analysis?: SuccessionRiskAnalysis[] }>(`${this.endpoint}/risk-analysis`);
-            return response.analysis || [];
-        } catch (error: any) {
-                        return [];
-        }
+  static async getRiskAnalysis(): Promise<SuccessionRiskAnalysis[]> {
+    try {
+      const response = await APIClient.get<unknown>(`${this.endpoint}/risk-analysis`);
+      return APIClient.unwrapList<SuccessionRiskAnalysis>(response, 'analysis');
+    } catch (error: any) {
+      return [];
     }
+  }
 
-    private static calculateRiskScore(position: CriticalPosition): number {
-        let score = 0;
+  private static calculateRiskScore(position: CriticalPosition): number {
+    let score = 0;
 
-        if (position.successionDepth === 0) score += 40;
-        else if (position.successionDepth === 1) score += 25;
-        else if (position.successionDepth === 2) score += 10;
+    if (position.successionDepth === 0) score += 40;
+    else if (position.successionDepth === 1) score += 25;
+    else if (position.successionDepth === 2) score += 10;
 
-        if (position.vacancyRisk === 'high') score += 30;
-        else if (position.vacancyRisk === 'medium') score += 15;
+    if (position.vacancyRisk === 'high') score += 30;
+    else if (position.vacancyRisk === 'medium') score += 15;
 
-        if (position.criticality === 'critical') score += 20;
-        else if (position.criticality === 'high') score += 10;
+    if (position.criticality === 'critical') score += 20;
+    else if (position.criticality === 'high') score += 10;
 
-        if (!position.hasEmergencyPlan) score += 10;
+    if (!position.hasEmergencyPlan) score += 10;
 
-        return Math.min(score, 100);
-    }
+    return Math.min(score, 100);
+  }
 }
 
 export class SuccessionSettingsService {
-    private static endpoint = '/succession-planning/settings';
+  private static endpoint = '/succession-planning/settings';
 
-    static async getSettings(): Promise<SuccessionSettings | null> {
-        try {
-            const response = await APIClient.get<{ settings?: SuccessionSettings }>(this.endpoint);
-            return response.settings || null;
-        } catch (error: any) {
-                        return null;
-        }
+  static async getSettings(): Promise<SuccessionSettings | null> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapItem<SuccessionSettings>(response, 'settings');
+    } catch (error: any) {
+      return null;
     }
+  }
 
-    static async updateSettings(updates: Partial<SuccessionSettings>): Promise<SuccessionSettings> {
-        const response = await APIClient.put<{ settings: SuccessionSettings }>(this.endpoint, updates);
-        return response.settings;
-    }
+  static async updateSettings(updates: Partial<SuccessionSettings>): Promise<SuccessionSettings> {
+    const response = await APIClient.put<{ settings: SuccessionSettings }>(this.endpoint, updates);
+    return response.settings;
+  }
 }

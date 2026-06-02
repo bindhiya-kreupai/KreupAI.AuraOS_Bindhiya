@@ -3,7 +3,7 @@
  * Finance Module - Budget Management
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 /**
@@ -31,10 +31,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to fetch budgets' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch budgets' }, { status: 500 });
   }
 }
 
@@ -64,10 +61,7 @@ export async function POST(request: NextRequest) {
         // Create budget from template
         const { templateId, budgetData } = body;
         if (!templateId) {
-          return NextResponse.json(
-            { error: 'templateId is required' },
-            { status: 400 }
-          );
+          return NextResponse.json({ error: 'templateId is required' }, { status: 400 });
         }
         return NextResponse.json({
           success: true,
@@ -81,16 +75,10 @@ export async function POST(request: NextRequest) {
         });
 
       default:
-        return NextResponse.json(
-          { error: 'Invalid action' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to create budget' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to create budget' }, { status: 500 });
   }
 }
 
@@ -105,10 +93,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Budget ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Budget ID is required' }, { status: 400 });
     }
 
     return NextResponse.json({
@@ -120,10 +105,7 @@ export async function PUT(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to update budget' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update budget' }, { status: 500 });
   }
 }
 
@@ -137,10 +119,7 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Budget ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Budget ID is required' }, { status: 400 });
     }
 
     return NextResponse.json({
@@ -148,9 +127,6 @@ export async function DELETE(request: NextRequest) {
       message: 'Budget deleted successfully',
     });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to delete budget' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to delete budget' }, { status: 500 });
   }
 }

@@ -3,26 +3,28 @@
  * Resets user password using a valid reset token
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { passwordResetService } from '@/lib/auth/password-reset.service';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
 
-const ResetSchema = z.object({
-  token: z.string().min(1, 'Token is required'),
-  newPassword: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      'Password must contain at least one uppercase letter, one lowercase letter, and one number'
-    ),
-  confirmPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
+const ResetSchema = z
+  .object({
+    token: z.string().min(1, 'Token is required'),
+    newPassword: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+      ),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 /**
  * POST /api/auth/password-reset/reset
@@ -67,17 +69,15 @@ export async function POST(request: NextRequest) {
           error: {
             code: 'E1002',
             message: 'Invalid or expired token',
-            details: 'This password reset link is invalid or has expired. Please request a new one.',
+            details:
+              'This password reset link is invalid or has expired. Please request a new one.',
           },
         },
         { status: 400 }
       );
     }
 
-    logger.info(
-      { userId: result.userId },
-      'Password reset completed successfully'
-    );
+    logger.info({ userId: result.userId }, 'Password reset completed successfully');
 
     return NextResponse.json({
       success: true,

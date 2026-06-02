@@ -1,157 +1,330 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from 'react';
-import { PerformanceAnalyticsService, PerformanceReviewService } from '../core/services';
+import React, { useEffect, useState } from 'react';
+import { PerformanceReviewService } from '../core/services';
 import {
-    Grid,
-    Users,
-    Info,
-    Move,
-    Save,
-    RotateCcw,
-    Loader2
+  AlertCircle,
+  CheckCircle2,
+  Grid,
+  Info,
+  Loader2,
+  Move,
+  RotateCcw,
+  Save,
 } from 'lucide-react';
 
 const BOXES = [
-    { id: '1-1', title: 'Rough Diamond', desc: 'High Potential, Low Performance', color: 'bg-amber-100 dark:bg-amber-900/30 border-amber-200' },
-    { id: '1-2', title: 'Future Star', desc: 'High Potential, Moderate Performance', color: 'bg-indigo-100 dark:bg-indigo-900/30 border-indigo-200' },
-    { id: '1-3', title: 'Star', desc: 'High Potential, High Performance', color: 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-200' },
-
-    { id: '2-1', title: 'Inconsistent', desc: 'Mod Potential, Low Performance', color: 'bg-slate-100 dark:bg-slate-800 border-slate-200' },
-    { id: '2-2', title: 'Key Player', desc: 'Mod Potential, Moderate Performance', color: 'bg-indigo-50 dark:bg-indigo-900/10 border-indigo-100' },
-    { id: '2-3', title: 'High Performer', desc: 'Mod Potential, High Performance', color: 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100' },
-
-    { id: '3-1', title: 'Talent Risk', desc: 'Low Potential, Low Performance', color: 'bg-rose-100 dark:bg-rose-900/30 border-rose-200' },
-    { id: '3-2', title: 'Effective', desc: 'Low Potential, Moderate Performance', color: 'bg-slate-100 dark:bg-slate-800 border-slate-200' },
-    { id: '3-3', title: 'Trusted Pro', desc: 'Low Potential, High Performance', color: 'bg-indigo-50 dark:bg-indigo-900/10 border-indigo-100' },
+  {
+    id: '1-1',
+    title: 'Rough Diamond',
+    desc: 'High Potential, Low Performance',
+    color: 'bg-amber-100 dark:bg-amber-900/30 border-amber-200',
+  },
+  {
+    id: '1-2',
+    title: 'Future Star',
+    desc: 'High Potential, Moderate Performance',
+    color: 'bg-indigo-100 dark:bg-indigo-900/30 border-indigo-200',
+  },
+  {
+    id: '1-3',
+    title: 'Star',
+    desc: 'High Potential, High Performance',
+    color: 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-200',
+  },
+  {
+    id: '2-1',
+    title: 'Inconsistent',
+    desc: 'Mod Potential, Low Performance',
+    color: 'bg-slate-100 dark:bg-slate-800 border-slate-200',
+  },
+  {
+    id: '2-2',
+    title: 'Key Player',
+    desc: 'Mod Potential, Moderate Performance',
+    color: 'bg-indigo-50 dark:bg-indigo-900/10 border-indigo-100',
+  },
+  {
+    id: '2-3',
+    title: 'High Performer',
+    desc: 'Mod Potential, High Performance',
+    color: 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100',
+  },
+  {
+    id: '3-1',
+    title: 'Talent Risk',
+    desc: 'Low Potential, Low Performance',
+    color: 'bg-rose-100 dark:bg-rose-900/30 border-rose-200',
+  },
+  {
+    id: '3-2',
+    title: 'Effective',
+    desc: 'Low Potential, Moderate Performance',
+    color: 'bg-slate-100 dark:bg-slate-800 border-slate-200',
+  },
+  {
+    id: '3-3',
+    title: 'Trusted Pro',
+    desc: 'Low Potential, High Performance',
+    color: 'bg-indigo-50 dark:bg-indigo-900/10 border-indigo-100',
+  },
 ];
 
 interface EmployeeBox {
-    id: string;
-    name: string;
-    role: string;
-    box: string;
-    avatar: string;
+  id: string;
+  name: string;
+  role: string;
+  box: string;
+  originalBox: string;
+  avatar: string;
+}
+
+const STORAGE_KEY = 'auraos.performance.nineBoxCalibration.v1';
+
+function computeBoxFromRating(rating: number): string {
+  const col = rating >= 4 ? 3 : rating >= 3 ? 2 : 1;
+  return `2-${col}`;
 }
 
 export default function NineBoxGridPage() {
-    const [loading, setLoading] = useState(true);
-    const [employees, setEmployees] = useState<EmployeeBox[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [employees, setEmployees] = useState<EmployeeBox[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [dirty, setDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
 
-    useEffect(() => {
-        async function loadData() {
-            try {
-                const reviews = await PerformanceReviewService.getReviews();
-                const mapped: EmployeeBox[] = reviews
-                    .filter((r: any) => r.finalRating !== null)
-                    .map((r: any) => {
-                        const rating = Math.round(r.finalRating || 3);
-                        // Map rating to 9-box: row = potential (1=high, 3=low), col = performance (1=low, 3=high)
-                        const col = rating >= 4 ? 3 : rating >= 3 ? 2 : 1;
-                        const row = 2; // Default to moderate potential unless more data available
-                        return {
-                            id: r.id,
-                            name: `Employee ${r.employeeId?.slice(-4) || r.id?.slice(-4)}`,
-                            role: r.reviewType || 'Review',
-                            box: `${row}-${col}`,
-                            avatar: (r.employeeId?.slice(-2) || 'EE').toUpperCase(),
-                        };
-                    });
-                setEmployees(mapped);
-            } catch (error: any) {
-                console.error('Failed to load nine-box data:', error);
-            } finally {
-                setLoading(false);
-            }
+  useEffect(() => {
+    if (!status) return;
+    const t = setTimeout(() => setStatus(null), 4000);
+    return () => clearTimeout(t);
+  }, [status]);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const reviews = await PerformanceReviewService.getReviews();
+      const overrides: Record<string, string> = (() => {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          return raw ? JSON.parse(raw) : {};
+        } catch {
+          return {};
         }
-        loadData();
-    }, []);
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-96">
-                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-            </div>
-        );
+      })();
+      const mapped: EmployeeBox[] = reviews
+        .filter((r: any) => r.finalRating !== null && r.finalRating !== undefined)
+        .map((r: any) => {
+          const rating = Math.round(r.finalRating || 3);
+          const initial = computeBoxFromRating(rating);
+          return {
+            id: r.id,
+            name: `Employee ${r.employeeId?.slice(-4) || r.id?.slice(-4)}`,
+            role: r.reviewType || 'Review',
+            box: overrides[r.id] || initial,
+            originalBox: initial,
+            avatar: (r.employeeId?.slice(-2) || 'EE').toUpperCase(),
+          };
+        });
+      setEmployees(mapped);
+      setDirty(false);
+    } catch (error: any) {
+      console.error('Failed to load nine-box data:', error);
+      setStatus({ kind: 'error', text: error?.message || 'Failed to load.' });
+    } finally {
+      setLoading(false);
     }
+  };
 
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const placeSelected = (boxId: string) => {
+    if (!selectedId) return;
+    setEmployees((all) => all.map((e) => (e.id === selectedId ? { ...e, box: boxId } : e)));
+    setSelectedId(null);
+    setDirty(true);
+  };
+
+  const handleReset = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+    setEmployees((all) => all.map((e) => ({ ...e, box: e.originalBox })));
+    setDirty(false);
+    setStatus({ kind: 'success', text: 'Calibration reset.' });
+  };
+
+  const handleSave = () => {
+    setSaving(true);
+    try {
+      const overrides: Record<string, string> = {};
+      employees.forEach((e) => {
+        if (e.box !== e.originalBox) overrides[e.id] = e.box;
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
+      setDirty(false);
+      setStatus({ kind: 'success', text: 'Calibration saved (browser-local).' });
+    } catch (e: any) {
+      setStatus({ kind: 'error', text: e?.message || 'Failed to save calibration.' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
     return (
-        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
-                <div>
-                    <h1 className="text-2xl font-bold flex items-center gap-2">
-                        <Grid className="w-6 h-6 text-indigo-500" />
-                        9-Box Grid
-                    </h1>
-                    <p className="text-slate-500 text-sm">Talent calibration matrix for succession planning.</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 text-slate-500 font-bold text-sm hover:text-indigo-500">
-                        <RotateCcw className="w-4 h-4" /> Reset
-                    </button>
-                    <button className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20">
-                        <Save className="w-4 h-4" /> Save Calibration
-                    </button>
-                </div>
-            </div>
-
-            {/* Grid Container */}
-            <div className="flex-1 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-auto">
-                <div className="flex relative h-full min-w-[800px]">
-                    {/* Y-Axis Label */}
-                    <div className="absolute -left-8 top-1/2 -translate-y-1/2 -rotate-90 text-sm font-bold text-slate-400 tracking-widest uppercase">
-                        Potential &rarr;
-                    </div>
-
-                    <div className="flex-1 flex flex-col gap-3">
-                        {/* Rows */}
-                        {[0, 1, 2].map(row => (
-                            <div key={row} className="flex-1 flex gap-3">
-                                {[0, 1, 2].map(col => {
-                                    const boxIndex = row * 3 + col;
-                                    const box = BOXES[boxIndex];
-                                    const occupants = employees.filter(e => e.box === box.id);
-
-                                    return (
-                                        <div
-                                            key={box.id}
-                                            className={`flex-1 rounded-xl border p-4 flex flex-col ${box.color} hover:bg-opacity-80 transition-all cursor-pointer group relative`}
-                                        >
-                                            <div className="flex justify-between items-start mb-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                                                <span className="font-bold text-sm">{box.title}</span>
-                                                <Info className="w-4 h-4" />
-                                            </div>
-
-                                            {/* Employees */}
-                                            <div className="flex-1 flex flex-wrap content-start gap-2">
-                                                {occupants.map(emp => (
-                                                    <div key={emp.id} className="bg-white dark:bg-slate-800 p-1.5 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700 flex items-center gap-2 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow">
-                                                        <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-[10px] font-bold text-indigo-700 dark:text-indigo-300">
-                                                            {emp.avatar}
-                                                        </div>
-                                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{emp.name}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-
-                                            <div className="text-[10px] text-slate-500 mt-auto pt-2 border-t border-black/5 dark:border-white/5">
-                                                {box.desc}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* X-Axis Label */}
-                    <div className="absolute bottom-[-1.5rem] left-1/2 -translate-x-1/2 text-sm font-bold text-slate-400 tracking-widest uppercase">
-                        Performance &rarr;
-                    </div>
-                </div>
-            </div>
-        </div>
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      </div>
     );
-}
+  }
 
+  return (
+    <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Grid className="w-6 h-6 text-indigo-500" />
+            9-Box Grid
+          </h1>
+          <p className="text-slate-500 text-sm">
+            Talent calibration matrix for succession planning.
+            {selectedId && (
+              <span className="ml-2 text-indigo-600 dark:text-indigo-300 font-medium">
+                <Move className="inline w-3 h-3 mr-1" /> Click a box to place selected employee
+              </span>
+            )}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleReset}
+            disabled={!dirty}
+            className="flex items-center gap-2 text-slate-500 font-bold text-sm hover:text-indigo-500 disabled:opacity-40 disabled:hover:text-slate-500"
+          >
+            <RotateCcw className="w-4 h-4" /> Reset
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={!dirty || saving}
+            className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20 disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" /> {saving ? 'Saving…' : 'Save Calibration'}
+          </button>
+        </div>
+      </div>
+
+      {status && (
+        <div
+          className={`rounded-lg border px-4 py-2 text-sm flex items-center gap-2 ${
+            status.kind === 'success'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-200'
+              : 'bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-900/20 dark:border-rose-800 dark:text-rose-200'
+          }`}
+        >
+          {status.kind === 'success' ? (
+            <CheckCircle2 className="w-4 h-4" />
+          ) : (
+            <AlertCircle className="w-4 h-4" />
+          )}
+          {status.text}
+        </div>
+      )}
+
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-auto">
+        {employees.length === 0 ? (
+          <div className="py-16 text-center text-slate-400 text-sm">
+            No calibrated reviews yet. Once reviews have a final rating, they will appear here.
+          </div>
+        ) : (
+          <div className="flex relative min-w-[800px] pb-6">
+            <div className="absolute -left-2 top-1/2 -translate-y-1/2 -rotate-90 text-sm font-bold text-slate-400 tracking-widest uppercase">
+              Potential &rarr;
+            </div>
+
+            <div className="flex-1 flex flex-col gap-3 ml-8">
+              {[0, 1, 2].map((row) => (
+                <div key={row} className="flex-1 flex gap-3">
+                  {[0, 1, 2].map((col) => {
+                    const boxIndex = row * 3 + col;
+                    const box = BOXES[boxIndex];
+                    const occupants = employees.filter((e) => e.box === box.id);
+
+                    return (
+                      <div
+                        key={box.id}
+                        onClick={() => selectedId && placeSelected(box.id)}
+                        className={`flex-1 rounded-xl border p-4 flex flex-col ${box.color} transition-all min-h-[140px] ${
+                          selectedId ? 'cursor-pointer hover:ring-2 hover:ring-indigo-300' : ''
+                        }`}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="font-bold text-sm">{box.title}</span>
+                          <Info className="w-4 h-4 text-slate-400" />
+                        </div>
+
+                        <div className="flex-1 flex flex-wrap content-start gap-2">
+                          {occupants.map((emp) => (
+                            <button
+                              key={emp.id}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedId(emp.id === selectedId ? null : emp.id);
+                              }}
+                              className={`p-1.5 rounded-lg shadow-sm border flex items-center gap-2 transition-all ${
+                                selectedId === emp.id
+                                  ? 'bg-indigo-600 text-white border-indigo-600 ring-2 ring-indigo-200'
+                                  : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 hover:shadow-md text-slate-700 dark:text-slate-300'
+                              }`}
+                              title={`${emp.name} (click to move)`}
+                            >
+                              <div
+                                className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                                  selectedId === emp.id
+                                    ? 'bg-white text-indigo-600'
+                                    : 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
+                                }`}
+                              >
+                                {emp.avatar}
+                              </div>
+                              <span className="text-xs font-bold">{emp.name}</span>
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="text-[10px] text-slate-500 mt-2 pt-2 border-t border-black/5 dark:border-white/5">
+                          {box.desc}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-sm font-bold text-slate-400 tracking-widest uppercase">
+              Performance &rarr;
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800 px-4 py-3 text-xs text-amber-800 dark:text-amber-200 flex gap-2">
+        <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+        <p>
+          Calibration overrides are stored per-browser. Adding a
+          <code className="px-1 mx-1 bg-amber-100 dark:bg-amber-900/40 rounded">calibratedBox</code>
+          column on{' '}
+          <code className="px-1 bg-amber-100 dark:bg-amber-900/40 rounded">
+            PerformanceReview
+          </code>{' '}
+          is the natural follow-up so HR teams share one view.
+        </p>
+      </div>
+    </div>
+  );
+}

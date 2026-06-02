@@ -5,7 +5,7 @@
  * Provides access to Application Performance Monitoring metrics
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
@@ -33,9 +33,9 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
           apm: {
             enabled: apm.isEnabled(),
             config: apmConfig,
-            currentTransaction: apm.getCurrentTransaction()
+            currentTransaction: apm.getCurrentTransaction(),
           },
-          queries: getPrismaQueryStats()
+          queries: getPrismaQueryStats(),
         };
         break;
 
@@ -46,7 +46,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       case 'config':
         data = {
           enabled: apm.isEnabled(),
-          ...apmConfig
+          ...apmConfig,
         };
         break;
 
@@ -59,7 +59,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
 
     return NextResponse.json({
       success: true,
-      data
+      data,
     });
   } catch (error: any) {
     logger.error('Error fetching APM metrics:', error);
@@ -87,14 +87,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         resetPrismaQueryStats();
         return NextResponse.json({
           success: true,
-          message: 'Query statistics reset successfully'
+          message: 'Query statistics reset successfully',
         });
 
       default:
-        return NextResponse.json(
-          { success: false, error: 'Invalid action' },
-          { status: 400 }
-        );
+        return NextResponse.json({ success: false, error: 'Invalid action' }, { status: 400 });
     }
   } catch (error: any) {
     logger.error('Error performing APM action:', error);

@@ -1,54 +1,18 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { forbidden, notFound, serverError, successItem } from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  const { permissions } = context;
-  if (!permissions.includes('tax-documents:read')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing tax-documents:read permission',
-          messageAr: 'ممنوع',
-        },
-      },
-      { status: 403 }
-    );
+export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) => {
+  try {
+    const { user, params, permissions } = context;
+    if (!permissions.includes('tax-documents:read')) return forbidden('tax-documents:read');
+    const row = await prisma.taxDocument.findFirst({
+      where: { id: params.id, tenantId: user.tenantId },
+    });
+    if (!row) return notFound('Tax document');
+    return successItem(row);
+  } catch (error: any) {
+    return serverError(error, 'fetch tax document');
   }
-  const { id } = context.params;
-
-  const mockTaxDocument = {
-    id,
-    type: 'W-2',
-    year: 2024,
-    employeeId: 'emp-001',
-    employeeName: 'John Smith',
-    employerName: 'AuraOS Technologies Inc.',
-    employerEIN: '12-3456789',
-    status: 'available',
-    generatedAt: '2024-01-31T00:00:00Z',
-    lastDownloadedAt: '2024-02-05T14:30:00Z',
-    details: {
-      box1_wagesTips: 95000.0,
-      box2_federalTaxWithheld: 18500.0,
-      box3_socialSecurityWages: 95000.0,
-      box4_socialSecurityTaxWithheld: 5890.0,
-      box5_medicareWages: 95000.0,
-      box6_medicareTaxWithheld: 1377.5,
-      box12_codes: [
-        { code: 'D', amount: 8500.0, description: '401(k) contributions' },
-        { code: 'DD', amount: 12600.0, description: 'Health coverage cost' },
-      ],
-      box16_stateWages: 95000.0,
-      box17_stateTaxWithheld: 6200.0,
-      state: 'CA',
-      stateId: '123-456-7890',
-    },
-    corrections: [],
-    downloadUrl: `/api/v1/tax-documents/${id}/download`,
-  };
-
-  return NextResponse.json({ data: mockTaxDocument });
 });

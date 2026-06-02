@@ -1,29 +1,60 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
+import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-const members = [
-    { id: '1', name: 'Emily Blunt', position: 'Senior Pursuer', status: 'on-duty', flightId: 'AF123' },
-    { id: '2', name: 'Tom Hardy', position: 'Flight Attendant', status: 'rest', flightId: null }
-];
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-aviation/cabin-crew:read'))
+      return forbidden('industry-aviation/cabin-crew:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).aviationCabinCrewMember.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).aviationCabinCrewMember.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error({ err: error, route: 'industry-aviation/cabin-crew/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
+  }
+});
 
-const assignments = [
-    { id: '1', crewId: '1', flightNumber: 'AF123', departure: 'CDG', arrival: 'JFK', date: '2024-03-20' }
-];
-
-export async function GET(req: NextRequest) {
-    const { pathname } = new URL(req.url);
-    if (pathname.includes('/members')) {
-        return NextResponse.json({ crewMembers: members });
-    }
-    if (pathname.includes('/assignments')) {
-        return NextResponse.json({ assignments });
-    }
-    return NextResponse.json({ crewMembers: members, assignments });
-}
-
-export async function POST(req: NextRequest) {
-    const data = await req.json();
-    const newMember = { id: Math.random().toString(36).substr(2, 9), ...data };
-    members.push(newMember);
-    return NextResponse.json({ crewMember: newMember });
-}
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-aviation/cabin-crew:create'))
+      return forbidden('industry-aviation/cabin-crew:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).aviationCabinCrewMember.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error(
+      { err: error, route: 'industry-aviation/cabin-crew/route.ts' },
+      'Failed to create'
+    );
+    return serverError(error, 'create');
+  }
+});

@@ -24,19 +24,19 @@ export class DemandForecastService {
 
   static async getForecasts(): Promise<DemandForecast[]> {
     try {
-      const response = await APIClient.get<{ forecasts?: DemandForecast[] }>(this.endpoint);
-      return response.forecasts || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<DemandForecast>(response, 'forecasts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getForecastById(id: string): Promise<DemandForecast | null> {
     try {
-      const response = await APIClient.get<{ forecast?: DemandForecast }>(`${this.endpoint}/${id}`);
-      return response.forecast || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<DemandForecast>(response, 'forecast');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -45,8 +45,14 @@ export class DemandForecastService {
     return response.forecast;
   }
 
-  static async updateForecast(id: string, updates: Partial<DemandForecast>): Promise<DemandForecast> {
-    const response = await APIClient.put<{ forecast: DemandForecast }>(`${this.endpoint}/${id}`, updates);
+  static async updateForecast(
+    id: string,
+    updates: Partial<DemandForecast>
+  ): Promise<DemandForecast> {
+    const response = await APIClient.put<{ forecast: DemandForecast }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.forecast;
   }
 
@@ -55,17 +61,26 @@ export class DemandForecastService {
   }
 
   static async approveForecast(id: string, approvedBy: string): Promise<DemandForecast> {
-    const response = await APIClient.post<{ forecast: DemandForecast }>(`${this.endpoint}/${id}/approve`, { approvedBy });
+    const response = await APIClient.post<{ forecast: DemandForecast }>(
+      `${this.endpoint}/${id}/approve`,
+      { approvedBy }
+    );
     return response.forecast;
   }
 
   static async rejectForecast(id: string, reason: string): Promise<DemandForecast> {
-    const response = await APIClient.post<{ forecast: DemandForecast }>(`${this.endpoint}/${id}/reject`, { reason });
+    const response = await APIClient.post<{ forecast: DemandForecast }>(
+      `${this.endpoint}/${id}/reject`,
+      { reason }
+    );
     return response.forecast;
   }
 
   static async cloneForecast(id: string, newName: string): Promise<DemandForecast> {
-    const response = await APIClient.post<{ forecast: DemandForecast }>(`${this.endpoint}/${id}/clone`, { newName });
+    const response = await APIClient.post<{ forecast: DemandForecast }>(
+      `${this.endpoint}/${id}/clone`,
+      { newName }
+    );
     return response.forecast;
   }
 }
@@ -79,19 +94,19 @@ export class SupplyAnalysisService {
 
   static async getAnalyses(): Promise<SupplyAnalysis[]> {
     try {
-      const response = await APIClient.get<{ analyses?: SupplyAnalysis[] }>(this.endpoint);
-      return response.analyses || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<SupplyAnalysis>(response, 'analyses');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getAnalysisById(id: string): Promise<SupplyAnalysis | null> {
     try {
-      const response = await APIClient.get<{ analysis?: SupplyAnalysis }>(`${this.endpoint}/${id}`);
-      return response.analysis || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<SupplyAnalysis>(response, 'analysis');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -100,8 +115,14 @@ export class SupplyAnalysisService {
     return response.analysis;
   }
 
-  static async updateAnalysis(id: string, updates: Partial<SupplyAnalysis>): Promise<SupplyAnalysis> {
-    const response = await APIClient.put<{ analysis: SupplyAnalysis }>(`${this.endpoint}/${id}`, updates);
+  static async updateAnalysis(
+    id: string,
+    updates: Partial<SupplyAnalysis>
+  ): Promise<SupplyAnalysis> {
+    const response = await APIClient.put<{ analysis: SupplyAnalysis }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.analysis;
   }
 
@@ -110,7 +131,9 @@ export class SupplyAnalysisService {
   }
 
   static async runAnalysis(id: string): Promise<SupplyAnalysis> {
-    const response = await APIClient.post<{ analysis: SupplyAnalysis }>(`${this.endpoint}/${id}/run`);
+    const response = await APIClient.post<{ analysis: SupplyAnalysis }>(
+      `${this.endpoint}/${id}/run`
+    );
     return response.analysis;
   }
 }
@@ -124,19 +147,19 @@ export class GapAnalysisService {
 
   static async getAnalyses(): Promise<GapAnalysis[]> {
     try {
-      const response = await APIClient.get<{ analyses?: GapAnalysis[] }>(this.endpoint);
-      return response.analyses || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<GapAnalysis>(response, 'analyses');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getAnalysisById(id: string): Promise<GapAnalysis | null> {
     try {
-      const response = await APIClient.get<{ analysis?: GapAnalysis }>(`${this.endpoint}/${id}`);
-      return response.analysis || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<GapAnalysis>(response, 'analysis');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -146,7 +169,10 @@ export class GapAnalysisService {
   }
 
   static async updateAnalysis(id: string, updates: Partial<GapAnalysis>): Promise<GapAnalysis> {
-    const response = await APIClient.put<{ analysis: GapAnalysis }>(`${this.endpoint}/${id}`, updates);
+    const response = await APIClient.put<{ analysis: GapAnalysis }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.analysis;
   }
 
@@ -154,10 +180,13 @@ export class GapAnalysisService {
     await APIClient.delete(`${this.endpoint}/${id}`);
   }
 
-  static async calculateGaps(demandForecastId: string, supplyAnalysisId: string): Promise<GapAnalysis> {
+  static async calculateGaps(
+    demandForecastId: string,
+    supplyAnalysisId: string
+  ): Promise<GapAnalysis> {
     const response = await APIClient.post<{ analysis: GapAnalysis }>(`${this.endpoint}/calculate`, {
       demandForecastId,
-      supplyAnalysisId
+      supplyAnalysisId,
     });
     return response.analysis;
   }
@@ -172,19 +201,19 @@ export class ScenarioModelingService {
 
   static async getScenarios(): Promise<ScenarioModel[]> {
     try {
-      const response = await APIClient.get<{ scenarios?: ScenarioModel[] }>(this.endpoint);
-      return response.scenarios || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<ScenarioModel>(response, 'scenarios');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getScenarioById(id: string): Promise<ScenarioModel | null> {
     try {
-      const response = await APIClient.get<{ scenario?: ScenarioModel }>(`${this.endpoint}/${id}`);
-      return response.scenario || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<ScenarioModel>(response, 'scenario');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -194,7 +223,10 @@ export class ScenarioModelingService {
   }
 
   static async updateScenario(id: string, updates: Partial<ScenarioModel>): Promise<ScenarioModel> {
-    const response = await APIClient.put<{ scenario: ScenarioModel }>(`${this.endpoint}/${id}`, updates);
+    const response = await APIClient.put<{ scenario: ScenarioModel }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.scenario;
   }
 
@@ -203,7 +235,9 @@ export class ScenarioModelingService {
   }
 
   static async runScenario(id: string): Promise<ScenarioModel> {
-    const response = await APIClient.post<{ scenario: ScenarioModel }>(`${this.endpoint}/${id}/run`);
+    const response = await APIClient.post<{ scenario: ScenarioModel }>(
+      `${this.endpoint}/${id}/run`
+    );
     return response.scenario;
   }
 
@@ -213,7 +247,10 @@ export class ScenarioModelingService {
   }
 
   static async cloneScenario(id: string, newName: string): Promise<ScenarioModel> {
-    const response = await APIClient.post<{ scenario: ScenarioModel }>(`${this.endpoint}/${id}/clone`, { newName });
+    const response = await APIClient.post<{ scenario: ScenarioModel }>(
+      `${this.endpoint}/${id}/clone`,
+      { newName }
+    );
     return response.scenario;
   }
 }
@@ -227,19 +264,19 @@ export class SuccessionReadinessService {
 
   static async getAssessments(): Promise<SuccessionReadiness[]> {
     try {
-      const response = await APIClient.get<{ assessments?: SuccessionReadiness[] }>(this.endpoint);
-      return response.assessments || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<SuccessionReadiness>(response, 'assessments');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getAssessmentById(id: string): Promise<SuccessionReadiness | null> {
     try {
-      const response = await APIClient.get<{ assessment?: SuccessionReadiness }>(`${this.endpoint}/${id}`);
-      return response.assessment || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<SuccessionReadiness>(response, 'assessment');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -248,8 +285,14 @@ export class SuccessionReadinessService {
     return response.assessment;
   }
 
-  static async updateAssessment(id: string, updates: Partial<SuccessionReadiness>): Promise<SuccessionReadiness> {
-    const response = await APIClient.put<{ assessment: SuccessionReadiness }>(`${this.endpoint}/${id}`, updates);
+  static async updateAssessment(
+    id: string,
+    updates: Partial<SuccessionReadiness>
+  ): Promise<SuccessionReadiness> {
+    const response = await APIClient.put<{ assessment: SuccessionReadiness }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.assessment;
   }
 
@@ -258,7 +301,9 @@ export class SuccessionReadinessService {
   }
 
   static async assessSuccessionReadiness(id: string): Promise<SuccessionReadiness> {
-    const response = await APIClient.post<{ assessment: SuccessionReadiness }>(`${this.endpoint}/${id}/assess`);
+    const response = await APIClient.post<{ assessment: SuccessionReadiness }>(
+      `${this.endpoint}/${id}/assess`
+    );
     return response.assessment;
   }
 }
@@ -272,19 +317,19 @@ export class TalentAcquisitionPlanService {
 
   static async getPlans(): Promise<TalentAcquisitionPlan[]> {
     try {
-      const response = await APIClient.get<{ plans?: TalentAcquisitionPlan[] }>(this.endpoint);
-      return response.plans || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<TalentAcquisitionPlan>(response, 'plans');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getPlanById(id: string): Promise<TalentAcquisitionPlan | null> {
     try {
-      const response = await APIClient.get<{ plan?: TalentAcquisitionPlan }>(`${this.endpoint}/${id}`);
-      return response.plan || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<TalentAcquisitionPlan>(response, 'plan');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -293,8 +338,14 @@ export class TalentAcquisitionPlanService {
     return response.plan;
   }
 
-  static async updatePlan(id: string, updates: Partial<TalentAcquisitionPlan>): Promise<TalentAcquisitionPlan> {
-    const response = await APIClient.put<{ plan: TalentAcquisitionPlan }>(`${this.endpoint}/${id}`, updates);
+  static async updatePlan(
+    id: string,
+    updates: Partial<TalentAcquisitionPlan>
+  ): Promise<TalentAcquisitionPlan> {
+    const response = await APIClient.put<{ plan: TalentAcquisitionPlan }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.plan;
   }
 
@@ -303,7 +354,10 @@ export class TalentAcquisitionPlanService {
   }
 
   static async generateFromGapAnalysis(gapAnalysisId: string): Promise<TalentAcquisitionPlan> {
-    const response = await APIClient.post<{ plan: TalentAcquisitionPlan }>(`${this.endpoint}/generate`, { gapAnalysisId });
+    const response = await APIClient.post<{ plan: TalentAcquisitionPlan }>(
+      `${this.endpoint}/generate`,
+      { gapAnalysisId }
+    );
     return response.plan;
   }
 
@@ -322,9 +376,9 @@ export class WorkforceAnalyticsService {
   static async getMetrics(): Promise<WorkforceAnalytics> {
     try {
       const response = await APIClient.get<{ metrics?: WorkforceAnalytics }>(this.endpoint);
-      return response.metrics || {} as WorkforceAnalytics;
+      return response.metrics || ({} as WorkforceAnalytics);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -339,14 +393,19 @@ export class WorkforcePlanningSettingsService {
   static async getSettings(): Promise<WorkforcePlanningSettings> {
     try {
       const response = await APIClient.get<{ settings?: WorkforcePlanningSettings }>(this.endpoint);
-      return response.settings || {} as WorkforcePlanningSettings;
+      return response.settings || ({} as WorkforcePlanningSettings);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
-  static async updateSettings(updates: Partial<WorkforcePlanningSettings>): Promise<WorkforcePlanningSettings> {
-    const response = await APIClient.put<{ settings: WorkforcePlanningSettings }>(this.endpoint, updates);
+  static async updateSettings(
+    updates: Partial<WorkforcePlanningSettings>
+  ): Promise<WorkforcePlanningSettings> {
+    const response = await APIClient.put<{ settings: WorkforcePlanningSettings }>(
+      this.endpoint,
+      updates
+    );
     return response.settings;
   }
 }

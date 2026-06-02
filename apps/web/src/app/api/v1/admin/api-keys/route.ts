@@ -1,126 +1,126 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { withAudit } from '@/lib/middleware/audit.middleware';
 import { AuditAction } from '@/lib/audit/audit.service';
+import { logger } from '@/lib/logger';
 
-export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  const { user } = context;
-  const _tenantId = user.tenantId;
+function hashKey(plain: string): string {
+  return crypto.createHash('sha256').update(plain).digest('hex');
+}
 
-  const apiKeys = [
-    {
-      id: 'key-001',
-      name: 'Payroll Integration',
-      prefix: 'aura_live_3kf8...',
-      status: 'active',
-      permissions: ['payroll:read', 'payroll:write', 'employees:read'],
-      createdAt: '2025-06-15T10:00:00Z',
-      lastUsed: '2026-01-23T08:30:00Z',
-      expiresAt: '2026-06-15T10:00:00Z',
-      usageCount: 15420,
-      rateLimit: { requests: 1000, window: '1 hour' },
-      createdBy: 'admin-001',
-      ipWhitelist: ['192.168.1.0/24', '10.0.0.0/8'],
-    },
-    {
-      id: 'key-002',
-      name: 'ATS Integration',
-      prefix: 'aura_live_9xm2...',
-      status: 'active',
-      permissions: ['recruitment:read', 'recruitment:write', 'employees:read'],
-      createdAt: '2025-08-20T14:00:00Z',
-      lastUsed: '2026-01-23T09:15:00Z',
-      expiresAt: '2026-08-20T14:00:00Z',
-      usageCount: 8932,
-      rateLimit: { requests: 500, window: '1 hour' },
-      createdBy: 'admin-001',
-      ipWhitelist: [],
-    },
-    {
-      id: 'key-003',
-      name: 'BI Dashboard',
-      prefix: 'aura_live_7pq4...',
-      status: 'active',
-      permissions: ['analytics:read', 'employees:read', 'reports:read'],
-      createdAt: '2025-09-10T09:00:00Z',
-      lastUsed: '2026-01-22T22:00:00Z',
-      expiresAt: null,
-      usageCount: 45210,
-      rateLimit: { requests: 2000, window: '1 hour' },
-      createdBy: 'admin-001',
-      ipWhitelist: ['10.0.5.0/24'],
-    },
-    {
-      id: 'key-004',
-      name: 'Legacy System (deprecated)',
-      prefix: 'aura_live_2ab1...',
-      status: 'revoked',
-      permissions: ['employees:read'],
-      createdAt: '2025-03-01T08:00:00Z',
-      lastUsed: '2025-10-15T12:00:00Z',
-      expiresAt: '2026-03-01T08:00:00Z',
-      revokedAt: '2025-11-01T10:00:00Z',
-      revokedBy: 'admin-001',
-      revokeReason: 'Legacy system decommissioned',
-      usageCount: 23456,
-      rateLimit: { requests: 100, window: '1 hour' },
-      createdBy: 'admin-001',
-      ipWhitelist: [],
-    },
-  ];
+export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) => {
+  try {
+    const { user } = context;
+    const tenantId = user.tenantId;
 
-  return NextResponse.json({
-    success: true,
-    data: apiKeys,
-    meta: { total: apiKeys.length, active: 3, revoked: 1 },
-  });
+    const rows = await prisma.aPIKey.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const data = rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      prefix: `${row.prefix}...`,
+      status: row.revokedAt ? 'revoked' : row.isActive ? 'active' : 'inactive',
+      permissions: row.scopes,
+      createdAt: row.createdAt.toISOString(),
+      lastUsed: row.lastUsedAt ? row.lastUsedAt.toISOString() : null,
+      expiresAt: row.expiresAt ? row.expiresAt.toISOString() : null,
+      usageCount: row.requestCount,
+      createdBy: row.createdBy,
+      revokedAt: row.revokedAt ? row.revokedAt.toISOString() : undefined,
+    }));
+
+    return NextResponse.json({
+      success: true,
+      data,
+      meta: {
+        total: data.length,
+        active: data.filter((d) => d.status === 'active').length,
+        revoked: data.filter((d) => d.status === 'revoked').length,
+      },
+    });
+  } catch (error: any) {
+    logger.error({ err: error }, 'Failed to list API keys');
+    return NextResponse.json(
+      { success: false, error: { code: 'E5001', message: 'Failed to list API keys' } },
+      { status: 500 }
+    );
+  }
 });
 
 export const POST = withAudit(
   withEnhancedAuth(async (request: NextRequest, context: any) => {
-    const { user } = context;
-    const _tenantId = user.tenantId;
+    try {
+      const { user } = context;
+      const tenantId = user.tenantId;
 
-    const body = await request.json();
+      const body = await request.json();
+      if (!body.name?.trim()) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: { code: 'E2001', message: 'name is required' },
+          },
+          { status: 400 }
+        );
+      }
 
-    // API key MUST come from a CSPRNG; Math.random() is predictable and unsafe for tokens.
-    // 32 bytes -> 64 hex chars -> ~256 bits of entropy.
-    const keyBytes = crypto.randomBytes(32).toString('hex');
-    const keySecret = `aura_live_${keyBytes}`;
-    const keyPrefix = `aura_live_${keyBytes.slice(0, 4)}...`;
+      // 32 bytes -> 64 hex chars -> ~256 bits of entropy
+      const keyBytes = crypto.randomBytes(32).toString('hex');
+      const keySecret = `aura_live_${keyBytes}`;
+      const keyHash = hashKey(keySecret);
+      const prefix = `aura_live_${keyBytes.slice(0, 4)}`;
 
-    const newKey = {
-      id: 'key-005',
-      name: body.name || 'New API Key',
-      key: keySecret,
-      prefix: keyPrefix,
-      status: 'active',
-      permissions: body.permissions || ['employees:read'],
-      createdAt: new Date().toISOString(),
-      lastUsed: null,
-      expiresAt: body.expiresAt || null,
-      usageCount: 0,
-      rateLimit: body.rateLimit || { requests: 1000, window: '1 hour' },
-      createdBy: 'admin-001',
-      ipWhitelist: body.ipWhitelist || [],
-      note: 'Store this key securely. It will not be shown again.',
-    };
+      const created = await prisma.aPIKey.create({
+        data: {
+          tenantId,
+          name: body.name,
+          keyHash,
+          prefix,
+          scopes: Array.isArray(body.permissions) ? body.permissions : ['employees:read'],
+          expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
+          isActive: true,
+          createdBy: user.userId,
+        },
+      });
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: newKey,
-        message: 'API key generated successfully. Store it securely.',
-      },
-      { status: 201 }
-    );
+      return NextResponse.json(
+        {
+          success: true,
+          data: {
+            id: created.id,
+            name: created.name,
+            key: keySecret, // only returned ONCE on creation
+            prefix: `${created.prefix}...`,
+            status: 'active',
+            permissions: created.scopes,
+            createdAt: created.createdAt.toISOString(),
+            expiresAt: created.expiresAt ? created.expiresAt.toISOString() : null,
+            usageCount: 0,
+            createdBy: created.createdBy,
+            note: 'Store this key securely. It will not be shown again.',
+          },
+          message: 'API key generated successfully. Store it securely.',
+        },
+        { status: 201 }
+      );
+    } catch (error: any) {
+      logger.error({ err: error }, 'Failed to create API key');
+      return NextResponse.json(
+        { success: false, error: { code: 'E5001', message: 'Failed to create API key' } },
+        { status: 500 }
+      );
+    }
   }),
   {
     action: AuditAction.API_KEY_CREATED,
     resourceType: 'api_key',
     captureRequestBody: true,
-    captureResponseBody: true,
+    captureResponseBody: false, // don't log the raw key
   }
 );

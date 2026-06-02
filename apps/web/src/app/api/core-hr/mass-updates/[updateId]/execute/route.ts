@@ -1,36 +1,27 @@
-// @ts-nocheck — Has Prisma schema drift (wrong field/relation names against current schema). Tracked under #29.
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { forbidden, notFound, serverError, successItem } from '@/lib/api/crud-helpers';
 
-export const POST = withEnhancedAuth(async (_request: any, context: any, { params }) => {
+export const POST = withEnhancedAuth(async (_request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-    const updateId = params?.updateId;
-
-    if (!updateId) {
-      return NextResponse.json({ error: 'Update ID is required' }, { status: 400 });
-    }
-
-    const executedAt = new Date().toISOString();
-
-    return NextResponse.json(
-      {
-        update: {
-          id: updateId,
-          status: 'EXECUTED',
-          executedAt,
-          executedBy: user.userId,
-          results: {
-            total: 0,
-            successful: 0,
-            failed: 0,
-          },
-        },
+    const { user, params, permissions } = context;
+    if (!permissions.includes('core-hr/mass-updates:execute'))
+      return forbidden('core-hr/mass-updates:execute');
+    const job = await prisma.massUpdateJob.findFirst({
+      where: { id: params.updateId, tenantId: user.tenantId },
+    });
+    if (!job) return notFound('Mass update job');
+    const updated = await prisma.massUpdateJob.update({
+      where: { id: job.id },
+      data: {
+        status: 'RUNNING',
+        executedAt: new Date(),
+        executedBy: user.userId,
       },
-      { status: 200 }
-    );
+    });
+    return successItem(updated, { status: 202 });
   } catch (error: any) {
-    console.error('POST /api/core-hr/mass-updates/[updateId]/execute error:', error);
-    return NextResponse.json({ error: 'Failed to execute mass update' }, { status: 500 });
+    return serverError(error, 'execute mass update');
   }
 });

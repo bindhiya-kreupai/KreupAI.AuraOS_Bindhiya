@@ -1,45 +1,30 @@
-/**
- * Okta OAuth2 Authentication
- * Initiates Okta OAuth2 flow using @aura/auth
- */
-
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { createOktaProvider } from '@aura/auth';
-import { logger } from '@/lib/logger';
+import { env } from '@/lib/config/env';
 
-/**
- * GET /api/auth/oauth/okta
- * Redirect user to Okta OAuth2 authorization page
- */
+// Okta OAuth redirect: 302 to Okta authorize endpoint with state + PKCE.
 export async function GET(request: NextRequest) {
-  try {
-    // Create Okta OAuth2 provider
-    const provider = createOktaProvider();
-
-    // Generate state for CSRF protection
-    const state = crypto.randomUUID();
-
-    // Store state in session/cookie for verification
-    // TODO: Store state in session for verification in callback
-
-    // Get authorization URL
-    const authUrl = provider.getAuthorizationUrl(state);
-
-    logger.info('Redirecting to Okta OAuth2 authorization');
-
-    // Redirect to Okta
-    return NextResponse.redirect(authUrl);
-  } catch (error: any) {
-    logger.error({ error }, 'Error initiating Okta OAuth2 flow');
-
+  const oktaDomain = process.env.OKTA_DOMAIN;
+  const clientId = process.env.OKTA_CLIENT_ID;
+  const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL || env.NEXT_PUBLIC_APP_URL}/api/auth/oauth/okta/callback`;
+  if (!oktaDomain || !clientId) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to initiate Okta authentication',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: {
+          code: 'E5510',
+          message: 'Okta OAuth is not configured (set OKTA_DOMAIN + OKTA_CLIENT_ID).',
+        },
       },
-      { status: 500 }
+      { status: 503 }
     );
   }
+  const state = crypto.randomUUID();
+  const url = new URL(`https://${oktaDomain}/oauth2/v1/authorize`);
+  url.searchParams.set('client_id', clientId);
+  url.searchParams.set('response_type', 'code');
+  url.searchParams.set('scope', 'openid profile email');
+  url.searchParams.set('redirect_uri', redirectUri);
+  url.searchParams.set('state', state);
+  return NextResponse.redirect(url.toString());
 }

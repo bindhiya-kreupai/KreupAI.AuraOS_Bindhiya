@@ -31,10 +31,8 @@ export class CabinCrewService {
 
   static async getAllCrewMembers(): Promise<CrewMemberProfile[]> {
     try {
-      const response = await APIClient.get<{ crewMembers?: CrewMemberProfile[] }>(
-        `${this.endpoint}/members`
-      );
-      return response.crewMembers || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/members`);
+      return APIClient.unwrapList<CrewMemberProfile>(response, 'crewMembers');
     } catch (_error: any) {
       return [];
     }
@@ -42,10 +40,8 @@ export class CabinCrewService {
 
   static async getCrewMemberById(crewId: string): Promise<CrewMemberProfile | null> {
     try {
-      const response = await APIClient.get<{ crewMember?: CrewMemberProfile }>(
-        `${this.endpoint}/members/${crewId}`
-      );
-      return response.crewMember || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/members/${crewId}`);
+      return APIClient.unwrapItem<CrewMemberProfile>(response, 'crewMember');
     } catch (_error: any) {
       return null;
     }
@@ -80,10 +76,8 @@ export class CabinCrewService {
   // Flight Assignments
   static async getAllFlightAssignments(): Promise<FlightAssignment[]> {
     try {
-      const response = await APIClient.get<{ assignments?: FlightAssignment[] }>(
-        `${this.endpoint}/assignments`
-      );
-      return response.assignments || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/assignments`);
+      return APIClient.unwrapList<FlightAssignment>(response, 'assignments');
     } catch (_error: any) {
       return [];
     }
@@ -91,10 +85,8 @@ export class CabinCrewService {
 
   static async getFlightAssignmentById(assignmentId: string): Promise<FlightAssignment | null> {
     try {
-      const response = await APIClient.get<{ assignment?: FlightAssignment }>(
-        `${this.endpoint}/assignments/${assignmentId}`
-      );
-      return response.assignment || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/assignments/${assignmentId}`);
+      return APIClient.unwrapItem<FlightAssignment>(response, 'assignment');
     } catch (_error: any) {
       return null;
     }
@@ -102,10 +94,10 @@ export class CabinCrewService {
 
   static async getCrewAssignments(crewId: string): Promise<FlightAssignment[]> {
     try {
-      const response = await APIClient.get<{ assignments?: FlightAssignment[] }>(
+      const response = await APIClient.get<unknown>(
         `${this.endpoint}/members/${crewId}/assignments`
       );
-      return response.assignments || [];
+      return APIClient.unwrapList<FlightAssignment>(response, 'assignments');
     } catch (_error: any) {
       return [];
     }
@@ -135,10 +127,8 @@ export class CabinCrewService {
   // Duty Time Management
   static async getAllDutyTimes(): Promise<DutyTime[]> {
     try {
-      const response = await APIClient.get<{ dutyTimes?: DutyTime[] }>(
-        `${this.endpoint}/duty-times`
-      );
-      return response.dutyTimes || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/duty-times`);
+      return APIClient.unwrapList<DutyTime>(response, 'dutyTimes');
     } catch (_error: any) {
       return [];
     }
@@ -146,10 +136,10 @@ export class CabinCrewService {
 
   static async getCrewDutyTimes(crewId: string): Promise<DutyTime[]> {
     try {
-      const response = await APIClient.get<{ dutyTimes?: DutyTime[] }>(
+      const response = await APIClient.get<unknown>(
         `${this.endpoint}/members/${crewId}/duty-times`
       );
-      return response.dutyTimes || [];
+      return APIClient.unwrapList<DutyTime>(response, 'dutyTimes');
     } catch (_error: any) {
       return [];
     }
@@ -166,10 +156,8 @@ export class CabinCrewService {
   // Rest Period Management
   static async getAllRestPeriods(): Promise<RestPeriod[]> {
     try {
-      const response = await APIClient.get<{ restPeriods?: RestPeriod[] }>(
-        `${this.endpoint}/rest-periods`
-      );
-      return response.restPeriods || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/rest-periods`);
+      return APIClient.unwrapList<RestPeriod>(response, 'restPeriods');
     } catch (_error: any) {
       return [];
     }
@@ -177,10 +165,10 @@ export class CabinCrewService {
 
   static async getCrewRestPeriods(crewId: string): Promise<RestPeriod[]> {
     try {
-      const response = await APIClient.get<{ restPeriods?: RestPeriod[] }>(
+      const response = await APIClient.get<unknown>(
         `${this.endpoint}/members/${crewId}/rest-periods`
       );
-      return response.restPeriods || [];
+      return APIClient.unwrapList<RestPeriod>(response, 'restPeriods');
     } catch (_error: any) {
       return [];
     }
@@ -208,8 +196,8 @@ export class PilotTrainingService {
 
   static async getAllPilots(): Promise<PilotProfile[]> {
     try {
-      const response = await APIClient.get<{ pilots?: PilotProfile[] }>(`${this.endpoint}/pilots`);
-      return response.pilots || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/pilots`);
+      return APIClient.unwrapList<PilotProfile>(response, 'pilots');
     } catch (_error: any) {
       return [];
     }
@@ -217,10 +205,8 @@ export class PilotTrainingService {
 
   static async getPilotById(pilotId: string): Promise<PilotProfile | null> {
     try {
-      const response = await APIClient.get<{ pilot?: PilotProfile }>(
-        `${this.endpoint}/pilots/${pilotId}`
-      );
-      return response.pilot || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/pilots/${pilotId}`);
+      return APIClient.unwrapItem<PilotProfile>(response, 'pilot');
     } catch (_error: any) {
       return null;
     }
@@ -250,10 +236,8 @@ export class PilotTrainingService {
   // Training Records
   static async getAllTrainingRecords(): Promise<TrainingRecord[]> {
     try {
-      const response = await APIClient.get<{ trainingRecords?: TrainingRecord[] }>(
-        `${this.endpoint}/training-records`
-      );
-      return response.trainingRecords || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/training-records`);
+      return APIClient.unwrapList<TrainingRecord>(response, 'trainingRecords');
     } catch (_error: any) {
       return [];
     }
@@ -261,10 +245,10 @@ export class PilotTrainingService {
 
   static async getPilotTrainingRecords(pilotId: string): Promise<TrainingRecord[]> {
     try {
-      const response = await APIClient.get<{ trainingRecords?: TrainingRecord[] }>(
+      const response = await APIClient.get<unknown>(
         `${this.endpoint}/pilots/${pilotId}/training-records`
       );
-      return response.trainingRecords || [];
+      return APIClient.unwrapList<TrainingRecord>(response, 'trainingRecords');
     } catch (_error: any) {
       return [];
     }
@@ -295,10 +279,8 @@ export class PilotTrainingService {
   // Simulator Sessions
   static async getAllSimulatorSessions(): Promise<SimulatorSession[]> {
     try {
-      const response = await APIClient.get<{ simulatorSessions?: SimulatorSession[] }>(
-        `${this.endpoint}/simulator-sessions`
-      );
-      return response.simulatorSessions || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/simulator-sessions`);
+      return APIClient.unwrapList<SimulatorSession>(response, 'simulatorSessions');
     } catch (_error: any) {
       return [];
     }
@@ -306,10 +288,10 @@ export class PilotTrainingService {
 
   static async getPilotSimulatorSessions(pilotId: string): Promise<SimulatorSession[]> {
     try {
-      const response = await APIClient.get<{ simulatorSessions?: SimulatorSession[] }>(
+      const response = await APIClient.get<unknown>(
         `${this.endpoint}/pilots/${pilotId}/simulator-sessions`
       );
-      return response.simulatorSessions || [];
+      return APIClient.unwrapList<SimulatorSession>(response, 'simulatorSessions');
     } catch (_error: any) {
       return [];
     }
@@ -339,10 +321,8 @@ export class PilotTrainingService {
   // Proficiency Checks
   static async getAllProficiencyChecks(): Promise<ProficiencyCheck[]> {
     try {
-      const response = await APIClient.get<{ proficiencyChecks?: ProficiencyCheck[] }>(
-        `${this.endpoint}/proficiency-checks`
-      );
-      return response.proficiencyChecks || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/proficiency-checks`);
+      return APIClient.unwrapList<ProficiencyCheck>(response, 'proficiencyChecks');
     } catch (_error: any) {
       return [];
     }
@@ -350,10 +330,10 @@ export class PilotTrainingService {
 
   static async getPilotProficiencyChecks(pilotId: string): Promise<ProficiencyCheck[]> {
     try {
-      const response = await APIClient.get<{ proficiencyChecks?: ProficiencyCheck[] }>(
+      const response = await APIClient.get<unknown>(
         `${this.endpoint}/pilots/${pilotId}/proficiency-checks`
       );
-      return response.proficiencyChecks || [];
+      return APIClient.unwrapList<ProficiencyCheck>(response, 'proficiencyChecks');
     } catch (_error: any) {
       return [];
     }
@@ -387,10 +367,8 @@ export class GroundOperationsService {
 
   static async getAllGroundStaff(): Promise<GroundStaffMember[]> {
     try {
-      const response = await APIClient.get<{ groundStaff?: GroundStaffMember[] }>(
-        `${this.endpoint}/staff`
-      );
-      return response.groundStaff || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/staff`);
+      return APIClient.unwrapList<GroundStaffMember>(response, 'groundStaff');
     } catch (_error: any) {
       return [];
     }
@@ -398,10 +376,8 @@ export class GroundOperationsService {
 
   static async getGroundStaffById(staffId: string): Promise<GroundStaffMember | null> {
     try {
-      const response = await APIClient.get<{ groundStaff?: GroundStaffMember }>(
-        `${this.endpoint}/staff/${staffId}`
-      );
-      return response.groundStaff || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/staff/${staffId}`);
+      return APIClient.unwrapItem<GroundStaffMember>(response, 'groundStaff');
     } catch (_error: any) {
       return null;
     }
@@ -436,10 +412,8 @@ export class GroundOperationsService {
   // Turnaround Operations
   static async getAllTurnarounds(): Promise<TurnaroundAssignment[]> {
     try {
-      const response = await APIClient.get<{ turnarounds?: TurnaroundAssignment[] }>(
-        `${this.endpoint}/turnarounds`
-      );
-      return response.turnarounds || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/turnarounds`);
+      return APIClient.unwrapList<TurnaroundAssignment>(response, 'turnarounds');
     } catch (_error: any) {
       return [];
     }
@@ -447,10 +421,8 @@ export class GroundOperationsService {
 
   static async getTurnaroundById(assignmentId: string): Promise<TurnaroundAssignment | null> {
     try {
-      const response = await APIClient.get<{ turnaround?: TurnaroundAssignment }>(
-        `${this.endpoint}/turnarounds/${assignmentId}`
-      );
-      return response.turnaround || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/turnarounds/${assignmentId}`);
+      return APIClient.unwrapItem<TurnaroundAssignment>(response, 'turnaround');
     } catch (_error: any) {
       return null;
     }
@@ -480,10 +452,8 @@ export class GroundOperationsService {
   // Ground Equipment
   static async getAllEquipment(): Promise<GroundEquipment[]> {
     try {
-      const response = await APIClient.get<{ equipment?: GroundEquipment[] }>(
-        `${this.endpoint}/equipment`
-      );
-      return response.equipment || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/equipment`);
+      return APIClient.unwrapList<GroundEquipment>(response, 'equipment');
     } catch (_error: any) {
       return [];
     }
@@ -491,10 +461,8 @@ export class GroundOperationsService {
 
   static async getEquipmentById(equipmentId: string): Promise<GroundEquipment | null> {
     try {
-      const response = await APIClient.get<{ equipment?: GroundEquipment }>(
-        `${this.endpoint}/equipment/${equipmentId}`
-      );
-      return response.equipment || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/equipment/${equipmentId}`);
+      return APIClient.unwrapItem<GroundEquipment>(response, 'equipment');
     } catch (_error: any) {
       return null;
     }
@@ -535,10 +503,8 @@ export class GroundOperationsService {
   // Ramp Handling Procedures
   static async getAllProcedures(): Promise<RampHandlingProcedure[]> {
     try {
-      const response = await APIClient.get<{ procedures?: RampHandlingProcedure[] }>(
-        `${this.endpoint}/procedures`
-      );
-      return response.procedures || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/procedures`);
+      return APIClient.unwrapList<RampHandlingProcedure>(response, 'procedures');
     } catch (_error: any) {
       return [];
     }
@@ -546,10 +512,8 @@ export class GroundOperationsService {
 
   static async getProcedureById(procedureId: string): Promise<RampHandlingProcedure | null> {
     try {
-      const response = await APIClient.get<{ procedure?: RampHandlingProcedure }>(
-        `${this.endpoint}/procedures/${procedureId}`
-      );
-      return response.procedure || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/procedures/${procedureId}`);
+      return APIClient.unwrapItem<RampHandlingProcedure>(response, 'procedure');
     } catch (_error: any) {
       return null;
     }
@@ -579,10 +543,8 @@ export class GroundOperationsService {
   // Safety Compliance
   static async getAllSafetyCompliance(): Promise<SafetyCompliance[]> {
     try {
-      const response = await APIClient.get<{ safetyCompliance?: SafetyCompliance[] }>(
-        `${this.endpoint}/safety-compliance`
-      );
-      return response.safetyCompliance || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/safety-compliance`);
+      return APIClient.unwrapList<SafetyCompliance>(response, 'safetyCompliance');
     } catch (_error: any) {
       return [];
     }
@@ -590,10 +552,10 @@ export class GroundOperationsService {
 
   static async getSafetyComplianceById(complianceId: string): Promise<SafetyCompliance | null> {
     try {
-      const response = await APIClient.get<{ safetyCompliance?: SafetyCompliance }>(
+      const response = await APIClient.get<unknown>(
         `${this.endpoint}/safety-compliance/${complianceId}`
       );
-      return response.safetyCompliance || null;
+      return APIClient.unwrapItem<SafetyCompliance>(response, 'safetyCompliance');
     } catch (_error: any) {
       return null;
     }
@@ -630,8 +592,8 @@ export class AviationSettingsService {
 
   static async getSettings(): Promise<AviationSettings | null> {
     try {
-      const response = await APIClient.get<{ settings?: AviationSettings }>(this.endpoint);
-      return response.settings || null;
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapItem<AviationSettings>(response, 'settings');
     } catch (_error: any) {
       return null;
     }
@@ -652,8 +614,8 @@ export class AlertsService {
 
   static async getAll(): Promise<Alert[]> {
     try {
-      const response = await APIClient.get<{ alerts?: Alert[] }>(this.endpoint);
-      return response.alerts || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<Alert>(response, 'alerts');
     } catch (_error: any) {
       return [];
     }

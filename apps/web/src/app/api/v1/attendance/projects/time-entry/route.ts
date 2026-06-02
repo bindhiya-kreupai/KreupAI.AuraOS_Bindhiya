@@ -1,66 +1,80 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-interface TimeEntryRequest {
-  projectId: string;
-  hours: number;
-  date: string;
-  notes?: string;
-}
-
-interface TimeEntry {
-  id: string;
-  projectId: string;
-  employeeId: string;
-  hours: number;
-  date: string;
-  notes: string;
-  status: 'pending' | 'approved' | 'rejected';
-  createdAt: string;
-}
-
-export const POST = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
-  if (!permissions.includes('attendance:create')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing attendance:create permission',
-          messageAr: 'ممنوع',
-        },
-      },
-      { status: 403 }
-    );
-  }
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const body: TimeEntryRequest = await request.json();
-
-    if (!body.projectId || !body.hours || !body.date) {
-      return NextResponse.json(
-        { error: 'projectId, hours, and date are required' },
-        { status: 400 }
-      );
+    const { user, permissions } = context;
+    if (!permissions.includes('attendance:read')) return forbidden('attendance:read');
+    const sp = new URL(request.url).searchParams;
+    const { page, limit, skip } = parsePagination(sp);
+    const employeeId = sp.get('employeeId');
+    const projectId = sp.get('projectId');
+    const where: Record<string, unknown> = { tenantId: user.tenantId };
+    if (employeeId) where.employeeId = employeeId;
+    if (projectId) where.projectId = projectId;
+    const model: any = (prisma as any).projectTimeEntry || (prisma as any).timeEntry;
+    if (!model) {
+      // Fall back to AttendanceRecord with project field
+      const [rows, total] = await Promise.all([
+        prisma.attendanceRecord.findMany({
+          where: { ...where, project: projectId || undefined } as any,
+          orderBy: { date: 'desc' },
+          skip,
+          take: limit,
+        }),
+        prisma.attendanceRecord.count({
+          where: { ...where, project: projectId || undefined } as any,
+        }),
+      ]);
+      return successList(rows, page, limit, total);
     }
+    const [rows, total] = await Promise.all([
+      model.findMany({ where, orderBy: { createdAt: 'desc' }, skip, take: limit }),
+      model.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    return serverError(error, 'list time entries');
+  }
+});
 
-    if (body.hours <= 0 || body.hours > 24) {
-      return NextResponse.json({ error: 'hours must be between 0 and 24' }, { status: 400 });
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('attendance:write')) return forbidden('attendance:write');
+    const body = await safeJson(request);
+    if (!body?.projectId || !body?.hours)
+      return validationError({ message: 'projectId + hours required' });
+    const employeeId = body.employeeId || user.userId;
+    const model: any = (prisma as any).projectTimeEntry || (prisma as any).timeEntry;
+    if (!model) {
+      // Persist to AttendanceRecord with project marker
+      const created = await prisma.attendanceRecord.create({
+        data: {
+          tenantId: user.tenantId,
+          employeeId,
+          date: body.date ? new Date(body.date) : new Date(),
+          workedHours: body.hours,
+          project: body.projectId,
+          notes: body.notes,
+          source: 'PROJECT_TIME_ENTRY',
+        } as any,
+      });
+      return successItem(created, { status: 201 });
     }
-
-    const newEntry: TimeEntry = {
-      id: `te-${Date.now()}`,
-      projectId: body.projectId,
-      employeeId: 'emp-001',
-      hours: body.hours,
-      date: body.date,
-      notes: body.notes || '',
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-    };
-
-    return NextResponse.json(newEntry, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    const created = await model.create({ data: { tenantId: user.tenantId, employeeId, ...body } });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    return serverError(error, 'create time entry');
   }
 });

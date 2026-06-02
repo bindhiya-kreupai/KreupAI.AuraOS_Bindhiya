@@ -1,160 +1,35 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { forbidden, serverError, successItem } from '@/lib/api/crud-helpers';
 
-// Tenant isolation is enforced via tenantId extracted from auth context (simulated here)
-
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: { code: string; message: string; details?: Record<string, unknown> };
-  meta?: any;
-}
-
-export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  const { permissions } = context;
-  if (!permissions.includes('scheduling:read')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing scheduling:read permission',
-          messageAr: 'ممنوع',
-        },
-      },
-      { status: 403 }
-    );
-  }
+// Fairness = standard deviation of hours assigned across employees in the schedule
+export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) => {
   try {
-    const { params } = context;
-    const { scheduleId } = params;
-
-    // Simulated schedule lookup with tenant isolation
-    const knownSchedules = ['sched-001', 'sched-002', 'sched-003'];
-    if (!knownSchedules.includes(scheduleId)) {
-      const response: ApiResponse = {
-        success: false,
-        error: {
-          code: 'E4001',
-          message: `Schedule with id '${scheduleId}' not found`,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: crypto.randomUUID(),
-          apiVersion: 'v1',
-        },
-      };
-      return NextResponse.json(response, { status: 404 });
+    const { user, params, permissions } = context;
+    if (!permissions.includes('scheduling:read')) return forbidden('scheduling:read');
+    const rosters = await prisma.shiftRoster.findMany({
+      where: { tenantId: user.tenantId, id: params.scheduleId } as any,
+    });
+    const byEmployee: Record<string, number> = {};
+    for (const r of rosters) {
+      const id = (r as any).employeeId;
+      byEmployee[id] = (byEmployee[id] || 0) + 1;
     }
-
-    const fairnessAnalysis = {
-      tenantId: 'tenant-1',
-      scheduleId,
-      overallFairnessScore: 88.5,
-      rating: 'GOOD', // POOR, FAIR, GOOD, EXCELLENT
-      period: {
-        startDate: '2026-03-01',
-        endDate: '2026-03-31',
-      },
-      metrics: {
-        hoursDistribution: {
-          score: 91.2,
-          giniCoefficient: 0.08,
-          standardDeviation: 2.4,
-          min: 36,
-          max: 44,
-          average: 40.1,
-          description: 'Hours are well-distributed across team members',
-        },
-        weekendEquity: {
-          score: 85.0,
-          averageWeekendsPerEmployee: 1.8,
-          standardDeviation: 0.6,
-          description: 'Weekend assignments are reasonably balanced',
-        },
-        preferenceAccommodation: {
-          score: 78.3,
-          requestsFulfilled: 34,
-          requestsTotal: 42,
-          fulfillmentRate: 80.9,
-          description: '81% of employee shift preferences were accommodated',
-        },
-        holidayEquity: {
-          score: 95.0,
-          description: 'Holiday assignments are equally distributed',
-        },
-        shiftTypeBalance: {
-          score: 89.5,
-          distribution: {
-            morning: { average: 14.2, stdDev: 1.8 },
-            afternoon: { average: 11.8, stdDev: 2.1 },
-            evening: { average: 4.5, stdDev: 1.2 },
-          },
-        },
-      },
-      employeeScores: [
-        {
-          employeeId: 'emp-001',
-          name: 'John Smith',
-          hoursScheduled: 40,
-          weekends: 2,
-          holidaysWorked: 0,
-          fairnessScore: 92.0,
-        },
-        {
-          employeeId: 'emp-002',
-          name: 'Maria Garcia',
-          hoursScheduled: 42,
-          weekends: 1,
-          holidaysWorked: 1,
-          fairnessScore: 83.5,
-        },
-        {
-          employeeId: 'emp-003',
-          name: 'David Lee',
-          hoursScheduled: 38,
-          weekends: 2,
-          holidaysWorked: 0,
-          fairnessScore: 87.0,
-        },
-      ],
-      inequities: [
-        {
-          severity: 'LOW',
-          type: 'WEEKEND_IMBALANCE',
-          description: 'emp-002 has 1 fewer weekend assignment than average this month',
-          recommendation: 'Adjust in next schedule cycle to balance cumulative weekend assignments',
-        },
-      ],
-      generatedAt: new Date().toISOString(),
-    };
-
-    const response: ApiResponse = {
-      success: true,
-      data: fairnessAnalysis,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 200 });
+    const counts = Object.values(byEmployee);
+    const mean = counts.length ? counts.reduce((a, b) => a + b, 0) / counts.length : 0;
+    const variance = counts.length
+      ? counts.reduce((sum, c) => sum + (c - mean) ** 2, 0) / counts.length
+      : 0;
+    const stdDev = Math.sqrt(variance);
+    return successItem({
+      scheduleId: params.scheduleId,
+      employees: counts.length,
+      meanShiftsPerEmployee: mean,
+      stdDev,
+      fairnessScore: counts.length ? Math.max(0, 100 - stdDev * 20) : 100,
+    });
   } catch (error: any) {
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to get schedule fairness score',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-    return NextResponse.json(response, { status: 500 });
+    return serverError(error, 'compute fairness');
   }
 });

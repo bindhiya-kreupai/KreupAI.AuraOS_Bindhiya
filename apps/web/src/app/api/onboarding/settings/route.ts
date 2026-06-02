@@ -1,115 +1,79 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { readSettings, writeSettings } from '@/lib/api/tenant-settings';
+import { logger } from '@/lib/logger';
 
-// GET - Fetch onboarding settings (structured defaults with tenant context)
-export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user }) => {
-    try {
-      const settings = {
-        tenantId: user.tenantId,
-        defaultProgramDuration: 90,
-        requireBuddy: true,
-        requirePreBoarding: true,
-        surveyEnabled: true,
-        surveySchedule: ['day_1', 'week_1', 'day_30', 'day_60', 'day_90'],
-        autoAssignTasks: true,
-        notifyManager: true,
-        notifyIT: true,
-        equipmentLeadTimeDays: 5,
-        autoAssignBuddy: true,
-        buddyMatchingCriteria: 'department',
-        autoSendPreBoarding: true,
-        preBoardingDaysBeforeStart: 7,
-        autoCreateTasks: true,
-        sendTaskReminders: true,
-        reminderDaysBefore: 2,
-        enableSurveys: true,
-        enable30_60_90Plan: true,
-        requireManagerReview: true,
-        managerReviewFrequency: 'weekly',
-        autoNotifications: {
-          newHireWelcome: true,
-          preBoardingPackage: true,
-          taskAssigned: true,
-          taskDue: true,
-          taskOverdue: true,
-          documentPending: true,
-          equipmentReady: true,
-          accessGranted: true,
-          surveyDue: true,
-          buddyAssigned: true,
-          milestoneReached: true,
-          completionCertificate: true,
-        },
-      };
+const MODULE = 'onboarding';
 
-      return NextResponse.json({ settings }, { status: 200 });
-    } catch (error: any) {
-      console.error('Error fetching onboarding settings:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch onboarding settings' },
-        { status: 500 }
-      );
-    }
+const DEFAULT_SETTINGS = {
+  defaultProgramDuration: 90,
+  requireBuddy: true,
+  requirePreBoarding: true,
+  surveyEnabled: true,
+  surveySchedule: ['day_1', 'week_1', 'day_30', 'day_60', 'day_90'],
+  autoAssignTasks: true,
+  notifyManager: true,
+  notifyIT: true,
+  equipmentLeadTimeDays: 5,
+  autoAssignBuddy: true,
+  buddyMatchingCriteria: 'department',
+  autoSendPreBoarding: true,
+  preBoardingDaysBeforeStart: 7,
+  autoCreateTasks: true,
+  sendTaskReminders: true,
+  reminderDaysBefore: 2,
+  enableSurveys: true,
+  enable30_60_90Plan: true,
+  requireManagerReview: true,
+  managerReviewFrequency: 'weekly',
+  autoNotifications: {
+    newHireWelcome: true,
+    preBoardingPackage: true,
+    taskAssigned: true,
+    taskDue: true,
+    taskOverdue: true,
+    documentPending: true,
+    equipmentReady: true,
+    accessGranted: true,
+    surveyDue: true,
+    buddyAssigned: true,
+    milestoneReached: true,
+    completionCertificate: true,
+  },
+};
+
+export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) => {
+  try {
+    const tenantId = context.user.tenantId;
+    const settings = await readSettings(tenantId, MODULE, DEFAULT_SETTINGS);
+    return NextResponse.json({ success: true, data: { ...settings, tenantId } });
+  } catch (error: any) {
+    logger.error({ err: error, module: MODULE }, 'Failed to read settings');
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch settings' },
+      { status: 500 }
+    );
   }
-);
+});
 
-// PUT - Update onboarding settings (returns merged settings for now)
-export const PUT = withEnhancedAuth(
-  async (request: NextRequest, { user }) => {
-    try {
-      const body = await request.json();
-
-      // Since there is no dedicated settings model yet, acknowledge the update
-      // and return the merged settings
-      const settings = {
-        tenantId: user.tenantId,
-        defaultProgramDuration: 90,
-        requireBuddy: true,
-        requirePreBoarding: true,
-        surveyEnabled: true,
-        surveySchedule: ['day_1', 'week_1', 'day_30', 'day_60', 'day_90'],
-        autoAssignTasks: true,
-        notifyManager: true,
-        notifyIT: true,
-        equipmentLeadTimeDays: 5,
-        autoAssignBuddy: true,
-        buddyMatchingCriteria: 'department',
-        autoSendPreBoarding: true,
-        preBoardingDaysBeforeStart: 7,
-        autoCreateTasks: true,
-        sendTaskReminders: true,
-        reminderDaysBefore: 2,
-        enableSurveys: true,
-        enable30_60_90Plan: true,
-        requireManagerReview: true,
-        managerReviewFrequency: 'weekly',
-        autoNotifications: {
-          newHireWelcome: true,
-          preBoardingPackage: true,
-          taskAssigned: true,
-          taskDue: true,
-          taskOverdue: true,
-          documentPending: true,
-          equipmentReady: true,
-          accessGranted: true,
-          surveyDue: true,
-          buddyAssigned: true,
-          milestoneReached: true,
-          completionCertificate: true,
-        },
-        ...body,
-        updatedAt: new Date().toISOString(),
-      };
-
-      return NextResponse.json({ settings }, { status: 200 });
-    } catch (error: any) {
-      console.error('Error updating onboarding settings:', error);
-      return NextResponse.json(
-        { error: 'Failed to update onboarding settings' },
-        { status: 500 }
-      );
-    }
+export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const tenantId = context.user.tenantId;
+    const userId = context.user.userId;
+    const body = await request.json();
+    // Strip server-managed fields so callers can't overwrite them.
+    delete body.tenantId;
+    delete body.updatedBy;
+    delete body.updatedAt;
+    await writeSettings(tenantId, MODULE, body, userId);
+    const settings = await readSettings(tenantId, MODULE, DEFAULT_SETTINGS);
+    return NextResponse.json({ success: true, data: { ...settings, tenantId } });
+  } catch (error: any) {
+    logger.error({ err: error, module: MODULE }, 'Failed to update settings');
+    return NextResponse.json(
+      { success: false, error: 'Failed to update settings' },
+      { status: 500 }
+    );
   }
-);
+});

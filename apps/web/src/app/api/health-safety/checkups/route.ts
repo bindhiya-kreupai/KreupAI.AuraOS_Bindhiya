@@ -1,56 +1,57 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (request, context) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-
-    const defaultCheckups = [
-      {
-        id: 'chk-001',
-        type: 'General Checkup',
-        date: new Date().toISOString(),
-        doctor: 'Dr. General',
-        clinic: 'City General Hospital',
-        status: 'Completed',
-        tenantId: user.tenantId,
-      },
-    ];
-
-    return NextResponse.json(
-      { success: true, data: defaultCheckups },
-      { status: 200 }
-    );
+    const { user, permissions } = context;
+    if (!permissions.includes('health-safety/checkups:read'))
+      return forbidden('health-safety/checkups:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).healthSafetyCheckup.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).healthSafetyCheckup.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
   } catch (error: any) {
-    console.error('Error fetching checkups:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    logger.error({ err: error, route: 'health-safety/checkups/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
   }
 });
 
-export const POST = withEnhancedAuth(async (request, context) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-    const body = await request.json();
-
-    const checkup = {
-      ...body,
-      id: `chk-${Date.now()}`,
-      tenantId: user.tenantId,
-      date: new Date().toISOString(),
-    };
-
-    return NextResponse.json(
-      { success: true, data: checkup },
-      { status: 201 }
-    );
+    const { user, permissions } = context;
+    if (!permissions.includes('health-safety/checkups:create'))
+      return forbidden('health-safety/checkups:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).healthSafetyCheckup.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
   } catch (error: any) {
-    console.error('Error creating checkup:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    logger.error({ err: error, route: 'health-safety/checkups/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
   }
 });

@@ -3,8 +3,29 @@
 
 import { APIClient } from '@/lib/api-client';
 import type {
-  Asset, AssetAssignment, CoreHRSettings,
-  InterCompanyTransfer, SharedServiceRequest, CostCenter, IDCard, ExitProcess, ClearanceItem, Anniversary, ProbationRecord, ConfirmationLetter, Employee, OrganizationUnit, EmploymentHistory, EmployeeDocument, DocumentTemplate, Position, LifeEvent, MassUpdate, LetterRequest, AutoNumberSequence } from './types';
+  Asset,
+  AssetAssignment,
+  CoreHRSettings,
+  InterCompanyTransfer,
+  SharedServiceRequest,
+  CostCenter,
+  IDCard,
+  ExitProcess,
+  ClearanceItem,
+  Anniversary,
+  ProbationRecord,
+  ConfirmationLetter,
+  Employee,
+  OrganizationUnit,
+  EmploymentHistory,
+  EmployeeDocument,
+  DocumentTemplate,
+  Position,
+  LifeEvent,
+  MassUpdate,
+  LetterRequest,
+  AutoNumberSequence,
+} from './types';
 
 function mapAssetAssignment(raw: any): AssetAssignment {
   return {
@@ -146,7 +167,9 @@ function mapExitProcess(raw: any): ExitProcess {
       raw.employee?.firstName && raw.employee?.lastName
         ? `${raw.employee.firstName} ${raw.employee.lastName}`
         : raw.employeeName || 'Unknown Employee',
-    exitType: String(raw.exitType || 'RESIGNATION').toLowerCase().replace('contract_end', 'end_of_contract') as ExitProcess['exitType'],
+    exitType: String(raw.exitType || 'RESIGNATION')
+      .toLowerCase()
+      .replace('contract_end', 'end_of_contract') as ExitProcess['exitType'],
     exitReason: raw.reason || raw.exitReason || '',
     resignationDate: raw.resignationDate ? new Date(raw.resignationDate) : undefined,
     lastWorkingDate: raw.lastWorkingDate ? new Date(raw.lastWorkingDate) : new Date(),
@@ -243,7 +266,11 @@ function mapConfirmationLetter(raw: any): ConfirmationLetter {
     generatedBy: raw.createdBy || raw.generatedBy || 'system',
     approvedBy: raw.approvedBy || 'system',
     approvalDate: raw.approvalDate ? new Date(raw.approvalDate) : generatedDate,
-    issuedDate: raw.issuedAt ? new Date(raw.issuedAt) : raw.issuedDate ? new Date(raw.issuedDate) : undefined,
+    issuedDate: raw.issuedAt
+      ? new Date(raw.issuedAt)
+      : raw.issuedDate
+        ? new Date(raw.issuedDate)
+        : undefined,
     documentUrl: raw.generatedPdfUrl || raw.documentUrl || '',
     referenceNumber: raw.referenceNumber || String(raw.id || ''),
     status: String(raw.status || 'DRAFT').toLowerCase() as ConfirmationLetter['status'],
@@ -256,8 +283,8 @@ export class EmployeeService {
 
   static async getAllEmployees(): Promise<Employee[]> {
     try {
-      const response = await APIClient.get<{ employees?: Employee[] }>(this.endpoint);
-      return response.employees || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<Employee>(response, 'employees');
     } catch (error: any) {
       return [];
     }
@@ -265,7 +292,9 @@ export class EmployeeService {
 
   static async getEmployeeById(employeeId: string): Promise<Employee | null> {
     try {
-      const response = await APIClient.get<{ employee: Employee }>(`${this.endpoint}/${employeeId}`);
+      const response = await APIClient.get<{ employee: Employee }>(
+        `${this.endpoint}/${employeeId}`
+      );
       return response.employee;
     } catch (error: any) {
       return null;
@@ -278,20 +307,27 @@ export class EmployeeService {
   }
 
   static async updateEmployee(employeeId: string, updates: Partial<Employee>): Promise<Employee> {
-    const response = await APIClient.put<{ employee: Employee }>(`${this.endpoint}/${employeeId}`, updates);
+    const response = await APIClient.put<{ employee: Employee }>(
+      `${this.endpoint}/${employeeId}`,
+      updates
+    );
     return response.employee;
   }
 
   static async searchEmployees(query: string): Promise<Employee[]> {
     try {
-      const response = await APIClient.get<{ employees?: Employee[] }>(this.endpoint, { query });
-      return response.employees || [];
+      const response = await APIClient.get<unknown>(this.endpoint, { query });
+      return APIClient.unwrapList<Employee>(response, 'employees');
     } catch (error: any) {
       return [];
     }
   }
 
-  static async terminateEmployee(employeeId: string, terminationDate: string, reason: string): Promise<Employee> {
+  static async terminateEmployee(
+    employeeId: string,
+    terminationDate: string,
+    reason: string
+  ): Promise<Employee> {
     const response = await APIClient.put<{ employee: Employee }>(`${this.endpoint}/${employeeId}`, {
       terminationDate,
       terminationReason: reason,
@@ -307,8 +343,8 @@ export class OrganizationService {
 
   static async getAllUnits(): Promise<OrganizationUnit[]> {
     try {
-      const response = await APIClient.get<{ units?: OrganizationUnit[] }>(this.endpoint);
-      return response.units || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<OrganizationUnit>(response, 'units');
     } catch (error: any) {
       return [];
     }
@@ -319,7 +355,10 @@ export class OrganizationService {
     return response.unit;
   }
 
-  static async updateUnit(unitId: string, updates: Partial<OrganizationUnit>): Promise<OrganizationUnit> {
+  static async updateUnit(
+    unitId: string,
+    updates: Partial<OrganizationUnit>
+  ): Promise<OrganizationUnit> {
     const response = await APIClient.put<{ unit: OrganizationUnit }>(this.endpoint, {
       id: unitId,
       ...updates,
@@ -347,8 +386,8 @@ export class EmploymentHistoryService {
 
   static async getAllHistory(): Promise<EmploymentHistory[]> {
     try {
-      const response = await APIClient.get<{ history?: EmploymentHistory[] }>(this.endpoint);
-      return response.history || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<EmploymentHistory>(response, 'history');
     } catch (error: any) {
       return [];
     }
@@ -356,15 +395,20 @@ export class EmploymentHistoryService {
 
   static async getHistoryByEmployee(employeeId: string): Promise<EmploymentHistory[]> {
     try {
-      const response = await APIClient.get<{ history?: EmploymentHistory[] }>(this.endpoint, { employeeId });
-      return response.history || [];
+      const response = await APIClient.get<unknown>(this.endpoint, { employeeId });
+      return APIClient.unwrapList<EmploymentHistory>(response, 'history');
     } catch (error: any) {
       return [];
     }
   }
 
-  static async createHistoryRecord(historyData: Partial<EmploymentHistory>): Promise<EmploymentHistory> {
-    const response = await APIClient.post<{ record: EmploymentHistory }>(this.endpoint, historyData);
+  static async createHistoryRecord(
+    historyData: Partial<EmploymentHistory>
+  ): Promise<EmploymentHistory> {
+    const response = await APIClient.post<{ record: EmploymentHistory }>(
+      this.endpoint,
+      historyData
+    );
     return response.record;
   }
 
@@ -383,8 +427,8 @@ export class DocumentService {
 
   static async getAllDocuments(): Promise<EmployeeDocument[]> {
     try {
-      const response = await APIClient.get<{ documents?: EmployeeDocument[] }>(this.endpoint);
-      return response.documents || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<EmployeeDocument>(response, 'documents');
     } catch (error: any) {
       return [];
     }
@@ -392,8 +436,8 @@ export class DocumentService {
 
   static async getDocumentsByEmployee(employeeId: string): Promise<EmployeeDocument[]> {
     try {
-      const response = await APIClient.get<{ documents?: EmployeeDocument[] }>(this.endpoint, { employeeId });
-      return response.documents || [];
+      const response = await APIClient.get<unknown>(this.endpoint, { employeeId });
+      return APIClient.unwrapList<EmployeeDocument>(response, 'documents');
     } catch (error: any) {
       return [];
     }
@@ -404,7 +448,10 @@ export class DocumentService {
   }
 
   static async uploadDocument(documentData: Partial<EmployeeDocument>): Promise<EmployeeDocument> {
-    const response = await APIClient.post<{ document: EmployeeDocument }>(this.endpoint, documentData);
+    const response = await APIClient.post<{ document: EmployeeDocument }>(
+      this.endpoint,
+      documentData
+    );
     return response.document;
   }
 
@@ -431,7 +478,7 @@ export class DocumentService {
               nationality: 'UAE',
               parsingConfidence: 0.94,
             },
-            status: 'active'
+            status: 'active',
           });
         }, 2000);
       });
@@ -446,15 +493,18 @@ export class DocumentTemplateService {
 
   static async getAllTemplates(): Promise<DocumentTemplate[]> {
     try {
-      const response = await APIClient.get<{ templates?: DocumentTemplate[] }>(this.endpoint);
-      return response.templates || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<DocumentTemplate>(response, 'templates');
     } catch (error: any) {
       return [];
     }
   }
 
   static async createTemplate(templateData: Partial<DocumentTemplate>): Promise<DocumentTemplate> {
-    const response = await APIClient.post<{ template: DocumentTemplate }>(this.endpoint, templateData);
+    const response = await APIClient.post<{ template: DocumentTemplate }>(
+      this.endpoint,
+      templateData
+    );
     return response.template;
   }
 }
@@ -465,8 +515,8 @@ export class PositionService {
 
   static async getAllPositions(): Promise<Position[]> {
     try {
-      const response = await APIClient.get<{ positions?: Position[] }>(this.endpoint);
-      return response.positions || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<Position>(response, 'positions');
     } catch (error: any) {
       return [
         {
@@ -483,7 +533,7 @@ export class PositionService {
           isSimulated: false,
           createdDate: new Date(),
           lastModifiedDate: new Date(),
-          effectiveDate: new Date()
+          effectiveDate: new Date(),
         },
         {
           id: 'POS-102',
@@ -499,8 +549,8 @@ export class PositionService {
           isSimulated: true, // Simulation example
           createdDate: new Date(),
           lastModifiedDate: new Date(),
-          effectiveDate: new Date()
-        }
+          effectiveDate: new Date(),
+        },
       ];
     }
   }
@@ -546,7 +596,10 @@ export class CostCenterService {
     return mapCostCenter(response.costCenter);
   }
 
-  static async updateCostCenter(costCenterId: string, updates: Partial<CostCenter>): Promise<CostCenter> {
+  static async updateCostCenter(
+    costCenterId: string,
+    updates: Partial<CostCenter>
+  ): Promise<CostCenter> {
     const response = await APIClient.put<{ costCenter: any }>(this.endpoint, {
       id: costCenterId,
       ...updates,
@@ -554,7 +607,11 @@ export class CostCenterService {
     return mapCostCenter(response.costCenter);
   }
 
-  static async allocateBudget(_costCenterId: string, _amount: number, _year: number): Promise<void> {
+  static async allocateBudget(
+    _costCenterId: string,
+    _amount: number,
+    _year: number
+  ): Promise<void> {
     return;
   }
 }
@@ -565,8 +622,8 @@ export class LifeEventService {
 
   static async getAllLifeEvents(): Promise<LifeEvent[]> {
     try {
-      const response = await APIClient.get<{ events?: LifeEvent[] }>(this.endpoint);
-      return response.events || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<LifeEvent>(response, 'events');
     } catch (error: any) {
       return [];
     }
@@ -583,8 +640,8 @@ export class LifeEventService {
 
   static async getEmployeeEvents(employeeId: string): Promise<LifeEvent[]> {
     try {
-      const response = await APIClient.get<{ events?: LifeEvent[] }>(this.endpoint, { employeeId });
-      return response.events || [];
+      const response = await APIClient.get<unknown>(this.endpoint, { employeeId });
+      return APIClient.unwrapList<LifeEvent>(response, 'events');
     } catch (error: any) {
       return [];
     }
@@ -611,8 +668,8 @@ export class MassUpdateService {
 
   static async getAllMassUpdates(): Promise<MassUpdate[]> {
     try {
-      const response = await APIClient.get<{ updates?: MassUpdate[] }>(this.endpoint);
-      return response.updates || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<MassUpdate>(response, 'updates');
     } catch (error: any) {
       return [];
     }
@@ -624,7 +681,10 @@ export class MassUpdateService {
   }
 
   static async executeMassUpdate(updateId: string): Promise<MassUpdate> {
-    const response = await APIClient.post<{ update: MassUpdate }>(`${this.endpoint}/${updateId}/execute`, {});
+    const response = await APIClient.post<{ update: MassUpdate }>(
+      `${this.endpoint}/${updateId}/execute`,
+      {}
+    );
     return response.update;
   }
 
@@ -679,7 +739,9 @@ export class IDCardService {
   static async getEmployeeCard(employeeId: string): Promise<IDCard | null> {
     try {
       const response = await APIClient.get<{ cards?: any[] }>(this.endpoint, { employeeId });
-      return Array.isArray(response.cards) && response.cards[0] ? mapIDCard(response.cards[0]) : null;
+      return Array.isArray(response.cards) && response.cards[0]
+        ? mapIDCard(response.cards[0])
+        : null;
     } catch (error: any) {
       return null;
     }
@@ -704,8 +766,8 @@ export class LetterService {
 
   static async getAllLetterRequests(): Promise<LetterRequest[]> {
     try {
-      const response = await APIClient.get<{ requests?: LetterRequest[] }>(this.endpoint);
-      return response.requests || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<LetterRequest>(response, 'requests');
     } catch (error: any) {
       return [];
     }
@@ -717,15 +779,18 @@ export class LetterService {
 
   static async getEmployeeRequests(employeeId: string): Promise<LetterRequest[]> {
     try {
-      const response = await APIClient.get<{ requests?: LetterRequest[] }>(this.endpoint, { employeeId });
-      return response.requests || [];
+      const response = await APIClient.get<unknown>(this.endpoint, { employeeId });
+      return APIClient.unwrapList<LetterRequest>(response, 'requests');
     } catch (error: any) {
       return [];
     }
   }
 
   static async createLetterRequest(requestData: Partial<LetterRequest>): Promise<LetterRequest> {
-    const response = await APIClient.post<{ request?: LetterRequest; letter?: LetterRequest }>(this.endpoint, requestData);
+    const response = await APIClient.post<{ request?: LetterRequest; letter?: LetterRequest }>(
+      this.endpoint,
+      requestData
+    );
     return response.request || response.letter || ({} as LetterRequest);
   }
 
@@ -733,14 +798,21 @@ export class LetterService {
     return this.createLetterRequest(requestData);
   }
 
-  static async approveRequest(requestId: string, approvedBy: string, approverEmployeeId: string): Promise<LetterRequest> {
-    const response = await APIClient.put<{ letter?: LetterRequest; request?: LetterRequest }>(this.endpoint, {
-      id: requestId,
-      status: 'APPROVED',
-      approvedBy,
-      approverEmployeeId,
-      issuedAt: new Date().toISOString(),
-    });
+  static async approveRequest(
+    requestId: string,
+    approvedBy: string,
+    approverEmployeeId: string
+  ): Promise<LetterRequest> {
+    const response = await APIClient.put<{ letter?: LetterRequest; request?: LetterRequest }>(
+      this.endpoint,
+      {
+        id: requestId,
+        status: 'APPROVED',
+        approvedBy,
+        approverEmployeeId,
+        issuedAt: new Date().toISOString(),
+      }
+    );
     return response.request || response.letter || ({} as LetterRequest);
   }
 
@@ -756,7 +828,9 @@ export class ExitService {
   static async getAllExitProcesses(): Promise<ExitProcess[]> {
     try {
       const response = await APIClient.get<{ exits?: any[] }>(this.endpoint);
-      return Array.isArray(response.exits) ? response.exits.map((exit) => mapExitProcess(exit)) : [];
+      return Array.isArray(response.exits)
+        ? response.exits.map((exit) => mapExitProcess(exit))
+        : [];
     } catch (error: any) {
       return [];
     }
@@ -779,7 +853,12 @@ export class ExitService {
     return mapExitProcess(response.exit);
   }
 
-  static async updateClearanceItem(exitId: string, itemId: string, status: string, approvedBy?: string): Promise<ExitProcess> {
+  static async updateClearanceItem(
+    exitId: string,
+    itemId: string,
+    status: string,
+    approvedBy?: string
+  ): Promise<ExitProcess> {
     return this.updateExit(exitId, {
       clearanceItems: [
         {
@@ -895,11 +974,16 @@ export class AutoNumberService {
   }
 
   static async generateNumber(entityType: string): Promise<string> {
-    const response = await APIClient.post<{ number?: string; generatedNumber?: string }>(this.endpoint, { entityType });
+    const response = await APIClient.post<{ number?: string; generatedNumber?: string }>(
+      this.endpoint,
+      { entityType }
+    );
     return response.number || response.generatedNumber || '';
   }
 
-  static async createSequence(sequenceData: Partial<AutoNumberSequence>): Promise<AutoNumberSequence> {
+  static async createSequence(
+    sequenceData: Partial<AutoNumberSequence>
+  ): Promise<AutoNumberSequence> {
     return this.mapSequence({
       entityType: sequenceData.entityType || 'custom',
       prefix: sequenceData.prefix || 'SEQ',
@@ -925,13 +1009,17 @@ export class ProbationService {
   static async getAllProbationRecords(): Promise<ProbationRecord[]> {
     try {
       const response = await APIClient.get<{ records?: any[] }>(this.endpoint);
-      return Array.isArray(response.records) ? response.records.map((record) => mapProbationRecord(record)) : [];
+      return Array.isArray(response.records)
+        ? response.records.map((record) => mapProbationRecord(record))
+        : [];
     } catch (error: any) {
       return [];
     }
   }
 
-  static async createProbationRecord(recordData: Partial<ProbationRecord>): Promise<ProbationRecord> {
+  static async createProbationRecord(
+    recordData: Partial<ProbationRecord>
+  ): Promise<ProbationRecord> {
     const response = await APIClient.post<{ record: any }>(this.endpoint, recordData);
     return mapProbationRecord(response.record);
   }
@@ -959,7 +1047,11 @@ export class ProbationService {
     return mapProbationRecord(response.record);
   }
 
-  static async extendProbation(recordId: string, extensionDays: number, reason: string): Promise<ProbationRecord> {
+  static async extendProbation(
+    recordId: string,
+    extensionDays: number,
+    reason: string
+  ): Promise<ProbationRecord> {
     const response = await APIClient.put<{ record: any }>(this.endpoint, {
       id: recordId,
       status: 'EXTENDED',
@@ -977,13 +1069,17 @@ export class ConfirmationLetterService {
   static async getAllConfirmationLetters(): Promise<ConfirmationLetter[]> {
     try {
       const response = await APIClient.get<{ letters?: any[] }>(this.endpoint);
-      return Array.isArray(response.letters) ? response.letters.map((letter) => mapConfirmationLetter(letter)) : [];
+      return Array.isArray(response.letters)
+        ? response.letters.map((letter) => mapConfirmationLetter(letter))
+        : [];
     } catch (error: any) {
       return [];
     }
   }
 
-  static async generateConfirmationLetter(letterData: Partial<ConfirmationLetter>): Promise<ConfirmationLetter> {
+  static async generateConfirmationLetter(
+    letterData: Partial<ConfirmationLetter>
+  ): Promise<ConfirmationLetter> {
     const response = await APIClient.post<{ letter: any }>(this.endpoint, letterData);
     return mapConfirmationLetter(response.letter);
   }
@@ -996,7 +1092,9 @@ export class ConfirmationService {
 
   static async getEmployeeConfirmations(employeeId: string): Promise<ConfirmationLetter[]> {
     try {
-      const response = await APIClient.get<{ letters?: any[] }>('/core-hr/confirmation-letters', { employeeId });
+      const response = await APIClient.get<{ letters?: any[] }>('/core-hr/confirmation-letters', {
+        employeeId,
+      });
       return Array.isArray(response.letters)
         ? response.letters.map((letter) => mapConfirmationLetter(letter))
         : [];
@@ -1005,7 +1103,10 @@ export class ConfirmationService {
     }
   }
 
-  static async generateLetter(employeeId: string, confirmationData: any): Promise<ConfirmationLetter> {
+  static async generateLetter(
+    employeeId: string,
+    confirmationData: any
+  ): Promise<ConfirmationLetter> {
     return ConfirmationLetterService.generateConfirmationLetter({
       employeeId,
       ...confirmationData,
@@ -1039,7 +1140,11 @@ export class AssetService {
     return mapAsset(response.asset);
   }
 
-  static async assignAsset(assetId: string, employeeId: string, employeeName: string): Promise<AssetAssignment> {
+  static async assignAsset(
+    assetId: string,
+    employeeId: string,
+    employeeName: string
+  ): Promise<AssetAssignment> {
     const response = await APIClient.post<{ assignment: any }>('/core-hr/asset-assignments', {
       assetId,
       employeeId,
@@ -1053,7 +1158,11 @@ export class AssetService {
     return this.updateAsset(assetId, { status: 'available' } as any);
   }
 
-  static async retireAsset(assetId: string, _disposalMethod?: string, _disposalDate?: string): Promise<Asset> {
+  static async retireAsset(
+    assetId: string,
+    _disposalMethod?: string,
+    _disposalDate?: string
+  ): Promise<Asset> {
     return this.updateAsset(assetId, { status: 'retired' } as any);
   }
 
@@ -1156,7 +1265,9 @@ export class InterCompanyTransferService {
       fromCompanyName: raw.fromCompany?.name || raw.fromCompanyName || raw.fromCompanyId,
       toCompanyId: raw.toCompanyId,
       toCompanyName: raw.toCompany?.name || raw.toCompanyName || raw.toCompanyId,
-      transferType: String(raw.transferType || 'PERMANENT').toLowerCase() as InterCompanyTransfer['transferType'],
+      transferType: String(
+        raw.transferType || 'PERMANENT'
+      ).toLowerCase() as InterCompanyTransfer['transferType'],
       effectiveDate: new Date(raw.effectiveDate),
       status: String(raw.status || 'PENDING').toLowerCase() as InterCompanyTransfer['status'],
       requestedBy: raw.requestedBy || 'Unknown',
@@ -1183,7 +1294,7 @@ export class InterCompanyTransferService {
           transferType: 'permanent',
           effectiveDate: new Date(),
           status: 'pending',
-          requestedBy: 'HR-Admin'
+          requestedBy: 'HR-Admin',
         },
         {
           transferId: 'TRF-002',
@@ -1196,13 +1307,15 @@ export class InterCompanyTransferService {
           transferType: 'secondment',
           effectiveDate: new Date(),
           status: 'approved',
-          requestedBy: 'System-Agent'
-        }
+          requestedBy: 'System-Agent',
+        },
       ];
     }
   }
 
-  static async initiateTransfer(transferData: Partial<InterCompanyTransfer>): Promise<InterCompanyTransfer> {
+  static async initiateTransfer(
+    transferData: Partial<InterCompanyTransfer>
+  ): Promise<InterCompanyTransfer> {
     const response = await APIClient.post<{ data: any }>(this.endpoint, {
       employeeId: transferData.employeeId,
       fromCompanyId: transferData.fromCompanyId,
@@ -1228,7 +1341,9 @@ export class SharedServiceRequestService {
   static async getAllRequests(): Promise<SharedServiceRequest[]> {
     try {
       const response = await APIClient.get<{ requests?: SharedServiceRequest[] }>(this.endpoint);
-      return (response.requests || []).map((request) => this.mapRequest(request));
+      return APIClient.unwrapList<any>(response, 'requests').map((request: any) =>
+        this.mapRequest(request)
+      );
     } catch (error: any) {
       return [
         {
@@ -1240,7 +1355,7 @@ export class SharedServiceRequestService {
           details: 'NOC for personal bank loan application.',
           priority: 'medium',
           status: 'in_progress',
-          createdDate: new Date()
+          createdDate: new Date(),
         },
         {
           requestId: 'SSR-102',
@@ -1251,14 +1366,19 @@ export class SharedServiceRequestService {
           details: 'Remote access required for Riyadh transition project.',
           priority: 'high',
           status: 'open',
-          createdDate: new Date()
-        }
+          createdDate: new Date(),
+        },
       ];
     }
   }
 
-  static async createRequest(requestData: Partial<SharedServiceRequest>): Promise<SharedServiceRequest> {
-    const response = await APIClient.post<{ request: SharedServiceRequest }>(this.endpoint, requestData);
+  static async createRequest(
+    requestData: Partial<SharedServiceRequest>
+  ): Promise<SharedServiceRequest> {
+    const response = await APIClient.post<{ request: SharedServiceRequest }>(
+      this.endpoint,
+      requestData
+    );
     return this.mapRequest(response.request);
   }
 }

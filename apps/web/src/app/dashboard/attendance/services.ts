@@ -2,9 +2,19 @@
 // Attendance Module Services - API Integrated
 import { APIClient } from '@/lib/api-client';
 import type {
-  Shift, ShiftAssignment, AttendanceRecord, AttendanceCheck, AttendanceRegularization,
-  OvertimeRequest, BiometricDevice, AttendancePolicy, WorkLocation, WFHRequest,
-  AttendanceMetrics, AttendanceSettings, MonthlyAttendanceReport
+  Shift,
+  ShiftAssignment,
+  AttendanceRecord,
+  AttendanceCheck,
+  AttendanceRegularization,
+  OvertimeRequest,
+  BiometricDevice,
+  AttendancePolicy,
+  WorkLocation,
+  WFHRequest,
+  AttendanceMetrics,
+  AttendanceSettings,
+  MonthlyAttendanceReport,
 } from './types';
 
 type TimesheetApiEntry = {
@@ -230,7 +240,9 @@ const REGULARIZATION_STATUS_MAP: Record<string, AttendanceRegularization['status
   REJECTED: 'rejected',
 };
 
-function normalizeRegularizationType(value?: string | null): AttendanceRegularization['regularizationType'] {
+function normalizeRegularizationType(
+  value?: string | null
+): AttendanceRegularization['regularizationType'] {
   if (!value) {
     return 'missed_punch';
   }
@@ -304,14 +316,12 @@ function mapCompOff(raw: CompOffApiResponse) {
   };
 }
 
-function normalizeCompOffPayload(
-  compOff: {
-    employeeId: string;
-    date: string;
-    hours: number;
-    reason: string;
-  }
-) {
+function normalizeCompOffPayload(compOff: {
+  employeeId: string;
+  date: string;
+  hours: number;
+  reason: string;
+}) {
   const payload: Record<string, unknown> = {
     workDate: compOff.date,
     workHours: compOff.hours,
@@ -333,7 +343,10 @@ function normalizePlaceholderEmployeeId(employeeId?: string) {
   return employeeId;
 }
 
-function inferShiftCardType(shiftName?: string, startTime?: string): 'Morning' | 'Evening' | 'Night' {
+function inferShiftCardType(
+  shiftName?: string,
+  startTime?: string
+): 'Morning' | 'Evening' | 'Night' {
   const normalizedName = shiftName?.toLowerCase() || '';
 
   if (normalizedName.includes('night')) {
@@ -674,7 +687,10 @@ function mapAttendanceException(raw: ExceptionApiResponse) {
       break;
     case 'MISSING_PUNCH':
       expected = 'In/Out Required';
-      actual = raw.checkIn || raw.checkOut ? `${formatExceptionTime(raw.checkIn)} / ${formatExceptionTime(raw.checkOut)}` : '--';
+      actual =
+        raw.checkIn || raw.checkOut
+          ? `${formatExceptionTime(raw.checkIn)} / ${formatExceptionTime(raw.checkOut)}`
+          : '--';
       break;
     case 'ABSENT':
       expected = 'Present';
@@ -734,10 +750,7 @@ function mapCompOffTransaction(raw: CompOffManagementApiResponse) {
 function normalizeRegularizationPayload(
   regularization: Partial<AttendanceRegularization> & Record<string, unknown>
 ) {
-  const typeSource =
-    regularization.regularizationType ||
-    regularization.type ||
-    'MISSED_PUNCH';
+  const typeSource = regularization.regularizationType || regularization.type || 'MISSED_PUNCH';
   const requestedClockIn =
     regularization.requestedClockIn ||
     regularization.requestedCheckIn ||
@@ -799,19 +812,19 @@ export class ShiftService {
 
   static async getShifts(): Promise<Shift[]> {
     try {
-      const response = await APIClient.get<{ shifts?: Shift[] }>(this.endpoint);
-      return response.shifts || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<Shift>(response, 'shifts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getShiftById(id: string): Promise<Shift | null> {
     try {
-      const response = await APIClient.get<{ shift?: Shift }>(`${this.endpoint}/${id}`);
-      return response.shift || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<Shift>(response, 'shift');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -846,22 +859,19 @@ export class AttendanceRecordService {
     type?: 'records' | 'summary' | 'calendar';
   }): Promise<AttendanceRecord[]> {
     try {
-      const response = await APIClient.get<{ records?: AttendanceRecord[]; attendance?: AttendanceRecord[] }>(
-        this.endpoint,
-        filters
-      );
-      return response.records || response.attendance || [];
+      const response = await APIClient.get<unknown>(this.endpoint, filters);
+      return APIClient.unwrapList<AttendanceRecord>(response, 'records');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getRecordById(id: string): Promise<AttendanceRecord | null> {
     try {
-      const response = await APIClient.get<{ record?: AttendanceRecord }>(`${this.endpoint}/${id}`);
-      return response.record || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<AttendanceRecord>(response, 'record');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -870,8 +880,14 @@ export class AttendanceRecordService {
     return response.record;
   }
 
-  static async updateRecord(id: string, updates: Partial<AttendanceRecord>): Promise<AttendanceRecord> {
-    const response = await APIClient.put<{ record: AttendanceRecord }>(`${this.endpoint}/${id}`, updates);
+  static async updateRecord(
+    id: string,
+    updates: Partial<AttendanceRecord>
+  ): Promise<AttendanceRecord> {
+    const response = await APIClient.put<{ record: AttendanceRecord }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.record;
   }
 
@@ -879,15 +895,19 @@ export class AttendanceRecordService {
     await APIClient.delete(`${this.endpoint}/${id}`);
   }
 
-  static async getMonthlyReport(employeeId: string, month: string): Promise<MonthlyAttendanceReport | null> {
+  static async getMonthlyReport(
+    employeeId: string,
+    month: string
+  ): Promise<MonthlyAttendanceReport | null> {
     try {
-      const response = await APIClient.get<{ report?: MonthlyAttendanceReport }>(
-        this.endpoint,
-        { employeeId, month, type: 'summary' }
-      );
-      return response.report || null;
+      const response = await APIClient.get<unknown>(this.endpoint, {
+        employeeId,
+        month,
+        type: 'summary',
+      });
+      return APIClient.unwrapItem<MonthlyAttendanceReport>(response, 'report');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -905,7 +925,9 @@ export class AttendanceCheckService {
       employeeId: raw.employeeId || '',
       employeeName: raw.employeeName || 'Unknown Employee',
       date: raw.timestamp || raw.checkTime || raw.createdAt || '',
-      checkType: String(raw.type || raw.checkType || 'CHECK_IN').toLowerCase() as AttendanceCheck['checkType'],
+      checkType: String(
+        raw.type || raw.checkType || 'CHECK_IN'
+      ).toLowerCase() as AttendanceCheck['checkType'],
       checkTime: raw.timestamp || raw.checkTime || raw.createdAt || '',
       deviceType: raw.deviceInfo?.deviceType || raw.deviceType,
       location: raw.location?.address || raw.location,
@@ -919,14 +941,14 @@ export class AttendanceCheckService {
   }
 
   static async recordCheck(check: Partial<AttendanceCheck>): Promise<AttendanceCheck> {
-    const response = await APIClient.post<{ data?: any }>(
-      this.timeCaptureEndpoint,
-      check
-    );
+    const response = await APIClient.post<{ data?: any }>(this.timeCaptureEndpoint, check);
     return this.mapCheck(response.data || {});
   }
 
-  static async getChecks(filters?: { employeeId?: string; date?: string }): Promise<AttendanceCheck[]> {
+  static async getChecks(filters?: {
+    employeeId?: string;
+    date?: string;
+  }): Promise<AttendanceCheck[]> {
     try {
       const response = await APIClient.get<{ data?: { captures?: any[] } }>(
         this.timeCaptureEndpoint,
@@ -934,7 +956,7 @@ export class AttendanceCheckService {
       );
       return (response.data?.captures || []).map((capture) => this.mapCheck(capture));
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -959,8 +981,8 @@ export class TimesheetService {
     status?: string;
   }): Promise<DashboardTimesheet[]> {
     try {
-      const response = await APIClient.get<{ data?: TimesheetApiResponse[] }>(this.endpoint, filters);
-      return (response.data || []).map(mapTimesheet);
+      const response = await APIClient.get<unknown>(this.endpoint, filters);
+      return APIClient.unwrapList<TimesheetApiResponse>(response).map(mapTimesheet);
     } catch (_error: any) {
       return [];
     }
@@ -969,12 +991,20 @@ export class TimesheetService {
   static async submitTimesheet(data: {
     employeeId?: string;
     weekEnding: string;
-    entries: Array<{ date: string; checkIn?: string | null; checkOut?: string | null; hours: number; status: string }>;
+    entries: Array<{
+      date: string;
+      checkIn?: string | null;
+      checkOut?: string | null;
+      hours: number;
+      status: string;
+    }>;
   }): Promise<DashboardTimesheet> {
     const payload = {
       ...data,
       employeeId:
-        data.employeeId && data.employeeId !== 'current-user' && data.employeeId !== 'current-user-id'
+        data.employeeId &&
+        data.employeeId !== 'current-user' &&
+        data.employeeId !== 'current-user-id'
           ? data.employeeId
           : undefined,
     };
@@ -1004,7 +1034,7 @@ export class RegularizationService {
       );
       return (response.data?.requests || []).map(mapRegularization);
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -1013,7 +1043,9 @@ export class RegularizationService {
   ): Promise<AttendanceRegularization> {
     const response = await APIClient.post<{ success: boolean; data?: RegularizationApiResponse }>(
       this.endpoint,
-      normalizeRegularizationPayload(regularization as Partial<AttendanceRegularization> & Record<string, unknown>)
+      normalizeRegularizationPayload(
+        regularization as Partial<AttendanceRegularization> & Record<string, unknown>
+      )
     );
     return mapRegularization(response.data!);
   }
@@ -1029,7 +1061,9 @@ export class RegularizationService {
         action: 'approve',
         regularizationId: id,
         approverId:
-          reviewedBy !== 'current-user' && reviewedBy !== 'current-user-id' ? reviewedBy : undefined,
+          reviewedBy !== 'current-user' && reviewedBy !== 'current-user-id'
+            ? reviewedBy
+            : undefined,
         comments,
       }
     );
@@ -1047,7 +1081,9 @@ export class RegularizationService {
         action: 'reject',
         regularizationId: id,
         approverId:
-          reviewedBy !== 'current-user' && reviewedBy !== 'current-user-id' ? reviewedBy : undefined,
+          reviewedBy !== 'current-user' && reviewedBy !== 'current-user-id'
+            ? reviewedBy
+            : undefined,
         comments: reason,
       }
     );
@@ -1067,7 +1103,7 @@ export class RegularizationService {
       );
       return (response.data?.requests || []).map(mapRegularization);
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 }
@@ -1090,13 +1126,10 @@ export class OvertimeService {
       const response = await APIClient.get<{
         success?: boolean;
         data?: { overtime?: OvertimeApiResponse[]; summary?: unknown };
-      }>(
-        this.endpoint,
-        { ...filters, employeeId: normalizedEmployeeId }
-      );
+      }>(this.endpoint, { ...filters, employeeId: normalizedEmployeeId });
       return (response.data?.overtime || []).map(mapOvertimeRequest);
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -1122,32 +1155,30 @@ export class OvertimeService {
       success?: boolean;
       data?: OvertimeApiResponse;
       request?: OvertimeApiResponse;
-    }>(
-      this.endpoint,
-      {
-        action: 'approve',
-        overtimeId: id,
-        approverId: approvedBy,
-        approvedMinutes: approvedHours ? approvedHours * 60 : undefined,
-      }
-    );
+    }>(this.endpoint, {
+      action: 'approve',
+      overtimeId: id,
+      approverId: approvedBy,
+      approvedMinutes: approvedHours ? approvedHours * 60 : undefined,
+    });
     return mapOvertimeRequest(response.data || response.request || { id: '' });
   }
 
-  static async rejectOvertime(id: string, rejectedBy: string, reason: string): Promise<OvertimeRequest> {
+  static async rejectOvertime(
+    id: string,
+    rejectedBy: string,
+    reason: string
+  ): Promise<OvertimeRequest> {
     const response = await APIClient.post<{
       success?: boolean;
       data?: OvertimeApiResponse;
       request?: OvertimeApiResponse;
-    }>(
-      this.endpoint,
-      {
-        action: 'reject',
-        overtimeId: id,
-        approverId: rejectedBy,
-        rejectionReason: reason,
-      }
-    );
+    }>(this.endpoint, {
+      action: 'reject',
+      overtimeId: id,
+      approverId: rejectedBy,
+      rejectionReason: reason,
+    });
     return mapOvertimeRequest(response.data || response.request || { id: '' });
   }
 
@@ -1157,10 +1188,10 @@ export class OvertimeService {
     month?: string;
   }): Promise<any[]> {
     try {
-      const response = await APIClient.get<{ data?: any[] }>(this.managementEndpoint, filters);
-      return response.data || [];
+      const response = await APIClient.get<unknown>(this.managementEndpoint, filters);
+      return APIClient.unwrapList<any>(response, 'data');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 }
@@ -1197,7 +1228,7 @@ export class AttendanceAnalyticsService {
         }
       );
     } catch (error: any) {
-            return {
+      return {
         totalEmployees: 0,
         presentToday: 0,
         absentToday: 0,
@@ -1217,7 +1248,11 @@ export class AttendanceAnalyticsService {
     }
   }
 
-  static async getExceptions(filters?: { date?: string; type?: string; status?: string }): Promise<any[]> {
+  static async getExceptions(filters?: {
+    date?: string;
+    type?: string;
+    status?: string;
+  }): Promise<any[]> {
     try {
       const response = await APIClient.get<{
         success?: boolean;
@@ -1225,7 +1260,7 @@ export class AttendanceAnalyticsService {
       }>('/attendance/exceptions', filters);
       return (response.data?.exceptions || []).map(mapAttendanceException);
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -1288,7 +1323,7 @@ export class AttendanceSettingsService {
         }
       );
     } catch (error: any) {
-            return {
+      return {
         workingDaysPerWeek: 5,
         weekendDays: [0, 6],
         standardWorkingHours: 8,
@@ -1345,7 +1380,7 @@ export class CompOffService {
       }>(this.endpoint, filters);
       return (response.data?.compOffs || []).map(mapCompOff);
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -1384,16 +1419,16 @@ export class CompOffService {
         balance: summary?.total ?? summary?.balance ?? 0,
       };
     } catch (error: any) {
-            return {
-              total: 0,
-              earned: 0,
-              used: 0,
-              pending: 0,
-              expiring: 0,
-              totalEarned: 0,
-              totalUsed: 0,
-              balance: 0,
-            };
+      return {
+        total: 0,
+        earned: 0,
+        used: 0,
+        pending: 0,
+        expiring: 0,
+        totalEarned: 0,
+        totalUsed: 0,
+        balance: 0,
+      };
     }
   }
 }
@@ -1419,31 +1454,42 @@ export class WFHService {
       );
       return (response.data || []).map(mapWFHRequest);
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async submitWFHRequest(request: Partial<WFHRequest>): Promise<WFHRequest> {
-    const response = await APIClient.post<{ success?: boolean; data?: WFHApiResponse; request?: WFHApiResponse }>(
-      this.endpoint,
-      normalizeWFHPayload(request)
-    );
+    const response = await APIClient.post<{
+      success?: boolean;
+      data?: WFHApiResponse;
+      request?: WFHApiResponse;
+    }>(this.endpoint, normalizeWFHPayload(request));
     return mapWFHRequest(response.data || response.request || { id: '' });
   }
 
-  static async approveWFHRequest(id: string, approverId: string, comments?: string): Promise<WFHRequest> {
-    const response = await APIClient.post<{ success?: boolean; data?: WFHApiResponse; request?: WFHApiResponse }>(
-      this.endpoint,
-      { action: 'approve', id, approverId, comments }
-    );
+  static async approveWFHRequest(
+    id: string,
+    approverId: string,
+    comments?: string
+  ): Promise<WFHRequest> {
+    const response = await APIClient.post<{
+      success?: boolean;
+      data?: WFHApiResponse;
+      request?: WFHApiResponse;
+    }>(this.endpoint, { action: 'approve', id, approverId, comments });
     return mapWFHRequest(response.data || response.request || { id: '' });
   }
 
-  static async rejectWFHRequest(id: string, approverId: string, reason: string): Promise<WFHRequest> {
-    const response = await APIClient.post<{ success?: boolean; data?: WFHApiResponse; request?: WFHApiResponse }>(
-      this.endpoint,
-      { action: 'reject', id, approverId, reason }
-    );
+  static async rejectWFHRequest(
+    id: string,
+    approverId: string,
+    reason: string
+  ): Promise<WFHRequest> {
+    const response = await APIClient.post<{
+      success?: boolean;
+      data?: WFHApiResponse;
+      request?: WFHApiResponse;
+    }>(this.endpoint, { action: 'reject', id, approverId, reason });
     return mapWFHRequest(response.data || response.request || { id: '' });
   }
 
@@ -1454,11 +1500,15 @@ export class WFHService {
       const targetMonth = month.trim();
 
       const usedDays = requests
-        .filter(request => request.status === 'approved' && request.startDate.startsWith(targetMonth))
+        .filter(
+          (request) => request.status === 'approved' && request.startDate.startsWith(targetMonth)
+        )
         .reduce((sum, request) => sum + request.numberOfDays, 0);
 
       const pendingDays = requests
-        .filter(request => request.status === 'pending' && request.startDate.startsWith(targetMonth))
+        .filter(
+          (request) => request.status === 'pending' && request.startDate.startsWith(targetMonth)
+        )
         .reduce((sum, request) => sum + request.numberOfDays, 0);
 
       const totalDays = 24;
@@ -1469,7 +1519,7 @@ export class WFHService {
         pendingDays,
       };
     } catch (error: any) {
-            return { totalDays: 0, usedDays: 0, remainingDays: 0, pendingDays: 0 };
+      return { totalDays: 0, usedDays: 0, remainingDays: 0, pendingDays: 0 };
     }
   }
 }
@@ -1481,7 +1531,11 @@ export class WFHService {
 export class ShiftSwapService {
   private static endpoint = '/attendance/shift-swap';
 
-  static async getMyShifts(employeeId: string, startDate?: string, endDate?: string): Promise<any[]> {
+  static async getMyShifts(
+    employeeId: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<any[]> {
     try {
       const normalizedEmployeeId = normalizePlaceholderEmployeeId(employeeId);
       const [scheduleResponse, swapResponse] = await Promise.all([
@@ -1499,16 +1553,16 @@ export class ShiftSwapService {
       const swaps = swapResponse.data || [];
 
       return schedules
-        .filter(schedule => {
+        .filter((schedule) => {
           if (!normalizedEmployeeId) {
             return true;
           }
 
           return schedule.employeeId === normalizedEmployeeId;
         })
-        .map(schedule => {
+        .map((schedule) => {
           const matchedSwap = swaps.find(
-            swap =>
+            (swap) =>
               swap.requestorId === schedule.employeeId &&
               (swap.requestorShiftId === schedule.id || swap.requestorShiftId === schedule.shiftId)
           );
@@ -1523,7 +1577,7 @@ export class ShiftSwapService {
           };
         });
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -1539,7 +1593,7 @@ export class ShiftSwapService {
       );
       return (response.data || []).map(mapMarketplaceSwap);
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -1568,31 +1622,34 @@ export class ShiftSwapService {
       payload.targetEmployeeId = targetEmployeeId;
     }
 
-    const response = await APIClient.post<{ success?: boolean; data?: ShiftSwapApiResponse; swap?: ShiftSwapApiResponse }>(
-      this.endpoint,
-      payload
-    );
+    const response = await APIClient.post<{
+      success?: boolean;
+      data?: ShiftSwapApiResponse;
+      swap?: ShiftSwapApiResponse;
+    }>(this.endpoint, payload);
     return response.data || response.swap;
   }
 
   static async acceptSwap(swapId: string, employeeId: string): Promise<any> {
     const normalizedEmployeeId = normalizePlaceholderEmployeeId(employeeId);
-    const response = await APIClient.put<{ success?: boolean; data?: ShiftSwapApiResponse; swap?: ShiftSwapApiResponse }>(
-      this.endpoint,
-      {
-        id: swapId,
-        status: 'APPROVED',
-        employeeId: normalizedEmployeeId,
-      }
-    );
+    const response = await APIClient.put<{
+      success?: boolean;
+      data?: ShiftSwapApiResponse;
+      swap?: ShiftSwapApiResponse;
+    }>(this.endpoint, {
+      id: swapId,
+      status: 'APPROVED',
+      employeeId: normalizedEmployeeId,
+    });
     return response.data || response.swap;
   }
 
   static async rejectSwap(swapId: string, reason: string): Promise<any> {
-    const response = await APIClient.put<{ success?: boolean; data?: ShiftSwapApiResponse; swap?: ShiftSwapApiResponse }>(
-      this.endpoint,
-      { id: swapId, status: 'REJECTED', reason }
-    );
+    const response = await APIClient.put<{
+      success?: boolean;
+      data?: ShiftSwapApiResponse;
+      swap?: ShiftSwapApiResponse;
+    }>(this.endpoint, { id: swapId, status: 'REJECTED', reason });
     return response.data || response.swap;
   }
 }
@@ -1616,7 +1673,7 @@ export class RosterService {
       );
       return (response.data || []).map(mapRosterRow);
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -1626,15 +1683,16 @@ export class RosterService {
     date: string;
     workLocationId?: string;
   }): Promise<ShiftAssignment> {
-    const response = await APIClient.post<{ success?: boolean; data?: any; assignment?: ShiftAssignment }>(
-      this.endpoint,
-      {
-        employeeId: assignment.employeeId,
-        shiftId: assignment.shiftId,
-        startDate: assignment.date,
-        endDate: assignment.date,
-      }
-    );
+    const response = await APIClient.post<{
+      success?: boolean;
+      data?: any;
+      assignment?: ShiftAssignment;
+    }>(this.endpoint, {
+      employeeId: assignment.employeeId,
+      shiftId: assignment.shiftId,
+      startDate: assignment.date,
+      endDate: assignment.date,
+    });
     return response.assignment || response.data;
   }
 
@@ -1646,7 +1704,7 @@ export class RosterService {
     workLocationId?: string;
   }): Promise<ShiftAssignment[]> {
     const createdAssignments = await Promise.all(
-      assignments.employeeIds.map(employeeId =>
+      assignments.employeeIds.map((employeeId) =>
         this.assignShiftToEmployee({
           employeeId,
           shiftId: assignments.shiftId,
@@ -1672,12 +1730,10 @@ export class GeoFencingService {
 
   static async getGeoFences(): Promise<WorkLocation[]> {
     try {
-      const response = await APIClient.get<{ locations?: WorkLocation[]; geoFences?: WorkLocation[] }>(
-        this.endpoint
-      );
-      return response.locations || response.geoFences || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<WorkLocation>(response, 'locations');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -1687,7 +1743,10 @@ export class GeoFencingService {
   }
 
   static async updateGeoFence(id: string, updates: Partial<WorkLocation>): Promise<WorkLocation> {
-    const response = await APIClient.put<{ location: WorkLocation }>(`${this.endpoint}/${id}`, updates);
+    const response = await APIClient.put<{ location: WorkLocation }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.location;
   }
 
@@ -1695,7 +1754,10 @@ export class GeoFencingService {
     await APIClient.delete(`${this.endpoint}/${id}`);
   }
 
-  static async validateLocation(latitude: number, longitude: number): Promise<{
+  static async validateLocation(
+    latitude: number,
+    longitude: number
+  ): Promise<{
     isValid: boolean;
     location?: WorkLocation;
   }> {
@@ -1706,7 +1768,7 @@ export class GeoFencingService {
       );
       return response;
     } catch (error: any) {
-            return { isValid: false };
+      return { isValid: false };
     }
   }
 }
@@ -1720,10 +1782,10 @@ export class IPRestrictionService {
 
   static async getIPRules(): Promise<any[]> {
     try {
-      const response = await APIClient.get<{ rules?: any[] }>(this.endpoint);
-      return response.rules || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<any>(response, 'rules');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -1746,19 +1808,21 @@ export class IPRestrictionService {
     ipAddress?: string;
   }): Promise<any[]> {
     try {
-      const response = await APIClient.get<{ attempts?: any[] }>(`${this.endpoint}/blocked`, filters);
-      return response.attempts || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/blocked`, filters);
+      return APIClient.unwrapList<any>(response, 'attempts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async validateIP(ipAddress: string): Promise<{ isValid: boolean }> {
     try {
-      const response = await APIClient.post<{ isValid: boolean }>(`${this.endpoint}/validate`, { ipAddress });
+      const response = await APIClient.post<{ isValid: boolean }>(`${this.endpoint}/validate`, {
+        ipAddress,
+      });
       return response;
     } catch (error: any) {
-            return { isValid: false };
+      return { isValid: false };
     }
   }
 }
@@ -1788,7 +1852,7 @@ export class PunchRulesService {
         }
       );
     } catch (error: any) {
-            return {
+      return {
         allowEarlyCheckIn: true,
         earlyCheckInMinutes: 30,
         allowLateCheckOut: true,
@@ -1829,7 +1893,7 @@ export class TimeRoundingService {
         }
       );
     } catch (error: any) {
-            return {
+      return {
         enabled: false,
         checkInRounding: 'none',
         checkOutRounding: 'none',
@@ -1854,10 +1918,10 @@ export class ApprovalWorkflowService {
 
   static async getWorkflows(): Promise<any[]> {
     try {
-      const response = await APIClient.get<{ workflows?: any[] }>(this.endpoint);
-      return response.workflows || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<any>(response, 'workflows');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -1890,10 +1954,10 @@ export class FieldForceService {
 
   static async getFieldAgents(filters?: { department?: string; status?: string }): Promise<any[]> {
     try {
-      const response = await APIClient.get<{ agents?: any[] }>(this.endpoint, filters);
-      return response.agents || [];
+      const response = await APIClient.get<unknown>(this.endpoint, filters);
+      return APIClient.unwrapList<any>(response, 'agents');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -1903,19 +1967,19 @@ export class FieldForceService {
     endDate?: string;
   }): Promise<any[]> {
     try {
-      const response = await APIClient.get<{ visits?: any[] }>(`${this.endpoint}/visits`, filters);
-      return response.visits || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/visits`, filters);
+      return APIClient.unwrapList<any>(response, 'visits');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async trackAgent(employeeId: string): Promise<any> {
     try {
-      const response = await APIClient.get<{ tracking?: any }>(`${this.endpoint}/track/${employeeId}`);
-      return response.tracking || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/track/${employeeId}`);
+      return APIClient.unwrapItem<any>(response, 'tracking');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -1964,13 +2028,15 @@ export class CompOffManagementService {
       const transactions = compOffs.map(mapCompOffTransaction);
       const balance = transactions.reduce((sum, transaction) => sum + transaction.credit, 0);
       const now = new Date();
-      const expiringSoon = compOffs.filter(compOff => {
+      const expiringSoon = compOffs.filter((compOff) => {
         if (!compOff.expiryDate) {
           return false;
         }
 
         const expiryDate = new Date(compOff.expiryDate);
-        const diffInDays = Math.ceil((expiryDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+        const diffInDays = Math.ceil(
+          (expiryDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)
+        );
         return diffInDays >= 0 && diffInDays <= 60;
       }).length;
 
@@ -1982,12 +2048,12 @@ export class CompOffManagementService {
         transactions,
       };
     } catch (error: any) {
-            return {
-              balance: 0,
-              expiringDays: 60,
-              expiringSoon: 0,
-              transactions: [],
-            };
+      return {
+        balance: 0,
+        expiringDays: 60,
+        expiringSoon: 0,
+        transactions: [],
+      };
     }
   }
 
@@ -2009,27 +2075,36 @@ export class CompOffManagementService {
       payload.employeeId = employeeId;
     }
 
-    const response = await APIClient.post<{ success?: boolean; data?: any; request?: any }>(this.endpoint, payload);
+    const response = await APIClient.post<{ success?: boolean; data?: any; request?: any }>(
+      this.endpoint,
+      payload
+    );
     return response.data || response.request;
   }
 
   static async approveCompOff(id: string, approverId: string, comments?: string): Promise<any> {
-    const response = await APIClient.post<{ success?: boolean; data?: any; compOff?: any }>(this.endpoint, {
-      action: 'approve',
-      id,
-      approverId,
-      comments,
-    });
+    const response = await APIClient.post<{ success?: boolean; data?: any; compOff?: any }>(
+      this.endpoint,
+      {
+        action: 'approve',
+        id,
+        approverId,
+        comments,
+      }
+    );
     return response.data || response.compOff;
   }
 
   static async rejectCompOff(id: string, approverId: string, reason: string): Promise<any> {
-    const response = await APIClient.post<{ success?: boolean; data?: any; compOff?: any }>(this.endpoint, {
-      action: 'reject',
-      id,
-      approverId,
-      reason,
-    });
+    const response = await APIClient.post<{ success?: boolean; data?: any; compOff?: any }>(
+      this.endpoint,
+      {
+        action: 'reject',
+        id,
+        approverId,
+        reason,
+      }
+    );
     return response.data || response.compOff;
   }
 }

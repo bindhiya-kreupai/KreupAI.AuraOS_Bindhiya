@@ -7,23 +7,24 @@
 
 import { APIClient } from '@/lib/api-client';
 import type {
-    OnboardingProgram,
-    OnboardingInstance,
-    BuddyAssignment,
-    Day30_60_90Plan,
-    OnboardingSurvey,
-    NewHireFeedback,
-    PreBoardingPackage,
-    OnboardingMetrics,
-    OnboardingSettings,
-    TaskStatus} from './types';
+  OnboardingProgram,
+  OnboardingInstance,
+  BuddyAssignment,
+  Day30_60_90Plan,
+  OnboardingSurvey,
+  NewHireFeedback,
+  PreBoardingPackage,
+  OnboardingMetrics,
+  OnboardingSettings,
+  TaskStatus,
+} from './types';
 import {
-    OnboardingTask,
-    OnboardingDocument,
-    OnboardingEquipment,
-    OnboardingAccess,
-    OnboardingTraining,
-    OnboardingStatus,
+  OnboardingTask,
+  OnboardingDocument,
+  OnboardingEquipment,
+  OnboardingAccess,
+  OnboardingTraining,
+  OnboardingStatus,
 } from './types';
 
 /**
@@ -31,44 +32,55 @@ import {
  * Manages onboarding program templates and configurations
  */
 export class OnboardingProgramService {
-    private static endpoint = '/onboarding/programs';
+  private static endpoint = '/onboarding/programs';
 
-    static async getPrograms(): Promise<OnboardingProgram[]> {
-        try {
-            const response = await APIClient.get<{ programs?: OnboardingProgram[] }>(this.endpoint);
-            return response.programs || [];
-        } catch (error: any) {
-                        return [];
-        }
+  static async getPrograms(): Promise<OnboardingProgram[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<OnboardingProgram>(response, 'programs');
+    } catch (error: any) {
+      return [];
     }
+  }
 
-    static async getProgramById(id: string): Promise<OnboardingProgram | null> {
-        try {
-            const response = await APIClient.get<{ program: OnboardingProgram }>(`${this.endpoint}/${id}`);
-            return response.program;
-        } catch (error: any) {
-                        return null;
-        }
+  static async getProgramById(id: string): Promise<OnboardingProgram | null> {
+    try {
+      const response = await APIClient.get<{ program: OnboardingProgram }>(
+        `${this.endpoint}/${id}`
+      );
+      return response.program;
+    } catch (error: any) {
+      return null;
     }
+  }
 
-    static async createProgram(data: OnboardingProgram): Promise<OnboardingProgram> {
-        const response = await APIClient.post<{ program: OnboardingProgram }>(this.endpoint, data);
-        return response.program;
-    }
+  static async createProgram(data: OnboardingProgram): Promise<OnboardingProgram> {
+    const response = await APIClient.post<{ program: OnboardingProgram }>(this.endpoint, data);
+    return response.program;
+  }
 
-    static async updateProgram(id: string, updates: Partial<OnboardingProgram>): Promise<OnboardingProgram> {
-        const response = await APIClient.put<{ program: OnboardingProgram }>(`${this.endpoint}/${id}`, updates);
-        return response.program;
-    }
+  static async updateProgram(
+    id: string,
+    updates: Partial<OnboardingProgram>
+  ): Promise<OnboardingProgram> {
+    const response = await APIClient.put<{ program: OnboardingProgram }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
+    return response.program;
+  }
 
-    static async deleteProgram(id: string): Promise<void> {
-        await APIClient.delete(`${this.endpoint}/${id}`);
-    }
+  static async deleteProgram(id: string): Promise<void> {
+    await APIClient.delete(`${this.endpoint}/${id}`);
+  }
 
-    static async cloneProgram(id: string, newName: string): Promise<OnboardingProgram> {
-        const response = await APIClient.post<{ program: OnboardingProgram }>(`${this.endpoint}/${id}/clone`, { newName });
-        return response.program;
-    }
+  static async cloneProgram(id: string, newName: string): Promise<OnboardingProgram> {
+    const response = await APIClient.post<{ program: OnboardingProgram }>(
+      `${this.endpoint}/${id}/clone`,
+      { newName }
+    );
+    return response.program;
+  }
 }
 
 /**
@@ -76,59 +88,78 @@ export class OnboardingProgramService {
  * Manages individual employee onboarding instances
  */
 export class OnboardingInstanceService {
-    private static endpoint = '/onboarding/instances';
+  private static endpoint = '/onboarding/instances';
 
-    static async getInstances(): Promise<OnboardingInstance[]> {
-        try {
-            const response = await APIClient.get<{ instances?: OnboardingInstance[] }>(this.endpoint);
-            return response.instances || [];
-        } catch (error: any) {
-                        return [];
-        }
+  static async getInstances(): Promise<OnboardingInstance[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<OnboardingInstance>(response, 'instances');
+    } catch (error: any) {
+      return [];
     }
+  }
 
-    static async getInstanceById(id: string): Promise<OnboardingInstance | null> {
-        try {
-            const response = await APIClient.get<{ instance: OnboardingInstance }>(`${this.endpoint}/${id}`);
-            return response.instance;
-        } catch (error: any) {
-                        return null;
-        }
+  static async getInstanceById(id: string): Promise<OnboardingInstance | null> {
+    try {
+      const response = await APIClient.get<{ instance: OnboardingInstance }>(
+        `${this.endpoint}/${id}`
+      );
+      return response.instance;
+    } catch (error: any) {
+      return null;
     }
+  }
 
-    static async getByEmployeeId(employeeId: string): Promise<OnboardingInstance | null> {
-        try {
-            const response = await APIClient.get<{ instance: OnboardingInstance }>(`${this.endpoint}/employee/${employeeId}`);
-            return response.instance;
-        } catch (error: any) {
-                        return null;
-        }
+  static async getByEmployeeId(employeeId: string): Promise<OnboardingInstance | null> {
+    try {
+      const response = await APIClient.get<{ instance: OnboardingInstance }>(
+        `${this.endpoint}/employee/${employeeId}`
+      );
+      return response.instance;
+    } catch (error: any) {
+      return null;
     }
+  }
 
-    static async createInstance(data: OnboardingInstance): Promise<OnboardingInstance> {
-        const response = await APIClient.post<{ instance: OnboardingInstance }>(this.endpoint, data);
-        return response.instance;
-    }
+  static async createInstance(data: OnboardingInstance): Promise<OnboardingInstance> {
+    const response = await APIClient.post<{ instance: OnboardingInstance }>(this.endpoint, data);
+    return response.instance;
+  }
 
-    static async updateInstance(id: string, updates: Partial<OnboardingInstance>): Promise<OnboardingInstance> {
-        const response = await APIClient.put<{ instance: OnboardingInstance }>(`${this.endpoint}/${id}`, updates);
-        return response.instance;
-    }
+  static async updateInstance(
+    id: string,
+    updates: Partial<OnboardingInstance>
+  ): Promise<OnboardingInstance> {
+    const response = await APIClient.put<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
+    return response.instance;
+  }
 
-    static async startOnboarding(id: string): Promise<OnboardingInstance> {
-        const response = await APIClient.post<{ instance: OnboardingInstance }>(`${this.endpoint}/${id}/start`, {});
-        return response.instance;
-    }
+  static async startOnboarding(id: string): Promise<OnboardingInstance> {
+    const response = await APIClient.post<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${id}/start`,
+      {}
+    );
+    return response.instance;
+  }
 
-    static async completeOnboarding(id: string): Promise<OnboardingInstance> {
-        const response = await APIClient.post<{ instance: OnboardingInstance }>(`${this.endpoint}/${id}/complete`, {});
-        return response.instance;
-    }
+  static async completeOnboarding(id: string): Promise<OnboardingInstance> {
+    const response = await APIClient.post<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${id}/complete`,
+      {}
+    );
+    return response.instance;
+  }
 
-    static async updateProgress(id: string): Promise<OnboardingInstance> {
-        const response = await APIClient.post<{ instance: OnboardingInstance }>(`${this.endpoint}/${id}/progress`, {});
-        return response.instance;
-    }
+  static async updateProgress(id: string): Promise<OnboardingInstance> {
+    const response = await APIClient.post<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${id}/progress`,
+      {}
+    );
+    return response.instance;
+  }
 }
 
 /**
@@ -136,45 +167,45 @@ export class OnboardingInstanceService {
  * Manages onboarding tasks
  */
 export class OnboardingTaskService {
-    private static endpoint = '/onboarding/tasks';
+  private static endpoint = '/onboarding/tasks';
 
-    static async updateTaskStatus(
-        instanceId: string,
-        taskId: string,
-        status: TaskStatus,
-        completedBy?: string
-    ): Promise<OnboardingInstance> {
-        const response = await APIClient.put<{ instance: OnboardingInstance }>(
-            `${this.endpoint}/${instanceId}/tasks/${taskId}/status`,
-            { status, completedBy }
-        );
-        return response.instance;
-    }
+  static async updateTaskStatus(
+    instanceId: string,
+    taskId: string,
+    status: TaskStatus,
+    completedBy?: string
+  ): Promise<OnboardingInstance> {
+    const response = await APIClient.put<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${instanceId}/tasks/${taskId}/status`,
+      { status, completedBy }
+    );
+    return response.instance;
+  }
 
-    static async addTaskComment(
-        instanceId: string,
-        taskId: string,
-        comment: string
-    ): Promise<OnboardingInstance> {
-        const response = await APIClient.post<{ instance: OnboardingInstance }>(
-            `${this.endpoint}/${instanceId}/tasks/${taskId}/comment`,
-            { comment }
-        );
-        return response.instance;
-    }
+  static async addTaskComment(
+    instanceId: string,
+    taskId: string,
+    comment: string
+  ): Promise<OnboardingInstance> {
+    const response = await APIClient.post<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${instanceId}/tasks/${taskId}/comment`,
+      { comment }
+    );
+    return response.instance;
+  }
 
-    static async assignTask(
-        instanceId: string,
-        taskId: string,
-        assignedTo: string,
-        assignedToName: string
-    ): Promise<OnboardingInstance> {
-        const response = await APIClient.post<{ instance: OnboardingInstance }>(
-            `${this.endpoint}/${instanceId}/tasks/${taskId}/assign`,
-            { assignedTo, assignedToName }
-        );
-        return response.instance;
-    }
+  static async assignTask(
+    instanceId: string,
+    taskId: string,
+    assignedTo: string,
+    assignedToName: string
+  ): Promise<OnboardingInstance> {
+    const response = await APIClient.post<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${instanceId}/tasks/${taskId}/assign`,
+      { assignedTo, assignedToName }
+    );
+    return response.instance;
+  }
 }
 
 /**
@@ -182,35 +213,35 @@ export class OnboardingTaskService {
  * Manages onboarding document collection
  */
 export class OnboardingDocumentService {
-    private static endpoint = '/onboarding/documents';
+  private static endpoint = '/onboarding/documents';
 
-    static async uploadDocument(
-        instanceId: string,
-        documentId: string,
-        fileUrl: string,
-        fileName: string,
-        fileSize: number
-    ): Promise<OnboardingInstance> {
-        const response = await APIClient.post<{ instance: OnboardingInstance }>(
-            `${this.endpoint}/${instanceId}/upload/${documentId}`,
-            { fileUrl, fileName, fileSize }
-        );
-        return response.instance;
-    }
+  static async uploadDocument(
+    instanceId: string,
+    documentId: string,
+    fileUrl: string,
+    fileName: string,
+    fileSize: number
+  ): Promise<OnboardingInstance> {
+    const response = await APIClient.post<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${instanceId}/upload/${documentId}`,
+      { fileUrl, fileName, fileSize }
+    );
+    return response.instance;
+  }
 
-    static async verifyDocument(
-        instanceId: string,
-        documentId: string,
-        verifiedBy: string,
-        approved: boolean,
-        rejectionReason?: string
-    ): Promise<OnboardingInstance> {
-        const response = await APIClient.post<{ instance: OnboardingInstance }>(
-            `${this.endpoint}/${instanceId}/verify/${documentId}`,
-            { verifiedBy, approved, rejectionReason }
-        );
-        return response.instance;
-    }
+  static async verifyDocument(
+    instanceId: string,
+    documentId: string,
+    verifiedBy: string,
+    approved: boolean,
+    rejectionReason?: string
+  ): Promise<OnboardingInstance> {
+    const response = await APIClient.post<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${instanceId}/verify/${documentId}`,
+      { verifiedBy, approved, rejectionReason }
+    );
+    return response.instance;
+  }
 }
 
 /**
@@ -218,44 +249,44 @@ export class OnboardingDocumentService {
  * Manages equipment provisioning
  */
 export class OnboardingEquipmentService {
-    private static endpoint = '/onboarding/equipment';
+  private static endpoint = '/onboarding/equipment';
 
-    static async requestEquipment(
-        instanceId: string,
-        equipmentId: string,
-        requestedBy: string
-    ): Promise<OnboardingInstance> {
-        const response = await APIClient.post<{ instance: OnboardingInstance }>(
-            `${this.endpoint}/${instanceId}/request/${equipmentId}`,
-            { requestedBy }
-        );
-        return response.instance;
-    }
+  static async requestEquipment(
+    instanceId: string,
+    equipmentId: string,
+    requestedBy: string
+  ): Promise<OnboardingInstance> {
+    const response = await APIClient.post<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${instanceId}/request/${equipmentId}`,
+      { requestedBy }
+    );
+    return response.instance;
+  }
 
-    static async approveEquipment(
-        instanceId: string,
-        equipmentId: string,
-        approvedBy: string
-    ): Promise<OnboardingInstance> {
-        const response = await APIClient.post<{ instance: OnboardingInstance }>(
-            `${this.endpoint}/${instanceId}/approve/${equipmentId}`,
-            { approvedBy }
-        );
-        return response.instance;
-    }
+  static async approveEquipment(
+    instanceId: string,
+    equipmentId: string,
+    approvedBy: string
+  ): Promise<OnboardingInstance> {
+    const response = await APIClient.post<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${instanceId}/approve/${equipmentId}`,
+      { approvedBy }
+    );
+    return response.instance;
+  }
 
-    static async assignEquipment(
-        instanceId: string,
-        equipmentId: string,
-        assetTag: string,
-        serialNumber?: string
-    ): Promise<OnboardingInstance> {
-        const response = await APIClient.post<{ instance: OnboardingInstance }>(
-            `${this.endpoint}/${instanceId}/assign/${equipmentId}`,
-            { assetTag, serialNumber }
-        );
-        return response.instance;
-    }
+  static async assignEquipment(
+    instanceId: string,
+    equipmentId: string,
+    assetTag: string,
+    serialNumber?: string
+  ): Promise<OnboardingInstance> {
+    const response = await APIClient.post<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${instanceId}/assign/${equipmentId}`,
+      { assetTag, serialNumber }
+    );
+    return response.instance;
+  }
 }
 
 /**
@@ -263,33 +294,33 @@ export class OnboardingEquipmentService {
  * Manages system access provisioning
  */
 export class OnboardingAccessService {
-    private static endpoint = '/onboarding/access';
+  private static endpoint = '/onboarding/access';
 
-    static async requestAccess(
-        instanceId: string,
-        accessId: string,
-        requestedBy: string
-    ): Promise<OnboardingInstance> {
-        const response = await APIClient.post<{ instance: OnboardingInstance }>(
-            `${this.endpoint}/${instanceId}/request/${accessId}`,
-            { requestedBy }
-        );
-        return response.instance;
-    }
+  static async requestAccess(
+    instanceId: string,
+    accessId: string,
+    requestedBy: string
+  ): Promise<OnboardingInstance> {
+    const response = await APIClient.post<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${instanceId}/request/${accessId}`,
+      { requestedBy }
+    );
+    return response.instance;
+  }
 
-    static async grantAccess(
-        instanceId: string,
-        accessId: string,
-        grantedBy: string,
-        username: string,
-        accountId?: string
-    ): Promise<OnboardingInstance> {
-        const response = await APIClient.post<{ instance: OnboardingInstance }>(
-            `${this.endpoint}/${instanceId}/grant/${accessId}`,
-            { grantedBy, username, accountId }
-        );
-        return response.instance;
-    }
+  static async grantAccess(
+    instanceId: string,
+    accessId: string,
+    grantedBy: string,
+    username: string,
+    accountId?: string
+  ): Promise<OnboardingInstance> {
+    const response = await APIClient.post<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${instanceId}/grant/${accessId}`,
+      { grantedBy, username, accountId }
+    );
+    return response.instance;
+  }
 }
 
 /**
@@ -297,34 +328,34 @@ export class OnboardingAccessService {
  * Manages onboarding training and induction
  */
 export class OnboardingTrainingService {
-    private static endpoint = '/onboarding/training';
+  private static endpoint = '/onboarding/training';
 
-    static async scheduleTraining(
-        instanceId: string,
-        moduleId: string,
-        scheduledDate: string,
-        location?: string,
-        meetingLink?: string
-    ): Promise<OnboardingInstance> {
-        const response = await APIClient.post<{ instance: OnboardingInstance }>(
-            `${this.endpoint}/${instanceId}/schedule/${moduleId}`,
-            { scheduledDate, location, meetingLink }
-        );
-        return response.instance;
-    }
+  static async scheduleTraining(
+    instanceId: string,
+    moduleId: string,
+    scheduledDate: string,
+    location?: string,
+    meetingLink?: string
+  ): Promise<OnboardingInstance> {
+    const response = await APIClient.post<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${instanceId}/schedule/${moduleId}`,
+      { scheduledDate, location, meetingLink }
+    );
+    return response.instance;
+  }
 
-    static async completeTraining(
-        instanceId: string,
-        moduleId: string,
-        assessmentScore?: number,
-        feedback?: string
-    ): Promise<OnboardingInstance> {
-        const response = await APIClient.post<{ instance: OnboardingInstance }>(
-            `${this.endpoint}/${instanceId}/complete/${moduleId}`,
-            { assessmentScore, feedback }
-        );
-        return response.instance;
-    }
+  static async completeTraining(
+    instanceId: string,
+    moduleId: string,
+    assessmentScore?: number,
+    feedback?: string
+  ): Promise<OnboardingInstance> {
+    const response = await APIClient.post<{ instance: OnboardingInstance }>(
+      `${this.endpoint}/${instanceId}/complete/${moduleId}`,
+      { assessmentScore, feedback }
+    );
+    return response.instance;
+  }
 }
 
 /**
@@ -332,40 +363,51 @@ export class OnboardingTrainingService {
  * Manages buddy program and assignments
  */
 export class BuddyAssignmentService {
-    private static endpoint = '/onboarding/buddies';
+  private static endpoint = '/onboarding/buddies';
 
-    static async getAssignments(): Promise<BuddyAssignment[]> {
-        try {
-            const response = await APIClient.get<{ assignments?: BuddyAssignment[] }>(this.endpoint);
-            return response.assignments || [];
-        } catch (error: any) {
-                        return [];
-        }
+  static async getAssignments(): Promise<BuddyAssignment[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<BuddyAssignment>(response, 'assignments');
+    } catch (error: any) {
+      return [];
     }
+  }
 
-    static async getAssignmentById(id: string): Promise<BuddyAssignment | null> {
-        try {
-            const response = await APIClient.get<{ assignment: BuddyAssignment }>(`${this.endpoint}/${id}`);
-            return response.assignment;
-        } catch (error: any) {
-                        return null;
-        }
+  static async getAssignmentById(id: string): Promise<BuddyAssignment | null> {
+    try {
+      const response = await APIClient.get<{ assignment: BuddyAssignment }>(
+        `${this.endpoint}/${id}`
+      );
+      return response.assignment;
+    } catch (error: any) {
+      return null;
     }
+  }
 
-    static async createAssignment(data: BuddyAssignment): Promise<BuddyAssignment> {
-        const response = await APIClient.post<{ assignment: BuddyAssignment }>(this.endpoint, data);
-        return response.assignment;
-    }
+  static async createAssignment(data: BuddyAssignment): Promise<BuddyAssignment> {
+    const response = await APIClient.post<{ assignment: BuddyAssignment }>(this.endpoint, data);
+    return response.assignment;
+  }
 
-    static async updateAssignment(id: string, updates: Partial<BuddyAssignment>): Promise<BuddyAssignment> {
-        const response = await APIClient.put<{ assignment: BuddyAssignment }>(`${this.endpoint}/${id}`, updates);
-        return response.assignment;
-    }
+  static async updateAssignment(
+    id: string,
+    updates: Partial<BuddyAssignment>
+  ): Promise<BuddyAssignment> {
+    const response = await APIClient.put<{ assignment: BuddyAssignment }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
+    return response.assignment;
+  }
 
-    static async completeAssignment(id: string): Promise<BuddyAssignment> {
-        const response = await APIClient.post<{ assignment: BuddyAssignment }>(`${this.endpoint}/${id}/complete`, {});
-        return response.assignment;
-    }
+  static async completeAssignment(id: string): Promise<BuddyAssignment> {
+    const response = await APIClient.post<{ assignment: BuddyAssignment }>(
+      `${this.endpoint}/${id}/complete`,
+      {}
+    );
+    return response.assignment;
+  }
 }
 
 /**
@@ -373,49 +415,52 @@ export class BuddyAssignmentService {
  * Manages milestone plans and reviews
  */
 export class Day30_60_90PlanService {
-    private static endpoint = '/onboarding/day-plans';
+  private static endpoint = '/onboarding/day-plans';
 
-    static async getPlans(): Promise<Day30_60_90Plan[]> {
-        try {
-            const response = await APIClient.get<{ plans?: Day30_60_90Plan[] }>(this.endpoint);
-            return response.plans || [];
-        } catch (error: any) {
-                        return [];
-        }
+  static async getPlans(): Promise<Day30_60_90Plan[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<Day30_60_90Plan>(response, 'plans');
+    } catch (error: any) {
+      return [];
     }
+  }
 
-    static async getPlanById(id: string): Promise<Day30_60_90Plan | null> {
-        try {
-            const response = await APIClient.get<{ plan: Day30_60_90Plan }>(`${this.endpoint}/${id}`);
-            return response.plan;
-        } catch (error: any) {
-                        return null;
-        }
+  static async getPlanById(id: string): Promise<Day30_60_90Plan | null> {
+    try {
+      const response = await APIClient.get<{ plan: Day30_60_90Plan }>(`${this.endpoint}/${id}`);
+      return response.plan;
+    } catch (error: any) {
+      return null;
     }
+  }
 
-    static async createPlan(data: Day30_60_90Plan): Promise<Day30_60_90Plan> {
-        const response = await APIClient.post<{ plan: Day30_60_90Plan }>(this.endpoint, data);
-        return response.plan;
-    }
+  static async createPlan(data: Day30_60_90Plan): Promise<Day30_60_90Plan> {
+    const response = await APIClient.post<{ plan: Day30_60_90Plan }>(this.endpoint, data);
+    return response.plan;
+  }
 
-    static async updatePlan(id: string, updates: Partial<Day30_60_90Plan>): Promise<Day30_60_90Plan> {
-        const response = await APIClient.put<{ plan: Day30_60_90Plan }>(`${this.endpoint}/${id}`, updates);
-        return response.plan;
-    }
+  static async updatePlan(id: string, updates: Partial<Day30_60_90Plan>): Promise<Day30_60_90Plan> {
+    const response = await APIClient.put<{ plan: Day30_60_90Plan }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
+    return response.plan;
+  }
 
-    static async reviewMilestone(
-        planId: string,
-        phase: 'day_30' | 'day_60' | 'day_90',
-        reviewedBy: string,
-        managerFeedback: string,
-        achievementPercentage: number
-    ): Promise<Day30_60_90Plan> {
-        const response = await APIClient.post<{ plan: Day30_60_90Plan }>(
-            `${this.endpoint}/${planId}/review/${phase}`,
-            { reviewedBy, managerFeedback, achievementPercentage }
-        );
-        return response.plan;
-    }
+  static async reviewMilestone(
+    planId: string,
+    phase: 'day_30' | 'day_60' | 'day_90',
+    reviewedBy: string,
+    managerFeedback: string,
+    achievementPercentage: number
+  ): Promise<Day30_60_90Plan> {
+    const response = await APIClient.post<{ plan: Day30_60_90Plan }>(
+      `${this.endpoint}/${planId}/review/${phase}`,
+      { reviewedBy, managerFeedback, achievementPercentage }
+    );
+    return response.plan;
+  }
 }
 
 /**
@@ -423,43 +468,43 @@ export class Day30_60_90PlanService {
  * Manages onboarding surveys and feedback
  */
 export class OnboardingSurveyService {
-    private static endpoint = '/onboarding/surveys';
+  private static endpoint = '/onboarding/surveys';
 
-    static async getSurveys(): Promise<OnboardingSurvey[]> {
-        try {
-            const response = await APIClient.get<{ surveys?: OnboardingSurvey[] }>(this.endpoint);
-            return response.surveys || [];
-        } catch (error: any) {
-                        return [];
-        }
+  static async getSurveys(): Promise<OnboardingSurvey[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<OnboardingSurvey>(response, 'surveys');
+    } catch (error: any) {
+      return [];
     }
+  }
 
-    static async getSurveyById(id: string): Promise<OnboardingSurvey | null> {
-        try {
-            const response = await APIClient.get<{ survey: OnboardingSurvey }>(`${this.endpoint}/${id}`);
-            return response.survey;
-        } catch (error: any) {
-                        return null;
-        }
+  static async getSurveyById(id: string): Promise<OnboardingSurvey | null> {
+    try {
+      const response = await APIClient.get<{ survey: OnboardingSurvey }>(`${this.endpoint}/${id}`);
+      return response.survey;
+    } catch (error: any) {
+      return null;
     }
+  }
 
-    static async createSurvey(data: OnboardingSurvey): Promise<OnboardingSurvey> {
-        const response = await APIClient.post<{ survey: OnboardingSurvey }>(this.endpoint, data);
-        return response.survey;
-    }
+  static async createSurvey(data: OnboardingSurvey): Promise<OnboardingSurvey> {
+    const response = await APIClient.post<{ survey: OnboardingSurvey }>(this.endpoint, data);
+    return response.survey;
+  }
 
-    static async completeSurvey(
-        surveyId: string,
-        responses: any[],
-        overallRating: number,
-        comments?: string
-    ): Promise<OnboardingSurvey> {
-        const response = await APIClient.post<{ survey: OnboardingSurvey }>(
-            `${this.endpoint}/${surveyId}/complete`,
-            { responses, overallRating, comments }
-        );
-        return response.survey;
-    }
+  static async completeSurvey(
+    surveyId: string,
+    responses: any[],
+    overallRating: number,
+    comments?: string
+  ): Promise<OnboardingSurvey> {
+    const response = await APIClient.post<{ survey: OnboardingSurvey }>(
+      `${this.endpoint}/${surveyId}/complete`,
+      { responses, overallRating, comments }
+    );
+    return response.survey;
+  }
 }
 
 /**
@@ -467,21 +512,21 @@ export class OnboardingSurveyService {
  * Manages new hire and manager feedback
  */
 export class FeedbackService {
-    private static endpoint = '/onboarding/feedback';
+  private static endpoint = '/onboarding/feedback';
 
-    static async getFeedback(): Promise<NewHireFeedback[]> {
-        try {
-            const response = await APIClient.get<{ feedback?: NewHireFeedback[] }>(this.endpoint);
-            return response.feedback || [];
-        } catch (error: any) {
-                        return [];
-        }
+  static async getFeedback(): Promise<NewHireFeedback[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<NewHireFeedback>(response, 'feedback');
+    } catch (error: any) {
+      return [];
     }
+  }
 
-    static async createFeedback(data: NewHireFeedback): Promise<NewHireFeedback> {
-        const response = await APIClient.post<{ feedback: NewHireFeedback }>(this.endpoint, data);
-        return response.feedback;
-    }
+  static async createFeedback(data: NewHireFeedback): Promise<NewHireFeedback> {
+    const response = await APIClient.post<{ feedback: NewHireFeedback }>(this.endpoint, data);
+    return response.feedback;
+  }
 }
 
 /**
@@ -489,40 +534,48 @@ export class FeedbackService {
  * Manages pre-boarding packages and materials
  */
 export class PreBoardingService {
-    private static endpoint = '/onboarding/pre-boarding';
+  private static endpoint = '/onboarding/pre-boarding';
 
-    static async getPackages(): Promise<PreBoardingPackage[]> {
-        try {
-            const response = await APIClient.get<{ packages?: PreBoardingPackage[] }>(this.endpoint);
-            return response.packages || [];
-        } catch (error: any) {
-                        return [];
-        }
+  static async getPackages(): Promise<PreBoardingPackage[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<PreBoardingPackage>(response, 'packages');
+    } catch (error: any) {
+      return [];
     }
+  }
 
-    static async getPackageById(id: string): Promise<PreBoardingPackage | null> {
-        try {
-            const response = await APIClient.get<{ package: PreBoardingPackage }>(`${this.endpoint}/${id}`);
-            return response.package;
-        } catch (error: any) {
-                        return null;
-        }
+  static async getPackageById(id: string): Promise<PreBoardingPackage | null> {
+    try {
+      const response = await APIClient.get<{ package: PreBoardingPackage }>(
+        `${this.endpoint}/${id}`
+      );
+      return response.package;
+    } catch (error: any) {
+      return null;
     }
+  }
 
-    static async createPackage(data: PreBoardingPackage): Promise<PreBoardingPackage> {
-        const response = await APIClient.post<{ package: PreBoardingPackage }>(this.endpoint, data);
-        return response.package;
-    }
+  static async createPackage(data: PreBoardingPackage): Promise<PreBoardingPackage> {
+    const response = await APIClient.post<{ package: PreBoardingPackage }>(this.endpoint, data);
+    return response.package;
+  }
 
-    static async sendPackage(packageId: string): Promise<PreBoardingPackage> {
-        const response = await APIClient.post<{ package: PreBoardingPackage }>(`${this.endpoint}/${packageId}/send`, {});
-        return response.package;
-    }
+  static async sendPackage(packageId: string): Promise<PreBoardingPackage> {
+    const response = await APIClient.post<{ package: PreBoardingPackage }>(
+      `${this.endpoint}/${packageId}/send`,
+      {}
+    );
+    return response.package;
+  }
 
-    static async acknowledgePackage(packageId: string): Promise<PreBoardingPackage> {
-        const response = await APIClient.post<{ package: PreBoardingPackage }>(`${this.endpoint}/${packageId}/acknowledge`, {});
-        return response.package;
-    }
+  static async acknowledgePackage(packageId: string): Promise<PreBoardingPackage> {
+    const response = await APIClient.post<{ package: PreBoardingPackage }>(
+      `${this.endpoint}/${packageId}/acknowledge`,
+      {}
+    );
+    return response.package;
+  }
 }
 
 /**
@@ -530,33 +583,33 @@ export class PreBoardingService {
  * Provides onboarding metrics and analytics
  */
 export class OnboardingAnalyticsService {
-    private static endpoint = '/onboarding/analytics';
+  private static endpoint = '/onboarding/analytics';
 
-    static async getMetrics(): Promise<OnboardingMetrics> {
-        try {
-            const response = await APIClient.get<{ metrics: OnboardingMetrics }>(this.endpoint);
-            return response.metrics;
-        } catch (error: any) {
-                        return {
-                totalOnboardings: 0,
-                activeOnboardings: 0,
-                completedOnboardings: 0,
-                averageDuration: 0,
-                completionRate: 0,
-                onTimeCompletionRate: 0,
-                averageTaskCompletionRate: 0,
-                averageSatisfactionScore: 0,
-                byPhase: [],
-                byDepartment: [],
-                commonChallenges: [],
-                topPerformingBuddies: [],
-                documentCompletionRate: 0,
-                equipmentDeliveryTime: 0,
-                accessProvisioningTime: 0,
-                trainingCompletionRate: 0,
-            };
-        }
+  static async getMetrics(): Promise<OnboardingMetrics> {
+    try {
+      const response = await APIClient.get<{ metrics: OnboardingMetrics }>(this.endpoint);
+      return response.metrics;
+    } catch (error: any) {
+      return {
+        totalOnboardings: 0,
+        activeOnboardings: 0,
+        completedOnboardings: 0,
+        averageDuration: 0,
+        completionRate: 0,
+        onTimeCompletionRate: 0,
+        averageTaskCompletionRate: 0,
+        averageSatisfactionScore: 0,
+        byPhase: [],
+        byDepartment: [],
+        commonChallenges: [],
+        topPerformingBuddies: [],
+        documentCompletionRate: 0,
+        equipmentDeliveryTime: 0,
+        accessProvisioningTime: 0,
+        trainingCompletionRate: 0,
+      };
     }
+  }
 }
 
 /**
@@ -564,45 +617,45 @@ export class OnboardingAnalyticsService {
  * Manages onboarding module configuration
  */
 export class OnboardingSettingsService {
-    private static endpoint = '/onboarding/settings';
+  private static endpoint = '/onboarding/settings';
 
-    static async getSettings(): Promise<OnboardingSettings> {
-        try {
-            const response = await APIClient.get<{ settings: OnboardingSettings }>(this.endpoint);
-            return response.settings;
-        } catch (error: any) {
-                        return {
-                autoAssignBuddy: true,
-                buddyMatchingCriteria: 'department',
-                autoSendPreBoarding: true,
-                preBoardingDaysBeforeStart: 7,
-                autoCreateTasks: true,
-                sendTaskReminders: true,
-                reminderDaysBefore: 2,
-                enableSurveys: true,
-                enable30_60_90Plan: true,
-                requireManagerReview: true,
-                managerReviewFrequency: 'weekly',
-                autoNotifications: {
-                    newHireWelcome: true,
-                    preBoardingPackage: true,
-                    taskAssigned: true,
-                    taskDue: true,
-                    taskOverdue: true,
-                    documentPending: true,
-                    equipmentReady: true,
-                    accessGranted: true,
-                    surveyDue: true,
-                    buddyAssigned: true,
-                    milestoneReached: true,
-                    completionCertificate: true,
-                },
-            };
-        }
+  static async getSettings(): Promise<OnboardingSettings> {
+    try {
+      const response = await APIClient.get<{ settings: OnboardingSettings }>(this.endpoint);
+      return response.settings;
+    } catch (error: any) {
+      return {
+        autoAssignBuddy: true,
+        buddyMatchingCriteria: 'department',
+        autoSendPreBoarding: true,
+        preBoardingDaysBeforeStart: 7,
+        autoCreateTasks: true,
+        sendTaskReminders: true,
+        reminderDaysBefore: 2,
+        enableSurveys: true,
+        enable30_60_90Plan: true,
+        requireManagerReview: true,
+        managerReviewFrequency: 'weekly',
+        autoNotifications: {
+          newHireWelcome: true,
+          preBoardingPackage: true,
+          taskAssigned: true,
+          taskDue: true,
+          taskOverdue: true,
+          documentPending: true,
+          equipmentReady: true,
+          accessGranted: true,
+          surveyDue: true,
+          buddyAssigned: true,
+          milestoneReached: true,
+          completionCertificate: true,
+        },
+      };
     }
+  }
 
-    static async updateSettings(updates: Partial<OnboardingSettings>): Promise<OnboardingSettings> {
-        const response = await APIClient.put<{ settings: OnboardingSettings }>(this.endpoint, updates);
-        return response.settings;
-    }
+  static async updateSettings(updates: Partial<OnboardingSettings>): Promise<OnboardingSettings> {
+    const response = await APIClient.put<{ settings: OnboardingSettings }>(this.endpoint, updates);
+    return response.settings;
+  }
 }

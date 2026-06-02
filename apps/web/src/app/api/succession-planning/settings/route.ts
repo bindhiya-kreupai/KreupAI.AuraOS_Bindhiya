@@ -1,62 +1,45 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { readSettings, writeSettings } from '@/lib/api/tenant-settings';
+import { logger } from '@/lib/logger';
 
-export const GET = withEnhancedAuth(async (request, context) => {
+const MODULE = 'successionPlanning';
+
+const DEFAULT_SETTINGS = {
+  settings: {},
+};
+
+export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-
-    const defaultSettings = {
-      settings: {
-        reviewFrequency: 'annual',
-        mandatorySuccessionDepth: 2,
-        retirementNoticeMonths: 12,
-        talentReviewCalendar: [],
-        nineBoxEnabled: true,
-        emergencyPlanRequired: true,
-        autoNotifications: {
-          vacancyRiskAlert: true,
-          developmentPlanDue: true,
-          talentReviewReminder: true,
-          readinessDateApproaching: true,
-          retirementAlert: true,
-        },
-      },
-      tenantId: user.tenantId,
-    };
-
-    return NextResponse.json(
-      { success: true, data: defaultSettings },
-      { status: 200 }
-    );
+    const tenantId = context.user.tenantId;
+    const settings = await readSettings(tenantId, MODULE, DEFAULT_SETTINGS);
+    return NextResponse.json({ success: true, data: { ...settings, tenantId } });
   } catch (error: any) {
-    console.error('Error fetching succession settings:', error);
+    logger.error({ err: error, module: MODULE }, 'Failed to read settings');
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: 'Failed to fetch settings' },
       { status: 500 }
     );
   }
 });
 
-export const PUT = withEnhancedAuth(async (request, context) => {
+export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const tenantId = context.user.tenantId;
+    const userId = context.user.userId;
     const body = await request.json();
-
-    const settings = {
-      settings: {
-        ...body,
-      },
-      tenantId: user.tenantId,
-    };
-
-    return NextResponse.json(
-      { success: true, data: settings },
-      { status: 200 }
-    );
+    // Strip server-managed fields so callers can't overwrite them.
+    delete body.tenantId;
+    delete body.updatedBy;
+    delete body.updatedAt;
+    await writeSettings(tenantId, MODULE, body, userId);
+    const settings = await readSettings(tenantId, MODULE, DEFAULT_SETTINGS);
+    return NextResponse.json({ success: true, data: { ...settings, tenantId } });
   } catch (error: any) {
-    console.error('Error updating succession settings:', error);
+    logger.error({ err: error, module: MODULE }, 'Failed to update settings');
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: 'Failed to update settings' },
       { status: 500 }
     );
   }
