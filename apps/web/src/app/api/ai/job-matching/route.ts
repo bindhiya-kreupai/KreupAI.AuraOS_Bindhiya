@@ -3,7 +3,7 @@
  * Phase 3: Intelligence Layer - Intelligent Recruitment
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -47,12 +47,9 @@ export async function POST(request: NextRequest) {
                   company: 'Internal',
                   matchScore: 0.87,
                   skillMatch: 0.88,
-                  experienceMatch: 0.90,
+                  experienceMatch: 0.9,
                   cultureMatch: 0.82,
-                  reasons: [
-                    'Technical skills are strong match',
-                    'Leadership experience evident',
-                  ],
+                  reasons: ['Technical skills are strong match', 'Leadership experience evident'],
                   gaps: ['Limited team management experience', 'No Agile certification'],
                 },
               ],
@@ -82,9 +79,9 @@ export async function POST(request: NextRequest) {
                   candidateId: 'cand-2',
                   name: 'John Smith',
                   matchScore: 0.88,
-                  skillMatch: 0.90,
+                  skillMatch: 0.9,
                   experienceMatch: 0.85,
-                  educationMatch: 0.90,
+                  educationMatch: 0.9,
                   availability: '2 weeks',
                   reasons: [
                     'Strong technical background',
@@ -137,7 +134,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
   } catch (error: any) {
-        return NextResponse.json({ error: 'Failed to process job matching' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process job matching' }, { status: 500 });
   }
 }
 
@@ -158,6 +155,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json({ error: 'Failed to fetch job matching data' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch job matching data' }, { status: 500 });
   }
 }

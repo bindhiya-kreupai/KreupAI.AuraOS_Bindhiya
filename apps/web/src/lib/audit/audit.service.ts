@@ -6,7 +6,10 @@
 import { logger } from '../logger';
 import { redis } from '../cache/redis';
 import { prisma } from '@aura/database';
-import type { AuditAction as PrismaAuditAction, AuditSeverity as PrismaAuditSeverity } from '@prisma/client';
+import type {
+  AuditAction as PrismaAuditAction,
+  AuditSeverity as PrismaAuditSeverity,
+} from '@prisma/client';
 
 export enum AuditAction {
   // Employee actions
@@ -45,6 +48,9 @@ export enum AuditAction {
   USER_LOGIN_FAILED = 'USER_LOGIN_FAILED',
   PASSWORD_CHANGED = 'PASSWORD_CHANGED',
   PASSWORD_RESET_REQUESTED = 'PASSWORD_RESET_REQUESTED',
+  MFA_ENABLED = 'MFA_ENABLED',
+  MFA_VERIFIED = 'MFA_VERIFIED',
+  MFA_DISABLED = 'MFA_DISABLED',
 
   // Authorization actions
   ROLE_ASSIGNED = 'ROLE_ASSIGNED',

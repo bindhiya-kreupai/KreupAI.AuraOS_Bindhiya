@@ -49,10 +49,7 @@ export class APIClient {
   /**
    * Generic fetch wrapper
    */
-  private static async request<T>(
-    endpoint: string,
-    options: FetchOptions = {}
-  ): Promise<T> {
+  private static async request<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
     const { params, ...fetchOptions } = options;
 
     const url = this.buildURL(endpoint, params);
@@ -93,32 +90,21 @@ export class APIClient {
       }
 
       // Network or other errors
-      throw new APIError(
-        error instanceof Error ? error.message : 'Network error',
-        0,
-        error
-      );
+      throw new APIError(error instanceof Error ? error.message : 'Network error', 0, error);
     }
   }
 
   /**
    * GET request
    */
-  static async get<T>(
-    endpoint: string,
-    params?: Record<string, any>
-  ): Promise<T> {
+  static async get<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
     return this.request<T>(endpoint, { method: 'GET', params });
   }
 
   /**
    * POST request
    */
-  static async post<T>(
-    endpoint: string,
-    data?: any,
-    params?: Record<string, any>
-  ): Promise<T> {
+  static async post<T>(endpoint: string, data?: any, params?: Record<string, any>): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
@@ -129,11 +115,7 @@ export class APIClient {
   /**
    * PUT request
    */
-  static async put<T>(
-    endpoint: string,
-    data?: any,
-    params?: Record<string, any>
-  ): Promise<T> {
+  static async put<T>(endpoint: string, data?: any, params?: Record<string, any>): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
@@ -144,11 +126,7 @@ export class APIClient {
   /**
    * PATCH request
    */
-  static async patch<T>(
-    endpoint: string,
-    data?: any,
-    params?: Record<string, any>
-  ): Promise<T> {
+  static async patch<T>(endpoint: string, data?: any, params?: Record<string, any>): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PATCH',
       body: data ? JSON.stringify(data) : undefined,
@@ -159,10 +137,52 @@ export class APIClient {
   /**
    * DELETE request
    */
-  static async delete<T>(
-    endpoint: string,
-    params?: Record<string, any>
-  ): Promise<T> {
+  static async delete<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
     return this.request<T>(endpoint, { method: 'DELETE', params });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Envelope helpers
+  // ---------------------------------------------------------------------------
+  // The API surface mixes two response shapes:
+  //   A) Flat:     { <hintKey>: T[] }
+  //   B) Wrapped:  { success: true, data: T[] }
+  //   C) Wrapped + nested: { success: true, data: { <hintKey>: T[] } }
+  //   D) Wrapped + meta:   { success: true, data: T[], meta: {...} }
+  // These helpers let services accept any of those without manual branching.
+
+  static unwrapList<T = unknown>(response: unknown, hintKey?: string): T[] {
+    if (response == null) return [];
+    if (Array.isArray(response)) return response as T[];
+    const obj = response as Record<string, any>;
+    if (hintKey && Array.isArray(obj[hintKey])) return obj[hintKey] as T[];
+    if (Array.isArray(obj.data)) return obj.data as T[];
+    if (obj.data && typeof obj.data === 'object') {
+      if (hintKey && Array.isArray(obj.data[hintKey])) return obj.data[hintKey] as T[];
+      for (const k of ['items', 'records', 'results']) {
+        if (Array.isArray(obj.data[k])) return obj.data[k] as T[];
+      }
+    }
+    for (const k of ['items', 'records', 'results']) {
+      if (Array.isArray(obj[k])) return obj[k] as T[];
+    }
+    return [];
+  }
+
+  static unwrapItem<T = unknown>(response: unknown, hintKey?: string): T | null {
+    if (response == null) return null;
+    if (Array.isArray(response)) return null;
+    const obj = response as Record<string, any>;
+    if (obj.success === false) return null;
+    if (hintKey && obj[hintKey] != null) return obj[hintKey] as T;
+    if (obj.data != null && typeof obj.data === 'object') {
+      if (hintKey && obj.data[hintKey] != null) return obj.data[hintKey] as T;
+      return obj.data as T;
+    }
+    if (obj.data != null) return obj.data as T;
+    // Drop common metadata-only wrappers so callers get the payload
+    const { success, error, meta, ...rest } = obj;
+    if (Object.keys(rest).length === 0) return null;
+    return obj as T;
   }
 }

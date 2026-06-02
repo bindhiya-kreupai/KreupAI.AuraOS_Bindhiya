@@ -2,10 +2,24 @@
 
 import { APIClient } from '@/lib/api-client';
 import type {
-  Technician, TechnicianShift, RosterTemplate, ShiftSwapRequest, TimeOffRequest, WorkloadAnalysis,
-  SalesCommission, VehicleSale, ServiceSale, CommissionStructure, CommissionReport, SalesPerson,
-  Part, InventoryMovement, PurchaseOrder, StockAdjustment, InventoryAnalysis,
-  AutomotiveSettings
+  Technician,
+  TechnicianShift,
+  RosterTemplate,
+  ShiftSwapRequest,
+  TimeOffRequest,
+  WorkloadAnalysis,
+  SalesCommission,
+  VehicleSale,
+  ServiceSale,
+  CommissionStructure,
+  CommissionReport,
+  SalesPerson,
+  Part,
+  InventoryMovement,
+  PurchaseOrder,
+  StockAdjustment,
+  InventoryAnalysis,
+  AutomotiveSettings,
 } from './types';
 
 // ============================================================================
@@ -17,29 +31,38 @@ export class TechnicianService {
 
   static async getAllTechnicians(): Promise<Technician[]> {
     try {
-      const response = await APIClient.get<{ technicians?: Technician[] }>(this.endpoint);
-      return response.technicians || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<Technician>(response, 'technicians');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getTechnicianById(technicianId: string): Promise<Technician | null> {
     try {
-      const response = await APIClient.get<{ technician?: Technician }>(`${this.endpoint}/${technicianId}`);
-      return response.technician || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${technicianId}`);
+      return APIClient.unwrapItem<Technician>(response, 'technician');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
   static async createTechnician(technicianData: Partial<Technician>): Promise<Technician> {
-    const response = await APIClient.post<{ technician: Technician }>(this.endpoint, technicianData);
+    const response = await APIClient.post<{ technician: Technician }>(
+      this.endpoint,
+      technicianData
+    );
     return response.technician;
   }
 
-  static async updateTechnician(technicianId: string, updates: Partial<Technician>): Promise<Technician> {
-    const response = await APIClient.put<{ technician: Technician }>(`${this.endpoint}/${technicianId}`, updates);
+  static async updateTechnician(
+    technicianId: string,
+    updates: Partial<Technician>
+  ): Promise<Technician> {
+    const response = await APIClient.put<{ technician: Technician }>(
+      `${this.endpoint}/${technicianId}`,
+      updates
+    );
     return response.technician;
   }
 
@@ -53,33 +76,37 @@ export class ShiftService {
 
   static async getAllShifts(): Promise<TechnicianShift[]> {
     try {
-      const response = await APIClient.get<{ shifts?: TechnicianShift[] }>(this.endpoint);
-      return response.shifts || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<TechnicianShift>(response, 'shifts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async getShiftsByTechnician(technicianId: string, startDate?: Date, endDate?: Date): Promise<TechnicianShift[]> {
+  static async getShiftsByTechnician(
+    technicianId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<TechnicianShift[]> {
     try {
-      const response = await APIClient.get<{ shifts?: TechnicianShift[] }>(`${this.endpoint}/technician/${technicianId}`, {
+      const response = await APIClient.get<unknown>(`${this.endpoint}/technician/${technicianId}`, {
         startDate: startDate?.toISOString(),
         endDate: endDate?.toISOString(),
       });
-      return response.shifts || [];
+      return APIClient.unwrapList<TechnicianShift>(response, 'shifts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getShiftsByDate(date: Date): Promise<TechnicianShift[]> {
     try {
-      const response = await APIClient.get<{ shifts?: TechnicianShift[] }>(`${this.endpoint}/date`, {
+      const response = await APIClient.get<unknown>(`${this.endpoint}/date`, {
         date: date.toISOString(),
       });
-      return response.shifts || [];
+      return APIClient.unwrapList<TechnicianShift>(response, 'shifts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -88,13 +115,21 @@ export class ShiftService {
     return response.shift;
   }
 
-  static async updateShift(shiftId: string, updates: Partial<TechnicianShift>): Promise<TechnicianShift> {
-    const response = await APIClient.put<{ shift: TechnicianShift }>(`${this.endpoint}/${shiftId}`, updates);
+  static async updateShift(
+    shiftId: string,
+    updates: Partial<TechnicianShift>
+  ): Promise<TechnicianShift> {
+    const response = await APIClient.put<{ shift: TechnicianShift }>(
+      `${this.endpoint}/${shiftId}`,
+      updates
+    );
     return response.shift;
   }
 
   static async bulkCreateShifts(shifts: Partial<TechnicianShift>[]): Promise<TechnicianShift[]> {
-    const response = await APIClient.post<{ shifts: TechnicianShift[] }>(`${this.endpoint}/bulk`, { shifts });
+    const response = await APIClient.post<{ shifts: TechnicianShift[] }>(`${this.endpoint}/bulk`, {
+      shifts,
+    });
     return response.shifts;
   }
 }
@@ -104,23 +139,33 @@ export class RosterTemplateService {
 
   static async getAllTemplates(): Promise<RosterTemplate[]> {
     try {
-      const response = await APIClient.get<{ templates?: RosterTemplate[] }>(this.endpoint);
-      return response.templates || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<RosterTemplate>(response, 'templates');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async createTemplate(templateData: Partial<RosterTemplate>): Promise<RosterTemplate> {
-    const response = await APIClient.post<{ template: RosterTemplate }>(this.endpoint, templateData);
+    const response = await APIClient.post<{ template: RosterTemplate }>(
+      this.endpoint,
+      templateData
+    );
     return response.template;
   }
 
-  static async applyTemplate(templateId: string, startDate: Date, endDate: Date): Promise<TechnicianShift[]> {
-    const response = await APIClient.post<{ shifts: TechnicianShift[] }>(`${this.endpoint}/${templateId}/apply`, {
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-    });
+  static async applyTemplate(
+    templateId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<TechnicianShift[]> {
+    const response = await APIClient.post<{ shifts: TechnicianShift[] }>(
+      `${this.endpoint}/${templateId}/apply`,
+      {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+      }
+    );
     return response.shifts;
   }
 }
@@ -130,20 +175,31 @@ export class ShiftSwapService {
 
   static async getAllSwapRequests(): Promise<ShiftSwapRequest[]> {
     try {
-      const response = await APIClient.get<{ swapRequests?: ShiftSwapRequest[] }>(this.endpoint);
-      return response.swapRequests || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<ShiftSwapRequest>(response, 'swapRequests');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async createSwapRequest(requestData: Partial<ShiftSwapRequest>): Promise<ShiftSwapRequest> {
-    const response = await APIClient.post<{ swapRequest: ShiftSwapRequest }>(this.endpoint, requestData);
+  static async createSwapRequest(
+    requestData: Partial<ShiftSwapRequest>
+  ): Promise<ShiftSwapRequest> {
+    const response = await APIClient.post<{ swapRequest: ShiftSwapRequest }>(
+      this.endpoint,
+      requestData
+    );
     return response.swapRequest;
   }
 
-  static async updateSwapRequest(requestId: string, updates: Partial<ShiftSwapRequest>): Promise<ShiftSwapRequest> {
-    const response = await APIClient.put<{ swapRequest: ShiftSwapRequest }>(`${this.endpoint}/${requestId}`, updates);
+  static async updateSwapRequest(
+    requestId: string,
+    updates: Partial<ShiftSwapRequest>
+  ): Promise<ShiftSwapRequest> {
+    const response = await APIClient.put<{ swapRequest: ShiftSwapRequest }>(
+      `${this.endpoint}/${requestId}`,
+      updates
+    );
     return response.swapRequest;
   }
 }
@@ -153,20 +209,29 @@ export class TimeOffService {
 
   static async getAllTimeOffRequests(): Promise<TimeOffRequest[]> {
     try {
-      const response = await APIClient.get<{ timeOffRequests?: TimeOffRequest[] }>(this.endpoint);
-      return response.timeOffRequests || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<TimeOffRequest>(response, 'timeOffRequests');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async createTimeOffRequest(requestData: Partial<TimeOffRequest>): Promise<TimeOffRequest> {
-    const response = await APIClient.post<{ timeOffRequest: TimeOffRequest }>(this.endpoint, requestData);
+    const response = await APIClient.post<{ timeOffRequest: TimeOffRequest }>(
+      this.endpoint,
+      requestData
+    );
     return response.timeOffRequest;
   }
 
-  static async updateTimeOffRequest(requestId: string, updates: Partial<TimeOffRequest>): Promise<TimeOffRequest> {
-    const response = await APIClient.put<{ timeOffRequest: TimeOffRequest }>(`${this.endpoint}/${requestId}`, updates);
+  static async updateTimeOffRequest(
+    requestId: string,
+    updates: Partial<TimeOffRequest>
+  ): Promise<TimeOffRequest> {
+    const response = await APIClient.put<{ timeOffRequest: TimeOffRequest }>(
+      `${this.endpoint}/${requestId}`,
+      updates
+    );
     return response.timeOffRequest;
   }
 }
@@ -175,11 +240,11 @@ export class WorkloadAnalysisService {
   private static endpoint = '/automotive/workload-analysis';
 
   static async getWorkloadAnalysis(startDate: Date, endDate: Date): Promise<WorkloadAnalysis> {
-    const response = await APIClient.get<{ analysis: WorkloadAnalysis }>(this.endpoint, {
+    const response = await APIClient.get<unknown>(this.endpoint, {
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
     });
-    return response.analysis;
+    return APIClient.unwrapItem<WorkloadAnalysis>(response, 'analysis') as WorkloadAnalysis;
   }
 }
 
@@ -192,15 +257,18 @@ export class SalesPersonService {
 
   static async getAllSalesPeople(): Promise<SalesPerson[]> {
     try {
-      const response = await APIClient.get<{ salesPeople?: SalesPerson[] }>(this.endpoint);
-      return response.salesPeople || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<SalesPerson>(response, 'salesPeople');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async createSalesPerson(salesPersonData: Partial<SalesPerson>): Promise<SalesPerson> {
-    const response = await APIClient.post<{ salesPerson: SalesPerson }>(this.endpoint, salesPersonData);
+    const response = await APIClient.post<{ salesPerson: SalesPerson }>(
+      this.endpoint,
+      salesPersonData
+    );
     return response.salesPerson;
   }
 }
@@ -210,24 +278,37 @@ export class CommissionService {
 
   static async getAllCommissions(): Promise<SalesCommission[]> {
     try {
-      const response = await APIClient.get<{ commissions?: SalesCommission[] }>(this.endpoint);
-      return response.commissions || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<SalesCommission>(response, 'commissions');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async calculateCommission(salesPersonId: string, startDate: Date, endDate: Date): Promise<SalesCommission> {
-    const response = await APIClient.post<{ commission: SalesCommission }>(`${this.endpoint}/calculate`, {
-      salesPersonId,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-    });
+  static async calculateCommission(
+    salesPersonId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<SalesCommission> {
+    const response = await APIClient.post<{ commission: SalesCommission }>(
+      `${this.endpoint}/calculate`,
+      {
+        salesPersonId,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+      }
+    );
     return response.commission;
   }
 
-  static async updateCommission(commissionId: string, updates: Partial<SalesCommission>): Promise<SalesCommission> {
-    const response = await APIClient.put<{ commission: SalesCommission }>(`${this.endpoint}/${commissionId}`, updates);
+  static async updateCommission(
+    commissionId: string,
+    updates: Partial<SalesCommission>
+  ): Promise<SalesCommission> {
+    const response = await APIClient.put<{ commission: SalesCommission }>(
+      `${this.endpoint}/${commissionId}`,
+      updates
+    );
     return response.commission;
   }
 }
@@ -237,10 +318,10 @@ export class VehicleSaleService {
 
   static async getAllVehicleSales(): Promise<VehicleSale[]> {
     try {
-      const response = await APIClient.get<{ vehicleSales?: VehicleSale[] }>(this.endpoint);
-      return response.vehicleSales || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<VehicleSale>(response, 'vehicleSales');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -255,10 +336,10 @@ export class ServiceSaleService {
 
   static async getAllServiceSales(): Promise<ServiceSale[]> {
     try {
-      const response = await APIClient.get<{ serviceSales?: ServiceSale[] }>(this.endpoint);
-      return response.serviceSales || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<ServiceSale>(response, 'serviceSales');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -273,15 +354,20 @@ export class CommissionStructureService {
 
   static async getAllStructures(): Promise<CommissionStructure[]> {
     try {
-      const response = await APIClient.get<{ structures?: CommissionStructure[] }>(this.endpoint);
-      return response.structures || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<CommissionStructure>(response, 'structures');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async createStructure(structureData: Partial<CommissionStructure>): Promise<CommissionStructure> {
-    const response = await APIClient.post<{ structure: CommissionStructure }>(this.endpoint, structureData);
+  static async createStructure(
+    structureData: Partial<CommissionStructure>
+  ): Promise<CommissionStructure> {
+    const response = await APIClient.post<{ structure: CommissionStructure }>(
+      this.endpoint,
+      structureData
+    );
     return response.structure;
   }
 }
@@ -289,13 +375,21 @@ export class CommissionStructureService {
 export class CommissionReportService {
   private static endpoint = '/automotive/commission-reports';
 
-  static async generateReport(reportType: string, startDate: Date, endDate: Date, salesPersonId?: string): Promise<CommissionReport> {
-    const response = await APIClient.post<{ report: CommissionReport }>(`${this.endpoint}/generate`, {
-      reportType,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      salesPersonId,
-    });
+  static async generateReport(
+    reportType: string,
+    startDate: Date,
+    endDate: Date,
+    salesPersonId?: string
+  ): Promise<CommissionReport> {
+    const response = await APIClient.post<{ report: CommissionReport }>(
+      `${this.endpoint}/generate`,
+      {
+        reportType,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        salesPersonId,
+      }
+    );
     return response.report;
   }
 }
@@ -309,28 +403,28 @@ export class PartService {
 
   static async getAllParts(): Promise<Part[]> {
     try {
-      const response = await APIClient.get<{ parts?: Part[] }>(this.endpoint);
-      return response.parts || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<Part>(response, 'parts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getPartById(partId: string): Promise<Part | null> {
     try {
-      const response = await APIClient.get<{ part?: Part }>(`${this.endpoint}/${partId}`);
-      return response.part || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${partId}`);
+      return APIClient.unwrapItem<Part>(response, 'part');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
   static async searchParts(query: string): Promise<Part[]> {
     try {
-      const response = await APIClient.get<{ parts?: Part[] }>(`${this.endpoint}/search`, { query });
-      return response.parts || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/search`, { query });
+      return APIClient.unwrapList<Part>(response, 'parts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -346,10 +440,10 @@ export class PartService {
 
   static async getLowStockParts(): Promise<Part[]> {
     try {
-      const response = await APIClient.get<{ parts?: Part[] }>(`${this.endpoint}/low-stock`);
-      return response.parts || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/low-stock`);
+      return APIClient.unwrapList<Part>(response, 'parts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 }
@@ -359,24 +453,29 @@ export class InventoryMovementService {
 
   static async getAllMovements(): Promise<InventoryMovement[]> {
     try {
-      const response = await APIClient.get<{ movements?: InventoryMovement[] }>(this.endpoint);
-      return response.movements || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<InventoryMovement>(response, 'movements');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async createMovement(movementData: Partial<InventoryMovement>): Promise<InventoryMovement> {
-    const response = await APIClient.post<{ movement: InventoryMovement }>(this.endpoint, movementData);
+  static async createMovement(
+    movementData: Partial<InventoryMovement>
+  ): Promise<InventoryMovement> {
+    const response = await APIClient.post<{ movement: InventoryMovement }>(
+      this.endpoint,
+      movementData
+    );
     return response.movement;
   }
 
   static async getMovementsByPart(partId: string): Promise<InventoryMovement[]> {
     try {
-      const response = await APIClient.get<{ movements?: InventoryMovement[] }>(`${this.endpoint}/part/${partId}`);
-      return response.movements || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/part/${partId}`);
+      return APIClient.unwrapList<InventoryMovement>(response, 'movements');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 }
@@ -386,10 +485,10 @@ export class PurchaseOrderService {
 
   static async getAllPurchaseOrders(): Promise<PurchaseOrder[]> {
     try {
-      const response = await APIClient.get<{ purchaseOrders?: PurchaseOrder[] }>(this.endpoint);
-      return response.purchaseOrders || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<PurchaseOrder>(response, 'purchaseOrders');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -398,13 +497,22 @@ export class PurchaseOrderService {
     return response.purchaseOrder;
   }
 
-  static async updatePurchaseOrder(poId: string, updates: Partial<PurchaseOrder>): Promise<PurchaseOrder> {
-    const response = await APIClient.put<{ purchaseOrder: PurchaseOrder }>(`${this.endpoint}/${poId}`, updates);
+  static async updatePurchaseOrder(
+    poId: string,
+    updates: Partial<PurchaseOrder>
+  ): Promise<PurchaseOrder> {
+    const response = await APIClient.put<{ purchaseOrder: PurchaseOrder }>(
+      `${this.endpoint}/${poId}`,
+      updates
+    );
     return response.purchaseOrder;
   }
 
   static async receivePurchaseOrder(poId: string, receivedItems: any[]): Promise<PurchaseOrder> {
-    const response = await APIClient.post<{ purchaseOrder: PurchaseOrder }>(`${this.endpoint}/${poId}/receive`, { receivedItems });
+    const response = await APIClient.post<{ purchaseOrder: PurchaseOrder }>(
+      `${this.endpoint}/${poId}/receive`,
+      { receivedItems }
+    );
     return response.purchaseOrder;
   }
 }
@@ -414,20 +522,31 @@ export class StockAdjustmentService {
 
   static async getAllAdjustments(): Promise<StockAdjustment[]> {
     try {
-      const response = await APIClient.get<{ adjustments?: StockAdjustment[] }>(this.endpoint);
-      return response.adjustments || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<StockAdjustment>(response, 'adjustments');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async createAdjustment(adjustmentData: Partial<StockAdjustment>): Promise<StockAdjustment> {
-    const response = await APIClient.post<{ adjustment: StockAdjustment }>(this.endpoint, adjustmentData);
+  static async createAdjustment(
+    adjustmentData: Partial<StockAdjustment>
+  ): Promise<StockAdjustment> {
+    const response = await APIClient.post<{ adjustment: StockAdjustment }>(
+      this.endpoint,
+      adjustmentData
+    );
     return response.adjustment;
   }
 
-  static async updateAdjustment(adjustmentId: string, updates: Partial<StockAdjustment>): Promise<StockAdjustment> {
-    const response = await APIClient.put<{ adjustment: StockAdjustment }>(`${this.endpoint}/${adjustmentId}`, updates);
+  static async updateAdjustment(
+    adjustmentId: string,
+    updates: Partial<StockAdjustment>
+  ): Promise<StockAdjustment> {
+    const response = await APIClient.put<{ adjustment: StockAdjustment }>(
+      `${this.endpoint}/${adjustmentId}`,
+      updates
+    );
     return response.adjustment;
   }
 }
@@ -436,10 +555,13 @@ export class InventoryAnalysisService {
   private static endpoint = '/automotive/inventory-analysis';
 
   static async generateAnalysis(startDate: Date, endDate: Date): Promise<InventoryAnalysis> {
-    const response = await APIClient.post<{ analysis: InventoryAnalysis }>(`${this.endpoint}/generate`, {
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-    });
+    const response = await APIClient.post<{ analysis: InventoryAnalysis }>(
+      `${this.endpoint}/generate`,
+      {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+      }
+    );
     return response.analysis;
   }
 }

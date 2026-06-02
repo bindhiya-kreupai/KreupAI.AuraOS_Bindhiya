@@ -3,7 +3,7 @@
  * Phase 3: Intelligence Layer - Workforce Planning
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { WorkforceAnalyticsService } from '@/lib/services/ai';
 
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
         );
     }
   } catch (error: any) {
-        return NextResponse.json(
+    return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to analyze workforce',
         errorAr: 'فشل في تحليل القوى العاملة',
@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json(
+    return NextResponse.json(
       { error: 'Failed to fetch workforce data', errorAr: 'فشل في جلب بيانات القوى العاملة' },
       { status: 500 }
     );

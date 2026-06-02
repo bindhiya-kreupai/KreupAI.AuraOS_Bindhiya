@@ -1,15 +1,22 @@
 import { APIClient } from '@/lib/api-client';
-import type { ContentRights, BandwidthMetrics, AudienceMetrics, NetworkOperations, MediaSettings, MediaAlert } from './types';
+import type {
+  ContentRights,
+  BandwidthMetrics,
+  AudienceMetrics,
+  NetworkOperations,
+  MediaSettings,
+  MediaAlert,
+} from './types';
 
 export class ContentRightsService {
   private static endpoint = '/industry-media/content-rights';
 
   static async getAllRights(): Promise<ContentRights[]> {
     try {
-      const response = await APIClient.get<{ rights?: ContentRights[] }>(this.endpoint);
-      return response.rights || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<ContentRights>(response, 'rights');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -18,8 +25,14 @@ export class ContentRightsService {
     return response.rights;
   }
 
-  static async updateRights(rightsId: string, updates: Partial<ContentRights>): Promise<ContentRights> {
-    const response = await APIClient.put<{ rights: ContentRights }>(`${this.endpoint}/${rightsId}`, updates);
+  static async updateRights(
+    rightsId: string,
+    updates: Partial<ContentRights>
+  ): Promise<ContentRights> {
+    const response = await APIClient.put<{ rights: ContentRights }>(
+      `${this.endpoint}/${rightsId}`,
+      updates
+    );
     return response.rights;
   }
 }
@@ -29,15 +42,18 @@ export class BandwidthAnalyticsService {
 
   static async getAllMetrics(): Promise<BandwidthMetrics[]> {
     try {
-      const response = await APIClient.get<{ metrics?: BandwidthMetrics[] }>(this.endpoint);
-      return response.metrics || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<BandwidthMetrics>(response, 'metrics');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async createMetrics(metricsData: Partial<BandwidthMetrics>): Promise<BandwidthMetrics> {
-    const response = await APIClient.post<{ metrics: BandwidthMetrics }>(this.endpoint, metricsData);
+    const response = await APIClient.post<{ metrics: BandwidthMetrics }>(
+      this.endpoint,
+      metricsData
+    );
     return response.metrics;
   }
 }
@@ -47,10 +63,10 @@ export class AudienceMetricsService {
 
   static async getAllMetrics(): Promise<AudienceMetrics[]> {
     try {
-      const response = await APIClient.get<{ metrics?: AudienceMetrics[] }>(this.endpoint);
-      return response.metrics || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<AudienceMetrics>(response, 'metrics');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -65,20 +81,31 @@ export class NetworkOperationsService {
 
   static async getAllOperations(): Promise<NetworkOperations[]> {
     try {
-      const response = await APIClient.get<{ operations?: NetworkOperations[] }>(this.endpoint);
-      return response.operations || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<NetworkOperations>(response, 'operations');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async createOperation(operationData: Partial<NetworkOperations>): Promise<NetworkOperations> {
-    const response = await APIClient.post<{ operation: NetworkOperations }>(this.endpoint, operationData);
+  static async createOperation(
+    operationData: Partial<NetworkOperations>
+  ): Promise<NetworkOperations> {
+    const response = await APIClient.post<{ operation: NetworkOperations }>(
+      this.endpoint,
+      operationData
+    );
     return response.operation;
   }
 
-  static async updateOperation(operationId: string, updates: Partial<NetworkOperations>): Promise<NetworkOperations> {
-    const response = await APIClient.put<{ operation: NetworkOperations }>(`${this.endpoint}/${operationId}`, updates);
+  static async updateOperation(
+    operationId: string,
+    updates: Partial<NetworkOperations>
+  ): Promise<NetworkOperations> {
+    const response = await APIClient.put<{ operation: NetworkOperations }>(
+      `${this.endpoint}/${operationId}`,
+      updates
+    );
     return response.operation;
   }
 }
@@ -88,10 +115,10 @@ export class MediaSettingsService {
 
   static async getSettings(): Promise<MediaSettings | null> {
     try {
-      const response = await APIClient.get<{ settings?: MediaSettings }>(this.endpoint);
-      return response.settings || null;
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapItem<MediaSettings>(response, 'settings');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -106,10 +133,10 @@ export class AlertsService {
 
   static async getAllAlerts(): Promise<MediaAlert[]> {
     try {
-      const response = await APIClient.get<{ alerts?: MediaAlert[] }>(this.endpoint);
-      return response.alerts || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<MediaAlert>(response, 'alerts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 

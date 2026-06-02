@@ -1,22 +1,63 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
+import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-const pilots = [
-    { id: '1', name: 'Capt. Sully', rank: 'Captain', flightHours: 15000, status: 'active' },
-    { id: '2', name: 'Maverick', rank: 'First Officer', flightHours: 2500, status: 'training' }
-];
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-aviation/pilot-training:read'))
+      return forbidden('industry-aviation/pilot-training:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).aviationPilotTraining.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).aviationPilotTraining.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error(
+      { err: error, route: 'industry-aviation/pilot-training/route.ts' },
+      'Failed to list'
+    );
+    return serverError(error, 'list');
+  }
+});
 
-export async function GET(req: NextRequest) {
-    const { pathname } = new URL(req.url);
-    if (pathname.includes('/pilots')) {
-        return NextResponse.json({ pilots });
-    }
-    return NextResponse.json({ pilots });
-}
-
-export async function POST(req: NextRequest) {
-    const data = await req.json();
-    const newPilot = { id: Math.random().toString(36).substr(2, 9), ...data };
-    pilots.push(newPilot);
-    return NextResponse.json({ pilot: newPilot });
-}
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-aviation/pilot-training:create'))
+      return forbidden('industry-aviation/pilot-training:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).aviationPilotTraining.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error(
+      { err: error, route: 'industry-aviation/pilot-training/route.ts' },
+      'Failed to create'
+    );
+    return serverError(error, 'create');
+  }
+});

@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { readSettings, writeSettings } from '@/lib/api/tenant-settings';
+import { logger } from '@/lib/logger';
 
-// Offboarding settings are returned as sensible defaults.
-// In production, these would be stored in a tenant settings table.
-// For now, GET returns defaults and PUT accepts updates (stored in-memory
-// per request cycle). A dedicated settings model can be added later.
+const MODULE = 'offboarding';
 
 const DEFAULT_SETTINGS = {
   defaultNoticePeriod: 30,
@@ -31,41 +31,36 @@ const DEFAULT_SETTINGS = {
   financeNotificationEmail: 'finance@company.com',
 };
 
-// ===== GET Handler =====
-export const GET = withEnhancedAuth(async (_request, _context) => {
+export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) => {
   try {
-    return NextResponse.json(
-      { success: true, settings: DEFAULT_SETTINGS },
-      { status: 200 }
-    );
+    const tenantId = context.user.tenantId;
+    const settings = await readSettings(tenantId, MODULE, DEFAULT_SETTINGS);
+    return NextResponse.json({ success: true, data: { ...settings, tenantId } });
   } catch (error: any) {
-    console.error('Error fetching offboarding settings:', error);
+    logger.error({ err: error, module: MODULE }, 'Failed to read settings');
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch offboarding settings' },
+      { success: false, error: 'Failed to fetch settings' },
       { status: 500 }
     );
   }
 });
 
-// ===== PUT Handler =====
-export const PUT = withEnhancedAuth(async (request, _context) => {
+export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
+    const tenantId = context.user.tenantId;
+    const userId = context.user.userId;
     const body = await request.json();
-
-    // Merge provided updates with defaults
-    const updatedSettings = {
-      ...DEFAULT_SETTINGS,
-      ...body,
-    };
-
-    return NextResponse.json(
-      { success: true, settings: updatedSettings },
-      { status: 200 }
-    );
+    // Strip server-managed fields so callers can't overwrite them.
+    delete body.tenantId;
+    delete body.updatedBy;
+    delete body.updatedAt;
+    await writeSettings(tenantId, MODULE, body, userId);
+    const settings = await readSettings(tenantId, MODULE, DEFAULT_SETTINGS);
+    return NextResponse.json({ success: true, data: { ...settings, tenantId } });
   } catch (error: any) {
-    console.error('Error updating offboarding settings:', error);
+    logger.error({ err: error, module: MODULE }, 'Failed to update settings');
     return NextResponse.json(
-      { success: false, error: 'Failed to update offboarding settings' },
+      { success: false, error: 'Failed to update settings' },
       { status: 500 }
     );
   }

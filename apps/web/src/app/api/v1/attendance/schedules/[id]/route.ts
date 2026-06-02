@@ -1,56 +1,61 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import {
+  forbidden,
+  notFound,
+  safeJson,
+  serverError,
+  successItem,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-interface Schedule {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  shiftType: 'morning' | 'afternoon' | 'night' | 'flexible';
-  startTime: string;
-  endTime: string;
-  daysOfWeek: number[];
-  effectiveFrom: string;
-  effectiveTo: string | null;
-  isActive: boolean;
-  updatedAt: string;
-}
+export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) => {
+  try {
+    const { user, params, permissions } = context;
+    if (!permissions.includes('attendance:read')) return forbidden('attendance:read');
+    const row = await prisma.shiftRoster.findFirst({
+      where: { id: params.id, tenantId: user.tenantId },
+    });
+    if (!row) return notFound('Schedule');
+    return successItem(row);
+  } catch (error: any) {
+    return serverError(error, 'fetch schedule');
+  }
+});
 
 export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  const { permissions } = context;
-  if (!permissions.includes('attendance:update')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing attendance:update permission',
-          messageAr: 'ممنوع',
-        },
-      },
-      { status: 403 }
-    );
-  }
   try {
-    const { id } = await context.params;
-    const body = await request.json();
+    const { user, params, permissions } = context;
+    if (!permissions.includes('attendance:write')) return forbidden('attendance:write');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    delete body.id;
+    delete body.tenantId;
+    const result = await prisma.shiftRoster.updateMany({
+      where: { id: params.id, tenantId: user.tenantId },
+      data: body,
+    });
+    if (result.count === 0) return notFound('Schedule');
+    const updated = await prisma.shiftRoster.findFirst({
+      where: { id: params.id, tenantId: user.tenantId },
+    });
+    return successItem(updated);
+  } catch (error: any) {
+    return serverError(error, 'update schedule');
+  }
+});
 
-    const updatedSchedule: Schedule = {
-      id,
-      employeeId: body.employeeId || 'emp-001',
-      employeeName: body.employeeName || 'John Smith',
-      shiftType: body.shiftType || 'morning',
-      startTime: body.startTime || '08:00',
-      endTime: body.endTime || '16:00',
-      daysOfWeek: body.daysOfWeek || [1, 2, 3, 4, 5],
-      effectiveFrom: body.effectiveFrom || '2025-01-01',
-      effectiveTo: body.effectiveTo || null,
-      isActive: body.isActive !== undefined ? body.isActive : true,
-      updatedAt: new Date().toISOString(),
-    };
-
-    return NextResponse.json(updatedSchedule);
-  } catch {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+export const DELETE = withEnhancedAuth(async (_request: NextRequest, context: any) => {
+  try {
+    const { user, params, permissions } = context;
+    if (!permissions.includes('attendance:write')) return forbidden('attendance:write');
+    const result = await prisma.shiftRoster.deleteMany({
+      where: { id: params.id, tenantId: user.tenantId },
+    });
+    if (result.count === 0) return notFound('Schedule');
+    return successItem({ deleted: true, id: params.id });
+  } catch (error: any) {
+    return serverError(error, 'delete schedule');
   }
 });

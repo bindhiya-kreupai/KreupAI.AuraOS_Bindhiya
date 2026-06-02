@@ -13,8 +13,8 @@ export class CredentialingService {
 
   static async getAllProviders(): Promise<HealthcareProvider[]> {
     try {
-      const response = await APIClient.get<{ providers?: HealthcareProvider[] }>(this.endpoint);
-      return response.providers || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<HealthcareProvider>(response, 'providers');
     } catch (_error: any) {
       return [];
     }
@@ -22,10 +22,8 @@ export class CredentialingService {
 
   static async getProviderById(id: string): Promise<HealthcareProvider | null> {
     try {
-      const response = await APIClient.get<{ provider?: HealthcareProvider }>(
-        `${this.endpoint}/${id}`
-      );
-      return response.provider || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<HealthcareProvider>(response, 'provider');
     } catch (_error: any) {
       return null;
     }
@@ -53,8 +51,8 @@ export class NurseRosteringService {
 
   static async getAllSchedules(): Promise<NurseSchedule[]> {
     try {
-      const response = await APIClient.get<{ schedules?: NurseSchedule[] }>(this.endpoint);
-      return response.schedules || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<NurseSchedule>(response, 'schedules');
     } catch (_error: any) {
       return [];
     }
@@ -62,8 +60,8 @@ export class NurseRosteringService {
 
   static async getScheduleById(id: string): Promise<NurseSchedule | null> {
     try {
-      const response = await APIClient.get<{ schedule?: NurseSchedule }>(`${this.endpoint}/${id}`);
-      return response.schedule || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<NurseSchedule>(response, 'schedule');
     } catch (_error: any) {
       return null;
     }
@@ -88,10 +86,8 @@ export class LocumManagementService {
 
   static async getAllLocumProviders(): Promise<LocumProvider[]> {
     try {
-      const response = await APIClient.get<{ providers?: LocumProvider[] }>(
-        `${this.endpoint}/providers`
-      );
-      return response.providers || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/providers`);
+      return APIClient.unwrapList<LocumProvider>(response, 'providers');
     } catch (_error: any) {
       return [];
     }
@@ -99,10 +95,8 @@ export class LocumManagementService {
 
   static async getLocumProviderById(id: string): Promise<LocumProvider | null> {
     try {
-      const response = await APIClient.get<{ provider?: LocumProvider }>(
-        `${this.endpoint}/providers/${id}`
-      );
-      return response.provider || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/providers/${id}`);
+      return APIClient.unwrapItem<LocumProvider>(response, 'provider');
     } catch (_error: any) {
       return null;
     }
@@ -129,10 +123,8 @@ export class LocumManagementService {
 
   static async getAllAssignments(): Promise<LocumAssignment[]> {
     try {
-      const response = await APIClient.get<{ assignments?: LocumAssignment[] }>(
-        `${this.endpoint}/assignments`
-      );
-      return response.assignments || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/assignments`);
+      return APIClient.unwrapList<LocumAssignment>(response, 'assignments');
     } catch (_error: any) {
       return [];
     }
@@ -152,8 +144,8 @@ export class HealthcareSettingsService {
 
   static async getSettings(): Promise<HealthcareSettings | null> {
     try {
-      const response = await APIClient.get<{ settings?: HealthcareSettings }>(this.endpoint);
-      return response.settings || null;
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapItem<HealthcareSettings>(response, 'settings');
     } catch (_error: any) {
       return null;
     }
@@ -170,8 +162,8 @@ export class AlertsService {
 
   static async getAll(): Promise<HealthcareAlert[]> {
     try {
-      const response = await APIClient.get<{ alerts?: HealthcareAlert[] }>(this.endpoint);
-      return response.alerts || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<HealthcareAlert>(response, 'alerts');
     } catch (_error: any) {
       return [];
     }

@@ -1,101 +1,57 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (_request: NextRequest, { _user, permissions }: any) => {
-  if (!permissions.includes('performance:read')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing performance:read permission',
-          messageAr: 'ممنوع',
-        },
-      },
-      { status: 403 }
-    );
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('performance/one-on-ones:read'))
+      return forbidden('performance/one-on-ones:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).oneOnOneMeeting.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).oneOnOneMeeting.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error({ err: error, route: 'v1/performance/one-on-ones/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
   }
-  return NextResponse.json({
-    success: true,
-    data: {
-      oneOnOnes: [
-        {
-          id: 'oo-001',
-          managerId: 'emp-201',
-          managerName: 'Engineering Manager',
-          reportId: 'emp-101',
-          reportName: 'Jane Smith',
-          frequency: 'weekly',
-          nextMeeting: '2026-01-27T10:00:00Z',
-          duration: 30,
-          status: 'scheduled',
-          agendaItems: ['Career development', 'Project updates', 'Blockers'],
-          lastMeetingNotes: 'Discussed promotion path and Q1 goals.',
-        },
-        {
-          id: 'oo-002',
-          managerId: 'emp-201',
-          managerName: 'Engineering Manager',
-          reportId: 'emp-102',
-          reportName: 'Tom Brown',
-          frequency: 'bi-weekly',
-          nextMeeting: '2026-01-30T14:00:00Z',
-          duration: 30,
-          status: 'scheduled',
-          agendaItems: ['Sprint retrospective', 'Skill development'],
-          lastMeetingNotes: 'Reviewed Q4 performance and set Q1 priorities.',
-        },
-        {
-          id: 'oo-003',
-          managerId: 'emp-201',
-          managerName: 'Engineering Manager',
-          reportId: 'emp-105',
-          reportName: 'David Lee',
-          frequency: 'weekly',
-          nextMeeting: '2026-01-28T11:00:00Z',
-          duration: 45,
-          status: 'scheduled',
-          agendaItems: ['Onboarding progress', 'Training feedback', 'Team integration'],
-          lastMeetingNotes: 'Discussed first month experiences and learning plan.',
-        },
-      ],
-      total: 3,
-    },
-  });
 });
 
-export const POST = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
-  if (!permissions.includes('performance:create')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing performance:create permission',
-          messageAr: 'ممنوع',
-        },
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('performance/one-on-ones:create'))
+      return forbidden('performance/one-on-ones:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).oneOnOneMeeting.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
       },
-      { status: 403 }
-    );
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error({ err: error, route: 'v1/performance/one-on-ones/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
   }
-  const body = await request.json();
-
-  return NextResponse.json({
-    success: true,
-    data: {
-      id: 'oo-004',
-      managerId: body.managerId,
-      managerName: body.managerName || 'Engineering Manager',
-      reportId: body.reportId,
-      reportName: body.reportName,
-      frequency: body.frequency || 'weekly',
-      nextMeeting: body.nextMeeting || '2026-02-03T10:00:00Z',
-      duration: body.duration || 30,
-      status: 'scheduled',
-      agendaItems: body.agendaItems || [],
-      meetingLink: 'https://meet.example.com/oo-004',
-      createdAt: new Date().toISOString(),
-    },
-  });
 });

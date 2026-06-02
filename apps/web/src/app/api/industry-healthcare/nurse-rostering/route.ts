@@ -1,53 +1,63 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
+import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-// In-memory storage for mock data
-const scheduleData: any[] = [];
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-healthcare/nurse-rostering:read'))
+      return forbidden('industry-healthcare/nurse-rostering:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).nurseRoster.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).nurseRoster.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error(
+      { err: error, route: 'industry-healthcare/nurse-rostering/route.ts' },
+      'Failed to list'
+    );
+    return serverError(error, 'list');
+  }
+});
 
-/**
- * GET /api/industry-healthcare/nurse-rostering
- * Get all nurse schedules
- */
-export async function GET(request: NextRequest) {
-    try {
-        return NextResponse.json({
-            schedules: scheduleData,
-            count: scheduleData.length,
-        });
-    } catch (error: any) {
-        console.error('Nurse rostering API error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
-    }
-}
-
-/**
- * POST /api/industry-healthcare/nurse-rostering
- * Create a new nurse schedule
- */
-export async function POST(request: NextRequest) {
-    try {
-        const body = await request.json();
-
-        const newSchedule = {
-            id: `schedule-${Date.now()}`,
-            ...body,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
-
-        scheduleData.push(newSchedule);
-
-        return NextResponse.json({
-            schedule: newSchedule,
-        }, { status: 201 });
-    } catch (error: any) {
-        console.error('Nurse rostering API error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
-    }
-}
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-healthcare/nurse-rostering:create'))
+      return forbidden('industry-healthcare/nurse-rostering:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).nurseRoster.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error(
+      { err: error, route: 'industry-healthcare/nurse-rostering/route.ts' },
+      'Failed to create'
+    );
+    return serverError(error, 'create');
+  }
+});

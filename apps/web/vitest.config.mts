@@ -5,8 +5,16 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   test: {
-    // Support both node and jsdom environments
+    // Default environment is node (fast, no DOM). Tests that need a DOM
+    // (React component / hook tests, anything that calls renderHook or
+    // @testing-library/react) get happy-dom via environmentMatchGlobs.
     environment: 'node',
+    environmentMatchGlobs: [
+      ['**/*.tsx', 'happy-dom'],
+      ['**/components/**/*.{test,spec}.{ts,tsx}', 'happy-dom'],
+      ['**/hooks/**/*.{test,spec}.{ts,tsx}', 'happy-dom'],
+      ['**/app/**/*.{test,spec}.{ts,tsx}', 'happy-dom'],
+    ],
     globals: true,
     setupFiles: ['./src/__tests__/setup.ts'],
     include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],

@@ -1,53 +1,63 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
+import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-// In-memory storage for mock data
-const credentialingData: any[] = [];
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-healthcare/credentialing:read'))
+      return forbidden('industry-healthcare/credentialing:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).healthcareCredentialing.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).healthcareCredentialing.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error(
+      { err: error, route: 'industry-healthcare/credentialing/route.ts' },
+      'Failed to list'
+    );
+    return serverError(error, 'list');
+  }
+});
 
-/**
- * GET /api/industry-healthcare/credentialing
- * Get all healthcare providers for credentialing
- */
-export async function GET(request: NextRequest) {
-    try {
-        return NextResponse.json({
-            providers: credentialingData,
-            count: credentialingData.length,
-        });
-    } catch (error: any) {
-        console.error('Healthcare credentialing API error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
-    }
-}
-
-/**
- * POST /api/industry-healthcare/credentialing
- * Create a new healthcare provider
- */
-export async function POST(request: NextRequest) {
-    try {
-        const body = await request.json();
-
-        const newProvider = {
-            id: `provider-${Date.now()}`,
-            ...body,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
-
-        credentialingData.push(newProvider);
-
-        return NextResponse.json({
-            provider: newProvider,
-        }, { status: 201 });
-    } catch (error: any) {
-        console.error('Healthcare credentialing API error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
-    }
-}
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-healthcare/credentialing:create'))
+      return forbidden('industry-healthcare/credentialing:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).healthcareCredentialing.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error(
+      { err: error, route: 'industry-healthcare/credentialing/route.ts' },
+      'Failed to create'
+    );
+    return serverError(error, 'create');
+  }
+});

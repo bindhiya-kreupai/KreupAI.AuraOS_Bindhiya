@@ -1,46 +1,53 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { forbidden, serverError, successItem } from '@/lib/api/crud-helpers';
 
-export const POST = withEnhancedAuth(async (request, context) => {
+// Real org-health snapshot: combine attrition signals + recognition activity +
+// pending leave/review backlogs into a composite score.
+export const POST = withEnhancedAuth(async (_request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-
-    const prediction = {
-      predictionId: `pred-${Date.now()}`,
-      predictionDate: new Date().toISOString(),
-      overallHealthScore: Math.floor(Math.random() * 30) + 70,
-      healthTrend: 'stable',
-      confidenceLevel: 'high',
-      dimensionScores: [],
-      riskAreas: [],
-      predictions: {
-        threeMonthOutlook: {
-          projectedScore: 90,
-          confidenceInterval: { lower: 85, upper: 93 },
-          keyDrivers: [],
-          scenarioAnalysis: { bestCase: 95, worstCase: 82, mostLikely: 90 }
-        },
-        sixMonthOutlook: {
-          projectedScore: 91,
-          confidenceInterval: { lower: 86, upper: 94 },
-          keyDrivers: [],
-          scenarioAnalysis: { bestCase: 96, worstCase: 83, mostLikely: 91 }
-        },
-        twelveMonthOutlook: {
-          projectedScore: 92,
-          confidenceInterval: { lower: 87, upper: 95 },
-          keyDrivers: [],
-          scenarioAnalysis: { bestCase: 97, worstCase: 84, mostLikely: 92 }
-        }
-      },
-      recommendations: [],
-      dataSources: ['HRIS', 'Performance Data', 'Engagement Surveys'],
-      modelVersion: 'v2.1.0',
-      createdDate: new Date().toISOString()
+    const { user, permissions } = context;
+    if (!permissions.includes('ai-automation:write')) return forbidden('ai-automation:write');
+    const start = Date.now();
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const [activeEmployees, recognitions, pendingLeaves, openTickets] = await Promise.all([
+      (prisma as any).employee.count({
+        where: { tenantId: user.tenantId, status: 'ACTIVE' as any },
+      }),
+      prisma.recognition.count({ where: { tenantId: user.tenantId, createdAt: { gte: since } } }),
+      prisma.leaveRequest.count({
+        where: { tenantId: user.tenantId, status: 'PENDING' as any } as any,
+      }),
+      prisma.helpdeskTicket.count({
+        where: { tenantId: user.tenantId, status: { in: ['OPEN', 'IN_PROGRESS'] } as any },
+      }),
+    ]);
+    const recognitionRate = activeEmployees ? recognitions / activeEmployees : 0;
+    const score = Math.max(
+      0,
+      Math.min(100, Math.round(50 + recognitionRate * 50 - pendingLeaves / 5 - openTickets / 10))
+    );
+    const output = {
+      activeEmployees,
+      recognitionsLast30Days: recognitions,
+      pendingLeaves,
+      openHelpdeskTickets: openTickets,
+      recognitionRatePerEmployee: recognitionRate,
+      healthScore: score,
+      level: score > 75 ? 'HEALTHY' : score > 50 ? 'WARNING' : 'CRITICAL',
     };
-
-    return NextResponse.json({ prediction }, { status: 201 });
+    const record = await prisma.aIRunRecord.create({
+      data: {
+        tenantId: user.tenantId,
+        runType: 'org_health',
+        output: output as any,
+        completedAt: new Date(),
+        durationMs: Date.now() - start,
+      },
+    });
+    return successItem({ ...output, id: record.id }, { status: 201 });
   } catch (error: any) {
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return serverError(error, 'generate org-health');
   }
 });

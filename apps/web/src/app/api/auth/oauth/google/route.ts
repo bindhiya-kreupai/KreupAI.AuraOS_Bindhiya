@@ -3,7 +3,7 @@
  * Initiates Google OAuth2 flow using @aura/auth
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { createGoogleProvider } from '@aura/auth';
 import { oauth2StateService } from '@/lib/auth/oauth-state.service';

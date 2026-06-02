@@ -13,10 +13,10 @@ export class AuditLogService {
 
   static async getAll(): Promise<AuditLog[]> {
     try {
-      const response = await APIClient.get<{ logs?: AuditLog[] }>(this.endpoint);
-      return response.logs || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<AuditLog>(response, 'logs');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -25,16 +25,16 @@ export class AuditLogService {
       const response = await APIClient.post<{ log: AuditLog }>(this.endpoint, data);
       return response.log;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
   static async getById(logId: string): Promise<AuditLog | null> {
     try {
-      const response = await APIClient.get<{ log?: AuditLog }>(`${this.endpoint}/${logId}`);
-      return response.log || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${logId}`);
+      return APIClient.unwrapItem<AuditLog>(response, 'log');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -48,10 +48,10 @@ export class RoleService {
 
   static async getAll(): Promise<RolePermission[]> {
     try {
-      const response = await APIClient.get<{ roles?: RolePermission[] }>(this.endpoint);
-      return response.roles || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<RolePermission>(response, 'roles');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -60,16 +60,22 @@ export class RoleService {
       const response = await APIClient.post<{ role: RolePermission }>(this.endpoint, data);
       return response.role;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
-  static async update(id: string, updates: Partial<RolePermission>): Promise<RolePermission | null> {
+  static async update(
+    id: string,
+    updates: Partial<RolePermission>
+  ): Promise<RolePermission | null> {
     try {
-      const response = await APIClient.put<{ role: RolePermission }>(`${this.endpoint}/${id}`, updates);
+      const response = await APIClient.put<{ role: RolePermission }>(
+        `${this.endpoint}/${id}`,
+        updates
+      );
       return response.role;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -78,7 +84,7 @@ export class RoleService {
       await APIClient.delete(`${this.endpoint}/${id}`);
       return true;
     } catch (error: any) {
-            return false;
+      return false;
     }
   }
 }
@@ -95,7 +101,7 @@ export class SecuritySettingsService {
       const response = await APIClient.get<{ settings: SecuritySettings }>(this.endpoint);
       return response.settings;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -104,7 +110,7 @@ export class SecuritySettingsService {
       const response = await APIClient.put<{ settings: SecuritySettings }>(this.endpoint, settings);
       return response.settings;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -118,10 +124,10 @@ export class SecurityAlertService {
 
   static async getAll(): Promise<SecurityAlert[]> {
     try {
-      const response = await APIClient.get<{ alerts?: SecurityAlert[] }>(this.endpoint);
-      return response.alerts || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<SecurityAlert>(response, 'alerts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -130,25 +136,28 @@ export class SecurityAlertService {
       const response = await APIClient.post<{ alert: SecurityAlert }>(this.endpoint, data);
       return response.alert;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
   static async update(id: string, updates: Partial<SecurityAlert>): Promise<SecurityAlert | null> {
     try {
-      const response = await APIClient.put<{ alert: SecurityAlert }>(`${this.endpoint}/${id}`, updates);
+      const response = await APIClient.put<{ alert: SecurityAlert }>(
+        `${this.endpoint}/${id}`,
+        updates
+      );
       return response.alert;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
   static async getActive(): Promise<SecurityAlert[]> {
     try {
-      const response = await APIClient.get<{ alerts?: SecurityAlert[] }>(`${this.endpoint}/active`);
-      return response.alerts || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/active`);
+      return APIClient.unwrapList<SecurityAlert>(response, 'alerts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 }

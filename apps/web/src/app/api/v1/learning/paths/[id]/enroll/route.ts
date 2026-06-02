@@ -1,45 +1,28 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { forbidden, notFound, safeJson, serverError, successItem } from '@/lib/api/crud-helpers';
 
-export const POST = withEnhancedAuth(
-  async (request: NextRequest, { _user, params, permissions }: any) => {
-    if (!permissions.includes('learning/paths:create')) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'E4030',
-            message: 'Forbidden: missing learning/paths:create permission',
-            messageAr: 'ممنوع',
-          },
-        },
-        { status: 403 }
-      );
-    }
-    params = params || {};
-    const { id } = params;
-    const body = await request.json();
-
-    const enrollment = {
-      id: 'enr-001',
-      pathId: id,
-      userId: body.userId || 'user-001',
-      enrolledAt: new Date().toISOString(),
-      status: 'active',
-      expectedCompletion: '2026-04-15T00:00:00Z',
-      currentModule: 1,
-      progress: 0,
-      schedule: {
-        hoursPerWeek: body.hoursPerWeek || 5,
-        preferredDays: body.preferredDays || ['monday', 'wednesday', 'friday'],
-        reminderEnabled: true,
-      },
-    };
-
-    return NextResponse.json(
-      { success: true, data: enrollment, message: 'Successfully enrolled in learning path' },
-      { status: 201 }
-    );
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, params, permissions } = context;
+    if (!permissions.includes('learning:enroll')) return forbidden('learning:enroll');
+    const body = (await safeJson(request)) || {};
+    const employeeId = body.employeeId || user.userId;
+    const path = await (prisma as any).learningPath?.findFirst({
+      where: { id: params.id, tenantId: user.tenantId },
+    });
+    if (!path) return notFound('Learning path');
+    const enrollment = await prisma.learningPathEnrollment.create({
+      data: {
+        tenantId: user.tenantId,
+        learningPathId: params.id,
+        employeeId,
+        status: 'IN_PROGRESS' as any,
+      } as any,
+    });
+    return successItem(enrollment, { status: 201 });
+  } catch (error: any) {
+    return serverError(error, 'enroll in path');
   }
-);
+});

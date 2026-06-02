@@ -3,7 +3,7 @@
  * Phase 3: Intelligence Layer - Predictive Analytics
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -12,10 +12,7 @@ export async function POST(request: NextRequest) {
     const action = body.action || 'forecast';
 
     if (!body.tenantId) {
-      return NextResponse.json(
-        { error: 'tenantId is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'tenantId is required' }, { status: 400 });
     }
 
     switch (action) {
@@ -90,10 +87,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to process leave forecasting' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to process leave forecasting' }, { status: 500 });
   }
 }
 
@@ -122,9 +116,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to fetch leave forecast' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch leave forecast' }, { status: 500 });
   }
 }

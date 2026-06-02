@@ -4,7 +4,7 @@
  * Tests all company-related API endpoints end-to-end
  */
 
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { createTestTenant, createTestEmployee, cleanupTestData } from '../helpers/test-utils';
 

@@ -6934,3 +6934,953 @@ model IndustryAviationSettings {
   @@index([tenantId])
   @@map("aura_industry_aviation_settings")
 }
+
+// ============================================================================
+// 24. GENERIC TENANT SETTINGS (per-module key/value store)
+// ============================================================================
+//
+// Single source of truth for per-tenant per-module configuration. Each module
+// page (`/api/<module>/settings`) reads and writes here instead of returning
+// hardcoded defaults. The handler merges DB rows over its module default map
+// so adding a new field is a code-only change and existing tenants see the
+// new default without a migration.
+
+model TenantSetting {
+  id        String   @id @default(uuid())
+  tenantId  String
+  module    String   // 'coreHr' | 'finance' | 'helpdesk' | 'health-safety' | …
+  key       String
+  value     Json
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, module, key])
+  @@index([tenantId, module])
+  @@map("aura_tenant_setting")
+}
+
+// ============================================================================
+// 25. NEW MODELS (Phase 5: full mock-route burndown)
+// ============================================================================
+// One-pass burndown that converts the remaining 119 mock-only API routes to
+// real DB-backed handlers. Each model below is intentionally minimal —
+// covers the fields the corresponding routes read/write today. Add columns
+// as the product matures.
+
+// ---- Policy management ----
+model PolicyDocument {
+  id                       String   @id @default(uuid())
+  tenantId                 String
+  title                    String
+  category                 String
+  version                  String   @default("1.0")
+  status                   String   @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
+  applicableTo             String   @default("ALL_EMPLOYEES")
+  summary                  String?  @db.Text
+  contentMarkdown          String?  @db.Text
+  acknowledgementsRequired Boolean  @default(true)
+  effectiveDate            DateTime?
+  reviewDate               DateTime?
+  publishedAt              DateTime?
+  ownerId                  String
+  ownerName                String?
+  createdBy                String
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  acknowledgements PolicyAcknowledgement[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("aura_policy_document")
+}
+
+model PolicyAcknowledgement {
+  id           String   @id @default(uuid())
+  tenantId     String
+  policyId     String
+  policy       PolicyDocument @relation(fields: [policyId], references: [id])
+  employeeId   String
+  acknowledgedAt DateTime @default(now())
+  ipAddress    String?
+  userAgent    String?
+
+  @@unique([policyId, employeeId])
+  @@index([tenantId])
+  @@index([policyId])
+  @@index([employeeId])
+  @@map("aura_policy_acknowledgement")
+}
+
+// ---- Admin forms ----
+model AdminForm {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?
+  fields      Json     // [{ id, label, type, required, options? }]
+  status      String   @default("ACTIVE") // ACTIVE | ARCHIVED
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  submissions FormSubmission[]
+
+  @@index([tenantId])
+  @@map("aura_admin_form")
+}
+
+model FormSubmission {
+  id          String   @id @default(uuid())
+  tenantId    String
+  formId      String
+  form        AdminForm @relation(fields: [formId], references: [id])
+  employeeId  String
+  answers     Json
+  submittedAt DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([formId])
+  @@index([employeeId])
+  @@map("aura_form_submission")
+}
+
+// ---- Data import jobs ----
+model DataImportJob {
+  id            String   @id @default(uuid())
+  tenantId      String
+  entityType    String   // 'employees' | 'leaves' | ...
+  fileName      String
+  totalRows     Int      @default(0)
+  processedRows Int      @default(0)
+  errorRows     Int      @default(0)
+  status        String   @default("QUEUED") // QUEUED | RUNNING | COMPLETED | FAILED
+  errorLog      Json?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdBy     String
+  createdAt     DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("aura_data_import_job")
+}
+
+// ---- AI config (per-tenant) ----
+model AIConfig {
+  id              String   @id @default(uuid())
+  tenantId        String   @unique
+  enableChatbot   Boolean  @default(false)
+  enableResumeAI  Boolean  @default(false)
+  enableAttritionPrediction Boolean @default(false)
+  llmProvider     String?  // 'openai' | 'azure' | 'anthropic' | null
+  llmModel        String?
+  rateLimitPerMin Int      @default(60)
+  updatedBy       String?
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+
+  @@map("aura_ai_config")
+}
+
+// ---- User preferences (dashboard layouts, theme, etc.) ----
+model UserPreferences {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  tenantId  String
+  prefs     Json     // free-form per-user prefs
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+  @@map("aura_user_preferences")
+}
+
+// ---- Recognition rules (leaderboard config) ----
+// Leaderboard aggregation runs against the existing `Recognition` model.
+
+// ---- Helpdesk ----
+model HelpdeskTicket {
+  id            String   @id @default(uuid())
+  tenantId      String
+  ticketNumber  String   @unique
+  subject       String
+  description   String?  @db.Text
+  category      String   // HR | IT | FACILITIES | PAYROLL
+  priority      String   @default("MEDIUM") // LOW | MEDIUM | HIGH | URGENT
+  status        String   @default("OPEN") // OPEN | IN_PROGRESS | RESOLVED | CLOSED
+  assigneeId    String?
+  requesterId   String
+  slaDueAt      DateTime?
+  resolvedAt    DateTime?
+  closedAt      DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([assigneeId])
+  @@index([requesterId])
+  @@map("aura_helpdesk_ticket")
+}
+
+model HelpdeskSLA {
+  id              String   @id @default(uuid())
+  tenantId        String
+  category        String
+  priority        String
+  responseHours   Int      @default(8)
+  resolutionHours Int      @default(24)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, category, priority])
+  @@index([tenantId])
+  @@map("aura_helpdesk_sla")
+}
+
+// ---- Engagement ----
+model EngagementEvent {
+  id          String   @id @default(uuid())
+  tenantId    String
+  title       String
+  description String?  @db.Text
+  startsAt    DateTime
+  endsAt      DateTime?
+  location    String?
+  capacity    Int?
+  rsvpCount   Int      @default(0)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("aura_engagement_event")
+}
+
+model EngagementSurvey {
+  id          String   @id @default(uuid())
+  tenantId    String
+  title       String
+  questions   Json     // [{ id, text, type, options? }]
+  status      String   @default("DRAFT") // DRAFT | ACTIVE | CLOSED
+  startsAt    DateTime?
+  endsAt      DateTime?
+  responses   Int      @default(0)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("aura_engagement_survey")
+}
+
+model EsgInitiative {
+  id          String   @id @default(uuid())
+  tenantId    String
+  pillar      String   // ENVIRONMENT | SOCIAL | GOVERNANCE
+  title       String
+  description String?  @db.Text
+  metrics     Json?
+  status      String   @default("ACTIVE")
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("aura_esg_initiative")
+}
+
+// ---- Health & Safety ----
+model HealthSafetyIncident {
+  id             String   @id @default(uuid())
+  tenantId       String
+  incidentNumber String   @unique
+  incidentDate   DateTime
+  type           String   // INJURY | NEAR_MISS | PROPERTY_DAMAGE | ENVIRONMENTAL
+  severity       String   // LOW | MEDIUM | HIGH | CRITICAL
+  description    String   @db.Text
+  location       String?
+  reportedBy     String
+  involvedIds    String[]
+  status         String   @default("REPORTED") // REPORTED | INVESTIGATING | RESOLVED | CLOSED
+  rootCause      String?  @db.Text
+  correctiveActions String? @db.Text
+  closedAt       DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("aura_hs_incident")
+}
+
+model HealthSafetyCheckup {
+  id            String   @id @default(uuid())
+  tenantId      String
+  employeeId    String
+  checkupType   String   // PRE_EMPLOYMENT | ANNUAL | HAZARD_BASED
+  scheduledFor  DateTime
+  completedAt   DateTime?
+  result        String?  // FIT | UNFIT | FIT_WITH_RESTRICTIONS
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@map("aura_hs_checkup")
+}
+
+model HealthSafetyTraining {
+  id            String   @id @default(uuid())
+  tenantId      String
+  title         String
+  description   String?  @db.Text
+  durationHours Float    @default(1)
+  validityDays  Int      @default(365)
+  mandatory     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("aura_hs_training")
+}
+
+model HealthSafetyEmergencyContact {
+  id          String   @id @default(uuid())
+  tenantId    String
+  type        String   // FIRE | MEDICAL | SECURITY | UTILITY
+  name        String
+  phone       String
+  email       String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("aura_hs_emergency")
+}
+
+// ---- Security alerts (read-only view onto existing audit log + dedicated alerts) ----
+model SecurityAlert {
+  id            String   @id @default(uuid())
+  tenantId      String
+  severity      String   // LOW | MEDIUM | HIGH | CRITICAL
+  category      String   // LOGIN_ANOMALY | DATA_EXFIL | PERMISSION_ESC | API_ABUSE
+  source        String
+  description   String   @db.Text
+  affectedUser  String?
+  status        String   @default("OPEN") // OPEN | INVESTIGATING | RESOLVED | FALSE_POSITIVE
+  detectedAt    DateTime @default(now())
+  resolvedAt    DateTime?
+  resolvedBy    String?
+  resolution    String?  @db.Text
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, severity])
+  @@map("aura_security_alert")
+}
+
+// ---- Mass updates ----
+model MassUpdateJob {
+  id             String   @id @default(uuid())
+  tenantId       String
+  entityType     String
+  field          String
+  filterCriteria Json
+  updateValue    Json
+  affectedCount  Int      @default(0)
+  status         String   @default("PENDING") // PENDING | RUNNING | COMPLETED | FAILED | REVERTED
+  errorLog       Json?
+  executedAt     DateTime?
+  executedBy     String?
+  createdBy      String
+  createdAt      DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("aura_mass_update_job")
+}
+
+// ---- Travel bookings ----
+model TravelBooking {
+  id            String   @id @default(uuid())
+  tenantId      String
+  employeeId    String
+  type          String   // FLIGHT | HOTEL | CAR | TRAIN
+  provider      String?
+  reference     String?
+  destination   String
+  startDate     DateTime
+  endDate       DateTime
+  cost          Decimal? @db.Decimal(12, 2)
+  currency      String   @default("USD")
+  status        String   @default("PENDING") // PENDING | CONFIRMED | CANCELLED | COMPLETED
+  bookedBy      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@map("aura_travel_booking")
+}
+
+// ---- Industry: manufacturing ----
+model ManufacturingEquipment {
+  id            String   @id @default(uuid())
+  tenantId      String
+  name          String
+  type          String
+  location      String?
+  serialNumber  String?
+  manufacturer  String?
+  installedAt   DateTime?
+  status        String   @default("OPERATIONAL") // OPERATIONAL | MAINTENANCE | OFFLINE | RETIRED
+  oeeScore      Float?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("aura_mfg_equipment")
+}
+
+model ManufacturingMaintenanceSchedule {
+  id            String   @id @default(uuid())
+  tenantId      String
+  equipmentId   String
+  frequencyDays Int
+  nextDueAt     DateTime
+  lastRunAt     DateTime?
+  technician    String?
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([equipmentId])
+  @@map("aura_mfg_maint_schedule")
+}
+
+model ManufacturingWorkOrder {
+  id            String   @id @default(uuid())
+  tenantId      String
+  workOrderNumber String @unique
+  equipmentId   String
+  type          String   // PREVENTIVE | CORRECTIVE | EMERGENCY
+  priority      String   @default("MEDIUM")
+  description   String?  @db.Text
+  assignedTo    String?
+  status        String   @default("OPEN") // OPEN | IN_PROGRESS | COMPLETED | CANCELLED
+  scheduledAt   DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([equipmentId])
+  @@map("aura_mfg_work_order")
+}
+
+model ManufacturingProductionLine {
+  id            String   @id @default(uuid())
+  tenantId      String
+  name          String
+  product       String?
+  capacityPerHour Int    @default(0)
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("aura_mfg_production_line")
+}
+
+model ManufacturingProductionRun {
+  id              String   @id @default(uuid())
+  tenantId        String
+  lineId          String
+  startedAt       DateTime
+  endedAt         DateTime?
+  unitsProduced   Int      @default(0)
+  unitsRejected   Int      @default(0)
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([lineId])
+  @@map("aura_mfg_production_run")
+}
+
+model ManufacturingOEEMetric {
+  id            String   @id @default(uuid())
+  tenantId      String
+  equipmentId   String
+  capturedAt    DateTime
+  availability  Float    @default(0)
+  performance   Float    @default(0)
+  quality       Float    @default(0)
+  oee           Float    @default(0)
+
+  @@index([tenantId])
+  @@index([equipmentId, capturedAt])
+  @@map("aura_mfg_oee_metric")
+}
+
+model ManufacturingSafetyInspection {
+  id            String   @id @default(uuid())
+  tenantId      String
+  area          String
+  inspectorId   String
+  inspectedAt   DateTime
+  passed        Boolean  @default(true)
+  findings      String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  @@index([tenantId])
+  @@map("aura_mfg_safety_inspection")
+}
+
+model ManufacturingPPEInventory {
+  id            String   @id @default(uuid())
+  tenantId      String
+  ppeType       String   // HARD_HAT | GLOVES | GOGGLES | etc.
+  quantityOnHand Int    @default(0)
+  reorderThreshold Int  @default(10)
+  unitCost      Decimal? @db.Decimal(10, 2)
+  lastRestocked DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("aura_mfg_ppe_inventory")
+}
+
+model ManufacturingAlert {
+  id            String   @id @default(uuid())
+  tenantId      String
+  alertType     String   // EQUIPMENT_DOWN | OEE_BELOW_THRESHOLD | SAFETY_INCIDENT | PPE_LOW
+  severity      String   @default("MEDIUM")
+  message       String
+  resourceId    String?  // equipmentId, lineId, etc.
+  status        String   @default("OPEN")
+  createdAt     DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("aura_mfg_alert")
+}
+
+// ---- Industry: aviation ----
+model AviationCabinCrewMember {
+  id             String   @id @default(uuid())
+  tenantId       String
+  employeeId     String   @unique
+  certification  String?  // CSA | SCCM | etc.
+  languages      String[]
+  baseAirport    String?
+  status         String   @default("ACTIVE")
+  certExpiresAt  DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("aura_av_cabin_crew")
+}
+
+model AviationPilotTraining {
+  id             String   @id @default(uuid())
+  tenantId       String
+  pilotId        String
+  trainingType   String   // INITIAL | RECURRENT | TYPE_RATING | etc.
+  aircraftType   String?
+  startDate      DateTime
+  endDate        DateTime?
+  status         String   @default("SCHEDULED") // SCHEDULED | IN_PROGRESS | COMPLETED | FAILED
+  certificateNumber String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([pilotId])
+  @@map("aura_av_pilot_training")
+}
+
+model AviationGroundEquipment {
+  id            String   @id @default(uuid())
+  tenantId      String
+  equipmentType String   // GPU | ASU | PUSHBACK_TUG | LOADER | etc.
+  serialNumber  String?
+  baseAirport   String?
+  status        String   @default("AVAILABLE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("aura_av_ground_equipment")
+}
+
+model AviationGroundStaff {
+  id            String   @id @default(uuid())
+  tenantId      String
+  employeeId    String   @unique
+  role          String   // RAMP | LOADER | CUSTOMER_SERVICE | etc.
+  baseAirport   String
+  certifications String[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("aura_av_ground_staff")
+}
+
+model AviationTurnaround {
+  id            String   @id @default(uuid())
+  tenantId      String
+  flightNumber  String
+  airport       String
+  arrivedAt     DateTime
+  departedAt    DateTime?
+  targetMinutes Int
+  actualMinutes Int?
+  status        String   @default("IN_PROGRESS")
+  assignedStaff String[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([flightNumber])
+  @@map("aura_av_turnaround")
+}
+
+model AviationAlert {
+  id            String   @id @default(uuid())
+  tenantId      String
+  alertType     String
+  severity      String   @default("MEDIUM")
+  message       String
+  flightNumber  String?
+  status        String   @default("OPEN")
+  createdAt     DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("aura_av_alert")
+}
+
+// ---- Industry: healthcare ----
+model HealthcareCredentialing {
+  id            String   @id @default(uuid())
+  tenantId      String
+  providerId    String
+  licenseNumber String
+  licenseType   String   // MD | RN | LPN | PA | etc.
+  issuingState  String
+  issueDate     DateTime
+  expiryDate    DateTime
+  status        String   @default("ACTIVE") // ACTIVE | EXPIRED | SUSPENDED | REVOKED
+  primarySpecialty String?
+  boardCertified Boolean @default(false)
+  npiVerified   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([providerId])
+  @@map("aura_hc_credentialing")
+}
+
+model LocumProvider {
+  id            String   @id @default(uuid())
+  tenantId      String
+  providerName  String
+  specialty     String
+  npi           String?
+  hourlyRate    Decimal? @db.Decimal(10, 2)
+  availability  Json?    // [{ date, available }]
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  assignments LocumAssignment[]
+
+  @@index([tenantId])
+  @@map("aura_hc_locum_provider")
+}
+
+model LocumAssignment {
+  id            String   @id @default(uuid())
+  tenantId      String
+  providerId    String
+  provider      LocumProvider @relation(fields: [providerId], references: [id])
+  facilityId    String?
+  startDate     DateTime
+  endDate       DateTime
+  hourlyRate    Decimal  @db.Decimal(10, 2)
+  totalHours    Float?
+  totalCost     Decimal? @db.Decimal(12, 2)
+  status        String   @default("SCHEDULED")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([providerId])
+  @@map("aura_hc_locum_assignment")
+}
+
+model NurseRoster {
+  id            String   @id @default(uuid())
+  tenantId      String
+  nurseId       String
+  shiftDate     DateTime
+  shiftType     String   // DAY | EVENING | NIGHT
+  unit          String?
+  patientCount  Int?
+  status        String   @default("SCHEDULED")
+  createdAt     DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([shiftDate])
+  @@map("aura_hc_nurse_roster")
+}
+
+model HealthcareAlert {
+  id            String   @id @default(uuid())
+  tenantId      String
+  alertType     String   // LICENSE_EXPIRING | UNDERSTAFFED | etc.
+  severity      String   @default("MEDIUM")
+  message       String
+  status        String   @default("OPEN")
+  createdAt     DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("aura_hc_alert")
+}
+
+// ---- Industry: retail ----
+model RetailStore {
+  id            String   @id @default(uuid())
+  tenantId      String
+  storeName     String
+  storeCode     String   @unique
+  region        String?
+  managerId     String?
+  squareFeet    Int?
+  openedAt      DateTime?
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("aura_retail_store")
+}
+
+model RetailCommissionPlan {
+  id            String   @id @default(uuid())
+  tenantId      String
+  name          String
+  description   String?
+  formula       Json     // { type: 'percent_of_sales', rate: 0.05 } etc.
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("aura_retail_commission_plan")
+}
+
+model RetailCommission {
+  id            String   @id @default(uuid())
+  tenantId      String
+  employeeId    String
+  planId        String
+  period        String   // YYYY-MM
+  salesAmount   Decimal  @db.Decimal(12, 2)
+  commissionAmount Decimal @db.Decimal(12, 2)
+  status        String   @default("CALCULATED") // CALCULATED | APPROVED | PAID
+  approvedAt    DateTime?
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([employeeId, period])
+  @@map("aura_retail_commission")
+}
+
+model RetailSeasonalHiring {
+  id            String   @id @default(uuid())
+  tenantId      String
+  season        String   // HOLIDAY | BACK_TO_SCHOOL | SUMMER
+  targetCount   Int
+  hiredCount    Int      @default(0)
+  startDate     DateTime
+  endDate       DateTime
+  status        String   @default("PLANNING")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("aura_retail_seasonal_hiring")
+}
+
+model RetailAlert {
+  id            String   @id @default(uuid())
+  tenantId      String
+  alertType     String
+  severity      String   @default("MEDIUM")
+  message       String
+  storeId       String?
+  status        String   @default("OPEN")
+  createdAt     DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("aura_retail_alert")
+}
+
+// ---- Tenant branding ----
+model TenantBranding {
+  id              String   @id @default(uuid())
+  tenantId        String   @unique
+  logoUrl         String?
+  primaryColor    String?
+  secondaryColor  String?
+  emailFromName   String?
+  emailFromAddress String?
+  customDomain    String?
+  updatedBy       String?
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+
+  @@map("aura_tenant_branding")
+}
+
+// ---- Document templates / uploads ----
+model DocumentTemplate {
+  id              String   @id @default(uuid())
+  tenantId        String
+  name            String
+  category        String   // OFFER | CONTRACT | LETTER | POLICY | etc.
+  body            String   @db.Text
+  variables       Json?
+  isActive        Boolean  @default(true)
+  createdBy       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, category])
+  @@map("aura_document_template")
+}
+
+model DocumentUpload {
+  id              String   @id @default(uuid())
+  tenantId        String
+  uploadedById    String
+  fileName        String
+  contentType     String?
+  sizeBytes       Int
+  storageKey      String   // S3 / GCS / blob key
+  metadata        Json?
+  expiresAt       DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([uploadedById])
+  @@map("aura_document_upload")
+}
+
+// ---- Compliance: labor ----
+model LaborMealBreakRule {
+  id            String   @id @default(uuid())
+  tenantId      String
+  countryCode   String
+  minHoursWorked Float   @default(5)
+  mealBreakMins Int      @default(30)
+  paidBreak     Boolean  @default(false)
+  effectiveFrom DateTime
+  createdAt     DateTime @default(now())
+
+  @@unique([tenantId, countryCode])
+  @@index([tenantId])
+  @@map("aura_meal_break_rule")
+}
+
+model PredictiveSchedulingRule {
+  id              String   @id @default(uuid())
+  tenantId        String
+  jurisdiction    String   // NYC | OR | etc.
+  advanceNoticeDays Int    @default(14)
+  predictabilityPayPercent Decimal @default(0) @db.Decimal(5, 2)
+  effectiveFrom   DateTime
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@unique([tenantId, jurisdiction])
+  @@index([tenantId])
+  @@map("aura_predictive_scheduling_rule")
+}
+
+// ---- AI / ML run records ----
+model AIRunRecord {
+  id            String   @id @default(uuid())
+  tenantId      String
+  runType       String   // attrition | leave_forecast | anomaly | resume_screen | etc.
+  inputContext  Json?
+  output        Json
+  modelVersion  String?
+  startedAt     DateTime @default(now())
+  completedAt   DateTime?
+  durationMs    Int?
+
+  @@index([tenantId])
+  @@index([tenantId, runType])
+  @@index([startedAt])
+  @@map("aura_ai_run_record")
+}
+
+// ---- Scheduler / cron job runs ----
+model ScheduledJobRun {
+  id          String   @id @default(uuid())
+  tenantId    String?  // null = global job
+  jobName     String
+  status      String   // STARTED | COMPLETED | FAILED
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  durationMs  Int?
+  error       String?  @db.Text
+  output      Json?
+
+  @@index([jobName])
+  @@index([tenantId])
+  @@index([startedAt])
+  @@map("aura_scheduled_job_run")
+}
+
+// ---- Auto-number sequences (when SystemSetting prefix-store is too coarse) ----
+model AutoNumberSequence {
+  id            String   @id @default(uuid())
+  tenantId      String
+  entityType    String   // 'employee' | 'invoice' | 'ticket' | etc.
+  prefix        String
+  suffix        String?
+  padLength     Int      @default(4)
+  currentNumber Int      @default(0)
+  incrementBy   Int      @default(1)
+  resetFrequency String  @default("never") // never | daily | monthly | yearly
+  isActive      Boolean  @default(true)
+  description   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, entityType])
+  @@index([tenantId])
+  @@map("aura_auto_number_sequence")
+}

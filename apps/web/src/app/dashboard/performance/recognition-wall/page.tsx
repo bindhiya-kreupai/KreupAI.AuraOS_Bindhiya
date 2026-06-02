@@ -1,10 +1,18 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { PerformanceReviewService } from '../core/services';
 import {
-  Heart, Award, Star, MessageSquare, ThumbsUp,
-  Plus, Trophy, TrendingUp, Sparkles, Loader2
+  Heart,
+  Award,
+  Star,
+  MessageSquare,
+  ThumbsUp,
+  Plus,
+  Trophy,
+  TrendingUp,
+  Sparkles,
+  Loader2,
 } from 'lucide-react';
 
 interface Recognition {
@@ -21,7 +29,14 @@ interface Recognition {
   timestamp: string;
 }
 
-const companyValues = ['Leadership', 'Innovation', 'Teamwork', 'Excellence', 'Integrity', 'Customer First'];
+const companyValues = [
+  'Leadership',
+  'Innovation',
+  'Teamwork',
+  'Excellence',
+  'Integrity',
+  'Customer First',
+];
 
 export default function RecognitionWallPage() {
   const [selectedValue, setSelectedValue] = useState('All');
@@ -43,7 +58,8 @@ export default function RecognitionWallPage() {
             fromAvatar: 'MG',
             to: `Employee ${r.employeeId?.slice(-4) || idx}`,
             toAvatar: (r.employeeId?.slice(-2) || 'EE').toUpperCase(),
-            message: r.managerComments || (Array.isArray(r.strengths) ? r.strengths[0] : 'Great work!'),
+            message:
+              r.managerComments || (Array.isArray(r.strengths) ? r.strengths[0] : 'Great work!'),
             value: 'Excellence',
             badge: 'Star Performer',
             points: 50,
@@ -74,9 +90,35 @@ export default function RecognitionWallPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">Recognition Wall</h1>
-          <p className="text-sm text-silver-mist mt-1">Celebrate achievements and appreciate your colleagues</p>
+          <p className="text-sm text-silver-mist mt-1">
+            Celebrate achievements and appreciate your colleagues
+          </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-celestial-indigo text-white rounded-lg font-medium text-sm hover:bg-celestial-indigo/90 transition-colors">
+        <button
+          onClick={() => {
+            const recipient = prompt('Who would you like to recognize? (Name or Employee ID)');
+            if (!recipient?.trim()) return;
+            const message = prompt('Recognition message:');
+            if (!message?.trim()) return;
+            try {
+              const key = 'auraos.performance.recognitions.v1';
+              const existing = JSON.parse(localStorage.getItem(key) || '[]');
+              existing.push({
+                id: `rec-${Date.now()}`,
+                recipient,
+                message,
+                createdAt: new Date().toISOString(),
+              });
+              localStorage.setItem(key, JSON.stringify(existing));
+              alert(
+                `Recognition sent to ${recipient}! Stored locally until a Recognition schema is added.`
+              );
+            } catch (e: any) {
+              alert(`Could not save: ${e?.message || e}`);
+            }
+          }}
+          className="flex items-center gap-2 px-4 py-2.5 bg-celestial-indigo text-white rounded-lg font-medium text-sm hover:bg-celestial-indigo/90 transition-colors"
+        >
           <Sparkles className="w-4 h-4" /> Give Recognition
         </button>
       </div>
@@ -105,7 +147,9 @@ export default function RecognitionWallPage() {
         <button
           onClick={() => setSelectedValue('All')}
           className={`px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
-            selectedValue === 'All' ? 'bg-celestial-indigo text-white' : 'bg-slate-100 dark:bg-deep-cosmos text-silver-mist'
+            selectedValue === 'All'
+              ? 'bg-celestial-indigo text-white'
+              : 'bg-slate-100 dark:bg-deep-cosmos text-silver-mist'
           }`}
         >
           All Values
@@ -115,7 +159,9 @@ export default function RecognitionWallPage() {
             key={value}
             onClick={() => setSelectedValue(value)}
             className={`px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
-              selectedValue === value ? 'bg-celestial-indigo text-white' : 'bg-slate-100 dark:bg-deep-cosmos text-silver-mist'
+              selectedValue === value
+                ? 'bg-celestial-indigo text-white'
+                : 'bg-slate-100 dark:bg-deep-cosmos text-silver-mist'
             }`}
           >
             {value}
@@ -134,10 +180,15 @@ export default function RecognitionWallPage() {
             </div>
           ) : (
             recognitions.map((rec) => (
-              <div key={rec.id} className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-4">
+              <div
+                key={rec.id}
+                className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-4"
+              >
                 <div className="flex items-start gap-3 mb-3">
                   <div className="w-9 h-9 rounded-full bg-celestial-indigo/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-celestial-indigo">{rec.fromAvatar}</span>
+                    <span className="text-xs font-bold text-celestial-indigo">
+                      {rec.fromAvatar}
+                    </span>
                   </div>
                   <div>
                     <p className="text-sm text-ink-black dark:text-pearl">
@@ -184,4 +235,3 @@ export default function RecognitionWallPage() {
     </div>
   );
 }
-

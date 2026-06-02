@@ -1,79 +1,56 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
-import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-function getDefaultEvents(tenantId: string) {
-  return [
-    {
-      id: `event-${tenantId}-001`,
-      title: 'Team Building Workshop',
-      description: 'Quarterly team building activity',
-      type: 'team_building',
-      status: 'published',
-      startDateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      endDateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000 + 7 * 60 * 60 * 1000).toISOString(),
-      location: 'Main Office',
-      capacity: 50,
-      registeredCount: 0,
-      tenantId,
-      createdBy: 'system',
-      createdAt: new Date().toISOString(),
-    },
-  ];
-}
-
-export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ENGAGEMENT, Action.READ, permissions);
-      if (permissionError) return permissionError;
-
-      const events = getDefaultEvents(user.tenantId);
-
-      return NextResponse.json({ success: true, data: events });
-    } catch (error: any) {
-      logger.error('Error fetching events:', error);
-      return NextResponse.json({ success: false, error: 'Failed to fetch events' }, { status: 500 });
-    }
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('engagement/events:read')) return forbidden('engagement/events:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).engagementEvent.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).engagementEvent.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error({ err: error, route: 'engagement/events/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
   }
-);
+});
 
-export const POST = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ENGAGEMENT, Action.CREATE, permissions);
-      if (permissionError) return permissionError;
-
-      const body = await request.json();
-      const newEvent = {
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('engagement/events:create'))
+      return forbidden('engagement/events:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).engagementEvent.create({
+      data: {
         ...body,
-        id: `event-${Date.now()}`,
         tenantId: user.tenantId,
         createdBy: user.userId,
-        createdAt: new Date().toISOString(),
-      };
-
-      return NextResponse.json({ success: true, data: newEvent }, { status: 201 });
-    } catch (error: any) {
-      logger.error('Error creating event:', error);
-      return NextResponse.json({ success: false, error: 'Failed to create event' }, { status: 500 });
-    }
+      },
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error({ err: error, route: 'engagement/events/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
   }
-);
-
-export const PUT = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ENGAGEMENT, Action.UPDATE, permissions);
-      if (permissionError) return permissionError;
-
-      const body = await request.json();
-      return NextResponse.json({ success: true, data: { ...body, tenantId: user.tenantId, lastModified: new Date().toISOString(), modifiedBy: user.userId } });
-    } catch (error: any) {
-      logger.error('Error updating event:', error);
-      return NextResponse.json({ success: false, error: 'Failed to update event' }, { status: 500 });
-    }
-  }
-);
+});

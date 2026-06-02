@@ -1,15 +1,21 @@
 import { APIClient } from '@/lib/api-client';
-import type { CrewMember, PortOperation, OffshoreCompliance, MaritimeSettings, MaritimeAlert } from './types';
+import type {
+  CrewMember,
+  PortOperation,
+  OffshoreCompliance,
+  MaritimeSettings,
+  MaritimeAlert,
+} from './types';
 
 export class VesselCrewingService {
   private static endpoint = '/industry-maritime/vessel-crewing';
 
   static async getAllCrew(): Promise<CrewMember[]> {
     try {
-      const response = await APIClient.get<{ crew?: CrewMember[] }>(`${this.endpoint}/crew`);
-      return response.crew || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/crew`);
+      return APIClient.unwrapList<CrewMember>(response, 'crew');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -19,7 +25,10 @@ export class VesselCrewingService {
   }
 
   static async updateCrew(crewId: string, updates: Partial<CrewMember>): Promise<CrewMember> {
-    const response = await APIClient.put<{ crew: CrewMember }>(`${this.endpoint}/crew/${crewId}`, updates);
+    const response = await APIClient.put<{ crew: CrewMember }>(
+      `${this.endpoint}/crew/${crewId}`,
+      updates
+    );
     return response.crew;
   }
 }
@@ -29,20 +38,29 @@ export class PortOperationsService {
 
   static async getAllOperations(): Promise<PortOperation[]> {
     try {
-      const response = await APIClient.get<{ operations?: PortOperation[] }>(this.endpoint);
-      return response.operations || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<PortOperation>(response, 'operations');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async createOperation(operationData: Partial<PortOperation>): Promise<PortOperation> {
-    const response = await APIClient.post<{ operation: PortOperation }>(this.endpoint, operationData);
+    const response = await APIClient.post<{ operation: PortOperation }>(
+      this.endpoint,
+      operationData
+    );
     return response.operation;
   }
 
-  static async updateOperation(operationId: string, updates: Partial<PortOperation>): Promise<PortOperation> {
-    const response = await APIClient.put<{ operation: PortOperation }>(`${this.endpoint}/${operationId}`, updates);
+  static async updateOperation(
+    operationId: string,
+    updates: Partial<PortOperation>
+  ): Promise<PortOperation> {
+    const response = await APIClient.put<{ operation: PortOperation }>(
+      `${this.endpoint}/${operationId}`,
+      updates
+    );
     return response.operation;
   }
 }
@@ -52,20 +70,31 @@ export class OffshoreComplianceService {
 
   static async getAllCompliance(): Promise<OffshoreCompliance[]> {
     try {
-      const response = await APIClient.get<{ compliance?: OffshoreCompliance[] }>(this.endpoint);
-      return response.compliance || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<OffshoreCompliance>(response, 'compliance');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async createCompliance(complianceData: Partial<OffshoreCompliance>): Promise<OffshoreCompliance> {
-    const response = await APIClient.post<{ compliance: OffshoreCompliance }>(this.endpoint, complianceData);
+  static async createCompliance(
+    complianceData: Partial<OffshoreCompliance>
+  ): Promise<OffshoreCompliance> {
+    const response = await APIClient.post<{ compliance: OffshoreCompliance }>(
+      this.endpoint,
+      complianceData
+    );
     return response.compliance;
   }
 
-  static async updateCompliance(complianceId: string, updates: Partial<OffshoreCompliance>): Promise<OffshoreCompliance> {
-    const response = await APIClient.put<{ compliance: OffshoreCompliance }>(`${this.endpoint}/${complianceId}`, updates);
+  static async updateCompliance(
+    complianceId: string,
+    updates: Partial<OffshoreCompliance>
+  ): Promise<OffshoreCompliance> {
+    const response = await APIClient.put<{ compliance: OffshoreCompliance }>(
+      `${this.endpoint}/${complianceId}`,
+      updates
+    );
     return response.compliance;
   }
 }
@@ -75,10 +104,10 @@ export class MaritimeSettingsService {
 
   static async getSettings(): Promise<MaritimeSettings | null> {
     try {
-      const response = await APIClient.get<{ settings?: MaritimeSettings }>(this.endpoint);
-      return response.settings || null;
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapItem<MaritimeSettings>(response, 'settings');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -93,10 +122,10 @@ export class AlertsService {
 
   static async getAllAlerts(): Promise<MaritimeAlert[]> {
     try {
-      const response = await APIClient.get<{ alerts?: MaritimeAlert[] }>(this.endpoint);
-      return response.alerts || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<MaritimeAlert>(response, 'alerts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 

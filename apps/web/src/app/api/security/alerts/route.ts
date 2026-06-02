@@ -1,76 +1,55 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
+    const { user, permissions } = context;
+    if (!permissions.includes('security/alerts:read')) return forbidden('security/alerts:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).securityAlert.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).securityAlert.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error({ err: error, route: 'security/alerts/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
+  }
+});
 
-    return NextResponse.json({
-      success: true,
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('security/alerts:create')) return forbidden('security/alerts:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).securityAlert.create({
       data: {
-        alerts: [],
+        ...body,
         tenantId: user.tenantId,
+        createdBy: user.userId,
       },
-    }, { status: 200 });
+    });
+    return successItem(created, { status: 201 });
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch security alerts' },
-      { status: 500 }
-    );
-  }
-});
-
-export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
-
-    const alert = {
-      id: `alert-${Date.now()}`,
-      alertType: body.alertType || 'access_violation',
-      severity: body.severity || 'low',
-      title: body.title || '',
-      message: body.message || '',
-      userId: body.userId || null,
-      ipAddress: body.ipAddress || null,
-      timestamp: body.timestamp || new Date().toISOString(),
-      status: 'active',
-      acknowledgedBy: null,
-      acknowledgedAt: null,
-      resolvedBy: null,
-      resolvedAt: null,
-      resolution: null,
-      tenantId: user.tenantId,
-      createdAt: new Date().toISOString(),
-    };
-
-    return NextResponse.json({ success: true, data: alert }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to create security alert' },
-      { status: 500 }
-    );
-  }
-});
-
-export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
-
-    const alert = {
-      ...body,
-      tenantId: user.tenantId,
-      updatedAt: new Date().toISOString(),
-      updatedBy: user.userId,
-    };
-
-    return NextResponse.json({ success: true, data: alert }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to update security alert' },
-      { status: 500 }
-    );
+    logger.error({ err: error, route: 'security/alerts/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
   }
 });

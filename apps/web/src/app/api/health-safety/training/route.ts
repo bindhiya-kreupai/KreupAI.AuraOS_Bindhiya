@@ -1,40 +1,57 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (request, context) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-
-    const defaultTraining = [
-      {
-        id: 'trn-001',
-        title: 'Fire Safety Drill',
-        duration: 15,
-        progress: 0,
-        deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        type: 'Mandatory',
-        tenantId: user.tenantId,
-      },
-      {
-        id: 'trn-002',
-        title: 'Ergonomics at Work',
-        duration: 30,
-        progress: 0,
-        deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        type: 'Recommended',
-        tenantId: user.tenantId,
-      },
-    ];
-
-    return NextResponse.json(
-      { success: true, data: defaultTraining },
-      { status: 200 }
-    );
+    const { user, permissions } = context;
+    if (!permissions.includes('health-safety/training:read'))
+      return forbidden('health-safety/training:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).healthSafetyTraining.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).healthSafetyTraining.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
   } catch (error: any) {
-    console.error('Error fetching safety training:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    logger.error({ err: error, route: 'health-safety/training/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
+  }
+});
+
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('health-safety/training:create'))
+      return forbidden('health-safety/training:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).healthSafetyTraining.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error({ err: error, route: 'health-safety/training/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
   }
 });

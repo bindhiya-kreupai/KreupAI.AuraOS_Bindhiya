@@ -1,62 +1,33 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-import crypto from 'crypto';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import {
+  forbidden,
+  safeJson,
+  serverError,
+  successItem,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-export const POST = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
-  if (!permissions.includes('learning/certificates:create')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing learning/certificates:create permission',
-          messageAr: 'ممنوع',
-        },
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('learning:certificate')) return forbidden('learning:certificate');
+    const body = await safeJson(request);
+    if (!body?.courseId || !body?.employeeId)
+      return validationError({ message: 'courseId + employeeId required' });
+    const certificate = await (prisma as any).certification.create({
+      data: {
+        tenantId: user.tenantId,
+        employeeId: body.employeeId,
+        courseId: body.courseId,
+        certificateNumber: `CERT-${Date.now().toString(36).toUpperCase()}`,
+        issuedAt: new Date(),
+        expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
       },
-      { status: 403 }
-    );
+    });
+    return successItem(certificate, { status: 201 });
+  } catch (error: any) {
+    return serverError(error, 'generate certificate');
   }
-  const body = await request.json();
-
-  const certificate = {
-    id: 'cert-' + Date.now(),
-    userId: body.userId || 'user-001',
-    pathId: body.pathId || 'lp-001',
-    recipientName: body.recipientName || 'John Smith',
-    pathTitle: 'Leadership Essentials',
-    issueDate: new Date().toISOString(),
-    expiryDate: '2028-01-23T00:00:00Z',
-    credentialId: 'CRED-2026-' + crypto.randomBytes(4).toString('hex').toUpperCase(),
-    verificationUrl: 'https://auraos.kreupai.com/verify/CRED-2026-ABC123',
-    score: body.score || 87,
-    completionDate: body.completionDate || new Date().toISOString(),
-    hoursCompleted: 40,
-    skills: ['communication', 'decision-making', 'team-management'],
-    issuedBy: {
-      organization: 'KreupAI Technologies',
-      signatoryName: 'Dr. Sarah Chen',
-      signatoryTitle: 'Director of Learning & Development',
-    },
-    pdf: {
-      url: '/api/v1/learning/certificates/cert-001/download',
-      size: '245KB',
-      format: 'A4',
-      generated: true,
-    },
-    shareableLinks: {
-      linkedin: 'https://www.linkedin.com/sharing/share-offsite/?url=...',
-      public: 'https://auraos.kreupai.com/certificates/public/cert-001',
-    },
-    blockchain: {
-      verified: true,
-      transactionHash: '0x1a2b3c4d5e6f...',
-      network: 'polygon',
-    },
-  };
-
-  return NextResponse.json(
-    { success: true, data: certificate, message: 'Certificate generated successfully' },
-    { status: 201 }
-  );
 });

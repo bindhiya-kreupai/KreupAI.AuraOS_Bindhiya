@@ -1,37 +1,57 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
+import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-const commissions = [
-    { id: '1', employeeName: 'Alice Johnson', amount: 1250, target: 10000, achieved: 12500, status: 'approved', date: '2024-03-01' },
-    { id: '2', employeeName: 'Bob Smith', amount: 850, target: 8000, achieved: 7500, status: 'pending', date: '2024-03-05' }
-];
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-retail/commissions:read'))
+      return forbidden('industry-retail/commissions:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).retailCommission.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).retailCommission.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error({ err: error, route: 'industry-retail/commissions/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
+  }
+});
 
-export async function GET(req: NextRequest) {
-    return NextResponse.json({ commissions });
-}
-
-export async function POST(req: NextRequest) {
-    const data = await req.json();
-    const newCommission = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data,
-        status: 'pending',
-        date: new Date().toISOString()
-    };
-    commissions.push(newCommission);
-    return NextResponse.json({ commission: newCommission });
-}
-
-export async function PUT(req: NextRequest) {
-    const { pathname } = new URL(req.url);
-    const id = pathname.split('/').pop();
-    const updates = await req.json();
-
-    const index = commissions.findIndex(c => c.id === id);
-    if (index !== -1) {
-        commissions[index] = { ...commissions[index], ...updates };
-        return NextResponse.json({ commission: commissions[index] });
-    }
-
-    return NextResponse.json({ error: 'Commission not found' }, { status: 404 });
-}
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-retail/commissions:create'))
+      return forbidden('industry-retail/commissions:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).retailCommission.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error({ err: error, route: 'industry-retail/commissions/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
+  }
+});

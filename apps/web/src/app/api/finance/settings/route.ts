@@ -1,84 +1,75 @@
-/**
- * Finance Settings API Routes
- * Finance Module - Settings Management
- */
-
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withEnhancedAuth } from '@/lib/auth';
+import { readSettings, writeSettings } from '@/lib/api/tenant-settings';
+import { logger } from '@/lib/logger';
 
-/**
- * GET /api/finance/settings
- * Get finance settings
- */
-export async function GET(request: NextRequest) {
+const MODULE = 'finance';
+
+const DEFAULT_SETTINGS = {
+  defaultCurrency: 'USD',
+  fiscalYearStart: '01-01',
+  budgetPeriod: 'annual',
+
+  requireBudgetApproval: true,
+  budgetVarianceThreshold: 10,
+  allowOverspending: false,
+  overspendingApprovalRequired: true,
+
+  requireVendorApproval: true,
+  vendorBackgroundCheckRequired: true,
+  minimumInsuranceCoverage: 1000000,
+  contractRenewalNoticeDays: 60,
+
+  defaultPettyCashLimit: 5000,
+  defaultTransactionLimit: 500,
+  requirePettyCashReceipt: true,
+  pettyCashApprovalThreshold: 200,
+  reconciliationFrequency: 'monthly',
+
+  defaultDepreciationMethod: 'straight_line',
+  defaultUsefulLife: 5,
+  assetCapitalizationThreshold: 5000,
+  requireAssetTag: true,
+
+  enableNotifications: true,
+  notifyBudgetThreshold: true,
+  notifyContractExpiry: true,
+  notifyVendorDocExpiry: true,
+  notifyPettyCashLow: true,
+};
+
+export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) => {
   try {
-    const defaultSettings = {
-      defaultCurrency: 'USD',
-      fiscalYearStart: '01-01',
-      budgetPeriod: 'annual',
-
-      requireBudgetApproval: true,
-      budgetVarianceThreshold: 10,
-      allowOverspending: false,
-      overspendingApprovalRequired: true,
-
-      requireVendorApproval: true,
-      vendorBackgroundCheckRequired: true,
-      minimumInsuranceCoverage: 1000000,
-      contractRenewalNoticeDays: 60,
-
-      defaultPettyCashLimit: 5000,
-      defaultTransactionLimit: 500,
-      requirePettyCashReceipt: true,
-      pettyCashApprovalThreshold: 200,
-      reconciliationFrequency: 'monthly',
-
-      defaultDepreciationMethod: 'straight_line',
-      defaultUsefulLife: 5,
-      assetCapitalizationThreshold: 5000,
-      requireAssetTag: true,
-
-      enableNotifications: true,
-      notifyBudgetThreshold: true,
-      notifyContractExpiry: true,
-      notifyVendorDocExpiry: true,
-      notifyPettyCashLow: true,
-
-      createdDate: new Date().toISOString(),
-      lastModified: new Date().toISOString(),
-    };
-
-    return NextResponse.json({
-      success: true,
-      settings: defaultSettings,
-    });
+    const tenantId = context.user.tenantId;
+    const settings = await readSettings(tenantId, MODULE, DEFAULT_SETTINGS);
+    return NextResponse.json({ success: true, data: { ...settings, tenantId } });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to fetch settings' },
+    logger.error({ err: error, module: MODULE }, 'Failed to read settings');
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch settings' },
       { status: 500 }
     );
   }
-}
+});
 
-/**
- * PUT /api/finance/settings
- * Update finance settings
- */
-export async function PUT(request: NextRequest) {
+export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
+    const tenantId = context.user.tenantId;
+    const userId = context.user.userId;
     const body = await request.json();
-
-    return NextResponse.json({
-      success: true,
-      settings: {
-        ...body,
-        lastModified: new Date().toISOString(),
-      },
-    });
+    // Strip server-managed fields so callers can't overwrite them.
+    delete body.tenantId;
+    delete body.updatedBy;
+    delete body.updatedAt;
+    await writeSettings(tenantId, MODULE, body, userId);
+    const settings = await readSettings(tenantId, MODULE, DEFAULT_SETTINGS);
+    return NextResponse.json({ success: true, data: { ...settings, tenantId } });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to update settings' },
+    logger.error({ err: error, module: MODULE }, 'Failed to update settings');
+    return NextResponse.json(
+      { success: false, error: 'Failed to update settings' },
       { status: 500 }
     );
   }
-}
+});

@@ -1,62 +1,55 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (_request: NextRequest, { _user, permissions }: any) => {
-  if (!permissions.includes('feedback:read')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing feedback:read permission',
-          messageAr: 'ممنوع',
-        },
-      },
-      { status: 403 }
-    );
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('feedback:read')) return forbidden('feedback:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).continuousFeedback.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).continuousFeedback.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error({ err: error, route: 'v1/feedback/given/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
   }
-  return NextResponse.json({
-    success: true,
-    data: {
-      userId: 'emp-101',
-      userName: 'Jane Smith',
-      givenFeedback: [
-        {
-          id: 'fb-020',
-          toUserName: 'Tom Brown',
-          type: 'peer',
-          category: 'collaboration',
-          rating: 4,
-          comment: 'Excellent teamwork on the Q4 project. Always willing to help.',
-          isAnonymous: false,
-          status: 'submitted',
-          createdAt: '2026-01-18T10:00:00Z',
-        },
-        {
-          id: 'fb-021',
-          toUserName: 'David Lee',
-          type: 'downward',
-          category: 'technical_skills',
-          rating: 4,
-          comment: 'Strong technical growth this quarter. Keep pushing boundaries.',
-          isAnonymous: false,
-          status: 'submitted',
-          createdAt: '2026-01-12T09:00:00Z',
-        },
-        {
-          id: 'fb-022',
-          toUserName: 'Sarah Connor',
-          type: 'peer',
-          category: 'initiative',
-          rating: 5,
-          comment: 'Outstanding initiative on the new CI/CD pipeline implementation.',
-          isAnonymous: false,
-          status: 'draft',
-          createdAt: '2026-01-22T15:00:00Z',
-        },
-      ],
-      totalCount: 3,
-    },
-  });
+});
+
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('feedback:create')) return forbidden('feedback:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).continuousFeedback.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error({ err: error, route: 'v1/feedback/given/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
+  }
 });

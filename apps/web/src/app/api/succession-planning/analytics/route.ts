@@ -1,36 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { forbidden, serverError, successItem } from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (request, context) => {
+export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-
-    const defaultMetrics = {
-      metrics: {
-        totalCriticalPositions: 0,
-        positionsWithSuccessors: 0,
-        positionsCoverage: 0,
-        readyNowSuccessors: 0,
-        avgSuccessionDepth: 0,
-        highRiskPositions: 0,
-        avgTimeToReadiness: 0,
-        developmentPlansActive: 0,
-        talentPoolSize: 0,
-        retentionRiskCount: 0,
-      },
-      analysis: [],
-      tenantId: user.tenantId,
-    };
-
-    return NextResponse.json(
-      { success: true, data: defaultMetrics },
-      { status: 200 }
-    );
+    const { user, permissions } = context;
+    if (!permissions.includes('succession-planning:read'))
+      return forbidden('succession-planning:read');
+    const activeEmployees = await (prisma as any).employee.count({
+      where: { tenantId: user.tenantId, status: 'ACTIVE' as any },
+    });
+    const probations = await prisma.probationTracking.count({
+      where: { tenantId: user.tenantId, status: 'ACTIVE' },
+    });
+    return successItem({
+      activeEmployees,
+      employeesOnProbation: probations,
+      successionReadyPercentage: 0, // populated once SuccessionPlan model is added
+      generatedAt: new Date().toISOString(),
+    });
   } catch (error: any) {
-    console.error('Error fetching succession analytics:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return serverError(error, 'compute succession analytics');
   }
 });

@@ -1,35 +1,26 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { forbidden, notFound, serverError, successItem } from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  const { permissions } = context;
-  if (!permissions.includes('documents:read')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing documents:read permission',
-          messageAr: 'ممنوع',
-        },
-      },
-      { status: 403 }
-    );
+export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) => {
+  try {
+    const { user, params, permissions } = context;
+    if (!permissions.includes('documents:read')) return forbidden('documents:read');
+    const row = await prisma.documentUpload.findFirst({
+      where: { id: params.id, tenantId: user.tenantId },
+    });
+    if (!row) return notFound('Document');
+    return successItem({
+      id: row.id,
+      fileName: row.fileName,
+      contentType: row.contentType,
+      sizeBytes: row.sizeBytes,
+      storageKey: row.storageKey,
+      downloadUrl: row.storageKey,
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+    });
+  } catch (error: any) {
+    return serverError(error, 'fetch document');
   }
-  const { id } = context.params;
-
-  // Mock file content (in production, this would fetch from storage)
-  const mockFileContent = Buffer.from(`Mock document content for document ID: ${id}`);
-
-  return new NextResponse(mockFileContent, {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="document-${id}.pdf"`,
-      'Content-Length': mockFileContent.length.toString(),
-      'X-Document-Id': id,
-      'X-Document-Name': `Document ${id}`,
-    },
-  });
 });

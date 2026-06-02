@@ -1,61 +1,51 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import {
+  forbidden,
+  safeJson,
+  serverError,
+  successItem,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-interface GeofenceValidateRequest {
-  lat: number;
-  lng: number;
+// Haversine in km
+function distance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-interface GeofenceValidateResponse {
-  valid: boolean;
-  status: 'inside' | 'outside';
-  geofenceName: string | null;
-  distanceFromBoundary: number;
-  timestamp: string;
-}
-
-export const POST = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
-  if (!permissions.includes('attendance:create')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing attendance:create permission',
-          messageAr: 'ممنوع',
-        },
-      },
-      { status: 403 }
-    );
-  }
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const body: GeofenceValidateRequest = await request.json();
-
-    if (body.lat === undefined || body.lng === undefined) {
-      return NextResponse.json({ error: 'lat and lng are required' }, { status: 400 });
+    const { user, permissions } = context;
+    if (!permissions.includes('attendance:punch')) return forbidden('attendance:punch');
+    const body = await safeJson(request);
+    if (typeof body?.latitude !== 'number' || typeof body?.longitude !== 'number') {
+      return validationError({ message: 'latitude + longitude required' });
     }
-
-    // Mock geofence validation logic
-    const officeLat = 37.7749;
-    const officeLng = -122.4194;
-    const radiusKm = 0.5;
-
-    const distance =
-      Math.sqrt(Math.pow(body.lat - officeLat, 2) + Math.pow(body.lng - officeLng, 2)) * 111; // rough km conversion
-
-    const isInside = distance <= radiusKm;
-
-    const response: GeofenceValidateResponse = {
-      valid: true,
-      status: isInside ? 'inside' : 'outside',
-      geofenceName: isInside ? 'Main Office' : null,
-      distanceFromBoundary: Math.round((distance - radiusKm) * 1000) / 1000,
-      timestamp: new Date().toISOString(),
-    };
-
-    return NextResponse.json(response);
-  } catch {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    const fences = await prisma.geofenceConfig.findMany({
+      where: { tenantId: user.tenantId, isActive: true, isDeleted: false } as any,
+    });
+    const matches = fences
+      .map((f: any) => {
+        const d = distance(f.latitude, f.longitude, body.latitude, body.longitude) * 1000;
+        return {
+          id: f.id,
+          name: f.name,
+          distanceMeters: d,
+          radiusMeters: f.radiusMeters,
+          withinRadius: d <= f.radiusMeters,
+        };
+      })
+      .filter((m) => m.withinRadius);
+    return successItem({ valid: matches.length > 0, matches, totalFences: fences.length });
+  } catch (error: any) {
+    return serverError(error, 'validate geofence');
   }
 });

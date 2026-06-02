@@ -7,10 +7,10 @@ export class PolicyService {
 
   static async getAll(): Promise<Policy[]> {
     try {
-      const response = await APIClient.get<{ policies?: Policy[] }>(this.endpoint);
-      return response.policies || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<Policy>(response, 'policies');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -34,10 +34,10 @@ export class PolicySettingsService {
 
   static async get(): Promise<PolicySettings | null> {
     try {
-      const response = await APIClient.get<{ settings?: PolicySettings }>(this.endpoint);
-      return response.settings || null;
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapItem<PolicySettings>(response, 'settings');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -52,8 +52,8 @@ export class AcknowledgementService {
 
   static async getAll(): Promise<any[]> {
     try {
-      const response = await APIClient.get<{ acknowledgements?: any[] }>(this.endpoint);
-      return response.acknowledgements || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<any>(response, 'acknowledgements');
     } catch (error: any) {
       return [];
     }
@@ -83,10 +83,10 @@ export class AlertsService {
 
   static async getAll(): Promise<PolicyAlert[]> {
     try {
-      const response = await APIClient.get<{ alerts?: PolicyAlert[] }>(this.endpoint);
-      return response.alerts || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<PolicyAlert>(response, 'alerts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 

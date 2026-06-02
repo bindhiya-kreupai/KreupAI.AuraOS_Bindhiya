@@ -33,24 +33,19 @@ export class ResignationService {
     departmentId?: string;
   }): Promise<ResignationLetter[]> {
     try {
-      const response = await APIClient.get<{ resignations?: ResignationLetter[] }>(
-        '/offboarding/resignations',
-        filters
-      );
-      return response.resignations || [];
+      const response = await APIClient.get<unknown>('/offboarding/resignations', filters);
+      return APIClient.unwrapList<ResignationLetter>(response, 'resignations');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getResignationById(id: string): Promise<ResignationLetter | null> {
     try {
-      const response = await APIClient.get<{ resignation?: ResignationLetter }>(
-        `/offboarding/resignations/${id}`
-      );
-      return response.resignation || null;
+      const response = await APIClient.get<unknown>(`/offboarding/resignations/${id}`);
+      return APIClient.unwrapItem<ResignationLetter>(response, 'resignation');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -62,7 +57,7 @@ export class ResignationService {
       );
       return response.resignation || resignation;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -75,16 +70,13 @@ export class ResignationService {
         `/offboarding/resignations/${id}`,
         updates
       );
-      return response.resignation || { ...updates, id } as ResignationLetter;
+      return response.resignation || ({ ...updates, id } as ResignationLetter);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
-  static async acceptResignation(
-    id: string,
-    acceptedBy: string
-  ): Promise<ResignationLetter> {
+  static async acceptResignation(id: string, acceptedBy: string): Promise<ResignationLetter> {
     return this.updateResignation(id, {
       status: 'accepted',
       acceptedBy,
@@ -138,24 +130,19 @@ export class TerminationService {
     departmentId?: string;
   }): Promise<TerminationNotice[]> {
     try {
-      const response = await APIClient.get<{ terminations?: TerminationNotice[] }>(
-        '/offboarding/terminations',
-        filters
-      );
-      return response.terminations || [];
+      const response = await APIClient.get<unknown>('/offboarding/terminations', filters);
+      return APIClient.unwrapList<TerminationNotice>(response, 'terminations');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getTerminationById(id: string): Promise<TerminationNotice | null> {
     try {
-      const response = await APIClient.get<{ termination?: TerminationNotice }>(
-        `/offboarding/terminations/${id}`
-      );
-      return response.termination || null;
+      const response = await APIClient.get<unknown>(`/offboarding/terminations/${id}`);
+      return APIClient.unwrapItem<TerminationNotice>(response, 'termination');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -167,7 +154,7 @@ export class TerminationService {
       );
       return response.termination || termination;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -180,9 +167,9 @@ export class TerminationService {
         `/offboarding/terminations/${id}`,
         updates
       );
-      return response.termination || { ...updates, id } as TerminationNotice;
+      return response.termination || ({ ...updates, id } as TerminationNotice);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -198,24 +185,19 @@ export class OffboardingInstanceService {
     departmentId?: string;
   }): Promise<OffboardingInstance[]> {
     try {
-      const response = await APIClient.get<{ instances?: OffboardingInstance[] }>(
-        '/offboarding/instances',
-        filters
-      );
-      return response.instances || [];
+      const response = await APIClient.get<unknown>('/offboarding/instances', filters);
+      return APIClient.unwrapList<OffboardingInstance>(response, 'instances');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getInstanceById(id: string): Promise<OffboardingInstance | null> {
     try {
-      const response = await APIClient.get<{ instance?: OffboardingInstance }>(
-        `/offboarding/instances/${id}`
-      );
-      return response.instance || null;
+      const response = await APIClient.get<unknown>(`/offboarding/instances/${id}`);
+      return APIClient.unwrapItem<OffboardingInstance>(response, 'instance');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -227,7 +209,7 @@ export class OffboardingInstanceService {
       );
       return response.instance || instance;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -240,9 +222,9 @@ export class OffboardingInstanceService {
         `/offboarding/instances/${id}`,
         updates
       );
-      return response.instance || { ...updates, id } as OffboardingInstance;
+      return response.instance || ({ ...updates, id } as OffboardingInstance);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -281,7 +263,7 @@ export class OffboardingInstanceService {
         progress,
       });
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -314,7 +296,7 @@ export class OffboardingTaskService {
       await OffboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
       return OffboardingInstanceService.updateProgress(instanceId);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -326,7 +308,7 @@ export class OffboardingTaskService {
       instance.tasks.push(task);
       return OffboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -338,7 +320,7 @@ export class OffboardingTaskService {
       instance.tasks = instance.tasks.filter((t) => t.id !== taskId);
       return OffboardingInstanceService.updateInstance(instanceId, { tasks: instance.tasks });
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -375,7 +357,7 @@ export class EquipmentReturnService {
         equipmentReturns: instance.equipmentReturns,
       });
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -402,7 +384,7 @@ export class EquipmentReturnService {
         equipmentReturns: instance.equipmentReturns,
       });
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -430,7 +412,7 @@ export class EquipmentReturnService {
         equipmentReturns: instance.equipmentReturns,
       });
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -463,7 +445,7 @@ export class AccessRevocationService {
         accessRevocations: instance.accessRevocations,
       });
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -492,7 +474,7 @@ export class AccessRevocationService {
         accessRevocations: instance.accessRevocations,
       });
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -527,7 +509,7 @@ export class ClearanceService {
         clearances: instance.clearances,
       });
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -561,7 +543,7 @@ export class ClearanceService {
         clearances: instance.clearances,
       });
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -576,13 +558,10 @@ export class KnowledgeTransferService {
     employeeId?: string;
   }): Promise<KnowledgeTransfer[]> {
     try {
-      const response = await APIClient.get<{ transfers?: KnowledgeTransfer[] }>(
-        '/offboarding/knowledge-transfers',
-        filters
-      );
-      return response.transfers || [];
+      const response = await APIClient.get<unknown>('/offboarding/knowledge-transfers', filters);
+      return APIClient.unwrapList<KnowledgeTransfer>(response, 'transfers');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -594,7 +573,7 @@ export class KnowledgeTransferService {
       );
       return response.transfer || transfer;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -607,9 +586,9 @@ export class KnowledgeTransferService {
         `/offboarding/knowledge-transfers/${id}`,
         updates
       );
-      return response.transfer || { ...updates, id } as KnowledgeTransfer;
+      return response.transfer || ({ ...updates, id } as KnowledgeTransfer);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -625,14 +604,11 @@ export class KnowledgeTransferService {
       const sessions = [...transfer.sessions, session];
       return this.updateKnowledgeTransfer(id, { sessions });
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
-  static async completeHandoverItem(
-    id: string,
-    itemId: string
-  ): Promise<KnowledgeTransfer> {
+  static async completeHandoverItem(id: string, itemId: string): Promise<KnowledgeTransfer> {
     try {
       const transfers = await this.getKnowledgeTransfers();
       const transfer = transfers.find((t) => t.id === id);
@@ -653,7 +629,7 @@ export class KnowledgeTransferService {
         progress,
       });
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -668,13 +644,10 @@ export class ExitInterviewService {
     status?: string;
   }): Promise<ExitInterview[]> {
     try {
-      const response = await APIClient.get<{ interviews?: ExitInterview[] }>(
-        '/offboarding/exit-interviews',
-        filters
-      );
-      return response.interviews || [];
+      const response = await APIClient.get<unknown>('/offboarding/exit-interviews', filters);
+      return APIClient.unwrapList<ExitInterview>(response, 'interviews');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -686,7 +659,7 @@ export class ExitInterviewService {
       );
       return response.interview || interview;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -699,16 +672,13 @@ export class ExitInterviewService {
         `/offboarding/exit-interviews/${id}`,
         updates
       );
-      return response.interview || { ...updates, id } as ExitInterview;
+      return response.interview || ({ ...updates, id } as ExitInterview);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
-  static async completeInterview(
-    id: string,
-    conductedBy: string
-  ): Promise<ExitInterview> {
+  static async completeInterview(id: string, conductedBy: string): Promise<ExitInterview> {
     return this.updateExitInterview(id, {
       status: 'completed',
       conductedDate: new Date().toISOString(),
@@ -727,13 +697,10 @@ export class ExitSurveyService {
     status?: string;
   }): Promise<ExitSurvey[]> {
     try {
-      const response = await APIClient.get<{ surveys?: ExitSurvey[] }>(
-        '/offboarding/exit-surveys',
-        filters
-      );
-      return response.surveys || [];
+      const response = await APIClient.get<unknown>('/offboarding/exit-surveys', filters);
+      return APIClient.unwrapList<ExitSurvey>(response, 'surveys');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -745,7 +712,7 @@ export class ExitSurveyService {
       );
       return response.survey || survey;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -770,9 +737,9 @@ export class ExitSurveyService {
           completedDate: new Date().toISOString(),
         }
       );
-      return response.survey || { id, status: 'completed' } as ExitSurvey;
+      return response.survey || ({ id, status: 'completed' } as ExitSurvey);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -787,13 +754,10 @@ export class FinalSettlementService {
     status?: string;
   }): Promise<FinalSettlement[]> {
     try {
-      const response = await APIClient.get<{ settlements?: FinalSettlement[] }>(
-        '/offboarding/final-settlements',
-        filters
-      );
-      return response.settlements || [];
+      const response = await APIClient.get<unknown>('/offboarding/final-settlements', filters);
+      return APIClient.unwrapList<FinalSettlement>(response, 'settlements');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -805,7 +769,7 @@ export class FinalSettlementService {
       );
       return response.settlement || settlement;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -818,9 +782,9 @@ export class FinalSettlementService {
         `/offboarding/final-settlements/${id}`,
         updates
       );
-      return response.settlement || { ...updates, id } as FinalSettlement;
+      return response.settlement || ({ ...updates, id } as FinalSettlement);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -856,13 +820,10 @@ export class AlumniService {
     departmentId?: string;
   }): Promise<AlumniRecord[]> {
     try {
-      const response = await APIClient.get<{ alumni?: AlumniRecord[] }>(
-        '/offboarding/alumni',
-        filters
-      );
-      return response.alumni || [];
+      const response = await APIClient.get<unknown>('/offboarding/alumni', filters);
+      return APIClient.unwrapList<AlumniRecord>(response, 'alumni');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -874,7 +835,7 @@ export class AlumniService {
       );
       return response.alumniRecord || record;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -887,9 +848,9 @@ export class AlumniService {
         `/offboarding/alumni/${id}`,
         updates
       );
-      return response.alumniRecord || { ...updates, id } as AlumniRecord;
+      return response.alumniRecord || ({ ...updates, id } as AlumniRecord);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -911,39 +872,41 @@ export class OffboardingAnalyticsService {
       const response = await APIClient.get<{ metrics?: OffboardingMetrics }>(
         '/offboarding/analytics/metrics'
       );
-      return response.metrics || {
-        totalOffboarding: 0,
-        activeOffboarding: 0,
-        completedOffboarding: 0,
-        averageCompletionTime: 0,
-        averageNoticePeriod: 0,
-        offboardingByType: [],
-        offboardingByDepartment: [],
-        turnoverRate: 0,
-        voluntaryTurnover: 0,
-        involuntaryTurnover: 0,
-        retirementRate: 0,
-        avgTenure: 0,
-        topExitReasons: [],
-        rehireEligibilityStats: {
-          eligible: 0,
-          notEligible: 0,
-          restricted: 0,
-          underReview: 0,
-        },
-        exitInterviewParticipation: 0,
-        exitSurveyResponse: 0,
-        averageExitRating: 0,
-        npsScore: 0,
-        equipmentReturnRate: 0,
-        clearanceCompletionRate: 0,
-        knowledgeTransferCompletionRate: 0,
-        alumniEngagementRate: 0,
-        costPerOffboarding: 0,
-        retentionRiskDepartments: [],
-      };
+      return (
+        response.metrics || {
+          totalOffboarding: 0,
+          activeOffboarding: 0,
+          completedOffboarding: 0,
+          averageCompletionTime: 0,
+          averageNoticePeriod: 0,
+          offboardingByType: [],
+          offboardingByDepartment: [],
+          turnoverRate: 0,
+          voluntaryTurnover: 0,
+          involuntaryTurnover: 0,
+          retirementRate: 0,
+          avgTenure: 0,
+          topExitReasons: [],
+          rehireEligibilityStats: {
+            eligible: 0,
+            notEligible: 0,
+            restricted: 0,
+            underReview: 0,
+          },
+          exitInterviewParticipation: 0,
+          exitSurveyResponse: 0,
+          averageExitRating: 0,
+          npsScore: 0,
+          equipmentReturnRate: 0,
+          clearanceCompletionRate: 0,
+          knowledgeTransferCompletionRate: 0,
+          alumniEngagementRate: 0,
+          costPerOffboarding: 0,
+          retentionRiskDepartments: [],
+        }
+      );
     } catch (error: any) {
-            return {} as OffboardingMetrics;
+      return {} as OffboardingMetrics;
     }
   }
 }
@@ -958,46 +921,46 @@ export class OffboardingSettingsService {
       const response = await APIClient.get<{ settings?: OffboardingSettings }>(
         '/offboarding/settings'
       );
-      return response.settings || {
-        defaultNoticePeriod: 30,
-        autoInitiateOffboarding: true,
-        requireExitInterview: true,
-        requireExitSurvey: true,
-        exitSurveyAnonymous: false,
-        exitSurveyExpiry: 30,
-        sendExitSurveyAfter: 0,
-        requireKnowledgeTransfer: true,
-        knowledgeTransferDuration: 14,
-        autoRevokeAccessOnExit: true,
-        accessRevocationLeadTime: 0,
-        autoCreateAlumniRecord: true,
-        alumniOptInRequired: false,
-        equipmentReturnReminder: 7,
-        clearanceReminderFrequency: 'weekly',
-        finalSettlementDays: 45,
-        allowCounterOffer: true,
-        counterOfferApprovalRequired: true,
-        notificationEmail: 'hr@company.com',
-        hrNotificationEmail: 'hr@company.com',
-        itNotificationEmail: 'it@company.com',
-        financeNotificationEmail: 'finance@company.com',
-      };
+      return (
+        response.settings || {
+          defaultNoticePeriod: 30,
+          autoInitiateOffboarding: true,
+          requireExitInterview: true,
+          requireExitSurvey: true,
+          exitSurveyAnonymous: false,
+          exitSurveyExpiry: 30,
+          sendExitSurveyAfter: 0,
+          requireKnowledgeTransfer: true,
+          knowledgeTransferDuration: 14,
+          autoRevokeAccessOnExit: true,
+          accessRevocationLeadTime: 0,
+          autoCreateAlumniRecord: true,
+          alumniOptInRequired: false,
+          equipmentReturnReminder: 7,
+          clearanceReminderFrequency: 'weekly',
+          finalSettlementDays: 45,
+          allowCounterOffer: true,
+          counterOfferApprovalRequired: true,
+          notificationEmail: 'hr@company.com',
+          hrNotificationEmail: 'hr@company.com',
+          itNotificationEmail: 'it@company.com',
+          financeNotificationEmail: 'finance@company.com',
+        }
+      );
     } catch (error: any) {
-            return {} as OffboardingSettings;
+      return {} as OffboardingSettings;
     }
   }
 
-  static async updateSettings(
-    updates: Partial<OffboardingSettings>
-  ): Promise<OffboardingSettings> {
+  static async updateSettings(updates: Partial<OffboardingSettings>): Promise<OffboardingSettings> {
     try {
       const response = await APIClient.put<{ settings?: OffboardingSettings }>(
         '/offboarding/settings',
         updates
       );
-      return response.settings || updates as OffboardingSettings;
+      return response.settings || (updates as OffboardingSettings);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }

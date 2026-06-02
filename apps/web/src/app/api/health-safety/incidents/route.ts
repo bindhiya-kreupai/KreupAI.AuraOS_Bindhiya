@@ -1,44 +1,57 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        incidents: [],
-        tenantId: user.tenantId,
-      },
-    }, { status: 200 });
+    const { user, permissions } = context;
+    if (!permissions.includes('health-safety/incidents:read'))
+      return forbidden('health-safety/incidents:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).healthSafetyIncident.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).healthSafetyIncident.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch incidents' },
-      { status: 500 }
-    );
+    logger.error({ err: error, route: 'health-safety/incidents/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
   }
 });
 
-export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-    const body = await request.json();
-
-    const incident = {
-      ...body,
-      id: `INC-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`,
-      tenantId: user.tenantId,
-      reportedAt: new Date().toISOString(),
-      status: body.status || 'Open',
-    };
-
-    return NextResponse.json({ success: true, data: incident }, { status: 201 });
+    const { user, permissions } = context;
+    if (!permissions.includes('health-safety/incidents:create'))
+      return forbidden('health-safety/incidents:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).healthSafetyIncident.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to create incident' },
-      { status: 500 }
-    );
+    logger.error({ err: error, route: 'health-safety/incidents/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
   }
 });

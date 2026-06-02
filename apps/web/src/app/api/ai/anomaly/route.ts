@@ -3,7 +3,7 @@
  * Phase 3: Intelligence Layer - Pattern Recognition
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -91,9 +91,17 @@ export async function POST(request: NextRequest) {
               patternsFound: 8,
               significantAnomalies: 3,
               trends: [
-                { pattern: 'WEEKLY_CYCLE', description: 'Monday/Friday absences trending up', strength: 0.85 },
+                {
+                  pattern: 'WEEKLY_CYCLE',
+                  description: 'Monday/Friday absences trending up',
+                  strength: 0.85,
+                },
                 { pattern: 'SEASONAL', description: 'End-of-month overtime spike', strength: 0.78 },
-                { pattern: 'DEPARTMENT', description: 'Engineering burnout indicators', strength: 0.82 },
+                {
+                  pattern: 'DEPARTMENT',
+                  description: 'Engineering burnout indicators',
+                  strength: 0.82,
+                },
               ],
             },
           },
@@ -113,7 +121,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
   } catch (error: any) {
-        return NextResponse.json({ error: 'Failed to process anomaly detection' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process anomaly detection' }, { status: 500 });
   }
 }
 
@@ -138,6 +146,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json({ error: 'Failed to fetch anomalies' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch anomalies' }, { status: 500 });
   }
 }

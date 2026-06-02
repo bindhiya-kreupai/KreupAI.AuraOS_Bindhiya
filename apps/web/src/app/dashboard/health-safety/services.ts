@@ -64,8 +64,8 @@ export interface HealthSafetySettings {
 export class IncidentService {
   static async getAll(): Promise<Incident[]> {
     try {
-      const response = await APIClient.get<{ data?: Incident[] }>('/health-safety/incidents');
-      return response.data || [];
+      const response = await APIClient.get<unknown>('/health-safety/incidents');
+      return APIClient.unwrapList<Incident>(response, 'data');
     } catch {
       return [];
     }
@@ -80,8 +80,8 @@ export class IncidentService {
 export class HealthCheckupService {
   static async getAll(): Promise<HealthCheckup[]> {
     try {
-      const response = await APIClient.get<{ data?: HealthCheckup[] }>('/health-safety/checkups');
-      return response.data || [];
+      const response = await APIClient.get<unknown>('/health-safety/checkups');
+      return APIClient.unwrapList<HealthCheckup>(response, 'data');
     } catch {
       return [];
     }
@@ -96,8 +96,8 @@ export class HealthCheckupService {
 export class EmergencyService {
   static async getContacts(): Promise<EmergencyContact[]> {
     try {
-      const response = await APIClient.get<{ data?: EmergencyContact[] }>('/health-safety/emergency');
-      return response.data || [];
+      const response = await APIClient.get<unknown>('/health-safety/emergency');
+      return APIClient.unwrapList<EmergencyContact>(response, 'data');
     } catch {
       return [];
     }
@@ -107,8 +107,8 @@ export class EmergencyService {
 export class SafetyTrainingService {
   static async getAll(): Promise<SafetyTraining[]> {
     try {
-      const response = await APIClient.get<{ data?: SafetyTraining[] }>('/health-safety/training');
-      return response.data || [];
+      const response = await APIClient.get<unknown>('/health-safety/training');
+      return APIClient.unwrapList<SafetyTraining>(response, 'data');
     } catch {
       return [];
     }
@@ -118,8 +118,8 @@ export class SafetyTrainingService {
 export class HealthSafetyAnalyticsService {
   static async getMetrics(): Promise<any> {
     try {
-      const response = await APIClient.get<{ data?: any }>('/health-safety/settings');
-      return response.data || {};
+      const response = await APIClient.get<unknown>('/health-safety/settings');
+      return APIClient.unwrapItem<any>(response) || {};
     } catch {
       return {};
     }
@@ -129,15 +129,22 @@ export class HealthSafetyAnalyticsService {
 export class HealthSafetySettingsService {
   static async getSettings(): Promise<HealthSafetySettings | null> {
     try {
-      const response = await APIClient.get<{ data?: HealthSafetySettings }>('/health-safety/settings');
-      return response.data || null;
+      const response = await APIClient.get<{ data?: HealthSafetySettings }>(
+        '/health-safety/settings'
+      );
+      return APIClient.unwrapItem<any>(response, 'data');
     } catch {
       return null;
     }
   }
 
-  static async updateSettings(settings: Partial<HealthSafetySettings>): Promise<HealthSafetySettings> {
-    const response = await APIClient.put<{ data: HealthSafetySettings }>('/health-safety/settings', settings);
+  static async updateSettings(
+    settings: Partial<HealthSafetySettings>
+  ): Promise<HealthSafetySettings> {
+    const response = await APIClient.put<{ data: HealthSafetySettings }>(
+      '/health-safety/settings',
+      settings
+    );
     return response.data;
   }
 }

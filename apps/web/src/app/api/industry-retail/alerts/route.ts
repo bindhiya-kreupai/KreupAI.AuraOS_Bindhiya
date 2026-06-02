@@ -1,23 +1,57 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
+import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-const alerts = [
-    { id: '1', type: 'performance', severity: 'high', title: 'Low Inventory', message: 'Store 1 is below threshold for key items.', status: 'active', createdAt: new Date().toISOString() },
-    { id: '2', type: 'hiring', severity: 'medium', title: 'Hiring Target', message: 'Store 2 is 20% behind on seasonal hiring.', status: 'active', createdAt: new Date().toISOString() }
-];
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-retail/alerts:read'))
+      return forbidden('industry-retail/alerts:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).retailAlert.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).retailAlert.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error({ err: error, route: 'industry-retail/alerts/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
+  }
+});
 
-export async function GET(req: NextRequest) {
-    return NextResponse.json({ alerts });
-}
-
-export async function POST(req: NextRequest) {
-    const data = await req.json();
-    const newAlert = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data,
-        status: 'active',
-        createdAt: new Date().toISOString()
-    };
-    alerts.push(newAlert);
-    return NextResponse.json({ alert: newAlert });
-}
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-retail/alerts:create'))
+      return forbidden('industry-retail/alerts:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).retailAlert.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error({ err: error, route: 'industry-retail/alerts/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
+  }
+});

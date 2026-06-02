@@ -1,69 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { forbidden, parsePagination, serverError, successList } from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (request, context) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-
-    const logs = [
-      {
-        logId: `log-${Date.now()}`,
-        timestamp: new Date().toISOString(),
-        userId: user.userId,
-        userName: 'Admin User',
-        action: 'update',
-        resource: 'employee',
-        resourceId: 'emp-001',
-        changes: { field: 'salary', oldValue: '50000', newValue: '55000' },
-        ipAddress: '192.168.1.1',
-        userAgent: 'Mozilla/5.0',
-        status: 'success',
-        errorMessage: null
-      },
-      {
-        logId: `log-${Date.now() - 1000}`,
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-        userId: user.userId,
-        userName: 'HR Manager',
-        action: 'create',
-        resource: 'employee',
-        resourceId: 'emp-002',
-        changes: {},
-        ipAddress: '192.168.1.2',
-        userAgent: 'Mozilla/5.0',
-        status: 'success',
-        errorMessage: null
-      }
-    ];
-
-    return NextResponse.json({ logs }, { status: 200 });
+    const { user, permissions } = context;
+    if (!permissions.includes('security:audit:read')) return forbidden('security:audit:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const sp = new URL(request.url).searchParams;
+    const action = sp.get('action') || undefined;
+    const userId = sp.get('userId') || undefined;
+    const where: any = { tenantId: user.tenantId };
+    if (action) where.action = action;
+    if (userId) where.userId = userId;
+    const [rows, total] = await Promise.all([
+      (prisma as any).auditLog.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).auditLog.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
   } catch (error: any) {
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-});
-
-export const POST = withEnhancedAuth(async (request, context) => {
-  try {
-    const body = await request.json();
-    const { user } = context;
-
-    const log = {
-      logId: `log-${Date.now()}`,
-      timestamp: body.timestamp || new Date().toISOString(),
-      userId: user.userId,
-      userName: body.userName || 'User',
-      action: body.action || 'read',
-      resource: body.resource || '',
-      resourceId: body.resourceId || '',
-      changes: body.changes || {},
-      ipAddress: body.ipAddress || '',
-      userAgent: body.userAgent || '',
-      status: body.status || 'success',
-      errorMessage: body.errorMessage || null
-    };
-
-    return NextResponse.json({ log }, { status: 201 });
-  } catch (error: any) {
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return serverError(error, 'list audit logs');
   }
 });

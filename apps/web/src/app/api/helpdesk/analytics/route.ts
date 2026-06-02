@@ -1,61 +1,42 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { forbidden, serverError, successItem } from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (request, context) => {
+export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-
-    const defaultAnalytics = {
-      analyticsId: `analytics-${user.tenantId}`,
-      period: {
-        startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        endDate: new Date().toISOString(),
-      },
-      ticketMetrics: {
-        totalTickets: 0,
-        newTickets: 0,
-        resolvedTickets: 0,
-        closedTickets: 0,
-        reopenedTickets: 0,
-        averageFirstResponseTime: 0,
-        averageResolutionTime: 0,
-        backlog: 0,
-      },
-      slaMetrics: {
-        totalSLAs: 0,
-        slaMet: 0,
-        slaBreached: 0,
-        slaAtRisk: 0,
-        complianceRate: 0,
-        averageBreachTime: 0,
-      },
-      agentMetrics: {
-        totalAgents: 0,
-        activeAgents: 0,
-        averageTicketsPerAgent: 0,
-        topPerformers: [],
-      },
-      categoryBreakdown: [],
-      satisfactionMetrics: {
-        totalSurveys: 0,
-        responseRate: 0,
-        averageRating: 0,
-        ratingDistribution: [],
-        netPromoterScore: 0,
-      },
-      trends: [],
-      tenantId: user.tenantId,
-    };
-
-    return NextResponse.json(
-      { success: true, data: defaultAnalytics },
-      { status: 200 }
-    );
+    const { user, permissions } = context;
+    if (!permissions.includes('helpdesk:read')) return forbidden('helpdesk:read');
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const [total, open, resolved, byCategory, byPriority] = await Promise.all([
+      prisma.helpdeskTicket.count({
+        where: { tenantId: user.tenantId, createdAt: { gte: since } },
+      }),
+      prisma.helpdeskTicket.count({
+        where: { tenantId: user.tenantId, status: { in: ['OPEN', 'IN_PROGRESS'] } },
+      }),
+      prisma.helpdeskTicket.count({ where: { tenantId: user.tenantId, status: 'RESOLVED' } }),
+      prisma.helpdeskTicket.groupBy({
+        by: ['category'],
+        where: { tenantId: user.tenantId, createdAt: { gte: since } },
+        _count: { _all: true },
+      }),
+      prisma.helpdeskTicket.groupBy({
+        by: ['priority'],
+        where: { tenantId: user.tenantId, createdAt: { gte: since } },
+        _count: { _all: true },
+      }),
+    ]);
+    return successItem({
+      windowDays: 30,
+      total,
+      open,
+      resolved,
+      byCategory: byCategory.map((b) => ({ category: b.category, count: b._count._all })),
+      byPriority: byPriority.map((b) => ({ priority: b.priority, count: b._count._all })),
+      generatedAt: new Date().toISOString(),
+    });
   } catch (error: any) {
-    console.error('Error fetching helpdesk analytics:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return serverError(error, 'compute helpdesk analytics');
   }
 });

@@ -6,10 +6,10 @@ export class VolunteerService {
 
   static async getAll(): Promise<Volunteer[]> {
     try {
-      const response = await APIClient.get<{ volunteers?: Volunteer[] }>(this.endpoint);
-      return response.volunteers || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<Volunteer>(response, 'volunteers');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -19,7 +19,10 @@ export class VolunteerService {
   }
 
   static async update(id: string, updates: Partial<Volunteer>): Promise<Volunteer> {
-    const response = await APIClient.put<{ volunteer: Volunteer }>(`${this.endpoint}/${id}`, updates);
+    const response = await APIClient.put<{ volunteer: Volunteer }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.volunteer;
   }
 }
@@ -29,10 +32,10 @@ export class MissionService {
 
   static async getAll(): Promise<FieldMission[]> {
     try {
-      const response = await APIClient.get<{ missions?: FieldMission[] }>(this.endpoint);
-      return response.missions || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<FieldMission>(response, 'missions');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -42,7 +45,10 @@ export class MissionService {
   }
 
   static async update(id: string, updates: Partial<FieldMission>): Promise<FieldMission> {
-    const response = await APIClient.put<{ mission: FieldMission }>(`${this.endpoint}/${id}`, updates);
+    const response = await APIClient.put<{ mission: FieldMission }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
     return response.mission;
   }
 }
@@ -52,10 +58,10 @@ export class DonorService {
 
   static async getAll(): Promise<Donor[]> {
     try {
-      const response = await APIClient.get<{ donors?: Donor[] }>(this.endpoint);
-      return response.donors || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<Donor>(response, 'donors');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -70,10 +76,10 @@ export class NonprofitSettingsService {
 
   static async get(): Promise<NonprofitSettings | null> {
     try {
-      const response = await APIClient.get<{ settings?: NonprofitSettings }>(this.endpoint);
-      return response.settings || null;
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapItem<NonprofitSettings>(response, 'settings');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -88,10 +94,10 @@ export class AlertsService {
 
   static async getAll(): Promise<NonprofitAlert[]> {
     try {
-      const response = await APIClient.get<{ alerts?: NonprofitAlert[] }>(this.endpoint);
-      return response.alerts || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<NonprofitAlert>(response, 'alerts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 

@@ -1,47 +1,57 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
+import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-// Mock data in-memory storage
-const stores = [
-    { id: '1', name: 'Downtown Flagship', location: 'New York, NY', manager: 'John Doe', status: 'open', weeklySales: 125000, footTraffic: 8500 },
-    { id: '2', name: 'Westside Mall', location: 'Los Angeles, CA', manager: 'Jane Smith', status: 'open', weeklySales: 98000, footTraffic: 12000 },
-    { id: '3', name: 'North Shore Outlet', location: 'Chicago, IL', manager: 'Bob Wilson', status: 'maintenance', weeklySales: 45000, footTraffic: 3000 }
-];
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-retail/stores:read'))
+      return forbidden('industry-retail/stores:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).retailStore.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).retailStore.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error({ err: error, route: 'industry-retail/stores/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
+  }
+});
 
-export async function GET(req: NextRequest) {
-    return NextResponse.json({ stores });
-}
-
-export async function POST(req: NextRequest) {
-    const data = await req.json();
-    const newStore = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...data,
-        status: data.status || 'open',
-        weeklySales: 0,
-        footTraffic: 0
-    };
-    stores.push(newStore);
-    return NextResponse.json({ store: newStore });
-}
-
-export async function PUT(req: NextRequest) {
-    const { pathname } = new URL(req.url);
-    const id = pathname.split('/').pop();
-    const updates = await req.json();
-
-    const index = stores.findIndex(s => s.id === id);
-    if (index !== -1) {
-        stores[index] = { ...stores[index], ...updates };
-        return NextResponse.json({ store: stores[index] });
-    }
-
-    // Global update if no ID provided (not recommended but for completeness)
-    if (!id || id === 'stores') {
-        const body = updates;
-        // In a real scenario, this would be a more complex update logic
-        return NextResponse.json({ store: body });
-    }
-
-    return NextResponse.json({ error: 'Store not found' }, { status: 404 });
-}
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('industry-retail/stores:create'))
+      return forbidden('industry-retail/stores:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).retailStore.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error({ err: error, route: 'industry-retail/stores/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
+  }
+});

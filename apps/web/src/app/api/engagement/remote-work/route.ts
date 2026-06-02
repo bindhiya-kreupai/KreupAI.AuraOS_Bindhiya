@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
@@ -31,89 +31,83 @@ function getDefaultRemoteWorkData(tenantId: string) {
   };
 }
 
-export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ENGAGEMENT, Action.READ, permissions);
-      if (permissionError) return permissionError;
+export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
+  try {
+    const permissionError = requirePermission(Resource.ENGAGEMENT, Action.READ, permissions);
+    if (permissionError) return permissionError;
 
-      const { searchParams } = new URL(request.url);
-      const type = searchParams.get('type');
-      const data = getDefaultRemoteWorkData(user.tenantId);
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type');
+    const data = getDefaultRemoteWorkData(user.tenantId);
 
-      switch (type) {
-        case 'policies':
-          return NextResponse.json({ policies: data.policies });
-        case 'assignments':
-          return NextResponse.json({ assignments: data.assignments });
-        case 'statistics':
-          return NextResponse.json({ statistics: data.statistics });
-        case 'metrics':
-          return NextResponse.json({ teamMetrics: data.statistics });
-        case 'equipment':
-          return NextResponse.json({ equipment: [] });
-        case 'requests':
-          return NextResponse.json({ requests: [] });
-        default:
-          return NextResponse.json(data);
-      }
-    } catch (error: any) {
-      logger.error('Remote Work API error:', error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    switch (type) {
+      case 'policies':
+        return NextResponse.json({ policies: data.policies });
+      case 'assignments':
+        return NextResponse.json({ assignments: data.assignments });
+      case 'statistics':
+        return NextResponse.json({ statistics: data.statistics });
+      case 'metrics':
+        return NextResponse.json({ teamMetrics: data.statistics });
+      case 'equipment':
+        return NextResponse.json({ equipment: [] });
+      case 'requests':
+        return NextResponse.json({ requests: [] });
+      default:
+        return NextResponse.json(data);
     }
+  } catch (error: any) {
+    logger.error('Remote Work API error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-);
+});
 
-export const POST = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ENGAGEMENT, Action.CREATE, permissions);
-      if (permissionError) return permissionError;
+export const POST = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
+  try {
+    const permissionError = requirePermission(Resource.ENGAGEMENT, Action.CREATE, permissions);
+    if (permissionError) return permissionError;
 
-      const body = await request.json();
-      const newRequest = {
-        ...body,
-        id: `rw-req-${Date.now()}`,
-        tenantId: user.tenantId,
-        requestedBy: user.userId,
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-      };
+    const body = await request.json();
+    const newRequest = {
+      ...body,
+      id: `rw-req-${Date.now()}`,
+      tenantId: user.tenantId,
+      requestedBy: user.userId,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
 
-      return NextResponse.json({ request: newRequest }, { status: 201 });
-    } catch (error: any) {
-      logger.error('Remote Work Request API error:', error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ request: newRequest }, { status: 201 });
+  } catch (error: any) {
+    logger.error('Remote Work Request API error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+});
+
+export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
+  try {
+    const permissionError = requirePermission(Resource.ENGAGEMENT, Action.UPDATE, permissions);
+    if (permissionError) return permissionError;
+
+    const body = await request.json();
+    const { requestId, decision, comments } = body;
+
+    if (!requestId || !decision) {
+      return NextResponse.json({ error: 'Request ID and decision are required' }, { status: 400 });
     }
+
+    const updatedRequest = {
+      id: requestId,
+      tenantId: user.tenantId,
+      decision,
+      comments: comments || '',
+      reviewedBy: user.userId,
+      reviewedAt: new Date().toISOString(),
+    };
+
+    return NextResponse.json({ request: updatedRequest });
+  } catch (error: any) {
+    logger.error('Remote Work Review API error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-);
-
-export const PUT = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ENGAGEMENT, Action.UPDATE, permissions);
-      if (permissionError) return permissionError;
-
-      const body = await request.json();
-      const { requestId, decision, comments } = body;
-
-      if (!requestId || !decision) {
-        return NextResponse.json({ error: 'Request ID and decision are required' }, { status: 400 });
-      }
-
-      const updatedRequest = {
-        id: requestId,
-        tenantId: user.tenantId,
-        decision,
-        comments: comments || '',
-        reviewedBy: user.userId,
-        reviewedAt: new Date().toISOString(),
-      };
-
-      return NextResponse.json({ request: updatedRequest });
-    } catch (error: any) {
-      logger.error('Remote Work Review API error:', error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-    }
-  }
-);
+});

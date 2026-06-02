@@ -4,7 +4,7 @@
  * Tests all department-related API endpoints end-to-end
  */
 
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { createTestTenant, createTestEmployee, cleanupTestData } from '../helpers/test-utils';
 
@@ -188,10 +188,7 @@ describe('Department API Integration Tests', () => {
       const result = await prisma.department.findMany({
         where: {
           tenantId,
-          OR: [
-            { name: { contains: 'List Department 5' } },
-            { code: { contains: 'LISTDEPT5' } },
-          ],
+          OR: [{ name: { contains: 'List Department 5' } }, { code: { contains: 'LISTDEPT5' } }],
         },
       });
 
@@ -507,7 +504,7 @@ describe('Department API Integration Tests', () => {
       });
 
       expect(roots.length).toBeGreaterThan(0);
-      const rootWithChildren = roots.find(r => r.childDepartments.length > 0);
+      const rootWithChildren = roots.find((r) => r.childDepartments.length > 0);
       expect(rootWithChildren).toBeDefined();
     });
 
@@ -606,10 +603,7 @@ describe('Department API Integration Tests', () => {
       });
 
       if (departments.length > 0) {
-        const totalEmployees = departments.reduce(
-          (sum, dept) => sum + dept._count.employees,
-          0
-        );
+        const totalEmployees = departments.reduce((sum, dept) => sum + dept._count.employees, 0);
         const average = totalEmployees / departments.length;
 
         expect(average).toBeGreaterThanOrEqual(0);

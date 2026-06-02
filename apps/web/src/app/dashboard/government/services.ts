@@ -4,7 +4,7 @@ import type {
   SecurityClearance,
   PensionScheme,
   GovernmentSettings,
-  GovernmentAlert
+  GovernmentAlert,
 } from './types';
 
 export class CivilServiceGradeService {
@@ -12,10 +12,10 @@ export class CivilServiceGradeService {
 
   static async getAllGrades(): Promise<CivilServiceGrade[]> {
     try {
-      const response = await APIClient.get<{ grades?: CivilServiceGrade[] }>(this.endpoint);
-      return response.grades || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<CivilServiceGrade>(response, 'grades');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -24,17 +24,23 @@ export class CivilServiceGradeService {
     return response.grade;
   }
 
-  static async updateGrade(gradeId: string, updates: Partial<CivilServiceGrade>): Promise<CivilServiceGrade> {
-    const response = await APIClient.put<{ grade: CivilServiceGrade }>(`${this.endpoint}/${gradeId}`, updates);
+  static async updateGrade(
+    gradeId: string,
+    updates: Partial<CivilServiceGrade>
+  ): Promise<CivilServiceGrade> {
+    const response = await APIClient.put<{ grade: CivilServiceGrade }>(
+      `${this.endpoint}/${gradeId}`,
+      updates
+    );
     return response.grade;
   }
 
   static async getGradeByEmployeeId(employeeId: string): Promise<CivilServiceGrade | null> {
     try {
-      const response = await APIClient.get<{ grade?: CivilServiceGrade }>(`${this.endpoint}/employee/${employeeId}`);
-      return response.grade || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/employee/${employeeId}`);
+      return APIClient.unwrapItem<CivilServiceGrade>(response, 'grade');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -44,38 +50,49 @@ export class SecurityClearanceService {
 
   static async getAllClearances(): Promise<SecurityClearance[]> {
     try {
-      const response = await APIClient.get<{ clearances?: SecurityClearance[] }>(this.endpoint);
-      return response.clearances || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<SecurityClearance>(response, 'clearances');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async createClearance(clearanceData: Partial<SecurityClearance>): Promise<SecurityClearance> {
-    const response = await APIClient.post<{ clearance: SecurityClearance }>(this.endpoint, clearanceData);
+  static async createClearance(
+    clearanceData: Partial<SecurityClearance>
+  ): Promise<SecurityClearance> {
+    const response = await APIClient.post<{ clearance: SecurityClearance }>(
+      this.endpoint,
+      clearanceData
+    );
     return response.clearance;
   }
 
-  static async updateClearance(clearanceId: string, updates: Partial<SecurityClearance>): Promise<SecurityClearance> {
-    const response = await APIClient.put<{ clearance: SecurityClearance }>(`${this.endpoint}/${clearanceId}`, updates);
+  static async updateClearance(
+    clearanceId: string,
+    updates: Partial<SecurityClearance>
+  ): Promise<SecurityClearance> {
+    const response = await APIClient.put<{ clearance: SecurityClearance }>(
+      `${this.endpoint}/${clearanceId}`,
+      updates
+    );
     return response.clearance;
   }
 
   static async getClearanceByEmployeeId(employeeId: string): Promise<SecurityClearance | null> {
     try {
-      const response = await APIClient.get<{ clearance?: SecurityClearance }>(`${this.endpoint}/employee/${employeeId}`);
-      return response.clearance || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/employee/${employeeId}`);
+      return APIClient.unwrapItem<SecurityClearance>(response, 'clearance');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
   static async getExpiringSoon(days: number = 90): Promise<SecurityClearance[]> {
     try {
-      const response = await APIClient.get<{ clearances?: SecurityClearance[] }>(`${this.endpoint}/expiring`, { days });
-      return response.clearances || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/expiring`, { days });
+      return APIClient.unwrapList<SecurityClearance>(response, 'clearances');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 }
@@ -85,10 +102,10 @@ export class PensionSchemeService {
 
   static async getAllPensions(): Promise<PensionScheme[]> {
     try {
-      const response = await APIClient.get<{ pensions?: PensionScheme[] }>(this.endpoint);
-      return response.pensions || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<PensionScheme>(response, 'pensions');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -97,26 +114,32 @@ export class PensionSchemeService {
     return response.pension;
   }
 
-  static async updatePension(pensionId: string, updates: Partial<PensionScheme>): Promise<PensionScheme> {
-    const response = await APIClient.put<{ pension: PensionScheme }>(`${this.endpoint}/${pensionId}`, updates);
+  static async updatePension(
+    pensionId: string,
+    updates: Partial<PensionScheme>
+  ): Promise<PensionScheme> {
+    const response = await APIClient.put<{ pension: PensionScheme }>(
+      `${this.endpoint}/${pensionId}`,
+      updates
+    );
     return response.pension;
   }
 
   static async getPensionByEmployeeId(employeeId: string): Promise<PensionScheme | null> {
     try {
-      const response = await APIClient.get<{ pension?: PensionScheme }>(`${this.endpoint}/employee/${employeeId}`);
-      return response.pension || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/employee/${employeeId}`);
+      return APIClient.unwrapItem<PensionScheme>(response, 'pension');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
   static async getRetirementEligible(): Promise<PensionScheme[]> {
     try {
-      const response = await APIClient.get<{ pensions?: PensionScheme[] }>(`${this.endpoint}/retirement-eligible`);
-      return response.pensions || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/retirement-eligible`);
+      return APIClient.unwrapList<PensionScheme>(response, 'pensions');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 }
@@ -126,10 +149,10 @@ export class GovernmentSettingsService {
 
   static async getSettings(): Promise<GovernmentSettings | null> {
     try {
-      const response = await APIClient.get<{ settings?: GovernmentSettings }>(this.endpoint);
-      return response.settings || null;
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapItem<GovernmentSettings>(response, 'settings');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
@@ -144,10 +167,10 @@ export class AlertsService {
 
   static async getAllAlerts(): Promise<GovernmentAlert[]> {
     try {
-      const response = await APIClient.get<{ alerts?: GovernmentAlert[] }>(this.endpoint);
-      return response.alerts || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<GovernmentAlert>(response, 'alerts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
@@ -157,7 +180,10 @@ export class AlertsService {
   }
 
   static async acknowledgeAlert(alertId: string, acknowledgedBy: string): Promise<GovernmentAlert> {
-    const response = await APIClient.post<{ alert: GovernmentAlert }>(`${this.endpoint}/${alertId}/acknowledge`, { acknowledgedBy });
+    const response = await APIClient.post<{ alert: GovernmentAlert }>(
+      `${this.endpoint}/${alertId}/acknowledge`,
+      { acknowledgedBy }
+    );
     return response.alert;
   }
 }

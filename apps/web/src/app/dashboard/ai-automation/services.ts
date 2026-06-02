@@ -30,28 +30,30 @@ export class OrgHealthPredictorService {
 
   static async getAllPredictions(): Promise<OrgHealthPrediction[]> {
     try {
-      const response = await APIClient.get<{ predictions?: OrgHealthPrediction[] }>(this.endpoint);
-      return response.predictions || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<OrgHealthPrediction>(response, 'predictions');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getLatestPrediction(): Promise<OrgHealthPrediction | null> {
     try {
-      const response = await APIClient.get<{ prediction?: OrgHealthPrediction }>(`${this.endpoint}/latest`);
-      return response.prediction || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/latest`);
+      return APIClient.unwrapItem<OrgHealthPrediction>(response, 'prediction');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
   static async generatePrediction(): Promise<OrgHealthPrediction | null> {
     try {
-      const response = await APIClient.post<{ prediction: OrgHealthPrediction }>(`${this.endpoint}/generate`);
+      const response = await APIClient.post<{ prediction: OrgHealthPrediction }>(
+        `${this.endpoint}/generate`
+      );
       return response.prediction;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -65,46 +67,60 @@ export class AICoachingBotService {
 
   static async getAllSessions(): Promise<CoachingSession[]> {
     try {
-      const response = await APIClient.get<{ sessions?: CoachingSession[] }>(this.endpoint);
-      return response.sessions || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<CoachingSession>(response, 'sessions');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getSessionById(sessionId: string): Promise<CoachingSession | null> {
     try {
-      const response = await APIClient.get<{ session?: CoachingSession }>(`${this.endpoint}/${sessionId}`);
-      return response.session || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${sessionId}`);
+      return APIClient.unwrapItem<CoachingSession>(response, 'session');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
-  static async startSession(sessionData: Partial<CoachingSession>): Promise<CoachingSession | null> {
+  static async startSession(
+    sessionData: Partial<CoachingSession>
+  ): Promise<CoachingSession | null> {
     try {
-      const response = await APIClient.post<{ session: CoachingSession }>(this.endpoint, sessionData);
+      const response = await APIClient.post<{ session: CoachingSession }>(
+        this.endpoint,
+        sessionData
+      );
       return response.session;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
-  static async sendMessage(sessionId: string, message: string, sender: 'user' | 'bot'): Promise<CoachingSession | null> {
+  static async sendMessage(
+    sessionId: string,
+    message: string,
+    sender: 'user' | 'bot'
+  ): Promise<CoachingSession | null> {
     try {
-      const response = await APIClient.post<{ session: CoachingSession }>(`${this.endpoint}/${sessionId}/message`, { message, sender });
+      const response = await APIClient.post<{ session: CoachingSession }>(
+        `${this.endpoint}/${sessionId}/message`,
+        { message, sender }
+      );
       return response.session;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
   static async endSession(sessionId: string): Promise<CoachingSession | null> {
     try {
-      const response = await APIClient.put<{ session: CoachingSession }>(`${this.endpoint}/${sessionId}/end`);
+      const response = await APIClient.put<{ session: CoachingSession }>(
+        `${this.endpoint}/${sessionId}/end`
+      );
       return response.session;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -118,46 +134,57 @@ export class WorkflowGeneratorService {
 
   static async getAllWorkflows(): Promise<GeneratedWorkflow[]> {
     try {
-      const response = await APIClient.get<{ workflows?: GeneratedWorkflow[] }>(this.endpoint);
-      return response.workflows || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<GeneratedWorkflow>(response, 'workflows');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getWorkflowById(workflowId: string): Promise<GeneratedWorkflow | null> {
     try {
-      const response = await APIClient.get<{ workflow?: GeneratedWorkflow }>(`${this.endpoint}/${workflowId}`);
-      return response.workflow || null;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${workflowId}`);
+      return APIClient.unwrapItem<GeneratedWorkflow>(response, 'workflow');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
   static async generateWorkflow(description: string): Promise<GeneratedWorkflow | null> {
     try {
-      const response = await APIClient.post<{ workflow: GeneratedWorkflow }>(`${this.endpoint}/generate`, { description });
+      const response = await APIClient.post<{ workflow: GeneratedWorkflow }>(
+        `${this.endpoint}/generate`,
+        { description }
+      );
       return response.workflow;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
-  static async updateWorkflow(workflowId: string, updates: Partial<GeneratedWorkflow>): Promise<GeneratedWorkflow | null> {
+  static async updateWorkflow(
+    workflowId: string,
+    updates: Partial<GeneratedWorkflow>
+  ): Promise<GeneratedWorkflow | null> {
     try {
-      const response = await APIClient.put<{ workflow: GeneratedWorkflow }>(`${this.endpoint}/${workflowId}`, updates);
+      const response = await APIClient.put<{ workflow: GeneratedWorkflow }>(
+        `${this.endpoint}/${workflowId}`,
+        updates
+      );
       return response.workflow;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
   static async deployWorkflow(workflowId: string): Promise<GeneratedWorkflow | null> {
     try {
-      const response = await APIClient.post<{ workflow: GeneratedWorkflow }>(`${this.endpoint}/${workflowId}/deploy`);
+      const response = await APIClient.post<{ workflow: GeneratedWorkflow }>(
+        `${this.endpoint}/${workflowId}/deploy`
+      );
       return response.workflow;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -171,19 +198,24 @@ export class ResumeScreeningService {
 
   static async getAllScreenings(): Promise<ResumeScreening[]> {
     try {
-      const response = await APIClient.get<{ screenings?: ResumeScreening[] }>(this.endpoint);
-      return response.screenings || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<ResumeScreening>(response, 'screenings');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async screenResume(screeningData: Partial<ResumeScreening>): Promise<ResumeScreening | null> {
+  static async screenResume(
+    screeningData: Partial<ResumeScreening>
+  ): Promise<ResumeScreening | null> {
     try {
-      const response = await APIClient.post<{ screening: ResumeScreening }>(this.endpoint, screeningData);
+      const response = await APIClient.post<{ screening: ResumeScreening }>(
+        this.endpoint,
+        screeningData
+      );
       return response.screening;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -197,28 +229,31 @@ export class AttritionPredictionService {
 
   static async getAllPredictions(): Promise<AttritionPrediction[]> {
     try {
-      const response = await APIClient.get<{ predictions?: AttritionPrediction[] }>(this.endpoint);
-      return response.predictions || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<AttritionPrediction>(response, 'predictions');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async predictAttrition(employeeId: string): Promise<AttritionPrediction | null> {
     try {
-      const response = await APIClient.post<{ prediction: AttritionPrediction }>(`${this.endpoint}/predict`, { employeeId });
+      const response = await APIClient.post<{ prediction: AttritionPrediction }>(
+        `${this.endpoint}/predict`,
+        { employeeId }
+      );
       return response.prediction;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
   static async getHighRiskEmployees(): Promise<AttritionPrediction[]> {
     try {
-      const response = await APIClient.get<{ predictions?: AttritionPrediction[] }>(`${this.endpoint}/high-risk`);
-      return response.predictions || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/high-risk`);
+      return APIClient.unwrapList<AttritionPrediction>(response, 'predictions');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 }
@@ -232,19 +267,26 @@ export class LeaveForecastingService {
 
   static async getAllForecasts(): Promise<LeaveForecast[]> {
     try {
-      const response = await APIClient.get<{ forecasts?: LeaveForecast[] }>(this.endpoint);
-      return response.forecasts || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<LeaveForecast>(response, 'forecasts');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async generateForecast(startDate: Date, endDate: Date, department?: string): Promise<LeaveForecast | null> {
+  static async generateForecast(
+    startDate: Date,
+    endDate: Date,
+    department?: string
+  ): Promise<LeaveForecast | null> {
     try {
-      const response = await APIClient.post<{ forecast: LeaveForecast }>(`${this.endpoint}/generate`, { startDate, endDate, department });
+      const response = await APIClient.post<{ forecast: LeaveForecast }>(
+        `${this.endpoint}/generate`,
+        { startDate, endDate, department }
+      );
       return response.forecast;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -258,28 +300,34 @@ export class AnomalyDetectionService {
 
   static async getAllAnomalies(): Promise<DetectedAnomaly[]> {
     try {
-      const response = await APIClient.get<{ anomalies?: DetectedAnomaly[] }>(this.endpoint);
-      return response.anomalies || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<DetectedAnomaly>(response, 'anomalies');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
   static async getActiveAnomalies(): Promise<DetectedAnomaly[]> {
     try {
-      const response = await APIClient.get<{ anomalies?: DetectedAnomaly[] }>(`${this.endpoint}/active`);
-      return response.anomalies || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/active`);
+      return APIClient.unwrapList<DetectedAnomaly>(response, 'anomalies');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async updateAnomaly(anomalyId: string, updates: Partial<DetectedAnomaly>): Promise<DetectedAnomaly | null> {
+  static async updateAnomaly(
+    anomalyId: string,
+    updates: Partial<DetectedAnomaly>
+  ): Promise<DetectedAnomaly | null> {
     try {
-      const response = await APIClient.put<{ anomaly: DetectedAnomaly }>(`${this.endpoint}/${anomalyId}`, updates);
+      const response = await APIClient.put<{ anomaly: DetectedAnomaly }>(
+        `${this.endpoint}/${anomalyId}`,
+        updates
+      );
       return response.anomaly;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -293,28 +341,41 @@ export class ChatbotService {
 
   static async getAllConversations(): Promise<ChatbotConversation[]> {
     try {
-      const response = await APIClient.get<{ conversations?: ChatbotConversation[] }>(this.endpoint);
-      return response.conversations || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<ChatbotConversation>(response, 'conversations');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async startConversation(employeeId: string, employeeName: string): Promise<ChatbotConversation | null> {
+  static async startConversation(
+    employeeId: string,
+    employeeName: string
+  ): Promise<ChatbotConversation | null> {
     try {
-      const response = await APIClient.post<{ conversation: ChatbotConversation }>(this.endpoint, { employeeId, employeeName });
+      const response = await APIClient.post<{ conversation: ChatbotConversation }>(this.endpoint, {
+        employeeId,
+        employeeName,
+      });
       return response.conversation;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
-  static async sendChatMessage(conversationId: string, message: string, sender: 'user' | 'bot'): Promise<ChatbotConversation | null> {
+  static async sendChatMessage(
+    conversationId: string,
+    message: string,
+    sender: 'user' | 'bot'
+  ): Promise<ChatbotConversation | null> {
     try {
-      const response = await APIClient.post<{ conversation: ChatbotConversation }>(`${this.endpoint}/${conversationId}/message`, { message, sender });
+      const response = await APIClient.post<{ conversation: ChatbotConversation }>(
+        `${this.endpoint}/${conversationId}/message`,
+        { message, sender }
+      );
       return response.conversation;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -328,28 +389,39 @@ export class InterviewSchedulingService {
 
   static async getAllSchedules(): Promise<InterviewSchedule[]> {
     try {
-      const response = await APIClient.get<{ schedules?: InterviewSchedule[] }>(this.endpoint);
-      return response.schedules || [];
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<InterviewSchedule>(response, 'schedules');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 
-  static async createSchedule(scheduleData: Partial<InterviewSchedule>): Promise<InterviewSchedule | null> {
+  static async createSchedule(
+    scheduleData: Partial<InterviewSchedule>
+  ): Promise<InterviewSchedule | null> {
     try {
-      const response = await APIClient.post<{ schedule: InterviewSchedule }>(this.endpoint, scheduleData);
+      const response = await APIClient.post<{ schedule: InterviewSchedule }>(
+        this.endpoint,
+        scheduleData
+      );
       return response.schedule;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
-  static async confirmSchedule(scheduleId: string, slotId: string): Promise<InterviewSchedule | null> {
+  static async confirmSchedule(
+    scheduleId: string,
+    slotId: string
+  ): Promise<InterviewSchedule | null> {
     try {
-      const response = await APIClient.put<{ schedule: InterviewSchedule }>(`${this.endpoint}/${scheduleId}/confirm`, { slotId });
+      const response = await APIClient.put<{ schedule: InterviewSchedule }>(
+        `${this.endpoint}/${scheduleId}/confirm`,
+        { slotId }
+      );
       return response.schedule;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -363,10 +435,13 @@ export class PerformanceAnalysisService {
 
   static async analyzePerformance(employeeId: string): Promise<PerformanceAnalysis | null> {
     try {
-      const response = await APIClient.post<{ analysis: PerformanceAnalysis }>(`${this.endpoint}/analyze`, { employeeId });
+      const response = await APIClient.post<{ analysis: PerformanceAnalysis }>(
+        `${this.endpoint}/analyze`,
+        { employeeId }
+      );
       return response.analysis;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -376,10 +451,10 @@ export class LDRecommendationService {
 
   static async getRecommendations(employeeId: string): Promise<LDRecommendation | null> {
     try {
-      const response = await APIClient.get<{ recommendation: LDRecommendation }>(`${this.endpoint}/${employeeId}`);
-      return response.recommendation;
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${employeeId}`);
+      return APIClient.unwrapItem<LDRecommendation>(response, 'recommendation');
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -389,10 +464,10 @@ export class JobMatchingService {
 
   static async findMatches(employeeId: string): Promise<JobMatch[]> {
     try {
-      const response = await APIClient.get<{ matches?: JobMatch[] }>(`${this.endpoint}/${employeeId}`);
-      return response.matches || [];
+      const response = await APIClient.get<unknown>(`${this.endpoint}/${employeeId}`);
+      return APIClient.unwrapList<JobMatch>(response, 'matches');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 }
@@ -402,10 +477,12 @@ export class EmailParsingService {
 
   static async parseEmail(emailId: string): Promise<EmailParsing | null> {
     try {
-      const response = await APIClient.post<{ parsing: EmailParsing }>(`${this.endpoint}/parse`, { emailId });
+      const response = await APIClient.post<{ parsing: EmailParsing }>(`${this.endpoint}/parse`, {
+        emailId,
+      });
       return response.parsing;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -415,10 +492,12 @@ export class AutoAccrualService {
 
   static async calculateAccruals(): Promise<AutoAccrual[]> {
     try {
-      const response = await APIClient.post<{ accruals?: AutoAccrual[] }>(`${this.endpoint}/calculate`);
-      return response.accruals || [];
+      const response = await APIClient.post<{ accruals?: AutoAccrual[] }>(
+        `${this.endpoint}/calculate`
+      );
+      return APIClient.unwrapList<AutoAccrual>(response, 'accruals');
     } catch (error: any) {
-            return [];
+      return [];
     }
   }
 }
@@ -428,10 +507,13 @@ export class NLPInsightsService {
 
   static async extractInsights(text: string, sourceType: string): Promise<NLPInsight | null> {
     try {
-      const response = await APIClient.post<{ insight: NLPInsight }>(`${this.endpoint}/extract`, { text, sourceType });
+      const response = await APIClient.post<{ insight: NLPInsight }>(`${this.endpoint}/extract`, {
+        text,
+        sourceType,
+      });
       return response.insight;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }
@@ -448,16 +530,21 @@ export class AIAutomationSettingsService {
       const response = await APIClient.get<{ settings: AIAutomationSettings }>(this.endpoint);
       return response.settings;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 
-  static async updateSettings(updates: Partial<AIAutomationSettings>): Promise<AIAutomationSettings | null> {
+  static async updateSettings(
+    updates: Partial<AIAutomationSettings>
+  ): Promise<AIAutomationSettings | null> {
     try {
-      const response = await APIClient.put<{ settings: AIAutomationSettings }>(this.endpoint, updates);
+      const response = await APIClient.put<{ settings: AIAutomationSettings }>(
+        this.endpoint,
+        updates
+      );
       return response.settings;
     } catch (error: any) {
-            return null;
+      return null;
     }
   }
 }

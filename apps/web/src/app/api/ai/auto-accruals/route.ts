@@ -3,7 +3,7 @@
  * Phase 3: Intelligence Layer - Leave Automation
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
   } catch (error: any) {
-        return NextResponse.json({ error: 'Failed to process auto accruals' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process auto accruals' }, { status: 500 });
   }
 }
 
@@ -134,6 +134,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: any) {
-        return NextResponse.json({ error: 'Failed to fetch auto accruals data' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch auto accruals data' }, { status: 500 });
   }
 }

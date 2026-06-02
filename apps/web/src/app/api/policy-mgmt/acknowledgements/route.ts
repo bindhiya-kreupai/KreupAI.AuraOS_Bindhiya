@@ -1,45 +1,60 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-export const GET = withEnhancedAuth(async (request, context) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-
-    return NextResponse.json(
-      { success: true, data: { acknowledgements: [] }, tenantId: user.tenantId },
-      { status: 200 }
-    );
+    const { user, permissions } = context;
+    if (!permissions.includes('policy-mgmt/acknowledgements:read'))
+      return forbidden('policy-mgmt/acknowledgements:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).policyAcknowledgement.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).policyAcknowledgement.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
   } catch (error: any) {
-    console.error('Error fetching acknowledgements:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    logger.error({ err: error, route: 'policy-mgmt/acknowledgements/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
   }
 });
 
-export const POST = withEnhancedAuth(async (request, context) => {
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user } = context;
-    const body = await request.json();
-
-    const acknowledgement = {
-      ...body,
-      id: `ack-${Date.now()}`,
-      tenantId: user.tenantId,
-      acknowledgedDate: new Date().toISOString(),
-      status: 'acknowledged',
-    };
-
-    return NextResponse.json(
-      { success: true, data: { acknowledgement } },
-      { status: 201 }
-    );
+    const { user, permissions } = context;
+    if (!permissions.includes('policy-mgmt/acknowledgements:create'))
+      return forbidden('policy-mgmt/acknowledgements:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).policyAcknowledgement.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
   } catch (error: any) {
-    console.error('Error creating acknowledgement:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
+    logger.error(
+      { err: error, route: 'policy-mgmt/acknowledgements/route.ts' },
+      'Failed to create'
     );
+    return serverError(error, 'create');
   }
 });

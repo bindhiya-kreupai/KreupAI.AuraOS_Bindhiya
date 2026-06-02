@@ -7,10 +7,8 @@ const BASE_ENDPOINT = '/engagement/remote-work';
 export class RemoteEmployeeService {
   static async getAll(): Promise<RemoteEmployee[]> {
     try {
-      const response = await APIClient.get<{ employees?: RemoteEmployee[] }>(
-        `${BASE_ENDPOINT}?type=employees`
-      );
-      return response.employees || [];
+      const response = await APIClient.get<unknown>(`${BASE_ENDPOINT}?type=employees`);
+      return APIClient.unwrapList<RemoteEmployee>(response, 'employees');
     } catch (_error: any) {
       return [];
     }
@@ -28,10 +26,8 @@ export class RemoteEmployeeService {
 export class RemotePolicyService {
   static async getAll(): Promise<RemotePolicy[]> {
     try {
-      const response = await APIClient.get<{ policies?: RemotePolicy[] }>(
-        `${BASE_ENDPOINT}?type=policies`
-      );
-      return response.policies || [];
+      const response = await APIClient.get<unknown>(`${BASE_ENDPOINT}?type=policies`);
+      return APIClient.unwrapList<RemotePolicy>(response, 'policies');
     } catch (_error: any) {
       return [];
     }
@@ -58,10 +54,8 @@ export class RemotePolicyService {
 export class RemoteWorkSettingsService {
   static async get(): Promise<RemoteWorkSettings | null> {
     try {
-      const response = await APIClient.get<{ teamMetrics?: RemoteWorkSettings }>(
-        `${BASE_ENDPOINT}?type=metrics`
-      );
-      return response.teamMetrics || null;
+      const response = await APIClient.get<unknown>(`${BASE_ENDPOINT}?type=metrics`);
+      return APIClient.unwrapItem<RemoteWorkSettings>(response, 'teamMetrics');
     } catch (_error: any) {
       return null;
     }
@@ -78,10 +72,8 @@ export class RemoteWorkSettingsService {
 export class AlertsService {
   static async getAll(): Promise<RemoteWorkAlert[]> {
     try {
-      const response = await APIClient.get<{ requests?: RemoteWorkAlert[] }>(
-        `${BASE_ENDPOINT}?type=requests`
-      );
-      return response.requests || [];
+      const response = await APIClient.get<unknown>(`${BASE_ENDPOINT}?type=requests`);
+      return APIClient.unwrapList<RemoteWorkAlert>(response, 'requests');
     } catch (_error: any) {
       return [];
     }

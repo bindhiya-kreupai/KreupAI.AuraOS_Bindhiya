@@ -1,69 +1,55 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
-import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-function getDefaultESGData(tenantId: string) {
-  return {
-    metrics: {
-      tenantId,
-      environmentalScore: 0,
-      socialScore: 0,
-      governanceScore: 0,
-      overallScore: 0,
-      carbonFootprint: 0,
-      volunteerHours: 0,
-      communityInvestment: 0,
-      lastUpdated: new Date().toISOString(),
-    },
-    initiatives: [],
-    goals: [],
-  };
-}
-
-export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ENGAGEMENT, Action.READ, permissions);
-      if (permissionError) return permissionError;
-
-      const esgData = getDefaultESGData(user.tenantId);
-
-      return NextResponse.json(esgData);
-    } catch (error: any) {
-      logger.error('ESG API error:', error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-    }
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('engagement/esg:read')) return forbidden('engagement/esg:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).esgInitiative.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).esgInitiative.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error({ err: error, route: 'engagement/esg/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
   }
-);
+});
 
-export const POST = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ENGAGEMENT, Action.CREATE, permissions);
-      if (permissionError) return permissionError;
-
-      const body = await request.json();
-      const { period } = body;
-
-      if (!period) {
-        return NextResponse.json({ error: 'Period is required' }, { status: 400 });
-      }
-
-      const report = {
-        id: `esg-report-${Date.now()}`,
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('engagement/esg:create')) return forbidden('engagement/esg:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).esgInitiative.create({
+      data: {
+        ...body,
         tenantId: user.tenantId,
-        period,
-        generatedBy: user.userId,
-        generatedAt: new Date().toISOString(),
-        data: getDefaultESGData(user.tenantId),
-      };
-
-      return NextResponse.json({ report }, { status: 201 });
-    } catch (error: any) {
-      logger.error('ESG Report API error:', error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-    }
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error({ err: error, route: 'engagement/esg/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
   }
-);
+});

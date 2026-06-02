@@ -46,37 +46,22 @@ function buildErrorResponse(method: string, routePath: string[]) {
   return NextResponse.json(body, { status: 501 });
 }
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { route: string[] } }
-) {
+export async function GET(_request: NextRequest, { params }: { params: { route: string[] } }) {
   return buildErrorResponse('GET', params.route);
 }
 
-export async function POST(
-  _request: NextRequest,
-  { params }: { params: { route: string[] } }
-) {
+export async function POST(_request: NextRequest, { params }: { params: { route: string[] } }) {
   return buildErrorResponse('POST', params.route);
 }
 
-export async function PUT(
-  _request: NextRequest,
-  { params }: { params: { route: string[] } }
-) {
+export async function PUT(_request: NextRequest, { params }: { params: { route: string[] } }) {
   return buildErrorResponse('PUT', params.route);
 }
 
-export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: { route: string[] } }
-) {
+export async function DELETE(_request: NextRequest, { params }: { params: { route: string[] } }) {
   return buildErrorResponse('DELETE', params.route);
 }
 
-export async function PATCH(
-  _request: NextRequest,
-  { params }: { params: { route: string[] } }
-) {
+export async function PATCH(_request: NextRequest, { params }: { params: { route: string[] } }) {
   return buildErrorResponse('PATCH', params.route);
 }

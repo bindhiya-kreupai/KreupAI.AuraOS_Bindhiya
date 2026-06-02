@@ -1,87 +1,56 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
-import { withAudit } from '@/lib/middleware/audit.middleware';
-import { AuditAction } from '@/lib/audit/audit.service';
+import { logger } from '@/lib/logger';
+import {
+  forbidden,
+  parsePagination,
+  safeJson,
+  serverError,
+  successItem,
+  successList,
+  validationError,
+} from '@/lib/api/crud-helpers';
 
-export const POST = withAudit(
-  withEnhancedAuth(async (request: NextRequest, context: any) => {
-    const { permissions } = context;
-    if (!permissions.includes('admin/data-import:create')) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'E4030',
-            message: 'Forbidden: missing admin/data-import:create permission',
-            messageAr: 'ممنوع',
-          },
-        },
-        { status: 403 }
-      );
-    }
-    const { user } = context;
-    const _tenantId = user.tenantId;
-
-    const body = await request.json();
-
-    const importJob = {
-      id: 'import-' + Date.now(),
-      type: body.type || 'employees',
-      status: 'processing',
-      fileName: body.fileName || 'employees_bulk_import.csv',
-      fileSize: body.fileSize || '2.4MB',
-      format: body.format || 'csv',
-      initiatedBy: 'admin-001',
-      initiatedAt: new Date().toISOString(),
-      options: {
-        skipDuplicates: body.options?.skipDuplicates ?? true,
-        updateExisting: body.options?.updateExisting ?? false,
-        validateOnly: body.options?.validateOnly ?? false,
-        notifyNewEmployees: body.options?.notifyNewEmployees ?? false,
-        mapping: body.options?.mapping || {
-          'First Name': 'firstName',
-          'Last Name': 'lastName',
-          Email: 'email',
-          Department: 'department',
-          Position: 'position',
-          'Start Date': 'startDate',
-          Salary: 'salary',
-        },
-      },
-      preview: {
-        totalRows: 150,
-        validRows: 142,
-        errorRows: 5,
-        warningRows: 3,
-        sampleErrors: [
-          { row: 23, field: 'email', error: 'Invalid email format', value: 'john.doe@' },
-          { row: 67, field: 'startDate', error: 'Date in past', value: '2020-01-01' },
-          { row: 89, field: 'department', error: 'Unknown department', value: 'Innovations' },
-        ],
-        sampleWarnings: [
-          { row: 12, field: 'salary', warning: 'Below range for position', value: '35000' },
-          {
-            row: 45,
-            field: 'email',
-            warning: 'Possible duplicate',
-            value: 'jane.smith@company.com',
-          },
-        ],
-      },
-      estimatedDuration: '2-3 minutes',
-      statusUrl: '/api/v1/admin/data-import/import-001/status',
-    };
-
-    return NextResponse.json(
-      { success: true, data: importJob, message: 'Import job started successfully' },
-      { status: 201 }
-    );
-  }),
-  {
-    action: AuditAction.DATA_EXPORTED,
-    resourceType: 'data_import',
-    captureRequestBody: true,
-    captureResponseBody: true,
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('admin/data-import:read')) return forbidden('admin/data-import:read');
+    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
+    const where = { tenantId: user.tenantId };
+    const [rows, total] = await Promise.all([
+      (prisma as any).dataImportJob.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).dataImportJob.count({ where }),
+    ]);
+    return successList(rows, page, limit, total);
+  } catch (error: any) {
+    logger.error({ err: error, route: 'v1/admin/data-import/route.ts' }, 'Failed to list');
+    return serverError(error, 'list');
   }
-);
+});
+
+export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('admin/data-import:create'))
+      return forbidden('admin/data-import:create');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+    const created = await (prisma as any).dataImportJob.create({
+      data: {
+        ...body,
+        tenantId: user.tenantId,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(created, { status: 201 });
+  } catch (error: any) {
+    logger.error({ err: error, route: 'v1/admin/data-import/route.ts' }, 'Failed to create');
+    return serverError(error, 'create');
+  }
+});

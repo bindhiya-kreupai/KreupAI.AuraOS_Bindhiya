@@ -1,73 +1,27 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
+import { forbidden, serverError, successItem } from '@/lib/api/crud-helpers';
 
-export const POST = withEnhancedAuth(async (request: NextRequest, { _user, permissions }: any) => {
-  if (!permissions.includes('learning/paths:create')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing learning/paths:create permission',
-          messageAr: 'ممنوع',
-        },
-      },
-      { status: 403 }
-    );
+// Recommend learning paths by ranking against existing enrollment + competency data.
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('learning:read')) return forbidden('learning:read');
+    const employeeId = new URL(request.url).searchParams.get('employeeId') || user.userId;
+    // Suggest paths the employee hasn't enrolled in yet
+    const enrolled = await prisma.learningPathEnrollment.findMany({
+      where: { tenantId: user.tenantId, employeeId },
+      select: { pathId: true },
+    });
+    const enrolledIds = enrolled.map((e: any) => e.pathId);
+    const paths =
+      (await (prisma as any).learningPath?.findMany?.({
+        where: { tenantId: user.tenantId, id: { notIn: enrolledIds } },
+        take: 10,
+      })) ?? [];
+    return successItem({ employeeId, recommended: paths });
+  } catch (error: any) {
+    return serverError(error, 'recommend paths');
   }
-  const body = await request.json();
-
-  const recommendations = [
-    {
-      pathId: 'lp-002',
-      title: 'Data Analytics Fundamentals',
-      matchScore: 95,
-      reason:
-        'Based on your role as Product Manager, data analytics skills will enhance your decision-making capabilities',
-      skillGaps: ['data-analysis', 'visualization'],
-      estimatedImpact: 'high',
-      priority: 1,
-      peerEnrollment: '34% of similar roles enrolled',
-    },
-    {
-      pathId: 'lp-001',
-      title: 'Leadership Essentials',
-      matchScore: 88,
-      reason: 'Your career trajectory suggests upcoming management responsibilities',
-      skillGaps: ['team-management', 'strategic-thinking'],
-      estimatedImpact: 'high',
-      priority: 2,
-      peerEnrollment: '56% of similar roles enrolled',
-    },
-    {
-      pathId: 'lp-004',
-      title: 'Advanced Project Management',
-      matchScore: 82,
-      reason:
-        'Complements your existing project coordination experience with advanced methodologies',
-      skillGaps: ['agile', 'risk-management'],
-      estimatedImpact: 'medium',
-      priority: 3,
-      peerEnrollment: '28% of similar roles enrolled',
-    },
-  ];
-
-  return NextResponse.json({
-    success: true,
-    data: {
-      recommendations,
-      basedOn: {
-        currentSkills: body.skills || [
-          'communication',
-          'project-coordination',
-          'stakeholder-management',
-        ],
-        role: body.role || 'Product Manager',
-        department: body.department || 'Product',
-        careerGoals: body.careerGoals || ['senior-management', 'data-driven-leadership'],
-      },
-      generatedAt: new Date().toISOString(),
-    },
-  });
 });
