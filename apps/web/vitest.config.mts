@@ -55,6 +55,10 @@ export default defineConfig({
         // Root-level service modules that have tests today.
         'src/lib/services/leave.service.ts',
         'src/lib/services/attendance.service.ts',
+        'src/lib/services/payroll.service.ts',
+        'src/lib/services/asset.service.ts',
+        'src/lib/services/document.service.ts',
+        'src/lib/services/employment-history.service.ts',
         'src/lib/audit/**/*.ts',
       ],
       exclude: [
