@@ -29,6 +29,11 @@ import type {
   AnySearchResult,
   GlobalSearchResults,
   SearchResultType,
+  EmployeeSearchResult,
+  DocumentSearchResult,
+  PolicySearchResult,
+  ExpenseReportSearchResult,
+  LeaveRequestSearchResult,
 } from '@/services/searchService';
 
 // ── Highlight ─────────────────────────────────────────────────────────────────
@@ -80,23 +85,23 @@ function getResultTitle(result: AnySearchResult): string {
 function getResultDescription(result: AnySearchResult): string {
   switch (result.type) {
     case 'employee': {
-      const r = result as import('@/services/searchService').EmployeeSearchResult;
+      const r = result as EmployeeSearchResult;
       return `${r.title} · ${r.department} · ${r.location}`;
     }
     case 'document': {
-      const r = result as import('@/services/searchService').DocumentSearchResult;
+      const r = result as DocumentSearchResult;
       return r.description;
     }
     case 'policy': {
-      const r = result as import('@/services/searchService').PolicySearchResult;
+      const r = result as PolicySearchResult;
       return `${r.description} (v${r.version})`;
     }
     case 'expense_report': {
-      const r = result as import('@/services/searchService').ExpenseReportSearchResult;
+      const r = result as ExpenseReportSearchResult;
       return `${r.reportCode} · ${r.employeeName} · ${r.currency} ${r.totalAmount.toFixed(2)}`;
     }
     case 'leave_request': {
-      const r = result as import('@/services/searchService').LeaveRequestSearchResult;
+      const r = result as LeaveRequestSearchResult;
       return `${r.employeeName} · ${r.leaveType} · ${r.startDate} to ${r.endDate}`;
     }
     default:

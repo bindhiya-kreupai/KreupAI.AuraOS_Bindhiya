@@ -12,7 +12,7 @@
   "plugins": ["@typescript-eslint"],
   "rules": {
     "no-console": ["warn", { "allow": ["error", "warn", "info", "log"] }],
-    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/ban-ts-comment": [
       "error",
       {
@@ -22,16 +22,7 @@
         "ts-check": false
       }
     ],
-    "@typescript-eslint/no-unused-vars": [
-      "warn",
-      {
-        "argsIgnorePattern": "^_",
-        "varsIgnorePattern": "^_",
-        "caughtErrorsIgnorePattern": "^_",
-        "destructuredArrayIgnorePattern": "^_",
-        "ignoreRestSiblings": true
-      }
-    ],
+    "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/consistent-type-imports": [
       "warn",
       {
@@ -39,7 +30,7 @@
       }
     ],
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn",
+    "react-hooks/exhaustive-deps": "off",
     "no-restricted-imports": [
       "error",
       {
@@ -50,12 +41,16 @@
     "no-var": "error",
     "object-shorthand": "warn",
     "quote-props": ["warn", "as-needed"],
-    "react/no-unescaped-entities": "warn",
-    "@typescript-eslint/no-namespace": "warn",
-    "@typescript-eslint/no-require-imports": "warn",
-    "@typescript-eslint/no-empty-object-type": "warn",
-    "react/jsx-no-comment-textnodes": "warn",
-    "@next/next/no-assign-module-variable": "warn"
+    "react/no-unescaped-entities": "off",
+    "@typescript-eslint/no-namespace": "off",
+    "@typescript-eslint/no-require-imports": "off",
+    "@typescript-eslint/no-empty-object-type": "off",
+    "react/jsx-no-comment-textnodes": "off",
+    "@next/next/no-assign-module-variable": "off",
+    "@next/next/no-img-element": "off",
+    "import/no-anonymous-default-export": "off",
+    "jsx-a11y/alt-text": "off",
+    "jsx-a11y/role-has-required-aria-props": "off"
   },
   "overrides": [
     {

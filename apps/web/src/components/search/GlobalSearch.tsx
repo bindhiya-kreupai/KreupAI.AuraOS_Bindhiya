@@ -23,7 +23,15 @@ import {
   Trash2,
 } from 'lucide-react';
 import { SearchService } from '@/services/searchService';
-import type { AnySearchResult, SearchSuggestion } from '@/services/searchService';
+import type {
+  AnySearchResult,
+  SearchSuggestion,
+  EmployeeSearchResult,
+  DocumentSearchResult,
+  PolicySearchResult,
+  ExpenseReportSearchResult,
+  LeaveRequestSearchResult,
+} from '@/services/searchService';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -82,23 +90,23 @@ function getResultTitle(result: AnySearchResult): string {
 function getResultSubtitle(result: AnySearchResult): string {
   switch (result.type) {
     case 'employee': {
-      const r = result as import('@/services/searchService').EmployeeSearchResult;
+      const r = result as EmployeeSearchResult;
       return `${r.title} · ${r.department}`;
     }
     case 'document': {
-      const r = result as import('@/services/searchService').DocumentSearchResult;
+      const r = result as DocumentSearchResult;
       return `${r.category} · ${r.fileType.toUpperCase()}`;
     }
     case 'policy': {
-      const r = result as import('@/services/searchService').PolicySearchResult;
+      const r = result as PolicySearchResult;
       return `${r.category} · v${r.version}`;
     }
     case 'expense_report': {
-      const r = result as import('@/services/searchService').ExpenseReportSearchResult;
+      const r = result as ExpenseReportSearchResult;
       return `${r.employeeName} · ${r.currency} ${r.totalAmount.toFixed(2)}`;
     }
     case 'leave_request': {
-      const r = result as import('@/services/searchService').LeaveRequestSearchResult;
+      const r = result as LeaveRequestSearchResult;
       return `${r.employeeName} · ${r.leaveType} · ${r.days} days`;
     }
     default:
